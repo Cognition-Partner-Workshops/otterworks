@@ -1,0 +1,286 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 599083837640.dkr.ecr.us-east-1.amazonaws.com/workshop
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway: ${{ steps.changes.outputs.api-gateway }}
+      auth-service: ${{ steps.changes.outputs.auth-service }}
+      file-service: ${{ steps.changes.outputs.file-service }}
+      document-service: ${{ steps.changes.outputs.document-service }}
+      collab-service: ${{ steps.changes.outputs.collab-service }}
+      notification-service: ${{ steps.changes.outputs.notification-service }}
+      search-service: ${{ steps.changes.outputs.search-service }}
+      analytics-service: ${{ steps.changes.outputs.analytics-service }}
+      admin-service: ${{ steps.changes.outputs.admin-service }}
+      audit-service: ${{ steps.changes.outputs.audit-service }}
+      web-app: ${{ steps.changes.outputs.web-app }}
+      admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
+      infrastructure: ${{ steps.changes.outputs.infrastructure }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api-gateway:
+              - 'services/api-gateway/**'
+            auth-service:
+              - 'services/auth-service/**'
+            file-service:
+              - 'services/file-service/**'
+            document-service:
+              - 'services/document-service/**'
+            collab-service:
+              - 'services/collab-service/**'
+            notification-service:
+              - 'services/notification-service/**'
+            search-service:
+              - 'services/search-service/**'
+            analytics-service:
+              - 'services/analytics-service/**'
+            admin-service:
+              - 'services/admin-service/**'
+            audit-service:
+              - 'services/audit-service/**'
+            web-app:
+              - 'frontend/web-app/**'
+            admin-dashboard:
+              - 'frontend/admin-dashboard/**'
+            infrastructure:
+              - 'infrastructure/**'
+
+  # Go - API Gateway
+  api-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api-gateway == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: go vet ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go build -o /dev/null ./cmd/server
+
+  # Java - Auth Service
+  auth-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/auth-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
+      - run: gradle check --no-daemon
+
+  # Rust - File Service
+  file-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.file-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/file-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: cargo fmt --check
+      - run: cargo clippy -- -D warnings
+      - run: cargo test
+      - run: cargo build --release
+
+  # Python - Document Service
+  document-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.document-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/document-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install poetry==1.8.2
+      - run: poetry install
+      - run: poetry run ruff check .
+      - run: poetry run pytest --cov=app
+
+  # Node.js - Collaboration Service
+  collab-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.collab-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/collab-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # Kotlin - Notification Service
+  notification-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.notification-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/notification-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
+      - run: gradle check --no-daemon
+
+  # Python - Search Service
+  search-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.search-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/search-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest --cov=app
+
+  # Scala - Analytics Service
+  analytics-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.analytics-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/analytics-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: sbt compile
+      - run: sbt test
+
+  # Ruby - Admin Service
+  admin-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.admin-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/admin-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: bundle exec rspec
+
+  # C# - Audit Service
+  audit-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.audit-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/audit-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build
+
+  # React/Next.js - Web App
+  web-app:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web-app == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/web-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # Angular - Admin Dashboard
+  admin-dashboard:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.admin-dashboard == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/admin-dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint || true
+      - run: npm test || true
+      - run: npm run build
+
+  # Terraform validation
+  infrastructure:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.infrastructure == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
