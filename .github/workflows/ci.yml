@@ -181,6 +181,40 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m pytest --cov=app || true
 
+  # Scala - Analytics Service
+  analytics-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.analytics-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/analytics-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: sbt compile
+      - run: sbt test
+
+  # Ruby - Admin Service
+  admin-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.admin-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/admin-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: bundle exec rspec
+
   # C# - Audit Service
   audit-service:
     needs: detect-changes
