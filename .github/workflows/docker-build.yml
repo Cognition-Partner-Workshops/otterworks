@@ -1,0 +1,55 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 599083837640.dkr.ecr.us-east-1.amazonaws.com/workshop
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - { name: api-gateway, context: services/api-gateway }
+          - { name: auth-service, context: services/auth-service }
+          - { name: file-service, context: services/file-service }
+          - { name: document-service, context: services/document-service }
+          - { name: collab-service, context: services/collab-service }
+          - { name: notification-service, context: services/notification-service }
+          - { name: search-service, context: services/search-service }
+          - { name: analytics-service, context: services/analytics-service }
+          - { name: admin-service, context: services/admin-service }
+          - { name: audit-service, context: services/audit-service }
+          - { name: web-app, context: frontend/web-app }
+          - { name: admin-dashboard, context: frontend/admin-dashboard }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:latest
