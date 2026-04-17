@@ -179,7 +179,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: python -m pytest --cov=app || true
+      - run: python -m pytest --cov=app
 
   # Scala - Analytics Service
   analytics-service:
@@ -230,7 +230,7 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet restore
       - run: dotnet build --no-restore
-      - run: dotnet test --no-build || true
+      - run: dotnet test --no-build
 
   # React/Next.js - Web App
   web-app:
