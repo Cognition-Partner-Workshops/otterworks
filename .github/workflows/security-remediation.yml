@@ -1,0 +1,150 @@
+name: Security Remediation (Devin)
+
+on:
+  repository_dispatch:
+    types: [vulnerability_detected]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to remediate (e.g. collab-service, file-service)'
+        required: false
+        type: string
+      severity:
+        description: 'Minimum severity to remediate'
+        required: false
+        default: 'CRITICAL'
+        type: choice
+        options:
+          - CRITICAL
+          - HIGH
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect vulnerability context
+        id: context
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "source=dispatch" >> "$GITHUB_OUTPUT"
+            echo '${{ toJson(github.event.client_payload) }}' > /tmp/vuln-context.json
+            SERVICE=$(jq -r '.service // "unknown"' /tmp/vuln-context.json)
+            SEVERITY=$(jq -r '.severity // "CRITICAL"' /tmp/vuln-context.json)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "source=manual" >> "$GITHUB_OUTPUT"
+            SERVICE="${{ inputs.service }}"
+            SEVERITY="${{ inputs.severity }}"
+
+            # Run a quick Trivy scan for the specified service
+            if [ -n "$SERVICE" ]; then
+              SCAN_PATH="services/$SERVICE"
+            else
+              SCAN_PATH="."
+            fi
+
+            docker run --rm -v "$PWD:/src" aquasec/trivy:latest fs \
+              --format json \
+              --severity "$SEVERITY" \
+              "/src/$SCAN_PATH" > /tmp/trivy-scan.json 2>/dev/null || true
+
+            jq --arg svc "$SERVICE" --arg sev "$SEVERITY" '{
+              service: $svc,
+              severity: $sev,
+              findings: [.Results[]? | select(.Vulnerabilities) |
+                .Vulnerabilities[]? | select(.Severity == $sev) |
+                {cveId: .VulnerabilityID, packageName: .PkgName,
+                 currentVersion: .InstalledVersion, fixedVersion: .FixedVersion,
+                 description: (.Title // "")}
+              ]
+            }' /tmp/trivy-scan.json > /tmp/vuln-context.json 2>/dev/null || echo '{}' > /tmp/vuln-context.json
+          fi
+
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
+          echo "severity=$SEVERITY" >> "$GITHUB_OUTPUT"
+
+      - name: Create Devin remediation session
+        env:
+          DEVIN_API_TOKEN: ${{ secrets.DEVIN_SERVICE_USER_TOKEN }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+          DEVIN_API_BASE: ${{ secrets.DEVIN_API_BASE_URL }}
+        run: |
+          SERVICE="${{ steps.context.outputs.service }}"
+          SEVERITY="${{ steps.context.outputs.severity }}"
+          VULN_CONTEXT=$(cat /tmp/vuln-context.json 2>/dev/null || echo '{}')
+
+          FINDING_SUMMARY=""
+          if echo "$VULN_CONTEXT" | jq -e '.findings' > /dev/null 2>&1; then
+            FINDING_SUMMARY=$(echo "$VULN_CONTEXT" | jq -r '
+              .findings[:20][] |
+              "  - \(.cveId // .packageName): \(.packageName) \(.currentVersion) -> \(.fixedVersion // "latest") (\(.description[:80]))"
+            ' 2>/dev/null || echo "  (see scan output for details)")
+          fi
+
+          if echo "$VULN_CONTEXT" | jq -e '.cveId' > /dev/null 2>&1; then
+            FINDING_SUMMARY="  - $(echo "$VULN_CONTEXT" | jq -r '"\(.cveId): \(.packageName) \(.currentVersion) -> \(.fixedVersion // "latest")"')"
+          fi
+
+          PROMPT=$(cat <<PROMPT_EOF
+          Remediate ${SEVERITY} security vulnerabilities in the Cognition-Partner-Workshops/otterworks repository.
+
+          Target service: ${SERVICE:-all services}
+          Severity: ${SEVERITY}
+
+          Vulnerability details:
+          ${FINDING_SUMMARY:-  Run Trivy scan to identify current vulnerabilities.}
+
+          Instructions:
+          1. If specific CVEs are listed above, update the affected packages to the fixed versions.
+          2. If no specific CVEs are listed, run the appropriate scanner for the service to identify vulnerabilities:
+             - Go: cd services/api-gateway && go vet ./... && govulncheck ./...
+             - Python: cd services/document-service && pip-audit
+             - Rust: cd services/file-service && cargo audit
+             - Node: cd services/collab-service && npm audit
+             - Java: cd services/auth-service && ./gradlew dependencyCheckAnalyze
+             - Ruby: cd services/admin-service && bundle audit check
+             - C#: cd services/audit-service && dotnet list package --vulnerable
+          3. Apply fixes using the language-appropriate package manager.
+          4. Run the service's lint and test commands to verify the fix compiles and tests pass.
+          5. Create a PR titled "fix(security): remediate ${SEVERITY} vulnerabilities in ${SERVICE:-affected services}"
+          PROMPT_EOF
+          )
+
+          API_BASE="${DEVIN_API_BASE:-https://partner-workshops.devinenterprise.com}"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${API_BASE}/api/v3/organizations/${DEVIN_ORG_ID}/sessions" \
+            -H "Authorization: Bearer ${DEVIN_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg title "Security Remediation: ${SEVERITY} vulns in ${SERVICE:-otterworks}" \
+              '{
+                prompt: $prompt,
+                title: $title,
+                repos: ["Cognition-Partner-Workshops/otterworks"],
+                tags: ["security-remediation", "automated", "vulnerability-fix"]
+              }'
+            )")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            SESSION_URL=$(echo "$BODY" | jq -r '.url // empty')
+            SESSION_ID=$(echo "$BODY" | jq -r '.session_id // empty')
+            echo "Devin remediation session created successfully"
+            echo "  Session ID: $SESSION_ID"
+            echo "  URL: $SESSION_URL"
+          else
+            echo "::error::Failed to create Devin remediation session (HTTP $HTTP_CODE)"
+            echo "$BODY"
+            exit 1
+          fi
