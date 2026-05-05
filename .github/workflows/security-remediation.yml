@@ -55,16 +55,27 @@ jobs:
               SCAN_PATH="."
             fi
 
+            # Severity is a minimum threshold: HIGH includes CRITICAL+HIGH
+            if [ "$SEVERITY" = "HIGH" ]; then
+              TRIVY_SEVERITY="CRITICAL,HIGH"
+            else
+              TRIVY_SEVERITY="$SEVERITY"
+            fi
+
             docker run --rm -v "$PWD:/src" aquasec/trivy:latest fs \
               --format json \
-              --severity "$SEVERITY" \
+              --severity "$TRIVY_SEVERITY" \
               "/src/$SCAN_PATH" > /tmp/trivy-scan.json 2>/dev/null || true
 
             jq --arg svc "$SERVICE" --arg sev "$SEVERITY" '{
               service: $svc,
               severity: $sev,
               findings: [.Results[]? | select(.Vulnerabilities) |
-                .Vulnerabilities[]? | select(.Severity == $sev) |
+                .Vulnerabilities[]? | select(
+                  if $sev == "HIGH" then (.Severity == "CRITICAL" or .Severity == "HIGH")
+                  else .Severity == $sev
+                  end
+                ) |
                 {cveId: .VulnerabilityID, packageName: .PkgName,
                  currentVersion: .InstalledVersion, fixedVersion: .FixedVersion,
                  description: (.Title // "")}
