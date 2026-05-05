@@ -56,28 +56,24 @@ jobs:
         run: |
           SCAN_ID=$(uuidgen)
 
-          # Map file paths to service names
-          map_service() {
-            local target="$1"
-            case "$target" in
-              services/api-gateway*) echo "api-gateway" ;;
-              services/auth-service*) echo "auth-service" ;;
-              services/file-service*) echo "file-service" ;;
-              services/document-service*) echo "document-service" ;;
-              services/collab-service*) echo "collab-service" ;;
-              services/notification-service*) echo "notification-service" ;;
-              services/search-service*) echo "search-service" ;;
-              services/analytics-service*) echo "analytics-service" ;;
-              services/admin-service*) echo "admin-service" ;;
-              services/audit-service*) echo "audit-service" ;;
-              frontend/web-app*) echo "web-app" ;;
-              frontend/admin-dashboard*) echo "admin-dashboard" ;;
-              *) echo "unknown" ;;
-            esac
-          }
-
           # Extract CRITICAL/HIGH findings into event payloads
+          # Service name mapping is done inside jq via if/elif chain
           FINDINGS=$(jq -r --arg scan_id "$SCAN_ID" --arg sha "$COMMIT_SHA" '
+            def map_service:
+              if startswith("services/api-gateway") then "api-gateway"
+              elif startswith("services/auth-service") then "auth-service"
+              elif startswith("services/file-service") then "file-service"
+              elif startswith("services/document-service") then "document-service"
+              elif startswith("services/collab-service") then "collab-service"
+              elif startswith("services/notification-service") then "notification-service"
+              elif startswith("services/search-service") then "search-service"
+              elif startswith("services/analytics-service") then "analytics-service"
+              elif startswith("services/admin-service") then "admin-service"
+              elif startswith("services/audit-service") then "audit-service"
+              elif startswith("frontend/web-app") then "web-app"
+              elif startswith("frontend/admin-dashboard") then "admin-dashboard"
+              else "unknown"
+              end;
             [.Results[]? | select(.Vulnerabilities) |
               .Target as $target |
               .Vulnerabilities[]? | select(.Severity == "CRITICAL" or .Severity == "HIGH") |
@@ -86,7 +82,7 @@ jobs:
                 scanId: $scan_id,
                 scanner: "trivy",
                 severity: .Severity,
-                service: $target,
+                service: ($target | map_service),
                 cveId: (.VulnerabilityID // ""),
                 packageName: (.PkgName // ""),
                 currentVersion: (.InstalledVersion // ""),
