@@ -15,6 +15,8 @@ permissions:
 env:
   AWS_REGION: us-east-1
   SNS_TOPIC_ARN: ${{ secrets.SNS_EVENTS_TOPIC_ARN }}
+  COMMIT_SHA: ${{ github.sha }}
+  GH_EVENT_NAME: ${{ github.event_name }}
 
 jobs:
   dependency-scan:
@@ -75,7 +77,7 @@ jobs:
           }
 
           # Extract CRITICAL/HIGH findings into event payloads
-          FINDINGS=$(jq -r --arg scan_id "$SCAN_ID" --arg sha "${{ github.sha }}" '
+          FINDINGS=$(jq -r --arg scan_id "$SCAN_ID" --arg sha "$COMMIT_SHA" '
             [.Results[]? | select(.Vulnerabilities) |
               .Target as $target |
               .Vulnerabilities[]? | select(.Severity == "CRITICAL" or .Severity == "HIGH") |
@@ -158,12 +160,22 @@ jobs:
 
   trigger-remediation:
     needs: [dependency-scan, publish-events]
-    if: needs.dependency-scan.outputs.has_critical == 'true' && github.event_name != 'pull_request'
+    if: needs.dependency-scan.outputs.has_critical == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check if PR
+        id: check
+        run: |
+          if [ "$GH_EVENT_NAME" = "pull_request" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Trigger Devin remediation session
+        if: steps.check.outputs.skip != 'true'
         env:
           DEVIN_API_TOKEN: ${{ secrets.DEVIN_SERVICE_USER_TOKEN }}
           DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
@@ -196,7 +208,7 @@ jobs:
           3. Create a single PR with all fixes, titled "fix(security): remediate critical vulnerabilities in [services]"
 
           Repository: Cognition-Partner-Workshops/otterworks
-          Commit: ${{ github.sha }}
+          Commit: $COMMIT_SHA
           EOF
           )
 

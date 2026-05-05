@@ -27,21 +27,26 @@ env:
 jobs:
   remediate:
     runs-on: ubuntu-latest
+    env:
+      INPUT_SERVICE: ${{ inputs.service }}
+      INPUT_SEVERITY: ${{ inputs.severity }}
+      EVENT_NAME: ${{ github.event_name }}
+      CLIENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Collect vulnerability context
         id: context
         run: |
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+          if [ "$EVENT_NAME" = "repository_dispatch" ]; then
             echo "source=dispatch" >> "$GITHUB_OUTPUT"
-            echo '${{ toJson(github.event.client_payload) }}' > /tmp/vuln-context.json
+            echo "$CLIENT_PAYLOAD" > /tmp/vuln-context.json
             SERVICE=$(jq -r '.service // "unknown"' /tmp/vuln-context.json)
             SEVERITY=$(jq -r '.severity // "CRITICAL"' /tmp/vuln-context.json)
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "source=manual" >> "$GITHUB_OUTPUT"
-            SERVICE="${{ inputs.service }}"
-            SEVERITY="${{ inputs.severity }}"
+            SERVICE="$INPUT_SERVICE"
+            SEVERITY="$INPUT_SEVERITY"
 
             # Run a quick Trivy scan for the specified service
             if [ -n "$SERVICE" ]; then
@@ -75,9 +80,11 @@ jobs:
           DEVIN_API_TOKEN: ${{ secrets.DEVIN_SERVICE_USER_TOKEN }}
           DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
           DEVIN_API_BASE: ${{ secrets.DEVIN_API_BASE_URL }}
+          CTX_SERVICE: ${{ steps.context.outputs.service }}
+          CTX_SEVERITY: ${{ steps.context.outputs.severity }}
         run: |
-          SERVICE="${{ steps.context.outputs.service }}"
-          SEVERITY="${{ steps.context.outputs.severity }}"
+          SERVICE="$CTX_SERVICE"
+          SEVERITY="$CTX_SEVERITY"
           VULN_CONTEXT=$(cat /tmp/vuln-context.json 2>/dev/null || echo '{}')
 
           FINDING_SUMMARY=""
