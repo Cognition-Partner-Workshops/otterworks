@@ -8,13 +8,38 @@ on:
   schedule:
     - cron: '0 6 * * 1' # Weekly Monday 6AM UTC
 
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  SNS_TOPIC_ARN: ${{ secrets.SNS_EVENTS_TOPIC_ARN }}
+  COMMIT_SHA: ${{ github.sha }}
+  GH_EVENT_NAME: ${{ github.event_name }}
+
 jobs:
   dependency-scan:
     runs-on: ubuntu-latest
+    outputs:
+      has_critical: ${{ steps.parse.outputs.has_critical }}
+      findings_json: ${{ steps.parse.outputs.findings_json }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (JSON)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-results.json'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+          skip-dirs: 'services/report-service'
+          trivyignores: '.trivyignore'
+
+      - name: Run Trivy vulnerability scanner (table, gate)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
@@ -24,6 +49,59 @@ jobs:
           exit-code: '1'
           skip-dirs: 'services/report-service'
           trivyignores: '.trivyignore'
+        continue-on-error: true
+
+      - name: Parse Trivy findings
+        id: parse
+        run: |
+          SCAN_ID=$(uuidgen)
+
+          # Extract CRITICAL/HIGH findings into event payloads
+          # Service name mapping is done inside jq via if/elif chain
+          FINDINGS=$(jq -r --arg scan_id "$SCAN_ID" --arg sha "$COMMIT_SHA" '
+            def map_service:
+              if startswith("services/api-gateway") then "api-gateway"
+              elif startswith("services/auth-service") then "auth-service"
+              elif startswith("services/file-service") then "file-service"
+              elif startswith("services/document-service") then "document-service"
+              elif startswith("services/collab-service") then "collab-service"
+              elif startswith("services/notification-service") then "notification-service"
+              elif startswith("services/search-service") then "search-service"
+              elif startswith("services/analytics-service") then "analytics-service"
+              elif startswith("services/admin-service") then "admin-service"
+              elif startswith("services/audit-service") then "audit-service"
+              elif startswith("frontend/web-app") then "web-app"
+              elif startswith("frontend/admin-dashboard") then "admin-dashboard"
+              else "unknown"
+              end;
+            [.Results[]? | select(.Vulnerabilities) |
+              .Target as $target |
+              .Vulnerabilities[]? | select(.Severity == "CRITICAL" or .Severity == "HIGH") |
+              {
+                eventType: "vulnerability_detected",
+                scanId: $scan_id,
+                scanner: "trivy",
+                severity: .Severity,
+                service: ($target | map_service),
+                cveId: (.VulnerabilityID // ""),
+                packageName: (.PkgName // ""),
+                currentVersion: (.InstalledVersion // ""),
+                fixedVersion: (.FixedVersion // ""),
+                description: ((.Title // "")[:200]),
+                filePath: $target,
+                commitSha: $sha,
+                timestamp: (now | todate)
+              }
+            ] | if length > 50 then .[:50] else . end
+          ' trivy-results.json 2>/dev/null || echo '[]')
+
+          HAS_CRITICAL=$(echo "$FINDINGS" | jq 'map(select(.severity == "CRITICAL")) | length > 0')
+          echo "has_critical=$HAS_CRITICAL" >> "$GITHUB_OUTPUT"
+
+          # Escape for GH output (newlines)
+          FINDINGS_ESCAPED=$(echo "$FINDINGS" | jq -c '.')
+          echo "findings_json=$FINDINGS_ESCAPED" >> "$GITHUB_OUTPUT"
+          echo "Found $(echo "$FINDINGS" | jq 'length') CRITICAL/HIGH vulnerabilities"
 
   secret-scan:
     runs-on: ubuntu-latest
@@ -49,3 +127,109 @@ jobs:
 
       - name: Run Semgrep
         run: semgrep scan --config p/default --config p/owasp-top-ten --config p/security-audit --error
+
+  publish-events:
+    needs: [dependency-scan]
+    if: needs.dependency-scan.outputs.findings_json != '[]' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Publish vulnerability events to SNS
+        env:
+          FINDINGS_JSON: ${{ needs.dependency-scan.outputs.findings_json }}
+        run: |
+          echo "$FINDINGS_JSON" | jq -c '.[]' | while IFS= read -r event; do
+            EVENT_TYPE=$(echo "$event" | jq -r '.eventType')
+            echo "Publishing $EVENT_TYPE event for $(echo "$event" | jq -r '.cveId // .packageName')"
+            aws sns publish \
+              --topic-arn "$SNS_TOPIC_ARN" \
+              --message "$event" \
+              --message-attributes "{\"eventType\":{\"DataType\":\"String\",\"StringValue\":\"$EVENT_TYPE\"}}" \
+              --region "$AWS_REGION" || echo "Warning: failed to publish event, continuing..."
+          done
+          echo "Published all vulnerability events to SNS"
+
+  trigger-remediation:
+    needs: [dependency-scan, publish-events]
+    if: needs.dependency-scan.outputs.has_critical == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if PR
+        id: check
+        run: |
+          if [ "$GH_EVENT_NAME" = "pull_request" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Devin remediation session
+        if: steps.check.outputs.skip != 'true'
+        env:
+          DEVIN_API_TOKEN: ${{ secrets.DEVIN_SERVICE_USER_TOKEN }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+          DEVIN_API_BASE: ${{ secrets.DEVIN_API_BASE_URL }}
+          FINDINGS_JSON: ${{ needs.dependency-scan.outputs.findings_json }}
+        run: |
+          CRITICAL_FINDINGS=$(echo "$FINDINGS_JSON" | jq -c '[.[] | select(.severity == "CRITICAL")]')
+          FINDING_COUNT=$(echo "$CRITICAL_FINDINGS" | jq 'length')
+          SERVICES=$(echo "$CRITICAL_FINDINGS" | jq -r '[.[].service] | unique | join(", ")')
+
+          SUMMARY=$(echo "$CRITICAL_FINDINGS" | jq -r '
+            group_by(.service) | .[] |
+            "Service: \(.[0].service)\n" +
+            ([.[] | "  - \(.cveId // .packageName): \(.packageName) \(.currentVersion) -> \(.fixedVersion) (\(.description[:80]))"] | join("\n"))
+          ')
+
+          API_BASE="${DEVIN_API_BASE:-https://partner-workshops.devinenterprise.com}"
+
+          PROMPT=$(cat <<EOF
+          Remediate $FINDING_COUNT CRITICAL security vulnerabilities in the otterworks repo.
+
+          Affected services: $SERVICES
+
+          Vulnerability details:
+          $SUMMARY
+
+          For each affected service:
+          1. Update the vulnerable dependency to the fixed version
+          2. Run the service's build and test commands to verify the fix
+          3. Create a single PR with all fixes, titled "fix(security): remediate critical vulnerabilities in [services]"
+
+          Repository: Cognition-Partner-Workshops/otterworks
+          Commit: $COMMIT_SHA
+          EOF
+          )
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${API_BASE}/api/v3/organizations/${DEVIN_ORG_ID}/sessions" \
+            -H "Authorization: Bearer ${DEVIN_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg title "Security Remediation: $FINDING_COUNT critical vulns in $SERVICES" \
+              '{
+                prompt: $prompt,
+                title: $title,
+                repos: ["Cognition-Partner-Workshops/otterworks"],
+                tags: ["security-remediation", "automated"]
+              }'
+            )")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            SESSION_ID=$(echo "$BODY" | jq -r '.session_id // .url // "unknown"')
+            echo "Devin remediation session created: $SESSION_ID"
+            echo "session_id=$SESSION_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Failed to create Devin session (HTTP $HTTP_CODE): $BODY"
+          fi
