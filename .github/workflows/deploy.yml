@@ -56,26 +56,27 @@ jobs:
         run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_DEV }} --region ${{ env.AWS_REGION }}
 
       - name: Deploy all services
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}
         run: |
-          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
           SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
           for svc in "${SERVICES[@]}"; do
             CHART="infrastructure/helm/${svc}"
             if [ -d "$CHART" ]; then
               echo "Deploying ${svc}..."
               helm upgrade --install "${svc}" "${CHART}" \
-                --namespace ${{ env.NAMESPACE }} \
-                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
-                --set image.tag="${IMAGE_TAG}" \
+                --namespace "$NAMESPACE" \
+                --set image.repository="$ECR_REGISTRY"/otterworks-${svc} \
+                --set image.tag="$IMAGE_TAG" \
                 --wait --atomic --timeout 5m
             fi
           done
 
       - name: Post-deploy health checks
         run: |
-          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
-          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
-          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
+          echo "Verifying pod health in namespace $NAMESPACE..."
+          kubectl get pods -n "$NAMESPACE" -o wide
+          kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
 
   deploy-staging:
     needs: deploy-dev
@@ -98,26 +99,27 @@ jobs:
         run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_STAGING }} --region ${{ env.AWS_REGION }}
 
       - name: Deploy all services
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}
         run: |
-          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
           SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
           for svc in "${SERVICES[@]}"; do
             CHART="infrastructure/helm/${svc}"
             if [ -d "$CHART" ]; then
               echo "Deploying ${svc}..."
               helm upgrade --install "${svc}" "${CHART}" \
-                --namespace ${{ env.NAMESPACE }} \
-                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
-                --set image.tag="${IMAGE_TAG}" \
+                --namespace "$NAMESPACE" \
+                --set image.repository="$ECR_REGISTRY"/otterworks-${svc} \
+                --set image.tag="$IMAGE_TAG" \
                 --wait --atomic --timeout 5m
             fi
           done
 
       - name: Post-deploy health checks
         run: |
-          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
-          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
-          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
+          echo "Verifying pod health in namespace $NAMESPACE..."
+          kubectl get pods -n "$NAMESPACE" -o wide
+          kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
 
   deploy-production:
     needs: deploy-staging
@@ -140,23 +142,24 @@ jobs:
         run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_PROD }} --region ${{ env.AWS_REGION }}
 
       - name: Deploy all services
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}
         run: |
-          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
           SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
           for svc in "${SERVICES[@]}"; do
             CHART="infrastructure/helm/${svc}"
             if [ -d "$CHART" ]; then
               echo "Deploying ${svc}..."
               helm upgrade --install "${svc}" "${CHART}" \
-                --namespace ${{ env.NAMESPACE }} \
-                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
-                --set image.tag="${IMAGE_TAG}" \
+                --namespace "$NAMESPACE" \
+                --set image.repository="$ECR_REGISTRY"/otterworks-${svc} \
+                --set image.tag="$IMAGE_TAG" \
                 --wait --atomic --timeout 5m
             fi
           done
 
       - name: Post-deploy health checks
         run: |
-          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
-          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
-          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
+          echo "Verifying pod health in namespace $NAMESPACE..."
+          kubectl get pods -n "$NAMESPACE" -o wide
+          kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
