@@ -1,0 +1,162 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      image_tag:
+        description: 'Image tag to deploy (defaults to latest build SHA)'
+        required: false
+        type: string
+  workflow_run:
+    workflows: ["Docker Build & Push"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'dev' }}
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 599083837640.dkr.ecr.us-east-1.amazonaws.com/workshop
+  EKS_CLUSTER_DEV: otterworks-dev
+  EKS_CLUSTER_STAGING: otterworks-staging
+  EKS_CLUSTER_PROD: otterworks-prod
+  NAMESPACE: otterworks
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    environment:
+      name: dev
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c  # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_DEV }} --region ${{ env.AWS_REGION }}
+
+      - name: Deploy all services
+        run: |
+          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
+          SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
+          for svc in "${SERVICES[@]}"; do
+            CHART="infrastructure/helm/${svc}"
+            if [ -d "$CHART" ]; then
+              echo "Deploying ${svc}..."
+              helm upgrade --install "${svc}" "${CHART}" \
+                --namespace ${{ env.NAMESPACE }} \
+                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
+                --set image.tag="${IMAGE_TAG}" \
+                --wait --atomic --timeout 5m
+            fi
+          done
+
+      - name: Post-deploy health checks
+        run: |
+          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
+          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
+          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
+
+  deploy-staging:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.environment == 'staging' || inputs.environment == 'production')) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    environment:
+      name: staging
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c  # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_STAGING }} --region ${{ env.AWS_REGION }}
+
+      - name: Deploy all services
+        run: |
+          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
+          SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
+          for svc in "${SERVICES[@]}"; do
+            CHART="infrastructure/helm/${svc}"
+            if [ -d "$CHART" ]; then
+              echo "Deploying ${svc}..."
+              helm upgrade --install "${svc}" "${CHART}" \
+                --namespace ${{ env.NAMESPACE }} \
+                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
+                --set image.tag="${IMAGE_TAG}" \
+                --wait --atomic --timeout 5m
+            fi
+          done
+
+      - name: Post-deploy health checks
+        run: |
+          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
+          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
+          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c  # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_PROD }} --region ${{ env.AWS_REGION }}
+
+      - name: Deploy all services
+        run: |
+          IMAGE_TAG="${{ inputs.image_tag || github.event.workflow_run.head_sha || github.sha }}"
+          SERVICES=(api-gateway auth-service file-service document-service collab-service notification-service search-service analytics-service admin-service audit-service report-service web-app admin-dashboard)
+          for svc in "${SERVICES[@]}"; do
+            CHART="infrastructure/helm/${svc}"
+            if [ -d "$CHART" ]; then
+              echo "Deploying ${svc}..."
+              helm upgrade --install "${svc}" "${CHART}" \
+                --namespace ${{ env.NAMESPACE }} \
+                --set image.repository=${{ env.ECR_REGISTRY }}/otterworks-${svc} \
+                --set image.tag="${IMAGE_TAG}" \
+                --wait --atomic --timeout 5m
+            fi
+          done
+
+      - name: Post-deploy health checks
+        run: |
+          echo "Verifying pod health in namespace ${{ env.NAMESPACE }}..."
+          kubectl get pods -n ${{ env.NAMESPACE }} -o wide
+          kubectl wait --for=condition=Ready pods --all -n ${{ env.NAMESPACE }} --timeout=300s
