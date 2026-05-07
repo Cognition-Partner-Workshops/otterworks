@@ -36,7 +36,7 @@ def _extract_user_id(request: Request) -> UUID | None:
         secret = _get_jwt_secret()
         if secret:
             try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
+                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384", "HS512"])
                 user_id_str = payload.get("user_id") or payload.get("sub")
                 if user_id_str:
                     return UUID(str(user_id_str))
@@ -58,6 +58,11 @@ def _require_user_id(request: Request) -> UUID:
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     return user_id
+
+
+async def get_current_user_id(request: Request) -> UUID:
+    """FastAPI dependency: extract and require authenticated user ID."""
+    return _require_user_id(request)
 
 
 def _ensure_owner(document: object, user_id: UUID) -> None:
@@ -248,7 +253,7 @@ async def delete_document(
     if not existing:
         raise HTTPException(status_code=404, detail="Document not found")
     _ensure_owner(existing, user_id)
-    deleted = await service.delete(document_id)
+    await service.delete(document_id)
     logger.info("document_deleted", document_id=str(document_id))
 
 

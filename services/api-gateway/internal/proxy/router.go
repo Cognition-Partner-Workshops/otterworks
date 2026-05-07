@@ -6,11 +6,10 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-
-	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/middleware"
 )
 
 // Route defines a mapping from a URL prefix to a backend service.
@@ -59,21 +58,22 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy := &httputil.ReverseProxy{}
 
-	// Wrap the default director to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
+	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
+		pr.SetURL(target)
+		pr.Out.Host = target.Host
+		pr.SetXForwarded()
+		// Strip any client-supplied identity headers to prevent spoofing
+		pr.Out.Header.Del("X-User-ID")
+		// Inject authenticated user ID from JWT claims
+		if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
 				userID = claims.UserID
 			}
 			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+				pr.Out.Header.Set("X-User-ID", userID)
 			}
 		}
 	}

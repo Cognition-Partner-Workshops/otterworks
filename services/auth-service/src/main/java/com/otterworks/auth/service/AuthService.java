@@ -24,6 +24,9 @@ public class AuthService {
 
   private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
+  private static final int MAX_FAILED_ATTEMPTS = 5;
+  private static final long LOCKOUT_DURATION_MINUTES = 15;
+
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
@@ -57,17 +60,40 @@ public class AuthService {
     return buildAuthResponse(user);
   }
 
-  @Transactional
+  @Transactional(noRollbackFor = IllegalArgumentException.class)
   public AuthResponse login(LoginRequest request) {
     User user =
         userRepository
             .findByEmail(request.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
+    if (user.isAccountLocked()) {
+      log.warn("Login attempt on locked account: email={}", user.getEmail());
+      throw new IllegalArgumentException("Account is temporarily locked. Try again later.");
+    }
+
+    // Reset failed attempts if a previous lockout has expired
+    if (user.getLockedUntil() != null) {
+      user.setFailedLoginAttempts(0);
+      user.setLockedUntil(null);
+    }
+
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+      user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
+      if (user.getFailedLoginAttempts() >= MAX_FAILED_ATTEMPTS) {
+        user.setLockedUntil(Instant.now().plus(LOCKOUT_DURATION_MINUTES, ChronoUnit.MINUTES));
+        log.warn(
+            "Account locked after {} failed attempts: email={}",
+            MAX_FAILED_ATTEMPTS,
+            user.getEmail());
+      }
+      userRepository.save(user);
       throw new IllegalArgumentException("Invalid credentials");
     }
 
+    // Reset on successful login
+    user.setFailedLoginAttempts(0);
+    user.setLockedUntil(null);
     user.setLastLoginAt(Instant.now());
     userRepository.save(user);
 
