@@ -33,23 +33,44 @@ jobs:
           - { name: admin-dashboard, context: frontend/admin-dashboard }
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c  # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@19d944daaa35f0fa1d3f7f8af1d3f2e5de25c5b7  # v2
 
-      - name: Build and push image
-        uses: docker/build-push-action@v5
+      - name: Build image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25  # v5
         with:
           context: ${{ matrix.service.context }}
-          push: true
+          push: false
+          load: true
           tags: |
             ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:${{ github.sha }}
             ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:latest
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8  # v0.36.0
+        with:
+          image-ref: '${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          timeout: '10m'
+
+      - name: Push image to ECR
+        run: |
+          docker push ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:latest
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@f713795cb21599bc4e5c4b58cbad1da852d7eeb9  # v3
+
+      - name: Sign image with cosign
+        run: cosign sign --yes ${{ env.ECR_REGISTRY }}/otterworks-${{ matrix.service.name }}:${{ github.sha }}
