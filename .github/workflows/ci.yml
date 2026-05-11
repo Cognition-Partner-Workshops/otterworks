@@ -142,7 +142,7 @@ jobs:
       - run: poetry run ruff check .
       - run: poetry run pytest --cov=app
 
-  # Node.js - Collaboration Service
+  # C# / ASP.NET 9 - Collaboration Service
   collab-service:
     needs: detect-changes
     if: needs.detect-changes.outputs.collab-service == 'true'
@@ -152,13 +152,14 @@ jobs:
         working-directory: services/collab-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
+          dotnet-version: '9.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet restore Tests/CollabService.Tests.csproj
+      - run: dotnet build Tests/CollabService.Tests.csproj --no-restore
+      - run: dotnet test Tests/CollabService.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
 
   # Kotlin - Notification Service
   notification-service:
