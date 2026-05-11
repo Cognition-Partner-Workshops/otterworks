@@ -273,7 +273,7 @@ jobs:
       - run: dotnet build --no-restore
       - run: dotnet restore tests/AuditService.Tests/AuditService.Tests.csproj
       - run: dotnet build tests/AuditService.Tests/AuditService.Tests.csproj --no-restore
-      - run: dotnet test tests/AuditService.Tests/AuditService.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
+      - run: dotnet test tests/AuditService.Tests/AuditService.Tests.csproj --no-build
 
   # React/Next.js - Web App
   web-app:
