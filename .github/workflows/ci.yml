@@ -124,7 +124,7 @@ jobs:
       - run: cargo test
       - run: cargo build --release
 
-  # Python - Document Service
+  # C# / ASP.NET 9 - Document Service
   document-service:
     needs: detect-changes
     if: needs.detect-changes.outputs.document-service == 'true'
@@ -134,13 +134,14 @@ jobs:
         working-directory: services/document-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-dotnet@v4
         with:
-          python-version: '3.12'
-      - run: pip install poetry==1.8.2
-      - run: poetry install
-      - run: poetry run ruff check .
-      - run: poetry run pytest --cov=app
+          dotnet-version: '9.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet restore Tests/DocumentService.Tests/DocumentService.Tests.csproj
+      - run: dotnet build Tests/DocumentService.Tests/DocumentService.Tests.csproj --no-restore
+      - run: dotnet test Tests/DocumentService.Tests/DocumentService.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
 
   # Node.js - Collaboration Service
   collab-service:
