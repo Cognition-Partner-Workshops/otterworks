@@ -179,7 +179,7 @@ jobs:
           gradle-version: '8.6'
       - run: gradle check --no-daemon
 
-  # Python - Search Service
+  # C# - Search Service
   search-service:
     needs: detect-changes
     if: needs.detect-changes.outputs.search-service == 'true'
@@ -189,11 +189,14 @@ jobs:
         working-directory: services/search-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-dotnet@v4
         with:
-          python-version: '3.12'
-      - run: pip install -r requirements-dev.txt
-      - run: python -m pytest --cov=app
+          dotnet-version: '9.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet restore Tests/SearchService.Tests.csproj
+      - run: dotnet build Tests/SearchService.Tests.csproj --no-restore
+      - run: dotnet test Tests/SearchService.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
 
   # Scala - Analytics Service
   analytics-service:
