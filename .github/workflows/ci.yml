@@ -218,43 +218,24 @@ jobs:
       - run: sbt compile
       - run: sbt test
 
-  # Ruby - Admin Service
+  # C# - Admin Service
   admin-service:
     needs: detect-changes
     if: needs.detect-changes.outputs.admin-service == 'true'
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: otterworks
-          POSTGRES_PASSWORD: otterworks
-          POSTGRES_DB: admin_service_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     defaults:
       run:
         working-directory: services/admin-service
-    env:
-      DATABASE_HOST: localhost
-      DATABASE_PORT: 5432
-      DATABASE_USER: otterworks
-      DATABASE_PASSWORD: otterworks
-      RAILS_ENV: test
     steps:
       - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/setup-dotnet@v4
         with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: services/admin-service
-      - run: bundle exec rails db:schema:load
-      - run: bundle exec rspec
+          dotnet-version: '9.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet restore Tests/AdminService.Tests.csproj
+      - run: dotnet build Tests/AdminService.Tests.csproj --no-restore
+      - run: dotnet test Tests/AdminService.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
 
   # C# - Audit Service
   audit-service:
