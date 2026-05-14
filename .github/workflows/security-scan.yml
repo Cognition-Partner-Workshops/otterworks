@@ -89,7 +89,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
-          CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           REPO: ${{ github.repository }}
@@ -129,14 +128,12 @@ jobs:
 
           REQUEST_BODY=$(jq -n \
             --argjson prompt "$ESCAPED_PROMPT" \
-            --arg title "Remediate Trivy dependency vulnerabilities on PR #${PR_NUMBER}" \
+            --arg title "DevinSecurityRemediation: Trivy dependency vulnerabilities on PR #${PR_NUMBER}" \
             --arg repo "$REPO" \
-            --arg user_id "${CREATE_AS_USER_ID}" \
             '{
               prompt: $prompt,
               title: $title,
               repos: [$repo],
-              create_as_user_id: $user_id,
               tags: ["dependency-fix", "trivy", "security", "automated"]
             }')
 
@@ -216,7 +213,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
-          CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           REPO: ${{ github.repository }}
@@ -254,14 +250,12 @@ jobs:
 
           REQUEST_BODY=$(jq -n \
             --argjson prompt "$ESCAPED_PROMPT" \
-            --arg title "Remediate Semgrep SAST findings on PR #${PR_NUMBER}" \
+            --arg title "DevinSecurityRemediation: Semgrep SAST findings on PR #${PR_NUMBER}" \
             --arg repo "$REPO" \
-            --arg user_id "${CREATE_AS_USER_ID}" \
             '{
               prompt: $prompt,
               title: $title,
               repos: [$repo],
-              create_as_user_id: $user_id,
               tags: ["sast-fix", "semgrep", "security", "automated"]
             }')
 
