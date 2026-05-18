@@ -84,17 +84,19 @@ jobs:
           DEVIN_API_TOKEN: ${{ secrets.DEVIN_API_TOKEN }}
           DEVIN_ORG_ID: ${{ vars.DEVIN_ORG_ID }}
           SECURITY_PLAYBOOK_ID: ${{ vars.SECURITY_PLAYBOOK_ID }}
+          TARGET_REPO: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           python scripts/security/trigger_devin_remediation.py \
             --report-file remediation-report.json \
-            --repo "${{ github.repository }}" \
-            --branch "${{ github.event.workflow_run.head_branch }}" \
+            --repo "$TARGET_REPO" \
+            --branch "$HEAD_BRANCH" \
             --playbook-id "${SECURITY_PLAYBOOK_ID:-}"
 
           echo "### Devin Remediation Triggered" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "A Devin session has been created to remediate the findings above." >> "$GITHUB_STEP_SUMMARY"
-          echo "Devin will create a PR against \`${{ github.event.workflow_run.head_branch }}\` with the fixes." >> "$GITHUB_STEP_SUMMARY"
+          echo "Devin will create a PR against \`$HEAD_BRANCH\` with the fixes." >> "$GITHUB_STEP_SUMMARY"
 
       - name: No vulnerabilities found
         if: >-
