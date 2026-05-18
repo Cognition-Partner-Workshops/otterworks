@@ -1,0 +1,108 @@
+name: Security Auto-Remediation
+
+# Triggers after the Security Scan workflow completes.
+# Downloads the SARIF artifact, parses it for actionable findings,
+# and triggers a Devin session to auto-remediate vulnerabilities.
+on:
+  workflow_run:
+    workflows: ["Security Scan"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  remediate:
+    # Only run for PR-triggered scans — skip push-to-main and scheduled runs
+    # to avoid creating Devin sessions that target main directly.
+    if: >-
+      github.event.workflow_run.conclusion != 'cancelled' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download SARIF artifact from Security Scan
+        uses: actions/download-artifact@v4
+        with:
+          name: semgrep-sarif
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Check for SARIF file
+        id: check-sarif
+        run: |
+          if [ -f semgrep-results.sarif ]; then
+            echo "sarif-exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "sarif-exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No SARIF artifact found — skipping remediation."
+          fi
+
+      - name: Setup Python
+        if: steps.check-sarif.outputs.sarif-exists == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        if: steps.check-sarif.outputs.sarif-exists == 'true'
+        run: pip install -r scripts/security/requirements.txt
+
+      - name: Parse scan report
+        if: steps.check-sarif.outputs.sarif-exists == 'true'
+        id: parse
+        run: |
+          python scripts/security/parse_scan_report.py \
+            --sarif-file semgrep-results.sarif \
+            --severity CRITICAL,HIGH \
+            --output-file remediation-report.json
+
+          vuln_count=$(python3 -c "import json; print(json.load(open('remediation-report.json'))['summary']['total_findings'])")
+          echo "vuln-count=$vuln_count" >> "$GITHUB_OUTPUT"
+          echo "### Scan Report Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          python3 -c "
+          import json
+          r = json.load(open('remediation-report.json'))
+          s = r['summary']
+          print(f\"- **Total findings:** {s['total_findings']}\")
+          print(f\"- **Critical:** {s['critical']}\")
+          print(f\"- **High:** {s['high']}\")
+          print(f\"- **Medium:** {s['medium']}\")
+          print(f\"- **Services affected:** {', '.join(s['services_affected']) or 'None'}\")
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Trigger Devin remediation session
+        if: >-
+          steps.check-sarif.outputs.sarif-exists == 'true' &&
+          steps.parse.outputs.vuln-count != '0'
+        env:
+          DEVIN_API_TOKEN: ${{ secrets.DEVIN_API_TOKEN }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_ORG_ID }}
+          SECURITY_PLAYBOOK_ID: ${{ vars.SECURITY_PLAYBOOK_ID }}
+          TARGET_REPO: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          python scripts/security/trigger_devin_remediation.py \
+            --report-file remediation-report.json \
+            --repo "$TARGET_REPO" \
+            --branch "$HEAD_BRANCH" \
+            --playbook-id "${SECURITY_PLAYBOOK_ID:-}"
+
+          echo "### Devin Remediation Triggered" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "A Devin session has been created to remediate the findings above." >> "$GITHUB_STEP_SUMMARY"
+          echo "Devin will create a PR against \`$HEAD_BRANCH\` with the fixes." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: No vulnerabilities found
+        if: >-
+          steps.check-sarif.outputs.sarif-exists == 'true' &&
+          steps.parse.outputs.vuln-count == '0'
+        run: |
+          echo "### No Actionable Vulnerabilities" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "No CRITICAL or HIGH vulnerabilities found — no remediation needed." >> "$GITHUB_STEP_SUMMARY"
