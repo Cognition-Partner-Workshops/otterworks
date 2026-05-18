@@ -49,3 +49,25 @@ jobs:
 
       - name: Run Semgrep
         run: semgrep scan --config p/default --config p/owasp-top-ten --config p/security-audit --error
+
+      - name: Run Semgrep (SARIF output for remediation)
+        if: always()
+        id: semgrep-sarif
+        run: |
+          semgrep scan --config p/default --config p/owasp-top-ten --config p/security-audit \
+            --sarif --output semgrep-results.sarif || true
+          if [ -s semgrep-results.sarif ]; then
+            count=$(python3 -c "import json; d=json.load(open('semgrep-results.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))" 2>/dev/null || echo "0")
+            echo "finding-count=$count" >> "$GITHUB_OUTPUT"
+          else
+            echo "finding-count=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload SARIF results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-sarif
+          path: semgrep-results.sarif
+          retention-days: 30
+          if-no-files-found: ignore
