@@ -14,11 +14,11 @@ permissions:
 
 jobs:
   remediate:
-    # Run when the security scan completed (success or failure — we need the report either way).
-    # Skip if cancelled or if it was a scheduled run (no PR branch to target).
+    # Only run for PR-triggered scans — skip push-to-main and scheduled runs
+    # to avoid creating Devin sessions that target main directly.
     if: >-
       github.event.workflow_run.conclusion != 'cancelled' &&
-      github.event.workflow_run.event != 'schedule'
+      github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
