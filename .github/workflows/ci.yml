@@ -246,6 +246,8 @@ jobs:
       DATABASE_USER: otterworks
       DATABASE_PASSWORD: otterworks
       RAILS_ENV: test
+      JWT_SECRET: ci_test_jwt_secret_key
+      SECRET_KEY_BASE: ci_test_secret_key_base
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -254,6 +256,7 @@ jobs:
           bundler-cache: true
           working-directory: services/admin-service
       - run: bundle exec rails db:schema:load
+      - run: bundle exec rails db:migrate
       - run: bundle exec rspec
 
   # C# - Audit Service
@@ -309,7 +312,7 @@ jobs:
       - run: npm test || true
       - run: npm run build
 
-  # Java 8 / Maven - Report Service (LEGACY)
+  # Java 17 / Maven - Report Service
   report-service:
     needs: detect-changes
     if: needs.detect-changes.outputs.report-service == 'true'
@@ -322,7 +325,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '8'
+          java-version: '17'
       - run: mvn compile -B -q
       - run: mvn test -B
       - run: mvn package -DskipTests -B -q
