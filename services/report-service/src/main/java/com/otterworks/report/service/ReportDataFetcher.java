@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.util.ReportDateUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -92,7 +93,7 @@ public class ReportDataFetcher {
                 }
                 return Collections.emptyList();
             });
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | UncheckedExecutionException e) {
             logger.error("Failed to fetch analytics data, using sample data: {}", e.getMessage());
             return generateSampleAnalyticsData(dateFrom, dateTo);
         }
@@ -120,7 +121,7 @@ public class ReportDataFetcher {
                 }
                 return Collections.emptyList();
             });
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | UncheckedExecutionException e) {
             logger.error("Failed to fetch audit data, using sample data: {}", e.getMessage());
             return generateSampleAuditData(dateFrom, dateTo);
         }
