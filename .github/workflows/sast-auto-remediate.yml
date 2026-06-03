@@ -1,0 +1,236 @@
+name: SAST Auto-Remediation
+
+# Event-driven security pipeline:
+#   PR opened by human → Trivy scan → findings? → Devin API → auto-fix → re-scan
+#
+# Bot-loop prevention: skips PRs authored by devin-ai-integration[bot].
+# Escalation: after MAX_FIX_ATTEMPTS, opens an issue for human review.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  TRIVY_VERSION: "0.62.2"
+  MAX_FIX_ATTEMPTS: 2
+  SEVERITY_THRESHOLD: "CRITICAL,HIGH"
+
+jobs:
+  sast-scan:
+    # Skip PRs authored by Devin to prevent infinite remediation loops.
+    if: github.event.pull_request.user.login != 'devin-ai-integration[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      has_findings: ${{ steps.parse.outputs.has_findings }}
+      findings_summary: ${{ steps.parse.outputs.findings_summary }}
+      attempt_count: ${{ steps.counter.outputs.attempt_count }}
+      exceeded_max: ${{ steps.counter.outputs.exceeded_max }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Count prior fix attempts
+        id: counter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Count commits by devin-ai-integration[bot] on this PR as a proxy
+          # for how many remediation cycles have already run.
+          ATTEMPT_COUNT=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" \
+            --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
+          echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
+          if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
+            echo "exceeded_max=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exceeded_max=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin v${{ env.TRIVY_VERSION }}
+
+      - name: Run Trivy filesystem scan
+        run: |
+          trivy fs . \
+            --severity "${{ env.SEVERITY_THRESHOLD }}" \
+            --format json \
+            --output trivy-results.json \
+            --skip-dirs services/report-service \
+            --ignorefile .trivyignore \
+            || true
+
+      - name: Parse findings
+        id: parse
+        run: |
+          # Extract vulnerability count and build a markdown summary.
+          VULN_COUNT=$(jq '[.Results[]? | .Vulnerabilities // [] | length] | add // 0' trivy-results.json)
+          echo "Total HIGH/CRITICAL findings: $VULN_COUNT"
+
+          if [ "$VULN_COUNT" -eq 0 ]; then
+            echo "has_findings=false" >> "$GITHUB_OUTPUT"
+            echo "findings_summary=No HIGH or CRITICAL vulnerabilities found." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_findings=true" >> "$GITHUB_OUTPUT"
+
+          # Build a compact summary (service → CVE list) for the PR comment
+          # and the Devin prompt. Truncate to 3000 chars to stay within
+          # GitHub Actions output limits.
+          SUMMARY=$(jq -r '
+            [.Results[] |
+              select((.Vulnerabilities // []) | length > 0) |
+              {
+                target: .Target,
+                vulns: [.Vulnerabilities[] | {
+                  id: .VulnerabilityID,
+                  pkg: .PkgName,
+                  installed: .InstalledVersion,
+                  fixed: (.FixedVersion // "n/a"),
+                  severity: .Severity,
+                  title: .Title
+                }]
+              }
+            ] |
+            map("### \(.target)\n" +
+              (.vulns | map("- **\(.severity)** `\(.id)`: \(.pkg) \(.installed) → \(.fixed) — \(.title)") | join("\n"))
+            ) | join("\n\n")
+          ' trivy-results.json | head -c 3000)
+
+          # Use a delimiter for multi-line output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "findings_summary<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Upload scan artifact
+        if: steps.parse.outputs.has_findings == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.json
+          retention-days: 7
+
+  comment-findings:
+    needs: sast-scan
+    if: needs.sast-scan.outputs.has_findings == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post findings to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(cat <<'COMMENT_EOF'
+          ## :shield: SAST Scan — Findings Detected
+
+          Trivy found **HIGH/CRITICAL** vulnerabilities on this PR.
+
+          ${{ needs.sast-scan.outputs.findings_summary }}
+
+          ---
+          **Remediation attempt:** ${{ needs.sast-scan.outputs.attempt_count }} / ${{ env.MAX_FIX_ATTEMPTS }}
+          COMMENT_EOF
+          )
+
+          gh api \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            -f body="$BODY"
+
+  trigger-devin:
+    needs: sast-scan
+    if: |
+      needs.sast-scan.outputs.has_findings == 'true' &&
+      needs.sast-scan.outputs.exceeded_max == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Devin remediation session
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          PR_NUM="${{ github.event.pull_request.number }}"
+          REPO="${{ github.repository }}"
+
+          PROMPT=$(cat <<PROMPT_EOF
+          You are remediating security vulnerabilities found by Trivy on
+          the OtterWorks monorepo.
+
+          Branch: ${BRANCH}
+          PR: #${PR_NUM}
+
+          Findings summary:
+          ${{ needs.sast-scan.outputs.findings_summary }}
+
+          Instructions:
+          1. Check out branch ${BRANCH}.
+          2. For each finding with a known fixed version, upgrade the
+             dependency in the appropriate manifest file
+             (package.json, requirements.txt, Gemfile, go.mod, etc.).
+          3. Run the service's tests to verify nothing breaks.
+          4. If a fix requires code changes beyond a version bump,
+             make the minimal safe change.
+          5. Commit and push to ${BRANCH}.
+          6. Do NOT modify .trivyignore — only fix real dependencies.
+          PROMPT_EOF
+          )
+
+          # Call Devin API to create a remediation session
+          curl -s -X POST "https://api.devin.ai/v1/sessions" \
+            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              '{prompt: $prompt}'
+            )" | jq .
+
+  escalate:
+    needs: sast-scan
+    if: |
+      needs.sast-scan.outputs.has_findings == 'true' &&
+      needs.sast-scan.outputs.exceeded_max == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open escalation issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues" \
+            -f title="[Security] Unresolved SAST findings on PR #${{ github.event.pull_request.number }}" \
+            -f body="$(cat <<ISSUE_EOF
+          ## Automated remediation exhausted
+
+          Devin attempted **${{ env.MAX_FIX_ATTEMPTS }}** fix cycles on
+          PR #${{ github.event.pull_request.number }} but HIGH/CRITICAL
+          findings remain.
+
+          ### Remaining findings
+
+          ${{ needs.sast-scan.outputs.findings_summary }}
+
+          ### Next steps
+
+          - Review the findings manually
+          - Check if the fixes require breaking API changes
+          - Consider adding justified suppressions to \`.trivyignore\`
+            with proper documentation
+
+          _Opened automatically by the SAST auto-remediation pipeline._
+          ISSUE_EOF
+          )" \
+            -f "labels[]=security" \
+            -f "labels[]=needs-human-review"
+
+      - name: Comment on PR about escalation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            -f body=":rotating_light: **Escalation:** Automated remediation has been attempted ${{ env.MAX_FIX_ATTEMPTS }} times without resolving all findings. A GitHub Issue has been opened for manual review."
