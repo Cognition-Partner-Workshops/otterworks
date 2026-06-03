@@ -1,7 +1,12 @@
 name: SAST Auto-Remediation
 
-# Event-driven security pipeline:
-#   PR opened by human → Trivy scan → findings? → Devin API → auto-fix → re-scan
+# Event-driven security pipeline with two trigger paths:
+#
+#   1. Trivy (pull_request):
+#      PR opened by human → Trivy scan → findings? → Devin API → auto-fix → re-scan
+#
+#   2. SonarCloud (check_run):
+#      PR analyzed by SonarCloud → quality gate fails → Devin API → auto-fix → re-scan
 #
 # Bot-loop prevention: skips PRs authored by devin-ai-integration[bot].
 # Escalation: after MAX_FIX_ATTEMPTS, opens an issue for human review.
@@ -10,21 +15,29 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches: [main]
+  check_run:
+    types: [completed]
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
+  checks: read
 
 env:
   TRIVY_VERSION: "0.62.2"
   MAX_FIX_ATTEMPTS: 2
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
 
+# ─────────────────────────────────────────────────────────────
+#  Path 1: Trivy dependency scan (pull_request trigger)
+# ─────────────────────────────────────────────────────────────
+
 jobs:
   sast-scan:
-    # Skip PRs authored by Devin to prevent infinite remediation loops.
-    if: github.event.pull_request.user.login != 'devin-ai-integration[bot]'
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login != 'devin-ai-integration[bot]'
     runs-on: ubuntu-latest
     outputs:
       has_findings: ${{ steps.parse.outputs.has_findings }}
@@ -39,10 +52,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Count commits by devin-ai-integration[bot] on this PR as a proxy
-          # for how many remediation cycles have already run.
           ATTEMPT_COUNT=$(gh api \
-            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
             --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
           echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
           if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
@@ -69,7 +80,6 @@ jobs:
       - name: Parse findings
         id: parse
         run: |
-          # Extract vulnerability count and build a markdown summary.
           VULN_COUNT=$(jq '[.Results[]? | .Vulnerabilities // [] | length] | add // 0' trivy-results.json)
           echo "Total HIGH/CRITICAL findings: $VULN_COUNT"
 
@@ -82,8 +92,7 @@ jobs:
           echo "has_findings=true" >> "$GITHUB_OUTPUT"
 
           # Build a compact summary (service → CVE list) for the PR comment
-          # and the Devin prompt. Truncate to 3000 chars to stay within
-          # GitHub Actions output limits.
+          # and the Devin prompt. Truncate to 3000 chars for GHA output limits.
           SUMMARY=$(jq -r '
             [.Results[] |
               select((.Vulnerabilities // []) | length > 0) |
@@ -104,7 +113,6 @@ jobs:
             ) | join("\n\n")
           ' trivy-results.json | head -c 3000)
 
-          # Use a delimiter for multi-line output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "findings_summary<<$EOF" >> "$GITHUB_OUTPUT"
           echo "$SUMMARY" >> "$GITHUB_OUTPUT"
@@ -152,23 +160,26 @@ jobs:
       needs.sast-scan.outputs.exceeded_max == 'false'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Devin remediation session
+      - name: Trigger Devin remediation session (Trivy findings)
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+          CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
           BRANCH: ${{ github.head_ref }}
           PR_NUM: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
         run: |
           PROMPT=$(cat <<'PROMPT_EOF'
-          You are remediating security vulnerabilities found by Trivy on
-          the OtterWorks monorepo.
+          A Trivy SAST scan has identified HIGH/CRITICAL dependency
+          vulnerabilities on this PR in the OtterWorks polyglot monorepo.
 
           Instructions:
           1. Check out the branch specified below.
           2. For each finding with a known fixed version, upgrade the
              dependency in the appropriate manifest file
-             (package.json, requirements.txt, Gemfile, go.mod, etc.).
+             (package.json, requirements.txt, Gemfile, go.mod, Cargo.toml,
+              pyproject.toml, build.gradle, pom.xml, etc.).
           3. Run the service's tests to verify nothing breaks.
           4. If a fix requires code changes beyond a version bump,
              make the minimal safe change.
@@ -177,23 +188,55 @@ jobs:
           PROMPT_EOF
           )
 
-          # Append dynamic context outside the heredoc to avoid shell expansion
           PROMPT="${PROMPT}
 
           Branch: ${BRANCH}
           PR: #${PR_NUM}
+          Repository: ${REPO}
 
           Findings summary:
           ${FINDINGS_SUMMARY}"
 
-          # Call Devin API to create a remediation session
-          curl -s -X POST "https://api.devin.ai/v1/sessions" \
+          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
+
+          REQUEST_BODY=$(jq -n \
+            --argjson prompt "$ESCAPED_PROMPT" \
+            --arg title "Remediate Trivy SAST findings on PR #${PR_NUM}" \
+            --arg repo "$REPO" \
+            --arg user_id "${CREATE_AS_USER_ID}" \
+            '{
+              prompt: $prompt,
+              title: $title,
+              repos: [$repo],
+              create_as_user_id: $user_id,
+              tags: ["sast-fix", "trivy", "security", "automated"]
+            }')
+
+          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             -H "Authorization: Bearer ${DEVIN_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n \
-              --arg prompt "$PROMPT" \
-              '{prompt: $prompt}'
-            )" | jq .
+            -d "$REQUEST_BODY" \
+            "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url')
+            echo "Devin session created: ${SESSION_URL}"
+
+            {
+              echo "## Devin SAST Auto-Fix Triggered (Trivy)"
+              echo ""
+              echo "A Devin session has been created to remediate dependency vulnerabilities."
+              echo ""
+              echo "**Session:** ${SESSION_URL}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Failed to create Devin session (HTTP ${HTTP_CODE})"
+            echo "$HTTP_BODY"
+            exit 1
+          fi
 
   escalate:
     needs: sast-scan
@@ -244,3 +287,174 @@ jobs:
           gh api \
             "repos/${REPO}/issues/${PR_NUM}/comments" \
             -f body=":rotating_light: **Escalation:** Automated remediation has been attempted ${FIX_ATTEMPTS} times without resolving all findings. A GitHub Issue has been opened for manual review."
+
+  # ─────────────────────────────────────────────────────────────
+  #  Path 2: SonarCloud quality gate (check_run trigger)
+  # ─────────────────────────────────────────────────────────────
+
+  sonarcloud-trigger-devin:
+    name: Trigger Devin SAST Auto-Fix (SonarCloud)
+    concurrency:
+      group: sast-fix-${{ github.event.check_run.pull_requests[0].number }}
+      cancel-in-progress: true
+    if: |
+      github.event_name == 'check_run' &&
+      github.event.check_run.app.slug == 'sonarqubecloud' &&
+      github.event.check_run.conclusion == 'failure' &&
+      github.event.check_run.pull_requests[0]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate trigger conditions
+        id: pr_check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.check_run.pull_requests[0].number }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "No PR associated with this check run. Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PR_DATA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" 2>&1)
+          PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.user.login')
+          PR_BRANCH=$(echo "$PR_DATA" | jq -r '.head.ref')
+          PR_STATE=$(echo "$PR_DATA" | jq -r '.state')
+
+          echo "pr_author=${PR_AUTHOR}" >> "$GITHUB_OUTPUT"
+          echo "pr_branch=${PR_BRANCH}" >> "$GITHUB_OUTPUT"
+
+          echo "PR #${PR_NUMBER} by ${PR_AUTHOR} on branch ${PR_BRANCH} (state: ${PR_STATE})"
+
+          # Skip PRs authored by Devin to prevent infinite loops
+          if [ "$PR_AUTHOR" = "devin-ai-integration[bot]" ]; then
+            echo "PR authored by Devin bot. Skipping to prevent loop."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$PR_STATE" != "open" ]; then
+            echo "PR is not open (state: ${PR_STATE}). Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # One-time remediation: check if Devin already attempted a fix
+          DEVIN_COMMENTS=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
+            --jq '[.[] | select(.body | contains("Devin SAST Auto-Fix"))] | length')
+
+          if [ "$DEVIN_COMMENTS" -gt 0 ]; then
+            echo "Devin has already attempted a fix on this PR. Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "All conditions met — triggering Devin auto-fix."
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
+      - name: Invoke Devin v3 API to remediate SonarCloud findings
+        if: steps.pr_check.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+          CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
+          PR_NUMBER: ${{ steps.pr_check.outputs.pr_number }}
+          PR_BRANCH: ${{ steps.pr_check.outputs.pr_branch }}
+          REPO: ${{ github.repository }}
+          CHECK_NAME: ${{ github.event.check_run.name }}
+          CHECK_URL: ${{ github.event.check_run.html_url }}
+          CHECK_OUTPUT_TITLE: ${{ github.event.check_run.output.title }}
+        run: |
+          PROMPT=$(cat <<'PROMPT_EOF'
+          A SonarCloud SAST scan has identified security issues on this PR
+          in the OtterWorks polyglot monorepo.
+
+          The SonarCloud quality gate FAILED. Please correct the findings
+          — this is a one-time automated remediation attempt before merge.
+
+          Instructions:
+          1. Clone the repository and checkout the branch specified below.
+          2. Review the SonarCloud findings for this PR at the dashboard URL below.
+          3. Fix ALL security vulnerabilities flagged by SonarCloud:
+             - For SQL injection: use parameterized queries.
+             - For command injection: use safe alternatives to exec().
+             - For code injection: remove eval() usage.
+             - For path traversal: validate file paths.
+             - For dependency CVEs: upgrade to the fixed version.
+          4. Run the affected service's tests to verify nothing breaks.
+          5. Commit and push to the branch.
+
+          Constraints:
+          - Only fix the security vulnerabilities — do not refactor unrelated code.
+          - Maintain the same functionality — replace insecure patterns with secure equivalents.
+          - This is a ONE-TIME remediation attempt. Make it count.
+          PROMPT_EOF
+          )
+
+          PROMPT="${PROMPT}
+
+          Branch: ${PR_BRANCH}
+          PR: #${PR_NUMBER}
+          Repository: ${REPO}
+          SonarCloud Check: ${CHECK_NAME}
+          SonarCloud Details: ${CHECK_OUTPUT_TITLE}
+          SonarCloud Dashboard: https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUMBER}"
+
+          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
+
+          REQUEST_BODY=$(jq -n \
+            --argjson prompt "$ESCAPED_PROMPT" \
+            --arg title "Remediate SonarCloud security findings on PR #${PR_NUMBER}" \
+            --arg repo "$REPO" \
+            --arg user_id "${CREATE_AS_USER_ID}" \
+            '{
+              prompt: $prompt,
+              title: $title,
+              repos: [$repo],
+              create_as_user_id: $user_id,
+              tags: ["sast-fix", "sonarcloud", "security", "automated"]
+            }')
+
+          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST_BODY" \
+            "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url')
+            SESSION_ID=$(echo "$HTTP_BODY" | jq -r '.session_id')
+            echo "Devin session created: ${SESSION_URL}"
+
+            {
+              echo "## Devin SAST Auto-Fix Triggered (SonarCloud)"
+              echo ""
+              echo "SonarCloud flagged security issues on PR #${PR_NUMBER}."
+              echo "A Devin session has been created for remediation."
+              echo ""
+              echo "**Session:** ${SESSION_URL}"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
+
+          SonarCloud identified security issues on this branch. A Devin session
+          has been automatically created for a **one-time remediation attempt**.
+
+          **Devin Session:** ${SESSION_URL}
+
+          Devin will commit the fix directly to branch \`${PR_BRANCH}\`.
+          SonarCloud will re-analyze once the fix is pushed."
+
+            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$COMMENT"
+          else
+            echo "::error::Failed to create Devin session (HTTP ${HTTP_CODE})"
+            echo "$HTTP_BODY"
+            exit 1
+          fi
