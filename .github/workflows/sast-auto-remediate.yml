@@ -153,33 +153,36 @@ jobs:
       - name: Trigger Devin remediation session
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          BRANCH: ${{ github.head_ref }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
         run: |
-          BRANCH="${{ github.head_ref }}"
-          PR_NUM="${{ github.event.pull_request.number }}"
-          REPO="${{ github.repository }}"
-
-          PROMPT=$(cat <<PROMPT_EOF
+          PROMPT=$(cat <<'PROMPT_EOF'
           You are remediating security vulnerabilities found by Trivy on
           the OtterWorks monorepo.
 
-          Branch: ${BRANCH}
-          PR: #${PR_NUM}
-
-          Findings summary:
-          ${{ needs.sast-scan.outputs.findings_summary }}
-
           Instructions:
-          1. Check out branch ${BRANCH}.
+          1. Check out the branch specified below.
           2. For each finding with a known fixed version, upgrade the
              dependency in the appropriate manifest file
              (package.json, requirements.txt, Gemfile, go.mod, etc.).
           3. Run the service's tests to verify nothing breaks.
           4. If a fix requires code changes beyond a version bump,
              make the minimal safe change.
-          5. Commit and push to ${BRANCH}.
+          5. Commit and push to the branch.
           6. Do NOT modify .trivyignore — only fix real dependencies.
           PROMPT_EOF
           )
+
+          # Append dynamic context outside the heredoc to avoid shell expansion
+          PROMPT="${PROMPT}
+
+          Branch: ${BRANCH}
+          PR: #${PR_NUM}
+
+          Findings summary:
+          ${FINDINGS_SUMMARY}"
 
           # Call Devin API to create a remediation session
           curl -s -X POST "https://api.devin.ai/v1/sessions" \
@@ -200,37 +203,42 @@ jobs:
       - name: Open escalation issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
+          FIX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
         run: |
-          gh api "repos/${{ github.repository }}/issues" \
-            -f title="[Security] Unresolved SAST findings on PR #${{ github.event.pull_request.number }}" \
-            -f body="$(cat <<ISSUE_EOF
-          ## Automated remediation exhausted
+          BODY="## Automated remediation exhausted
 
-          Devin attempted **${{ env.MAX_FIX_ATTEMPTS }}** fix cycles on
-          PR #${{ github.event.pull_request.number }} but HIGH/CRITICAL
-          findings remain.
+          Devin attempted **${FIX_ATTEMPTS}** fix cycles on
+          PR #${PR_NUM} but HIGH/CRITICAL findings remain.
 
           ### Remaining findings
 
-          ${{ needs.sast-scan.outputs.findings_summary }}
+          ${FINDINGS_SUMMARY}
 
           ### Next steps
 
           - Review the findings manually
           - Check if the fixes require breaking API changes
-          - Consider adding justified suppressions to \`.trivyignore\`
+          - Consider adding justified suppressions to .trivyignore
             with proper documentation
 
-          _Opened automatically by the SAST auto-remediation pipeline._
-          ISSUE_EOF
-          )" \
+          _Opened automatically by the SAST auto-remediation pipeline._"
+
+          gh api "repos/${REPO}/issues" \
+            -f title="[Security] Unresolved SAST findings on PR #${PR_NUM}" \
+            -f body="$BODY" \
             -f "labels[]=security" \
             -f "labels[]=needs-human-review"
 
       - name: Comment on PR about escalation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          FIX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
         run: |
           gh api \
-            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
-            -f body=":rotating_light: **Escalation:** Automated remediation has been attempted ${{ env.MAX_FIX_ATTEMPTS }} times without resolving all findings. A GitHub Issue has been opened for manual review."
+            "repos/${REPO}/issues/${PR_NUM}/comments" \
+            -f body=":rotating_light: **Escalation:** Automated remediation has been attempted ${FIX_ATTEMPTS} times without resolving all findings. A GitHub Issue has been opened for manual review."
