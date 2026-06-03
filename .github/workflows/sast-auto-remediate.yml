@@ -126,21 +126,23 @@ jobs:
       - name: Post findings to PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
+          ATTEMPT_COUNT: ${{ needs.sast-scan.outputs.attempt_count }}
+          MAX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          BODY=$(cat <<'COMMENT_EOF'
-          ## :shield: SAST Scan — Findings Detected
+          BODY="## :shield: SAST Scan — Findings Detected
 
           Trivy found **HIGH/CRITICAL** vulnerabilities on this PR.
 
-          ${{ needs.sast-scan.outputs.findings_summary }}
+          ${FINDINGS_SUMMARY}
 
           ---
-          **Remediation attempt:** ${{ needs.sast-scan.outputs.attempt_count }} / ${{ env.MAX_FIX_ATTEMPTS }}
-          COMMENT_EOF
-          )
+          **Remediation attempt:** ${ATTEMPT_COUNT} / ${MAX_ATTEMPTS}"
 
           gh api \
-            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            "repos/${REPO}/issues/${PR_NUM}/comments" \
             -f body="$BODY"
 
   trigger-devin:
