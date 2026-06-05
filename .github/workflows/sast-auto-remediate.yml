@@ -153,6 +153,15 @@ jobs:
             "repos/${REPO}/issues/${PR_NUM}/comments" \
             -f body="$BODY"
 
+      - name: Add trivy-remediation-needed label to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/${REPO}/issues/${PR_NUM}/labels" \
+            --input - <<< '["trivy-remediation-needed"]'
+
   trigger-devin:
     needs: sast-scan
     if: |
