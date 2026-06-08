@@ -169,81 +169,50 @@ jobs:
       needs.sast-scan.outputs.exceeded_max == 'false'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Devin remediation session (Trivy findings)
+      - name: Trigger Devin remediation via webhook automation
         env:
-          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
-          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
-          CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
+          DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+          WEBHOOK_URL: "https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-ea3b9981a9c84d6ba476ec498b40ced5"
           BRANCH: ${{ github.head_ref }}
           PR_NUM: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
         run: |
-          PROMPT=$(cat <<'PROMPT_EOF'
-          A Trivy SAST scan has identified HIGH/CRITICAL dependency
-          vulnerabilities on this PR in the OtterWorks polyglot monorepo.
-
-          Instructions:
-          1. Check out the branch specified below.
-          2. For each finding with a known fixed version, upgrade the
-             dependency in the appropriate manifest file
-             (package.json, requirements.txt, Gemfile, go.mod, Cargo.toml,
-              pyproject.toml, build.gradle, pom.xml, etc.).
-          3. Run the service's tests to verify nothing breaks.
-          4. If a fix requires code changes beyond a version bump,
-             make the minimal safe change.
-          5. Commit and push to the branch.
-          6. Do NOT modify .trivyignore — only fix real dependencies.
-          PROMPT_EOF
-          )
-
-          PROMPT="${PROMPT}
-
-          Branch: ${BRANCH}
-          PR: #${PR_NUM}
-          Repository: ${REPO}
-
-          Findings summary:
-          ${FINDINGS_SUMMARY}"
-
-          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
-
-          REQUEST_BODY=$(jq -n \
-            --argjson prompt "$ESCAPED_PROMPT" \
-            --arg title "Remediate Trivy SAST findings on PR #${PR_NUM}" \
+          PAYLOAD=$(jq -n \
+            --arg branch "$BRANCH" \
+            --arg pr_number "$PR_NUM" \
             --arg repo "$REPO" \
-            --arg user_id "${CREATE_AS_USER_ID}" \
+            --arg findings "$FINDINGS_SUMMARY" \
             '{
-              prompt: $prompt,
-              title: $title,
-              repos: [$repo],
-              create_as_user_id: $user_id,
-              tags: ["sast-fix", "trivy", "security", "automated"]
+              event: "trivy_findings_detected",
+              pr_number: ($pr_number | tonumber),
+              branch: $branch,
+              repo: $repo,
+              findings_summary: $findings
             }')
 
-          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+          HTTP_CODE=$(curl -s -o /tmp/webhook_response.json -w "%{http_code}" \
+            -X POST \
             -H "Content-Type: application/json" \
-            -d "$REQUEST_BODY" \
-            "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions")
-
-          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
-          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+            -H "X-Webhook-Secret: ${DEVIN_WEBHOOK_SECRET}" \
+            -d "$PAYLOAD" \
+            "${WEBHOOK_URL}")
 
           if [ "$HTTP_CODE" -eq 200 ]; then
-            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url')
-            echo "Devin session created: ${SESSION_URL}"
+            echo "Devin automation webhook accepted (HTTP 200)"
+            cat /tmp/webhook_response.json
 
             {
               echo "## Devin SAST Auto-Fix Triggered (Trivy)"
               echo ""
-              echo "A Devin session has been created to remediate dependency vulnerabilities."
+              echo "A Devin remediation session has been triggered via webhook automation."
               echo ""
-              echo "**Session:** ${SESSION_URL}"
+              echo "**PR:** #${PR_NUM}"
+              echo "**Branch:** ${BRANCH}"
             } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "::error::Failed to create Devin session (HTTP ${HTTP_CODE})"
-            echo "$HTTP_BODY"
+            echo "::error::Webhook call failed (HTTP ${HTTP_CODE})"
+            cat /tmp/webhook_response.json
             exit 1
           fi
 
