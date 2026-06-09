@@ -8,7 +8,9 @@ name: SAST Auto-Remediation
 #   2. SonarCloud (check_run):
 #      PR analyzed by SonarCloud → quality gate fails → Devin API → auto-fix → re-scan
 #
-# Bot-loop prevention: skips PRs authored by devin-ai-integration[bot].
+# Bot-loop prevention:
+#   - Trivy path: bounded by MAX_FIX_ATTEMPTS counter (counts bot commits).
+#   - SonarCloud path: one-time remediation (checks for prior "Devin SAST Auto-Fix" comment).
 # Escalation: after MAX_FIX_ATTEMPTS, opens an issue for human review.
 
 on:
@@ -35,9 +37,7 @@ env:
 
 jobs:
   sast-scan:
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.user.login != 'devin-ai-integration[bot]'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       has_findings: ${{ steps.parse.outputs.has_findings }}
@@ -328,13 +328,6 @@ jobs:
           echo "pr_branch=${PR_BRANCH}" >> "$GITHUB_OUTPUT"
 
           echo "PR #${PR_NUMBER} by ${PR_AUTHOR} on branch ${PR_BRANCH} (state: ${PR_STATE})"
-
-          # Skip PRs authored by Devin to prevent infinite loops
-          if [ "$PR_AUTHOR" = "devin-ai-integration[bot]" ]; then
-            echo "PR authored by Devin bot. Skipping to prevent loop."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
 
           if [ "$PR_STATE" != "open" ]; then
             echo "PR is not open (state: ${PR_STATE}). Skipping."
