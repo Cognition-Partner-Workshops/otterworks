@@ -9,8 +9,8 @@ name: SAST Auto-Remediation
 #      PR analyzed by SonarCloud → quality gate fails → Devin API → auto-fix → re-scan
 #
 # Bot-loop prevention:
-#   - Trivy path: bounded by MAX_FIX_ATTEMPTS counter (counts bot commits).
-#   - SonarCloud path: one-time remediation (checks for prior "Devin SAST Auto-Fix" comment).
+#   - Trivy path: bounded by MAX_FIX_ATTEMPTS counter (counts remediation-trigger comments).
+#   - SonarCloud path: one-time remediation (checks for <!-- sonarcloud-remediation-attempt --> marker).
 # Escalation: after MAX_FIX_ATTEMPTS, opens an issue for human review.
 
 on:
@@ -350,12 +350,12 @@ jobs:
             exit 0
           fi
 
-          # One-time remediation: check if Devin already attempted a fix
+          # One-time remediation: check if Devin already attempted a SonarCloud fix
           DEVIN_COMMENTS=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
-            --jq '[.[] | select(.body | contains("Devin SAST Auto-Fix"))] | length')
+            --jq '[.[] | select(.body | contains("<!-- sonarcloud-remediation-attempt -->"))] | length')
 
           if [ "$DEVIN_COMMENTS" -gt 0 ]; then
-            echo "Devin has already attempted a fix on this PR. Skipping."
+            echo "Devin has already attempted a SonarCloud fix on this PR. Skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -450,7 +450,8 @@ jobs:
               echo "**Session:** ${SESSION_URL}"
             } >> "$GITHUB_STEP_SUMMARY"
 
-            COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
+            COMMENT="<!-- sonarcloud-remediation-attempt -->
+          ## Devin SAST Auto-Fix — SonarCloud Remediation In Progress
 
           SonarCloud identified security issues on this branch. A Devin session
           has been automatically created for a **one-time remediation attempt**.
