@@ -52,9 +52,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Count remediation-trigger comments (not bot commits) to avoid
+          # false escalation when Devin authors a PR with multiple commits.
           ATTEMPT_COUNT=$(gh api \
-            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
-            --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" \
+            --jq '[.[] | select(.body | contains("<!-- trivy-remediation-attempt -->"))] | length')
           echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
           if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
             echo "exceeded_max=true" >> "$GITHUB_OUTPUT"
@@ -162,6 +164,7 @@ jobs:
     steps:
       - name: Trigger Devin remediation session (Trivy findings)
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
           CREATE_AS_USER_ID: ${{ secrets.DEVIN_CREATE_AS_USER_ID }}
@@ -232,6 +235,18 @@ jobs:
               echo ""
               echo "**Session:** ${SESSION_URL}"
             } >> "$GITHUB_STEP_SUMMARY"
+
+            COMMENT="<!-- trivy-remediation-attempt -->
+          ## Devin SAST Auto-Fix — Trivy Remediation In Progress
+
+          Trivy identified dependency vulnerabilities on this branch.
+          A Devin session has been automatically created for remediation.
+
+          **Devin Session:** ${SESSION_URL}
+
+          Trivy will re-scan once the fix is pushed."
+
+            gh api "repos/${REPO}/issues/${PR_NUM}/comments" -f body="$COMMENT"
           else
             echo "::error::Failed to create Devin session (HTTP ${HTTP_CODE})"
             echo "$HTTP_BODY"
