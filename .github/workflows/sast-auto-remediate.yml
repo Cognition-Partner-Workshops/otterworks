@@ -27,7 +27,7 @@ permissions:
   checks: read
 
 env:
-  TRIVY_VERSION: "0.62.2"
+  TRIVY_VERSION: "0.71.0"
   MAX_FIX_ATTEMPTS: 2
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
 
