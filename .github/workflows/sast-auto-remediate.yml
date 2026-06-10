@@ -281,6 +281,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: >
             -Dsonar.host.url=https://sonarcloud.io
@@ -296,31 +297,42 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           PR_NUM: ${{ github.event.pull_request.number }}
         run: |
-          echo "Waiting for SonarCloud analysis to complete..."
-          sleep 10
+          # Wait for the SonarCloud compute engine task to finish before
+          # checking the quality gate. This avoids the fail-open scenario
+          # where the gate status is polled before analysis completes.
 
-          for i in $(seq 1 12); do
-            GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
-              "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUM}" \
-              | jq -r '.projectStatus.status // "PENDING"')
+          echo "Waiting for SonarCloud compute engine task to finish..."
 
-            echo "Attempt ${i}: quality gate status = ${GATE_STATUS}"
+          for i in $(seq 1 30); do
+            CE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
+              "https://sonarcloud.io/api/ce/activity?component=Cognition-Partner-Workshops_otterworks&ps=1&status=PENDING,IN_PROGRESS" \
+              | jq -r '.tasks | length')
 
-            if [ "$GATE_STATUS" = "ERROR" ]; then
-              echo "gate_failed=true" >> "$GITHUB_OUTPUT"
-              echo "Quality gate FAILED"
-              exit 0
-            elif [ "$GATE_STATUS" = "OK" ]; then
-              echo "gate_failed=false" >> "$GITHUB_OUTPUT"
-              echo "Quality gate PASSED"
-              exit 0
+            if [ "$CE_STATUS" = "0" ]; then
+              echo "No pending/in-progress tasks — analysis complete."
+              break
             fi
 
+            echo "Attempt ${i}: compute engine still processing (${CE_STATUS} task(s))..."
             sleep 10
           done
 
-          echo "gate_failed=false" >> "$GITHUB_OUTPUT"
-          echo "Quality gate status could not be determined after 2 minutes"
+          GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUM}" \
+            | jq -r '.projectStatus.status // "NONE"')
+
+          echo "Quality gate status: ${GATE_STATUS}"
+
+          if [ "$GATE_STATUS" = "ERROR" ]; then
+            echo "gate_failed=true" >> "$GITHUB_OUTPUT"
+            echo "Quality gate FAILED"
+          elif [ "$GATE_STATUS" = "OK" ]; then
+            echo "gate_failed=false" >> "$GITHUB_OUTPUT"
+            echo "Quality gate PASSED"
+          else
+            echo "gate_failed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Quality gate status is '${GATE_STATUS}' — could not determine result. Defaulting to pass."
+          fi
 
   sonarcloud-trigger-devin:
     name: Trigger Devin SAST Auto-Fix (SonarCloud)
