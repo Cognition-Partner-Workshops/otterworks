@@ -195,12 +195,16 @@ jobs:
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "Devin automation webhook triggered successfully (HTTP ${HTTP_CODE})"
 
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
+
             {
               echo "## Devin SAST Auto-Fix Triggered (Trivy)"
               echo ""
               echo "A Devin automation has been triggered to remediate dependency vulnerabilities."
-              echo ""
-              echo "**Response:** ${HTTP_BODY}"
+              if [ -n "$SESSION_URL" ]; then
+                echo ""
+                echo "**Session:** ${SESSION_URL}"
+              fi
             } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "::error::Failed to trigger Devin webhook (HTTP ${HTTP_CODE})"
@@ -370,13 +374,17 @@ jobs:
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "Devin automation webhook triggered successfully (HTTP ${HTTP_CODE})"
 
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
+
             {
               echo "## Devin SAST Auto-Fix Triggered (SonarCloud)"
               echo ""
               echo "SonarCloud flagged security issues on PR #${PR_NUMBER}."
               echo "A Devin automation has been triggered for remediation."
-              echo ""
-              echo "**Response:** ${HTTP_BODY}"
+              if [ -n "$SESSION_URL" ]; then
+                echo ""
+                echo "**Session:** ${SESSION_URL}"
+              fi
             } >> "$GITHUB_STEP_SUMMARY"
 
             COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
