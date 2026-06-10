@@ -303,6 +303,7 @@ jobs:
 
           echo "Waiting for SonarCloud compute engine task to finish..."
 
+          CE_TIMED_OUT=false
           for i in $(seq 1 30); do
             CE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
               "https://sonarcloud.io/api/ce/activity?component=Cognition-Partner-Workshops_otterworks&ps=1&status=PENDING,IN_PROGRESS" \
@@ -316,6 +317,11 @@ jobs:
             echo "Attempt ${i}: compute engine still processing (${CE_STATUS} task(s))..."
             sleep 10
           done
+
+          if [ "$i" -eq 30 ] && [ "$CE_STATUS" != "0" ]; then
+            echo "::warning::SonarCloud compute engine task did not complete within 5 minutes. Quality gate result may be stale."
+            CE_TIMED_OUT=true
+          fi
 
           GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
             "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUM}" \
