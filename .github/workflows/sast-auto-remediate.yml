@@ -319,8 +319,9 @@ jobs:
           done
 
           if [ "$i" -eq 30 ] && [ "$CE_STATUS" != "0" ]; then
-            echo "::warning::SonarCloud compute engine task did not complete within 5 minutes. Quality gate result may be stale."
-            CE_TIMED_OUT=true
+            echo "::warning::SonarCloud compute engine task did not complete within 5 minutes. Failing closed to avoid missing security findings."
+            echo "gate_failed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
