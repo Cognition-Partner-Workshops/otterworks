@@ -26,7 +26,7 @@ permissions:
 
 env:
   TRIVY_VERSION: "0.71.0"
-  MAX_FIX_ATTEMPTS: 2
+  MAX_FIX_ATTEMPTS: 10
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
 
 # ─────────────────────────────────────────────────────────────
