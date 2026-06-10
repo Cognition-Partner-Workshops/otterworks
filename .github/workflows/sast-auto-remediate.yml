@@ -5,8 +5,8 @@ name: SAST Auto-Remediation
 #   1. Trivy (pull_request):
 #      PR opened by human → Trivy scan → findings? → Devin webhook → auto-fix → re-scan
 #
-#   2. SonarCloud (check_run):
-#      PR analyzed by SonarCloud → quality gate fails → Devin webhook → auto-fix → re-scan
+#   2. SonarCloud (pull_request):
+#      PR opened by human → SonarCloud scan → quality gate fails → Devin webhook → auto-fix
 #
 # Bot-loop prevention: skips PRs authored by devin-ai-integration[bot].
 # Escalation: after MAX_FIX_ATTEMPTS, opens an issue for human review.
@@ -15,8 +15,6 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches: [main]
-  check_run:
-    types: [completed]
 
 permissions:
   contents: read
@@ -263,70 +261,111 @@ jobs:
             -f body=":rotating_light: **Escalation:** Automated remediation has been attempted ${FIX_ATTEMPTS} times without resolving all findings. A GitHub Issue has been opened for manual review."
 
   # ─────────────────────────────────────────────────────────────
-  #  Path 2: SonarCloud quality gate (check_run trigger)
+  #  Path 2: SonarCloud quality gate (CI-based analysis)
   # ─────────────────────────────────────────────────────────────
+
+  sonarcloud-scan:
+    name: SonarCloud Scan
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login != 'devin-ai-integration[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      gate_failed: ${{ steps.gate.outputs.gate_failed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.projectKey=Cognition-Partner-Workshops_otterworks
+            -Dsonar.organization=cognition-partner-workshops
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
+            -Dsonar.pullrequest.branch=${{ github.head_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+
+      - name: Check quality gate
+        id: gate
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          # Wait for the SonarCloud compute engine task to finish before
+          # checking the quality gate. This avoids the fail-open scenario
+          # where the gate status is polled before analysis completes.
+
+          echo "Waiting for SonarCloud compute engine task to finish..."
+
+          CE_TIMED_OUT=false
+          for i in $(seq 1 30); do
+            CE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
+              "https://sonarcloud.io/api/ce/activity?component=Cognition-Partner-Workshops_otterworks&ps=1&status=PENDING,IN_PROGRESS" \
+              | jq -r '.tasks | length')
+
+            if [ "$CE_STATUS" = "0" ]; then
+              echo "No pending/in-progress tasks — analysis complete."
+              break
+            fi
+
+            echo "Attempt ${i}: compute engine still processing (${CE_STATUS} task(s))..."
+            sleep 10
+          done
+
+          if [ "$i" -eq 30 ] && [ "$CE_STATUS" != "0" ]; then
+            echo "::warning::SonarCloud compute engine task did not complete within 5 minutes. Failing closed to avoid missing security findings."
+            echo "gate_failed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUM}" \
+            | jq -r '.projectStatus.status // "NONE"')
+
+          echo "Quality gate status: ${GATE_STATUS}"
+
+          if [ "$GATE_STATUS" = "ERROR" ]; then
+            echo "gate_failed=true" >> "$GITHUB_OUTPUT"
+            echo "Quality gate FAILED"
+          elif [ "$GATE_STATUS" = "OK" ]; then
+            echo "gate_failed=false" >> "$GITHUB_OUTPUT"
+            echo "Quality gate PASSED"
+          else
+            echo "gate_failed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Quality gate status is '${GATE_STATUS}' — could not determine result. Defaulting to pass."
+          fi
 
   sonarcloud-trigger-devin:
     name: Trigger Devin SAST Auto-Fix (SonarCloud)
+    needs: sonarcloud-scan
+    if: needs.sonarcloud-scan.outputs.gate_failed == 'true'
     concurrency:
-      group: sast-fix-${{ github.event.check_run.pull_requests[0].number }}
+      group: sast-sonar-fix-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    if: |
-      github.event_name == 'check_run' &&
-      github.event.check_run.app.slug == 'sonarqubecloud' &&
-      github.event.check_run.conclusion == 'failure' &&
-      github.event.check_run.pull_requests[0]
     runs-on: ubuntu-latest
     steps:
-      - name: Validate trigger conditions
+      - name: Check for prior remediation attempts
         id: pr_check
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.check_run.pull_requests[0].number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "No PR associated with this check run. Skipping."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          PR_DATA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" 2>&1)
-          PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.user.login')
-          PR_BRANCH=$(echo "$PR_DATA" | jq -r '.head.ref')
-          PR_STATE=$(echo "$PR_DATA" | jq -r '.state')
-
-          echo "pr_author=${PR_AUTHOR}" >> "$GITHUB_OUTPUT"
-          echo "pr_branch=${PR_BRANCH}" >> "$GITHUB_OUTPUT"
-
-          echo "PR #${PR_NUMBER} by ${PR_AUTHOR} on branch ${PR_BRANCH} (state: ${PR_STATE})"
-
-          # Skip PRs authored by Devin to prevent infinite loops
-          if [ "$PR_AUTHOR" = "devin-ai-integration[bot]" ]; then
-            echo "PR authored by Devin bot. Skipping to prevent loop."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ "$PR_STATE" != "open" ]; then
-            echo "PR is not open (state: ${PR_STATE}). Skipping."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # One-time remediation: check if Devin already attempted a fix
           DEVIN_COMMENTS=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
             --jq '[.[] | select(.body | contains("Devin SAST Auto-Fix"))] | length')
 
           if [ "$DEVIN_COMMENTS" -gt 0 ]; then
-            echo "Devin has already attempted a fix on this PR. Skipping."
+            echo "Devin has already attempted a SonarCloud fix on this PR. Skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "All conditions met — triggering Devin auto-fix."
           echo "should_run=true" >> "$GITHUB_OUTPUT"
 
       - name: Trigger Devin remediation via webhook (SonarCloud findings)
@@ -334,12 +373,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           DEVIN_SONAR_WEBHOOK_SECRET: ${{ secrets.DEVIN_SONAR_WEBHOOK_SECRET }}
-          PR_NUMBER: ${{ steps.pr_check.outputs.pr_number }}
-          PR_BRANCH: ${{ steps.pr_check.outputs.pr_branch }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
           REPO: ${{ github.repository }}
-          CHECK_NAME: ${{ github.event.check_run.name }}
-          CHECK_URL: ${{ github.event.check_run.html_url }}
-          CHECK_OUTPUT_TITLE: ${{ github.event.check_run.output.title }}
         run: |
           WEBHOOK_URL="https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-0dacfd8d718245e686f2f03d8917ac52"
 
@@ -347,18 +383,12 @@ jobs:
             --arg branch "$PR_BRANCH" \
             --arg pr_number "$PR_NUMBER" \
             --arg repo "$REPO" \
-            --arg check_name "$CHECK_NAME" \
-            --arg check_url "$CHECK_URL" \
-            --arg check_output "$CHECK_OUTPUT_TITLE" \
             --arg dashboard "https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUMBER}" \
             '{
               source: "sonarcloud",
               branch: $branch,
               pr_number: $pr_number,
               repository: $repo,
-              check_name: $check_name,
-              check_url: $check_url,
-              check_output_title: $check_output,
               sonarcloud_dashboard: $dashboard
             }')
 
@@ -379,7 +409,7 @@ jobs:
             {
               echo "## Devin SAST Auto-Fix Triggered (SonarCloud)"
               echo ""
-              echo "SonarCloud flagged security issues on PR #${PR_NUMBER}."
+              echo "SonarCloud quality gate failed on PR #${PR_NUMBER}."
               echo "A Devin automation has been triggered for remediation."
               if [ -n "$SESSION_URL" ]; then
                 echo ""
@@ -389,8 +419,10 @@ jobs:
 
             COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
 
-          SonarCloud identified security issues on this branch. A Devin automation
+          SonarCloud quality gate failed on this branch. A Devin automation
           has been triggered for a **one-time remediation attempt**.
+
+          **[SonarCloud Dashboard](https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUMBER})**
 
           Devin will commit the fix directly to branch \`${PR_BRANCH}\`.
           SonarCloud will re-analyze once the fix is pushed."
