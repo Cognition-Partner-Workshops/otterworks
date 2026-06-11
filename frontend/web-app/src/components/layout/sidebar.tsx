@@ -18,10 +18,9 @@ import {
   Plus,
   LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores/auth-store";
-import { getInitials } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -39,7 +38,7 @@ const bottomItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuthStore();
@@ -50,7 +49,11 @@ export function Sidebar() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          role="button"
+          tabIndex={0}
           onClick={toggleSidebar}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleSidebar(); }}
+          aria-label="Close sidebar"
         />
       )}
 

@@ -6,11 +6,11 @@ import { File, AlertCircle } from "lucide-react";
 const MAX_PREVIEW_SIZE = 500_000; // 500 KB — truncate beyond this
 
 interface TextFilePreviewProps {
-  presignedUrl?: string;
-  fileName: string;
+  readonly presignedUrl?: string;
+  readonly fileName: string;
 }
 
-export function TextFilePreview({ presignedUrl, fileName }: TextFilePreviewProps) {
+export function TextFilePreview({ presignedUrl, fileName }: TextFilePreviewProps): React.JSX.Element {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [truncated, setTruncated] = useState(false);
@@ -102,7 +102,7 @@ export function TextFilePreview({ presignedUrl, fileName }: TextFilePreviewProps
             {fileName}
           </span>
           <span className="text-xs text-gray-400">
-            {lines.length} line{lines.length !== 1 ? "s" : ""}
+            {lines.length} line{lines.length === 1 ? "" : "s"}
           </span>
         </div>
         <div className="overflow-auto max-h-[600px]">
@@ -135,10 +135,10 @@ export function TextFilePreview({ presignedUrl, fileName }: TextFilePreviewProps
 }
 
 interface PdfFilePreviewProps {
-  presignedUrl?: string;
+  readonly presignedUrl?: string;
 }
 
-export function PdfFilePreview({ presignedUrl }: PdfFilePreviewProps) {
+export function PdfFilePreview({ presignedUrl }: PdfFilePreviewProps): React.JSX.Element {
   if (!presignedUrl) {
     return (
       <div className="text-center py-8">
@@ -172,11 +172,11 @@ export function PdfFilePreview({ presignedUrl }: PdfFilePreviewProps) {
 }
 
 interface ImageFilePreviewProps {
-  presignedUrl?: string;
-  fileName: string;
+  readonly presignedUrl?: string;
+  readonly fileName: string;
 }
 
-export function ImageFilePreview({ presignedUrl, fileName }: ImageFilePreviewProps) {
+export function ImageFilePreview({ presignedUrl, fileName }: ImageFilePreviewProps): React.JSX.Element {
   const [error, setError] = useState(false);
 
   useEffect(() => {

@@ -4,14 +4,14 @@ import { useEffect, useRef, useCallback } from "react";
 import { AlertTriangle } from "lucide-react";
 
 interface ConfirmDialogProps {
-  open: boolean;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  variant?: "destructive" | "default";
-  onConfirm: () => void;
-  onCancel: () => void;
+  readonly open: boolean;
+  readonly title: string;
+  readonly description: string;
+  readonly confirmLabel?: string;
+  readonly cancelLabel?: string;
+  readonly variant?: "destructive" | "default";
+  readonly onConfirm: () => void;
+  readonly onCancel: () => void;
 }
 
 export function ConfirmDialog({
@@ -23,7 +23,7 @@ export function ConfirmDialog({
   variant = "default",
   onConfirm,
   onCancel,
-}: ConfirmDialogProps) {
+}: ConfirmDialogProps): React.JSX.Element | null {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -65,9 +65,9 @@ export function ConfirmDialog({
   const isDestructive = variant === "destructive";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
+    <dialog
+      open
+      className="fixed inset-0 z-50 flex items-center justify-center bg-transparent"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-description"
@@ -126,6 +126,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

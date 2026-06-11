@@ -44,14 +44,14 @@ function sanitizeSnippet(html: string): string {
 
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 import type { SearchResult } from "@/types";
 
-function SearchContent() {
+function SearchContent(): React.JSX.Element {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
@@ -161,7 +161,7 @@ function SearchContent() {
       ) : submittedQuery ? (
         <div className="space-y-1">
           <p className="text-sm text-gray-500 mb-4">
-            {data?.total || results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{submittedQuery}&rdquo;
+            {data?.total || results.length} result{results.length === 1 ? "" : "s"} for &ldquo;{submittedQuery}&rdquo;
           </p>
           {results.map((result) => (
             <SearchResultRow key={result.id} result={result} />
@@ -178,27 +178,28 @@ function SearchContent() {
   );
 }
 
+function getSearchResultHref(result: SearchResult): string {
+  if (result.type === "document") return `/documents/${result.id}`;
+  if (result.type === "folder") return `/files?folder=${result.id}`;
+  return `/files/${result.id}`;
+}
+
+function getSearchResultIcon(type: SearchResult["type"]) {
+  if (type === "document") return FileText;
+  if (type === "folder") return FolderOpen;
+  return File;
+}
+
+function getSearchResultIconColor(type: SearchResult["type"]): string {
+  if (type === "document") return "text-blue-600 bg-blue-50";
+  if (type === "folder") return "text-amber-600 bg-amber-50";
+  return "text-otter-600 bg-otter-50";
+}
+
 function SearchResultRow({ result }: { result: SearchResult }) {
-  const href =
-    result.type === "document"
-      ? `/documents/${result.id}`
-      : result.type === "folder"
-      ? `/files?folder=${result.id}`
-      : `/files/${result.id}`;
-
-  const Icon =
-    result.type === "document"
-      ? FileText
-      : result.type === "folder"
-      ? FolderOpen
-      : File;
-
-  const iconColor =
-    result.type === "document"
-      ? "text-blue-600 bg-blue-50"
-      : result.type === "folder"
-      ? "text-amber-600 bg-amber-50"
-      : "text-otter-600 bg-otter-50";
+  const href = getSearchResultHref(result);
+  const Icon = getSearchResultIcon(result.type);
+  const iconColor = getSearchResultIconColor(result.type);
 
   return (
     <Link
@@ -237,7 +238,7 @@ function SearchResultRow({ result }: { result: SearchResult }) {
   );
 }
 
-export default function SearchPage() {
+export default function SearchPage(): React.JSX.Element {
   return (
     <AppShell>
       <ErrorBoundary>

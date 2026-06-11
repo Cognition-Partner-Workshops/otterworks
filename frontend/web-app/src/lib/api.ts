@@ -16,36 +16,40 @@ import type {
   SharedUser,
 } from "@/types";
 
+// S3/LocalStack presigned URL rewrite: Docker internal hostname → browser-reachable host
+const LOCALSTACK_INTERNAL_HOST = "://localstack:";
+const LOCALSTACK_EXTERNAL_HOST = "://localhost:";
+
 // Shape after the axios camelCase interceptor transforms the file-service response
 interface RawShareItem {
-  id: string;
-  fileId: string;
-  sharedWith: string;
-  permission: string;
-  sharedBy: string;
-  createdAt: string;
+  readonly id: string;
+  readonly fileId: string;
+  readonly sharedWith: string;
+  readonly permission: string;
+  readonly sharedBy: string;
+  readonly createdAt: string;
 }
 
 interface RawFileItem {
-  id: string;
-  name: string;
-  mimeType: string;
-  sizeBytes: number;
-  s3Key: string;
-  folderId: string | null;
-  ownerId: string;
-  version: number;
-  isTrashed: boolean;
-  createdAt: string;
-  updatedAt: string;
-  sharedWith?: RawShareItem[];
+  readonly id: string;
+  readonly name: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly s3Key: string;
+  readonly folderId: string | null;
+  readonly ownerId: string;
+  readonly version: number;
+  readonly isTrashed: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sharedWith?: RawShareItem[];
 }
 
 interface RawFileListResponse {
-  files: RawFileItem[];
-  total: number;
-  page: number;
-  pageSize: number;
+  readonly files: RawFileItem[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
 }
 
 // Normalize a single file from the file-service format to the frontend FileItem shape
@@ -63,11 +67,15 @@ function mapRawFile(raw: RawFileItem): FileItem {
     path: `/${raw.name}`,
     downloadUrl: undefined,
     sharedWith: (() => {
+      const mapPermission = (p: string): "view" | "edit" => {
+        if (p === "editor") return "edit";
+        return "view";
+      };
       const mapped = (raw.sharedWith ?? []).map((s) => ({
         userId: s.sharedWith,
         name: "",
         email: "",
-        permission: s.permission === "viewer" ? "view" as const : s.permission === "editor" ? "edit" as const : "view" as const,
+        permission: mapPermission(s.permission),
       }));
       const seen = new Set<string>();
       return mapped.filter((s) => {
@@ -127,11 +135,11 @@ export const authApi = {
 // ── Helpers ───────────────────────────────────────────────────
 // Extract the user ID from the JWT stored in localStorage.
 function getOwnerIdFromJwt(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof globalThis.window === "undefined") return null;
   const token = localStorage.getItem("otter_access_token");
   if (!token) return null;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const payload = JSON.parse(atob(token.split(".")[1].replaceAll('-', '+').replaceAll('_', '/')));
     return payload.sub ?? null;
   } catch {
     return null;
@@ -238,7 +246,7 @@ export const filesApi = {
     const { data } = await apiClient.get<{ url: string; expiresInSecs: number }>(`/files/${id}/download`);
     // Presigned URLs from S3/LocalStack use the internal Docker hostname.
     // Rewrite to localhost so the browser can reach the endpoint.
-    return data.url.replace("://localstack:", "://localhost:");
+    return data.url.replace(LOCALSTACK_INTERNAL_HOST, LOCALSTACK_EXTERNAL_HOST);
   },
   delete: async (id: string): Promise<void> => {
     await apiClient.post(`/files/${id}/trash`);
@@ -379,14 +387,16 @@ export const searchApi = {
     const total = (data.total as number) ?? rawResults.length;
     const pg = (data.page as number) ?? 1;
     const ps = (data.page_size as number) ?? (data.pageSize as number) ?? 20;
+    const str = (v: unknown): string =>
+      typeof v === "string" ? v : typeof v === "number" ? String(v) : "";
     return {
       data: rawResults.map((r): SearchResult => ({
-        id: String(r.id ?? ""),
+        id: str(r.id),
         type: (r.type as SearchResult["type"]) ?? "file",
-        name: String(r.title ?? r.name ?? r.id ?? ""),
-        snippet: String(r.content_snippet ?? r.contentSnippet ?? ""),
+        name: str(r.title) || str(r.name) || str(r.id),
+        snippet: str(r.content_snippet) || str(r.contentSnippet),
         path: "",
-        updatedAt: String(r.updated_at ?? r.updatedAt ?? ""),
+        updatedAt: str(r.updated_at) || str(r.updatedAt),
         ownerName: "",
       })),
       total,
@@ -426,14 +436,14 @@ export const notificationsApi = {
 // ── Activity ──────────────────────────────────────────────────
 // Shape after the axios camelCase interceptor transforms the file-service response
 interface RawActivityItem {
-  id: string;
-  type: string;
-  description: string;
-  actorName: string;
-  resourceName: string;
-  resourceType: string;
-  resourceId: string;
-  createdAt: string;
+  readonly id: string;
+  readonly type: string;
+  readonly description: string;
+  readonly actorName: string;
+  readonly resourceName: string;
+  readonly resourceType: string;
+  readonly resourceId: string;
+  readonly createdAt: string;
 }
 
 export const activityApi = {
@@ -507,13 +517,13 @@ const STARRED_STORAGE_KEY = "otter_starred_items";
 type StarredItemType = "file" | "folder" | "document";
 
 interface StarredEntry {
-  itemId: string;
-  itemType: StarredItemType;
-  starredAt: string;
+  readonly itemId: string;
+  readonly itemType: StarredItemType;
+  readonly starredAt: string;
 }
 
 function getStarredMap(): Record<string, StarredEntry> {
-  if (typeof window === "undefined") return {};
+  if (typeof globalThis.window === "undefined") return {};
   try {
     const raw = localStorage.getItem(STARRED_STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Record<string, StarredEntry>) : {};
@@ -523,7 +533,7 @@ function getStarredMap(): Record<string, StarredEntry> {
 }
 
 function saveStarredMap(map: Record<string, StarredEntry>): void {
-  if (typeof window === "undefined") return;
+  if (typeof globalThis.window === "undefined") return;
   localStorage.setItem(STARRED_STORAGE_KEY, JSON.stringify(map));
 }
 

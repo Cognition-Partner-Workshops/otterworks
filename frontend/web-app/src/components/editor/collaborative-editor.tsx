@@ -8,7 +8,7 @@ import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { useAuthStore } from "@/stores/auth-store";
-import { generateColor } from "@/lib/utils";
+import { generateColor, cn } from "@/lib/utils";
 import {
   Bold,
   Italic,
@@ -25,17 +25,16 @@ import {
   WifiOff,
   RefreshCw,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CollaborativeEditorProps {
-  documentId: string;
-  initialContent?: string;
-  onUpdate?: (content: string) => void;
+  readonly documentId: string;
+  readonly initialContent?: string;
+  readonly onUpdate?: (content: string) => void;
 }
 
 const COLLAB_WS_URL = process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:8085";
 
-export function CollaborativeEditor({ documentId, initialContent, onUpdate }: CollaborativeEditorProps) {
+export function CollaborativeEditor({ documentId, initialContent, onUpdate }: CollaborativeEditorProps): React.JSX.Element {
   const { user } = useAuthStore();
   const [ydoc] = useState(() => new Y.Doc());
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
@@ -45,7 +44,7 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("otter_access_token") : null;
+    const token = typeof globalThis.window === "undefined" ? null : localStorage.getItem("otter_access_token");
     const wsProvider = new WebsocketProvider(
       COLLAB_WS_URL,
       `document-${documentId}`,
