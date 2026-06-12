@@ -117,7 +117,7 @@ import { AuditEvent } from '../../core/models/audit.model';
   `,
   styles: [`
     .page-container { padding: 0; }
-    .page-title { font-size: 1.5rem; font-weight: 600; color: #333; margin-bottom: 24px; }
+    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 24px; }
     .loading-container { display: flex; justify-content: center; padding: 60px; }
 
     .toolbar { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -125,8 +125,8 @@ import { AuditEvent } from '../../core/models/audit.model';
     .filter-field { width: 160px; }
 
     .table-container {
-      background: white; border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08); overflow: hidden;
+      background: var(--bg-surface); border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow-color); overflow: hidden;
     }
 
     .audit-table { width: 100%; }
@@ -136,19 +136,19 @@ import { AuditEvent } from '../../core/models/audit.model';
       font-weight: 600; text-transform: uppercase;
     }
 
-    .action-create { background: #e8f5e9; color: #2e7d32; }
-    .action-update { background: #e3f2fd; color: #1565c0; }
-    .action-delete { background: #ffebee; color: #c62828; }
-    .action-share { background: #f3e5f5; color: #7b1fa2; }
-    .action-login { background: #fff3e0; color: #e65100; }
-    .action-logout { background: #eceff1; color: #546e7a; }
-    .action-upload { background: #e0f7fa; color: #00695c; }
-    .action-download { background: #fce4ec; color: #ad1457; }
-    .action-suspend { background: #ffebee; color: #b71c1c; }
-    .action-restore { background: #e8f5e9; color: #1b5e20; }
+    .action-create { background: var(--success-bg); color: var(--success-color); }
+    .action-update { background: var(--info-bg); color: var(--info-color); }
+    .action-delete { background: var(--error-bg); color: var(--error-color); }
+    .action-share { background: var(--purple-bg); color: var(--purple-text); }
+    .action-login { background: var(--warning-bg); color: var(--warning-color); }
+    .action-logout { background: var(--chip-bg); color: var(--chip-color); }
+    .action-upload { background: var(--upload-bg); color: var(--upload-color); }
+    .action-download { background: var(--download-bg); color: var(--download-color); }
+    .action-suspend { background: var(--error-bg); color: var(--suspend-color); }
+    .action-restore { background: var(--success-bg); color: var(--restore-color); }
 
     .resource-cell { display: flex; flex-direction: column; }
-    .resource-type { font-size: 0.7rem; color: #999; text-transform: uppercase; }
+    .resource-type { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
 
     .severity-indicator {
       display: flex; align-items: center; gap: 6px;
@@ -159,12 +159,12 @@ import { AuditEvent } from '../../core/models/audit.model';
       width: 8px; height: 8px; border-radius: 50%; display: inline-block;
     }
 
-    .severity-info .severity-dot { background: #4caf50; }
-    .severity-info { color: #4caf50; }
-    .severity-warning .severity-dot { background: #ff9800; }
-    .severity-warning { color: #ff9800; }
-    .severity-critical .severity-dot { background: #f44336; }
-    .severity-critical { color: #f44336; }
+    .severity-info .severity-dot { background: var(--severity-info-color); }
+    .severity-info { color: var(--severity-info-color); }
+    .severity-warning .severity-dot { background: var(--severity-warning-color); }
+    .severity-warning { color: var(--severity-warning-color); }
+    .severity-critical .severity-dot { background: var(--severity-critical-color); }
+    .severity-critical { color: var(--severity-critical-color); }
   `],
 })
 export class AuditComponent implements OnInit {

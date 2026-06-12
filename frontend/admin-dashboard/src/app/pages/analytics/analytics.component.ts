@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { AnalyticsReport } from '../../core/models/analytics.model';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-analytics',
@@ -99,7 +100,7 @@ import { AnalyticsReport } from '../../core/models/analytics.model';
   `,
   styles: [`
     .page-container { padding: 0; }
-    .page-title { font-size: 1.5rem; font-weight: 600; color: #333; margin-bottom: 24px; }
+    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 24px; }
     .loading-container { display: flex; justify-content: center; padding: 60px; }
 
     .charts-grid {
@@ -143,22 +144,61 @@ export class AnalyticsComponent implements OnInit {
     plugins: { legend: { position: 'right' } },
   };
 
-  constructor(private api: AdminApiService) {}
+  private lastReport: AnalyticsReport | null = null;
+
+  constructor(
+    private api: AdminApiService,
+    private themeService: ThemeService,
+  ) {
+    effect(() => {
+      this.themeService.darkMode();
+      if (this.lastReport) this.buildCharts(this.lastReport);
+    });
+  }
 
   ngOnInit(): void {
     this.api.getAnalyticsReport().subscribe(report => {
+      this.lastReport = report;
       this.buildCharts(report);
       this.loading = false;
     });
   }
 
   private buildCharts(report: AnalyticsReport): void {
+    const isDark = this.themeService.darkMode();
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    const tickColor = isDark ? '#aaa' : '#666';
+    const legendColor = isDark ? '#e0e0e0' : '#333';
+
+    this.lineChartOptions = {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
+        x: { grid: { color: gridColor }, ticks: { color: tickColor } },
+      },
+    };
+
+    this.barChartOptions = {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
+        x: { grid: { color: gridColor }, ticks: { color: tickColor } },
+      },
+    };
+
+    this.pieChartOptions = {
+      responsive: true,
+      plugins: { legend: { position: 'right', labels: { color: legendColor } } },
+    };
+
     this.activeUsersChart = {
       labels: report.activeUsers.map(d => d.label),
       datasets: [{
         data: report.activeUsers.map(d => d.value),
         borderColor: '#1976d2',
-        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+        backgroundColor: isDark ? 'rgba(25, 118, 210, 0.2)' : 'rgba(25, 118, 210, 0.1)',
         fill: true,
         tension: 0.4,
       }],
@@ -169,7 +209,7 @@ export class AnalyticsComponent implements OnInit {
       datasets: [{
         data: report.storageUsage.map(d => d.value),
         borderColor: '#ff9800',
-        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+        backgroundColor: isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.1)',
         fill: true,
         tension: 0.4,
       }],
