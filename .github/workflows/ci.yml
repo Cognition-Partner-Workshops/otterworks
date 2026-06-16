@@ -70,7 +70,7 @@ jobs:
               - 'docker-compose*.yml'
               - 'Makefile'
 
-  # Go - API Gateway
+  # C# / ASP.NET 9 - API Gateway
   api-gateway:
     needs: detect-changes
     if: needs.detect-changes.outputs.api-gateway == 'true'
@@ -80,12 +80,14 @@ jobs:
         working-directory: services/api-gateway
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-dotnet@v4
         with:
-          go-version: '1.22'
-      - run: go vet ./...
-      - run: go test -race -coverprofile=coverage.out ./...
-      - run: go build -o /dev/null ./cmd/server
+          dotnet-version: '9.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet restore Tests/ApiGateway.Tests.csproj
+      - run: dotnet build Tests/ApiGateway.Tests.csproj --no-restore
+      - run: dotnet test Tests/ApiGateway.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
 
   # Java - Auth Service
   auth-service:
