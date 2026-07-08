@@ -117,6 +117,8 @@ module Api
           incident.resolve!
           IncidentEventPublisher.incident_resolved(incident, metadata: { alert_name: alert_name })
           Rails.logger.info("Incident #{incident.id} auto-resolved by Grafana alert #{alert_name}")
+        rescue Incident::InvalidTransitionError => e
+          Rails.logger.warn("Could not auto-resolve incident #{incident.id} for alert #{alert_name}: #{e.message}")
         end
 
         def build_description(alert_name, base_description, labels, annotations)

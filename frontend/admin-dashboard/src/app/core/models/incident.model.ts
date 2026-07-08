@@ -12,6 +12,7 @@ export interface Incident {
   devinSessionStatus: string | null;
   reporterId: string | null;
   resolvedAt: string | null;
+  closedAt: string | null;
   active: boolean;
   source: IncidentSource;
   servicenowSysId: string | null;

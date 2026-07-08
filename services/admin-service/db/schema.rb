@@ -114,6 +114,26 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000008) do
     t.index ["user_id"], name: "index_storage_quotas_on_user_id", unique: true
   end
 
+  create_table "incidents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description", null: false
+    t.string "severity", default: "medium", null: false
+    t.string "status", default: "open", null: false
+    t.string "affected_service"
+    t.string "devin_session_id"
+    t.string "devin_session_url"
+    t.string "devin_session_status"
+    t.uuid "reporter_id"
+    t.datetime "resolved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "closed_at"
+    t.index ["affected_service"], name: "index_incidents_on_affected_service"
+    t.index ["devin_session_id"], name: "index_incidents_on_devin_session_id", unique: true
+    t.index ["severity"], name: "index_incidents_on_severity"
+    t.index ["status"], name: "index_incidents_on_status"
+  end
+
   create_table "system_configs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "key", null: false
     t.text "value", null: false
