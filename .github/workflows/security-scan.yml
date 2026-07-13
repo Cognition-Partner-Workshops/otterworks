@@ -21,7 +21,9 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch base ref
-        run: git fetch --no-tags origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
 
       - name: Install Trivy
         run: |
@@ -37,8 +39,10 @@ jobs:
             --format json --output trivy-head.json
 
       - name: Scan merge base
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          base="$(git merge-base "origin/${{ github.base_ref }}" HEAD)"
+          base="$(git merge-base "origin/$BASE_REF" HEAD)"
           git worktree add --detach ../otterworks-base "$base"
           trap 'git worktree remove --force ../otterworks-base' EXIT
           trivy fs ../otterworks-base --severity CRITICAL,HIGH \
@@ -78,7 +82,9 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch base ref
-        run: git fetch --no-tags origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
 
       - name: Install Gitleaks
         run: |
@@ -87,11 +93,13 @@ jobs:
           tar xz -C /usr/local/bin -f /tmp/gitleaks.tar.gz gitleaks
 
       - name: Scan pull request commits
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
           # PR-only scoping prevents known historical lab fixtures from gating PRs.
           # The full-history scan runs in the informational full-scan-baseline job.
           gitleaks detect --source . --verbose --redact \
-            --log-opts "origin/${{ github.base_ref }}..HEAD"
+            --log-opts "origin/$BASE_REF..HEAD"
 
   sast:
     if: github.event_name == 'pull_request'
@@ -102,14 +110,18 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch base ref
-        run: git fetch --no-tags origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
 
       - name: Install Semgrep
         run: pip install semgrep
 
       - name: Scan pull request changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          base="$(git merge-base "origin/${{ github.base_ref }}" HEAD)"
+          base="$(git merge-base "origin/$BASE_REF" HEAD)"
           semgrep scan --config p/default --config p/owasp-top-ten \
             --config p/security-audit --error --baseline-commit "$base"
 
