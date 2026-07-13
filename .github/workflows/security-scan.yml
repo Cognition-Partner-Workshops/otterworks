@@ -36,6 +36,7 @@ jobs:
           trivy fs . --severity CRITICAL,HIGH \
             --skip-dirs services/report-service \
             --ignorefile .trivyignore \
+            --offline-scan \
             --format json --output trivy-head.json
 
       - name: Scan merge base
@@ -48,6 +49,7 @@ jobs:
           trivy fs ../otterworks-base --severity CRITICAL,HIGH \
             --skip-dirs services/report-service \
             --ignorefile .trivyignore \
+            --offline-scan \
             --format json --output trivy-base.json
 
       - name: Fail only on newly introduced vulnerabilities
@@ -182,6 +184,7 @@ jobs:
           trivy fs . --severity CRITICAL,HIGH \
             --skip-dirs services/report-service \
             --ignorefile .trivyignore \
+            --offline-scan \
             --format json --output trivy.json
           rc=$?
           set -e
