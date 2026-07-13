@@ -58,11 +58,11 @@ jobs:
       - name: Fail only on newly introduced vulnerabilities
         run: |
           # Compare stable finding identities so acknowledged/base findings do not gate PRs.
-          jq -r '[.Results[]?.Vulnerabilities[]? |
-            [.Target, .PkgName, .VulnerabilityID] | @tsv] | .[]' trivy-head.json |
+          jq -r '[.Results[]? | .Target as $t | .Vulnerabilities[]? |
+            [$t, .PkgName, .VulnerabilityID] | @tsv] | .[]' trivy-head.json |
             sort -u > head-findings.tsv
-          jq -r '[.Results[]?.Vulnerabilities[]? |
-            [.Target, .PkgName, .VulnerabilityID] | @tsv] | .[]' trivy-base.json |
+          jq -r '[.Results[]? | .Target as $t | .Vulnerabilities[]? |
+            [$t, .PkgName, .VulnerabilityID] | @tsv] | .[]' trivy-base.json |
             sort -u > base-findings.tsv
           comm -23 head-findings.tsv base-findings.tsv > new-findings.tsv
           if [[ -s new-findings.tsv ]]; then
