@@ -46,11 +46,14 @@ jobs:
           base="$(git merge-base "origin/$BASE_REF" HEAD)"
           git worktree add --detach ../otterworks-base "$base"
           trap 'git worktree remove --force ../otterworks-base' EXIT
-          trivy fs ../otterworks-base --severity CRITICAL,HIGH \
+          (
+            cd ../otterworks-base
+            trivy fs . --severity CRITICAL,HIGH \
             --skip-dirs services/report-service \
             --ignorefile .trivyignore \
             --offline-scan \
-            --format json --output trivy-base.json
+            --format json --output "$GITHUB_WORKSPACE/trivy-base.json"
+          )
 
       - name: Fail only on newly introduced vulnerabilities
         run: |
