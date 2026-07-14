@@ -121,4 +121,16 @@ resource "aws_opensearchserverless_collection" "this" {
     aws_opensearchserverless_security_policy.encryption,
     aws_opensearchserverless_security_policy.network,
   ]
+
+  lifecycle {
+    # AOSS collection and security-policy names must be <= 32 chars. The data
+    # access policy name ("-data") is the longest of the derived names, so
+    # guarding it guards them all. Fails fast at plan time instead of surfacing
+    # an opaque AWS API error at apply for long project/namespace values that
+    # still pass the per-variable regex validations.
+    precondition {
+      condition     = length(local.acc_policy_name) <= 32
+      error_message = "Derived AOSS names exceed 32 chars: shorten var.project and/or var.namespace_suffix so that length(project + namespace_suffix) <= 26."
+    }
+  }
 }

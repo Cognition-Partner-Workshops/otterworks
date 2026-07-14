@@ -86,8 +86,6 @@ provider "helm" {
 
 data "aws_caller_identity" "current" {}
 
-data "aws_region" "current" {}
-
 # --- Modules ---
 
 module "storage" {
@@ -132,8 +130,15 @@ module "opensearch" {
   environment = var.environment
   project     = "otterworks"
 
-  namespace_suffix           = var.opensearch_namespace_suffix
-  data_access_principal_arns = [module.irsa.role_arns["search-service"]]
+  namespace_suffix = var.opensearch_namespace_suffix
+  # Construct the search-service IRSA role ARN from its deterministic name
+  # (see modules/irsa: "${project}-${sa}-${environment}") rather than reading
+  # module.irsa output. This keeps the dependency one-directional
+  # (module.irsa -> module.opensearch) so the IAM statement below can scope
+  # aoss:APIAccessAll to this collection's ARN without a cycle.
+  data_access_principal_arns = [
+    "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/otterworks-search-service-${var.environment}",
+  ]
 }
 
 module "auth" {
@@ -291,11 +296,11 @@ module "irsa" {
           # OpenSearch Serverless data-plane access (SEARCH_BACKEND=opensearch).
           # Fine-grained index/document permissions are enforced by the AOSS
           # data access policy (see module.opensearch); this IAM grant is the
-          # required companion permission. Scoped to aoss collections in this
-          # account/region to avoid a dependency cycle with module.opensearch.
+          # required companion permission, scoped to this migration's collection
+          # ARN (not all collections in the account).
           Effect   = "Allow"
           Action   = ["aoss:APIAccessAll"]
-          Resource = ["arn:aws:aoss:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:collection/*"]
+          Resource = [module.opensearch.collection_arn]
         },
       ]
     })
