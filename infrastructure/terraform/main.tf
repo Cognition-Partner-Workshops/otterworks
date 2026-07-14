@@ -139,6 +139,9 @@ module "opensearch" {
   data_access_principal_arns = [
     "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/otterworks-search-service-${var.environment}",
   ]
+  # Public endpoint (reachable + SigV4-gated) only in dev; staging/prod default
+  # to VPC-only (add a VPC endpoint before deploying the migration there).
+  allow_public_access = var.environment == "dev"
 }
 
 module "auth" {

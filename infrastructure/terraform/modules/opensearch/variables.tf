@@ -42,7 +42,7 @@ variable "data_access_principal_arns" {
 }
 
 variable "allow_public_access" {
-  description = "If true the network policy allows public access to the collection endpoint and Dashboards (dev only). Prefer VPC access in prod."
+  description = "If true the network policy allows public access to the collection endpoint and Dashboards. Secure by default (false, VPC-only); the root module opts dev into public access explicitly."
   type        = bool
-  default     = true
+  default     = false
 }

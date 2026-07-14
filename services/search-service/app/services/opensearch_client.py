@@ -18,6 +18,7 @@ Parity notes:
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlparse
 
 import structlog
 from opensearchpy import OpenSearch, RequestsHttpConnection
@@ -58,13 +59,12 @@ class OpenSearchService:
 
     @staticmethod
     def _build_client(config: OpenSearchConfig) -> OpenSearch:
-        endpoint = config.endpoint
-        use_ssl = endpoint.startswith("https")
-        host = endpoint.replace("https://", "").replace("http://", "")
-        port = 443 if use_ssl else 9200
-        if ":" in host:
-            host, port_str = host.split(":", 1)
-            port = int(port_str)
+        # Robustly parse scheme/host/port so trailing slashes or paths in the
+        # endpoint (e.g. "http://localhost:9200/") don't break port extraction.
+        parsed = urlparse(config.endpoint)
+        use_ssl = parsed.scheme == "https"
+        host = parsed.hostname or "localhost"
+        port = parsed.port or (443 if use_ssl else 9200)
 
         http_auth = None
         if config.use_aws_auth:
