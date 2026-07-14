@@ -28,6 +28,7 @@ jobs:
       admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
+      sample-service: ${{ steps.changes.outputs.sample-service }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +64,8 @@ jobs:
               - 'infrastructure/**'
             report-service:
               - 'services/report-service/**'
+            sample-service:
+              - 'services/sample-service/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
@@ -135,6 +138,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install poetry==1.8.2
+      - run: poetry install
+      - run: poetry run ruff check .
+      - run: poetry run pytest --cov=app
+
+  # Python - Sample Service
+  sample-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.sample-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/sample-service
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: '3.12'
       - run: pip install poetry==1.8.2
