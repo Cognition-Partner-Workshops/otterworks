@@ -15,6 +15,10 @@ def _make_jwt(user_id: str) -> str:
     return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm="HS256")
 
 
+def _auth_headers(user_id: uuid.UUID) -> dict[str, str]:
+    return {"Authorization": f"Bearer {_make_jwt(str(user_id))}"}
+
+
 @pytest.mark.asyncio
 async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
@@ -42,15 +46,32 @@ async def test_get_document(client: AsyncClient, owner_id: uuid.UUID):
     )
     doc_id = create_resp.json()["id"]
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}")
+    resp = await client.get(
+        f"/api/v1/documents/{doc_id}", headers=_auth_headers(owner_id)
+    )
     assert resp.status_code == 200
     assert resp.json()["id"] == doc_id
 
 
 @pytest.mark.asyncio
-async def test_get_document_not_found(client: AsyncClient):
-    resp = await client.get(f"/api/v1/documents/{uuid.uuid4()}")
+async def test_get_document_not_found(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get(
+        f"/api/v1/documents/{uuid.uuid4()}", headers=_auth_headers(owner_id)
+    )
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_unknown_route_returns_standard_error(client: AsyncClient):
+    resp = await client.get("/api/v1/missing")
+    assert resp.status_code == 404
+    assert resp.json() == {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Not Found",
+            "status": 404,
+        }
+    }
 
 
 @pytest.mark.asyncio
@@ -94,6 +115,7 @@ async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Updated", "content": "New body"},
+        headers=_auth_headers(owner_id),
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -113,6 +135,7 @@ async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.patch(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Patched Title"},
+        headers=_auth_headers(owner_id),
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -129,10 +152,14 @@ async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
     )
     doc_id = create_resp.json()["id"]
 
-    resp = await client.delete(f"/api/v1/documents/{doc_id}")
+    resp = await client.delete(
+        f"/api/v1/documents/{doc_id}", headers=_auth_headers(owner_id)
+    )
     assert resp.status_code == 204
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}")
+    resp = await client.get(
+        f"/api/v1/documents/{doc_id}", headers=_auth_headers(owner_id)
+    )
     assert resp.status_code == 404
 
 
@@ -147,9 +174,12 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Versioned", "content": "v2"},
+        headers=_auth_headers(owner_id),
     )
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
+    resp = await client.get(
+        f"/api/v1/documents/{doc_id}/versions", headers=_auth_headers(owner_id)
+    )
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
@@ -168,12 +198,18 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Changed", "content": "Changed body"},
+        headers=_auth_headers(owner_id),
     )
 
-    versions_resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
+    versions_resp = await client.get(
+        f"/api/v1/documents/{doc_id}/versions", headers=_auth_headers(owner_id)
+    )
     v1_id = versions_resp.json()[-1]["id"]  # first version
 
-    resp = await client.post(f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore")
+    resp = await client.post(
+        f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore",
+        headers=_auth_headers(owner_id),
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["title"] == "Restore Me"
@@ -208,7 +244,9 @@ async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
     doc_id = create_resp.json()["id"]
 
     resp = await client.get(
-        f"/api/v1/documents/{doc_id}/export", params={"format": "html"}
+        f"/api/v1/documents/{doc_id}/export",
+        params={"format": "html"},
+        headers=_auth_headers(owner_id),
     )
     assert resp.status_code == 200
     assert "<h1>Export</h1>" in resp.text
@@ -223,7 +261,9 @@ async def test_export_document_markdown(client: AsyncClient, owner_id: uuid.UUID
     doc_id = create_resp.json()["id"]
 
     resp = await client.get(
-        f"/api/v1/documents/{doc_id}/export", params={"format": "markdown"}
+        f"/api/v1/documents/{doc_id}/export",
+        params={"format": "markdown"},
+        headers=_auth_headers(owner_id),
     )
     assert resp.status_code == 200
     assert "# Export MD" in resp.text
@@ -279,3 +319,21 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
         json={"title": "No Auth Doc"},
     )
     assert resp.status_code == 401
+    assert resp.json() == {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "owner_id is required: provide it in the body or authenticate via JWT",
+            "status": 401,
+        }
+    }
+
+
+@pytest.mark.asyncio
+async def test_invalid_document_request_uses_validation_error_shape(
+    client: AsyncClient,
+):
+    resp = await client.post("/api/v1/documents/", json={"title": 123})
+
+    assert resp.status_code == 422
+    assert resp.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert resp.json()["error"]["status"] == 422

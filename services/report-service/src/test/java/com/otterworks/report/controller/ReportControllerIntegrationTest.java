@@ -1,9 +1,12 @@
 package com.otterworks.report.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
+import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.model.ReportType;
+import com.otterworks.report.repository.ReportRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,9 @@ public class ReportControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ReportRepository reportRepository;
 
     // ---- POST /api/v1/reports ----
 
@@ -109,7 +115,9 @@ public class ReportControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code", is("VALIDATION_ERROR")))
+                .andExpect(jsonPath("$.error.status", is(400)));
     }
 
     @Test
@@ -155,7 +163,17 @@ public class ReportControllerIntegrationTest {
     @Test
     public void getNonExistentReportReturns404() throws Exception {
         mockMvc.perform(get("/api/v1/reports/999999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("NOT_FOUND")))
+                .andExpect(jsonPath("$.error.status", is(404)));
+    }
+
+    @Test
+    public void unknownRouteReturnsStandard404() throws Exception {
+        mockMvc.perform(get("/api/v1/missing"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("NOT_FOUND")))
+                .andExpect(jsonPath("$.error.status", is(404)));
     }
 
     // ---- GET /api/v1/reports ----
@@ -195,23 +213,25 @@ public class ReportControllerIntegrationTest {
     @Test
     public void downloadNonExistentReportReturns404() throws Exception {
         mockMvc.perform(get("/api/v1/reports/999999/download"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("NOT_FOUND")));
     }
 
     @Test
     public void downloadPendingReportReturns409() throws Exception {
-        Long id = createReportAndReturnId("Download Pending Report",
-                ReportCategory.USAGE_ANALYTICS, ReportType.PDF, "integration-user-8");
+        Report report = new Report();
+        report.setReportName("Download Pending Report");
+        report.setCategory(ReportCategory.USAGE_ANALYTICS);
+        report.setReportType(ReportType.PDF);
+        report.setRequestedBy("integration-user-8");
+        report.setStatus(ReportStatus.PENDING);
+        report.setCreatedAt(new Date());
+        Long id = reportRepository.save(report).getId();
 
-        MvcResult result = mockMvc.perform(get("/api/v1/reports/" + id))
-                .andReturn();
-        String statusVal = objectMapper.readTree(
-                result.getResponse().getContentAsString()).get("status").asText();
-
-        if ("PENDING".equals(statusVal) || "GENERATING".equals(statusVal)) {
-            mockMvc.perform(get("/api/v1/reports/" + id + "/download"))
-                    .andExpect(status().isConflict());
-        }
+        mockMvc.perform(get("/api/v1/reports/" + id + "/download"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code", is("CONFLICT")))
+                .andExpect(jsonPath("$.error.status", is(409)));
     }
 
     // ---- DELETE /api/v1/reports/{id} ----
@@ -231,7 +251,8 @@ public class ReportControllerIntegrationTest {
     @Test
     public void deleteNonExistentReportReturns404() throws Exception {
         mockMvc.perform(delete("/api/v1/reports/999999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("NOT_FOUND")));
     }
 
     // ---- Health endpoint ----

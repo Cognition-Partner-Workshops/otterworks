@@ -30,9 +30,22 @@ RSpec.describe Api::V1::Admin::BulkController do
       expect(body['failure_count']).to eq(1)
     end
 
+    it 'preserves per-item errors when all operations fail' do
+      post :users, params: { operation: 'suspend', user_ids: [SecureRandom.uuid] }
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body['success_count']).to eq(0)
+      expect(body['failure_count']).to eq(1)
+      expect(body['errors']).to be_an(Array)
+      expect(body['errors']).not_to be_empty
+    end
+
     it 'returns bad_request for empty user_ids' do
       post :users, params: { operation: 'suspend', user_ids: [] }
       expect(response).to have_http_status(:bad_request)
+      body = JSON.parse(response.body)
+      expect(body.dig('error', 'code')).to eq('BAD_REQUEST')
+      expect(body.dig('error', 'status')).to eq(400)
     end
   end
 end
