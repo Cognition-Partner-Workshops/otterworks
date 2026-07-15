@@ -3,6 +3,8 @@
 # S3 buckets for file storage, data lake, and audit archive
 # ------------------------------------------------------------------------------
 
+data "aws_caller_identity" "current" {}
+
 locals {
   common_tags = {
     Module  = "storage"
@@ -13,7 +15,7 @@ locals {
 # --- File Storage Bucket ---
 
 resource "aws_s3_bucket" "files" {
-  bucket = "${var.project}-files-${var.environment}"
+  bucket = "${var.project}-files-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = merge(local.common_tags, {
     Service = "file-service"
@@ -51,6 +53,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "files" {
   rule {
     id     = "archive-old-versions"
     status = "Enabled"
+
+    filter {}
+
     noncurrent_version_transition {
       noncurrent_days = 30
       storage_class   = "GLACIER"
@@ -64,7 +69,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "files" {
 # --- Data Lake Bucket ---
 
 resource "aws_s3_bucket" "data_lake" {
-  bucket = "${var.project}-data-lake-${var.environment}"
+  bucket = "${var.project}-data-lake-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = merge(local.common_tags, {
     Service = "analytics-service"
@@ -92,7 +97,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "data_lake" {
 # --- Audit Archive Bucket ---
 
 resource "aws_s3_bucket" "audit_archive" {
-  bucket = "${var.project}-audit-archive-${var.environment}"
+  bucket = "${var.project}-audit-archive-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = merge(local.common_tags, {
     Service = "audit-service"

@@ -23,7 +23,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "otterworks-terraform-state"
+    bucket = "otterworks-terraform-state-622047409253"
     key    = "otterworks/terraform.tfstate"
     region = "us-east-1"
   }
@@ -48,7 +48,7 @@ data "terraform_remote_state" "platform" {
   backend = "s3"
 
   config = {
-    bucket = "otterworks-terraform-state"
+    bucket = "otterworks-terraform-state-622047409253"
     key    = "platform/terraform.tfstate"
     region = "us-east-1"
   }
