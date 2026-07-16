@@ -29,7 +29,7 @@ jobs:
           - { name: analytics-service, context: services/analytics-service }
           - { name: admin-service, context: services/admin-service }
           - { name: audit-service, context: services/audit-service }
-          - { name: web-app, context: frontend/web-app }
+          - { name: web-app, context: frontend/client-app }
           - { name: admin-dashboard, context: frontend/admin-dashboard }
 
     steps:
