@@ -56,7 +56,7 @@ jobs:
             audit-service:
               - 'services/audit-service/**'
             web-app:
-              - 'frontend/web-app/**'
+              - 'frontend/client-app/**'
             admin-dashboard:
               - 'frontend/admin-dashboard/**'
             infrastructure:
@@ -280,7 +280,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend/web-app
+        working-directory: frontend/client-app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
