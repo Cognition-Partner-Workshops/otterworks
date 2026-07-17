@@ -22,6 +22,19 @@ output "rds_endpoint" {
   value       = module.database.rds_endpoint
 }
 
+# --- REPLATFORM: Aurora Serverless v2 (namespace aur1) ---
+# Empty string when enable_aurora_aur1 = false so the before-state output set
+# is effectively unchanged. deploy-dev.sh reads this when DB_BACKEND=aurora.
+output "aurora_aur1_endpoint" {
+  description = "Aurora Serverless v2 (aur1) writer endpoint (host:port); empty when not provisioned"
+  value       = try(module.aurora_aur1[0].aurora_endpoint, "")
+}
+
+output "aurora_aur1_arn" {
+  description = "Aurora Serverless v2 (aur1) cluster ARN; empty when not provisioned"
+  value       = try(module.aurora_aur1[0].aurora_arn, "")
+}
+
 output "dynamodb_file_metadata_table" {
   description = "DynamoDB table name for file metadata"
   value       = module.database.file_metadata_table_name
