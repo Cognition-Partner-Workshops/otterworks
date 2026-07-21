@@ -7,7 +7,7 @@ from typing import Any
 import requests
 import structlog
 
-from app.services.meilisearch_client import MeiliSearchService
+from app.services.backend import SearchBackend
 
 logger = structlog.get_logger()
 
@@ -17,9 +17,9 @@ FETCH_TIMEOUT = 30
 
 
 class Indexer:
-    """Handles document and file indexing into MeiliSearch."""
+    """Handles document and file indexing into the configured search backend."""
 
-    def __init__(self, search_service: MeiliSearchService) -> None:
+    def __init__(self, search_service: SearchBackend) -> None:
         self.search = search_service
 
     def index_document(self, payload: dict[str, Any]) -> dict[str, str]:

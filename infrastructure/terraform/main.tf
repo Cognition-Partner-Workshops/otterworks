@@ -84,6 +84,8 @@ provider "helm" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 # --- Modules ---
 
 module "storage" {
@@ -118,6 +120,28 @@ module "search" {
   vpc_cidr               = local.vpc_cidr
   subnet_ids             = local.private_subnets
   meilisearch_master_key = var.meilisearch_master_key
+}
+
+# Managed/serverless migration target for search-service. Lives ALONGSIDE the
+# self-managed MeiliSearch `search` module above; namespaced (os-demo) and
+# reversible via `terraform destroy -target=module.opensearch`.
+module "opensearch" {
+  source      = "./modules/opensearch"
+  environment = var.environment
+  project     = "otterworks"
+
+  namespace_suffix = var.opensearch_namespace_suffix
+  # Construct the search-service IRSA role ARN from its deterministic name
+  # (see modules/irsa: "${project}-${sa}-${environment}") rather than reading
+  # module.irsa output. This keeps the dependency one-directional
+  # (module.irsa -> module.opensearch) so the IAM statement below can scope
+  # aoss:APIAccessAll to this collection's ARN without a cycle.
+  data_access_principal_arns = [
+    "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/otterworks-search-service-${var.environment}",
+  ]
+  # Public endpoint (reachable + SigV4-gated) only in dev; staging/prod default
+  # to VPC-only (add a VPC endpoint before deploying the migration there).
+  allow_public_access = var.environment == "dev"
 }
 
 module "auth" {
@@ -270,6 +294,16 @@ module "irsa" {
             module.search.meilisearch_ecs_service_arn,
             "${replace(module.search.meilisearch_ecs_cluster_arn, ":cluster/", ":task/")}/*",
           ]
+        },
+        {
+          # OpenSearch Serverless data-plane access (SEARCH_BACKEND=opensearch).
+          # Fine-grained index/document permissions are enforced by the AOSS
+          # data access policy (see module.opensearch); this IAM grant is the
+          # required companion permission, scoped to this migration's collection
+          # ARN (not all collections in the account).
+          Effect   = "Allow"
+          Action   = ["aoss:APIAccessAll"]
+          Resource = [module.opensearch.collection_arn]
         },
       ]
     })

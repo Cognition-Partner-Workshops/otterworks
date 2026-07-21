@@ -9,7 +9,8 @@ import structlog
 from flask import Blueprint, current_app, jsonify, request
 
 from app.api.health import SEARCH_COUNT
-from app.services.meilisearch_client import MeiliSearchService, get_search_analytics
+from app.services.analytics import get_search_analytics
+from app.services.backend import SearchBackend
 
 logger = structlog.get_logger()
 
@@ -36,8 +37,8 @@ def _chaos_active(key: str) -> bool:
         return False
 
 
-def _get_service() -> MeiliSearchService:
-    """Get the shared MeiliSearchService from app config."""
+def _get_service() -> SearchBackend:
+    """Get the shared search backend from app config."""
     return current_app.config["SEARCH_SERVICE"]
 
 
