@@ -19,7 +19,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,6 +73,13 @@ public class ReportController {
     public ResponseEntity<ReportResponse> createReport(
             @Valid @RequestBody ReportRequest request) {
 
+        if (request.getReportName() == null || request.getReportName().trim().isEmpty()
+                || request.getCategory() == null
+                || request.getReportType() == null
+                || request.getRequestedBy() == null || request.getRequestedBy().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
                 request.getReportType(), request.getRequestedBy());
@@ -78,6 +87,15 @@ public class ReportController {
         Report report = reportService.createReport(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(ReportResponse.fromEntity(report));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationException(
+            MethodArgumentNotValidException exception) {
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @GetMapping("/{id}")

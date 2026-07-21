@@ -21,10 +21,10 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -59,23 +59,24 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-
-	// Wrap the default director to forward authenticated user identity.
+	// Forward authenticated user identity after hop-by-hop headers are removed.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
-			userID := claims.Subject
-			if userID == "" {
-				userID = claims.UserID
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(request *httputil.ProxyRequest) {
+			request.SetURL(target)
+			request.SetXForwarded()
+			request.Out.Host = target.Host
+			if claims := middleware.GetJWTClaims(request.In.Context()); claims != nil {
+				userID := claims.Subject
+				if userID == "" {
+					userID = claims.UserID
+				}
+				if userID != "" {
+					request.Out.Header.Set("X-User-ID", userID)
+				}
 			}
-			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
-			}
-		}
+		},
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
