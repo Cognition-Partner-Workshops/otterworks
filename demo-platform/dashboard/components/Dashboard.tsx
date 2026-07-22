@@ -46,7 +46,7 @@ export default function Dashboard() {
     <div className="mx-auto max-w-7xl px-4 py-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">OtterWorks Demo Ops</h1>
+          <h1 className="text-xl font-semibold">Careotter Demo Ops</h1>
           <p className="text-sm text-slate-500">Ephemeral demo tenant control plane</p>
         </div>
         <div className="flex items-center gap-2">

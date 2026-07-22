@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Dev Spin-up (companion to teardown-dev.sh)
+# Careotter - Dev Spin-up (companion to teardown-dev.sh)
 #
 # Brings the environment back after a teardown:
 #   1. Re-applies the platform layer (VPC/EKS/ECR) -> recreates the EKS cluster

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Bug-Injection Catalog
+# Careotter Bug-Injection Catalog
 #
 # Maps a demo scenario -> a per-tenant variant. Every scenario is scoped to ONE
 # tenant namespace and NEVER mutates the golden app (main) or other tenants.

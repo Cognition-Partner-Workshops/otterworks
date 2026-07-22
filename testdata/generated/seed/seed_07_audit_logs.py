@@ -127,7 +127,7 @@ BROWSER_UAS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
 ]
 
-SYSTEM_UA = "OtterWorks-API/1.0"
+SYSTEM_UA = "Careotter-API/1.0"
 
 
 def seed(cur, ns: str) -> int:

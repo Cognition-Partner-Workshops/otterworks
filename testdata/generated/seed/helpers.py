@@ -1,5 +1,5 @@
 """
-Shared helpers for OtterWorks bulk seed data generation.
+Shared helpers for Careotter bulk seed data generation.
 
 Provides deterministic UUID generation, shared constants, and DB connection
 so all 10 data modules produce referentially-consistent data without needing

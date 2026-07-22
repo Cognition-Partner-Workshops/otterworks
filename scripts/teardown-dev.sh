@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Dev Teardown (cost saver)
+# Careotter - Dev Teardown (cost saver)
 #
 # Default mode ("keep data"): destroys ONLY the expensive EKS compute
 #   (control plane ~$73/mo + nodes) via a targeted destroy of the EKS module.

@@ -61,7 +61,7 @@ class DevinSessionService
 
     def build_prompt(incident)
       <<~PROMPT
-        You are investigating an incident in the OtterWorks platform, a collaborative file storage and document editing system (similar to Google Drive + Google Docs) built as a polyglot microservices architecture.
+        You are investigating an incident in the Careotter platform, a collaborative file storage and document editing system (similar to Google Drive + Google Docs) built as a polyglot microservices architecture.
 
         ## Incident Details
         - **Title**: #{incident.title}
@@ -69,7 +69,7 @@ class DevinSessionService
         - **Affected Service**: #{incident.affected_service.presence || 'Unknown'}
         - **Description**: #{incident.description}
 
-        ## OtterWorks Architecture
+        ## Careotter Architecture
         The platform has 11 microservices:
         - API Gateway (Go/Chi, port 8080) - routing, rate limiting, JWT validation
         - Auth Service (Java/Spring Boot, port 8081) - authentication, RBAC

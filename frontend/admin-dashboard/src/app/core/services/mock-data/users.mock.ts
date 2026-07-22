@@ -3,7 +3,7 @@ import { User, UserActivity } from '../../models/user.model';
 export const MOCK_USERS: User[] = [
   {
     id: 'usr-001',
-    email: 'alice.johnson@otterworks.io',
+    email: 'alice.johnson@careotter.io',
     displayName: 'Alice Johnson',
     role: 'admin',
     status: 'active',
@@ -16,7 +16,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-002',
-    email: 'bob.martinez@otterworks.io',
+    email: 'bob.martinez@careotter.io',
     displayName: 'Bob Martinez',
     role: 'editor',
     status: 'active',
@@ -29,7 +29,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-003',
-    email: 'carol.chen@otterworks.io',
+    email: 'carol.chen@careotter.io',
     displayName: 'Carol Chen',
     role: 'editor',
     status: 'active',
@@ -42,7 +42,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-004',
-    email: 'david.kim@otterworks.io',
+    email: 'david.kim@careotter.io',
     displayName: 'David Kim',
     role: 'viewer',
     status: 'suspended',
@@ -55,7 +55,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-005',
-    email: 'emily.davis@otterworks.io',
+    email: 'emily.davis@careotter.io',
     displayName: 'Emily Davis',
     role: 'editor',
     status: 'active',
@@ -68,7 +68,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-006',
-    email: 'frank.wilson@otterworks.io',
+    email: 'frank.wilson@careotter.io',
     displayName: 'Frank Wilson',
     role: 'admin',
     status: 'active',
@@ -81,7 +81,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-007',
-    email: 'grace.lee@otterworks.io',
+    email: 'grace.lee@careotter.io',
     displayName: 'Grace Lee',
     role: 'viewer',
     status: 'pending',
@@ -94,7 +94,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-008',
-    email: 'henry.patel@otterworks.io',
+    email: 'henry.patel@careotter.io',
     displayName: 'Henry Patel',
     role: 'editor',
     status: 'active',
@@ -107,7 +107,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-009',
-    email: 'irene.garcia@otterworks.io',
+    email: 'irene.garcia@careotter.io',
     displayName: 'Irene Garcia',
     role: 'editor',
     status: 'active',
@@ -120,7 +120,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-010',
-    email: 'james.thompson@otterworks.io',
+    email: 'james.thompson@careotter.io',
     displayName: 'James Thompson',
     role: 'viewer',
     status: 'active',

@@ -3,7 +3,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: otterworks-chaos-scenarios
-    folder: OtterWorks
+    folder: Careotter
     interval: 30s
     rules:
 

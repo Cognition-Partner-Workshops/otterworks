@@ -1,4 +1,4 @@
-# AGENTS.md — OtterWorks
+# AGENTS.md — Careotter
 
 Guidance for AI agents (and humans) working in this repo.
 
@@ -29,7 +29,7 @@ Guidance for AI agents (and humans) working in this repo.
 
 Each demo runs as an **ephemeral tenant** on the shared EKS cluster (`otterworks-dev`).
 `scripts/deploy-tenant.sh <ATTENDEE_ID>` stamps the golden app into a dedicated namespace so
-many attendees run "their own OtterWorks" side by side without touching each other or `main`.
+many attendees run "their own Careotter" side by side without touching each other or `main`.
 Full operator detail lives in `docs/MULTI-TENANT-DEMO-PLAN.md` (design) and
 `docs/MULTI-TENANT-RUNBOOK.md` (step-by-step); this section is the mental model you need
 before building a bespoke variant.

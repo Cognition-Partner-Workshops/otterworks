@@ -1,7 +1,7 @@
 {
   "id": null,
   "uid": "otterworks-chaos-scenarios",
-  "title": "OtterWorks Chaos Scenarios",
+  "title": "Careotter Chaos Scenarios",
   "description": "Real-time monitoring of chaos engineering scenarios - trigger from admin dashboard and observe failures here",
   "tags": [
     "otterworks",

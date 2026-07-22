@@ -1,4 +1,4 @@
-# OtterWorks Flow Guide
+# Careotter Flow Guide
 
 This document maps the main system flows from simple to complex, and shows how services communicate in each path.
 

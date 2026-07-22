@@ -1,4 +1,4 @@
-# Trace Sampling Configuration for OtterWorks
+# Trace Sampling Configuration for Careotter
 #
 # This file documents the sampling policies applied by the OpenTelemetry
 # Collector tail_sampling processor. The actual configuration lives in

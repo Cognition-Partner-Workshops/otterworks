@@ -1,4 +1,4 @@
-# OtterWorks Web App
+# Careotter Web App
 
 React 18 single-page application built with Vite, served by nginx in production,
 wrapped by Capacitor to produce the native Android and iOS apps, and by Electron

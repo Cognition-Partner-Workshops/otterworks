@@ -1,10 +1,10 @@
-# OtterWorks — SDLC Tool-Coverage Reference
+# Careotter — SDLC Tool-Coverage Reference
 
-> **Purpose.** OtterWorks is a polyglot microservices platform (11 backend services across 8
+> **Purpose.** Careotter is a polyglot microservices platform (11 backend services across 8
 > languages + 2 frontends) built to exercise a realistic enterprise SDLC. This document
 > inventories **which software-development-lifecycle capabilities the repo actually demonstrates
 > today** versus **what is missing or stubbed**, so it can be used as a demo reference when
-> mapping OtterWorks to customer stories.
+> mapping Careotter to customer stories.
 >
 > Findings are based on the actual repo contents (file paths cited) plus a live end-to-end AWS
 > deployment performed against account `<AWS_ACCOUNT_ID>` / `us-east-1` (EKS `otterworks-dev`, v1.32).
@@ -353,7 +353,7 @@ shared-services EKS + Airflow/Spark; actual is standalone `platform/terraform` +
 | **Legacy modernization** | §13, §2 (report-service Java 8) | Cron ETL and the intentionally-legacy `report-service` are ready-made "before" states |
 | **Analytics lakehouse re-architecture** | §13 | Durable PostgreSQL analytics store is the "before" for an S3 + Apache Iceberg (Glue/Athena) migration, with old-vs-new reconciliation as continuous validation |
 
-## Top gaps to fix before OtterWorks is a clean all-around reference
+## Top gaps to fix before Careotter is a clean all-around reference
 
 1. **Finish the CD wiring.** This PR made charts installable (CRD-safe ServiceMonitor) and added
    optional ConfigMap/Secret templates, proving api-gateway + auth-service reachable. Still the

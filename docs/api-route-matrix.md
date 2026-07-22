@@ -1,4 +1,4 @@
-# OtterWorks API Route Matrix
+# Careotter API Route Matrix
 
 This matrix captures the primary API endpoints used to design and expand the black-box API flow tests in `tests/api`.
 

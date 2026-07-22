@@ -43,7 +43,7 @@ export default function LoginPage() {
         onSubmit={onSubmit}
         className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold">OtterWorks Demo Ops</h1>
+        <h1 className="text-xl font-semibold">Careotter Demo Ops</h1>
         <p className="mt-1 text-sm text-slate-500">Enter the facilitator passcode.</p>
 
         <label htmlFor="passcode" className="mt-6 block text-sm font-medium">

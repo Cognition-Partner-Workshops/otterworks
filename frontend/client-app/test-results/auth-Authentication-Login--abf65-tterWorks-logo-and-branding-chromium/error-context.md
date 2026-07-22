@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: auth.spec.ts >> Authentication >> Login >> displays OtterWorks logo and branding
+- Name: auth.spec.ts >> Authentication >> Login >> displays Careotter logo and branding
 - Location: e2e/auth.spec.ts:116:9
 
 # Error details

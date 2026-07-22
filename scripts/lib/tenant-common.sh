@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks multi-tenant demo — shared library
+# Careotter multi-tenant demo — shared library
 #
 # Sourced by deploy-tenant.sh / teardown-tenant.sh / tenant-platform-baseline.sh.
 # Holds the naming rules, Terraform-output loading and per-service Helm wiring

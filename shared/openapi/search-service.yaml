@@ -1,12 +1,12 @@
 openapi: "3.0.3"
 info:
-  title: OtterWorks Search Service
+  title: Careotter Search Service
   description: |
     Full-text search and indexing service backed by MeiliSearch.
     Results are scoped per-user via the X-User-ID header set by the API gateway.
   version: "1.0.0"
   contact:
-    name: OtterWorks Platform Team
+    name: Careotter Platform Team
 
 servers:
   - url: http://localhost:8087

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Database Module
+# Careotter Database Module
 # RDS PostgreSQL and DynamoDB tables
 # ------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ resource "aws_db_subnet_group" "main" {
 
 resource "aws_security_group" "rds" {
   name        = "${var.project}-rds-${var.environment}"
-  description = "Security group for OtterWorks RDS PostgreSQL"
+  description = "Security group for Careotter RDS PostgreSQL"
   vpc_id      = var.vpc_id
 
   ingress {

@@ -1,4 +1,4 @@
-"""OtterWorks Document Service - FastAPI application."""
+"""Careotter Document Service - FastAPI application."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -48,7 +48,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="OtterWorks Document Service",
+    title="Careotter Document Service",
     description="Document CRUD, versioning, and content management",
     version=settings.app_version,
     docs_url="/docs",

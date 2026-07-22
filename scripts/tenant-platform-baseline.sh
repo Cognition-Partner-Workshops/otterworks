@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Shared Platform Baseline for Multi-Tenant Demos (run ONCE)
+# Careotter - Shared Platform Baseline for Multi-Tenant Demos (run ONCE)
 #
 # These are SHARED, cluster-wide pieces consumed by every tenant — conceptually
 # they belong in platform-engineering-shared-services and must NOT be duplicated

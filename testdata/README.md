@@ -1,13 +1,13 @@
 # Synthetic Test-Data Generation Framework
 
-Generate and validate synthetic data for OtterWorks lower environments (dev, QA,
+Generate and validate synthetic data for Careotter lower environments (dev, QA,
 staging, load-test) driven by **GitHub Issue acceptance criteria**.
 
 ## How It Works
 
 1. A GitHub Issue describes a user story with acceptance criteria (row counts,
    distributions, relationships, activity patterns).
-2. Devin reads the issue, introspects the OtterWorks schema, and generates
+2. Devin reads the issue, introspects the Careotter schema, and generates
    Python scripts in `testdata/generated/<namespace>/`.
 3. The scripts create a namespaced Postgres schema (`otterworks_<ns>`), generate
    data, and load it.
@@ -17,7 +17,7 @@ staging, load-test) driven by **GitHub Issue acceptance criteria**.
 ## Quick Start
 
 ```bash
-# Prerequisites: running Postgres (make infra-up) with OtterWorks schemas
+# Prerequisites: running Postgres (make infra-up) with Careotter schemas
 export DB_HOST=localhost DB_PORT=5432 DB_NAME=otterworks DB_USER=otterworks DB_PASSWORD=otterworks_dev
 
 # Generate data for a namespace (produced by Devin from a GH Issue)
@@ -56,7 +56,7 @@ The harness runs two layers of checks:
 
 | Category | What it checks |
 |----------|----------------|
-| Table existence | All core OtterWorks tables present in the namespace |
+| Table existence | All core Careotter tables present in the namespace |
 | FK integrity | `user_roles`, `user_settings`, `refresh_tokens`, `storage_quotas` reference valid parents |
 | Temporal consistency | Audit logs do not reference resources created after the log timestamp |
 | Enum values | Roles, statuses, severities, tiers contain only valid values |

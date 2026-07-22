@@ -8,7 +8,7 @@
 
 ## Symptoms
 
-- The affected service tile turns red on the OtterWorks Overview dashboard.
+- The affected service tile turns red on the Careotter Overview dashboard.
 - Dependent services return 502/503 errors when routing requests to the downed service.
 - Health check endpoint returns non-200 or times out.
 

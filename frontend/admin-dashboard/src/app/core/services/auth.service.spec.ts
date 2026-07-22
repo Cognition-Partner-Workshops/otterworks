@@ -32,26 +32,26 @@ describe('AuthService', () => {
 
   it('should login successfully with valid credentials', fakeAsync(() => {
     let loggedInUser: AuthUser | undefined;
-    service.login('admin@otterworks.io', 'admin123').subscribe(user => {
+    service.login('admin@careotter.io', 'admin123').subscribe(user => {
       loggedInUser = user;
     });
     tick(900);
     expect(loggedInUser).toBeTruthy();
-    expect(loggedInUser!.email).toBe('admin@otterworks.io');
+    expect(loggedInUser!.email).toBe('admin@careotter.io');
     expect(loggedInUser!.role).toBe('admin');
     expect(service.isAuthenticated).toBeTrue();
     expect(service.currentUser).toBeTruthy();
   }));
 
   it('should store token in localStorage after login', fakeAsync(() => {
-    service.login('admin@otterworks.io', 'admin123').subscribe();
+    service.login('admin@careotter.io', 'admin123').subscribe();
     tick(900);
     expect(localStorage.getItem('ow_admin_token')).toBeTruthy();
     expect(localStorage.getItem('ow_admin_user')).toBeTruthy();
   }));
 
   it('should clear auth state on logout', fakeAsync(() => {
-    service.login('admin@otterworks.io', 'admin123').subscribe();
+    service.login('admin@careotter.io', 'admin123').subscribe();
     tick(900);
     spyOn(router, 'navigate');
     service.logout();
@@ -64,7 +64,7 @@ describe('AuthService', () => {
   it('should emit user on currentUser$ observable', fakeAsync(() => {
     const emitted: (AuthUser | null)[] = [];
     service.currentUser$.subscribe(user => emitted.push(user));
-    service.login('admin@otterworks.io', 'admin123').subscribe();
+    service.login('admin@careotter.io', 'admin123').subscribe();
     tick(900);
     expect(emitted.length).toBeGreaterThanOrEqual(2);
     expect(emitted[emitted.length - 1]).toBeTruthy();
@@ -72,7 +72,7 @@ describe('AuthService', () => {
 
   it('should return token from getToken()', fakeAsync(() => {
     expect(service.getToken()).toBeNull();
-    service.login('admin@otterworks.io', 'admin123').subscribe();
+    service.login('admin@careotter.io', 'admin123').subscribe();
     tick(900);
     expect(service.getToken()).toBeTruthy();
     expect(service.getToken()!.startsWith('mock-jwt-token-')).toBeTrue();
@@ -80,7 +80,7 @@ describe('AuthService', () => {
 
   it('should reject login with empty password', fakeAsync(() => {
     let error: Error | undefined;
-    service.login('admin@otterworks.io', '').subscribe({
+    service.login('admin@careotter.io', '').subscribe({
       error: (e: Error) => { error = e; },
     });
     tick(900);

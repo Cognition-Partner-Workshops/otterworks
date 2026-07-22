@@ -1,4 +1,4 @@
-# Fluent Bit Configuration for OtterWorks
+# Fluent Bit Configuration for Careotter
 #
 # Collects JSON-formatted logs from all services, enriches them
 # with service metadata, and forwards to CloudWatch Logs.

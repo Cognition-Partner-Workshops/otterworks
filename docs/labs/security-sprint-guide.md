@@ -1,6 +1,6 @@
 # Security Sprint Guide
 
-This guide covers how to run security scans across OtterWorks services, interpret the results, triage findings, and verify that suppressions in `.trivyignore` are appropriate.
+This guide covers how to run security scans across Careotter services, interpret the results, triage findings, and verify that suppressions in `.trivyignore` are appropriate.
 
 ## Running Scans
 

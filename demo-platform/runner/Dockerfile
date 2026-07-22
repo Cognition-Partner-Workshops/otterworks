@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Demo Platform — runner image (otterworks/demo-runner)
+# Careotter Demo Platform — runner image (otterworks/demo-runner)
 #
 # Launched as a Kubernetes Job by the ops dashboard to run ONE tenant op
 # (deploy / teardown / inject / reset / reap). Carries the repo + a full CLI

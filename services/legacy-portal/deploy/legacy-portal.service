@@ -14,7 +14,7 @@
 #     SPRING_DATASOURCE_USERNAME=legacyportal
 #     SPRING_DATASOURCE_PASSWORD=... (do not commit real secrets)
 [Unit]
-Description=OtterWorks Legacy Portal (modular monolith)
+Description=Careotter Legacy Portal (modular monolith)
 After=network.target
 
 [Service]

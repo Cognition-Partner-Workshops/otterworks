@@ -3,7 +3,7 @@
 # dependencies = ["psycopg2-binary", "bcrypt"]
 # ///
 """
-OtterWorks admin-service seed script.
+Careotter admin-service seed script.
 
 Populates the admin-service PostgreSQL database with 10 realistic users,
 storage quotas, audit log entries, feature flags, and announcements so the
@@ -417,7 +417,7 @@ def seed_audit_logs(cur) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    print("\nOtterWorks admin-service seed script")
+    print("\nCareotter admin-service seed script")
     print(f"  Target: {DB_CONFIG['user']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}\n")
 
     try:

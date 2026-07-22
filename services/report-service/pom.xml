@@ -16,7 +16,7 @@
     <artifactId>report-service</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <name>OtterWorks Report Service</name>
+    <name>Careotter Report Service</name>
     <description>Legacy report generation service — PDF, CSV, Excel exports from analytics and audit data</description>
 
     <properties>

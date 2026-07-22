@@ -60,6 +60,6 @@ describe('SidebarComponent', () => {
 
   it('should render logo text when expanded', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('OtterWorks');
+    expect(compiled.textContent).toContain('Careotter');
   });
 });

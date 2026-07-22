@@ -7,15 +7,15 @@ export default function Home() {
         <div className="relative max-w-5xl mx-auto px-4 py-24 sm:py-32 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
-              <span className="text-white font-bold text-xl">OW</span>
+              <span className="text-white font-bold text-xl">CO</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white">
-              OtterWorks
+              Careotter
             </h1>
           </div>
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Collaborative document and file management for modern teams. Store,
-            share, and edit together in real time.
+            Patient records management for modern medical practices. Store,
+            organize, and access patient charts securely, together in real time.
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
@@ -37,32 +37,32 @@ export default function Home() {
       {/* Features */}
       <div className="max-w-5xl mx-auto px-4 py-20">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-12">
-          Everything you need for team collaboration
+          Everything your practice needs to manage patient records
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
-            title="File Management"
-            description="Upload, organize, and share files with drag-and-drop simplicity. Folder trees, version history, and instant preview."
+            title="Patient Records"
+            description="Upload, organize, and share patient charts with drag-and-drop simplicity. Folder trees, version history, and instant preview."
           />
           <FeatureCard
-            title="Document Editing"
-            description="Rich text editor with real-time collaboration. See cursors, track changes, and work together seamlessly."
+            title="Chart Editing"
+            description="Rich clinical note editor with real-time collaboration. See cursors, track changes, and document care together."
           />
           <FeatureCard
-            title="Real-time Collaboration"
-            description="Work with your team simultaneously. See who is online, share instantly, and stay in sync."
+            title="Care Team Collaboration"
+            description="Work with your care team simultaneously. See who is online, share instantly, and stay in sync."
           />
           <FeatureCard
             title="Powerful Search"
-            description="Find anything in seconds. Full-text search across files and documents with smart filters."
+            description="Find any patient or record in seconds. Full-text search across charts and documents with smart filters."
           />
           <FeatureCard
-            title="Secure Sharing"
-            description="Granular permissions for every file and document. Control who can view, edit, or manage your content."
+            title="HIPAA-Ready Sharing"
+            description="Granular permissions for every chart and document. Control who can view, edit, or manage patient information."
           />
           <FeatureCard
             title="Instant Notifications"
-            description="Stay informed with real-time notifications for shares, comments, mentions, and edits."
+            description="Stay informed with real-time notifications for shares, comments, mentions, and updates."
           />
         </div>
       </div>
@@ -72,12 +72,12 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 py-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-otter-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-[10px]">OW</span>
+              <span className="text-white font-bold text-[10px]">CO</span>
             </div>
-            <span className="text-sm text-gray-500">OtterWorks</span>
+            <span className="text-sm text-gray-500">Careotter</span>
           </div>
           <p className="text-xs text-gray-400">
-            Collaborative document &amp; file management platform
+            Patient records management for doctor offices
           </p>
         </div>
       </footer>

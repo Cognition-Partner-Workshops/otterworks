@@ -1,8 +1,8 @@
-# OtterWorks ETL Migration Guide: Legacy Cron Scripts to Apache Airflow
+# Careotter ETL Migration Guide: Legacy Cron Scripts to Apache Airflow
 
 ## Current State (Legacy)
 
-The OtterWorks ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a `config.ini` file that contains hardcoded AWS credentials, database passwords, and service URLs in plaintext.
+The Careotter ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a `config.ini` file that contains hardcoded AWS credentials, database passwords, and service URLs in plaintext.
 
 ### Problems with the Current Implementation
 

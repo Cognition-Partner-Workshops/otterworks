@@ -1,6 +1,6 @@
-# OtterWorks Architecture
+# Careotter Architecture
 
-OtterWorks is a collaborative file storage and document editing platform (functionally equivalent to Google Drive + Google Docs). It is built as a polyglot microservices system to demonstrate a realistic enterprise technology stack with intentional variety across languages, frameworks, and infrastructure patterns.
+Careotter is a collaborative file storage and document editing platform (functionally equivalent to Google Drive + Google Docs). It is built as a polyglot microservices system to demonstrate a realistic enterprise technology stack with intentional variety across languages, frameworks, and infrastructure patterns.
 
 ## System Overview
 

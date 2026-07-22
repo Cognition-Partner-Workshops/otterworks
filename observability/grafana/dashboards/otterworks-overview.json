@@ -1,8 +1,8 @@
 {
   "id": null,
   "uid": "otterworks-overview",
-  "title": "OtterWorks Overview",
-  "description": "High-level overview of all OtterWorks services, request rates, error rates, and key business metrics.",
+  "title": "Careotter Overview",
+  "description": "High-level overview of all Careotter services, request rates, error rates, and key business metrics.",
   "tags": [
     "otterworks",
     "overview"

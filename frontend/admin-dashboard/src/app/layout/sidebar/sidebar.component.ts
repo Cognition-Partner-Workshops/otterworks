@@ -20,7 +20,7 @@ interface NavItem {
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
           <mat-icon class="logo-icon">pets</mat-icon>
-          <span class="logo-text">OtterWorks</span>
+          <span class="logo-text">Careotter</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
           <mat-icon class="logo-icon">pets</mat-icon>

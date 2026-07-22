@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { startAppServer, AppServer } from "./server";
 
-// OtterWorks desktop shell. Serves the client-app web build (`../dist`) from an
+// Careotter desktop shell. Serves the client-app web build (`../dist`) from an
 // embedded local server that also proxies /api/v1/* to the API gateway - the
 // same same-origin model used by the Vite dev server and the production nginx
 // container - then points a BrowserWindow at it.
@@ -47,7 +47,7 @@ function createWindow(url: string): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    title: "OtterWorks",
+    title: "Careotter",
     ...(HAS_DEV_ICON ? { icon: DEV_ICON } : {}),
     webPreferences: {
       contextIsolation: true,
@@ -123,7 +123,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() =>
     start().catch((err) => {
-      dialog.showErrorBox("OtterWorks failed to start", err.message);
+      dialog.showErrorBox("Careotter failed to start", err.message);
       app.exit(1);
     })
   );

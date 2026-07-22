@@ -1,4 +1,4 @@
-# OtterWorks Demo Platform — Design (Multi-Tenant Ops Dashboard)
+# Careotter Demo Platform — Design (Multi-Tenant Ops Dashboard)
 
 Status: DRAFT for review. Grounded in the **actual** deployed infrastructure discovered on
 2026-07-16 (not the idealized platform template). Decisions needed from you are in §11.

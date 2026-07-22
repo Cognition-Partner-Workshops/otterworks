@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Per-Tenant Bug Injection
+# Careotter - Per-Tenant Bug Injection
 #
 # Applies a scenario from scripts/bug-catalog.yaml to a SINGLE tenant namespace
 # without touching the golden app or any other tenant. See the catalog for the

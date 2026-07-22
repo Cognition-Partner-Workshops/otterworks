@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Platform - VPC Module
+# Careotter Platform - VPC Module
 # Standalone VPC with public and private subnets for EKS
 # ------------------------------------------------------------------------------
 

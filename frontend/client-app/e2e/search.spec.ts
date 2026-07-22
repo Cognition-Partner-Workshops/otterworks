@@ -19,7 +19,7 @@ test.describe("Search Page", () => {
   });
 
   test("shows empty state before searching", async ({ page }) => {
-    await expect(page.getByText("Search OtterWorks")).toBeVisible({
+    await expect(page.getByText("Search Careotter")).toBeVisible({
       timeout: 10_000,
     });
     await expect(

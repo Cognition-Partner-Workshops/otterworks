@@ -1,4 +1,4 @@
-# OtterWorks Exploratory QA Report
+# Careotter Exploratory QA Report
 
 Test date: May 1, 2026  
 Scope: Local app running via `make up`  

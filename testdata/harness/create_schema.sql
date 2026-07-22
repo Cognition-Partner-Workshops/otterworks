@@ -1,6 +1,6 @@
 -- Create a namespaced schema for synthetic test data.
 -- Usage: psql -f create_schema.sql -v ns=dev
--- Result: schema "otterworks_dev" with all core OtterWorks tables.
+-- Result: schema "otterworks_dev" with all core Careotter tables.
 
 \set schema_name otterworks_:ns
 

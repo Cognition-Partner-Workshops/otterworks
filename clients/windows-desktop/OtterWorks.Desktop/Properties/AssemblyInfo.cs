@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 using System.Windows;
 
 [assembly: AssemblyTitle("OtterWorks.Desktop")]
-[assembly: AssemblyDescription("Native Windows desktop client for the OtterWorks platform (WPF, .NET Framework 4.8)")]
+[assembly: AssemblyDescription("Native Windows desktop client for the Careotter platform (WPF, .NET Framework 4.8)")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OtterWorks")]
+[assembly: AssemblyCompany("Careotter")]
 [assembly: AssemblyProduct("OtterWorks.Desktop")]
-[assembly: AssemblyCopyright("Copyright © OtterWorks")]
+[assembly: AssemblyCopyright("Copyright © Careotter")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]

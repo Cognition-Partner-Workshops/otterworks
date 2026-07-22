@@ -1,7 +1,7 @@
 {
   "name": "@otterworks/collab-service",
   "version": "0.1.0",
-  "description": "OtterWorks Collaboration Service - Real-time collaborative editing via CRDT",
+  "description": "Careotter Collaboration Service - Real-time collaborative editing via CRDT",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

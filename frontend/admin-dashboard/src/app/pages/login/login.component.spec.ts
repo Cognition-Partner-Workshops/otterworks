@@ -50,6 +50,6 @@ describe('LoginComponent', () => {
 
   it('should display app title', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('OtterWorks');
+    expect(compiled.textContent).toContain('Careotter');
   });
 });

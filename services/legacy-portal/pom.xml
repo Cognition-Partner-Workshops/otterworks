@@ -16,7 +16,7 @@
     <artifactId>legacy-portal</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <name>OtterWorks Legacy Portal</name>
+    <name>Careotter Legacy Portal</name>
     <description>Legacy modular monolith bundling three bounded contexts (announcements,
         user-preferences, feedback) in one deployable. Runs on a VM today — a rehost and
         monolith-decomposition "before" state.</description>

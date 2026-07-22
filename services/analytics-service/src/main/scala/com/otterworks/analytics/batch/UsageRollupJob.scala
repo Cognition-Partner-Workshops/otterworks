@@ -12,7 +12,7 @@ import java.time.Instant
 /**
  * Nightly usage-rollup batch job (LEGACY "before" state).
  *
- * This is the scheduled, timer-driven batch process that OtterWorks runs to
+ * This is the scheduled, timer-driven batch process that Careotter runs to
  * aggregate the previous day's raw analytics events into per-day usage rollups.
  * It runs as a Kubernetes CronJob (`infrastructure/helm/analytics-service`,
  * `templates/cronjob.yaml`) and can be run locally via `make batch-usage-rollup`

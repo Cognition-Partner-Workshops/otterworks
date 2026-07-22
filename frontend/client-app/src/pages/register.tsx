@@ -61,9 +61,9 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <div className="w-10 h-10 bg-otter-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">OW</span>
+              <span className="text-white font-bold text-lg">CO</span>
             </div>
-            <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
+            <span className="text-2xl font-bold text-gray-900">Careotter</span>
           </Link>
           <p className="text-gray-500 mt-2">Create your account</p>
         </div>

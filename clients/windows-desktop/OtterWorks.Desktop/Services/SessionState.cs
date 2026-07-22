@@ -23,7 +23,7 @@ namespace OtterWorks.Desktop.Services
             _persist = persist;
             string dir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "OtterWorks");
+                "Careotter");
             _storePath = Path.Combine(dir, "session.dat");
         }
 

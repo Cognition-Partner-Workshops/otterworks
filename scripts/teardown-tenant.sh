@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Per-Tenant Teardown
+# Careotter - Per-Tenant Teardown
 #
 # Deletes an ephemeral tenant created by deploy-tenant.sh:
 #   1. (unless --keep-db) drops the per-tenant RDS database otterworks_<ID>

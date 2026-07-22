@@ -1,12 +1,12 @@
 Feature: Landing Page
   As a visitor
-  I want to see the OtterWorks landing page
+  I want to see the Careotter landing page
   So that I can learn about the product and sign up
 
   Scenario: Visitor sees the hero section
     Given I am on the landing page
-    Then I should see the heading "OtterWorks"
-    And I should see the text "Collaborative document and file management"
+    Then I should see the heading "Careotter"
+    And I should see the text "Patient records management for modern medical practices"
 
   Scenario: Visitor sees navigation CTAs
     Given I am on the landing page
@@ -15,11 +15,11 @@ Feature: Landing Page
 
   Scenario: Visitor sees all feature cards
     Given I am on the landing page
-    Then I should see the text "File Management"
-    And I should see the text "Document Editing"
-    And I should see the text "Real-time Collaboration"
+    Then I should see the text "Patient Records"
+    And I should see the text "Chart Editing"
+    And I should see the text "Care Team Collaboration"
     And I should see the text "Powerful Search"
-    And I should see the text "Secure Sharing"
+    And I should see the text "HIPAA-Ready Sharing"
     And I should see the text "Instant Notifications"
 
   Scenario: Sign In link navigates to login
@@ -34,4 +34,4 @@ Feature: Landing Page
 
   Scenario: Footer is visible
     Given I am on the landing page
-    Then I should see the text "Collaborative document & file management platform"
+    Then I should see the text "Patient records management for doctor offices"

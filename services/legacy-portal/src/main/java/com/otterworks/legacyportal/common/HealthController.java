@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Lightweight health endpoint matching the {@code /health} convention used by the other OtterWorks
+ * Lightweight health endpoint matching the {@code /health} convention used by the other Careotter
  * services (Actuator's {@code /actuator/health} is also enabled).
  */
 @RestController

@@ -16,7 +16,7 @@ variable "environment" {
 }
 
 variable "namespace" {
-  description = "Kubernetes namespace for OtterWorks services"
+  description = "Kubernetes namespace for Careotter services"
   type        = string
   default     = "otterworks"
 }

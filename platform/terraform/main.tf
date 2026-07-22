@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Platform - Root Module
+# Careotter Platform - Root Module
 # Provisions standalone VPC, EKS cluster, and ECR repositories
 # No dependency on platform-engineering shared services
 # ------------------------------------------------------------------------------
