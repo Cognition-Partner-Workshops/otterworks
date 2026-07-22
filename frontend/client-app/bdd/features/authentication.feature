@@ -1,6 +1,6 @@
 Feature: Authentication
   As a user
-  I want to register and log in to OtterWorks
+  I want to register and log in to Careotter
   So that I can access my documents and files
 
   Scenario: Registration form renders correctly

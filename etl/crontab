@@ -1,4 +1,4 @@
-# OtterWorks ETL schedules — managed manually
+# Careotter ETL schedules — managed manually
 # Contact: data-team@otterworks.dev (Jake left in 2020, ask Sarah)
 0 2 * * * /opt/etl/run.sh analytics_daily.py >> /var/log/etl/analytics.log 2>&1
 0 3 * * 0 /opt/etl/run.sh audit_archive_weekly.py >> /var/log/etl/audit.log 2>&1

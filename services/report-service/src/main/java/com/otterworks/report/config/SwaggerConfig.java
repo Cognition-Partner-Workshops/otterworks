@@ -40,10 +40,10 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("OtterWorks Report Service API")
+                .title("Careotter Report Service API")
                 .description("Legacy report generation service for PDF, CSV, and Excel exports")
                 .version("0.1.0")
-                .contact(new Contact("OtterWorks Engineering", "", "engineering@otterworks.example.com"))
+                .contact(new Contact("Careotter Engineering", "", "engineering@otterworks.example.com"))
                 .build();
     }
 }

@@ -6,9 +6,9 @@ test.describe("Landing Page", () => {
   });
 
   test("displays the hero section with branding", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "OtterWorks" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Careotter" })).toBeVisible();
     await expect(
-      page.getByText("Collaborative document and file management")
+      page.getByText("Patient records management for modern medical practices")
     ).toBeVisible();
   });
 
@@ -21,11 +21,11 @@ test.describe("Landing Page", () => {
 
   test("renders all six feature cards", async ({ page }) => {
     const features = [
-      "File Management",
-      "Document Editing",
-      "Real-time Collaboration",
+      "Patient Records",
+      "Chart Editing",
+      "Care Team Collaboration",
       "Powerful Search",
-      "Secure Sharing",
+      "HIPAA-Ready Sharing",
       "Instant Notifications",
     ];
     for (const title of features) {
@@ -45,7 +45,7 @@ test.describe("Landing Page", () => {
 
   test("footer is visible with copyright text", async ({ page }) => {
     await expect(
-      page.getByText("Collaborative document & file management platform")
+      page.getByText("Patient records management for doctor offices")
     ).toBeVisible();
   });
 });

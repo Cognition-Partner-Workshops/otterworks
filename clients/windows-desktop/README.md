@@ -1,12 +1,12 @@
-# OtterWorks Desktop (Windows)
+# Careotter Desktop (Windows)
 
-A native **Windows desktop client** for the OtterWorks platform, built with **C# on .NET
-Framework 4.8** using **WPF** and the **MVVM** pattern. It talks to the OtterWorks REST API
+A native **Windows desktop client** for the Careotter platform, built with **C# on .NET
+Framework 4.8** using **WPF** and the **MVVM** pattern. It talks to the Careotter REST API
 through the API gateway using `HttpClient`.
 
 > **Why .NET Framework 4.8?** This client is intentionally built on the *legacy* .NET
 > Framework (classic `.csproj` + `packages.config` + `Newtonsoft.Json`) so it can serve as a
-> realistic **framework-upgrade target** (net48 → .NET 8 / WinUI) alongside OtterWorks' other
+> realistic **framework-upgrade target** (net48 → .NET 8 / WinUI) alongside Careotter's other
 > upgrade candidates (e.g. the Java 8 `report-service`). It mirrors the core flow of the
 > `frontend/web-app` React client.
 
@@ -73,11 +73,11 @@ executable on build):
 }
 ```
 
-- `apiBaseUrl` — the OtterWorks API gateway base. Default `http://localhost:8080/api/v1`
+- `apiBaseUrl` — the Careotter API gateway base. Default `http://localhost:8080/api/v1`
   (the app runs on the same host as the Docker Compose backend). Point this at any reachable
   gateway if the backend runs elsewhere.
 - `persistTokens` — when `true`, the session is saved to
-  `%APPDATA%\OtterWorks\session.dat`, DPAPI-encrypted for the current user, and restored on
+  `%APPDATA%\Careotter\session.dat`, DPAPI-encrypted for the current user, and restored on
   next launch.
 
 ## Running the backend
@@ -136,7 +136,7 @@ Or press **F5** in Visual Studio.
 
 ## Verification screenshots
 
-Captured on Windows against the OtterWorks backend (auth-service, document-service and
+Captured on Windows against the Careotter backend (auth-service, document-service and
 api-gateway) running locally, base URL `http://localhost:8080/api/v1`.
 
 ### 1. Register a new user

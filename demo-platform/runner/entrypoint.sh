@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks Demo Platform — runner entrypoint
+# Careotter Demo Platform — runner entrypoint
 #
 # This image is launched as a Kubernetes Job by the ops dashboard (namespace
 # otterworks-platform). It carries the repo + toolchain (aws/kubectl/helm/
@@ -9,7 +9,7 @@
 # It is deliberately thin glue: the real work is done by the EXISTING tenant
 # tooling in ../scripts (deploy-tenant.sh / teardown-tenant.sh / inject-bug.sh)
 # and the reaper in ../reaper/reaper.sh. This entrypoint only:
-#   1. checks out the requested OtterWorks git branch (TENANT_BRANCH),
+#   1. checks out the requested Careotter git branch (TENANT_BRANCH),
 #   2. transitions status in the control table (deploying -> active | error),
 #   3. runs the requested op via the existing scripts,
 #   4. records the resolved coordinates (url/api_url/db_name/namespace/expires)

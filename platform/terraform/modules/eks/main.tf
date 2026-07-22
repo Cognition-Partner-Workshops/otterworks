@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Platform - EKS Module
+# Careotter Platform - EKS Module
 # Standalone EKS cluster with managed node group
 # ------------------------------------------------------------------------------
 

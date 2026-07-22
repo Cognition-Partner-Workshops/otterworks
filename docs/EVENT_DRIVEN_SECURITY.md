@@ -2,7 +2,7 @@
 
 ## Overview
 
-OtterWorks uses an event-driven SAST pipeline where security findings detected
+Careotter uses an event-driven SAST pipeline where security findings detected
 in pull requests are automatically routed to Devin for remediation. The pipeline
 supports **two scanner paths** — Trivy (dependency CVEs) and SonarCloud (code
 quality gate) — both feeding into the same Devin v3 API for autonomous fix

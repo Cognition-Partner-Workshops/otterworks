@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Search Module
+# Careotter Search Module
 # MeiliSearch instance for full-text search
 # ------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ locals {
 
 resource "aws_security_group" "meilisearch" {
   name        = "${var.project}-meilisearch-${var.environment}"
-  description = "Security group for OtterWorks MeiliSearch"
+  description = "Security group for Careotter MeiliSearch"
   vpc_id      = var.vpc_id
 
   ingress {

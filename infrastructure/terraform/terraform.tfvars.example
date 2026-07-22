@@ -1,4 +1,4 @@
-# OtterWorks Infrastructure - Example Variable Values
+# Careotter Infrastructure - Example Variable Values
 # Copy this file to terraform.tfvars and customize for your environment.
 #
 # Prerequisites: Platform layer must be applied first (platform/terraform)
@@ -11,7 +11,7 @@ aws_region = "us-east-1"
 # Environment name (dev, staging, prod)
 environment = "dev"
 
-# Kubernetes namespace for OtterWorks services
+# Kubernetes namespace for Careotter services
 namespace = "otterworks"
 
 # REQUIRED: RDS PostgreSQL master password (no default — must be set)

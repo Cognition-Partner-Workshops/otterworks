@@ -6,7 +6,7 @@ import type { Tenant } from "@/lib/types";
 // Reconcile the control-table status against live pods: a tenant whose only
 // unhealthy pods are the planted-bug services (see env.expectedDegradedServices)
 // is `active`; a non-terminal tenant with an UNEXPECTED crashlooping pod is
-// surfaced as `error`. Without the exclusion every OtterWorks tenant would read
+// surfaced as `error`. Without the exclusion every Careotter tenant would read
 // `error` forever, because admin-service crash-loops by design on the golden app.
 function reconcileStatus(t: Tenant): Tenant {
   if (!t.live) return t;

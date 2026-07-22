@@ -80,7 +80,7 @@ class ApiClient:
             except httpx.HTTPError as exc:
                 last_error = exc
             time.sleep(0.25)
-        pytest.skip(f"OtterWorks API gateway is not reachable: {last_error}")
+        pytest.skip(f"Careotter API gateway is not reachable: {last_error}")
 
     def iso_time(self, days_offset: int = 0) -> str:
         return (datetime.now(UTC) + timedelta(days=days_offset)).isoformat()

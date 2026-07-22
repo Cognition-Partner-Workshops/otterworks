@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Infrastructure - Application-Specific AWS Resources
+# Careotter Infrastructure - Application-Specific AWS Resources
 # Platform (VPC, EKS, ECR) is provisioned by /platform/terraform
 # This layer provisions app-level resources: RDS, DynamoDB, S3, SQS, etc.
 # ------------------------------------------------------------------------------

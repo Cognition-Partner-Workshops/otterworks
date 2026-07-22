@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Per-Tenant Scale-to-Zero (cost control)
+# Careotter - Per-Tenant Scale-to-Zero (cost control)
 #
 # Between demo sessions, scale a tenant's compute to zero while KEEPING the
 # namespace, config/secrets, per-tenant Redis/MeiliSearch data and RDS database

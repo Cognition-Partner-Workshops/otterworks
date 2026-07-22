@@ -19,7 +19,7 @@ export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
   {
     id: 'aud-004', timestamp: '2026-04-17T09:15:00Z', userId: 'usr-001', userName: 'Alice Johnson',
     action: 'share', resourceType: 'Document', resourceName: 'Budget-2026.xlsx',
-    details: 'Shared with bob.martinez@otterworks.io (editor)', ipAddress: '192.168.1.10', severity: 'info',
+    details: 'Shared with bob.martinez@careotter.io (editor)', ipAddress: '192.168.1.10', severity: 'info',
   },
   {
     id: 'aud-005', timestamp: '2026-04-17T09:00:00Z', userId: 'usr-002', userName: 'Bob Martinez',
@@ -38,7 +38,7 @@ export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
   },
   {
     id: 'aud-008', timestamp: '2026-04-16T22:15:00Z', userId: 'usr-004', userName: 'David Kim',
-    action: 'suspend', resourceType: 'User', resourceName: 'david.kim@otterworks.io',
+    action: 'suspend', resourceType: 'User', resourceName: 'david.kim@careotter.io',
     details: 'Account suspended by admin due to policy violation', ipAddress: '192.168.1.15', severity: 'critical',
   },
   {

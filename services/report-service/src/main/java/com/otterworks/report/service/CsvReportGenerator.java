@@ -54,7 +54,7 @@ public class CsvReportGenerator {
                 String[] header = columns.toArray(new String[0]);
 
                 // Write metadata comments
-                writer.writeNext(new String[]{"# OtterWorks Report: " + report.getReportName()});
+                writer.writeNext(new String[]{"# Careotter Report: " + report.getReportName()});
                 writer.writeNext(new String[]{"# Generated: " + ReportDateUtils.toDisplayString(new Date())});
                 writer.writeNext(new String[]{"# Period: "
                         + ReportDateUtils.toDisplayString(report.getDateFrom())

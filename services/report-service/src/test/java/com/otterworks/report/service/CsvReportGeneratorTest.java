@@ -90,7 +90,7 @@ public class CsvReportGeneratorTest {
         boolean hasRowsComment = false;
 
         for (String line : lines) {
-            if (line.contains("OtterWorks Report") && line.contains("Metadata Check Report")) {
+            if (line.contains("Careotter Report") && line.contains("Metadata Check Report")) {
                 hasReportNameComment = true;
             }
             if (line.contains("Generated:")) {

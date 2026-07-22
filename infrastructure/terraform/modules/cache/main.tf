@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Cache Module
+# Careotter Cache Module
 # ElastiCache Redis for session management and caching
 # Used by collab-service (real-time state) and auth-service (session tokens)
 # ------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ resource "aws_elasticache_subnet_group" "main" {
 
 resource "aws_security_group" "redis" {
   name        = "${var.project}-redis-${var.environment}"
-  description = "Security group for OtterWorks ElastiCache Redis"
+  description = "Security group for Careotter ElastiCache Redis"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -47,7 +47,7 @@ resource "aws_security_group" "redis" {
 
 resource "aws_elasticache_replication_group" "main" {
   replication_group_id = "${var.project}-redis-${var.environment}"
-  description          = "OtterWorks Redis cluster for session and cache"
+  description          = "Careotter Redis cluster for session and cache"
 
   engine               = "redis"
   engine_version       = "7.1"

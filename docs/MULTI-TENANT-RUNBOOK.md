@@ -1,4 +1,4 @@
-# OtterWorks Multi-Tenant Demo — Operator Runbook
+# Careotter Multi-Tenant Demo — Operator Runbook
 
 Execution of `docs/MULTI-TENANT-DEMO-PLAN.md`. Stands up many **isolated,
 ephemeral** copies of the golden app on the **shared** `otterworks-dev` EKS

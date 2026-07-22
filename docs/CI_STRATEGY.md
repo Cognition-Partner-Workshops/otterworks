@@ -1,8 +1,8 @@
-# OtterWorks CI Strategy
+# Careotter CI Strategy
 
 ## Current CI Architecture
 
-OtterWorks uses **3 GitHub Actions workflows** that run on every push to `main` and on all PRs targeting `main`:
+Careotter uses **3 GitHub Actions workflows** that run on every push to `main` and on all PRs targeting `main`:
 
 ### 1. `ci.yml` — Service Build & Test Pipeline
 

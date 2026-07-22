@@ -2,7 +2,7 @@
 name = "file-service"
 version = "0.1.0"
 edition = "2021"
-authors = ["OtterWorks Engineering"]
+authors = ["Careotter Engineering"]
 
 [dependencies]
 actix-web = "4"

@@ -1,11 +1,11 @@
 Feature: Application Navigation
   As a user
   I want to navigate between pages
-  So that I can access all features of OtterWorks
+  So that I can access all features of Careotter
 
   Scenario: Landing page is accessible
     Given I navigate to "/"
-    Then I should see the heading "OtterWorks"
+    Then I should see the heading "Careotter"
 
   Scenario: Login page is accessible
     Given I navigate to "/login"

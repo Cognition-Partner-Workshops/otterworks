@@ -95,7 +95,7 @@ public class ExcelReportGenerator {
 
         // Title
         Row titleRow = sheet.createRow(0);
-        titleRow.createCell(0).setCellValue("OtterWorks Report");
+        titleRow.createCell(0).setCellValue("Careotter Report");
         titleRow.getCell(0).setCellStyle(titleStyle);
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
 

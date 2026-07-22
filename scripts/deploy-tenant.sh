@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Per-Tenant Ephemeral Demo Deploy
+# Careotter - Per-Tenant Ephemeral Demo Deploy
 #
 # Stands up an isolated copy of the golden app for one attendee/demo run in the
 # namespace  otterworks-<ATTENDEE_ID>  on the SHARED otterworks-dev EKS cluster.

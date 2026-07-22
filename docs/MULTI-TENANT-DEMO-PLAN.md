@@ -1,6 +1,6 @@
-# OtterWorks Multi-Tenant / Ephemeral Demo Environments — Scoping & Plan
+# Careotter Multi-Tenant / Ephemeral Demo Environments — Scoping & Plan
 
-**Goal.** Run many concurrent OtterWorks demos on the **same shared AWS/EKS infrastructure**
+**Goal.** Run many concurrent Careotter demos on the **same shared AWS/EKS infrastructure**
 without demos stepping on each other, so facilitators/attendees can:
 
 - spin up an **isolated** copy of the app on demand,

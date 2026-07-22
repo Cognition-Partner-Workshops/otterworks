@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Monitoring Module
+# Careotter Monitoring Module
 # CloudWatch log groups for each service
 # ------------------------------------------------------------------------------
 

@@ -63,9 +63,9 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-otter-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">OW</span>
+                <span className="text-white font-bold text-sm">CO</span>
               </div>
-              <span className="font-semibold text-gray-900">OtterWorks</span>
+              <span className="font-semibold text-gray-900">Careotter</span>
             </Link>
           )}
           <button

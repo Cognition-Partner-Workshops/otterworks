@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks IRSA Module
+# Careotter IRSA Module
 # IAM Roles for Service Accounts (IRSA) on EKS
 # Enables fine-grained AWS permissions per Kubernetes service account
 # ------------------------------------------------------------------------------

@@ -10,7 +10,7 @@ using OtterWorks.Desktop.Models;
 namespace OtterWorks.Desktop.Services
 {
     /// <summary>
-    /// Thin REST client for the OtterWorks API gateway. Auth payloads are camelCase and
+    /// Thin REST client for the Careotter API gateway. Auth payloads are camelCase and
     /// document/file payloads are snake_case; each model carries explicit
     /// <c>[JsonProperty]</c> attributes so a single serializer handles both shapes.
     /// </summary>
@@ -101,14 +101,14 @@ namespace OtterWorks.Desktop.Services
             {
                 throw new ApiException(
                     0,
-                    "Could not reach the OtterWorks backend. Verify it is running and that the " +
+                    "Could not reach the Careotter backend. Verify it is running and that the " +
                     "API base URL is correct.\n\n" + ex.Message);
             }
             catch (TaskCanceledException)
             {
                 throw new ApiException(
                     0,
-                    "The request to the OtterWorks backend timed out. Verify the server is " +
+                    "The request to the Careotter backend timed out. Verify the server is " +
                     "running and responsive.");
             }
 
@@ -136,7 +136,7 @@ namespace OtterWorks.Desktop.Services
                 {
                     throw new ApiException(
                         response.StatusCode,
-                        "The OtterWorks backend returned an unexpected (non-JSON) response.");
+                        "The Careotter backend returned an unexpected (non-JSON) response.");
                 }
             }
         }

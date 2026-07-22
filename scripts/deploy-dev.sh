@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - Full Standalone Deploy
+# Careotter - Full Standalone Deploy
 # 1. Provisions platform infrastructure (VPC, EKS, ECR) via Terraform
 # 2. Provisions application infrastructure (RDS, DynamoDB, S3, etc.) via Terraform
 # 3. Builds Docker images, pushes to ECR, and deploys via Helm

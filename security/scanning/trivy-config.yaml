@@ -1,4 +1,4 @@
-# Trivy scanning configuration for OtterWorks
+# Trivy scanning configuration for Careotter
 severity:
   - CRITICAL
   - HIGH

@@ -10,7 +10,7 @@
             </Border.Effect>
             <StackPanel>
                 <TextBlock Text="Create account" FontSize="24" FontWeight="Bold" Foreground="#111827" />
-                <TextBlock Text="Get started with OtterWorks." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,20" />
+                <TextBlock Text="Get started with Careotter." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,20" />
 
                 <TextBlock Text="Display name" FontWeight="SemiBold" Margin="0,0,0,4" />
                 <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"

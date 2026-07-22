@@ -3,7 +3,7 @@ import { Announcement } from '../../models/announcement.model';
 export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-001', title: 'Scheduled Maintenance Window',
-    content: 'OtterWorks will undergo scheduled maintenance on April 20, 2026 from 2:00 AM to 6:00 AM UTC. During this time, file uploads and real-time collaboration may be temporarily unavailable.',
+    content: 'Careotter will undergo scheduled maintenance on April 20, 2026 from 2:00 AM to 6:00 AM UTC. During this time, chart uploads and real-time collaboration may be temporarily unavailable.',
     priority: 'high', status: 'published',
     createdAt: '2026-04-16T10:00:00Z', publishedAt: '2026-04-16T10:30:00Z', expiresAt: '2026-04-21T00:00:00Z',
     createdBy: 'Frank Wilson', targetAudience: 'all',
@@ -30,8 +30,8 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     createdBy: 'Frank Wilson', targetAudience: 'all',
   },
   {
-    id: 'ann-005', title: 'Welcome to OtterWorks 2.0',
-    content: 'We are excited to announce the launch of OtterWorks 2.0, featuring real-time collaboration, improved search, and a brand new admin dashboard.',
+    id: 'ann-005', title: 'Welcome to Careotter 2.0',
+    content: 'We are excited to announce the launch of Careotter 2.0, featuring real-time collaboration, improved search, and a brand new admin dashboard.',
     priority: 'low', status: 'archived',
     createdAt: '2026-03-01T12:00:00Z', publishedAt: '2026-03-01T12:30:00Z',
     createdBy: 'Alice Johnson', targetAudience: 'all',

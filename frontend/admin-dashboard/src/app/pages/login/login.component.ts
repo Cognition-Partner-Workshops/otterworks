@@ -23,7 +23,7 @@ import { AuthService } from '../../core/services/auth.service';
         <mat-card-header>
           <div class="login-header">
             <mat-icon class="login-logo">pets</mat-icon>
-            <h1>OtterWorks Admin</h1>
+            <h1>Careotter Admin</h1>
             <p>Sign in to the admin dashboard</p>
           </div>
         </mat-card-header>
@@ -31,7 +31,7 @@ import { AuthService } from '../../core/services/auth.service';
           <form (ngSubmit)="onLogin()" class="login-form">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
-              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="admin@otterworks.io" (input)="clearError()">
+              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="admin@careotter.io" (input)="clearError()">
               <mat-icon matSuffix>email</mat-icon>
             </mat-form-field>
 

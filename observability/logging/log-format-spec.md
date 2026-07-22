@@ -1,6 +1,6 @@
-# OtterWorks Standardized Log Format
+# Careotter Standardized Log Format
 
-All OtterWorks services MUST emit structured JSON logs that conform to the
+All Careotter services MUST emit structured JSON logs that conform to the
 schema below. This ensures consistent parsing by Fluent Bit and enables
 cross-service log correlation in CloudWatch / Loki.
 

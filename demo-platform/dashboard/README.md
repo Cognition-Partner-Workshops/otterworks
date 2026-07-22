@@ -1,7 +1,7 @@
-# OtterWorks Demo Ops Dashboard
+# Careotter Demo Ops Dashboard
 
 A self-contained **Next.js 14 (App Router, TypeScript strict)** control-plane UI + API
-for the OtterWorks ephemeral demo platform. It implements the API contract in
+for the Careotter ephemeral demo platform. It implements the API contract in
 [`../docs/api-contract.md`](../docs/api-contract.md) against the DynamoDB control table
 described in [`../docs/control-table-schema.md`](../docs/control-table-schema.md).
 

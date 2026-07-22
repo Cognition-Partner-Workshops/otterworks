@@ -1,6 +1,6 @@
-# OtterWorks
+# Careotter
 
-A collaborative file storage and document editing platform — functionally equivalent to Google Drive + Google Docs. Built as a polyglot microservices system to demonstrate a realistic enterprise technology stack.
+Careotter is a patient records management platform for doctor offices — a collaborative system for storing, editing, and sharing patient charts and clinical documents. Careotter is a fictional software company that has helped medical practices manage patient records for 20 years. The application is built as a polyglot microservices system to demonstrate a realistic enterprise technology stack.
 
 ## Prerequisites
 
@@ -112,7 +112,7 @@ All observability services run locally via `docker-compose.infra.yml`.
 
 | Tool | URL | Purpose |
 |------|-----|---------|
-| Grafana | http://localhost:3001 | Dashboards and metrics visualization (admin / otterworks) |
+| Grafana | http://localhost:3001 | Dashboards and metrics visualization (admin / careotter) |
 | Prometheus | http://localhost:9090 | Metrics collection and alerting rules |
 | Jaeger | http://localhost:16686 | Distributed tracing UI |
 | MeiliSearch | http://localhost:7700 | Search engine dashboard |
@@ -158,7 +158,7 @@ Per-service build targets are also available (e.g., `make build-gateway`, `make 
 ## Project Structure
 
 ```
-otterworks/
+careotter/
 ├── services/              # Backend microservices (11 services, 8 languages)
 │   ├── api-gateway/       #   Go / Chi
 │   ├── auth-service/      #   Java / Spring Boot
@@ -232,4 +232,4 @@ otterworks/
 
 ## License
 
-Proprietary - OtterWorks Inc.
+Proprietary - Careotter Inc.

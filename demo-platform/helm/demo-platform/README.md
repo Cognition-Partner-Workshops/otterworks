@@ -1,6 +1,6 @@
 # demo-platform Helm chart
 
-Deploys the OtterWorks **Demo Platform control plane** into the
+Deploys the Careotter **Demo Platform control plane** into the
 `otterworks-platform` namespace on the shared `otterworks-dev` EKS cluster:
 
 - the `otterworks-platform` **namespace**;

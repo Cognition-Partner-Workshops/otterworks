@@ -38,7 +38,7 @@ export const MOCK_INCIDENTS: Incident[] = [
   {
     id: 'inc-003',
     title: 'Notification service SQS consumer backlog growing',
-    description: 'The SQS queue otterworks-notifications has over 5000 messages in backlog. The Kotlin notification service consumer appears to be processing messages slowly. Possible memory pressure or SES rate limiting causing delays in email delivery.',
+    description: 'The SQS queue careotter-notifications has over 5000 messages in backlog. The Kotlin notification service consumer appears to be processing messages slowly. Possible memory pressure or SES rate limiting causing delays in email delivery.',
     severity: 'critical',
     status: 'open',
     affectedService: 'notification-service',

@@ -3,7 +3,7 @@
 # dependencies = ["psycopg2-binary", "tabulate"]
 # ///
 """
-OtterWorks test-data validation harness.
+Careotter test-data validation harness.
 
 Validates that generated synthetic data satisfies:
   1. Schema conformance (FK, NOT NULL, types, unique constraints)
@@ -296,10 +296,10 @@ def validate_criteria(cur, schema: str, criteria_file: Path) -> list[CheckResult
 
 def run_standard_checks(cur, schema: str) -> list[CheckResult]:
     """
-    Run the standard OtterWorks test-data validation suite.
+    Run the standard Careotter test-data validation suite.
 
     These checks apply to any generated dataset regardless of the specific
-    user story — they enforce the invariants of the OtterWorks schema.
+    user story — they enforce the invariants of the Careotter schema.
     """
     results = []
 
@@ -408,7 +408,7 @@ def run_standard_checks(cur, schema: str) -> list[CheckResult]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Validate OtterWorks synthetic test data"
+        description="Validate Careotter synthetic test data"
     )
     parser.add_argument(
         "--ns", required=True,
@@ -464,7 +464,7 @@ def main() -> int:
 
     # Output report
     print(f"\n{'=' * 60}")
-    print(f"  OtterWorks Test-Data Validation Report")
+    print(f"  Careotter Test-Data Validation Report")
     print(f"  Namespace: {args.ns}  |  Schema: {schema}")
     print(f"  Ran at: {report.started_at.isoformat()}")
     print(f"{'=' * 60}\n")

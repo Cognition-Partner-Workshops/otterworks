@@ -1,7 +1,7 @@
 {
   "id": null,
   "uid": "otterworks-infrastructure",
-  "title": "OtterWorks Infrastructure",
+  "title": "Careotter Infrastructure",
   "description": "Infrastructure monitoring: pod status, node utilization, network traffic, database connections, and queue depths.",
   "tags": [
     "otterworks",

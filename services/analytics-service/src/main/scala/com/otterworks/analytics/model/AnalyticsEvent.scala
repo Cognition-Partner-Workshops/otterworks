@@ -33,7 +33,7 @@ object AnalyticsEvent:
       timestamp = Instant.now()
     )
 
-/** Supported event types across the OtterWorks platform. */
+/** Supported event types across the Careotter platform. */
 object EventType:
   val DocumentCreated = "document.created"
   val DocumentViewed = "document.viewed"

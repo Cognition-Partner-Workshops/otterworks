@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks Demo Platform — Reaper v2 (schedule-driven, GCs EVERYTHING)
+# Careotter Demo Platform — Reaper v2 (schedule-driven, GCs EVERYTHING)
 #
 # SUPERSEDES the basic namespace-only TTL reaper embedded in
 # scripts/tenant-platform-baseline.sh (which deletes tenant namespaces but

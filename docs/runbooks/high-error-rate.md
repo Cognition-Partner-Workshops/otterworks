@@ -8,7 +8,7 @@
 
 ## Symptoms
 
-- Spike in 5xx responses visible on the OtterWorks Overview or Chaos Scenarios dashboard.
+- Spike in 5xx responses visible on the Careotter Overview or Chaos Scenarios dashboard.
 - Users report failures when performing actions (uploads, searches, document edits).
 - On-call receives a PagerDuty / Grafana alert notification.
 

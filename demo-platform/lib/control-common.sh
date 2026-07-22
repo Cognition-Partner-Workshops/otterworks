@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks Demo Platform — control-table (DynamoDB) helper library
+# Careotter Demo Platform — control-table (DynamoDB) helper library
 #
 # Sourced by:
 #   - runner/entrypoint.sh  (deploy/teardown/inject/reset status + audit writes)

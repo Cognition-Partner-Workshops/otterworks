@@ -7,7 +7,7 @@ namespace OtterWorks.Desktop.Services
     /// <summary>
     /// Application configuration loaded from <c>appsettings.json</c> next to the executable.
     /// The backend base URL is configurable so the app can point at a local Docker Compose
-    /// stack (the default) or any reachable OtterWorks gateway.
+    /// stack (the default) or any reachable Careotter gateway.
     /// </summary>
     public class AppSettings
     {

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Storage Module
+# Careotter Storage Module
 # S3 buckets for file storage, data lake, and audit archive
 # ------------------------------------------------------------------------------
 

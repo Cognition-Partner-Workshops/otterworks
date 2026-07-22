@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# OtterWorks Demo Platform — control-plane infrastructure
+# Careotter Demo Platform — control-plane infrastructure
 #
 # Durable, tenant-independent resources for the demo ops platform:
 #   - DynamoDB control table (state store: registry, locks, reaper config, audit)

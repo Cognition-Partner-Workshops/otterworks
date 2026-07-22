@@ -22,7 +22,7 @@ class NotificationTemplatesTest {
 
         assertEquals("File Shared With You", rendered.title)
         assertTrue(rendered.message.contains("alice"))
-        assertEquals("OtterWorks: A file has been shared with you", rendered.emailSubject)
+        assertEquals("Careotter: A file has been shared with you", rendered.emailSubject)
         assertTrue(rendered.emailBody.contains("file-abc"))
         assertTrue(rendered.emailBody.contains("alice"))
     }

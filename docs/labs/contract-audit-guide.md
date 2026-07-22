@@ -1,6 +1,6 @@
 # Contract Audit Lab Guide
 
-This guide walks you through auditing the API and event contracts across OtterWorks services. The goal is to find places where a service's actual behavior drifts from its published specification, then decide whether to fix the spec or the code.
+This guide walks you through auditing the API and event contracts across Careotter services. The goal is to find places where a service's actual behavior drifts from its published specification, then decide whether to fix the spec or the code.
 
 ## Where to Find Specifications
 

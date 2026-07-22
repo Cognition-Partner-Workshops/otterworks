@@ -1,8 +1,8 @@
 {
   "id": null,
   "uid": "otterworks-incident-overview",
-  "title": "OtterWorks Incident Overview",
-  "description": "Cross-service incident overview showing error rates, latencies, and active alerts across all OtterWorks services",
+  "title": "Careotter Incident Overview",
+  "description": "Cross-service incident overview showing error rates, latencies, and active alerts across all Careotter services",
   "tags": [
     "otterworks",
     "incident",
@@ -277,7 +277,7 @@
         "mode": "markdown",
         "content": "### Trace Search by Service\n\nClick a service name to open Jaeger trace search filtered to that service:\n\n| Service | Language | Jaeger Link |\n|---------|----------|-------------|\n| api-gateway | Go | [Search Traces](http://jaeger:16686/search?service=api-gateway) |\n| auth-service | Java | [Search Traces](http://jaeger:16686/search?service=auth-service) |\n| file-service | Rust | [Search Traces](http://jaeger:16686/search?service=file-service) |\n| document-service | Python | [Search Traces](http://jaeger:16686/search?service=document-service) |\n| collab-service | Node.js | [Search Traces](http://jaeger:16686/search?service=collab-service) |\n| notification-service | Kotlin | [Search Traces](http://jaeger:16686/search?service=notification-service) |\n| search-service | Python | [Search Traces](http://jaeger:16686/search?service=search-service) |\n| analytics-service | Scala | [Search Traces](http://jaeger:16686/search?service=analytics-service) |\n| admin-service | Ruby | [Search Traces](http://jaeger:16686/search?service=admin-service) |\n| audit-service | C# | [Search Traces](http://jaeger:16686/search?service=audit-service) |"
       },
-      "description": "Quick links to Jaeger trace search for each OtterWorks service"
+      "description": "Quick links to Jaeger trace search for each Careotter service"
     }
   ],
   "links": [
@@ -289,7 +289,7 @@
       "tooltip": "View chaos engineering scenario dashboards"
     },
     {
-      "title": "OtterWorks Overview",
+      "title": "Careotter Overview",
       "url": "/d/otterworks-overview",
       "type": "link",
       "icon": "dashboard",

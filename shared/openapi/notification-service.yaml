@@ -1,13 +1,13 @@
 openapi: "3.0.3"
 info:
-  title: OtterWorks Notification Service
+  title: Careotter Notification Service
   description: |
     Real-time notification delivery service built with Kotlin/Ktor.
     Supports in-app notifications via REST and WebSocket, with configurable
     delivery preferences per event type.
   version: "1.0.0"
   contact:
-    name: OtterWorks Platform Team
+    name: Careotter Platform Team
 
 servers:
   - url: http://localhost:8086

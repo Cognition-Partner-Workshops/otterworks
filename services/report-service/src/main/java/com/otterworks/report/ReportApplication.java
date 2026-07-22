@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * OtterWorks Report Service — generates PDF, CSV, and Excel reports
+ * Careotter Report Service — generates PDF, CSV, and Excel reports
  * from analytics and audit data.
  *
  * LEGACY NOTES (tech debt for upgrade exercise):

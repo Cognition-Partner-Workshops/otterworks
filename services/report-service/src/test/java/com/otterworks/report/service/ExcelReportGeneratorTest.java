@@ -121,11 +121,11 @@ public class ExcelReportGeneratorTest {
             Sheet summary = workbook.getSheet("Summary");
             assertNotNull("Summary sheet should exist", summary);
 
-            // Row 0: Title "OtterWorks Report"
+            // Row 0: Title "Careotter Report"
             Row titleRow = summary.getRow(0);
             assertNotNull("Title row should exist", titleRow);
-            assertEquals("Title should be 'OtterWorks Report'",
-                    "OtterWorks Report", titleRow.getCell(0).getStringCellValue());
+            assertEquals("Title should be 'Careotter Report'",
+                    "Careotter Report", titleRow.getCell(0).getStringCellValue());
 
             // Row 2: Report Name label and value
             Row nameRow = summary.getRow(2);

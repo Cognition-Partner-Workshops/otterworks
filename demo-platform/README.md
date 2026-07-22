@@ -1,11 +1,11 @@
-# OtterWorks Demo Platform (control plane)
+# Careotter Demo Platform (control plane)
 
-A self-contained control plane for running **many ephemeral OtterWorks demo tenants** on the
+A self-contained control plane for running **many ephemeral Careotter demo tenants** on the
 shared `otterworks-dev` EKS cluster, designed to scale to **high tens of tenants**. It adds a
 platform plane (dashboard + durable state + reaper + DNS/TLS) on top of the existing per-tenant
 tooling in `../scripts/` (`deploy-tenant.sh`, `teardown-tenant.sh`, `inject-bug.sh`, …).
 
-> Scoped to OtterWorks only (per decision), kept in this monorepo rather than
+> Scoped to Careotter only (per decision), kept in this monorepo rather than
 > `platform-engineering-shared-services`.
 
 ## Two planes
@@ -31,7 +31,7 @@ demo-platform/
 
 ## Checkout / check-in model
 A **checkout** reserves a tenant id (atomic lock in the control table), maps it to an
-OtterWorks git **branch** (`workshop-<id>`), and deploys that branch into `otterworks-<id>`.
+Careotter git **branch** (`workshop-<id>`), and deploys that branch into `otterworks-<id>`.
 A **check-in** tears the tenant down and frees the id. All state lives in the control table, so
 it is **independent of the ephemeral infra** — it survives teardown, node churn, and pod
 restarts. The reaper reconciles desired (table) vs actual (cluster/AWS) and GCs everything,

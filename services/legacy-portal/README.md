@@ -10,7 +10,7 @@ process. It exists as a realistic **"before" state** for two migration demos:
 - **Monolith decomposition (→ microservices / Lambda)** — its three contexts are cleanly separated
   by package **and by database schema**, so the seams for splitting it into services are obvious.
 
-> This component is part of the OtterWorks **golden app** as a durable before-state. The
+> This component is part of the Careotter **golden app** as a durable before-state. The
 > after-state (EC2/ASG IaC, decomposed services) is intentionally **not** included here.
 
 ## Bounded contexts

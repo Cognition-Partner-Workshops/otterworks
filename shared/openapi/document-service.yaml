@@ -1,13 +1,13 @@
 openapi: "3.0.3"
 info:
-  title: OtterWorks Document Service
+  title: Careotter Document Service
   description: |
     Document management service built with FastAPI. Provides CRUD operations
     for documents, versioning, comments, templates, and export functionality.
     Authentication via JWT Bearer token or X-User-ID header fallback.
   version: "1.0.0"
   contact:
-    name: OtterWorks Platform Team
+    name: Careotter Platform Team
 
 servers:
   - url: http://localhost:8083
