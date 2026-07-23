@@ -5,6 +5,7 @@ export interface RedisConfig {
   host: string;
   port: number;
   password?: string;
+  tls: boolean;
   db?: number;
   keyPrefix?: string;
 }
@@ -23,6 +24,7 @@ export class RedisAdapter {
       host: config.host,
       port: config.port,
       password: config.password,
+      tls: config.tls ? {} : undefined,
       db: config.db || 0,
       maxRetriesPerRequest: 3,
       retryStrategy: (times: number) => Math.min(times * 200, 5000),

@@ -23,7 +23,8 @@ private val logger = KotlinLogging.logger {}
 private val redisPool: JedisPool by lazy {
     val host = System.getenv("REDIS_HOST") ?: "localhost"
     val port = System.getenv("REDIS_PORT")?.toIntOrNull() ?: 6379
-    JedisPool(JedisPoolConfig(), host, port, 1000)
+    val tls = System.getenv("REDIS_TLS")?.toBoolean() ?: false
+    JedisPool(JedisPoolConfig(), host, port, 1000, tls)
 }
 
 private fun chaosActive(flag: String): Boolean {

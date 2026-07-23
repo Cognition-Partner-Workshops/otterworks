@@ -115,3 +115,10 @@ the above changes `main`. Verify per the "Live verification" section of the runb
 - `scripts/deploy-dev.sh` wires all services' config/secrets from Terraform outputs and
   deploys via Helm. `scripts/spinup-dev.sh` / `scripts/teardown-dev.sh` manage cluster
   lifecycle for cost control. See `docs/SDLC-COVERAGE.md` §3 for the full CD picture.
+
+## Project verification
+
+- Validate deployment script syntax: `bash -n scripts/deploy-dev.sh`
+- Lint Helm charts: `for chart in infrastructure/helm/*; do helm lint "$chart"; done`
+- Render Helm charts with required image values: `for chart in infrastructure/helm/*; do service="$(basename "$chart")"; helm template "$service" "$chart" --namespace otterworks --set image.repository=example.invalid/otterworks/"$service" --set image.tag=test >/dev/null; done`
+- Validate Terraform layers: `terraform -chdir=platform/terraform validate` and `terraform -chdir=infrastructure/terraform validate`

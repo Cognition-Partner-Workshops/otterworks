@@ -32,7 +32,12 @@ async fn main() -> std::io::Result<()> {
     let redis_url = {
         let host = std::env::var("REDIS_HOST").unwrap_or_else(|_| "localhost".into());
         let port = std::env::var("REDIS_PORT").unwrap_or_else(|_| "6379".into());
-        format!("redis://{}:{}", host, port)
+        let scheme = if std::env::var("REDIS_TLS").as_deref() == Ok("true") {
+            "rediss"
+        } else {
+            "redis"
+        };
+        format!("{}://{}:{}", scheme, host, port)
     };
     let redis_client = redis::Client::open(redis_url).expect("invalid Redis URL");
     let redis_cm = redis::aio::ConnectionManager::new(redis_client)
