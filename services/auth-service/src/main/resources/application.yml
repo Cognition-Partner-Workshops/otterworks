@@ -24,7 +24,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations: classpath:db/migration,classpath:com/otterworks/auth/migration
     baseline-on-migrate: true
     baseline-version: 0
 
