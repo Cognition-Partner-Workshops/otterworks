@@ -16,11 +16,11 @@ use crate::events::EventPublisher;
 use crate::metadata::MetadataClient;
 use crate::middleware;
 use crate::models::{
-    ActivityItem, ActivityQuery, ActivityResponse, CreateFolderRequest, DownloadResponse,
-    FileDetailResponse, FileMetadata, FileShare, FileVersion, Folder, HealthResponse,
-    ListFilesQuery, ListFilesResponse, ListFoldersQuery, ListFoldersResponse, ListVersionsResponse,
-    MoveFileRequest, RenameFileRequest, ShareFileRequest, ShareFileResponse, UpdateFolderRequest,
-    UploadResponse,
+    sanitize_content_disposition_filename, ActivityItem, ActivityQuery, ActivityResponse,
+    CreateFolderRequest, DownloadQuery, DownloadResponse, FileDetailResponse, FileMetadata,
+    FileShare, FileVersion, Folder, HealthResponse, ListFilesQuery, ListFilesResponse,
+    ListFoldersQuery, ListFoldersResponse, ListVersionsResponse, MoveFileRequest,
+    RenameFileRequest, ShareFileRequest, ShareFileResponse, UpdateFolderRequest, UploadResponse,
 };
 use crate::storage::S3Client;
 
@@ -356,6 +356,7 @@ pub async fn download_file(
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
+    query: web::Query<DownloadQuery>,
 ) -> Result<HttpResponse, ServiceError> {
     let file_id: Uuid = path
         .into_inner()
@@ -363,12 +364,85 @@ pub async fn download_file(
         .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
 
     let file = meta.get_file(&file_id).await?;
-    let url = s3.presigned_download_url(&file.s3_key, 3600).await?;
+
+    // For inline previews, override the response content-type with the mime type
+    // recorded in metadata (S3 objects seeded via LocalStack report
+    // `binary/octet-stream`) and ask S3 to serve the object inline.
+    let url = if query.disposition.as_deref() == Some("inline") {
+        s3.presigned_url(&file.s3_key, 3600, Some(&file.mime_type), Some("inline"))
+            .await?
+    } else {
+        s3.presigned_download_url(&file.s3_key, 3600).await?
+    };
 
     Ok(HttpResponse::Ok().json(DownloadResponse {
         url,
         expires_in_secs: 3600,
     }))
+}
+
+/// Stream a file's bytes back through the API (same-origin), setting the real
+/// `Content-Type` from metadata. Presigned S3/LocalStack URLs are cross-origin
+/// and cannot be `fetch()`-ed from the browser (CORS), which is required to
+/// parse office documents client-side; serving the bytes here avoids that.
+/// `?disposition=inline` marks the response for inline rendering; otherwise it
+/// is served as an attachment.
+pub async fn file_content(
+    req: HttpRequest,
+    s3: web::Data<S3Client>,
+    meta: web::Data<MetadataClient>,
+    path: web::Path<String>,
+    query: web::Query<DownloadQuery>,
+) -> Result<HttpResponse, ServiceError> {
+    let file_id: Uuid = path
+        .into_inner()
+        .parse()
+        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+
+    let file = meta.get_file(&file_id).await?;
+
+    let kind = if query.disposition.as_deref() == Some("inline") {
+        "inline"
+    } else {
+        "attachment"
+    };
+    let disposition = format!(
+        "{kind}; filename=\"{}\"",
+        sanitize_content_disposition_filename(&file.name)
+    );
+
+    // Honor a client Range request (previews only fetch the first slice of large
+    // text/CSV files) so we don't stream the whole object over the network.
+    // `nosniff` stops browsers from MIME-sniffing user-uploaded bytes into an
+    // executable type regardless of the stored metadata mime.
+    let range = req
+        .headers()
+        .get(actix_web::http::header::RANGE)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string);
+
+    if let Some(range) = range {
+        let (bytes, content_range) = s3.download_object_range(&file.s3_key, &range).await?;
+        let mut b = HttpResponse::PartialContent();
+        if let Some(cr) = content_range {
+            b.insert_header((actix_web::http::header::CONTENT_RANGE, cr));
+        }
+        Ok(
+            b.insert_header((actix_web::http::header::ACCEPT_RANGES, "bytes"))
+                .content_type(file.mime_type.as_str())
+                .insert_header((actix_web::http::header::CONTENT_DISPOSITION, disposition))
+                .insert_header((actix_web::http::header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
+                .body(bytes),
+        )
+    } else {
+        let bytes = s3.download_object(&file.s3_key).await?;
+        Ok(HttpResponse::Ok()
+            .insert_header((actix_web::http::header::ACCEPT_RANGES, "bytes"))
+            .content_type(file.mime_type.as_str())
+            .insert_header((actix_web::http::header::CONTENT_DISPOSITION, disposition))
+            .insert_header((actix_web::http::header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
+            .body(bytes))
+    }
 }
 
 pub async fn move_file(

@@ -108,6 +108,24 @@ pub struct DownloadResponse {
     pub expires_in_secs: u64,
 }
 
+#[derive(Debug, Deserialize, Default)]
+pub struct DownloadQuery {
+    /// `inline` presigns the URL so browsers render the file in place (used by
+    /// previews); anything else (or omitted) keeps the default attachment
+    /// download behavior.
+    pub disposition: Option<String>,
+}
+
+/// Sanitize a filename for safe inclusion in a `Content-Disposition` header
+/// value. Strips control characters (which could inject header terminators) and
+/// replaces quote/backslash so the name cannot break out of the quoted string.
+pub fn sanitize_content_disposition_filename(name: &str) -> String {
+    name.chars()
+        .filter(|c| !c.is_control())
+        .map(|c| if c == '"' || c == '\\' { '_' } else { c })
+        .collect()
+}
+
 #[derive(Debug, Deserialize)]
 pub struct ListFilesQuery {
     pub folder_id: Option<Uuid>,
@@ -199,4 +217,55 @@ pub struct ActivityQuery {
 #[derive(Debug, Serialize)]
 pub struct ActivityResponse {
     pub items: Vec<ActivityItem>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_query(qs: &str) -> DownloadQuery {
+        actix_web::web::Query::<DownloadQuery>::from_query(qs)
+            .expect("query should parse")
+            .into_inner()
+    }
+
+    #[test]
+    fn download_query_detects_inline_disposition() {
+        let q = parse_query("disposition=inline");
+        assert_eq!(q.disposition.as_deref(), Some("inline"));
+    }
+
+    #[test]
+    fn download_query_defaults_to_none() {
+        let q = parse_query("");
+        assert!(q.disposition.is_none());
+    }
+
+    #[test]
+    fn download_query_non_inline_disposition_is_preserved() {
+        let q = parse_query("disposition=attachment");
+        assert_eq!(q.disposition.as_deref(), Some("attachment"));
+        // Only the exact value "inline" should switch on inline presigning.
+        assert_ne!(q.disposition.as_deref(), Some("inline"));
+    }
+
+    #[test]
+    fn sanitize_filename_preserves_normal_names() {
+        assert_eq!(
+            sanitize_content_disposition_filename("Q4 2025 Sales.xlsx"),
+            "Q4 2025 Sales.xlsx"
+        );
+    }
+
+    #[test]
+    fn sanitize_filename_strips_header_injection() {
+        // CR/LF must be removed so they cannot terminate the header, and quotes
+        // must not break out of the quoted-string filename value.
+        let dirty = "evil\r\nSet-Cookie: x=1\"name.pdf";
+        let clean = sanitize_content_disposition_filename(dirty);
+        assert!(!clean.contains('\r'));
+        assert!(!clean.contains('\n'));
+        assert!(!clean.contains('"'));
+        assert_eq!(clean, "evilSet-Cookie: x=1_name.pdf");
+    }
 }

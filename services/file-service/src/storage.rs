@@ -74,20 +74,72 @@ impl S3Client {
         Ok(body.into_bytes())
     }
 
+    /// Download a byte range of an object from S3.
+    ///
+    /// `range` is a raw HTTP Range header value (e.g. `bytes=0-499999`). Returns
+    /// the requested bytes and S3's `Content-Range` response header (e.g.
+    /// `bytes 0-499999/1048576`) when available, so callers can serve a `206
+    /// Partial Content` response without reading the whole object into memory.
+    pub async fn download_object_range(
+        &self,
+        key: &str,
+        range: &str,
+    ) -> Result<(Bytes, Option<String>), ServiceError> {
+        let resp = self
+            .client
+            .get_object()
+            .bucket(&self.bucket)
+            .key(key)
+            .range(range)
+            .send()
+            .await
+            .map_err(|e| ServiceError::S3Error(format!("range download failed: {e}")))?;
+
+        let content_range = resp.content_range().map(str::to_string);
+        let body = resp
+            .body
+            .collect()
+            .await
+            .map_err(|e| ServiceError::S3Error(format!("body read failed: {e}")))?;
+
+        Ok((body.into_bytes(), content_range))
+    }
+
     /// Generate a presigned download URL.
     pub async fn presigned_download_url(
         &self,
         key: &str,
         expires_in_secs: u64,
     ) -> Result<String, ServiceError> {
+        self.presigned_url(key, expires_in_secs, None, None).await
+    }
+
+    /// Generate a presigned URL, optionally overriding the response `Content-Type`
+    /// and `Content-Disposition` returned by S3.
+    ///
+    /// Objects seeded via LocalStack lose their stored `Content-Type` (it becomes
+    /// `binary/octet-stream`), so inline previews pass the real mime type from
+    /// metadata here together with `Content-Disposition: inline` to make browsers
+    /// render the file instead of downloading it.
+    pub async fn presigned_url(
+        &self,
+        key: &str,
+        expires_in_secs: u64,
+        response_content_type: Option<&str>,
+        response_content_disposition: Option<&str>,
+    ) -> Result<String, ServiceError> {
         let presigning = PresigningConfig::expires_in(Duration::from_secs(expires_in_secs))
             .map_err(|e| ServiceError::S3Error(format!("presign config error: {e}")))?;
 
-        let presigned = self
-            .client
-            .get_object()
-            .bucket(&self.bucket)
-            .key(key)
+        let mut request = self.client.get_object().bucket(&self.bucket).key(key);
+        if let Some(content_type) = response_content_type {
+            request = request.response_content_type(content_type);
+        }
+        if let Some(disposition) = response_content_disposition {
+            request = request.response_content_disposition(disposition);
+        }
+
+        let presigned = request
             .presigned(presigning)
             .await
             .map_err(|e| ServiceError::S3Error(format!("presign failed: {e}")))?;
