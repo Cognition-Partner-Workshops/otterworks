@@ -352,10 +352,40 @@ pub async fn delete_file(
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[derive(serde::Deserialize)]
+pub struct DownloadQuery {
+    pub disposition: Option<String>,
+}
+
+/// MIME types that are safe to serve inline: they cannot execute script
+/// in a browsing context. Notably excludes text/html, image/svg+xml, and
+/// application/xhtml+xml.
+pub fn is_inline_safe(mime_type: &str) -> bool {
+    if mime_type.starts_with("video/") || mime_type.starts_with("audio/") {
+        return true;
+    }
+    if mime_type.starts_with("image/") {
+        return !mime_type.starts_with("image/svg");
+    }
+    if mime_type == "application/pdf" || mime_type == "application/json" {
+        return true;
+    }
+    mime_type.starts_with("text/") && mime_type != "text/html"
+}
+
+/// Strips characters that could break out of a quoted Content-Disposition
+/// filename parameter (quotes, backslashes, and control characters).
+pub fn sanitize_disposition_filename(name: &str) -> String {
+    name.chars()
+        .filter(|c| !c.is_control() && *c != '"' && *c != '\\')
+        .collect()
+}
+
 pub async fn download_file(
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
+    query: web::Query<DownloadQuery>,
 ) -> Result<HttpResponse, ServiceError> {
     let file_id: Uuid = path
         .into_inner()
@@ -363,7 +393,16 @@ pub async fn download_file(
         .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
 
     let file = meta.get_file(&file_id).await?;
-    let url = s3.presigned_download_url(&file.s3_key, 3600).await?;
+    let disposition = match query.disposition.as_deref() {
+        Some("inline") if is_inline_safe(&file.mime_type) => "inline".to_string(),
+        _ => format!(
+            "attachment; filename=\"{}\"",
+            sanitize_disposition_filename(&file.name)
+        ),
+    };
+    let url = s3
+        .presigned_download_url_with_content_type(&file.s3_key, 3600, &file.mime_type, &disposition)
+        .await?;
 
     Ok(HttpResponse::Ok().json(DownloadResponse {
         url,
@@ -721,5 +760,40 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    #[test]
+    fn test_inline_safe_mime_types() {
+        assert!(is_inline_safe("image/png"));
+        assert!(is_inline_safe("video/mp4"));
+        assert!(is_inline_safe("audio/mpeg"));
+        assert!(is_inline_safe("application/pdf"));
+        assert!(is_inline_safe("application/json"));
+        assert!(is_inline_safe("text/plain"));
+        assert!(is_inline_safe("text/csv"));
+    }
+
+    #[test]
+    fn test_sanitize_disposition_filename() {
+        assert_eq!(
+            sanitize_disposition_filename("report \"Q2\".pdf"),
+            "report Q2.pdf"
+        );
+        assert_eq!(
+            sanitize_disposition_filename("evil\r\nX-Injected: 1.pdf"),
+            "evilX-Injected: 1.pdf"
+        );
+        assert_eq!(sanitize_disposition_filename("a\\b.txt"), "ab.txt");
+    }
+
+    #[test]
+    fn test_scriptable_mime_types_not_inline_safe() {
+        assert!(!is_inline_safe("text/html"));
+        assert!(!is_inline_safe("image/svg+xml"));
+        assert!(!is_inline_safe("application/xhtml+xml"));
+        assert!(!is_inline_safe("application/octet-stream"));
+        assert!(!is_inline_safe(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ));
     }
 }
