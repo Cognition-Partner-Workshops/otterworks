@@ -7,7 +7,9 @@ import threading
 import time
 from typing import TYPE_CHECKING, Any
 
+import meilisearch.errors
 import structlog
+from botocore.exceptions import BotoCoreError, ClientError
 
 if TYPE_CHECKING:
     from app.services.indexer import Indexer
@@ -185,7 +187,7 @@ class SQSConsumer:
                 "sqs_message_validation_failed", message_id=message.get("MessageId")
             )
             sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
-        except Exception:
+        except (BotoCoreError, ClientError, meilisearch.errors.MeilisearchError, RuntimeError, OSError, KeyError, TypeError):
             logger.exception(
                 "sqs_message_processing_failed", message_id=message.get("MessageId")
             )
