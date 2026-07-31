@@ -71,6 +71,23 @@ output "meilisearch_ecs_cluster_arn" {
   value       = module.search.meilisearch_ecs_cluster_arn
 }
 
+# --- OpenSearch Serverless (migration target) ---
+
+output "opensearch_collection_endpoint" {
+  description = "OpenSearch Serverless collection endpoint (set as OPENSEARCH_ENDPOINT for SEARCH_BACKEND=opensearch)"
+  value       = module.opensearch.collection_endpoint
+}
+
+output "opensearch_dashboard_endpoint" {
+  description = "OpenSearch Dashboards endpoint for the migration target collection"
+  value       = module.opensearch.dashboard_endpoint
+}
+
+output "opensearch_collection_arn" {
+  description = "ARN of the OpenSearch Serverless collection"
+  value       = module.opensearch.collection_arn
+}
+
 # --- Auth ---
 
 output "cognito_user_pool_id" {

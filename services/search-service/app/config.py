@@ -19,6 +19,30 @@ class MeiliSearchConfig:
 
 
 @dataclass(frozen=True)
+class OpenSearchConfig:
+    """Amazon OpenSearch (Serverless) connection configuration.
+
+    ``endpoint`` is the collection endpoint (host, optionally with scheme).
+    When ``use_aws_auth`` is true the client signs requests with SigV4 for the
+    ``aoss`` service (OpenSearch Serverless); otherwise it connects unsigned
+    (a plain OpenSearch cluster, e.g. for local development).
+    """
+
+    endpoint: str = field(default_factory=lambda: os.getenv("OPENSEARCH_ENDPOINT", "http://localhost:9200"))
+    region: str = field(default_factory=lambda: os.getenv("AWS_REGION", "us-east-1"))
+    use_aws_auth: bool = field(
+        default_factory=lambda: os.getenv("OPENSEARCH_USE_AWS_AUTH", "true").lower() == "true"
+    )
+    service: str = field(default_factory=lambda: os.getenv("OPENSEARCH_SERVICE", "aoss"))
+    documents_index: str = field(
+        default_factory=lambda: os.getenv("OPENSEARCH_DOCUMENTS_INDEX", "documents")
+    )
+    files_index: str = field(
+        default_factory=lambda: os.getenv("OPENSEARCH_FILES_INDEX", "files")
+    )
+
+
+@dataclass(frozen=True)
 class SQSConfig:
     """SQS consumer configuration."""
 
@@ -56,6 +80,12 @@ class AppConfig:
         default_factory=lambda: os.getenv("FLASK_DEBUG", "false").lower() == "true"
     )
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
+    # Selects the search backend adapter. "meilisearch" (default, self-managed)
+    # keeps main unchanged; "opensearch" targets Amazon OpenSearch Serverless.
+    search_backend: str = field(
+        default_factory=lambda: os.getenv("SEARCH_BACKEND", "meilisearch").lower()
+    )
     meilisearch: MeiliSearchConfig = field(default_factory=MeiliSearchConfig)
+    opensearch: OpenSearchConfig = field(default_factory=OpenSearchConfig)
     sqs: SQSConfig = field(default_factory=SQSConfig)
     auth: AuthConfig = field(default_factory=AuthConfig)

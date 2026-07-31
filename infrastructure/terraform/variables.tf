@@ -39,3 +39,9 @@ variable "meilisearch_master_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "opensearch_namespace_suffix" {
+  description = "Namespace suffix for the OpenSearch Serverless migration target (module.opensearch)."
+  type        = string
+  default     = "os-demo"
+}
