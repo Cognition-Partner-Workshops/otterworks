@@ -91,12 +91,10 @@ Managed via Terraform in `infrastructure/terraform/`:
 
 ### Deploy to AWS
 
-```bash
-# Initialize and apply Terraform
-make tf-init
-make tf-apply          # uses environments/dev.tfvars
+See [AWS and EKS deployment setup](docs/AWS_EKS_SETUP.md) for the required AWS authentication, local environment variables, monitoring prerequisite, deployment process, and troubleshooting.
 
-# Deploy services to EKS
+```bash
+source .env
 make deploy-dev
 ```
 

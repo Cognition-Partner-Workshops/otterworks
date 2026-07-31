@@ -24,7 +24,10 @@ def _get_redis() -> redis_lib.Redis:
     if _redis_client is None:
         host = os.getenv("REDIS_HOST", "localhost")
         port = int(os.getenv("REDIS_PORT", "6379"))
-        _redis_client = redis_lib.Redis(host=host, port=port, decode_responses=True, socket_timeout=1)
+        tls = os.getenv("REDIS_TLS", "false").lower() == "true"
+        _redis_client = redis_lib.Redis(
+            host=host, port=port, ssl=tls, decode_responses=True, socket_timeout=1,
+        )
     return _redis_client
 
 
