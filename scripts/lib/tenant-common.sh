@@ -346,10 +346,6 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false") ;;
     analytics-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
-      # Drop the nightly usage-rollup CronJob for ephemeral tenants: it is the
-      # batch->event-driven demo's "before" state, unrelated to multi-tenant
-      # isolation, and just burns ResourceQuota on short-lived tenants.
-      EXTRA_ARGS+=(--set cronjob.enabled=false)
       EXTRA_ARGS+=(--set-string "config.ANALYTICS_HOST=0.0.0.0" --set-string "config.PORT=8088")
       # Third migration path, and the quietest: AnalyticsDb.migrate() runs Flyway
       # from the same DATABASE_URL as the Slick pool, and a failed migration
@@ -360,6 +356,11 @@ build_helm_args() {
       # the session pooler far less than the connection count suggests.
       EXTRA_ARGS+=(--set-string "config.DATABASE_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
       EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${DB_USER}")
+      # Tenants never publish onto the shared default EventBridge bus,
+      # regardless of T_WIRE_EVENTING: the usage-rollup pipeline writes to a
+      # single shared rollup table keyed only by date, so tenant events would
+      # mix across tenants.
+      EXTRA_ARGS+=(--set-string "config.EVENTBRIDGE_ENABLED=false")
       add_secret DATABASE_PASSWORD "${DB_PASSWORD}" ;;
     admin-service)
       # Rails takes a session-level advisory lock in `db:migrate`, which runs
