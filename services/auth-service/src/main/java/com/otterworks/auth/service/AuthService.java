@@ -6,9 +6,11 @@ import com.otterworks.auth.dto.LoginRequest;
 import com.otterworks.auth.dto.RegisterRequest;
 import com.otterworks.auth.entity.RefreshToken;
 import com.otterworks.auth.entity.User;
+import com.otterworks.auth.exception.AccountLockedException;
 import com.otterworks.auth.repository.RefreshTokenRepository;
 import com.otterworks.auth.repository.UserRepository;
 import com.otterworks.auth.security.JwtTokenProvider;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
@@ -23,6 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
   private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
+  /** Failed attempts on one account before it is temporarily locked. */
+  static final int LOCKOUT_THRESHOLD = 5;
+
+  /** Lock duration for a first lockout; doubles with each consecutive one. */
+  static final Duration LOCKOUT_BASE = Duration.ofSeconds(30);
+
+  /** Cap on exponential backoff doublings (30s * 2^5 = 16 minutes max). */
+  private static final int MAX_LOCKOUT_DOUBLINGS = 5;
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
@@ -57,18 +68,34 @@ public class AuthService {
     return buildAuthResponse(user);
   }
 
-  @Transactional
+  @Transactional(noRollbackFor = {IllegalArgumentException.class, AccountLockedException.class})
   public AuthResponse login(LoginRequest request) {
     User user =
         userRepository
-            .findByEmail(request.getEmail())
+            .findByEmailForUpdate(request.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
+    Instant now = Instant.now();
+    if (user.getLockedUntil() != null) {
+      if (now.isBefore(user.getLockedUntil())) {
+        // Refused without touching the lockout state: attempts made while locked must not be
+        // able to push the window forward, or anyone could keep an account locked forever.
+        throw new AccountLockedException(
+            "Account temporarily locked due to repeated failed login attempts");
+      }
+      user.setLockedUntil(null);
+      user.setFailedLoginAttempts(0);
+    }
+
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+      recordFailedAttempt(user, now);
       throw new IllegalArgumentException("Invalid credentials");
     }
 
-    user.setLastLoginAt(Instant.now());
+    user.setFailedLoginAttempts(0);
+    user.setLockedUntil(null);
+    user.setLockoutCycles(0);
+    user.setLastLoginAt(now);
     userRepository.save(user);
 
     log.info("User logged in: email={}", user.getEmail());
@@ -123,6 +150,20 @@ public class AuthService {
   public void logout(UUID userId) {
     refreshTokenRepository.revokeAllByUserId(userId);
     log.info("User logged out: {}", userId);
+  }
+
+  private void recordFailedAttempt(User user, Instant now) {
+    int failures = user.getFailedLoginAttempts() + 1;
+    user.setFailedLoginAttempts(failures);
+    if (failures >= LOCKOUT_THRESHOLD) {
+      int cycles = user.getLockoutCycles() + 1;
+      user.setLockoutCycles(cycles);
+      int doublings = Math.min(cycles - 1, MAX_LOCKOUT_DOUBLINGS);
+      user.setLockedUntil(now.plus(LOCKOUT_BASE.multipliedBy(1L << doublings)));
+      log.warn(
+          "Account locked after {} failed login attempts: email={}", failures, user.getEmail());
+    }
+    userRepository.save(user);
   }
 
   private AuthResponse buildAuthResponse(User user) {
