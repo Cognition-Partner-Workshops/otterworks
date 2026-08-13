@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# Cloud-init for the rehosted legacy-portal VM. Reproduces the on-prem host as-is:
+# same fat JAR, same systemd unit (deploy/legacy-portal.service), but pointed at
+# RDS PostgreSQL instead of a co-located database.
+set -euo pipefail
+
+# AL2023 ships AWS CLI v2 preinstalled; only add what's missing.
+dnf install -y java-11-amazon-corretto-headless postgresql15 jq
+
+useradd -r -s /usr/sbin/nologin legacyportal || true
+mkdir -p /opt/legacy-portal
+
+# --- Fetch script for the application JAR (uploaded by scripts/rehost-deploy.sh) ---
+cat > /opt/legacy-portal/fetch-jar.sh <<'FETCH'
+#!/usr/bin/env bash
+set -euo pipefail
+# Download to a temp path and move atomically: a partial download must never
+# clobber the JAR the running JVM has open.
+aws s3 cp "s3://${artifact_bucket}/${artifact_key}" /opt/legacy-portal/legacy-portal.jar.new
+chown legacyportal:legacyportal /opt/legacy-portal/legacy-portal.jar.new
+mv /opt/legacy-portal/legacy-portal.jar.new /opt/legacy-portal/legacy-portal.jar
+FETCH
+chmod +x /opt/legacy-portal/fetch-jar.sh
+
+# --- Datasource config (same env contract as /etc/legacy-portal.env on-prem) ---
+# The master password lives only in the RDS-managed Secrets Manager secret and
+# rotates automatically, so /etc/legacy-portal.env is regenerated from the
+# secret before every app start (systemd ExecStartPre), never baked in once.
+cat > /opt/legacy-portal/get-db-password.sh <<'GETPW'
+#!/usr/bin/env bash
+set -euo pipefail
+# Retry: on a fresh apply the instance can boot before IAM grants propagate.
+for attempt in $(seq 1 12); do
+  if SECRET="$(aws secretsmanager get-secret-value \
+    --secret-id '${db_secret_arn}' \
+    --query SecretString --output text 2>/dev/null)"; then
+    jq -r .password <<< "$SECRET"
+    exit 0
+  fi
+  sleep 10
+done
+echo "failed to read DB secret after retries" >&2
+exit 1
+GETPW
+chmod +x /opt/legacy-portal/get-db-password.sh
+
+cat > /opt/legacy-portal/refresh-env.sh <<'REFRESH'
+#!/usr/bin/env bash
+set -euo pipefail
+DB_PASSWORD="$(/opt/legacy-portal/get-db-password.sh)"
+# systemd's EnvironmentFile parser does quote removal and backslash
+# unescaping, so double-quote the value and escape backslashes to keep
+# RDS-generated passwords (which may contain ' or \) intact.
+DB_PASSWORD_ESCAPED="$${DB_PASSWORD//\\/\\\\}"
+# Root-only file: systemd reads EnvironmentFile as root before dropping
+# privileges, so the unprivileged service account never needs read access.
+install -m 600 -o root -g root /dev/null /etc/legacy-portal.env.tmp
+{
+  printf '%s\n' 'SPRING_PROFILES_ACTIVE=postgres'
+  printf '%s\n' 'SPRING_DATASOURCE_URL=jdbc:postgresql://${db_endpoint}/${db_name}'
+  printf '%s\n' 'SPRING_DATASOURCE_USERNAME=${db_username}'
+  printf 'SPRING_DATASOURCE_PASSWORD="%s"\n' "$DB_PASSWORD_ESCAPED"
+} > /etc/legacy-portal.env.tmp
+mv /etc/legacy-portal.env.tmp /etc/legacy-portal.env
+REFRESH
+chmod +x /opt/legacy-portal/refresh-env.sh
+# Best-effort: the unit regenerates this file via ExecStartPre before every
+# start, so a transient secret-read failure must not abort the rest of boot.
+/opt/legacy-portal/refresh-env.sh || echo "initial env refresh failed; ExecStartPre will retry" >&2
+
+# --- systemd unit (verbatim from services/legacy-portal/deploy/legacy-portal.service) ---
+cat > /etc/systemd/system/legacy-portal.service <<'UNIT'
+[Unit]
+Description=OtterWorks Legacy Portal (modular monolith)
+After=network.target
+
+[Service]
+Type=simple
+User=legacyportal
+WorkingDirectory=/opt/legacy-portal
+# Re-read the (auto-rotated) RDS master password before every start; the '+'
+# runs the refresh as root while the service itself stays unprivileged.
+ExecStartPre=+/opt/legacy-portal/refresh-env.sh
+EnvironmentFile=-/etc/legacy-portal.env
+ExecStart=/usr/bin/java -jar /opt/legacy-portal/legacy-portal.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+# --- Rotation watcher: restart the app when the RDS-managed secret rotates ---
+# The env file is only re-read at start, so a mid-run rotation would leave the
+# JVM's pool authenticating with a stale password until a manual restart.
+cat > /opt/legacy-portal/check-rotation.sh <<'CHECK'
+#!/usr/bin/env bash
+set -euo pipefail
+CURRENT="$(aws secretsmanager get-secret-value \
+  --secret-id '${db_secret_arn}' \
+  --query VersionId --output text)"
+STAMP=/var/lib/legacy-portal-secret-version
+if [[ ! -f "$STAMP" ]]; then
+  echo "$CURRENT" > "$STAMP"
+  exit 0
+fi
+if [[ "$(cat "$STAMP")" != "$CURRENT" ]]; then
+  if systemctl is-active --quiet legacy-portal; then
+    systemctl restart legacy-portal
+  fi
+  echo "$CURRENT" > "$STAMP"
+fi
+CHECK
+chmod +x /opt/legacy-portal/check-rotation.sh
+
+cat > /etc/systemd/system/legacy-portal-rotation.service <<'UNIT'
+[Unit]
+Description=Restart legacy-portal when the RDS master secret rotates
+
+[Service]
+Type=oneshot
+ExecStart=/opt/legacy-portal/check-rotation.sh
+UNIT
+
+cat > /etc/systemd/system/legacy-portal-rotation.timer <<'UNIT'
+[Unit]
+Description=Periodic check for RDS master secret rotation
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target
+UNIT
+
+# /opt/legacy-portal stays root-owned: refresh-env.sh, get-db-password.sh and
+# check-rotation.sh run as root, so the service account must not be able to
+# rewrite them. The app only needs to read the JAR (chowned after each fetch).
+systemctl daemon-reload
+systemctl enable legacy-portal
+systemctl enable --now legacy-portal-rotation.timer
+
+# --- One schema per bounded context (mirrors scripts/initdb.sql) ---
+# Runs after the unit/timer are installed and with bounded retries, so a
+# transient DB hiccup can't abort the boot before the host is operable.
+DB_HOST="$(cut -d: -f1 <<< '${db_endpoint}')"
+DB_PORT="$(cut -d: -f2 <<< '${db_endpoint}')"
+if PGPASSWORD="$(/opt/legacy-portal/get-db-password.sh)"; then
+  export PGPASSWORD
+  for attempt in $(seq 1 12); do
+    if psql -v ON_ERROR_STOP=1 "host=$${DB_HOST} port=$${DB_PORT} dbname=${db_name} user=${db_username}" <<'SQL'
+CREATE SCHEMA IF NOT EXISTS announcements;
+CREATE SCHEMA IF NOT EXISTS user_preferences;
+CREATE SCHEMA IF NOT EXISTS feedback;
+SQL
+    then
+      break
+    fi
+    if [[ "$attempt" -eq 12 ]]; then
+      # Best-effort: leave the host operable; rerun the CREATE SCHEMA
+      # statements via SSM if this ever trips.
+      echo "failed to create schemas after retries" >&2
+      break
+    fi
+    sleep 10
+  done
+else
+  echo "skipping schema bootstrap: DB secret unavailable" >&2
+fi
+
+# The JAR may not exist yet on the very first boot (the artifact bucket is created
+# in the same apply); the unit and config above must still land so a later
+# scripts/rehost-deploy.sh upload + restart brings the app up. Retry the fetch so a
+# transient credential/IAM-propagation error does not leave the app stopped.
+for attempt in $(seq 1 6); do
+  if /opt/legacy-portal/fetch-jar.sh; then
+    systemctl start legacy-portal
+    break
+  fi
+  sleep 10
+done
