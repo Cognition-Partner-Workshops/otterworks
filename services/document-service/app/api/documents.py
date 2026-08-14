@@ -15,7 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.document import (
     DocumentCreate,
+    DocumentCreateRequest,
     DocumentFromTemplate,
+    DocumentFromTemplateRequest,
     DocumentListResponse,
     DocumentPatch,
     DocumentResponse,
@@ -58,33 +60,62 @@ async def _maybe_inject_latency() -> None:
         await asyncio.sleep(delay)
 
 
+# Claim value the reindexers present to enumerate documents across owners.
+SERVICE_SCOPE = "service"
+
+
 def _get_jwt_secret() -> str:
     return os.environ.get("JWT_SECRET", "")
 
 
-def _extract_user_id(request: Request) -> UUID | None:
-    """Extract user ID from the Authorization JWT."""
+def _decode_token(request: Request) -> dict | None:
+    """Return the validated claims of the Authorization JWT, if any."""
     auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
-        else:
-            forwarded_user_id = request.headers.get("X-User-ID")
-            if forwarded_user_id:
-                try:
-                    return UUID(str(forwarded_user_id))
-                except ValueError:
-                    pass
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    secret = _get_jwt_secret()
+    if not secret:
+        return None
+    try:
+        return jwt.decode(
+            auth_header[len("Bearer "):], secret, algorithms=["HS256", "HS384"]
+        )
+    except jwt.PyJWTError:
+        return None
 
-    return None
+
+def _extract_user_id(request: Request) -> UUID | None:
+    """Extract user ID from the Authorization JWT.
+
+    Identity comes from a signed token only. There is deliberately no X-User-ID
+    fallback: an unset JWT_SECRET fails closed rather than letting a caller name
+    whichever user it likes.
+    """
+    payload = _decode_token(request)
+    if payload is None:
+        return None
+    user_id_str = payload.get("user_id") or payload.get("sub")
+    if not user_id_str:
+        return None
+    try:
+        return UUID(str(user_id_str))
+    except ValueError:
+        return None
+
+
+def _is_service_caller(request: Request) -> bool:
+    """True for the indexers, which hold a service-scoped token instead of a user.
+
+    Cross-owner authority is only granted to a token that expires, so a leaked one
+    stops working on its own.
+    """
+    payload = _decode_token(request)
+    if payload is None or payload.get("scope") != SERVICE_SCOPE:
+        return False
+    if "exp" not in payload:
+        logger.warning("service_token_without_expiry_rejected", sub=payload.get("sub"))
+        return False
+    return True
 
 
 def _require_user_id(request: Request) -> UUID:
@@ -99,29 +130,38 @@ def _ensure_owner(document: object, user_id: UUID) -> None:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
+def _resolve_list_owner(request: Request, requested_owner_id: UUID | None) -> UUID | None:
+    """Listings are scoped to the caller, whatever the query asks for.
+
+    A service-scoped caller (the search indexers) may enumerate any owner, since it
+    has to rebuild the whole index.
+    """
+    if _is_service_caller(request):
+        return requested_owner_id
+    caller_id = _require_user_id(request)
+    if requested_owner_id is not None and requested_owner_id != caller_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return caller_id
+
+
 async def _do_create_document(
-    body: DocumentCreate,
+    body: DocumentCreateRequest,
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
-            )
-        body.owner_id = extracted_id
+    owner_id = _require_user_id(request)
 
     service = DocumentService(db)
-    document = await service.create(body)
+    document = await service.create(
+        DocumentCreate(**body.model_dump(), owner_id=owner_id)
+    )
     logger.info("document_created", document_id=str(document.id))
     return document
 
 
 @router.post("/", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def create_document(
-    body: DocumentCreate,
+    body: DocumentCreateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
@@ -137,7 +177,7 @@ async def create_document(
     include_in_schema=False,
 )
 async def create_document_no_slash(
-    body: DocumentCreate,
+    body: DocumentCreateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
@@ -148,15 +188,17 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
     await _maybe_inject_latency()
+    owner_id = _require_user_id(request)
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=owner_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -196,8 +238,8 @@ async def list_documents(
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    """List the caller's documents with optional filtering and pagination."""
+    effective_owner = _resolve_list_owner(request, owner_id)
     return await _do_list_documents(effective_owner, folder_id, page, size, db)
 
 
@@ -214,8 +256,8 @@ async def list_documents_no_slash(
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    """List the caller's documents (no trailing slash)."""
+    effective_owner = _resolve_list_owner(request, owner_id)
     return await _do_list_documents(effective_owner, folder_id, page, size, db)
 
 
@@ -367,12 +409,16 @@ async def export_document(
 )
 async def create_from_template(
     template_id: UUID,
-    body: DocumentFromTemplate,
+    body: DocumentFromTemplateRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a document from a template."""
+    """Create a document from a template, owned by the caller."""
+    owner_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.create_from_template(template_id, body)
+    document = await service.create_from_template(
+        template_id, DocumentFromTemplate(**body.model_dump(), owner_id=owner_id)
+    )
     if not document:
         raise HTTPException(status_code=404, detail="Template not found")
     logger.info(

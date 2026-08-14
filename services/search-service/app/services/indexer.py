@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import datetime
+import os
 from typing import Any
 
+import jwt
 import requests
 import structlog
 
@@ -14,6 +17,35 @@ logger = structlog.get_logger()
 DOCUMENT_SERVICE_URL = "http://document-service:8083"
 FILE_SERVICE_URL = "http://file-service:8082"
 FETCH_TIMEOUT = 30
+SERVICE_TOKEN_TTL = datetime.timedelta(minutes=5)
+
+
+class ReindexUnauthorized(RuntimeError):
+    """The crawler cannot authenticate, so a rebuild would empty the index."""
+
+
+def _service_auth_headers() -> dict[str, str]:
+    """A reindex enumerates every owner's content, which needs a service token.
+
+    The owning services scope listings to the caller for user tokens, so the crawler
+    presents a token carrying scope=service instead of a user id.
+    """
+    secret = os.environ.get("JWT_SECRET", "")
+    if not secret:
+        # No credential to present: the crawl goes out unauthenticated and the
+        # source's 401 is what aborts the rebuild, so nothing is cleared.
+        logger.warning("reindex_service_token_unavailable")
+        return {}
+    token = jwt.encode(
+        {
+            "scope": "service",
+            "sub": "search-service-indexer",
+            "exp": datetime.datetime.now(datetime.timezone.utc) + SERVICE_TOKEN_TTL,
+        },
+        secret,
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
 
 
 class Indexer:
@@ -90,7 +122,9 @@ class Indexer:
         Fetches all documents from the document-service and all files
         from the file-service, then passes them to MeiliSearch for
         bulk re-indexing.  If a source service is unreachable the
-        corresponding index is still cleared and recreated empty.
+        corresponding index is still cleared and recreated empty; a crawl the
+        source *rejects* aborts before anything is cleared, since replacing the
+        index with an empty one would hide every document from every user.
         """
         documents = self._fetch_all_documents()
         files = self._fetch_all_files()
@@ -112,8 +146,14 @@ class Indexer:
                 resp = requests.get(
                     f"{DOCUMENT_SERVICE_URL}/api/v1/documents/",
                     params={"page": page, "page_size": 100},
+                    headers=_service_auth_headers(),
                     timeout=FETCH_TIMEOUT,
                 )
+                if resp.status_code in (401, 403):
+                    logger.warning("reindex_document_fetch_denied", status=resp.status_code)
+                    raise ReindexUnauthorized(
+                        "document-service rejected the service token"
+                    )
                 if resp.status_code != 200:
                     logger.warning("reindex_document_fetch_failed", status=resp.status_code)
                     break
@@ -148,8 +188,12 @@ class Indexer:
                 resp = requests.get(
                     f"{FILE_SERVICE_URL}/api/v1/files",
                     params={"page": page, "page_size": 100},
+                    headers=_service_auth_headers(),
                     timeout=FETCH_TIMEOUT,
                 )
+                if resp.status_code in (401, 403):
+                    logger.warning("reindex_file_fetch_denied", status=resp.status_code)
+                    raise ReindexUnauthorized("file-service rejected the service token")
                 if resp.status_code != 200:
                     logger.warning("reindex_file_fetch_failed", status=resp.status_code)
                     break

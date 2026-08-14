@@ -2,6 +2,7 @@
 
 import os
 import uuid
+from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
@@ -15,6 +16,19 @@ def _make_jwt(user_id: str) -> str:
     return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm="HS256")
 
 
+def _make_service_jwt(ttl: int = 300) -> str:
+    """A reindexer credential: service scope, and it expires."""
+    return jwt.encode(
+        {
+            "scope": "service",
+            "sub": "search-indexer",
+            "exp": datetime.now(UTC) + timedelta(seconds=ttl),
+        },
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
+
+
 @pytest.mark.asyncio
 async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
@@ -22,7 +36,6 @@ async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
         json={
             "title": "Test Document",
             "content": "Hello world",
-            "owner_id": str(owner_id),
         },
     )
     assert resp.status_code == 201
@@ -260,10 +273,10 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
+async def test_create_document_x_user_id_header_ignored(anon_client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()
-    resp = await client.post(
+    resp = await anon_client.post(
         "/api/v1/documents/",
         json={"title": "Header Doc"},
         headers={"X-User-Id": str(user_id)},
@@ -272,10 +285,95 @@ async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_no_auth_returns_401(client: AsyncClient):
+async def test_create_document_no_auth_returns_401(anon_client: AsyncClient):
     """Creating a document without owner_id and without auth returns 401."""
-    resp = await client.post(
+    resp = await anon_client.post(
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
     )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_document_ignores_body_owner_id(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    """A client-supplied owner_id cannot assign a document to someone else."""
+    victim_id = uuid.uuid4()
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mass assignment", "owner_id": str(victim_id)},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(owner_id)
+
+
+@pytest.mark.asyncio
+async def test_list_documents_rejects_other_owner(client: AsyncClient):
+    """Listing another user's documents is denied, not silently honoured."""
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(uuid.uuid4())}
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_search_documents_scoped_to_caller(
+    client: AsyncClient, anon_client: AsyncClient
+):
+    """Search never returns another user's documents."""
+    await client.post("/api/v1/documents/", json={"title": "Mine", "content": "secret"})
+
+    other_token = _make_jwt(str(uuid.uuid4()))
+    resp = await anon_client.get(
+        "/api/v1/documents/search",
+        params={"q": "secret"},
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_service_token_lists_every_owner(
+    client: AsyncClient, anon_client: AsyncClient
+):
+    """The search reindexers enumerate all documents with a service-scoped token."""
+    await client.post("/api/v1/documents/", json={"title": "Indexed"})
+
+    resp = await anon_client.get(
+        "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_service_jwt()}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_service_token_without_expiry_is_not_trusted(anon_client: AsyncClient):
+    """Cross-owner authority is only granted to a credential that expires."""
+    everlasting = jwt.encode(
+        {"scope": "service", "sub": "search-indexer"},
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
+    resp = await anon_client.get(
+        "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {everlasting}"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_expired_service_token_is_rejected(anon_client: AsyncClient):
+    resp = await anon_client.get(
+        "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_service_jwt(ttl=-60)}"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_search_documents_requires_auth(anon_client: AsyncClient):
+    resp = await anon_client.get("/api/v1/documents/search", params={"q": "anything"})
     assert resp.status_code == 401

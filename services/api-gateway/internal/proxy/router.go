@@ -13,6 +13,9 @@ import (
 	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/middleware"
 )
 
+// identityHeaders are set from validated claims and never accepted from a client.
+var identityHeaders = []string{"X-User-ID", "X-User-Email", "X-User-Roles"}
+
 // Route defines a mapping from a URL prefix to a backend service.
 type Route struct {
 	Prefix    string
@@ -59,23 +62,39 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-
-	// Wrap the default director to forward authenticated user identity.
+	// Rewrite (rather than Director) so the outbound headers set here are the ones
+	// the backend sees, and so the forwarding headers are rebuilt from the peer.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
-			userID := claims.Subject
-			if userID == "" {
-				userID = claims.UserID
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(target)
+			pr.Out.Host = pr.In.Host
+
+			// SetXForwarded derives the scheme from this hop, which is plaintext behind
+			// the TLS-terminating ingress. Keep the scheme the ingress reported; the
+			// RealIP middleware has already dropped it if an untrusted peer sent it.
+			forwardedProto := pr.In.Header.Get("X-Forwarded-Proto")
+			pr.SetXForwarded()
+			if forwardedProto != "" {
+				pr.Out.Header.Set("X-Forwarded-Proto", forwardedProto)
 			}
-			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+
+			// Identity headers are the gateway's to set: drop whatever the client sent
+			// before deriving them from validated claims.
+			for _, h := range identityHeaders {
+				pr.Out.Header.Del(h)
 			}
-		}
+			if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
+				userID := claims.Subject
+				if userID == "" {
+					userID = claims.UserID
+				}
+				if userID != "" {
+					pr.Out.Header.Set("X-User-ID", userID)
+				}
+			}
+		},
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
