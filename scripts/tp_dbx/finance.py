@@ -73,13 +73,17 @@ def names(args):
 
 # --- golden legacy baseline --------------------------------------------------
 def legacy_root(args) -> Path:
-    root = Path(args.legacy_root or os.environ.get("OTTERWORKS_LEGACY_ROOT", ""))
-    if not root.is_dir():
+    # an unset value must not collapse to Path("") == ".", which is always a
+    # directory: the baseline would then be "found" in the cwd and the recompute
+    # would fail later with a confusing empty-input error instead of this guidance
+    raw = args.legacy_root or os.environ.get("OTTERWORKS_LEGACY_ROOT", "")
+    root = Path(raw) if raw else None
+    if root is None or not root.is_dir():
         raise SystemExit(
-            f"legacy root not found: {root}\n"
+            f"legacy root not found: {raw or '<unset>'}\n"
             "  capture the golden baseline first:\n"
-            f"    export OTTERWORKS_LEGACY_ROOT={root}\n"
-            f"    make legacy-etl-gen-data NS=<ns>\n"
+            "    export OTTERWORKS_LEGACY_ROOT=/tmp/otterworks-legacy-<ns>\n"
+            "    make legacy-etl-gen-data NS=<ns>\n"
             "    TP_FAKETIME='2026-01-15 00:00:00' scripts/tp-run-deterministic.sh "
             "make legacy-etl-run JOB=run_all NS=<ns>"
         )
@@ -209,6 +213,20 @@ def trigger(dbx: Databricks, n, params: dict) -> dict:
     return outcome
 
 
+def require_success(outcome: dict, label: str) -> dict:
+    """A recon run that failed must never be reconciled around: gold and the
+    delivered export both survive between invocations, so a failed run leaves the
+    *previous* run's correct rows and bytes in place and every content check
+    downstream would compare those and pass. Stop instead of reporting a green
+    recon for a run that did not happen."""
+    if outcome["result_state"] != "SUCCESS":
+        raise SystemExit(
+            f"recon {label} run {outcome['run_id']} ended {outcome['result_state']}, not SUCCESS: "
+            f"{outcome['message']}\n  {outcome['url']}"
+        )
+    return outcome
+
+
 def cmd_run(dbx: Databricks, args) -> int:
     n = names(args)
     params = {
@@ -284,13 +302,15 @@ def cmd_recon(dbx: Databricks, args) -> int:
           f"{legacy_psv} vs {legacy_csv_label} ({report_path.name})")
 
     # --- run A: the real batch
-    run_a = trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME, "delivery_probe": "off"})
+    run_a = require_success(
+        trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME,
+                         "delivery_probe": "off"}), "build")
     gold_a = gold_rows(dbx, n)
     export_a = download_export(dbx, main_export)
 
     check(checks, "finance-aggregate-parity",
-          {"groups": rows_as_strings(expected_rows)},
-          {"groups": rows_as_strings(gold_a)},
+          {"run_succeeded": True, "groups": rows_as_strings(expected_rows)},
+          {"run_succeeded": run_a["result_state"] == "SUCCESS", "groups": rows_as_strings(gold_a)},
           f"{legacy_csv_label}; actual recomputed from {n.gold} after run {run_a['run_id']}")
     for ccy, rt, count, cents in expected_rows:
         actual = [row for row in gold_a if row[0] == ccy and row[1] == rt]
@@ -312,7 +332,9 @@ def cmd_recon(dbx: Databricks, args) -> int:
           f"export object at {main_export} read back from the volume")
 
     # --- run B: idempotency
-    run_b = trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME, "delivery_probe": "off"})
+    run_b = require_success(
+        trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME,
+                         "delivery_probe": "off"}), "idempotency rerun")
     gold_b = gold_rows(dbx, n)
     export_b = download_export(dbx, main_export)
     idempotent = gold_a == gold_b and export_a == export_b and export_b == expected_payload
@@ -413,14 +435,18 @@ def cmd_recon(dbx: Databricks, args) -> int:
           f"already at {main_export}")
 
     # --- run C: restore the good batch and confirm it reproduces run A exactly
-    run_c = trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME, "delivery_probe": "off"})
+    run_c = require_success(
+        trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME,
+                         "delivery_probe": "off"}), "rebuild after empty batch")
     gold_c = gold_rows(dbx, n)
     export_c = download_export(dbx, main_export)
     restored = gold_c == gold_a and export_c == export_a
     check(checks, "finance-idempotency",
-          {"gold_rows_identical": True, "export_sha256": hashlib.sha256(expected_payload).hexdigest(),
+          {"reruns_succeeded": True, "gold_rows_identical": True,
+           "export_sha256": hashlib.sha256(expected_payload).hexdigest(),
            "rebuild_after_empty_batch_identical": True},
-          {"gold_rows_identical": gold_a == gold_b,
+          {"reruns_succeeded": run_b["result_state"] == "SUCCESS" and run_c["result_state"] == "SUCCESS",
+           "gold_rows_identical": gold_a == gold_b,
            "export_sha256": hashlib.sha256(export_c or b"").hexdigest(),
            "rebuild_after_empty_batch_identical": restored},
           f"reruns {run_b['run_id']} and {run_c['run_id']} recomputed from {n.gold} and the delivered export")
