@@ -390,6 +390,11 @@ def main(argv=None) -> int:
                 "concurrent writers to the same landing slice and partially-written drops other than "
                 "the .ok-marker case were not exercised"
             ),
+            (
+                "silver/quarantine writes build SQL string literals via parse_sql.esc() (quote and "
+                "backslash escaping) rather than parameter markers; no adversarial-content drop was "
+                "landed to exercise that path live"
+            ),
         ],
         "recon_result": "pass" if all(c["result"] == "pass" for c in checks) and idempotent else "fail",
     }

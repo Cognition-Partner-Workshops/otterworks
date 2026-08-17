@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "dbx-parse",
   "namespace": "cnvparse",
-  "generated_at": "2026-08-17T05:42:03Z",
+  "generated_at": "2026-08-17T05:58:44Z",
   "run_mode": "live",
   "source_artifact": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
   "contract": "docs/tech-partnerships/contracts/parse_custbill_fixedwidth.json",
@@ -484,7 +484,8 @@
     "encoding_invalid_byte, bad_record_length and missing_cust_id/missing_cust_name rejection paths are covered only by offline tests (tests/tp/test_custbill_layout.py); no live drop carrying those defects was landed in Databricks",
     "legacy-side behaviour was captured live only for the corrupted-amount drop; the invalid-calendar-date and trailer-mismatch drops were not replayed through the legacy parser, so their legacy output is not part of this comparison",
     "infrastructure/terraform-databricks/jobs_parse.tf is fmt-checked only; the shared Databricks stack is parent-owned and no terraform plan/apply was run from this unit",
-    "concurrent writers to the same landing slice and partially-written drops other than the .ok-marker case were not exercised"
+    "concurrent writers to the same landing slice and partially-written drops other than the .ok-marker case were not exercised",
+    "silver/quarantine writes build SQL string literals via parse_sql.esc() (quote and backslash escaping) rather than parameter markers; no adversarial-content drop was landed to exercise that path live"
   ],
   "recon_result": "pass"
 }

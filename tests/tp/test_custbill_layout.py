@@ -77,6 +77,52 @@ def test_non_numeric_amount_is_quarantined_with_original_bytes():
     assert base64.b64decode(reject.raw_bytes_base64) == bad
 
 
+def test_non_ascii_date_digit_is_quarantined_without_raising():
+    bad = (
+        b"C000000001"
+        + b"ACME".ljust(29)
+        + b"\xc2\xb2"
+        + b"0230131"
+        + b"000000012345"
+        + b"USD"
+        + b"01"
+    )
+
+    result = layout.parse_file("unicode-date.dat", make_file(bad))
+
+    assert [reject.reason_code for reject in result.rejects] == ["invalid_date_format"]
+
+
+def test_non_ascii_amount_digit_is_quarantined_without_raising():
+    bad = (
+        b"C000000001"
+        + b"ACME".ljust(30)
+        + b"20230131"
+        + b"\xc2\xb2"
+        + b"00000012345"
+        + b"US"
+        + b"01"
+    )
+
+    result = layout.parse_file("unicode-amount.dat", make_file(bad))
+
+    assert [reject.reason_code for reject in result.rejects] == ["non_numeric_amount"]
+
+
+def test_non_ascii_trailer_digit_uses_invalid_count_sentinel():
+    body = make_record()
+    trailer = b"TRL\xc2\xb200000000"
+
+    result = layout.parse_file(
+        "unicode-trailer.dat",
+        b"HDR CBCUST01\n" + body + b"\n" + trailer + b"\n",
+    )
+
+    assert result.failed
+    assert result.trailer_count == -1
+    assert any(reject.reason_code == "trailer_count_mismatch" for reject in result.rejects)
+
+
 def test_invalid_calendar_date_is_rejected_but_leap_day_is_accepted():
     invalid = make_record(cust_id="CUST000001", bill_date="20230231")
     leap_day = make_record(cust_id="CUST000002", bill_date="20240229")

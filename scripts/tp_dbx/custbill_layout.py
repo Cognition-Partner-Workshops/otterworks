@@ -148,7 +148,7 @@ def parse_record(source_file: str, line_no: int, raw: bytes):
         return None, _reject(source_file, line_no, raw, text, "missing_cust_name", "CUST-NAME is blank")
 
     date_field = slice_field("bill_date")
-    if not (len(date_field) == 8 and date_field.isdigit()):
+    if not (len(date_field) == 8 and date_field.isascii() and date_field.isdecimal()):
         return None, _reject(source_file, line_no, raw, text, "invalid_date_format",
                              f"BILL-DATE {date_field!r} is not 8 digits")
     year, month, day = int(date_field[:4]), int(date_field[4:6]), int(date_field[6:8])
@@ -157,7 +157,7 @@ def parse_record(source_file: str, line_no: int, raw: bytes):
                              f"BILL-DATE {date_field} is not a calendar date")
 
     amount_field = slice_field("amount")
-    if not (len(amount_field) == 12 and amount_field.isdigit()):
+    if not (len(amount_field) == 12 and amount_field.isascii() and amount_field.isdecimal()):
         return None, _reject(source_file, line_no, raw, text, "non_numeric_amount",
                              f"BILL-AMT {amount_field!r} is not 12 digits")
     amount_cents = int(amount_field)
@@ -199,7 +199,7 @@ def split_lines(data: bytes) -> list:
 def trailer_count(line: bytes) -> int:
     """TRL count occupies pos 4-13 (the legacy `cut -c4-13 | sed 's/^0*//'`)."""
     digits = line[3:13].decode("latin-1").strip()
-    return int(digits) if digits.isdigit() else -1
+    return int(digits) if digits.isascii() and digits.isdecimal() else -1
 
 
 def parse_file(source_file: str, data: bytes) -> FileResult:
@@ -241,6 +241,7 @@ def parse_file(source_file: str, data: bytes) -> FileResult:
 
     if result.failed:
         accepted, result.records = result.records, []
+        body_by_line = dict(body)
         failure_reason = (
             "file_failed_missing_trailer" if not trailers
             else "file_failed_trailer_mismatch"
@@ -251,12 +252,13 @@ def parse_file(source_file: str, data: bytes) -> FileResult:
             else f"file rejected: trailer={result.trailer_count} records={result.body_count}"
         )
         for record in accepted:
+            raw = body_by_line[record.source_line]
             result.rejects.append(Reject(
                 source_file=source_file,
                 source_line=record.source_line,
                 raw_bytes_base64=base64.b64encode(
-                    dict(body)[record.source_line]).decode("ascii"),
-                raw_line=decode_line(dict(body)[record.source_line])[0],
+                    raw).decode("ascii"),
+                raw_line=decode_line(raw)[0],
                 reason_code=failure_reason,
                 detail=failure_detail,
             ))
