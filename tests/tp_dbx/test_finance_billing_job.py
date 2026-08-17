@@ -81,6 +81,7 @@ def test_deliver_writes_and_verifies_payload(tmp_path):
     result = JOB.deliver(payload, str(directory), "finance_billing.csv")
 
     assert (directory / "finance_billing.csv").is_file()
+    assert not (directory / ".finance_billing.csv.staging").exists()
     assert result == {
         "path": str(directory / "finance_billing.csv"),
         "byte_size": len(payload),
@@ -170,7 +171,7 @@ def test_require_run_id_rejects_values_that_would_escape_the_sql_literal(value):
         JOB.require_run_id(value)
 
 
-def test_deliver_skip_write_removes_stale_target_before_verification(tmp_path):
+def test_deliver_skip_write_preserves_stale_target_before_verification(tmp_path):
     payload = JOB.render_export([("USD", "01", 1, 100)])
     directory = tmp_path / "exports"
     directory.mkdir()
@@ -180,7 +181,32 @@ def test_deliver_skip_write_removes_stale_target_before_verification(tmp_path):
     with pytest.raises(JOB.DeliveryError, match="silent_delivery_noop"):
         JOB.deliver(payload, str(directory), target.name, skip_write=True)
 
-    assert not target.exists()
+    assert target.read_bytes() == payload
+    assert not (directory / ".finance_billing.csv.staging").exists()
+
+
+def test_deliver_scratch_mismatch_preserves_prior_export(tmp_path, monkeypatch):
+    prior_payload = JOB.render_export([("USD", "01", 1, 100)])
+    new_payload = JOB.render_export([("USD", "01", 2, 200)])
+    directory = tmp_path / "exports"
+    directory.mkdir()
+    target = directory / "finance_billing.csv"
+    target.write_bytes(prior_payload)
+    real_open = open
+
+    def corrupt_staging(path, mode="r", *args, **kwargs):
+        if mode == "rb" and str(path).endswith(".staging"):
+            with real_open(path, "wb") as handle:
+                handle.write(b"corrupted staging bytes")
+        return real_open(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(JOB, "open", corrupt_staging, raising=False)
+
+    with pytest.raises(JOB.DeliveryError, match="delivery mismatch"):
+        JOB.deliver(new_payload, str(directory), target.name)
+
+    assert target.read_bytes() == prior_payload
+    assert not (directory / ".finance_billing.csv.staging").exists()
 
 
 @pytest.mark.parametrize(

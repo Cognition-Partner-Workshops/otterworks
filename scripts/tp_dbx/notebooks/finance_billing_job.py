@@ -273,21 +273,32 @@ def deliver(payload: bytes, directory: str, name: str, skip_write: bool = False)
     rather than the run reporting success.
 
     The export is byte-identical across reruns, so reading the destination back
-    cannot on its own tell a fresh write from last run's leftovers. Removing the
-    target first makes the absence of a write observable: a delivery that did
-    nothing leaves nothing to verify instead of inheriting a stale artifact.
+    cannot on its own tell a fresh write from last run's leftovers. This run's
+    bytes are therefore written to a scratch name and verified there, and only a
+    verified scratch file is moved onto the export path: a delivery that did
+    nothing has nothing to move, and the previously delivered report survives a
+    failed run instead of being destroyed by it.
     """
     check_export_name(name)
     path = f"{directory}/{name}"
+    staged = f"{directory}/.{name}.staging"
     os.makedirs(directory, exist_ok=True)
-    if os.path.exists(path):
-        os.remove(path)
+    if os.path.exists(staged):
+        os.remove(staged)
     if not skip_write:
-        with open(path, "wb") as handle:
+        with open(staged, "wb") as handle:
             handle.write(payload)
-    if not os.path.exists(path):
-        raise DeliveryError(f"silent_delivery_noop: nothing was delivered at {path}")
-    with open(path, "rb") as handle:  # a fresh handle: never trust the write buffer
+    if not os.path.exists(staged):
+        raise DeliveryError(f"silent_delivery_noop: nothing was delivered for {path}")
+    with open(staged, "rb") as handle:  # a fresh handle: never trust the write buffer
+        landed = handle.read()
+    if landed != payload:
+        os.remove(staged)
+        raise DeliveryError(
+            f"delivery mismatch at {path}: {len(landed)} bytes landed, {len(payload)} expected"
+        )
+    os.replace(staged, path)
+    with open(path, "rb") as handle:
         landed = handle.read()
     if landed != payload:
         raise DeliveryError(

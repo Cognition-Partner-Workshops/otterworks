@@ -405,10 +405,10 @@ def cmd_recon(dbx: Databricks, args) -> int:
                                    "delivery_probe": "skip_write"})
     stale_leftover = download_export(dbx, main_export)
     check(checks, "finance-verified-delivery",
-          {"stale_artifact_run_fails": True, "stale_artifact_accepted_as_delivery": False},
+          {"stale_artifact_run_fails": True, "prior_artifact_survives_failure": True},
           {"stale_artifact_run_fails": probe_stale["result_state"] != "SUCCESS"
                                        and "silent_delivery_noop" in probe_stale["message"],
-           "stale_artifact_accepted_as_delivery": stale_leftover is not None},
+           "prior_artifact_survives_failure": stale_leftover == export_b},
           f"probe run {probe_stale['run_id']} skipped the write with a byte-identical artifact "
           f"already at {main_export}")
 
