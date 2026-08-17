@@ -299,19 +299,22 @@ def cmd_fail_test(dbx: Databricks, n: ChainNames, args) -> int:
     payload = ("\n".join(body) + "\n").encode()
     dbx.put_file(f"{n.drop_dir}/{BAD_TRAILER_FILE}", payload)
     print(f"planted {BAD_TRAILER_FILE} (trailer says 42, body has 1 record)")
-    run_id = _trigger(dbx, n)
-    report = _run_report(dbx, dbx.wait_run(run_id))
-    print(json.dumps(report, indent=2))
-    ledger = dbx.sql_ok(
-        f"SELECT task_key, status, detail FROM {n.ledger} "
-        f"WHERE run_id = '{report['run_id']}' ORDER BY recorded_at"
-    ).dicts()
-    _record_evidence(n, "failure_run", {**report, "ledger": ledger})
-    # clean up the planted file and its bronze rows (unit-owned table only)
-    dbx.delete_file(f"{n.drop_dir}/{BAD_TRAILER_FILE}")
-    dbx.sql_ok(f"DELETE FROM {n.bronze} WHERE source_file = '{BAD_TRAILER_FILE}'")
-    print("cleanup: planted drop deleted and its bronze rows removed")
-    return 0 if report["result_state"] == "FAILED" else 1
+    try:
+        run_id = _trigger(dbx, n)
+        report = _run_report(dbx, dbx.wait_run(run_id))
+        print(json.dumps(report, indent=2))
+        report_run_id = int(report["run_id"])
+        ledger = dbx.sql_ok(
+            f"SELECT task_key, status, detail FROM {n.ledger} "
+            f"WHERE run_id = {report_run_id} ORDER BY recorded_at"
+        ).dicts()
+        _record_evidence(n, "failure_run", {**report, "ledger": ledger})
+        return 0 if report["result_state"] == "FAILED" else 1
+    finally:
+        # Clean up the planted file and its bronze rows (unit-owned table only).
+        dbx.delete_file(f"{n.drop_dir}/{BAD_TRAILER_FILE}")
+        dbx.sql_ok(f"DELETE FROM {n.bronze} WHERE source_file = '{BAD_TRAILER_FILE}'")
+        print("cleanup: planted drop deleted and its bronze rows removed")
 
 
 def cmd_empty_input(dbx: Databricks, n: ChainNames, args) -> int:
@@ -319,21 +322,23 @@ def cmd_empty_input(dbx: Databricks, n: ChainNames, args) -> int:
     no-op that preserves prior output. Proven live, then the drop is restored."""
     before_rows = int(dbx.sql_ok(f"SELECT count(*) FROM {n.silver}").scalar())
     before_md5 = hashlib.md5(_gold_csv(dbx, n).encode()).hexdigest()
-    cmd_clear_drop(dbx, n, args)
-    report = _run_report(dbx, dbx.wait_run(_trigger(dbx, n)))
-    after_rows = int(dbx.sql_ok(f"SELECT count(*) FROM {n.silver}").scalar())
-    after_md5 = hashlib.md5(_gold_csv(dbx, n).encode()).hexdigest()
-    evidence = {
-        **report,
-        "silver_rows_before": before_rows,
-        "silver_rows_after": after_rows,
-        "gold_md5_before": before_md5,
-        "gold_md5_after": after_md5,
-    }
-    print(json.dumps(evidence, indent=2))
-    _record_evidence(n, "empty_input", evidence)
-    cmd_land(dbx, n, args)
-    return 0
+    try:
+        cmd_clear_drop(dbx, n, args)
+        report = _run_report(dbx, dbx.wait_run(_trigger(dbx, n)))
+        after_rows = int(dbx.sql_ok(f"SELECT count(*) FROM {n.silver}").scalar())
+        after_md5 = hashlib.md5(_gold_csv(dbx, n).encode()).hexdigest()
+        evidence = {
+            **report,
+            "silver_rows_before": before_rows,
+            "silver_rows_after": after_rows,
+            "gold_md5_before": before_md5,
+            "gold_md5_after": after_md5,
+        }
+        print(json.dumps(evidence, indent=2))
+        _record_evidence(n, "empty_input", evidence)
+        return 0 if report["result_state"] == "SUCCESS" else 1
+    finally:
+        cmd_land(dbx, n, args)
 
 
 def cmd_missing_param(dbx: Databricks, n: ChainNames, args) -> int:
@@ -465,7 +470,8 @@ def cmd_recon(dbx: Databricks, n: ChainNames, args) -> int:
     live_failure = {}
     observed_attempts = None
     if failure.get("run_id"):
-        run = dbx.ok("GET", f"/api/2.1/jobs/runs/get?run_id={failure['run_id']}")
+        failure_run_id = int(failure["run_id"])
+        run = dbx.ok("GET", f"/api/2.1/jobs/runs/get?run_id={failure_run_id}")
         live_failure = _run_report(dbx, run)
         # a retried task reports the attempt it ended on: bounded retries were
         # not just configured, they actually ran
@@ -479,7 +485,7 @@ def cmd_recon(dbx: Databricks, n: ChainNames, args) -> int:
         )
         ledger_rows = dbx.sql_ok(
             f"SELECT task_key, status FROM {n.ledger} "
-            f"WHERE run_id = '{failure['run_id']}' AND task_key = 'chain' ORDER BY recorded_at"
+            f"WHERE run_id = {failure_run_id} AND task_key = 'chain' ORDER BY recorded_at"
         ).rows
     else:
         ledger_rows = []
