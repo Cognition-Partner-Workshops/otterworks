@@ -244,12 +244,11 @@ def main(argv=None) -> int:
     all_target = target_rows(dbx, n, set())
     per_file = {}
     for name in (anomalies["corrupt"], anomalies["baddate"], anomalies["trailer"]):
-        body = len(parse_file(name, (anomaly_dir / name).read_bytes()).records) + len(
-            parse_file(name, (anomaly_dir / name).read_bytes()).rejects)
+        parsed = parse_file(name, (anomaly_dir / name).read_bytes())
         per_file[name] = {
             "silver": len([r for r in all_target if r[0] == name]),
             "quarantine": [q for q in quarantined if q["source_file"] == name],
-            "body_lines_local": body,
+            "body_lines": parsed.body_count,
         }
 
     corrupt = per_file[anomalies["corrupt"]]
@@ -293,12 +292,11 @@ def main(argv=None) -> int:
     accounting = {}
     for name, data in per_file.items():
         rows = data["quarantine"]
-        body_lines = 50 if name != anomalies["trailer"] else 49
         # a whole-file rejection also records the TRL line itself (source_line > 0,
         # reason trailer_count_mismatch), so account for it separately
         file_level = len([q for q in rows if q["reason_code"] in ("trailer_count_mismatch", "missing_trailer")])
         accounting[name] = {
-            "body_lines": body_lines,
+            "body_lines": data["body_lines"],
             "accounted": data["silver"] + len(rows) - file_level,
             "unattributed_rows": len([q for q in rows if not q["source_file"] or not q["reason_code"]
                                       or not q["raw_bytes_base64"] and q["source_line"] > 0]),
