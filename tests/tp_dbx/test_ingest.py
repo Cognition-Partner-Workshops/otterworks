@@ -269,6 +269,21 @@ def test_rerun_deduplicates_by_file_and_digest():
     assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
 
 
+def test_publish_rejects_reused_run_id_before_landing():
+    n = Names()
+    data = b"new"
+    dbx = FakeDbx({
+        "/drop/CUSTBILL_001.dat": data,
+        "/drop/CUSTBILL_001.dat.sha256": ingest.sha256(data).encode(),
+        "/commits/run-1.json": b'{"run_id":"run-1","objects":[]}',
+    })
+
+    with pytest.raises(RuntimeError, match="use a fresh run id"):
+        ingest.publish(dbx, n, "run-1")
+    assert not any(path.startswith("/data/") for path, _ in dbx.puts)
+    assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
+
+
 def test_merge_requires_every_attribute():
     n = ingest_sql.Names(ns="test")
     row = {"source_file": "a.dat", "byte_size": 1, "content_sha256": "x",
@@ -285,6 +300,7 @@ def test_notebook_embeds_authoritative_sql_functions():
     body = ingest.notebook_source(n)
     assert "publish-deferred" in body
     assert "ineligible_names" in body
+    assert "commit marker already exists for run id" in body
     embedded = body.split("# BEGIN EMBEDDED INGEST_SQL\n", 1)[1].split(
         "\n# END EMBEDDED INGEST_SQL", 1
     )[0]

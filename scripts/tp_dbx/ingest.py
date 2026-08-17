@@ -98,6 +98,15 @@ def _existing_pairs(dbx: Databricks, n: S.Names) -> set[tuple[str, str]]:
     return {(str(row[0]), str(row[1])) for row in result.rows}
 
 
+def _commit_marker_exists(dbx, n: S.Names, run_id: str) -> bool:
+    marker_path = n.commit_path(run_id)
+    return any(
+        entry.get("path") == marker_path
+        or entry.get("name") == marker_path.rsplit("/", 1)[-1]
+        for entry in dbx.list_dir(n.commit_dir)
+    )
+
+
 def publish(dbx, n: S.Names, run_id: str) -> dict | None:
     run_id = S.require_run_id(run_id)
     entries = dbx.list_dir(n.drop_dir)
@@ -122,10 +131,15 @@ def publish(dbx, n: S.Names, run_id: str) -> dict | None:
         verified.append((name, payload, digest))
     dbx.sql_ok(S.create_bronze(n))
     existing = _existing_pairs(dbx, n)
+    to_publish = [(name, payload, digest) for name, payload, digest in verified
+                  if (name, digest) not in existing]
+    if not to_publish:
+        print(f"publish no-op: all drop objects already registered for ns={n.ns}")
+        return None
+    if _commit_marker_exists(dbx, n, run_id):
+        raise RuntimeError(f"commit marker already exists for run id {run_id!r}; use a fresh run id")
     rows, objects = [], []
-    for name, payload, digest in verified:
-        if (name, digest) in existing:
-            continue
+    for name, payload, digest in to_publish:
         landed_path = f"{n.run_data_dir(run_id)}/{name}"
         dbx.put_file(landed_path, payload)
         if sha256(dbx.get_file(landed_path)) != digest:
@@ -137,9 +151,6 @@ def publish(dbx, n: S.Names, run_id: str) -> dict | None:
         rows.append({
             **objects[-1], "commit_id": run_id, "ingest_run_id": run_id,
         })
-    if not objects:
-        print(f"publish no-op: all drop objects already registered for ns={n.ns}")
-        return None
     marker = {
         "run_id": run_id,
         "committed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -321,9 +332,14 @@ if verified:
         (str(row[0]), str(row[1]))
         for row in spark.sql(f"SELECT source_file, content_sha256 FROM {{n.bronze}}").collect()
     }}
-    for name, data, content_sha256 in verified:
-        if (name, content_sha256) in existing:
-            continue
+    to_publish = [
+        (name, data, content_sha256)
+        for name, data, content_sha256 in verified
+        if (name, content_sha256) not in existing
+    ]
+    if to_publish and os.path.exists(commit_dir + "/" + run_id + ".json"):
+        raise RuntimeError("commit marker already exists for run id " + repr(run_id) + "; use a fresh run id")
+    for name, data, content_sha256 in to_publish:
         os.makedirs(data_dir, exist_ok=True)
         os.makedirs(commit_dir, exist_ok=True)
         landed = data_dir + "/" + name
