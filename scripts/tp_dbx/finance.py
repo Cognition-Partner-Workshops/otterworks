@@ -369,6 +369,21 @@ def cmd_recon(dbx: Databricks, args) -> int:
            "prior_export_preserved": main_after_empty == export_b},
           f"run {run_empty['run_id']} against the empty input dir {n.landing}/{args.empty_subdir}")
 
+    # --- stale-artifact probe: the export is byte-identical across runs, so a
+    # read-back of the destination only proves delivery if last run's artifact
+    # cannot satisfy it. Probed against the real path, with a good artifact in
+    # place; run C below re-delivers it.
+    probe_stale = trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME,
+                                   "delivery_probe": "skip_write"})
+    stale_leftover = download_export(dbx, main_export)
+    check(checks, "finance-verified-delivery",
+          {"stale_artifact_run_fails": True, "stale_artifact_accepted_as_delivery": False},
+          {"stale_artifact_run_fails": probe_stale["result_state"] != "SUCCESS"
+                                       and "silent_delivery_noop" in probe_stale["message"],
+           "stale_artifact_accepted_as_delivery": stale_leftover is not None},
+          f"probe run {probe_stale['run_id']} skipped the write with a byte-identical artifact "
+          f"already at {main_export}")
+
     # --- run C: restore the good batch and confirm it reproduces run A exactly
     run_c = trigger(dbx, n, {"input_subdir": args.input_subdir, "export_name": JOB.EXPORT_NAME, "delivery_probe": "off"})
     gold_c = gold_rows(dbx, n)

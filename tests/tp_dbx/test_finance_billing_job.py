@@ -145,3 +145,62 @@ def test_require_run_id_accepts_platform_run_ids(value):
 def test_require_run_id_rejects_values_that_would_escape_the_sql_literal(value):
     with pytest.raises(ValueError):
         JOB.require_run_id(value)
+
+
+def test_deliver_skip_write_removes_stale_target_before_verification(tmp_path):
+    payload = JOB.render_export([("USD", "01", 1, 100)])
+    directory = tmp_path / "exports"
+    directory.mkdir()
+    target = directory / "finance_billing.csv"
+    target.write_bytes(payload)
+
+    with pytest.raises(JOB.DeliveryError, match="silent_delivery_noop"):
+        JOB.deliver(payload, str(directory), target.name, skip_write=True)
+
+    assert not target.exists()
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["finance'billing.csv", "finance billing.csv", "finance,billing.csv", "finance@billing.csv"],
+)
+def test_check_export_name_rejects_characters_outside_allowed_alphabet(name):
+    with pytest.raises(ValueError):
+        JOB.check_export_name(name)
+
+
+def test_batch_files_lists_nested_and_unfiltered_files(tmp_path):
+    input_dir = tmp_path / "parsed"
+    (input_dir / "sub").mkdir(parents=True)
+    for relative in (
+        "CUSTBILL_CNVFINANCE_001.psv",
+        "CUSTBILL_CNVFINANCE_002.psv",
+        "notes.txt",
+        "sub/CUSTBILL_X.psv",
+    ):
+        (input_dir / relative).write_text("payload")
+
+    assert JOB.batch_files(str(input_dir)) == [
+        "CUSTBILL_CNVFINANCE_001.psv",
+        "CUSTBILL_CNVFINANCE_002.psv",
+        "notes.txt",
+        "sub/CUSTBILL_X.psv",
+    ]
+
+
+def test_unrecognised_inputs_rejects_non_matching_batch_files():
+    files = [
+        "CUSTBILL_CNVFINANCE_001.psv",
+        "CUSTBILL_CNVFINANCE_002.psv",
+        "CUSTBILL_CNVFINANCE_003.PSV",
+        "CUSTBILL_CNVFINANCE_004.psv.gz",
+        "notes.txt",
+        "sub/CUSTBILL_X.psv",
+    ]
+
+    assert JOB.unrecognised_inputs(files) == [
+        "CUSTBILL_CNVFINANCE_003.PSV",
+        "CUSTBILL_CNVFINANCE_004.psv.gz",
+        "notes.txt",
+        "sub/CUSTBILL_X.psv",
+    ]

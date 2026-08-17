@@ -79,9 +79,14 @@ def require_ident(value: str, label: str) -> str:
 
 def check_export_name(name: str) -> str:
     """The legacy job wrote CSV bytes to a `.xls` name; the content and the
-    extension must agree, so a non-CSV name is a hard failure, not a rename."""
+    extension must agree, so a non-CSV name is a hard failure, not a rename.
+
+    The name also reaches the audit INSERT as part of a SQL literal, so it is
+    restricted to an inert alphabet instead of being escaped."""
     if "/" in name or name.startswith("."):
         raise ValueError(f"export name must be a bare file name: {name!r}")
+    if not all(ch.isalnum() or ch in "._-" for ch in name):
+        raise ValueError(f"export name must match [A-Za-z0-9._-]+: {name!r}")
     if not name.endswith(".csv"):
         raise ValueError(
             f"mislabelled_artifact_type: this job emits CSV bytes, so {name!r} would "
@@ -249,13 +254,21 @@ def gold_rows_query(n: Names) -> str:
 
 # --- run ---------------------------------------------------------------------
 def deliver(payload: bytes, directory: str, name: str, skip_write: bool = False) -> dict:
-    """Write the export and then prove it landed. `skip_write` exercises the
-    planted silent-delivery-noop anomaly: verification must fail rather than the
-    run reporting success."""
+    """Write the export and then prove *this run's* bytes landed. `skip_write`
+    exercises the planted silent-delivery-noop anomaly: verification must fail
+    rather than the run reporting success.
+
+    The export is byte-identical across reruns, so reading the destination back
+    cannot on its own tell a fresh write from last run's leftovers. Removing the
+    target first makes the absence of a write observable: a delivery that did
+    nothing leaves nothing to verify instead of inheriting a stale artifact.
+    """
     check_export_name(name)
     path = f"{directory}/{name}"
+    os.makedirs(directory, exist_ok=True)
+    if os.path.exists(path):
+        os.remove(path)
     if not skip_write:
-        os.makedirs(directory, exist_ok=True)
         with open(path, "wb") as handle:
             handle.write(payload)
     if not os.path.exists(path):
@@ -274,10 +287,29 @@ def deliver(payload: bytes, directory: str, name: str, skip_write: bool = False)
     }
 
 
-def input_files(input_dir: str) -> list[str]:
+def batch_files(input_dir: str) -> list[str]:
+    """Every file `read_files()` would ingest, as paths relative to the batch
+    directory — the emptiness decision has to be made over the same set that is
+    actually read, recursively and without a name filter, or a batch of files
+    this job does not recognise looks exactly like no batch at all."""
     if not os.path.isdir(input_dir):
         return []
-    return sorted(f for f in os.listdir(input_dir) if f.endswith(".psv"))
+    found = []
+    for directory, _, names in os.walk(input_dir):
+        relative = os.path.relpath(directory, input_dir)
+        found.extend(name if relative == "." else f"{relative}/{name}" for name in names)
+    return sorted(found)
+
+
+def unrecognised_inputs(files) -> list[str]:
+    """The legacy reader took `CUSTBILL*.psv` in the batch directory itself.
+    Anything else present is a rejection: an unread file must never be reported
+    as an empty month."""
+    return [
+        f
+        for f in files
+        if "/" in f or not (f.startswith("CUSTBILL") and f.endswith(".psv"))
+    ]
 
 
 def run(spark, dbutils, params: dict) -> dict:
@@ -294,7 +326,13 @@ def run(spark, dbutils, params: dict) -> dict:
     for statement in ddl(n):
         spark.sql(statement)
 
-    files = input_files(input_dir)
+    files = batch_files(input_dir)
+    unrecognised = unrecognised_inputs(files)
+    if unrecognised:
+        raise ValueError(
+            f"unrecognised_input in {input_dir}: {', '.join(unrecognised)} — refusing to "
+            "report an empty month for a batch this job cannot read"
+        )
     spark.sql(load_bronze(n, input_dir, bool(files)))
 
     violations = spark.sql(validation_query(n)).collect()
