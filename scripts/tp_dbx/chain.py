@@ -657,9 +657,12 @@ def cmd_recon(dbx: Databricks, n: ChainNames, args) -> int:
         "checks": checks,
         "values_recomputed_from_target": True,
         "idempotency_rerun": {
-            "performed": True,
+            # derived from recorded evidence: a report must never claim a rerun
+            # that was not actually triggered (the schema then rejects it)
+            "performed": bool(rerun.get("run_id")),
             "result": "pass"
-            if all(
+            if rerun.get("run_id")
+            and all(
                 c["result"] == "pass" for c in checks if c["id"] == "orch-idempotency"
             )
             else "fail",
