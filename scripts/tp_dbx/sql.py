@@ -279,7 +279,11 @@ AS SELECT
      trim(substr(raw_line, 1, 10)) AS cust_id,
      trim(substr(raw_line, 11, 30)) AS cust_name,
      try_to_date(substr(raw_line, 41, 8), 'yyyyMMdd') AS bill_date,
-     try_cast(substr(raw_line, 49, 12) AS BIGINT) AS amount_cents,
+     -- same digits-only predicate the harness quarantines on: try_cast would
+     -- accept a padded or signed amount the harness rejects, and the row would
+     -- then be both kept here and routed to quarantine below
+     CASE WHEN substr(raw_line, 49, 12) RLIKE '^[0-9]{{12}}$'
+          THEN CAST(substr(raw_line, 49, 12) AS BIGINT) END AS amount_cents,
      trim(substr(raw_line, 61, 3)) AS currency,
      substr(raw_line, 64, 2) AS record_type,
      source_file, source_period, source_year
