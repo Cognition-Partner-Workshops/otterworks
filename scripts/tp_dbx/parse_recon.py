@@ -145,15 +145,18 @@ def build_anomalies(source_dir: Path, out_dir: Path) -> dict:
     first, second = drops[:2]
 
     corrupt = out_dir / "CUSTBILL_CNVPARSE_CORRUPT.dat"
-    subprocess.run(["sed", "2s/^\\(.\\{52\\}\\)./\\1A/", str(first)],
-                   check=True, stdout=corrupt.open("wb"))
+    with corrupt.open("wb") as handle:
+        subprocess.run(["sed", "2s/^\\(.\\{52\\}\\)./\\1A/", str(first)],
+                       check=True, stdout=handle)
 
     baddate = out_dir / "CUSTBILL_CNVPARSE_BADDATE.dat"
-    subprocess.run(["sed", "2s/^\\(.\\{40\\}\\).\\{8\\}/\\120230231/", str(second)],
-                   check=True, stdout=baddate.open("wb"))
+    with baddate.open("wb") as handle:
+        subprocess.run(["sed", "2s/^\\(.\\{40\\}\\).\\{8\\}/\\120230231/", str(second)],
+                       check=True, stdout=handle)
 
     trailer = out_dir / "CUSTBILL_CNVPARSE_TRLMISMATCH.dat"
-    subprocess.run(["sed", "3d", str(first)], check=True, stdout=trailer.open("wb"))
+    with trailer.open("wb") as handle:
+        subprocess.run(["sed", "3d", str(first)], check=True, stdout=handle)
 
     corrupted_line = corrupt.read_bytes().split(b"\n")[1]
     return {
@@ -334,7 +337,8 @@ def main(argv=None) -> int:
     unit("land", ns)
     unit("land", ns, ["--source", str(anomaly_dir)])
 
-    observed = sorted({q["reason_code"] for q in quarantine(dbx, n)})
+    final_quarantine = quarantine(dbx, n)
+    observed = sorted({q["reason_code"] for q in final_quarantine})
     detected = [anomaly for anomaly in PLANTED if anomaly in observed]
     report = {
         "kind": "recon-report",
@@ -374,7 +378,7 @@ def main(argv=None) -> int:
                            if reason not in PLANTED + ["file_failed_trailer_mismatch"]],
         },
         "quarantine_reason_counts": {
-            reason: len([q for q in quarantine(dbx, n) if q["reason_code"] == reason])
+            reason: len([q for q in final_quarantine if q["reason_code"] == reason])
             for reason in observed
         },
         "evidence": evidence,

@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "dbx-parse",
   "namespace": "cnvparse",
-  "generated_at": "2026-08-17T06:56:41Z",
+  "generated_at": "2026-08-17T07:11:24Z",
   "run_mode": "live",
   "source_artifact": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
   "contract": "docs/tech-partnerships/contracts/parse_custbill_fixedwidth.json",
