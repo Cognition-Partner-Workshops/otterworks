@@ -12,9 +12,16 @@ variable "ow_tp_ingest_ns" {
 }
 
 variable "ow_tp_ingest_notebook_path" {
-  description = "Workspace path of the namespace ingest notebook."
+  description = "Optional workspace path override for the namespace ingest notebook."
   type        = string
-  default     = "/Shared/ow_tp/ingest_cnvingest"
+  default     = ""
+}
+
+locals {
+  ow_tp_ingest_notebook_path = coalesce(
+    var.ow_tp_ingest_notebook_path != "" ? var.ow_tp_ingest_notebook_path : null,
+    "/Shared/ow_tp/ingest_${var.ow_tp_ingest_ns}",
+  )
 }
 
 resource "databricks_job" "ow_tp_ingest" {
@@ -38,7 +45,7 @@ resource "databricks_job" "ow_tp_ingest" {
     task_key = "ingest"
 
     notebook_task {
-      notebook_path = var.ow_tp_ingest_notebook_path
+      notebook_path = local.ow_tp_ingest_notebook_path
       base_parameters = {
         ns      = var.ow_tp_ingest_ns
         catalog = var.ow_tp_ingest_catalog

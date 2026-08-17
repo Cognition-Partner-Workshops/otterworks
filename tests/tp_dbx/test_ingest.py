@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from types import SimpleNamespace
 
 import pytest
 
@@ -60,6 +61,48 @@ class Names:
     bronze = "ow_tp.bronze.custbill_raw_test"
     ns = "test"
     catalog = "ow_tp"
+
+
+class OrderingDbx:
+    def __init__(self, files=None):
+        self.files = dict(files or {})
+        self.events = []
+
+    def put_file(self, path, payload):
+        self.events.append(("put", path))
+        self.files[path] = payload
+
+    def delete_file(self, path):
+        self.events.append(("delete", path))
+        if path not in self.files:
+            return 404
+        del self.files[path]
+        return 204
+
+
+def test_send_drop_retracts_sidecar_before_overwriting_data(tmp_path):
+    source = tmp_path / "CUSTBILL_001.dat"
+    source.write_bytes(b"new-bytes")
+    drop_dir = ingest_sql.Names(catalog="ow_tp", ns="test").drop_dir
+    target = f"{drop_dir}/CUSTBILL_001.dat"
+    dbx = OrderingDbx({f"{target}.sha256": b"old-digest"})
+    args = SimpleNamespace(catalog="ow_tp", ns="test", source=str(tmp_path), strip_suffix="")
+
+    assert ingest.cmd_send_drop(dbx, args) == 0
+    assert dbx.events.index(("delete", f"{target}.sha256")) < dbx.events.index(("put", target))
+    assert dbx.files[f"{target}.sha256"] == ingest.sha256(b"new-bytes").encode()
+
+
+def test_send_drop_tolerates_missing_sidecar(tmp_path):
+    source = tmp_path / "CUSTBILL_001.dat"
+    source.write_bytes(b"first-send")
+    dbx = OrderingDbx()
+    args = SimpleNamespace(catalog="ow_tp", ns="test", source=str(tmp_path), strip_suffix="")
+
+    assert ingest.cmd_send_drop(dbx, args) == 0
+    drop_dir = ingest_sql.Names(catalog="ow_tp", ns="test").drop_dir
+    assert ("delete", f"{drop_dir}/CUSTBILL_001.dat.sha256") in dbx.events
+    assert dbx.files[f"{drop_dir}/CUSTBILL_001.dat"] == b"first-send"
 
 
 def test_eligible_selection_skips_partial_and_unrelated():
@@ -177,3 +220,6 @@ def test_terraform_job_invariants():
     assert re.search(r"^\s*project\s*=", text, re.MULTILINE)
     assert re.search(r"^\s*unit\s*=", text, re.MULTILINE)
     assert re.search(r"^\s*namespace\s*=", text, re.MULTILINE)
+    assert 'default     = "/Shared/ow_tp/ingest_cnvingest"' not in text
+    assert 'notebook_path = local.ow_tp_ingest_notebook_path' in text
+    assert '"/Shared/ow_tp/ingest_${var.ow_tp_ingest_ns}"' in text

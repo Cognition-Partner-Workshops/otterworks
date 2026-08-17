@@ -66,6 +66,7 @@ def cmd_send_drop(dbx: Databricks, args) -> int:
         digest = sha256(payload)
         part = f"{n.drop_dir}/{target}.part"
         final = f"{n.drop_dir}/{target}"
+        dbx.delete_file(f"{n.drop_dir}/{target}.sha256")
         dbx.put_file(part, payload)
         dbx.put_file(final, payload)
         dbx.delete_file(part)
