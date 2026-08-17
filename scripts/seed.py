@@ -49,8 +49,20 @@ def hours_ago(n: int) -> datetime:
 def uid() -> str:
     return str(uuid.uuid4())
 
+BCRYPT_MIN_ROUNDS = 12
+BCRYPT_MAX_ROUNDS = 31
+
+def _bcrypt_rounds() -> int:
+    try:
+        requested = int(os.getenv("BCRYPT_ROUNDS", ""))
+    except ValueError:
+        requested = BCRYPT_MIN_ROUNDS
+    return min(BCRYPT_MAX_ROUNDS, max(BCRYPT_MIN_ROUNDS, requested))
+
+BCRYPT_ROUNDS = _bcrypt_rounds()
+
 def hash_password(plain: str) -> str:
-    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(rounds=10)).decode()
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS)).decode()
 
 def log(msg: str) -> None:
     print(f"  {msg}")
