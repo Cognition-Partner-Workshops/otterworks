@@ -113,12 +113,20 @@ def _existing_pairs(dbx: Databricks, n: S.Names) -> set[tuple[str, str]]:
     return {(str(row[0]), str(row[1])) for row in result.rows}
 
 
-def _commit_marker_exists(dbx, n: S.Names, run_id: str) -> bool:
+def _existing_commit_marker(dbx, n: S.Names, run_id: str) -> dict | None:
     marker_path = n.commit_path(run_id)
-    return any(
-        entry.get("path") == marker_path
-        or entry.get("name") == marker_path.rsplit("/", 1)[-1]
-        for entry in dbx.list_dir(n.commit_dir)
+    for entry in dbx.list_dir(n.commit_dir):
+        if entry.get("path") == marker_path or entry.get("name") == marker_path.rsplit("/", 1)[-1]:
+            return json.loads(dbx.get_file(marker_path))
+    return None
+
+
+def _object_key(obj: dict) -> tuple:
+    return (
+        obj.get("source_file"),
+        obj.get("content_sha256"),
+        obj.get("byte_size"),
+        obj.get("landed_path"),
     )
 
 
@@ -151,29 +159,49 @@ def publish(dbx, n: S.Names, run_id: str) -> dict | None:
     if not to_publish:
         print(f"publish no-op: all drop objects already registered for ns={n.ns}")
         return None
-    if _commit_marker_exists(dbx, n, run_id):
-        raise RuntimeError(f"commit marker already exists for run id {run_id!r}; use a fresh run id")
-    rows, objects = [], []
-    for name, payload, digest in to_publish:
-        landed_path = f"{n.run_data_dir(run_id)}/{name}"
-        dbx.put_file(landed_path, payload)
-        if sha256(dbx.get_file(landed_path)) != digest:
-            raise RuntimeError(f"byte mismatch after publishing {name}")
-        objects.append({
-            "source_file": name, "byte_size": len(payload), "content_sha256": digest,
-            "landed_path": landed_path,
-        })
-        rows.append({
-            **objects[-1], "commit_id": run_id, "ingest_run_id": run_id,
-        })
-    marker = {
-        "run_id": run_id,
-        "committed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "objects": objects,
-    }
-    dbx.put_file(n.commit_path(run_id), json.dumps(marker, sort_keys=True).encode())
+    expected = [{
+        "source_file": name,
+        "byte_size": len(payload),
+        "content_sha256": digest,
+        "landed_path": f"{n.run_data_dir(run_id)}/{name}",
+    } for name, payload, digest in to_publish]
+    marker = _existing_commit_marker(dbx, n, run_id)
+    if marker is not None:
+        if marker.get("run_id") != run_id or sorted(map(_object_key, marker.get("objects", []))) != sorted(
+            map(_object_key, expected)
+        ):
+            raise RuntimeError(f"commit marker already exists for run id {run_id!r}; use a fresh run id")
+        objects = marker["objects"]
+        for obj in objects:
+            payload = dbx.get_file(obj["landed_path"])
+            if len(payload) != obj["byte_size"] or sha256(payload) != obj["content_sha256"]:
+                raise RuntimeError(f"byte mismatch after publishing {obj['source_file']}")
+        rows = [{**obj, "commit_id": run_id, "ingest_run_id": run_id} for obj in objects]
+        repaired = True
+    else:
+        rows, objects = [], []
+        for name, payload, digest in to_publish:
+            landed_path = f"{n.run_data_dir(run_id)}/{name}"
+            dbx.put_file(landed_path, payload)
+            if sha256(dbx.get_file(landed_path)) != digest:
+                raise RuntimeError(f"byte mismatch after publishing {name}")
+            objects.append({
+                "source_file": name, "byte_size": len(payload), "content_sha256": digest,
+                "landed_path": landed_path,
+            })
+            rows.append({
+                **objects[-1], "commit_id": run_id, "ingest_run_id": run_id,
+            })
+        marker = {
+            "run_id": run_id,
+            "committed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "objects": objects,
+        }
+        dbx.put_file(n.commit_path(run_id), json.dumps(marker, sort_keys=True).encode())
+        repaired = False
     dbx.sql_ok(S.merge_bronze(n, rows))
-    print(f"published {len(objects)} object(s), commit={n.commit_path(run_id)}")
+    verb = "repaired" if repaired else "published"
+    print(f"{verb} {len(objects)} object(s), commit={n.commit_path(run_id)}")
     return marker
 
 
@@ -352,29 +380,52 @@ if verified:
         for name, data, content_sha256 in verified
         if (name, content_sha256) not in existing
     ]
-    if to_publish and os.path.exists(commit_dir + "/" + run_id + ".json"):
-        raise RuntimeError("commit marker already exists for run id " + repr(run_id) + "; use a fresh run id")
-    for name, data, content_sha256 in to_publish:
-        os.makedirs(data_dir, exist_ok=True)
-        os.makedirs(commit_dir, exist_ok=True)
-        landed = data_dir + "/" + name
-        with open(landed, "wb") as handle:
-            handle.write(data)
-        check, check_sha = digest(landed)
-        if check != data or check_sha != content_sha256:
-            raise RuntimeError("byte mismatch after publishing " + name)
-        obj = {{"source_file": name, "byte_size": len(data), "content_sha256": content_sha256, "landed_path": landed}}
-        objects.append(obj)
-        rows.append({{**obj, "commit_id": run_id, "ingest_run_id": run_id}})
+    expected = [
+        {{"source_file": name, "byte_size": len(data), "content_sha256": content_sha256,
+          "landed_path": data_dir + "/" + name}}
+        for name, data, content_sha256 in to_publish
+    ]
+    marker_path = commit_dir + "/" + run_id + ".json"
+    existing_marker = None
+    if to_publish and os.path.exists(marker_path):
+        with open(marker_path, "r", encoding="utf-8") as handle:
+            existing_marker = json.load(handle)
+        key = lambda obj: (obj.get("source_file"), obj.get("content_sha256"),
+                           obj.get("byte_size"), obj.get("landed_path"))
+        if (existing_marker.get("run_id") != run_id
+                or sorted(map(key, existing_marker.get("objects", []))) != sorted(map(key, expected))):
+            raise RuntimeError("commit marker already exists for run id " + repr(run_id) + "; use a fresh run id")
+        objects = existing_marker["objects"]
+        for obj in objects:
+            check, check_sha = digest(obj["landed_path"])
+            if len(check) != obj["byte_size"] or check_sha != obj["content_sha256"]:
+                raise RuntimeError("byte mismatch after publishing " + obj["source_file"])
+        rows = [{{**obj, "commit_id": run_id, "ingest_run_id": run_id}} for obj in objects]
+    else:
+        for name, data, content_sha256 in to_publish:
+            os.makedirs(data_dir, exist_ok=True)
+            os.makedirs(commit_dir, exist_ok=True)
+            landed = data_dir + "/" + name
+            with open(landed, "wb") as handle:
+                handle.write(data)
+            check, check_sha = digest(landed)
+            if check != data or check_sha != content_sha256:
+                raise RuntimeError("byte mismatch after publishing " + name)
+            obj = {{"source_file": name, "byte_size": len(data), "content_sha256": content_sha256, "landed_path": landed}}
+            objects.append(obj)
+            rows.append({{**obj, "commit_id": run_id, "ingest_run_id": run_id}})
 if objects:
     required = ("source_file", "byte_size", "content_sha256", "landed_path", "commit_id", "ingest_run_id")
     for row in rows:
         for key in required:
             if row.get(key) is None or row.get(key) == "":
                 raise ValueError("refusing to register a bronze row with missing " + key)
-    marker = {{"run_id": run_id, "committed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "objects": objects}}
-    with open(commit_dir + "/" + run_id + ".json", "w", encoding="utf-8") as handle:
-        json.dump(marker, handle, sort_keys=True)
+    if existing_marker is None:
+        marker = {{"run_id": run_id, "committed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "objects": objects}}
+        with open(marker_path, "w", encoding="utf-8") as handle:
+            json.dump(marker, handle, sort_keys=True)
+    else:
+        marker = existing_marker
     spark.sql(merge_bronze(n, rows))
 print(json.dumps({{"run_id": run_id, "published_objects": len(objects), "commit": commit_dir + "/" + run_id + ".json" if objects else None}}, sort_keys=True))
 '''

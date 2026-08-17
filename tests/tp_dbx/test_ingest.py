@@ -308,6 +308,37 @@ def test_publish_rejects_reused_run_id_before_landing():
     assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
 
 
+def test_publish_repairs_existing_matching_marker_without_reupload():
+    n = ingest_sql.Names(catalog="ow_tp", ns="test")
+    payload = b"repair-me"
+    digest = ingest.sha256(payload)
+    landed_path = n.run_data_dir("run-1") + "/CUSTBILL_001.dat"
+    marker = {
+        "run_id": "run-1",
+        "committed_at": "2026-08-17T04:00:00Z",
+        "objects": [{
+            "source_file": "CUSTBILL_001.dat",
+            "byte_size": len(payload),
+            "content_sha256": digest,
+            "landed_path": landed_path,
+        }],
+    }
+    marker_bytes = json.dumps(marker, sort_keys=True).encode()
+    dbx = FakeDbx({
+        n.drop_dir + "/CUSTBILL_001.dat": payload,
+        n.drop_dir + "/CUSTBILL_001.dat.sha256": digest.encode(),
+        landed_path: payload,
+        n.commit_path("run-1"): marker_bytes,
+    })
+
+    result = ingest.publish(dbx, n, "run-1")
+
+    assert result == marker
+    assert dbx.puts == []
+    assert dbx.files[n.commit_path("run-1")] == marker_bytes
+    assert any("MERGE INTO" in sql for sql in dbx.sql_calls)
+
+
 def test_merge_requires_every_attribute():
     n = ingest_sql.Names(ns="test")
     row = {"source_file": "a.dat", "byte_size": 1, "content_sha256": "x",
