@@ -286,6 +286,35 @@ AS SELECT
    FROM {n.bronze}
    WHERE record_kind = 'BODY';
 
+-- Quarantine routing, declared: the rows the expectations above drop are kept
+-- here with the same reason vocabulary the harness uses, so nothing is lost.
+CREATE OR REFRESH MATERIALIZED VIEW custbill_dlt_quarantine_{n.ns} (
+  CONSTRAINT quarantine_reason_known
+    EXPECT (reason IN ('nonnumeric_amount', 'invalid_calendar_date'))
+)
+COMMENT 'Records dropped by the silver expectations, routed with their reason'
+AS SELECT source_file, source_period, source_year,
+          trim(substr(raw_line, 1, 10)) AS cust_id, raw_line,
+          CASE WHEN NOT substr(raw_line, 49, 12) RLIKE '^[0-9]{{12}}$'
+               THEN 'nonnumeric_amount' ELSE 'invalid_calendar_date' END AS reason
+   FROM {n.bronze}
+   WHERE record_kind = 'BODY'
+     AND (NOT substr(raw_line, 49, 12) RLIKE '^[0-9]{{12}}$'
+          OR try_to_date(substr(raw_line, 41, 8), 'yyyyMMdd') IS NULL);
+
+-- File-level integrity: the legacy chain only warned on a trailer mismatch, so
+-- this expectation reports the bad files rather than dropping their rows.
+CREATE OR REFRESH MATERIALIZED VIEW custbill_dlt_files_{n.ns} (
+  CONSTRAINT trailer_count_matches_body EXPECT (trailer_count = body_count)
+)
+COMMENT 'One row per landed CUSTBILL drop with its trailer/body reconciliation'
+AS SELECT source_file, source_period, source_year,
+          max(CASE WHEN record_kind = 'TRL'
+                   THEN CAST(substr(raw_line, 4, 10) AS BIGINT) END) AS trailer_count,
+          count_if(record_kind = 'BODY') AS body_count
+   FROM {n.bronze}
+   GROUP BY source_file, source_period, source_year;
+
 CREATE OR REFRESH MATERIALIZED VIEW custbill_dlt_annual_{n.ns}
 COMMENT 'Annual finance totals derived inside the pipeline (finance_excel_report replacement)'
 AS SELECT source_year, currency, record_type, count(*) AS record_count,
@@ -293,6 +322,37 @@ AS SELECT source_year, currency, record_type, count(*) AS record_count,
    FROM custbill_dlt_{n.ns}
    GROUP BY source_year, currency, record_type;
 """
+
+
+def dlt_quality_parity(n: Names) -> str:
+    """Do the pipeline's declared expectations quarantine exactly the rows the
+    harness quarantines? Trailer defects are file-level in the pipeline, so they
+    are compared as file counts, not row counts."""
+    return f"""
+    WITH harness_rows AS (
+      SELECT source_file, reason, cust_id FROM {n.quarantine}
+      WHERE reason <> 'trailer_count_mismatch'
+    ),
+    pipeline_rows AS (
+      SELECT source_file, reason, cust_id
+      FROM {n.catalog}.silver.custbill_dlt_quarantine_{n.ns}
+    ),
+    row_diff AS (
+      SELECT 'quarantine_row' AS scope, 'harness_only' AS side, count(*) AS records
+      FROM (SELECT * FROM harness_rows EXCEPT SELECT * FROM pipeline_rows)
+      UNION ALL
+      SELECT 'quarantine_row', 'pipeline_only', count(*)
+      FROM (SELECT * FROM pipeline_rows EXCEPT SELECT * FROM harness_rows)
+    ),
+    trailer_diff AS (
+      SELECT 'trailer_file' AS scope, 'count_mismatch' AS side,
+             abs((SELECT count(DISTINCT source_file) FROM {n.quarantine}
+                  WHERE reason = 'trailer_count_mismatch')
+                 - (SELECT count(*) FROM {n.catalog}.silver.custbill_dlt_files_{n.ns}
+                    WHERE trailer_count IS NOT NULL AND trailer_count <> body_count)) AS records
+    )
+    SELECT * FROM (SELECT * FROM row_diff UNION ALL SELECT * FROM trailer_diff)
+    WHERE records <> 0"""
 
 
 def dlt_parity(n: Names) -> str:

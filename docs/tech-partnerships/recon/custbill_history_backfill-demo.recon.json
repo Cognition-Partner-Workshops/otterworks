@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "custbill_history_backfill",
   "namespace": "demo",
-  "generated_at": "2026-08-17T02:59:35Z",
+  "generated_at": "2026-08-17T05:04:22Z",
   "run_mode": "live",
   "checks": [
     {
@@ -664,6 +664,7 @@
     "unexpected": []
   },
   "unverified_paths": [
-    "legacy sendmail delivery of the finance report (no SMTP in the demo estate)"
+    "legacy sendmail delivery of the finance report (no SMTP in the demo estate)",
+    "recon-failure webhook POST from the ns=demo notifier task: the red path is rehearsed in a throwaway namespace so this namespace stays green, so this namespace's notifier notebook has never fired"
   ]
 }
