@@ -109,9 +109,7 @@ def publish(dbx, n: S.Names, run_id: str) -> dict | None:
             f"sidecars for ns={n.ns}: {', '.join(ineligible)}"
         )
     if not names_to_publish:
-        if ineligible:
-            return None
-        else:
+        if not ineligible:
             print(f"publish no-op: drop is empty for ns={n.ns}")
         return None
     verified = []
