@@ -1,6 +1,19 @@
 """Application configuration via pydantic-settings."""
 
+import os
+from urllib.parse import quote
+
 from pydantic_settings import BaseSettings
+
+
+def _default_database_url() -> str:
+    """Local-dev database URL assembled from the standard POSTGRES_* env vars."""
+    user = quote(os.getenv("POSTGRES_USER", "otterworks"), safe="")
+    password = quote(os.getenv("POSTGRES_PASSWORD", "otterworks_dev"), safe="")
+    host = os.getenv("POSTGRES_HOST", "localhost")
+    port = os.getenv("POSTGRES_PORT", "5432")
+    database = os.getenv("POSTGRES_DB", "otterworks")
+    return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}"
 
 
 class Settings(BaseSettings):
@@ -8,9 +21,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
 
-    database_url: str = (
-        "postgresql+asyncpg://otterworks:otterworks_dev@localhost:5432/otterworks"
-    )
+    database_url: str = _default_database_url()
     db_pool_size: int = 10
     db_max_overflow: int = 20
 
