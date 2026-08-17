@@ -54,8 +54,10 @@ data "aws_iam_policy_document" "audit_archive" {
     resources = ["${aws_s3_bucket.audit_archive.arn}/${var.audit_archive_prefix}/*"]
   }
 
-  # Without ListBucket, S3 answers HeadObject on an absent key with 403 rather
-  # than 404, so the archive writer cannot tell "not archived yet" from "denied".
+  # Without ListBucket, S3 answers HeadObject for an absent key with 403 rather
+  # than 404, so the archiver's "already written?" probe could never see a miss.
+  # Unconditioned deliberately: s3:prefix is only populated for list calls, so a
+  # condition on it never matches HeadObject authorization.
   statement {
     sid       = "ProbeArchiveObjects"
     actions   = ["s3:ListBucket"]
@@ -96,6 +98,25 @@ resource "aws_sqs_queue" "audit_archive_dlq" {
   name                      = "${local.name_prefix}audit-archive-dlq"
   message_retention_seconds = 1209600
   sqs_managed_sse_enabled   = true
+}
+
+# Compliance-relevant records: encrypted at rest and never publicly reachable.
+resource "aws_s3_bucket_server_side_encryption_configuration" "audit_archive" {
+  bucket = aws_s3_bucket.audit_archive.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "audit_archive" {
+  bucket                  = aws_s3_bucket.audit_archive.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_lambda_function" "audit_archive" {
