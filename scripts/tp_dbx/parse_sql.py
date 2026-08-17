@@ -1,9 +1,10 @@
 """Namespace-scoped names and SQL for the dbx-parse unit.
 
 One place for every statement so the SQL the job runs and the SQL the recon
-harness runs are provably the same text, parameterised only by namespace. Every
-object carries the `ow_tp` prefix and the namespace suffix: the demo workspace is
-shared, so nothing here can touch another namespace's slice.
+harness runs are provably the same text, parameterised by namespace and named
+write parameters. Every object carries the `ow_tp` prefix and the namespace
+suffix: the demo workspace is shared, so nothing here can touch another
+namespace's slice.
 
 Spark-free and dependency-free — this module is inlined verbatim into the
 Databricks notebook task and imported by the local fixture harness.
@@ -102,38 +103,80 @@ def ddl(n: Names) -> list:
 def delete_file_rows(n: Names, source_file: str) -> list:
     """Per-file replace: makes a rerun idempotent without touching other files."""
     return [
-        f"DELETE FROM {n.silver} WHERE ns = '{esc(n.ns)}' AND source_file = '{esc(source_file)}'",
-        f"DELETE FROM {n.quarantine} WHERE ns = '{esc(n.ns)}' AND source_file = '{esc(source_file)}'",
+        (
+            f"DELETE FROM {n.silver} WHERE ns = :ns AND source_file = :source_file",
+            {"ns": n.ns, "source_file": source_file},
+        ),
+        (
+            f"DELETE FROM {n.quarantine} WHERE ns = :ns AND source_file = :source_file",
+            {"ns": n.ns, "source_file": source_file},
+        ),
     ]
 
 
 def insert_records(n: Names, records: list) -> list:
     statements = []
     for chunk in _chunks(records, 200):
-        values = ", ".join(
-            f"('{esc(n.ns)}', '{esc(r.source_file)}', {int(r.source_line)}, '{esc(r.cust_id)}', "
-            f"'{esc(r.cust_name)}', DATE'{r.bill_date}', {int(r.amount_cents)}, "
-            f"'{esc(r.currency)}', '{esc(r.record_type)}')"
-            for r in chunk
-        )
+        values = []
+        params = {"ns": n.ns}
+        for i, r in enumerate(chunk):
+            prefix = f"r{i}_"
+            values.append(
+                f"(:ns, :{prefix}source_file, :{prefix}source_line, :{prefix}cust_id, "
+                f":{prefix}cust_name, CAST(:{prefix}bill_date AS DATE), "
+                f":{prefix}amount_cents, :{prefix}currency, :{prefix}record_type)"
+            )
+            params.update({
+                f"{prefix}source_file": r.source_file,
+                f"{prefix}source_line": int(r.source_line),
+                f"{prefix}cust_id": r.cust_id,
+                f"{prefix}cust_name": r.cust_name,
+                f"{prefix}bill_date": r.bill_date,
+                f"{prefix}amount_cents": int(r.amount_cents),
+                f"{prefix}currency": r.currency,
+                f"{prefix}record_type": r.record_type,
+            })
         statements.append(
-            f"INSERT INTO {n.silver} (ns, source_file, source_line, cust_id, cust_name, "
-            f"bill_date, amount_cents, currency, record_type) VALUES {values}")
+            (
+                (
+                    f"INSERT INTO {n.silver} (ns, source_file, source_line, cust_id, cust_name, "
+                    f"bill_date, amount_cents, currency, record_type) VALUES {', '.join(values)}"
+                ),
+                params,
+            )
+        )
     return statements
 
 
 def insert_rejects(n: Names, rejects: list) -> list:
     statements = []
     for chunk in _chunks(rejects, 200):
-        values = ", ".join(
-            f"('{esc(n.ns)}', '{esc(q.source_file)}', {int(q.source_line)}, "
-            f"'{esc(q.raw_bytes_base64)}', '{esc(q.raw_line)}', '{esc(q.reason_code)}', "
-            f"'{esc(q.detail)}')"
-            for q in chunk
-        )
+        values = []
+        params = {"ns": n.ns}
+        for i, q in enumerate(chunk):
+            prefix = f"r{i}_"
+            values.append(
+                f"(:ns, :{prefix}source_file, :{prefix}source_line, "
+                f":{prefix}raw_bytes_base64, :{prefix}raw_line, :{prefix}reason_code, "
+                f":{prefix}detail)"
+            )
+            params.update({
+                f"{prefix}source_file": q.source_file,
+                f"{prefix}source_line": int(q.source_line),
+                f"{prefix}raw_bytes_base64": q.raw_bytes_base64,
+                f"{prefix}raw_line": q.raw_line,
+                f"{prefix}reason_code": q.reason_code,
+                f"{prefix}detail": q.detail,
+            })
         statements.append(
-            f"INSERT INTO {n.quarantine} (ns, source_file, source_line, raw_bytes_base64, "
-            f"raw_line, reason_code, detail) VALUES {values}")
+            (
+                (
+                    f"INSERT INTO {n.quarantine} (ns, source_file, source_line, raw_bytes_base64, "
+                    f"raw_line, reason_code, detail) VALUES {', '.join(values)}"
+                ),
+                params,
+            )
+        )
     return statements
 
 

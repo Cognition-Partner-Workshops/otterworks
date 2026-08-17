@@ -68,12 +68,12 @@ for name in drops:
     with open(names.incoming + "/" + name, "rb") as handle:
         data = handle.read()
     result = parse_file(name, data)
-    for statement in delete_file_rows(names, name):
-        spark.sql(statement)
-    for statement in insert_records(names, result.records):
-        spark.sql(statement)
-    for statement in insert_rejects(names, result.rejects):
-        spark.sql(statement)
+    for statement, params in delete_file_rows(names, name):
+        spark.sql(statement, args=params)
+    for statement, params in insert_records(names, result.records):
+        spark.sql(statement, args=params)
+    for statement, params in insert_rejects(names, result.rejects):
+        spark.sql(statement, args=params)
     summary["files"].append({
         "file": name, "body_lines": result.body_count, "trailer": result.trailer_count,
         "records": len(result.records), "rejects": len(result.rejects), "failed": result.failed,

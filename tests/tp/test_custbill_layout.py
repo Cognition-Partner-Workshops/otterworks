@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "tp_dbx
 
 import custbill_layout as layout
 import parse_sql
+import parse_unit
 
 
 def make_record(
@@ -214,6 +215,89 @@ def test_blank_customer_id_and_name_are_rejected():
 
 def test_escapes_single_quotes_and_backslashes():
     assert parse_sql.esc(r"O'Reilly\billing") == r"O''Reilly\\billing"
+
+
+def marker_names(statement):
+    return set(re.findall(r"(?<!:):([A-Za-z0-9_]+)", statement))
+
+
+def test_parameterized_writes_preserve_values_outside_statement_text():
+    names = parse_sql.Names(catalog="ow_tp", ns="cnvparse")
+    cust_name = r"O'Reilly\billing"
+    raw_line = r"raw 'line\with a slash"
+    record = layout.Record(
+        source_file="CUSTBILL_001.dat",
+        source_line=2,
+        cust_id="CUST000001",
+        cust_name=cust_name,
+        bill_date="2023-01-31",
+        amount_cents=540688,
+        currency="USD",
+        record_type="01",
+    )
+    reject = layout.Reject(
+        source_file="CUSTBILL_001.dat",
+        source_line=3,
+        raw_bytes_base64="cmF3",
+        raw_line=raw_line,
+        reason_code="bad_record_length",
+        detail="line has a 'quote\\slash",
+    )
+
+    record_statement, record_params = parse_sql.insert_records(names, [record])[0]
+    reject_statement, reject_params = parse_sql.insert_rejects(names, [reject])[0]
+
+    assert record_params["r0_cust_name"] == cust_name
+    assert reject_params["r0_raw_line"] == raw_line
+    assert cust_name not in record_statement
+    assert raw_line not in reject_statement
+    assert "'" not in record_statement
+    assert "'" not in reject_statement
+    assert marker_names(record_statement) == set(record_params)
+    assert marker_names(reject_statement) == set(reject_params)
+    assert "CAST(:r0_bill_date AS DATE)" in record_statement
+
+
+def test_parameterized_write_chunking_matches_markers_and_notebook_calls():
+    names = parse_sql.Names(catalog="ow_tp", ns="cnvparse")
+    records = [
+        layout.Record(
+            source_file=f"CUSTBILL_{i:03d}.dat",
+            source_line=i + 1,
+            cust_id=f"CUST{i:06d}",
+            cust_name="Customer",
+            bill_date="2023-01-31",
+            amount_cents=i,
+            currency="USD",
+            record_type="01",
+        )
+        for i in range(201)
+    ]
+    rejects = [
+        layout.Reject(
+            source_file=f"CUSTBILL_{i:03d}.dat",
+            source_line=i + 1,
+            raw_bytes_base64="cmF3",
+            raw_line="bad",
+            reason_code="bad_record_length",
+            detail="bad",
+        )
+        for i in range(201)
+    ]
+
+    record_statements = parse_sql.insert_records(names, records)
+    reject_statements = parse_sql.insert_rejects(names, rejects)
+    delete_statements = parse_sql.delete_file_rows(names, "CUSTBILL_001.dat")
+
+    assert len(record_statements) == 2
+    assert len(reject_statements) == 2
+    assert len(delete_statements) == 2
+    for statement, params in record_statements + reject_statements + delete_statements:
+        assert marker_names(statement) == set(params)
+        assert len(marker_names(statement)) == len(params)
+    assert all(params["ns"] == "cnvparse" for _, params in record_statements)
+    assert all(params["ns"] == "cnvparse" for _, params in reject_statements)
+    assert parse_unit.NOTEBOOK_EPILOGUE.count("spark.sql(statement, args=params)") == 3
 
 
 def test_names_accept_valid_namespace_and_catalog():

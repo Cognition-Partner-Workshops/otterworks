@@ -389,9 +389,12 @@ def main(argv=None) -> int:
                 "the .ok-marker case were not exercised"
             ),
             (
-                "silver/quarantine writes build SQL string literals via parse_sql.esc() (quote and "
-                "backslash escaping) rather than parameter markers; no adversarial-content drop was "
-                "landed to exercise that path live"
+                "silver/quarantine writes now bind every value through named parameter markers, so no "
+                "adversarial-content drop was needed to exercise a string-escaping path; the earlier "
+                "esc() literal path silently dropped single quotes from cust_name/raw_line/detail "
+                "(Spark reads '' inside a literal as adjacent strings, not an escaped quote) — the raw "
+                "bytes were never affected because they are stored base64, but text columns written "
+                "before this change are not byte-faithful"
             ),
         ],
         "recon_result": "pass" if all(c["result"] == "pass" for c in checks) and idempotent else "fail",

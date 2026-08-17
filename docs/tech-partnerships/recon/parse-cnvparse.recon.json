@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "dbx-parse",
   "namespace": "cnvparse",
-  "generated_at": "2026-08-17T06:11:22Z",
+  "generated_at": "2026-08-17T06:44:32Z",
   "run_mode": "live",
   "source_artifact": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
   "contract": "docs/tech-partnerships/contracts/parse_custbill_fixedwidth.json",
@@ -144,13 +144,13 @@
       "id": "parse-idempotency",
       "expected": {
         "silver_hash": "a03bf031b18c72199ffa938d74ba954c87ba730104e25e4c51350fc03d2ada26",
-        "quarantine_hash": "c1564f0768a34329ed3d390e6c723c121cfbab82f1d21df8c302ce0c4a0c6dbb",
+        "quarantine_hash": "e13ab4fd547294cd7a4c4bcbc477caeeddc932d4b0d8c85e7e6e2bb9bac7c3f6",
         "silver_rows": 198,
         "quarantine_rows": 52
       },
       "actual": {
         "silver_hash": "a03bf031b18c72199ffa938d74ba954c87ba730104e25e4c51350fc03d2ada26",
-        "quarantine_hash": "c1564f0768a34329ed3d390e6c723c121cfbab82f1d21df8c302ce0c4a0c6dbb",
+        "quarantine_hash": "e13ab4fd547294cd7a4c4bcbc477caeeddc932d4b0d8c85e7e6e2bb9bac7c3f6",
         "silver_rows": 198,
         "quarantine_rows": 52
       },
@@ -287,7 +287,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "job rerun over identical landed bytes; silver hash a03bf031b18c7219 -> a03bf031b18c7219, quarantine hash c1564f0768a34329 -> c1564f0768a34329"
+    "evidence": "job rerun over identical landed bytes; silver hash a03bf031b18c7219 -> a03bf031b18c7219, quarantine hash e13ab4fd547294cd -> e13ab4fd547294cd"
   },
   "planted_anomaly_detections": {
     "expected_set": [
@@ -485,7 +485,7 @@
     "legacy-side behaviour was captured live only for the corrupted-amount drop; the invalid-calendar-date and trailer-mismatch drops were not replayed through the legacy parser, so their legacy output is not part of this comparison",
     "infrastructure/terraform-databricks/jobs_parse.tf is fmt-checked only; the shared Databricks stack is parent-owned and no terraform plan/apply was run from this unit",
     "concurrent writers to the same landing slice and partially-written drops other than the .ok-marker case were not exercised",
-    "silver/quarantine writes build SQL string literals via parse_sql.esc() (quote and backslash escaping) rather than parameter markers; no adversarial-content drop was landed to exercise that path live"
+    "silver/quarantine writes now bind every value through named parameter markers, so no adversarial-content drop was needed to exercise a string-escaping path; the earlier esc() literal path silently dropped single quotes from cust_name/raw_line/detail (Spark reads '' inside a literal as adjacent strings, not an escaped quote) \u2014 the raw bytes were never affected because they are stored base64, but text columns written before this change are not byte-faithful"
   ],
   "recon_result": "pass"
 }
