@@ -19,13 +19,24 @@ Fixed-width layout is copybook CBCUST01:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+
+NAME_RE = re.compile(r"^[a-z0-9_]{1,24}$")
 
 
 @dataclass(frozen=True)
 class ChainNames:
     ns: str
     catalog: str = "ow_tp"
+
+    def __post_init__(self) -> None:
+        """Names are interpolated into generated SQL text, so they are constrained
+        here as well as at the CLI boundary: no builder can emit quote-breaking
+        text regardless of how it was constructed."""
+        for field, value in (("ns", self.ns), ("catalog", self.catalog)):
+            if not NAME_RE.match(value):
+                raise ValueError(f"{field}={value!r} must match {NAME_RE.pattern}")
 
     @property
     def drop_dir(self) -> str:

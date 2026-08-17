@@ -18,9 +18,8 @@ variable "namespace" {
 }
 
 variable "sql_warehouse_id" {
-  description = "Existing parent-owned serverless SQL warehouse; this unit never creates compute"
+  description = "Id of an existing parent-owned serverless SQL warehouse; this unit never creates compute. No default: an apply must name the warehouse of the workspace it targets rather than silently binding to one."
   type        = string
-  default     = "565cd2fd713738c4"
 }
 
 data "databricks_sql_warehouse" "shared_serverless" {
