@@ -4,7 +4,7 @@ USING (
          total_events, documents_created, documents_edited, comments_added,
          files_uploaded, files_shared, files_deleted, bytes_uploaded
   FROM ow_tp.bronze.cronbox_activity_history_summary
-  WHERE namespace = :ns AND report_date < DATE':ds'
+  WHERE namespace = :ns AND report_date < DATE(:ds)
 ) s ON t.namespace = s.namespace AND t.report_date = s.report_date
 WHEN MATCHED THEN UPDATE SET
   t.active_users = s.active_users, t.active_documents = s.active_documents,

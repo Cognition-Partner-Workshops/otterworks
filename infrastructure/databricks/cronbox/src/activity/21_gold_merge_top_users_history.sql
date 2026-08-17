@@ -5,7 +5,7 @@ USING (
          CAST(ROW_NUMBER() OVER (PARTITION BY report_date ORDER BY total DESC, source_line ASC) AS INT) AS user_rank,
          source_line AS first_seq
   FROM ow_tp.bronze.cronbox_activity_history_top_users
-  WHERE namespace = :ns AND report_date < DATE':ds'
+  WHERE namespace = :ns AND report_date < DATE(:ds)
     AND parse_error IS NULL
 ) s ON t.namespace = s.namespace AND t.report_date = s.report_date AND t.user_id = s.user_id
 WHEN MATCHED THEN UPDATE SET
