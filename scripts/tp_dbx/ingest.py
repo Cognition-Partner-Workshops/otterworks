@@ -171,25 +171,61 @@ def _walk_files(dbx, path: str) -> list[str]:
     return found
 
 
+def _commit_markers(dbx, n: S.Names) -> list[tuple[str, dict]]:
+    markers = []
+    for path in _walk_files(dbx, n.commit_dir):
+        if path.endswith(".json"):
+            markers.append((path, json.loads(dbx.get_file(path))))
+    return markers
+
+
+def _object_status(dbx, n: S.Names) -> list[dict]:
+    object_paths = {
+        path for path in _walk_files(dbx, n.data_dir)
+        if path.endswith(".dat")
+    }
+    committed = {
+        obj["landed_path"]
+        for _, marker in _commit_markers(dbx, n)
+        for obj in marker.get("objects", [])
+        if obj.get("landed_path") in object_paths
+    }
+    return [
+        {"path": path, "status": "committed" if path in committed else "uncommitted"}
+        for path in sorted(object_paths)
+    ]
+
+
 def cmd_recon_collect(dbx, args) -> int:
     n = names(args)
     sql_results = []
     for statement in (S.recon_inventory(n), S.recon_counts(n),
                       S.recon_null_attribution(n), S.recon_duplicates(n)):
         sql_results.append({"statement": statement, "result": _raw_result(dbx.sql_ok(statement))})
+    object_status = _object_status(dbx, n)
+    committed = {item["path"] for item in object_status if item["status"] == "committed"}
     volume = {"objects": [], "commits": []}
     for path in _walk_files(dbx, n.data_dir):
         if path.endswith(".dat"):
             payload = dbx.get_file(path)
-            volume["objects"].append({"path": path, "byte_size": len(payload), "content_sha256": sha256(payload)})
-    for path in _walk_files(dbx, n.commit_dir):
-        if path.endswith(".json"):
-            marker = json.loads(dbx.get_file(path))
-            checked = []
-            for obj in marker.get("objects", []):
-                payload = dbx.get_file(obj["landed_path"])
-                checked.append({"path": obj["landed_path"], "byte_size": len(payload), "content_sha256": sha256(payload)})
-            volume["commits"].append({"path": path, "marker": marker, "objects": checked})
+            volume["objects"].append({
+                "path": path,
+                "byte_size": len(payload),
+                "content_sha256": sha256(payload),
+                "status": "committed" if path in committed else "uncommitted",
+            })
+    for path, marker in _commit_markers(dbx, n):
+        checked = []
+        for obj in marker.get("objects", []):
+            payload = dbx.get_file(obj["landed_path"])
+            checked.append({"path": obj["landed_path"], "byte_size": len(payload),
+                            "content_sha256": sha256(payload), "status": "committed"})
+        volume["commits"].append({"path": path, "marker": marker, "objects": checked})
+    volume["object_counts"] = {
+        "total": len(object_status),
+        "committed": len(committed),
+        "uncommitted": len(object_status) - len(committed),
+    }
     output = {"namespace": n.ns, "catalog": n.catalog, "sql": sql_results, "volume": volume}
     text = json.dumps(output, indent=2, sort_keys=True)
     if args.out:
@@ -354,9 +390,17 @@ def cmd_status(dbx, args) -> int:
         bronze = result.dicts()
     except DbxError:
         bronze = "absent"
+    object_status = _object_status(dbx, n)
+    counts = {
+        "total": len(object_status),
+        "committed": sum(item["status"] == "committed" for item in object_status),
+        "uncommitted": sum(item["status"] == "uncommitted" for item in object_status),
+    }
     print(json.dumps({"bronze": bronze,
-                      "objects": len(_walk_files(dbx, n.data_dir)),
-                      "commits": len(_walk_files(dbx, n.commit_dir))}, sort_keys=True))
+                      "objects": len(object_status),
+                      "object_counts": counts,
+                      "object_status": object_status,
+                      "commits": len(_commit_markers(dbx, n))}, sort_keys=True))
     return 0
 
 

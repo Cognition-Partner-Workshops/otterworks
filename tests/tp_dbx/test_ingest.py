@@ -20,13 +20,18 @@ class FakeDbx:
 
     def list_dir(self, path):
         prefix = path.rstrip("/") + "/"
-        children = []
+        children = {}
         for key in self.files:
             if key.startswith(prefix):
                 rest = key[len(prefix):]
-                if "/" not in rest:
-                    children.append({"name": rest, "path": key})
-        return children
+                name = rest.split("/", 1)[0]
+                child_path = f"{prefix}{name}".rstrip("/")
+                children[child_path] = {
+                    "name": name,
+                    "path": child_path,
+                    **({"is_directory": True} if "/" in rest else {}),
+                }
+        return list(children.values())
 
     def get_file(self, path):
         return self.files[path]
@@ -220,6 +225,38 @@ def test_empty_drop_is_noop_and_prior_rows_untouched():
     assert ingest.publish(dbx, n, "run-2") is None
     assert dbx.files["/commits/old.json"] == b"old"
     assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
+
+
+def test_status_and_recon_classify_committed_and_uncommitted_objects(capsys):
+    n = ingest_sql.Names(catalog="ow_tp", ns="test")
+    committed_path = f"{n.run_data_dir('run-1')}/CUSTBILL_001.dat"
+    orphan_path = f"{n.run_data_dir('run-2')}/CUSTBILL_002.dat"
+    marker = {
+        "run_id": "run-1",
+        "objects": [{"landed_path": committed_path}],
+    }
+    dbx = FakeDbx({
+        committed_path: b"committed",
+        orphan_path: b"orphan",
+        n.commit_path("run-1"): json.dumps(marker).encode(),
+    })
+    args = SimpleNamespace(catalog="ow_tp", ns="test", out="")
+
+    assert ingest.cmd_status(dbx, args) == 0
+    status = json.loads(capsys.readouterr().out)
+    assert status["object_counts"] == {"committed": 1, "total": 2, "uncommitted": 1}
+    assert {item["path"]: item["status"] for item in status["object_status"]} == {
+        committed_path: "committed",
+        orphan_path: "uncommitted",
+    }
+
+    assert ingest.cmd_recon_collect(dbx, args) == 0
+    recon = json.loads(capsys.readouterr().out)
+    assert {item["path"]: item["status"] for item in recon["volume"]["objects"]} == {
+        committed_path: "committed",
+        orphan_path: "uncommitted",
+    }
+    assert recon["volume"]["object_counts"] == {"committed": 1, "total": 2, "uncommitted": 1}
 
 
 def test_rerun_deduplicates_by_file_and_digest():
