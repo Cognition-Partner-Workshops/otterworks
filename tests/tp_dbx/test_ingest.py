@@ -133,6 +133,30 @@ def test_send_drop_rejects_sidecar_retraction_failure(tmp_path):
     assert not any(event[0] == "put" for event in dbx.events)
 
 
+def test_send_drop_reports_mixed_source_suffixes(tmp_path, capsys):
+    (tmp_path / "CUSTBILL_A.dat").write_bytes(b"matching")
+    (tmp_path / "CUSTBILL_B.dat.done").write_bytes(b"skipped")
+    dbx = OrderingDbx()
+    args = SimpleNamespace(catalog="ow_tp", ns="test", source=str(tmp_path), strip_suffix="")
+
+    assert ingest.cmd_send_drop(dbx, args) == 0
+    output = capsys.readouterr().out
+    assert "CUSTBILL_B.dat.done" in output
+    assert "not matching configured suffix" in output
+    assert any(event[0] == "put" and event[1].endswith("/CUSTBILL_A.dat") for event in dbx.events)
+    assert not any(event[1].endswith("/CUSTBILL_B.dat") for event in dbx.events)
+
+
+def test_send_drop_rejects_directory_with_no_matching_files(tmp_path):
+    (tmp_path / "CUSTBILL_B.dat.done").write_bytes(b"skipped")
+    dbx = OrderingDbx()
+    args = SimpleNamespace(catalog="ow_tp", ns="test", source=str(tmp_path), strip_suffix="")
+
+    with pytest.raises(SystemExit, match="no CUSTBILL source files matched"):
+        ingest.cmd_send_drop(dbx, args)
+    assert dbx.events == []
+
+
 def test_eligible_selection_skips_partial_and_unrelated():
     entries = [{"name": name, "path": f"/drop/{name}"} for name in (
         "CUSTBILL_001.dat", "CUSTBILL_001.dat.sha256",

@@ -69,12 +69,27 @@ def cmd_send_drop(dbx: Databricks, args) -> int:
     source = Path(args.source)
     if not source.is_dir():
         raise SystemExit(f"source directory not found: {source}")
+    matching, skipped = [], []
     for path in sorted(source.iterdir()):
-        if not path.is_file() or any(path.name.endswith(s) for s in S.IN_PROGRESS_SUFFIXES):
+        if not path.is_file() or not path.name.startswith("CUSTBILL"):
             continue
-        if not path.name.startswith("CUSTBILL"):
-            continue
-        target = normalise_source_name(path.name, args.strip_suffix)
+        if args.strip_suffix:
+            matches = path.name.endswith(args.strip_suffix)
+        else:
+            matches = path.name.endswith(S.DROP_GLOB_SUFFIX)
+        if matches:
+            matching.append((path, normalise_source_name(path.name, args.strip_suffix)))
+        else:
+            skipped.append(path.name)
+    if not matching:
+        skipped_names = ", ".join(skipped) if skipped else "<none>"
+        raise SystemExit(
+            f"no CUSTBILL source files matched --strip-suffix {args.strip_suffix!r}; "
+            f"skipped: {skipped_names}"
+        )
+    if skipped:
+        print(f"skipped source files not matching configured suffix: {', '.join(skipped)}")
+    for path, target in matching:
         payload = path.read_bytes()
         digest = sha256(payload)
         part = f"{n.drop_dir}/{target}.part"
