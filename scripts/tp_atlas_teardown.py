@@ -62,8 +62,7 @@ def build_namespace_uri(
     query = f"?{parsed.query}" if parsed.query else ""
     return (
         f"{parsed.scheme}://{quote(username, safe='')}:"
-        f"{quote(password, safe='')}@{host}/"
-        f"{quote(database_name, safe='')}{query}"
+        f"{quote(password, safe='')}@{host}/{query}"
     )
 
 
@@ -148,12 +147,12 @@ def main() -> int:
     cluster_uri = os.environ.get("MONGODB_ATLAS_URI")
     if not cluster_uri:
         raise SystemExit("MONGODB_ATLAS_URI is required")
-    credentials = (
-        _read_namespace_credentials(sys.stdin)
-        if args.credentials_stdin
-        else resolve_namespace_credentials({})
-    )
     try:
+        credentials = (
+            _read_namespace_credentials(sys.stdin)
+            if args.credentials_stdin
+            else resolve_namespace_credentials({})
+        )
         return drop_namespace_database(args.ns, cluster_uri, credentials)
     except (RuntimeError, ValueError) as exc:
         raise SystemExit(str(exc)) from None

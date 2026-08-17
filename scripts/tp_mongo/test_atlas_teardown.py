@@ -4,6 +4,8 @@ import io
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tp_atlas_teardown import (  # noqa: E402
@@ -68,7 +70,7 @@ def test_build_namespace_uri_uses_cluster_host_and_quotes_credentials() -> None:
     )
     assert uri == (
         "mongodb+srv://ow-tp-drift01:fake%2Fp%40ss@cluster.example/"
-        "ow_tp_drift01?retryWrites=true"
+        "?retryWrites=true"
     )
 
 
@@ -143,3 +145,47 @@ def test_present_database_without_namespace_outputs_fails_loudly() -> None:
         assert "Terraform namespace outputs" in str(exc)
     else:
         raise AssertionError("existing database without credentials must fail")
+
+
+def test_main_reports_truncated_credentials_without_traceback(monkeypatch) -> None:
+    monkeypatch.setenv(
+        "MONGODB_ATLAS_URI",
+        "mongodb+srv://shared:ignored@cluster.example/ow_tp_shared",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["tp_atlas_teardown.py", "--ns", "drift01", "--credentials-stdin"],
+    )
+    monkeypatch.setattr(
+        sys,
+        "stdin",
+        io.TextIOWrapper(io.BytesIO(b"ow-tp-drift01\0fake-password")),
+    )
+
+    from tp_atlas_teardown import main
+
+    with pytest.raises(SystemExit, match="expected three Terraform outputs"):
+        main()
+
+
+def test_main_reports_invalid_credential_encoding_without_traceback(monkeypatch) -> None:
+    monkeypatch.setenv(
+        "MONGODB_ATLAS_URI",
+        "mongodb+srv://shared:ignored@cluster.example/ow_tp_shared",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["tp_atlas_teardown.py", "--ns", "drift01", "--credentials-stdin"],
+    )
+    monkeypatch.setattr(
+        sys,
+        "stdin",
+        io.TextIOWrapper(io.BytesIO(b"\xff\0fake-password\0ow_tp_drift01")),
+    )
+
+    from tp_atlas_teardown import main
+
+    with pytest.raises(SystemExit, match="utf-8"):
+        main()
