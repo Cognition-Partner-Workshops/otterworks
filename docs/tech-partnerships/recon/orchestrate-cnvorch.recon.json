@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "dbx-orchestrate",
   "namespace": "cnvorch",
-  "generated_at": "2026-08-17T05:57:58Z",
+  "generated_at": "2026-08-17T06:18:23Z",
   "run_mode": "live",
   "source_artifacts": [
     "etl/legacy-extra/crontab",
