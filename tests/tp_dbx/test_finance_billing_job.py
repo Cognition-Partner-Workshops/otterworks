@@ -1,0 +1,136 @@
+import hashlib
+import importlib.util
+import sys
+from pathlib import Path
+
+import pytest
+
+
+def load_job_module():
+    job_source = Path(__file__).resolve().parents[2] / "scripts/tp_dbx/notebooks/finance_billing_job.py"
+    spec = importlib.util.spec_from_file_location("finance_billing_job", job_source)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+JOB = load_job_module()
+
+
+def test_render_export_matches_legacy_layout():
+    rows = [
+        ("USD", "02", 2, -5),
+        ("EUR", "01", 1, 10155441),
+        ("USD", "01", 3, 5),
+    ]
+
+    expected = (
+        b"Currency,RecordType,RecordCount,TotalAmount\n"
+        b"EUR,INVOICE,1,101554.41\n"
+        b"USD,INVOICE,3,0.05\n"
+        b"USD,CREDIT,2,-0.05\n"
+    )
+
+    payload = JOB.render_export(rows)
+
+    assert payload == expected
+    assert not payload.startswith(b"\xef\xbb\xbf")
+
+
+def test_render_export_rejects_unmapped_record_type():
+    with pytest.raises(ValueError, match="unmapped record_type"):
+        JOB.render_export([("USD", "99", 1, 100)])
+
+
+@pytest.mark.parametrize(
+    ("cents", "expected"),
+    [(0, "0.00"), (5, "0.05"), (10155441, "101554.41"), (-5, "-0.05")],
+)
+def test_cents_to_amount(cents, expected):
+    assert JOB.cents_to_amount(cents) == expected
+
+
+def test_check_export_name_accepts_csv():
+    assert JOB.check_export_name("finance_billing.csv") == "finance_billing.csv"
+
+
+def test_check_export_name_rejects_mislabelled_artifact():
+    with pytest.raises(ValueError, match="mislabelled_artifact_type"):
+        JOB.check_export_name("finance_billing.xls")
+
+
+@pytest.mark.parametrize("name", ["reports/finance_billing.csv", ".finance_billing.csv"])
+def test_check_export_name_rejects_non_bare_names(name):
+    with pytest.raises(ValueError):
+        JOB.check_export_name(name)
+
+
+def test_export_row_count_excludes_header_and_tolerates_trailing_newline():
+    payload = b"Currency,RecordType,RecordCount,TotalAmount\nUSD,INVOICE,1,1.00\nEUR,CREDIT,2,2.00\n"
+
+    assert JOB.export_row_count(payload) == 2
+    assert JOB.export_row_count(b"Currency,RecordType,RecordCount,TotalAmount\n") == 0
+    assert JOB.export_row_count(b"Currency,RecordType,RecordCount,TotalAmount") == 0
+
+
+def test_deliver_writes_and_verifies_payload(tmp_path):
+    payload = JOB.render_export([("USD", "01", 1, 100)])
+    directory = tmp_path / "exports"
+
+    result = JOB.deliver(payload, str(directory), "finance_billing.csv")
+
+    assert (directory / "finance_billing.csv").is_file()
+    assert result == {
+        "path": str(directory / "finance_billing.csv"),
+        "byte_size": len(payload),
+        "row_count": 1,
+        "sha256": hashlib.sha256(payload).hexdigest(),
+    }
+
+
+def test_deliver_skip_write_rejects_silent_noop(tmp_path):
+    directory = tmp_path / "missing"
+
+    with pytest.raises(JOB.DeliveryError, match="silent_delivery_noop"):
+        JOB.deliver(b"payload", str(directory), "finance_billing.csv", skip_write=True)
+
+    assert not (directory / "finance_billing.csv").exists()
+
+
+def test_deliver_rejects_non_csv_before_writing(tmp_path):
+    directory = tmp_path / "not-created"
+
+    with pytest.raises(ValueError, match="mislabelled_artifact_type"):
+        JOB.deliver(b"payload", str(directory), "finance_billing.xls")
+
+    assert not directory.exists()
+
+
+@pytest.mark.parametrize("value", ["Bad", "a" * 25, "x-y", ""])
+def test_require_ns_rejects_bad_values(value):
+    with pytest.raises(ValueError):
+        JOB.require_ns(value)
+
+
+@pytest.mark.parametrize("value", ["x-y", ""])
+def test_require_ident_rejects_bad_values(value):
+    with pytest.raises(ValueError):
+        JOB.require_ident(value, "identifier")
+
+
+def test_validation_query_rejects_null_raw_lines():
+    query = JOB.validation_query(JOB.Names(ns="cnvfinance"))
+
+    assert "WHERE raw_line IS NULL OR length(trim(raw_line)) > 0" in query
+    assert "WHEN raw_line IS NULL THEN 'null_raw_line'" in query
+    assert "WHERE raw_line IS NULL\n" in query
+
+
+def test_names_and_ddl_targets_are_namespace_suffixed():
+    names = JOB.Names(catalog="ow_tp", ns="cnvfinance")
+    targets = [names.bronze, names.silver, names.gold, names.audit]
+
+    assert all(target.endswith("_cnvfinance") for target in targets)
+    for statement, target in zip(JOB.ddl(names), targets):
+        assert target in statement
