@@ -334,3 +334,4 @@ def test_terraform_job_invariants():
     assert 'default     = "/Shared/ow_tp/ingest_cnvingest"' not in text
     assert 'notebook_path = local.ow_tp_ingest_notebook_path' in text
     assert '"/Shared/ow_tp/ingest_${var.ow_tp_ingest_ns}"' in text
+    assert 'source  = "databricks/databricks"' in text

@@ -1,4 +1,13 @@
 # Parent-owned provider/backend configuration is intentionally not repeated here.
+terraform {
+  required_providers {
+    databricks = {
+      source  = "databricks/databricks"
+      version = "= 1.126.0"
+    }
+  }
+}
+
 variable "ow_tp_ingest_catalog" {
   description = "Parent-owned Unity Catalog catalog."
   type        = string
