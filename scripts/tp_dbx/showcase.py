@@ -682,9 +682,16 @@ run_url = f"https://{{workspace}}/jobs/{{job_id}}/runs/{{run_id}}"
 
 # recompute the checks so the payload names the failing ones with expected vs
 # actual: the spawned session should not have to reverse-engineer the failure
-# from a task log it cannot read
+# from a task log it cannot read. It must never cost us the notification though:
+# recon_check also fails when the SQL itself cannot run (dropped table,
+# permissions, compute), and that is precisely when someone has to be told
 CHECKS_SQL = """{checks_sql}"""
-failing = [row.asDict() for row in spark.sql(CHECKS_SQL).where("result = 'fail'").collect()]
+checks_error = ""
+try:
+    failing = [row.asDict() for row in spark.sql(CHECKS_SQL).where("result = 'fail'").collect()]
+except Exception as exc:  # noqa: BLE001
+    failing, checks_error = [], f"{{type(exc).__name__}}: {{exc}}"[:2000]
+    print("could not recompute the checks:", checks_error)
 
 payload = {{
     "source": "databricks-recon-job",
@@ -699,13 +706,15 @@ payload = {{
     "catalog": "{catalog}",
     "failing_checks": failing[:50],
     "failing_check_count": len(failing),
+    "checks_error": checks_error,
     "recon_report": "docs/tech-partnerships/recon/custbill_history_backfill-{ns}.recon.json",
     "recon_command": "make dbx-showcase CMD=recon NS={ns}",
     "detail": (
         "OtterWorks CUSTBILL history reconciliation failed on Databricks. "
         "The recon task raise_error message names the failing checks; each check "
         "compares the migrated gold aggregates against the legacy-derived "
-        "expectations table."
+        "expectations table. An empty failing_checks list with checks_error set "
+        "means the recon SQL itself could not run — diagnose that first."
     ),
 }}
 
