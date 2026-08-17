@@ -113,6 +113,29 @@ def test_require_ns_rejects_bad_values(value):
         JOB.require_ns(value)
 
 
+@pytest.mark.parametrize(
+    ("validator", "value"),
+    [
+        (JOB.require_ns, "cnvfinаnce"),
+        (lambda value: JOB.require_ident(value, "catalog"), "ow_tp１"),
+        (JOB.require_run_id, "run１"),
+        (JOB.check_export_name, "finance_billing１.csv"),
+    ],
+)
+def test_ascii_validators_reject_non_ascii_lookalikes(validator, value):
+    with pytest.raises(ValueError):
+        validator(value)
+
+
+def test_ascii_validators_accept_real_values():
+    assert JOB.require_ns("cnvfinance") == "cnvfinance"
+    assert JOB.require_ident("ow_tp", "catalog") == "ow_tp"
+    assert JOB.require_ident("parsed", "input_subdir") == "parsed"
+    assert JOB.require_run_id("12345") == "12345"
+    assert JOB.require_run_id("run-1_a") == "run-1_a"
+    assert JOB.check_export_name("finance_billing.csv") == "finance_billing.csv"
+
+
 @pytest.mark.parametrize("value", ["x-y", ""])
 def test_require_ident_rejects_bad_values(value):
     with pytest.raises(ValueError):
@@ -186,6 +209,19 @@ def test_batch_files_lists_nested_and_unfiltered_files(tmp_path):
         "notes.txt",
         "sub/CUSTBILL_X.psv",
     ]
+
+
+def test_require_input_dir_rejects_missing_directory(tmp_path):
+    with pytest.raises(ValueError, match="missing_input_dir"):
+        JOB.require_input_dir(str(tmp_path / "missing"))
+
+
+def test_require_input_dir_accepts_existing_empty_directory(tmp_path):
+    input_dir = tmp_path / "parsed_empty"
+    input_dir.mkdir()
+
+    assert JOB.require_input_dir(str(input_dir)) == str(input_dir)
+    assert JOB.batch_files(str(input_dir)) == []
 
 
 def test_unrecognised_inputs_rejects_non_matching_batch_files():

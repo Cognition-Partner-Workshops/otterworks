@@ -66,13 +66,15 @@ class Names:
 
 
 def require_ns(ns: str) -> str:
-    if not ns or not ns.replace("_", "").isalnum() or not ns.islower() or len(ns) > 24:
+    if not ns or not all("a" <= ch <= "z" or "0" <= ch <= "9" or ch == "_" for ch in ns) or len(ns) > 24:
         raise ValueError(f"namespace must be lowercase [a-z0-9_] and at most 24 chars: {ns!r}")
     return ns
 
 
 def require_ident(value: str, label: str) -> str:
-    if not value or not value.replace("_", "").isalnum():
+    if not value or not all(
+        "A" <= ch <= "Z" or "a" <= ch <= "z" or "0" <= ch <= "9" or ch == "_" for ch in value
+    ):
         raise ValueError(f"{label} must match [A-Za-z0-9_]+: {value!r}")
     return value
 
@@ -85,7 +87,13 @@ def check_export_name(name: str) -> str:
     restricted to an inert alphabet instead of being escaped."""
     if "/" in name or name.startswith("."):
         raise ValueError(f"export name must be a bare file name: {name!r}")
-    if not all(ch.isalnum() or ch in "._-" for ch in name):
+    if not all(
+        "A" <= ch <= "Z"
+        or "a" <= ch <= "z"
+        or "0" <= ch <= "9"
+        or ch in "._-"
+        for ch in name
+    ):
         raise ValueError(f"export name must match [A-Za-z0-9._-]+: {name!r}")
     if not name.endswith(".csv"):
         raise ValueError(
@@ -100,7 +108,13 @@ def require_run_id(run_id: str) -> str:
     overridden at run-now time, so anything outside the platform's own run-id
     alphabet is refused instead of escaped."""
     run_id = str(run_id)
-    if not run_id or not run_id.replace("-", "").replace("_", "").isalnum():
+    if not run_id or not all(
+        "A" <= ch <= "Z"
+        or "a" <= ch <= "z"
+        or "0" <= ch <= "9"
+        or ch in "_-"
+        for ch in run_id
+    ):
         raise ValueError(f"run_id must match [A-Za-z0-9_-]+: {run_id!r}")
     return run_id
 
@@ -301,6 +315,12 @@ def batch_files(input_dir: str) -> list[str]:
     return sorted(found)
 
 
+def require_input_dir(input_dir: str) -> str:
+    if not os.path.isdir(input_dir):
+        raise ValueError(f"missing_input_dir: {input_dir}")
+    return input_dir
+
+
 def unrecognised_inputs(files) -> list[str]:
     """The legacy reader took `CUSTBILL*.psv` in the batch directory itself.
     Anything else present is a rejection: an unread file must never be reported
@@ -314,7 +334,9 @@ def unrecognised_inputs(files) -> list[str]:
 
 def run(spark, dbutils, params: dict) -> dict:
     n = Names(catalog=require_ident(params["catalog"], "catalog"), ns=require_ns(params["ns"]))
-    input_dir = f"{n.landing}/{require_ident(params['input_subdir'], 'input_subdir')}"
+    input_dir = require_input_dir(
+        f"{n.landing}/{require_ident(params['input_subdir'], 'input_subdir')}"
+    )
     probe = params.get("delivery_probe", "off")
     if probe not in {"off", "skip_write"}:
         raise ValueError(f"delivery_probe must be off or skip_write: {probe!r}")

@@ -26,6 +26,7 @@ import json
 import os
 import re
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -356,18 +357,45 @@ def cmd_recon(dbx: Databricks, args) -> int:
           "static scan of the converted job and harness sources vs the legacy Perl script")
 
     # --- empty input: header-only export, zero gold rows, prior export untouched
+    empty_input_dir = f"{n.landing}/{args.empty_subdir}"
+    quoted_empty_input_dir = urllib.parse.quote(empty_input_dir, safe="/")
+    directory_status, directory_body = dbx.call(
+        "PUT", f"/api/2.0/fs/directories{quoted_empty_input_dir}"
+    )
+    if not 200 <= directory_status < 300:
+        raise DbxError(
+            f"PUT {empty_input_dir} -> HTTP {directory_status}: "
+            f"{json.dumps(directory_body)[:300]}"
+        )
+    # existence is read back from the API rather than assumed from the PUT: list_dir
+    # answers [] for both an empty directory and a missing one, so a 404 here would
+    # otherwise look exactly like the empty batch this check is about
+    listed_status, _ = dbx.call("GET", f"/api/2.0/fs/directories{quoted_empty_input_dir}")
+    empty_input_exists = 200 <= listed_status < 300
+    empty_input_entries = dbx.list_dir(empty_input_dir)
+    if not empty_input_exists:
+        raise DbxError(f"empty input directory missing after create: {empty_input_dir}")
+    if empty_input_entries:
+        raise DbxError(
+            f"empty input directory is not empty: {empty_input_dir} "
+            f"({len(empty_input_entries)} entries)"
+        )
     run_empty = trigger(dbx, n, {"input_subdir": args.empty_subdir, "export_name": JOB.EXPORT_NAME,
                                  "delivery_probe": "off"})
     gold_empty = gold_rows(dbx, n)
     empty_payload = download_export(dbx, empty_export)
     main_after_empty = download_export(dbx, main_export)
     check(checks, "finance-empty-input",
-          {"run_succeeded": True, "gold_rows": 0, "empty_export": JOB.HEADER + "\n",
+          {"run_succeeded": True, "input_dir_exists": True, "input_dir_empty": True,
+           "gold_rows": 0, "empty_export": JOB.HEADER + "\n",
            "prior_export_preserved": True},
-          {"run_succeeded": run_empty["result_state"] == "SUCCESS", "gold_rows": len(gold_empty),
+          {"run_succeeded": run_empty["result_state"] == "SUCCESS",
+           "input_dir_exists": empty_input_exists, "input_dir_empty": empty_input_entries == [],
+           "gold_rows": len(gold_empty),
            "empty_export": (empty_payload or b"").decode("utf-8"),
            "prior_export_preserved": main_after_empty == export_b},
-          f"run {run_empty['run_id']} against the empty input dir {n.landing}/{args.empty_subdir}")
+          f"verified empty input dir {empty_input_dir} exists and list_dir is empty; "
+          f"run {run_empty['run_id']} used that directory")
 
     # --- stale-artifact probe: the export is byte-identical across runs, so a
     # read-back of the destination only proves delivery if last run's artifact
