@@ -205,6 +205,30 @@ def _checks(dbx: Databricks, n: S.Names) -> list[dict]:
     return dbx.sql_ok(S.recon_checks(n)).dicts()
 
 
+def notifier_runs(dbx: Databricks, n: S.Names) -> list[str]:
+    """Run urls where this namespace's notifier task actually executed, so the
+    report can state what happened here instead of assuming the red path was
+    always rehearsed somewhere else."""
+    job = dbx.find_job(f"ow_tp_billing_history_recon_{n.ns}")
+    if not job:
+        return []
+    fired = []
+    query = f"/api/2.1/jobs/runs/list?job_id={job['job_id']}&expand_tasks=true&limit=25"
+    for _ in range(20):
+        payload = dbx.ok("GET", query)
+        for run in payload.get("runs", []):
+            for task in run.get("tasks", []):
+                if (task.get("task_key") == "notify_devin"
+                        and task.get("state", {}).get("result_state") == "SUCCESS"):
+                    fired.append(dbx.run_url(int(run["run_id"])))
+        token = payload.get("next_page_token", "")
+        if not token:
+            break
+        query = (f"/api/2.1/jobs/runs/list?job_id={job['job_id']}&expand_tasks=true"
+                 f"&limit=25&page_token={urllib.parse.quote(token)}")
+    return fired
+
+
 def cmd_recon(dbx: Databricks, args) -> int:
     n = names(args)
     data = load_manifest(args)
@@ -237,6 +261,18 @@ def cmd_recon(dbx: Databricks, args) -> int:
     expected_keys = {tuple(a) for a in expected_anomalies}
     actual_keys = {tuple(a) for a in actual_anomalies}
 
+    unverified = ["legacy sendmail delivery of the finance report (no SMTP in the demo estate)"]
+    fired = notifier_runs(dbx, n)
+    if not fired:
+        unverified.append(
+            f"recon-failure webhook POST from the ns={n.ns} notifier task: no run of this "
+            "namespace's recon job has taken the red path, so its notifier notebook has "
+            "never fired here (the red path is rehearsed in a throwaway namespace so this "
+            "namespace stays green)"
+        )
+    else:
+        print(f"notifier fired in ns={n.ns}: {', '.join(fired[:3])}")
+
     report = {
         "kind": "recon-report",
         "unit": "custbill_history_backfill",
@@ -261,12 +297,7 @@ def cmd_recon(dbx: Databricks, args) -> int:
             "missing": sorted(list(k) for k in expected_keys - actual_keys),
             "unexpected": sorted(list(k) for k in actual_keys - expected_keys),
         },
-        "unverified_paths": [
-            "legacy sendmail delivery of the finance report (no SMTP in the demo estate)",
-            (f"recon-failure webhook POST from the ns={n.ns} notifier task: the red path is "
-             "rehearsed in a throwaway namespace so this namespace stays green, so this "
-             "namespace's notifier notebook has never fired"),
-        ],
+        "unverified_paths": unverified,
     }
     failed = [c for c in report["checks"] if c["result"] == "fail"]
     rows = ",".join(
