@@ -306,7 +306,7 @@ def cmd_fail_test(dbx: Databricks, n: ChainNames, args) -> int:
         report_run_id = int(report["run_id"])
         ledger = dbx.sql_ok(
             f"SELECT task_key, status, detail FROM {n.ledger} "
-            f"WHERE run_id = {report_run_id} ORDER BY recorded_at"
+            f"WHERE run_id = '{report_run_id}' ORDER BY recorded_at"
         ).dicts()
         _record_evidence(n, "failure_run", {**report, "ledger": ledger})
         return 0 if report["result_state"] == "FAILED" else 1
@@ -485,7 +485,7 @@ def cmd_recon(dbx: Databricks, n: ChainNames, args) -> int:
         )
         ledger_rows = dbx.sql_ok(
             f"SELECT task_key, status FROM {n.ledger} "
-            f"WHERE run_id = {failure_run_id} AND task_key = 'chain' ORDER BY recorded_at"
+            f"WHERE run_id = '{failure_run_id}' AND task_key = 'chain' ORDER BY recorded_at"
         ).rows
     else:
         ledger_rows = []
