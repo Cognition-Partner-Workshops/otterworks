@@ -539,12 +539,65 @@ def cmd_teardown(dbx: Databricks, args) -> int:
     for table in (n.gold, n.silver, n.bronze):
         dbx.sql_ok(f"DROP TABLE IF EXISTS {table}")
         print(f"dropped {table}")
-    for entry in dbx.list_dir(f"{n.landing}/{args.input_subdir}"):
-        dbx.delete_file(entry["path"])
+    input_dirs = (
+        f"{n.landing}/{args.input_subdir}",
+        f"{n.landing}/{getattr(args, 'empty_subdir', 'parsed_empty')}",
+    )
+    for input_dir in input_dirs:
+        for entry in dbx.list_dir(input_dir):
+            dbx.delete_file(entry["path"])
+        dbx.delete_dir(input_dir)
+        print(f"deleted directory {input_dir}")
+    # n.landing is already namespace-scoped; the volume root itself is shared.
+    dbx.delete_dir(n.landing)
+    print(f"deleted directory {n.landing}")
     job = dbx.find_job(job_name(n.ns))
     if job:
         dbx.ok("POST", "/api/2.1/jobs/delete", {"job_id": int(job["job_id"])})
         print(f"deleted job {job['job_id']}")
+    status, _ = dbx.call(
+        "POST", "/api/2.0/workspace/delete", {"path": notebook_path(n.ns)}
+    )
+    print(f"workspace delete {notebook_path(n.ns)}: HTTP {status}")
+
+    def directory_exists(path: str) -> bool:
+        quoted = urllib.parse.quote(path, safe="/")
+        status, payload = dbx.call("GET", f"/api/2.0/fs/directories{quoted}")
+        if status == 404:
+            return False
+        if not 200 <= status < 300:
+            raise DbxError(f"GET {path} -> HTTP {status}: {json.dumps(payload)[:300]}")
+        return True
+
+    def workspace_object_exists(path: str) -> bool:
+        quoted = urllib.parse.quote(path, safe="")
+        status, payload = dbx.call(
+            "GET", f"/api/2.0/workspace/get-status?path={quoted}"
+        )
+        if status == 404:
+            return False
+        if not 200 <= status < 300:
+            raise DbxError(f"GET workspace status {path} -> HTTP {status}: {json.dumps(payload)[:300]}")
+        return True
+
+    # negative verification across every object class teardown touches
+    # sql_ok, not sql: an errored scan returns no rows, which would read as proof
+    # of absence and let teardown report a namespace it never cleaned
+    remaining = {}
+    for schema in ("bronze", "silver", "gold"):
+        result = dbx.sql_ok(f"SHOW TABLES IN {n.catalog}.{schema} LIKE '*_{n.ns}'")
+        remaining[f"{schema}_tables"] = result.rows
+    remaining.update({
+        "input_dirs": [path for path in input_dirs if directory_exists(path)],
+        "landing_dir": directory_exists(n.landing),
+        "job": dbx.find_job(job_name(n.ns)) is not None,
+        "notebook": workspace_object_exists(notebook_path(n.ns)),
+    })
+    print("negative verification: " + json.dumps(remaining))
+    survivors = [key for key, value in remaining.items() if value]
+    if survivors:
+        print(f"teardown incomplete, survivors: {survivors}")
+        return 1
     print(f"retained as run evidence: {n.audit} and the exports under {n.exports}")
     return 0
 
