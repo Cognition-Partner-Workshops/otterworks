@@ -63,9 +63,9 @@ export function ConfirmDialog({
   const isDestructive = variant === "destructive";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
+    <dialog
+      open
+      className="fixed inset-0 z-50 flex items-center justify-center bg-transparent !m-0 p-0 w-full h-full max-w-none max-h-none"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-description"
@@ -124,6 +124,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
