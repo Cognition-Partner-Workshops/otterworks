@@ -21,27 +21,27 @@ resource "databricks_job" "finance" {
   }
 
   parameter {
-    key     = "ns"
+    name    = "ns"
     default = var.ns
   }
 
   parameter {
-    key     = "catalog"
+    name    = "catalog"
     default = var.catalog
   }
 
   parameter {
-    key     = "input_subdir"
+    name    = "input_subdir"
     default = "parsed"
   }
 
   parameter {
-    key     = "export_name"
+    name    = "export_name"
     default = "finance_billing.csv"
   }
 
   parameter {
-    key     = "delivery_probe"
+    name    = "delivery_probe"
     default = "off"
   }
 

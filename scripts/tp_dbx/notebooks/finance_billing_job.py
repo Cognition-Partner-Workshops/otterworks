@@ -90,6 +90,16 @@ def check_export_name(name: str) -> str:
     return name
 
 
+def require_run_id(run_id: str) -> str:
+    """The run id reaches an INSERT as a literal, and a job parameter can be
+    overridden at run-now time, so anything outside the platform's own run-id
+    alphabet is refused instead of escaped."""
+    run_id = str(run_id)
+    if not run_id or not run_id.replace("-", "").replace("_", "").isalnum():
+        raise ValueError(f"run_id must match [A-Za-z0-9_-]+: {run_id!r}")
+    return run_id
+
+
 def cents_to_amount(cents: int) -> str:
     sign = "-" if cents < 0 else ""
     cents = abs(int(cents))
@@ -276,6 +286,10 @@ def run(spark, dbutils, params: dict) -> dict:
     probe = params.get("delivery_probe", "off")
     if probe not in {"off", "skip_write"}:
         raise ValueError(f"delivery_probe must be off or skip_write: {probe!r}")
+    # both the artifact name and the run id are checked up front: a misconfigured
+    # run must fail the same way whether or not the batch turns out to have data
+    requested_export = check_export_name(params["export_name"])
+    run_id = require_run_id(params["run_id"])
 
     for statement in ddl(n):
         spark.sql(statement)
@@ -297,13 +311,13 @@ def run(spark, dbutils, params: dict) -> dict:
     ]
     payload = render_export(rows)
     # empty input never truncates the last good export in place
-    name = params["export_name"] if rows else EMPTY_EXPORT_NAME
-    delivered = deliver(payload, n.exports, check_export_name(name), skip_write=probe == "skip_write")
+    name = requested_export if rows else EMPTY_EXPORT_NAME
+    delivered = deliver(payload, n.exports, name, skip_write=probe == "skip_write")
 
     input_rows = spark.sql(f"SELECT count(*) AS c FROM {n.silver}").collect()[0]["c"]
     spark.sql(
         f"""INSERT INTO {n.audit} VALUES (
-              '{params['run_id']}', current_timestamp(), '{delivered['path']}',
+              '{run_id}', current_timestamp(), '{delivered['path']}',
               {delivered['byte_size']}, {delivered['row_count']},
               '{delivered['sha256']}', {input_rows})"""
     )

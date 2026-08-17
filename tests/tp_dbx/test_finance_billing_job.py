@@ -134,3 +134,14 @@ def test_names_and_ddl_targets_are_namespace_suffixed():
     assert all(target.endswith("_cnvfinance") for target in targets)
     for statement, target in zip(JOB.ddl(names), targets):
         assert target in statement
+
+
+@pytest.mark.parametrize("value", ["12345", "run-1_a"])
+def test_require_run_id_accepts_platform_run_ids(value):
+    assert JOB.require_run_id(value) == value
+
+
+@pytest.mark.parametrize("value", ["1'); DROP TABLE t; --", "", "run id"])
+def test_require_run_id_rejects_values_that_would_escape_the_sql_literal(value):
+    with pytest.raises(ValueError):
+        JOB.require_run_id(value)

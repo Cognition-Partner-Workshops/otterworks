@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "dbx-finance",
   "namespace": "cnvfinance",
-  "generated_at": "2026-08-17T05:35:24Z",
+  "generated_at": "2026-08-17T05:47:52Z",
   "run_mode": "live",
   "checks": [
     {
@@ -54,7 +54,7 @@
           "USD,CREDIT,8,54737.57"
         ]
       },
-      "source_of_truth": "golden legacy output: $OTTERWORKS_LEGACY_ROOT/reports/finance_billing_*.csv; actual recomputed from ow_tp.gold.custbill_billing_summary_cnvfinance after run 295808705897443",
+      "source_of_truth": "golden legacy output: $OTTERWORKS_LEGACY_ROOT/reports/finance_billing_*.csv; actual recomputed from ow_tp.gold.custbill_billing_summary_cnvfinance after run 846017353627873",
       "result": "pass"
     },
     {
@@ -136,7 +136,7 @@
         "mislabelled_run_fails": true,
         "probe_artifact_left_behind": false
       },
-      "source_of_truth": "/Volumes/ow_tp/gold/exports/cnvfinance/finance_billing.csv read back from the volume; probe runs 947964070415521 / 50124082563473",
+      "source_of_truth": "/Volumes/ow_tp/gold/exports/cnvfinance/finance_billing.csv read back from the volume; probe runs 20369953497246 / 940073925292294",
       "result": "pass"
     },
     {
@@ -168,7 +168,7 @@
         "empty_export": "Currency,RecordType,RecordCount,TotalAmount\n",
         "prior_export_preserved": true
       },
-      "source_of_truth": "run 1107234375070990 against the empty input dir /Volumes/ow_tp/bronze/landing/cnvfinance/parsed_empty",
+      "source_of_truth": "run 398092706798410 against the empty input dir /Volumes/ow_tp/bronze/landing/cnvfinance/parsed_empty",
       "result": "pass"
     },
     {
@@ -183,7 +183,7 @@
         "export_sha256": "ef1ad83223ebf1e902d57b15126f63fed91510b3228e8883d3c1bb6f03cadde0",
         "rebuild_after_empty_batch_identical": true
       },
-      "source_of_truth": "reruns 610895863317006 and 1073049021968899 recomputed from ow_tp.gold.custbill_billing_summary_cnvfinance and the delivered export",
+      "source_of_truth": "reruns 870331020293776 and 553705555085679 recomputed from ow_tp.gold.custbill_billing_summary_cnvfinance and the delivered export",
       "result": "pass"
     }
   ],
@@ -191,7 +191,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "job re-run 610895863317006 reproduced run 295808705897443 byte-identically (185 bytes, sha256 ef1ad83223ebf1e9...), and run 1073049021968899 restored the same gold rows and export after the empty-input run 1107234375070990"
+    "evidence": "job re-run 870331020293776 reproduced run 846017353627873 byte-identically (185 bytes, sha256 ef1ad83223ebf1e9...), and run 553705555085679 restored the same gold rows and export after the empty-input run 398092706798410"
   },
   "planted_anomaly_detections": {
     "expected_set": [
@@ -231,12 +231,12 @@
   "evidence": {
     "golden_baseline": "/tmp/otterworks-legacy-cnvfinance/reports/finance_billing_20260115.csv",
     "job_runs": {
-      "build": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/295808705897443",
-      "idempotency": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/610895863317006",
-      "delivery_noop_probe": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/947964070415521",
-      "mislabel_probe": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/50124082563473",
-      "empty_input": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/1107234375070990",
-      "restore": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/1073049021968899"
+      "build": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/846017353627873",
+      "idempotency": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/870331020293776",
+      "delivery_noop_probe": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/20369953497246",
+      "mislabel_probe": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/940073925292294",
+      "empty_input": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/398092706798410",
+      "restore": "https://dbc-8bc9474f-40ae.cloud.databricks.com/jobs/runs/553705555085679"
     },
     "gold_table": "https://dbc-8bc9474f-40ae.cloud.databricks.com/explore/data/ow_tp/gold/custbill_billing_summary_cnvfinance",
     "export_object": "/Volumes/ow_tp/gold/exports/cnvfinance/finance_billing.csv",
