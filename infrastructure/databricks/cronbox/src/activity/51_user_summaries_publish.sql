@@ -30,7 +30,8 @@ WITH win AS (
   GROUP BY namespace, user_id
 ), ranked AS (
   SELECT t.namespace, t.user_id, t.total_actions, CAST(t.active_days AS INT) AS active_days,
-         a.actions_by_type, f.first_seen_date, f.first_seen_seq,
+       COALESCE(a.actions_by_type, CAST(map() AS MAP<STRING, BIGINT>)),
+       f.first_seen_date, f.first_seen_seq,
          CAST(ROW_NUMBER() OVER (
            ORDER BY t.total_actions DESC, f.first_seen_date DESC,
                     COALESCE(f.first_seen_seq, 9223372036854775807) ASC

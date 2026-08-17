@@ -53,8 +53,8 @@ def summary_envelope(ns: str, row: dict, landing_ds: str) -> dict:
     }
 
 
-def parse_history(ns: str, day: date, key: str, raw: bytes, landing_ds: str | None = None) -> list[dict]:
-    landing = landing_ds or str(day)
+def parse_history(ns: str, day: date, key: str, raw: bytes, landing_ds: str) -> list[dict]:
+    landing = landing_ds
     try:
         text = gzip.decompress(raw).decode("utf-8")
     except (UnicodeDecodeError, OSError) as exc:

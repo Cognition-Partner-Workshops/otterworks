@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "cron-activity",
   "namespace": "demo",
-  "generated_at": "2026-08-17T06:42:09.221430Z",
+  "generated_at": "2026-08-17T06:44:42.079548Z",
   "run_mode": "fixture",
   "checks": [
     {
@@ -5936,28 +5936,112 @@
       "result": "skipped"
     },
     {
-      "id": "ACT-03/target_assertions",
+      "id": "ACT-03/history_days_present",
       "expected": "target assertion",
       "actual": "fixture mode",
       "source_of_truth": "deployed Databricks target",
       "result": "skipped"
     },
     {
-      "id": "ACT-04/target_assertions",
+      "id": "ACT-03/missing_history_days",
       "expected": "target assertion",
       "actual": "fixture mode",
       "source_of_truth": "deployed Databricks target",
       "result": "skipped"
     },
     {
-      "id": "ACT-05/target_assertions",
+      "id": "ACT-03/gap_day_contributes_nothing",
       "expected": "target assertion",
       "actual": "fixture mode",
       "source_of_truth": "deployed Databricks target",
       "result": "skipped"
     },
     {
-      "id": "ACT-06/target_assertions",
+      "id": "ACT-03/job_run_succeeded",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-03/analytics_rundate_row_intact",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-04/latest_matches_dated_report",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-05/no_duplicate_users_after_rerun",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-05/report_row_singleton_after_rerun",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-05/values_stable_across_rerun",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/report_trends",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/report_daily_summaries",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/report_user_summaries",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/report_top_users",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/user_order",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/user_summaries_jsonl_equivalent",
+      "expected": "target assertion",
+      "actual": "fixture mode",
+      "source_of_truth": "deployed Databricks target",
+      "result": "skipped"
+    },
+    {
+      "id": "ACT-06/report_scalar_fields",
       "expected": "target assertion",
       "actual": "fixture mode",
       "source_of_truth": "deployed Databricks target",

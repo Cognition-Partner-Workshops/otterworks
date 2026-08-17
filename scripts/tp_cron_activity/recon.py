@@ -123,7 +123,7 @@ def history_dates(ds: str, objects: list[Path]) -> list[str]:
         parts = obj.parts
         value = "-".join(next(x.split("=")[1] for x in parts if x.startswith(prefix + "="))
                          for prefix in ("year", "month", "day"))
-        if date.fromisoformat(ds) - timedelta(days=29) <= date.fromisoformat(value) < date.fromisoformat(ds):
+        if date.fromisoformat(ds) - timedelta(days=29) <= date.fromisoformat(value) <= date.fromisoformat(ds):
             output.append(value)
     return sorted(output)
 
@@ -170,9 +170,26 @@ def fixture(ns: str, ds: str) -> dict:
     check(checks, "LAND-08/malformed_attribution", True, False,
           "synthetic malformed and invalid UTF-8 fixture not landed",
           result="skipped")
-    for ident in ("ACT-01/summary_window_values", "ACT-02/user_aggregates",
-                  "ACT-03/target_assertions", "ACT-04/target_assertions",
-                  "ACT-05/target_assertions", "ACT-06/target_assertions"):
+    for ident in (
+        "ACT-01/summary_window_values",
+        "ACT-02/user_aggregates",
+        "ACT-03/history_days_present",
+        "ACT-03/missing_history_days",
+        "ACT-03/gap_day_contributes_nothing",
+        "ACT-03/job_run_succeeded",
+        "ACT-03/analytics_rundate_row_intact",
+        "ACT-04/latest_matches_dated_report",
+        "ACT-05/no_duplicate_users_after_rerun",
+        "ACT-05/report_row_singleton_after_rerun",
+        "ACT-05/values_stable_across_rerun",
+        "ACT-06/report_trends",
+        "ACT-06/report_daily_summaries",
+        "ACT-06/report_user_summaries",
+        "ACT-06/report_top_users",
+        "ACT-06/user_order",
+        "ACT-06/user_summaries_jsonl_equivalent",
+        "ACT-06/report_scalar_fields",
+    ):
         check(checks, ident, "target assertion", "fixture mode",
               "deployed Databricks target", result="skipped")
     expected_anomalies = [["missing_history_day", "2026-01-02"],
@@ -251,11 +268,7 @@ def live(ns: str, ds: str, warehouse_id: str | None, rerun_mode: str) -> dict:
           actual["Q_LATEST"][0]["report_date"] if actual["Q_LATEST"] else None, "baseline report date")
     check(checks, "ACT-04/latest_matches_dated_report", report_rows[0]["report_sha256"] if report_rows else None,
           actual["Q_LATEST"][0]["report_sha256"] if actual["Q_LATEST"] else None, "dated report and latest view")
-    dupes = actual["Q_USER_DUPES"][0] if actual["Q_USER_DUPES"] else {}
     expected_dupes = {"row_count": len(expected_users), "distinct_users": len(expected_users), "distinct_ordinals": len(expected_users)}
-    check(checks, "ACT-05/no_duplicate_users_after_rerun", expected_dupes, dupes, "baseline user_summaries.jsonl")
-    check(checks, "ACT-05/report_row_singleton_after_rerun", 1,
-          actual["Q_DAILY_ROWCOUNT"][0]["row_count"] if actual["Q_DAILY_ROWCOUNT"] else 0, "dated report table")
     check(checks, "ACT-06/report_trends", report["trends"], target_report.get("trends", {}), "baseline activity_report.json")
     check(checks, "ACT-06/report_daily_summaries", report["daily_summaries"], target_report.get("daily_summaries", []), "baseline activity_report.json")
     check(checks, "ACT-06/report_user_summaries", [user_shape(r) for r in report["user_summaries"]],
@@ -267,7 +280,10 @@ def live(ns: str, ds: str, warehouse_id: str | None, rerun_mode: str) -> dict:
     check(checks, "ACT-06/user_summaries_jsonl_equivalent", expected_users, target_users, "baseline user_summaries.jsonl")
     check(checks, "ACT-06/report_scalar_fields", {k: report[k] for k in ("report_type", "report_date", "lookback_days")},
           {k: target_report.get(k) for k in ("report_type", "report_date", "lookback_days")}, "baseline activity_report.json")
-    check(checks, "ACT-06/generated_at_volatile", "skipped", "skipped", "contract volatility policy", result="skipped")
+    check(checks, "ACT-06/generated_at_volatile",
+          "generated_at is excluded from parity comparison because it is volatile",
+          "target report generated_at is excluded from the queried parity shape",
+          "contract volatility policy", result="skipped")
     job = dbx.find_job(JOB_NAME)
     shape = {"found": bool(job), "schedule_paused": False, "serverless_only": False}
     if job:
@@ -301,6 +317,12 @@ def live(ns: str, ds: str, warehouse_id: str | None, rerun_mode: str) -> dict:
     rerun["after"] = digest({"users": after_actual["Q_USER_SUMMARIES"], "report": after_actual["Q_REPORT"]})
     rerun["result"] = "pass" if rerun_ok and rerun["before"] == rerun["after"] else "fail"
     check(checks, "ACT-03/job_run_succeeded", "SUCCESS", rerun.get("state", {}).get("result_state", rerun.get("state")), "idempotency rerun")
+    after_dupes = after_actual["Q_USER_DUPES"][0] if after_actual["Q_USER_DUPES"] else {}
+    check(checks, "ACT-05/no_duplicate_users_after_rerun", expected_dupes, after_dupes,
+          "post-rerun user_summaries query")
+    check(checks, "ACT-05/report_row_singleton_after_rerun", 1,
+          after_actual["Q_DAILY_ROWCOUNT"][0]["row_count"] if after_actual["Q_DAILY_ROWCOUNT"] else 0,
+          "post-rerun dated report query")
     check(checks, "ACT-05/values_stable_across_rerun", rerun["before"], rerun["after"], "before/after target digests")
     actual_anomalies = []
     if "2026-01-02" in coverage_missing:
@@ -316,7 +338,19 @@ def live(ns: str, ds: str, warehouse_id: str | None, rerun_mode: str) -> dict:
         "planted_anomaly_detections": {"expected_set": expected_anomalies, "actual_set": actual_anomalies,
                                       "missing": [x for x in expected_anomalies if x not in actual_anomalies],
                                       "unexpected": [x for x in actual_anomalies if x not in expected_anomalies]},
-        "unverified_paths": ["generated_at is intentionally omitted from target report; map key order is not bitwise comparable."],
+        "unverified_paths": [
+            "generated_at is intentionally omitted from target report parity; its volatility is recorded by ACT-06/generated_at_volatile.",
+            "actions_by_type map key order is not bitwise comparable; recon compares key/value content.",
+            "This recon does not assert the backfill/bronze landing path; TARGET/landing_volume_present covers only the dated landing directory.",
+            *(
+                ["The daily job was not found, so its deployed task graph was not exercised."]
+                if not job else []
+            ),
+            *(
+                ["SQL rerun mode does not exercise the deployed job task graph."]
+                if rerun_mode == "sql" else []
+            ),
+        ],
     }
 
 

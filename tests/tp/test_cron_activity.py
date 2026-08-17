@@ -26,7 +26,7 @@ def test_windows_include_run_date_and_summary_has_thirty_one_dates():
 
 def test_parse_history_guard_and_missing_day_are_nonfatal():
     key = "analytics/daily/year=2026/month=01/day=14/top_users.jsonl.gz"
-    records = parse_history("demo", date(2026, 1, 14), key, gzip.compress(b'{"user_id":"u","total":1,"actions":{}}\n'))
+    records = parse_history("demo", date(2026, 1, 14), key, gzip.compress(b'{"user_id":"u","total":1,"actions":{}}\n'), "2026-01-14")
     assert records[0]["report_date"] == "2026-01-14"
     assert "2026-01-15" not in {record["report_date"] for record in records}
     assert records[0]["landing_ds"] == "2026-01-14"
@@ -35,11 +35,11 @@ def test_parse_history_guard_and_missing_day_are_nonfatal():
 def test_malformed_and_invalid_utf8_are_attributed():
     key = "analytics/daily/year=2026/month=01/day=14/top_users.jsonl.gz"
     records = parse_history("demo", date(2026, 1, 14), key,
-                            gzip.compress(b'not-json\n{"user_id":"u","total":1,"actions":{}}\n'))
+                            gzip.compress(b'not-json\n{"user_id":"u","total":1,"actions":{}}\n'), "2026-01-14")
     assert records[0]["parse_error"]
     assert records[0]["source_object"] == key
     assert records[0]["source_line"] == 1
-    invalid = parse_history("demo", date(2026, 1, 14), key, b"\x1f\x8bnot-utf8")
+    invalid = parse_history("demo", date(2026, 1, 14), key, b"\x1f\x8bnot-utf8", "2026-01-14")
     assert invalid[0]["parse_error"]
     assert invalid[0]["source_line"] == 1
 
@@ -47,7 +47,7 @@ def test_malformed_and_invalid_utf8_are_attributed():
 def test_extra_fields_and_missing_user_are_tolerated_and_attributed():
     key = "history.gz"
     records = parse_history("demo", date(2026, 1, 14), key,
-                            gzip.compress(b'{"total":2,"actions":{"edit":2},"extra":"ok"}\n'))
+                            gzip.compress(b'{"total":2,"actions":{"edit":2},"extra":"ok"}\n'), "2026-01-14")
     assert aggregate_history(records)[0]["user_id"] == "unknown"
     assert aggregate_history(records)[0]["active_days"] == 1
 
