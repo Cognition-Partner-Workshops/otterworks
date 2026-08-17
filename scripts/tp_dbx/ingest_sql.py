@@ -19,6 +19,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+RUN_ID_PATTERN = r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+
+
+def require_run_id(run_id: str) -> str:
+    if (
+        not isinstance(run_id, str)
+        or not run_id
+        or len(run_id) > 128
+        or not run_id[0].isascii()
+        or not run_id[0].isalnum()
+        or any(not (char.isascii() and (char.isalnum() or char in "_-")) for char in run_id[1:])
+    ):
+        raise SystemExit(f"run id must match {RUN_ID_PATTERN}: {run_id!r}")
+    return run_id
+
+
 # Only complete drops are eligible: a name carrying one of these suffixes is a
 # transfer still in flight (the mainframe sender renames into place when done).
 IN_PROGRESS_SUFFIXES = (".part", ".tmp", ".filepart", ".inprogress")
@@ -52,10 +68,10 @@ class Names:
         return f"{self.ingest_dir}/_commits"
 
     def run_data_dir(self, run_id: str) -> str:
-        return f"{self.data_dir}/{run_id}"
+        return f"{self.data_dir}/{require_run_id(run_id)}"
 
     def commit_path(self, run_id: str) -> str:
-        return f"{self.commit_dir}/{run_id}.json"
+        return f"{self.commit_dir}/{require_run_id(run_id)}.json"
 
     @property
     def bronze(self) -> str:

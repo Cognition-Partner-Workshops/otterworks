@@ -160,6 +160,34 @@ def test_completion_marker_mismatch_raises_before_publish():
     assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
 
 
+@pytest.mark.parametrize("run_id", ["../otherns", "..", "run/id"])
+def test_publish_rejects_unsafe_run_id_before_side_effects(run_id):
+    n = Names()
+    data = b"source"
+    dbx = FakeDbx({
+        "/drop/CUSTBILL_001.dat": data,
+        "/drop/CUSTBILL_001.dat.sha256": ingest.sha256(data).encode(),
+    })
+    with pytest.raises(SystemExit, match="run id must match"):
+        ingest.publish(dbx, n, run_id)
+    assert dbx.puts == []
+    assert dbx.sql_calls == []
+
+
+@pytest.mark.parametrize("run_id", ["12345", "local-" + "a" * 32])
+def test_publish_accepts_valid_run_ids(run_id):
+    n = Names()
+    data = b"source"
+    dbx = FakeDbx({
+        "/drop/CUSTBILL_001.dat": data,
+        "/drop/CUSTBILL_001.dat.sha256": ingest.sha256(data).encode(),
+    })
+    marker = ingest.publish(dbx, n, run_id)
+    assert marker["run_id"] == run_id
+    assert f"/data/{run_id}/CUSTBILL_001.dat" in dbx.files
+    assert f"/commits/{run_id}.json" in dbx.files
+
+
 def test_empty_drop_is_noop_and_prior_rows_untouched():
     n = Names()
     dbx = FakeDbx({"/commits/old.json": b"old"}, pairs=[("old.dat", "digest")])

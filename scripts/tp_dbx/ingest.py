@@ -81,6 +81,7 @@ def _existing_pairs(dbx: Databricks, n: S.Names) -> set[tuple[str, str]]:
 
 
 def publish(dbx, n: S.Names, run_id: str) -> dict | None:
+    run_id = S.require_run_id(run_id)
     entries = dbx.list_dir(n.drop_dir)
     names_to_publish = eligible_drop_names(entries)
     if not names_to_publish:
@@ -174,12 +175,14 @@ def cmd_recon_collect(dbx, args) -> int:
 
 def notebook_source(n: S.Names) -> str:
     embedded = "\n\n".join([
+        inspect.getsource(S.require_run_id),
         inspect.getsource(S.Names),
         inspect.getsource(S.quote),
         inspect.getsource(S.create_bronze),
         inspect.getsource(S.merge_bronze),
     ])
     embedded = (
+        "RUN_ID_PATTERN = " + repr(S.RUN_ID_PATTERN) + "\n"
         "IN_PROGRESS_SUFFIXES = " + repr(S.IN_PROGRESS_SUFFIXES) + "\n"
         "DROP_GLOB_PREFIX = " + repr(S.DROP_GLOB_PREFIX) + "\n"
         "DROP_GLOB_SUFFIX = " + repr(S.DROP_GLOB_SUFFIX) + "\n\n" + embedded
@@ -197,16 +200,17 @@ dbutils.widgets.text("catalog", "{n.catalog}")
 dbutils.widgets.text("run_id", "")
 ns = dbutils.widgets.get("ns")
 catalog = dbutils.widgets.get("catalog")
-run_id = dbutils.widgets.get("run_id") or "local-" + uuid.uuid4().hex
+raw_run_id = dbutils.widgets.get("run_id") or "local-" + uuid.uuid4().hex
 landing = f"/Volumes/{{catalog}}/bronze/landing/{{ns}}"
 drop_dir = landing + "/drop"
-data_dir = landing + "/ingest/data/" + run_id
-commit_dir = landing + "/ingest/_commits"
 
 # BEGIN EMBEDDED INGEST_SQL
 {embedded}
 # END EMBEDDED INGEST_SQL
 n = Names(catalog=catalog, ns=ns)
+run_id = require_run_id(raw_run_id)
+data_dir = landing + "/ingest/data/" + run_id
+commit_dir = landing + "/ingest/_commits"
 
 def digest(path):
     with open(path, "rb") as handle:
