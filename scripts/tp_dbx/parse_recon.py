@@ -39,6 +39,7 @@ REPO = Path(__file__).resolve().parents[2]
 LEGACY_PARSER = REPO / "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh"
 PLANTED = ["non_numeric_amount", "invalid_calendar_date", "trailer_count_mismatch"]
 CORRUPT_CUST = None  # discovered from the corrupted line itself
+LEGACY_ROOT: Path | None = None  # set from --legacy-root before any unit() call
 
 
 def now() -> str:
@@ -105,9 +106,15 @@ def content_hash(rows: list) -> str:
 
 
 def unit(command: str, ns: str, extra: list = ()) -> str:
+    """Drive parse_unit.py under the legacy root this recon was pointed at, so the
+    landed drops and the golden baseline can never come from different directories."""
     argv = [sys.executable, str(Path(__file__).resolve().parent / "parse_unit.py"),
             command, "--ns", ns, *extra]
-    completed = subprocess.run(argv, capture_output=True, text=True, cwd=str(REPO), check=False)
+    env = dict(os.environ)
+    if LEGACY_ROOT is not None:
+        env["OTTERWORKS_LEGACY_ROOT"] = str(LEGACY_ROOT)
+    completed = subprocess.run(argv, capture_output=True, text=True, cwd=str(REPO),
+                               env=env, check=False)
     if completed.returncode != 0:
         raise SystemExit(f"{command} failed: {completed.stdout}\n{completed.stderr}")
     return completed.stdout
@@ -191,6 +198,8 @@ def main(argv=None) -> int:
     n = S.Names(catalog=require_ident(args.catalog, "catalog"), ns=ns)
     dbx = Databricks()
     legacy_root = Path(args.legacy_root)
+    global LEGACY_ROOT
+    LEGACY_ROOT = legacy_root
     golden = golden_rows(legacy_root / "parsed")
     golden_files = {row[0] for row in golden}
     checks: list = []
