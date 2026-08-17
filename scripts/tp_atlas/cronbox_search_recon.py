@@ -47,11 +47,13 @@ BASELINE = (
     REPO_ROOT
     / "testdata/legacy/golden/cronbox/demo/search_reindex_weekly/manifest.json"
 )
+SEED_MANIFEST_ROOT = REPO_ROOT / "testdata/legacy/golden/cronbox"
 CONTRACT = REPO_ROOT / "docs/tech-partnerships/contracts/cron-search.json"
 UNIT = "cron-search"
 PROBE_PREFIX = "ow-tp-cron-search-recon-"
 SEARCH_VISIBILITY_TIMEOUT_S = 180
 TOKEN_PATTERN = re.compile(r"\w+", re.UNICODE)
+MULTIBYTE_QUERY_IDS = ("DOC-UNICODE-TITLE", "FILE-UNICODE-NAME")
 
 
 def _digest(ids: Iterable[str]) -> str:
@@ -73,6 +75,118 @@ def _set_check(
         },
         "source_of_truth": source,
         "result": "pass" if expected_set == actual_set else "fail",
+    }
+
+
+def _seed_literals(namespace: str) -> dict[tuple[str, str], str]:
+    path = SEED_MANIFEST_ROOT / namespace / "seed-manifest.json"
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    unicode_file = manifest.get("stores", {}).get(FILES, {}).get("unicode_file")
+    if not isinstance(unicode_file, Mapping):
+        return {}
+    record_id = unicode_file.get("id")
+    file_name = unicode_file.get("file_name")
+    if not isinstance(record_id, str) or not isinstance(file_name, str):
+        return {}
+    return {(FILES, record_id): file_name}
+
+
+def _multibyte_check(
+    queries: Sequence[Mapping[str, Any]],
+    query_results: Mapping[str, Sequence[str]],
+    records: Mapping[str, Sequence[Mapping[str, Any]]],
+    source_of_truth: str,
+    committed_literals: Mapping[tuple[str, str], str],
+) -> dict[str, Any]:
+    query_evidence = {}
+    stored_evidence = []
+    evaluated_query_ids = set()
+    query_sets_pass = True
+    stored_values_pass = True
+    by_id = {
+        collection: {str(record.get("id")): record for record in items}
+        for collection, items in records.items()
+    }
+    for query in queries:
+        if query["id"] not in MULTIBYTE_QUERY_IDS:
+            continue
+        evaluated_query_ids.add(query["id"])
+        expected_ids = set(query["expected_ids"])
+        actual_ids = set(query_results.get(query["id"], []))
+        missing = sorted(expected_ids - actual_ids)
+        unexpected = sorted(actual_ids - expected_ids)
+        query_evidence[query["id"]] = {
+            "expected_ids": sorted(expected_ids),
+            "actual_ids": sorted(actual_ids),
+            "missing": missing,
+            "unexpected": unexpected,
+        }
+        query_sets_pass &= not missing and not unexpected
+        field = "title" if query["collection"] == DOCUMENTS else "name"
+        query_text = query.get("meilisearch_query", {}).get("q", "")
+        required_characters = sorted(
+            {character for character in query_text if ord(character) > 127}
+        )
+        for record_id in sorted(expected_ids):
+            record = by_id.get(query["collection"], {}).get(record_id)
+            value = record.get(field) if record else None
+            missing_characters = [
+                character
+                for character in required_characters
+                if not isinstance(value, str) or character not in value
+            ]
+            expected_literal = committed_literals.get((query["collection"], record_id))
+            literal_matches = expected_literal is not None and value == expected_literal
+            failure_reasons = []
+            if not required_characters and expected_literal is None:
+                failure_reasons.append(
+                    "no_non_ascii_query_characters_or_committed_literal_available"
+                )
+            if missing_characters:
+                failure_reasons.append("required_query_characters_missing")
+            if expected_literal is not None and not literal_matches:
+                failure_reasons.append("committed_literal_mismatch")
+            value_pass = not failure_reasons
+            stored_evidence.append(
+                {
+                    "query_id": query["id"],
+                    "record_id": record_id,
+                    "field": field,
+                    "value": value,
+                    "required_characters": required_characters,
+                    "missing_characters": missing_characters,
+                    "expected_literal": expected_literal,
+                    "literal_matches": literal_matches,
+                    "failure_reasons": failure_reasons,
+                }
+            )
+            stored_values_pass &= value_pass
+    required_query_ids = set(MULTIBYTE_QUERY_IDS)
+    query_sets_pass = evaluated_query_ids == required_query_ids and query_sets_pass
+    stored_values_pass = (
+        evaluated_query_ids == required_query_ids and stored_values_pass
+    )
+    return {
+        "id": "SRC-04/multibyte-query",
+        "expected": {
+            "query_ids": list(MULTIBYTE_QUERY_IDS),
+            "id_sets_match": True,
+            "stored_values": {
+                "required_query_characters_present": True,
+                "committed_literals_match_when_available": True,
+                "missing_expectation_is_failure": True,
+            },
+        },
+        "actual": {
+            "evaluated_query_ids": sorted(evaluated_query_ids),
+            "queries": query_evidence,
+            "stored_values": stored_evidence,
+        },
+        "source_of_truth": source_of_truth,
+        "result": "pass" if query_sets_pass and stored_values_pass else "fail",
     }
 
 
@@ -400,6 +514,26 @@ def recon_live(namespace: str) -> dict[str, Any]:
                 check["result"] = "fail"
                 check["actual"]["outside_corpus"] = outside
             checks.append(check)
+        multibyte_records = {}
+        for query in queries:
+            if query["id"] not in MULTIBYTE_QUERY_IDS:
+                continue
+            field = "title" if query["collection"] == DOCUMENTS else "name"
+            ids = query["expected_ids"]
+            multibyte_records[query["collection"]] = list(
+                db[query["collection"]].find(
+                    {"id": {"$in": ids}}, {"_id": 0, "id": 1, field: 1}
+                )
+            )
+        checks.append(
+            _multibyte_check(
+                queries,
+                first,
+                multibyte_records,
+                "committed multi-byte golden queries and values read back from deployed Atlas collections",
+                _seed_literals(namespace),
+            )
+        )
 
         try:
             deployed = []
@@ -517,12 +651,21 @@ def recon_fixture(namespace: str, source_url: str) -> dict[str, Any]:
                 "golden query set evaluated by the fixture $search evaluator",
             )
         )
+    checks.append(
+        _multibyte_check(
+            queries,
+            first,
+            corpus,
+            "committed multi-byte golden queries and locally transformed fixture corpus",
+            _seed_literals(namespace),
+        )
+    )
     checks.extend(
         role_checks(load_definitions(), "committed index definitions (offline)")
     )
     checks.append(
         {
-            "id": "SRC-04/attribution",
+            "id": "POLICY/malformed-record-attribution",
             "expected": {"records_indexed_under_blank_id": 0},
             "actual": {
                 "records_indexed_under_blank_id": 0,
@@ -559,6 +702,8 @@ def recon_fixture(namespace: str, source_url: str) -> dict[str, Any]:
             "$search execution, index field-role read-back, and continuous index maintenance "
             "(SRC-02/SRC-03/SRC-05 on the real engine): fixture mode evaluates query semantics "
             "locally and only the parent's live run proves them on Atlas",
+            "SRC-04/multibyte-query: query matching was evaluated by the local fixture evaluator "
+            "rather than Atlas $search",
             "MeiliSearch relevance ordering and scores (contract coverage gap: "
             "meili_ranking_rules_not_portable)",
             "MeiliSearch typo tolerance parity (contract coverage gap: typo_tolerance_semantics)",
