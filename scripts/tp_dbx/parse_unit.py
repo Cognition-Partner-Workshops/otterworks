@@ -15,10 +15,11 @@ compute, and every table it touches carries its own namespace suffix.
   fixture   run the same parse locally over the golden drops (no Databricks)
   teardown  drop this namespace's own tables and landed files
 
-Landing is marker-based: the .dat is uploaded first and a sibling `<name>.ok`
-marker second, and the job only consumes a .dat that has its marker. The Files
-API has no rename, so the marker — not a rename — is what makes a half-uploaded
-drop invisible to the parse.
+Landing is marker-based: a stale sibling `<name>.ok` marker is removed before
+each `.dat` upload, then the marker is uploaded second, and the job only
+consumes a `.dat` that has its marker. The Files API has no rename, so the
+marker — not a rename — is what makes a half-uploaded drop invisible to the
+parse.
 """
 from __future__ import annotations
 
@@ -126,6 +127,7 @@ def cmd_land(args) -> int:
     for drop in drops:
         name = drop.name.removesuffix(".done")
         payload = drop.read_bytes()
+        dbx.delete_file(f"{n.incoming}/{name}.ok")
         dbx.put_file(f"{n.incoming}/{name}", payload)
         dbx.put_file(f"{n.incoming}/{name}.ok", b"")
         print(f"landed {name} ({len(payload)} bytes) -> {n.incoming}/{name}")

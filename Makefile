@@ -50,6 +50,7 @@ dbx-showcase-help: ## List the Databricks billing-history showcase steps
 	python3 scripts/tp_dbx/showcase.py --help
 
 dbx-parse: ## Run a dbx-parse unit step (CMD=<land|provision|deploy|run|status|fixture|teardown> NS=<ns>)
+	@test -n "$(CMD)" || { echo "usage: make dbx-parse CMD=<step> [NS=<ns>] [ARGS=...]"; exit 2; }
 	python3 scripts/tp_dbx/parse_unit.py --ns $${NS:-cnvparse} $(CMD) $(ARGS)
 
 PROCS_COMPOSE = docker compose -f docker-compose.procs.yml -p otterworks-procs-$(NS)

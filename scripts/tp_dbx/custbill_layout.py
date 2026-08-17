@@ -49,6 +49,7 @@ REASONS = (
     "invalid_record_type",
     "trailer_count_mismatch",
     "missing_trailer",
+    "file_failed_missing_trailer",
     "file_failed_trailer_mismatch",
 )
 
@@ -240,6 +241,15 @@ def parse_file(source_file: str, data: bytes) -> FileResult:
 
     if result.failed:
         accepted, result.records = result.records, []
+        failure_reason = (
+            "file_failed_missing_trailer" if not trailers
+            else "file_failed_trailer_mismatch"
+        )
+        failure_detail = (
+            f"file rejected: no TRL record; records={result.body_count}"
+            if not trailers
+            else f"file rejected: trailer={result.trailer_count} records={result.body_count}"
+        )
         for record in accepted:
             result.rejects.append(Reject(
                 source_file=source_file,
@@ -247,8 +257,8 @@ def parse_file(source_file: str, data: bytes) -> FileResult:
                 raw_bytes_base64=base64.b64encode(
                     dict(body)[record.source_line]).decode("ascii"),
                 raw_line=decode_line(dict(body)[record.source_line])[0],
-                reason_code="file_failed_trailer_mismatch",
-                detail=f"file rejected: trailer={result.trailer_count} records={result.body_count}",
+                reason_code=failure_reason,
+                detail=failure_detail,
             ))
         result.rejects.sort(key=lambda item: (item.source_line, item.reason_code))
     return result

@@ -144,7 +144,13 @@ def test_missing_trailer_fails_file():
 
     assert result.failed
     assert result.records == []
-    assert "missing_trailer" in {reject.reason_code for reject in result.rejects}
+    assert {
+        reject.reason_code
+        for reject in result.rejects
+    } == {"file_failed_missing_trailer", "missing_trailer"}
+    body_rejects = [reject for reject in result.rejects if reject.source_line > 0]
+    assert [reject.reason_code for reject in body_rejects] == ["file_failed_missing_trailer"]
+    assert all("-1" not in reject.detail for reject in result.rejects)
 
 
 def test_blank_customer_id_and_name_are_rejected():
