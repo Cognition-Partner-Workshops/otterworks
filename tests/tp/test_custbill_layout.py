@@ -1,6 +1,9 @@
 import base64
+import re
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "tp_dbx"))
 
@@ -159,3 +162,28 @@ def test_blank_customer_id_and_name_are_rejected():
 
 def test_escapes_single_quotes_and_backslashes():
     assert parse_sql.esc(r"O'Reilly\billing") == r"O''Reilly\\billing"
+
+
+def test_names_accept_valid_namespace_and_catalog():
+    names = parse_sql.Names(catalog="ow_tp", ns="cnvparse")
+
+    assert names.silver == "ow_tp.silver.custbill_records_cnvparse"
+    assert names.notebook == "/Shared/ow_tp/parse_custbill_cnvparse"
+
+
+@pytest.mark.parametrize("value", ["bad'quote", "bad value", "bad.dot", "bad-hyphen"])
+def test_names_reject_invalid_namespace_identifiers(value):
+    with pytest.raises(
+        SystemExit,
+        match=re.escape(f"namespace must match [a-z0-9_]{{1,24}}: {value!r}"),
+    ):
+        parse_sql.Names(ns=value)
+
+
+@pytest.mark.parametrize("value", ["bad'quote", "bad value", "bad.dot", "bad-hyphen"])
+def test_names_reject_invalid_catalog_identifiers(value):
+    with pytest.raises(
+        SystemExit,
+        match=re.escape(f"catalog must match [A-Za-z0-9_]+: {value!r}"),
+    ):
+        parse_sql.Names(catalog=value)

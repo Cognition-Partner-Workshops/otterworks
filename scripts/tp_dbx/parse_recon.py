@@ -126,10 +126,16 @@ def build_anomalies(source_dir: Path, out_dir: Path) -> dict:
     The amount corruption is the demo beat: a single letter sed into the
     fixed-width amount field, which the legacy parser converts to 0.00 and passes.
     """
+    drops = sorted(source_dir.glob("CUSTBILL*.dat"))
+    if not drops:
+        drops = sorted(source_dir.glob("CUSTBILL*.dat.done"))
+    if len(drops) < 2:
+        raise SystemExit(f"expected at least two CUSTBILL drops under {source_dir}")
+
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
-    first, second = sorted(source_dir.glob("CUSTBILL*.dat.done"))[:2]
+    first, second = drops[:2]
 
     corrupt = out_dir / "CUSTBILL_CNVPARSE_CORRUPT.dat"
     subprocess.run(["sed", "2s/^\\(.\\{52\\}\\)./\\1A/", str(first)],

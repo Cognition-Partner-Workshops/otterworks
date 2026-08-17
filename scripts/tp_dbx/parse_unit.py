@@ -226,6 +226,9 @@ def cmd_teardown(args) -> int:
     for item in dbx.list_dir(n.incoming):
         dbx.delete_file(item["path"])
     dbx.delete_dir(n.incoming)
+    dbx.delete_dir(n.landing)
+    status, _ = dbx.call("POST", "/api/2.0/workspace/delete", {"path": n.notebook})
+    print(f"workspace delete {n.notebook}: HTTP {status}")
     job = dbx.find_job(n.job)
     if job:
         dbx.ok("POST", "/api/2.1/jobs/delete", {"job_id": int(job["job_id"])})

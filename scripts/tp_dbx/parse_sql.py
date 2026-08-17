@@ -10,9 +10,24 @@ Databricks notebook task and imported by the local fixture harness.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 UNIT = "parse"
+NS_RE = re.compile(r"[a-z0-9_]{1,24}")
+IDENT_RE = re.compile(r"[A-Za-z0-9_]+")
+
+
+def require_ns(ns: str) -> str:
+    if not NS_RE.fullmatch(ns):
+        raise SystemExit(f"namespace must match [a-z0-9_]{{1,24}}: {ns!r}")
+    return ns
+
+
+def require_ident(value: str, label: str) -> str:
+    if not IDENT_RE.fullmatch(value):
+        raise SystemExit(f"{label} must match [A-Za-z0-9_]+: {value!r}")
+    return value
 
 
 def esc(value: str) -> str:
@@ -25,6 +40,10 @@ def esc(value: str) -> str:
 class Names:
     catalog: str = "ow_tp"
     ns: str = "demo"
+
+    def __post_init__(self):
+        require_ident(self.catalog, "catalog")
+        require_ns(self.ns)
 
     @property
     def landing(self) -> str:
