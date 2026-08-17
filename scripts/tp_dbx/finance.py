@@ -541,7 +541,7 @@ def cmd_teardown(dbx: Databricks, args) -> int:
         print(f"dropped {table}")
     input_dirs = (
         f"{n.landing}/{args.input_subdir}",
-        f"{n.landing}/{getattr(args, 'empty_subdir', 'parsed_empty')}",
+        f"{n.landing}/{args.empty_subdir}",
     )
     for input_dir in input_dirs:
         for entry in dbx.list_dir(input_dir):
@@ -609,6 +609,7 @@ def main() -> int:
     parser.add_argument("--catalog", default="ow_tp", choices=["ow_tp"])
     parser.add_argument("--warehouse-id", default=os.environ.get("DATABRICKS_SQL_WAREHOUSE_ID", ""))
     parser.add_argument("--input-subdir", default="parsed")
+    parser.add_argument("--empty-subdir", default="parsed_empty")
     parser.add_argument("--legacy-root", default="")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("land")
@@ -620,7 +621,6 @@ def main() -> int:
     recon = sub.add_parser("recon")
     recon.add_argument("--out", default="docs/tech-partnerships/recon/finance-cnvfinance.recon.json")
     recon.add_argument("--run-mode", default="live", choices=["live", "fixture"])
-    recon.add_argument("--empty-subdir", default="parsed_empty")
     recon.add_argument(
         "--unverified",
         nargs="*",
