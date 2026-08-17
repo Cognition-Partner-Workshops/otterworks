@@ -27,7 +27,7 @@ a password (see `redacted_uri` in `scripts/tp_mongo/platform_common.py`).
 | 0 | Before-state | `make seed-legacy-validate NS=demo` | 15/15 PASS |
 | 1 | Capability preflight | `make tp-preflight PLATFORM=atlas` | cluster read, wire write, access-list create+delete, `collMod` DDL on an existing collection all VERIFIED; `alert-webhook-config` DENIED (accepted — the recon job calls Devin directly) |
 | 2 | Wave 1 — migrations reconciled | per-unit recon table below | 18/18, 16/16, 20/20, 12/12 checks pass, live against Atlas |
-| 3 | Validators enforced | `make tp-mongo-validators NS=demo` | every collection has a `$jsonSchema`; each probe insert rejected server-side (`code 121`) |
+| 3 | Validators enforced | `make tp-mongo-validators NS=demo` | every collection has a `$jsonSchema`; every probe insert attempted is rejected server-side (`code 121`) |
 | 4 | Deterministic aggregation | `make tp-mongo-report NS=demo OUT=<path>` | one pipeline replaces a 4-way legacy join; `Decimal128` money; run twice → byte-identical |
 | 5 | Hard cutover | `make up` then the app's document/billing flows | services read MongoDB, not Postgres/Oracle |
 | 6 | Full recon GREEN | `make tp-mongo-recon-platform NS=demo RUN_MODE=live` | `GREEN: 87 checks passed`, exit 0, **no** webhook call (failure-only notification) |
@@ -69,8 +69,8 @@ MongoDB. Parity is proved against **recorded transcripts of the legacy procedure
 transcripts are never re-recorded and the legacy SQL is never edited.
 
 ```bash
-make procs-rules-gate MODULE=rating      # PASS=8  FAIL=0 SKIP=0
-make procs-rules-gate MODULE=invoicing   # PASS=6  FAIL=0 SKIP=0
+make procs-rules-gate MODULE=rating      # Rules gate PASS: rating      (10 rules)
+make procs-rules-gate MODULE=invoicing   # Rules gate PASS: invoicing   (8 rules)
 make procs-parity                        # PASS=19 FAIL=0 SKIP=5 (dunning still pending → SKIP)
 ```
 
@@ -85,7 +85,11 @@ the three showcase pieces and the failure loop:
 
 1. **Schema validation** — every collection carries a `$jsonSchema` validator; the showcase
    attempts a missing-required-field insert, a wrong-BSON-type insert, and an unmodeled-field
-   insert per collection and shows the **server** rejecting each one (error code 121).
+   insert per collection and shows the **server** rejecting every attempted probe (error code
+   121), with zero failures. Two by-design exemptions show up in the evidence as unattempted
+   probes rather than passes: `files` / `files_quarantine` permit unmodeled fields (attributed
+   DynamoDB extras), so the unmodeled-field probe is skipped there, and `documents_quarantine`
+   has no sample document to mutate, so only the missing-required-field probe runs.
    Evidence: `docs/tech-partnerships/evidence/mongodb-20260817/demo-validator-showcase.json`.
 2. **Deterministic aggregation report** — a single pipeline over `invoices` (embedded lines)
    joined to `customers` replaces a 4-way legacy join across `CUSTOMER_MASTER`,
