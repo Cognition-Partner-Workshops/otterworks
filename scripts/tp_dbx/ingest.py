@@ -13,11 +13,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import ingest_sql as S
-from client import Databricks, DbxError, require_ident, require_ns
+from client import Databricks, DbxError
 
 
 def names(args) -> S.Names:
-    return S.Names(catalog=require_ident(args.catalog, "catalog"), ns=require_ns(args.ns))
+    return S.Names(catalog=args.catalog, ns=args.ns)
 
 
 def sha256(data: bytes) -> str:
@@ -38,6 +38,19 @@ def eligible_drop_names(entries: list[dict]) -> list[str]:
         for entry in entries
     }
     return sorted(name for name in names if f"{name}.sha256" in sidecars)
+
+
+def ineligible_drop_names(entries: list[dict]) -> list[str]:
+    names = {
+        str(entry.get("name") or entry.get("path", "").rsplit("/", 1)[-1])
+        for entry in entries
+    }
+    return sorted(
+        name for name in names
+        if name.startswith(S.DROP_GLOB_PREFIX)
+        and name.endswith(S.DROP_GLOB_SUFFIX)
+        and f"{name}.sha256" not in names
+    )
 
 
 def normalise_source_name(name: str, strip_suffix: str) -> str:
@@ -66,7 +79,12 @@ def cmd_send_drop(dbx: Databricks, args) -> int:
         digest = sha256(payload)
         part = f"{n.drop_dir}/{target}.part"
         final = f"{n.drop_dir}/{target}"
-        dbx.delete_file(f"{n.drop_dir}/{target}.sha256")
+        status = dbx.delete_file(f"{n.drop_dir}/{target}.sha256")
+        if status != 404 and not 200 <= status < 300:
+            raise DbxError(
+                f"DELETE {n.drop_dir}/{target}.sha256 -> HTTP {status}: "
+                "refusing to overwrite data"
+            )
         dbx.put_file(part, payload)
         dbx.put_file(final, payload)
         dbx.delete_file(part)
@@ -84,8 +102,17 @@ def publish(dbx, n: S.Names, run_id: str) -> dict | None:
     run_id = S.require_run_id(run_id)
     entries = dbx.list_dir(n.drop_dir)
     names_to_publish = eligible_drop_names(entries)
+    ineligible = ineligible_drop_names(entries)
+    if ineligible:
+        print(
+            f"publish deferred: {len(ineligible)} drop object(s) await completion "
+            f"sidecars for ns={n.ns}: {', '.join(ineligible)}"
+        )
     if not names_to_publish:
-        print(f"publish no-op: drop is empty for ns={n.ns}")
+        if ineligible:
+            return None
+        else:
+            print(f"publish no-op: drop is empty for ns={n.ns}")
         return None
     verified = []
     for name in names_to_publish:
@@ -175,6 +202,8 @@ def cmd_recon_collect(dbx, args) -> int:
 
 def notebook_source(n: S.Names) -> str:
     embedded = "\n\n".join([
+        inspect.getsource(S.require_ns),
+        inspect.getsource(S.require_ident),
         inspect.getsource(S.require_run_id),
         inspect.getsource(S.Names),
         inspect.getsource(S.quote),
@@ -182,6 +211,8 @@ def notebook_source(n: S.Names) -> str:
         inspect.getsource(S.merge_bronze),
     ])
     embedded = (
+        "NS_PATTERN = " + repr(S.NS_PATTERN) + "\n"
+        "IDENT_PATTERN = " + repr(S.IDENT_PATTERN) + "\n"
         "RUN_ID_PATTERN = " + repr(S.RUN_ID_PATTERN) + "\n"
         "IN_PROGRESS_SUFFIXES = " + repr(S.IN_PROGRESS_SUFFIXES) + "\n"
         "DROP_GLOB_PREFIX = " + repr(S.DROP_GLOB_PREFIX) + "\n"
@@ -224,6 +255,21 @@ names_to_publish = sorted(
     and name.endswith(DROP_GLOB_SUFFIX)
     and name + ".sha256" in entries
 )
+ineligible_names = sorted(
+    name for name in entries
+    if name.startswith(DROP_GLOB_PREFIX)
+    and name.endswith(DROP_GLOB_SUFFIX)
+    and name + ".sha256" not in entries
+)
+if ineligible_names:
+    print(json.dumps({{"event": "publish-deferred", "reason": "completion-sidecar-missing",
+                      "ineligible": ineligible_names}}, sort_keys=True))
+if not names_to_publish:
+    if ineligible_names:
+        print(json.dumps({{"event": "publish-no-op", "reason": "completion-sidecar-missing",
+                          "ineligible": ineligible_names}}, sort_keys=True))
+    else:
+        print(json.dumps({{"event": "publish-no-op", "reason": "drop-empty"}}, sort_keys=True))
 verified = []
 for name in names_to_publish:
     data, content_sha256 = digest(drop_dir + "/" + name)

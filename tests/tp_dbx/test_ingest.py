@@ -63,10 +63,20 @@ class Names:
     catalog = "ow_tp"
 
 
+@pytest.mark.parametrize(
+    ("catalog", "ns", "label"),
+    [("ow/tp", "test", "catalog"), ("ow_tp", "../otherns", "namespace")],
+)
+def test_names_validate_namespace_and_catalog(catalog, ns, label):
+    with pytest.raises(SystemExit, match=f"{label} must match"):
+        ingest_sql.Names(catalog=catalog, ns=ns)
+
+
 class OrderingDbx:
-    def __init__(self, files=None):
+    def __init__(self, files=None, delete_status=None):
         self.files = dict(files or {})
         self.events = []
+        self.delete_status = delete_status
 
     def put_file(self, path, payload):
         self.events.append(("put", path))
@@ -74,6 +84,8 @@ class OrderingDbx:
 
     def delete_file(self, path):
         self.events.append(("delete", path))
+        if self.delete_status is not None:
+            return self.delete_status
         if path not in self.files:
             return 404
         del self.files[path]
@@ -103,6 +115,17 @@ def test_send_drop_tolerates_missing_sidecar(tmp_path):
     drop_dir = ingest_sql.Names(catalog="ow_tp", ns="test").drop_dir
     assert ("delete", f"{drop_dir}/CUSTBILL_001.dat.sha256") in dbx.events
     assert dbx.files[f"{drop_dir}/CUSTBILL_001.dat"] == b"first-send"
+
+
+def test_send_drop_rejects_sidecar_retraction_failure(tmp_path):
+    source = tmp_path / "CUSTBILL_001.dat"
+    source.write_bytes(b"new-bytes")
+    dbx = OrderingDbx(delete_status=500)
+    args = SimpleNamespace(catalog="ow_tp", ns="test", source=str(tmp_path), strip_suffix="")
+
+    with pytest.raises(ingest.DbxError, match="refusing to overwrite data"):
+        ingest.cmd_send_drop(dbx, args)
+    assert not any(event[0] == "put" for event in dbx.events)
 
 
 def test_eligible_selection_skips_partial_and_unrelated():
@@ -141,12 +164,15 @@ def test_publish_byte_mismatch_raises_and_does_not_commit(monkeypatch):
     assert "/commits/run-1.json" not in dbx.files
 
 
-def test_missing_completion_marker_is_skipped():
+def test_missing_completion_marker_is_skipped(capsys):
     n = Names()
     dbx = FakeDbx({"/drop/CUSTBILL_001.dat": b"incomplete"})
     assert ingest.publish(dbx, n, "run-1") is None
     assert not any(path.startswith("/data/") for path, _ in dbx.puts)
     assert not any("MERGE INTO" in sql for sql in dbx.sql_calls)
+    output = capsys.readouterr().out
+    assert "CUSTBILL_001.dat" in output
+    assert "await completion sidecars" in output
 
 
 def test_completion_marker_mismatch_raises_before_publish():
@@ -220,12 +246,16 @@ def test_merge_requires_every_attribute():
 def test_notebook_embeds_authoritative_sql_functions():
     n = ingest_sql.Names(ns="test")
     body = ingest.notebook_source(n)
+    assert "publish-deferred" in body
+    assert "ineligible_names" in body
     embedded = body.split("# BEGIN EMBEDDED INGEST_SQL\n", 1)[1].split(
         "\n# END EMBEDDED INGEST_SQL", 1
     )[0]
     namespace = {}
     exec("from dataclasses import dataclass\n" + embedded, namespace)  # noqa: S102
     embedded_names = namespace["Names"](catalog="ow_tp", ns="test")
+    with pytest.raises(SystemExit, match="namespace must match"):
+        namespace["Names"](catalog="ow_tp", ns="../otherns")
     rows = [
         {"source_file": "CUSTBILL_001.dat", "byte_size": 4, "content_sha256": "abcd",
          "landed_path": "/data/x/CUSTBILL_001.dat", "commit_id": "x", "ingest_run_id": "x"},

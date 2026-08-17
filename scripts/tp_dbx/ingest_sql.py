@@ -11,7 +11,8 @@ record content. Bronze therefore holds one row per atomically published object
 
 Landing layout under the shared landing volume, per namespace:
   <landing>/drop/                     SFTP replacement; the off-platform sender
-                                      writes <name>.part and renames on completion
+                                      writes complete bytes then a matching .sha256
+                                      sidecar; only sidecar-bearing objects publish
   <landing>/ingest/data/<run_id>/     published objects (visible only once committed)
   <landing>/ingest/_commits/<id>.json commit marker; the single atomic publish point
 """
@@ -19,7 +20,26 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+NS_PATTERN = r"[a-z0-9_]{1,24}"
+IDENT_PATTERN = r"[A-Za-z0-9_]+"
 RUN_ID_PATTERN = r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+
+
+def require_ns(ns: str) -> str:
+    if not isinstance(ns, str) or not ns or len(ns) > 24 or any(
+        not (char.isascii() and (char.islower() or char.isdigit() or char == "_"))
+        for char in ns
+    ):
+        raise SystemExit(f"namespace must match {NS_PATTERN}: {ns!r}")
+    return ns
+
+
+def require_ident(value: str, label: str) -> str:
+    if not isinstance(value, str) or not value or any(
+        not (char.isascii() and (char.isalnum() or char == "_")) for char in value
+    ):
+        raise SystemExit(f"{label} must match {IDENT_PATTERN}: {value!r}")
+    return value
 
 
 def require_run_id(run_id: str) -> str:
@@ -35,8 +55,8 @@ def require_run_id(run_id: str) -> str:
     return run_id
 
 
-# Only complete drops are eligible: a name carrying one of these suffixes is a
-# transfer still in flight (the mainframe sender renames into place when done).
+# Only complete drops are eligible when the matching .sha256 sidecar exists.
+# These suffixes remain a defence in depth for other in-progress transfers.
 IN_PROGRESS_SUFFIXES = (".part", ".tmp", ".filepart", ".inprogress")
 DROP_GLOB_PREFIX = "CUSTBILL"
 DROP_GLOB_SUFFIX = ".dat"
@@ -46,6 +66,10 @@ DROP_GLOB_SUFFIX = ".dat"
 class Names:
     catalog: str = "ow_tp"
     ns: str = "demo"
+
+    def __post_init__(self):
+        object.__setattr__(self, "catalog", require_ident(self.catalog, "catalog"))
+        object.__setattr__(self, "ns", require_ns(self.ns))
 
     @property
     def landing(self) -> str:
