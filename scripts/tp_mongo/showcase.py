@@ -495,7 +495,7 @@ def cmd_report(client: MongoClient, args) -> int:
             "kind": "finance-report-comparison",
             "namespace": ns,
             "generated_at": now(),
-            "golden_baseline": str(golden_path.relative_to(REPO)) if golden_path.is_absolute() else str(golden_path),
+            "golden_baseline": str(golden_path.relative_to(REPO)) if golden_path.is_relative_to(REPO) else str(golden_path),
             "pipeline": "scripts/tp_mongo/showcase.py finance_pipeline (one aggregation, $facet group+unwind)",
             "legacy": golden,
             "mongodb": live,
