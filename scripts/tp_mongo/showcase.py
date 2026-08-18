@@ -494,6 +494,9 @@ def cmd_drift(client: MongoClient, args) -> int:
     require_rehearsal(client, args.ns)
     ns = args.ns
     db = database(client, ns)
+    if args.kind in ("stale", "corrupt") and args.n < 1:
+        raise SystemExit("--n must be >= 1 (limit(0) would cap nothing and "
+                         "touch the whole collection)")
     if args.kind == "stale":
         victims = [d["_id"] for d in db["invoices"]
                    .find({"ns": ns}, {"_id": 1}).sort("_id", -1).limit(args.n)]
