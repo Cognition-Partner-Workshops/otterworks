@@ -14,6 +14,11 @@ namespace's own collections.
   validate-demo  the stage moment: conforming writes land, contract violations
                  (a DD-MON-YY string date, a 156th ad-hoc field, a CSV blob)
                  are rejected by the database itself
+  report         the legacy month-end finance rollup as ONE aggregation
+                 pipeline over the invoices collection (embedded lines: group
+                 and unwind, no joins), asserted equal to the legacy golden
+                 report to the cent; --emit-golden regenerates the golden file
+                 from the seeded Oracle fixture
 
 Credentials come from MONGODB_ATLAS_URI (or MONGODB_URI / --mongodb-uri); the
 tool never prints the URI.
@@ -22,10 +27,13 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 from bson.decimal128 import Decimal128
@@ -39,6 +47,12 @@ from validators import VALIDATORS
 REPO = Path(__file__).resolve().parents[2]
 DB_PREFIX = "ow_tp_mongodb_"
 PROBE_PREFIX = "showcase-probe"
+SHOWCASE_DIR = REPO / "docs/tech-partnerships/showcase"
+
+# the CODES rows and inline DECODE the legacy report resolves its magic
+# numbers through (scripts/tp_mongo/legacy_finance_report.sql)
+INV_STATUS = {10: "draft", 20: "issued", 30: "paid", 40: "overdue"}
+LINE_TYPE = {1: "CHARGE", 2: "CREDIT", 3: "ADJUSTMENT", 9: "MISC"}
 
 
 def require_ns(ns: str) -> str:
@@ -280,6 +294,218 @@ def cmd_validate_demo(client: MongoClient, args) -> int:
     return 0 if not failed and not residue else 1
 
 
+# --- report ------------------------------------------------------------------
+def cents(value) -> str:
+    if isinstance(value, Decimal128):
+        value = value.to_decimal()
+    return str(Decimal(value).quantize(Decimal("0.01")))
+
+
+def ns_batch_no(ns: str) -> int:
+    """The namespace's deterministic batch number in the shared Oracle fixture
+    (same derivation as migrations/mongodb/invoices/migrate.py)."""
+    return int(hashlib.sha256(ns.encode()).hexdigest()[:8], 16) % 90_000_000 + 1_000_000
+
+
+def legacy_finance_report(container: str, ns: str) -> dict:
+    """Run the committed legacy SQL (scripts/tp_mongo/legacy_finance_report.sql)
+    against the seeded Oracle fixture, scoped to the namespace's batch_no, and
+    parse its CSV sections."""
+    sql = (
+        f"DEFINE batch_no = {ns_batch_no(ns)}\n".encode()
+        + (REPO / "scripts/tp_mongo/legacy_finance_report.sql").read_bytes()
+    )
+    proc = subprocess.run(
+        [
+            "docker", "exec", "-i", container, "bash", "-c",
+            "sqlplus -s ow_billing/ow_billing@localhost:1521/FREEPDB1",
+        ],
+        input=sql,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"legacy report failed (sqlplus exit {proc.returncode}): "
+            f"{(proc.stdout.decode().strip() or proc.stderr.decode().strip())[-500:]}"
+        )
+    by_status: dict[str, dict] = {}
+    by_status_line_type: dict[str, dict] = {}
+    section = ""
+    for raw in proc.stdout.decode().splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line in ("SECTION1", "SECTION2"):
+            section = line
+            continue
+        if line.startswith("STATUS_DESC"):
+            continue
+        parts = line.split(",")
+        if section == "SECTION1":
+            if len(parts) != 3:
+                raise SystemExit(f"unexpected legacy report output: {line!r}")
+            status, count, total = parts
+            by_status[status] = {
+                "invoice_count": int(count),
+                "header_total_amt": cents(total),
+            }
+        elif section == "SECTION2":
+            if len(parts) != 6:
+                raise SystemExit(f"unexpected legacy report output: {line!r}")
+            status, line_type, count, amount, tax, touched = parts
+            by_status_line_type[f"{status}|{line_type}"] = {
+                "line_count": int(count),
+                "line_amount": cents(amount),
+                "line_tax": cents(tax),
+                "invoices_touched": int(touched),
+            }
+    if not by_status or not by_status_line_type:
+        raise SystemExit(
+            "legacy report returned no rows; is the Oracle fixture seeded? "
+            f"(stderr: {proc.stderr.decode().strip()[:500]})"
+        )
+    return {"by_status": by_status, "by_status_line_type": by_status_line_type}
+
+
+def decode(field: str, mapping: dict[int, str]) -> dict:
+    """The CODES join / inline DECODE of the legacy report as a $switch."""
+    return {
+        "$switch": {
+            "branches": [
+                {"case": {"$eq": [field, code]}, "then": name}
+                for code, name in mapping.items()
+            ],
+            "default": {"$concat": ["UNKNOWN(", {"$toString": field}, ")"]},
+        }
+    }
+
+
+def finance_pipeline(ns: str) -> list[dict]:
+    """The whole legacy month-end finance rollup as ONE aggregation pipeline:
+    embedded lines mean group-and-unwind, no joins, and the 37 orphaned legacy
+    lines are absent by construction (they live in quarantine, not here)."""
+    return [
+        {"$match": {"ns": ns}},
+        {"$addFields": {"status_desc": decode("$status_cd", INV_STATUS)}},
+        {"$facet": {
+            "by_status": [
+                {"$group": {
+                    "_id": "$status_desc",
+                    "invoice_count": {"$sum": 1},
+                    "header_total_amt": {"$sum": "$total_amt"},
+                }},
+                {"$sort": {"_id": 1}},
+            ],
+            "by_status_line_type": [
+                {"$unwind": "$lines"},
+                {"$group": {
+                    "_id": {
+                        "status": "$status_desc",
+                        "line_type": decode("$lines.line_type_cd", LINE_TYPE),
+                    },
+                    "line_count": {"$sum": 1},
+                    "line_amount": {"$sum": "$lines.amount"},
+                    "line_tax": {"$sum": "$lines.tax_amt"},
+                    "invoice_ids": {"$addToSet": "$_id"},
+                }},
+                {"$addFields": {"invoices_touched": {"$size": "$invoice_ids"}}},
+                {"$project": {"invoice_ids": 0}},
+                {"$sort": {"_id.status": 1, "_id.line_type": 1}},
+            ],
+        }},
+    ]
+
+
+def mongo_finance_report(client: MongoClient, ns: str) -> dict:
+    [facets] = list(database(client, ns)["invoices"].aggregate(finance_pipeline(ns)))
+    by_status = {
+        row["_id"]: {
+            "invoice_count": row["invoice_count"],
+            "header_total_amt": cents(row["header_total_amt"]),
+        }
+        for row in facets["by_status"]
+    }
+    by_status_line_type = {
+        f"{row['_id']['status']}|{row['_id']['line_type']}": {
+            "line_count": row["line_count"],
+            "line_amount": cents(row["line_amount"]),
+            "line_tax": cents(row["line_tax"]),
+            "invoices_touched": row["invoices_touched"],
+        }
+        for row in facets["by_status_line_type"]
+    }
+    return {"by_status": by_status, "by_status_line_type": by_status_line_type}
+
+
+def diff_reports(golden: dict, live: dict) -> list[str]:
+    mismatches = []
+    for section in ("by_status", "by_status_line_type"):
+        g, l = golden[section], live[section]
+        for key in sorted(set(g) | set(l)):
+            if key not in l:
+                mismatches.append(f"{section}[{key}]: missing from aggregation")
+            elif key not in g:
+                mismatches.append(f"{section}[{key}]: absent from legacy golden")
+            elif g[key] != l[key]:
+                mismatches.append(f"{section}[{key}]: legacy={g[key]} mongo={l[key]}")
+    return mismatches
+
+
+def cmd_report(client: MongoClient, args) -> int:
+    ns = args.ns
+    golden_path = Path(args.golden or SHOWCASE_DIR / f"finance_report.{ns}.golden.json")
+
+    if args.emit_golden:
+        golden = {
+            "kind": "finance-report-golden",
+            "namespace": ns,
+            "generated_at": now(),
+            "source": {
+                "sql": "scripts/tp_mongo/legacy_finance_report.sql",
+                "store": "oracle invoice_header/invoice_line/codes",
+                "container": args.oracle_container,
+            },
+            "report": legacy_finance_report(args.oracle_container, ns),
+        }
+        golden_path.parent.mkdir(parents=True, exist_ok=True)
+        golden_path.write_text(json.dumps(golden, indent=2, sort_keys=True) + "\n")
+        print(f"golden: {golden_path}")
+        return 0
+
+    if not golden_path.exists():
+        raise SystemExit(f"golden baseline not found: {golden_path} (run report --emit-golden)")
+    golden = json.loads(golden_path.read_text())["report"]
+    live = mongo_finance_report(client, ns)
+    mismatches = diff_reports(golden, live)
+
+    print(f"{'STATUS':<10} {'LINE_TYPE':<12} {'LINES':>7} {'AMOUNT':>16} {'TAX':>14}")
+    for key, row in sorted(live["by_status_line_type"].items()):
+        status, line_type = key.split("|")
+        print(f"{status:<10} {line_type:<12} {row['line_count']:>7} "
+              f"{row['line_amount']:>16} {row['line_tax']:>14}")
+    verdict = "MATCH to the cent" if not mismatches else f"{len(mismatches)} MISMATCHES"
+    print(f"aggregation vs legacy golden: {verdict}")
+    for m in mismatches:
+        print(f"  {m}")
+
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps({
+            "kind": "finance-report-comparison",
+            "namespace": ns,
+            "generated_at": now(),
+            "golden_baseline": str(golden_path.relative_to(REPO)) if golden_path.is_relative_to(REPO) else str(golden_path),
+            "pipeline": "scripts/tp_mongo/showcase.py finance_pipeline (one aggregation, $facet group+unwind)",
+            "legacy": golden,
+            "mongodb": live,
+            "mismatches": mismatches,
+            "match": not mismatches,
+        }, indent=2, sort_keys=True) + "\n")
+        print(f"report: {out}")
+    return 0 if not mismatches else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -291,14 +517,24 @@ def main() -> int:
     sub.add_parser("validators")
     demo = sub.add_parser("validate-demo")
     demo.add_argument("--out", default="")
+    report = sub.add_parser("report")
+    report.add_argument("--out", default="")
+    report.add_argument("--golden", default="")
+    report.add_argument("--emit-golden", action="store_true")
+    report.add_argument(
+        "--oracle-container",
+        default="otterworks-oracle-billing-oracle-billing-1",
+    )
 
     args = parser.parse_args()
     args.ns = require_ns(args.ns)
     commands = {
         "validators": cmd_validators,
         "validate-demo": cmd_validate_demo,
+        "report": cmd_report,
     }
-    return commands[args.command](connect(args), args)
+    needs_mongo = not (args.command == "report" and args.emit_golden)
+    return commands[args.command](connect(args) if needs_mongo else None, args)
 
 
 if __name__ == "__main__":
