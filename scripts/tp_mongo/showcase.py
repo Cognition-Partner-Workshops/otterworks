@@ -19,9 +19,17 @@ namespace's own collections.
                  and unwind, no joins), asserted equal to the legacy golden
                  report to the cent; --emit-golden regenerates the golden file
                  from the seeded Oracle fixture
+  recon          recompute every baseline check from the target against the
+                 seeder manifest; exit non-zero on any failure
+  run-job        run recon and, on failure, POST {namespace, failing_checks,
+                 run_url, base_branch} to the Devin automation webhook
+  drift          stage a REAL failure in a rehearsal namespace (refuses the
+                 persistent demo namespace): stale | corrupt | missing
+  teardown       drop the namespace's databases (refuses demo) and verify absence
 
 Credentials come from MONGODB_ATLAS_URI (or MONGODB_URI / --mongodb-uri); the
-tool never prints the URI.
+tool never prints the URI. The webhook secret comes only from the
+OW_TP_MONGO_RECON_WEBHOOK_SECRET environment variable and is never printed.
 """
 from __future__ import annotations
 
@@ -32,6 +40,7 @@ import json
 import os
 import subprocess
 import sys
+import urllib.request
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -48,6 +57,8 @@ REPO = Path(__file__).resolve().parents[2]
 DB_PREFIX = "ow_tp_mongodb_"
 PROBE_PREFIX = "showcase-probe"
 SHOWCASE_DIR = REPO / "docs/tech-partnerships/showcase"
+PERSISTENT_NS = "demo"
+WEBHOOK_SECRET_ENV = "OW_TP_MONGO_RECON_WEBHOOK_SECRET"
 
 # the CODES rows and inline DECODE the legacy report resolves its magic
 # numbers through (scripts/tp_mongo/legacy_finance_report.sql)
@@ -294,6 +305,247 @@ def cmd_validate_demo(client: MongoClient, args) -> int:
     return 0 if not failed and not residue else 1
 
 
+# --- recon -------------------------------------------------------------------
+class FoldedChecksum:
+    """Order-independent md5 sum (mirrors testdata/legacy/legacy_common.py)."""
+
+    _MOD = 1 << 128
+
+    def __init__(self) -> None:
+        self._total = 0
+        self.count = 0
+
+    def add(self, line: str) -> None:
+        digest = hashlib.md5(line.encode()).digest()
+        self._total = (self._total + int.from_bytes(digest, "big")) % self._MOD
+        self.count += 1
+
+    def hexdigest(self) -> str:
+        return f"{self._total:032x}"
+
+
+def load_manifest(ns: str, path: str = "") -> dict:
+    manifest_path = Path(path) if path else REPO / "testdata/legacy/manifests" / f"{ns}.json"
+    if not manifest_path.exists():
+        raise SystemExit(
+            f"manifest not found: {manifest_path} "
+            f"(run `make oracle-billing-seed NS={ns}` and `make seed-legacy NS={ns}`)"
+        )
+    return json.loads(manifest_path.read_text())
+
+
+def recon_checks(client: MongoClient, ns: str, manifest: dict) -> list[dict]:
+    """Recompute every baseline check from the target (never from migration-time
+    memory), exactly as the per-unit recon reports do, against the seeder
+    manifest as the source of truth."""
+    db = database(client, ns)
+    quarantine = client[f"{DB_PREFIX}{ns}_quarantine"]
+    targets = manifest["targets"]
+    checks: list[dict] = []
+
+    def check(cid: str, expected, actual) -> None:
+        checks.append({
+            "id": cid,
+            "expected": expected,
+            "actual": actual,
+            "result": "pass" if expected == actual else "fail",
+        })
+
+    # customers: ordered PK+balance checksum, folded EAV entries
+    m_cust = targets["oracle.OW_BILLING.CUSTOMER_MASTER"]
+    cust_ck = hashlib.md5()
+    n_customers = n_eav = 0
+    for doc in db["customers"].find({"ns": ns}, sort=[("_id", 1)]):
+        n_customers += 1
+        bal = doc.get("balances", {}).get("current")
+        cust_ck.update(f"{doc['_id']}:{bal:.2f}\n".encode() if bal is not None
+                       else f"{doc['_id']}:\n".encode())
+        for entries in doc.get("attributes", {}).values():
+            n_eav += len(entries)
+    check("customers-count", m_cust["rows"], n_customers)
+    check("customers-checksum", m_cust["checksum"], cust_ck.hexdigest())
+    check("customers-eav-entries",
+          targets["oracle.OW_BILLING.ENTITY_ATTR_VALUE"]["rows"], n_eav)
+
+    # invoices: header count plus embedded+quarantined line checksum
+    m_lines = targets["oracle.OW_BILLING.INVOICE_LINE"]
+    pairs: list[tuple[str, str]] = []
+    n_invoices = n_embedded = 0
+    for doc in db["invoices"].find({"ns": ns}, {"lines.line_id": 1, "lines.amount": 1}):
+        n_invoices += 1
+        for line in doc.get("lines", []):
+            n_embedded += 1
+            pairs.append((line["line_id"], f"{line['amount'].to_decimal():.2f}"))
+    n_quarantined = 0
+    for doc in quarantine["invoice_lines_quarantine"].find({"ns": ns}, {"amount": 1}):
+        n_quarantined += 1
+        amount = doc.get("amount")
+        pairs.append((doc["_id"],
+                      f"{amount.to_decimal():.2f}" if amount is not None else "None"))
+    lines_ck = hashlib.md5()
+    for pk, amt in sorted(pairs):
+        lines_ck.update(f"{pk}:{amt}\n".encode())
+    check("invoices-count", targets["oracle.OW_BILLING.INVOICE_HEADER"]["rows"], n_invoices)
+    check("invoice-lines-total", m_lines["rows"], n_embedded + n_quarantined)
+    check("invoice-lines-checksum", m_lines["checksum"], lines_ck.hexdigest())
+
+    # documents: count and embedded versions
+    n_documents = n_versions = 0
+    for doc in db["documents"].find({"ns": ns}, {"versions.version_number": 1}):
+        n_documents += 1
+        n_versions += len(doc.get("versions", []))
+    check("documents-count", targets[f"postgres.otterworks_{ns}.documents"]["rows"], n_documents)
+    check("document-versions-embedded",
+          targets[f"postgres.otterworks_{ns}.document_versions"]["rows"], n_versions)
+
+    # files: order-independent id|size|key checksum (files are tenant-scoped)
+    m_files = targets["dynamodb.file-metadata"]
+    files_ck = FoldedChecksum()
+    for doc in db["files"].find({"tenant": ns}, {"_id": 1, "size_bytes": 1, "s3_key": 1}):
+        files_ck.add(f"{doc['_id']}|{doc.get('size_bytes')}|{doc.get('s3_key')}")
+    check("files-count", m_files["items"], files_ck.count)
+    check("files-checksum", m_files["checksum"], files_ck.hexdigest())
+
+    # contracts: the Unit A validators are still enforced
+    enforced = sorted(
+        info["name"]
+        for info in db.list_collections()
+        if info["name"] in VALIDATORS
+        and "$jsonSchema" in info.get("options", {}).get("validator", {})
+        and info["options"].get("validationAction") == "error"
+    )
+    check("validators-enforced", sorted(VALIDATORS), enforced)
+    return checks
+
+
+def run_recon(client: MongoClient, args) -> tuple[list[dict], list[str]]:
+    ns = args.ns
+    checks = recon_checks(client, ns, load_manifest(ns, args.manifest))
+    failing = [c["id"] for c in checks if c["result"] == "fail"]
+    width = max(len(c["id"]) for c in checks)
+    for c in checks:
+        print(f"[{'PASS' if c['result'] == 'pass' else 'FAIL'}] {c['id']:<{width}} "
+              f"expected={c['expected']} actual={c['actual']}")
+    print(f"recon {ns}: {'GREEN' if not failing else 'FAILED'}"
+          + (f" failing_checks={failing}" if failing else f" ({len(checks)} checks)"))
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps({
+            "kind": "showcase-recon",
+            "namespace": ns,
+            "generated_at": now(),
+            "values_recomputed_from_target": True,
+            "checks": checks,
+            "failing_checks": failing,
+            "result": "pass" if not failing else "fail",
+        }, indent=2, sort_keys=True) + "\n")
+        print(f"recon report: {out}")
+    return checks, failing
+
+
+def cmd_recon(client: MongoClient, args) -> int:
+    _, failing = run_recon(client, args)
+    return 0 if not failing else 1
+
+
+def current_branch() -> str:
+    return subprocess.run(
+        ["git", "-C", str(REPO), "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+
+def cmd_run_job(client: MongoClient, args) -> int:
+    """The hand-triggered wrapper: recon, and on failure notify the Devin
+    automation webhook. Green runs never fire the webhook."""
+    _, failing = run_recon(client, args)
+    if not failing:
+        print("run-job: recon green, webhook not fired")
+        return 0
+
+    if not args.webhook_url:
+        raise SystemExit("recon FAILED but no --webhook-url "
+                         "(or OW_TP_MONGO_RECON_WEBHOOK_URL) configured")
+    secret = os.environ.get(WEBHOOK_SECRET_ENV, "")
+    if not secret:
+        raise SystemExit(f"recon FAILED but {WEBHOOK_SECRET_ENV} is not set; "
+                         "webhook not fired")
+    payload = {
+        "namespace": args.ns,
+        "failing_checks": failing,
+        "run_url": args.run_url,
+        "base_branch": args.base_branch or current_branch(),
+    }
+    print(f"run-job: recon FAILED, notifying Devin automation: {json.dumps(payload)}")
+    request = urllib.request.Request(
+        args.webhook_url,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json", "X-Webhook-Secret": secret},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        print(f"run-job: webhook fired ({response.status})")
+    return 1
+
+
+# --- drift (rehearsal namespaces only) ----------------------------------------
+def require_rehearsal(client: MongoClient, ns: str) -> None:
+    if ns == PERSISTENT_NS:
+        raise SystemExit(f"refusing: {PERSISTENT_NS!r} is the persistent showcase "
+                         "namespace; stage drift in a rehearsal namespace")
+    if f"{DB_PREFIX}{ns}" not in client.list_database_names():
+        raise SystemExit(f"{DB_PREFIX}{ns} does not exist; migrate the rehearsal "
+                         "namespace first")
+
+
+def cmd_drift(client: MongoClient, args) -> int:
+    """Stage a REAL failure: genuinely drifted data that a recomputed recon
+    check must catch. Never a hard-coded error, never the demo namespace."""
+    require_rehearsal(client, args.ns)
+    ns = args.ns
+    db = database(client, ns)
+    if args.kind in ("stale", "corrupt") and args.n < 1:
+        raise SystemExit("--n must be >= 1 (limit(0) would cap nothing and "
+                         "touch the whole collection)")
+    if args.kind == "stale":
+        victims = [d["_id"] for d in db["invoices"]
+                   .find({"ns": ns}, {"_id": 1}).sort("_id", -1).limit(args.n)]
+        result = db["invoices"].delete_many({"_id": {"$in": victims}})
+        print(f"drift(stale): deleted {result.deleted_count} invoices from "
+              f"{db.name}.invoices (as if a load never ran)")
+    elif args.kind == "corrupt":
+        victims = [d["_id"] for d in db["customers"]
+                   .find({"ns": ns}, {"_id": 1}).sort("_id", 1).limit(args.n)]
+        result = db["customers"].update_many(
+            {"_id": {"$in": victims}}, {"$inc": {"balances.current": 0.01}})
+        print(f"drift(corrupt): shifted balances.current by 0.01 on "
+              f"{result.modified_count} customers (schema-valid, checksum-breaking)")
+    else:  # missing
+        db["documents"].drop()
+        print(f"drift(missing): dropped {db.name}.documents entirely")
+    print("stage the proof with: run-job (recon must fail on recomputed checks)")
+    return 0
+
+
+# --- teardown ------------------------------------------------------------------
+def cmd_teardown(client: MongoClient, args) -> int:
+    ns = args.ns
+    if ns == PERSISTENT_NS:
+        raise SystemExit(f"refusing: {PERSISTENT_NS!r} is the persistent showcase "
+                         "namespace and is never torn down")
+    names = [f"{DB_PREFIX}{ns}", f"{DB_PREFIX}{ns}_quarantine"]
+    for name in names:
+        client.drop_database(name)
+        print(f"dropped {name}")
+    residue = [n for n in client.list_database_names() if n in names]
+    if residue:
+        print(f"teardown FAILED, still present: {residue}")
+        return 1
+    print(f"teardown verified: {', '.join(names)} absent")
+    return 0
+
+
 # --- report ------------------------------------------------------------------
 def cents(value) -> str:
     if isinstance(value, Decimal128):
@@ -526,12 +778,35 @@ def main() -> int:
         default="otterworks-oracle-billing-oracle-billing-1",
     )
 
+    recon = sub.add_parser("recon")
+    run_job = sub.add_parser("run-job")
+    for p in (recon, run_job):
+        p.add_argument("--manifest", default="")
+        p.add_argument("--out", default="")
+    run_job.add_argument("--webhook-url",
+                         default=os.environ.get("OW_TP_MONGO_RECON_WEBHOOK_URL", ""))
+    run_job.add_argument("--run-url", required=True,
+                         help="URL identifying this run (workflow run, artifact, or log)")
+    run_job.add_argument("--base-branch", default="",
+                         help="base branch for the remediation PR (default: current branch)")
+
+    drift = sub.add_parser("drift")
+    drift.add_argument("--kind", required=True, choices=["stale", "corrupt", "missing"])
+    drift.add_argument("--n", type=int, default=250,
+                       help="documents to delete/corrupt for stale/corrupt drift")
+
+    sub.add_parser("teardown")
+
     args = parser.parse_args()
     args.ns = require_ns(args.ns)
     commands = {
         "validators": cmd_validators,
         "validate-demo": cmd_validate_demo,
         "report": cmd_report,
+        "recon": cmd_recon,
+        "run-job": cmd_run_job,
+        "drift": cmd_drift,
+        "teardown": cmd_teardown,
     }
     needs_mongo = not (args.command == "report" and args.emit_golden)
     return commands[args.command](connect(args) if needs_mongo else None, args)

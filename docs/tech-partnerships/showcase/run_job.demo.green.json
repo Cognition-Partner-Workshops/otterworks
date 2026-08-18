@@ -1,0 +1,82 @@
+{
+  "checks": [
+    {
+      "actual": 25000,
+      "expected": 25000,
+      "id": "customers-count",
+      "result": "pass"
+    },
+    {
+      "actual": "4f92feef2ad58dbab30e289957931928",
+      "expected": "4f92feef2ad58dbab30e289957931928",
+      "id": "customers-checksum",
+      "result": "pass"
+    },
+    {
+      "actual": 8333,
+      "expected": 8333,
+      "id": "customers-eav-entries",
+      "result": "pass"
+    },
+    {
+      "actual": 18750,
+      "expected": 18750,
+      "id": "invoices-count",
+      "result": "pass"
+    },
+    {
+      "actual": 150000,
+      "expected": 150000,
+      "id": "invoice-lines-total",
+      "result": "pass"
+    },
+    {
+      "actual": "88a66751f0b08b476b492105a2efc537",
+      "expected": "88a66751f0b08b476b492105a2efc537",
+      "id": "invoice-lines-checksum",
+      "result": "pass"
+    },
+    {
+      "actual": 2000,
+      "expected": 2000,
+      "id": "documents-count",
+      "result": "pass"
+    },
+    {
+      "actual": 13876,
+      "expected": 13876,
+      "id": "document-versions-embedded",
+      "result": "pass"
+    },
+    {
+      "actual": 10000,
+      "expected": 10000,
+      "id": "files-count",
+      "result": "pass"
+    },
+    {
+      "actual": "db614663b2c6d41141cae82261b416d5",
+      "expected": "db614663b2c6d41141cae82261b416d5",
+      "id": "files-checksum",
+      "result": "pass"
+    },
+    {
+      "actual": [
+        "customers",
+        "invoices"
+      ],
+      "expected": [
+        "customers",
+        "invoices"
+      ],
+      "id": "validators-enforced",
+      "result": "pass"
+    }
+  ],
+  "failing_checks": [],
+  "generated_at": "2026-08-18T04:55:15Z",
+  "kind": "showcase-recon",
+  "namespace": "demo",
+  "result": "pass",
+  "values_recomputed_from_target": true
+}
