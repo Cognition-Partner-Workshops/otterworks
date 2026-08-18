@@ -94,7 +94,13 @@ def _extract_user_id(request: Request) -> UUID | None:
     return None
 
 
-def _require_user_id(request: Request) -> UUID:
+def require_user_id(request: Request) -> UUID:
+    """Identity of the caller, as a dependency so it can be substituted.
+
+    The per-document endpoints resolve identity through this so a deployment
+    that fronts the service with something else -- or a test harness driving
+    the ASGI app -- can supply the caller instead of forging a bearer token.
+    """
     user_id = _extract_user_id(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -341,12 +347,11 @@ async def list_documents_no_slash(
 @router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a document by ID."""
     await _maybe_inject_latency()
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     document = await service.get(document_id)
     if not document:
@@ -359,12 +364,11 @@ async def get_document(
 async def update_document(
     document_id: UUID,
     body: DocumentUpdate,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Full replace of a document."""
     await _maybe_inject_latency()
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     existing = await service.get(document_id)
     if not existing:
@@ -379,12 +383,11 @@ async def update_document(
 async def patch_document(
     document_id: UUID,
     body: DocumentPatch,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Partial update of a document."""
     await _maybe_inject_latency()
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     existing = await service.get(document_id)
     if not existing:
@@ -398,12 +401,11 @@ async def patch_document(
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_document(
     document_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a document (soft delete)."""
     await _maybe_inject_latency()
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     existing = await service.get(document_id)
     if not existing:
@@ -416,11 +418,10 @@ async def delete_document(
 @router.get("/{document_id}/versions", response_model=list[DocumentVersionResponse])
 async def list_versions(
     document_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """List document versions."""
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     document = await service.get(document_id)
     if not document:
@@ -437,11 +438,10 @@ async def list_versions(
 async def restore_version(
     document_id: UUID,
     version_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Restore a document to a previous version."""
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     existing = await service.get(document_id)
     if not existing:
@@ -463,11 +463,10 @@ async def restore_version(
 @router.post("/{document_id}/share")
 async def create_share_link(
     document_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Mint a read-only share link for a document."""
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     document = await service.get(document_id)
     if not document:
@@ -481,12 +480,11 @@ async def create_share_link(
 @router.get("/{document_id}/export")
 async def export_document(
     document_id: UUID,
-    request: Request,
+    user_id: UUID = Depends(require_user_id),
     format: str = Query("markdown", pattern="^(pdf|html|markdown)$"),  # noqa: A002
     db: AsyncSession = Depends(get_db),
 ):
     """Export a document in the requested format."""
-    user_id = _require_user_id(request)
     service = DocumentService(db)
     document = await service.get(document_id)
     if not document:
