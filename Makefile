@@ -60,7 +60,7 @@ mongo-showcase-help: ## List the MongoDB migration showcase steps
 
 mongo-run-job: ## Hand-triggered recon job: on failure POST to the Devin webhook (NS=<ns> RUN_URL=<url>)
 	@test -n "$(RUN_URL)" || { echo "usage: make mongo-run-job NS=<ns> RUN_URL=<url> [ARGS=...]"; exit 2; }
-	uv run --no-project scripts/tp_mongo/showcase.py --ns $${NS:-demo} run-job --run-url $(RUN_URL) $(ARGS)
+	uv run --no-project scripts/tp_mongo/showcase.py --ns $${NS:-demo} run-job --run-url "$(RUN_URL)" $(ARGS)
 
 tp-atlas-teardown: ## Drop a rehearsal namespace's Atlas databases and verify absence (NS=<ns>; refuses NS=demo)
 	@test -n "$(NS)" || { echo "usage: make tp-atlas-teardown NS=<rehearsal-ns>"; exit 2; }
