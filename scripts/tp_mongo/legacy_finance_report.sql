@@ -16,8 +16,11 @@
 --     bash -c "sqlplus -s ow_billing/ow_billing@localhost:1521/FREEPDB1" \
 --     < scripts/tp_mongo/legacy_finance_report.sql
 -- ============================================================================
+-- The fixture is shared: every namespace seeds into the same tables,
+-- distinguished by its deterministic batch_no (define batch_no before running).
+WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET MARKUP CSV ON QUOTE OFF
-SET PAGESIZE 0 FEEDBACK OFF HEADING ON
+SET PAGESIZE 0 FEEDBACK OFF HEADING ON VERIFY OFF
 
 PROMPT SECTION1
 SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_desc,
@@ -25,7 +28,8 @@ SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_de
        TO_CHAR(SUM(h.total_amt), 'FM999999999999990.00') AS header_total_amt
   FROM invoice_header h,
        codes st
- WHERE st.code_type (+) = 'INV_STATUS'
+ WHERE h.batch_no = &batch_no
+   AND st.code_type (+) = 'INV_STATUS'
    AND st.code_val  (+) = h.status_cd
  GROUP BY NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')')
  ORDER BY 1;
@@ -45,7 +49,8 @@ SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_de
   FROM invoice_header h,
        invoice_line   l,
        codes          st
- WHERE h.invoice_id = l.invoice_id
+ WHERE h.batch_no = &batch_no
+   AND h.invoice_id = l.invoice_id
    AND st.code_type (+) = 'INV_STATUS'
    AND st.code_val  (+) = h.status_cd
  GROUP BY NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')'),

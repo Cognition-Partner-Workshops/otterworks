@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -300,10 +301,20 @@ def cents(value) -> str:
     return str(Decimal(value).quantize(Decimal("0.01")))
 
 
-def legacy_finance_report(container: str) -> dict:
+def ns_batch_no(ns: str) -> int:
+    """The namespace's deterministic batch number in the shared Oracle fixture
+    (same derivation as migrations/mongodb/invoices/migrate.py)."""
+    return int(hashlib.sha256(ns.encode()).hexdigest()[:8], 16) % 90_000_000 + 1_000_000
+
+
+def legacy_finance_report(container: str, ns: str) -> dict:
     """Run the committed legacy SQL (scripts/tp_mongo/legacy_finance_report.sql)
-    against the seeded Oracle fixture and parse its CSV sections."""
-    sql = (REPO / "scripts/tp_mongo/legacy_finance_report.sql").read_bytes()
+    against the seeded Oracle fixture, scoped to the namespace's batch_no, and
+    parse its CSV sections."""
+    sql = (
+        f"DEFINE batch_no = {ns_batch_no(ns)}\n".encode()
+        + (REPO / "scripts/tp_mongo/legacy_finance_report.sql").read_bytes()
+    )
     proc = subprocess.run(
         [
             "docker", "exec", "-i", container, "bash", "-c",
@@ -311,8 +322,12 @@ def legacy_finance_report(container: str) -> dict:
         ],
         input=sql,
         capture_output=True,
-        check=True,
     )
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"legacy report failed (sqlplus exit {proc.returncode}): "
+            f"{(proc.stdout.decode().strip() or proc.stderr.decode().strip())[-500:]}"
+        )
     by_status: dict[str, dict] = {}
     by_status_line_type: dict[str, dict] = {}
     section = ""
@@ -327,12 +342,16 @@ def legacy_finance_report(container: str) -> dict:
             continue
         parts = line.split(",")
         if section == "SECTION1":
+            if len(parts) != 3:
+                raise SystemExit(f"unexpected legacy report output: {line!r}")
             status, count, total = parts
             by_status[status] = {
                 "invoice_count": int(count),
                 "header_total_amt": cents(total),
             }
         elif section == "SECTION2":
+            if len(parts) != 6:
+                raise SystemExit(f"unexpected legacy report output: {line!r}")
             status, line_type, count, amount, tax, touched = parts
             by_status_line_type[f"{status}|{line_type}"] = {
                 "line_count": int(count),
@@ -446,7 +465,7 @@ def cmd_report(client: MongoClient, args) -> int:
                 "store": "oracle invoice_header/invoice_line/codes",
                 "container": args.oracle_container,
             },
-            "report": legacy_finance_report(args.oracle_container),
+            "report": legacy_finance_report(args.oracle_container, ns),
         }
         golden_path.parent.mkdir(parents=True, exist_ok=True)
         golden_path.write_text(json.dumps(golden, indent=2, sort_keys=True) + "\n")
@@ -514,7 +533,8 @@ def main() -> int:
         "validate-demo": cmd_validate_demo,
         "report": cmd_report,
     }
-    return commands[args.command](connect(args), args)
+    needs_mongo = not (args.command == "report" and args.emit_golden)
+    return commands[args.command](connect(args) if needs_mongo else None, args)
 
 
 if __name__ == "__main__":
