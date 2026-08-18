@@ -51,7 +51,7 @@ dbx-showcase-help: ## List the Databricks billing-history showcase steps
 
 # Live MongoDB migration showcase (needs MONGODB_ATLAS_URI). DDL (collMod)
 # only ever touches the named namespace's own collections.
-mongo-showcase: ## Run a MongoDB showcase step (CMD=<validators|validate-demo|recon|run-job|drift|teardown> NS=<ns>)
+mongo-showcase: ## Run a MongoDB showcase step (CMD=<validators|validate-demo|report|recon|run-job|drift|teardown> NS=<ns>)
 	@test -n "$(CMD)" || { echo "usage: make mongo-showcase CMD=<step> [NS=<ns>] [ARGS=...]"; exit 2; }
 	uv run --no-project scripts/tp_mongo/showcase.py --ns $${NS:-demo} $(CMD) $(ARGS)
 

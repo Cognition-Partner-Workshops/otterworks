@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-08-18T04:37:53Z",
+  "golden_baseline": "docs/tech-partnerships/showcase/finance_report.demo.golden.json",
+  "kind": "finance-report-comparison",
+  "legacy": {
+    "by_status": {
+      "issued": {
+        "header_total_amt": "55450955.92",
+        "invoice_count": 5504
+      },
+      "overdue": {
+        "header_total_amt": "27585416.69",
+        "invoice_count": 2748
+      },
+      "paid": {
+        "header_total_amt": "104582085.97",
+        "invoice_count": 10498
+      }
+    },
+    "by_status_line_type": {
+      "issued|ADJUSTMENT": {
+        "invoices_touched": 3970,
+        "line_amount": "89342458.72",
+        "line_count": 7172,
+        "line_tax": "7370753.25"
+      },
+      "issued|CHARGE": {
+        "invoices_touched": 5390,
+        "line_amount": "272970444.56",
+        "line_count": 21986,
+        "line_tax": "22520061.50"
+      },
+      "issued|CREDIT": {
+        "invoices_touched": 4043,
+        "line_amount": "89070669.33",
+        "line_count": 7289,
+        "line_tax": "7348329.83"
+      },
+      "issued|MISC": {
+        "invoices_touched": 4082,
+        "line_amount": "91004713.28",
+        "line_count": 7427,
+        "line_tax": "7507889.17"
+      },
+      "overdue|ADJUSTMENT": {
+        "invoices_touched": 2010,
+        "line_amount": "46159627.92",
+        "line_count": 3669,
+        "line_tax": "3808169.31"
+      },
+      "overdue|CHARGE": {
+        "invoices_touched": 2697,
+        "line_amount": "138879290.51",
+        "line_count": 11033,
+        "line_tax": "11457541.62"
+      },
+      "overdue|CREDIT": {
+        "invoices_touched": 2023,
+        "line_amount": "45603750.56",
+        "line_count": 3713,
+        "line_tax": "3762309.77"
+      },
+      "overdue|MISC": {
+        "invoices_touched": 2057,
+        "line_amount": "45428735.38",
+        "line_count": 3704,
+        "line_tax": "3747870.82"
+      },
+      "paid|ADJUSTMENT": {
+        "invoices_touched": 7728,
+        "line_amount": "173231742.31",
+        "line_count": 13994,
+        "line_tax": "14291619.19"
+      },
+      "paid|CHARGE": {
+        "invoices_touched": 10305,
+        "line_amount": "518314902.74",
+        "line_count": 42099,
+        "line_tax": "42760980.82"
+      },
+      "paid|CREDIT": {
+        "invoices_touched": 7681,
+        "line_amount": "172716626.64",
+        "line_count": 13961,
+        "line_tax": "14249122.33"
+      },
+      "paid|MISC": {
+        "invoices_touched": 7681,
+        "line_amount": "172756944.90",
+        "line_count": 13916,
+        "line_tax": "14252447.75"
+      }
+    }
+  },
+  "match": true,
+  "mismatches": [],
+  "mongodb": {
+    "by_status": {
+      "issued": {
+        "header_total_amt": "55450955.92",
+        "invoice_count": 5504
+      },
+      "overdue": {
+        "header_total_amt": "27585416.69",
+        "invoice_count": 2748
+      },
+      "paid": {
+        "header_total_amt": "104582085.97",
+        "invoice_count": 10498
+      }
+    },
+    "by_status_line_type": {
+      "issued|ADJUSTMENT": {
+        "invoices_touched": 3970,
+        "line_amount": "89342458.72",
+        "line_count": 7172,
+        "line_tax": "7370753.25"
+      },
+      "issued|CHARGE": {
+        "invoices_touched": 5390,
+        "line_amount": "272970444.56",
+        "line_count": 21986,
+        "line_tax": "22520061.50"
+      },
+      "issued|CREDIT": {
+        "invoices_touched": 4043,
+        "line_amount": "89070669.33",
+        "line_count": 7289,
+        "line_tax": "7348329.83"
+      },
+      "issued|MISC": {
+        "invoices_touched": 4082,
+        "line_amount": "91004713.28",
+        "line_count": 7427,
+        "line_tax": "7507889.17"
+      },
+      "overdue|ADJUSTMENT": {
+        "invoices_touched": 2010,
+        "line_amount": "46159627.92",
+        "line_count": 3669,
+        "line_tax": "3808169.31"
+      },
+      "overdue|CHARGE": {
+        "invoices_touched": 2697,
+        "line_amount": "138879290.51",
+        "line_count": 11033,
+        "line_tax": "11457541.62"
+      },
+      "overdue|CREDIT": {
+        "invoices_touched": 2023,
+        "line_amount": "45603750.56",
+        "line_count": 3713,
+        "line_tax": "3762309.77"
+      },
+      "overdue|MISC": {
+        "invoices_touched": 2057,
+        "line_amount": "45428735.38",
+        "line_count": 3704,
+        "line_tax": "3747870.82"
+      },
+      "paid|ADJUSTMENT": {
+        "invoices_touched": 7728,
+        "line_amount": "173231742.31",
+        "line_count": 13994,
+        "line_tax": "14291619.19"
+      },
+      "paid|CHARGE": {
+        "invoices_touched": 10305,
+        "line_amount": "518314902.74",
+        "line_count": 42099,
+        "line_tax": "42760980.82"
+      },
+      "paid|CREDIT": {
+        "invoices_touched": 7681,
+        "line_amount": "172716626.64",
+        "line_count": 13961,
+        "line_tax": "14249122.33"
+      },
+      "paid|MISC": {
+        "invoices_touched": 7681,
+        "line_amount": "172756944.90",
+        "line_count": 13916,
+        "line_tax": "14252447.75"
+      }
+    }
+  },
+  "namespace": "demo",
+  "pipeline": "scripts/tp_mongo/showcase.py finance_pipeline (one aggregation, $facet group+unwind)"
+}
