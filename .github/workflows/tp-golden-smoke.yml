@@ -35,6 +35,10 @@ jobs:
         run: docker compose -f docker-compose.oracle-billing.yml config > /dev/null
       - name: Golden `make -n test` still parses
         run: make -n test > /dev/null
+      - name: TP portal visual renderers (stdlib-only, sample inputs)
+        run: |
+          python3 scripts/tp_portal/render_scorecard.py scripts/tp_portal/samples/sample-parity.recon.json --out /tmp/tp-smoke-scorecard.html > /dev/null
+          python3 scripts/tp_portal/render_load_charts.py --before scripts/tp_portal/samples/sample-load-monolith.json --after scripts/tp_portal/samples/sample-load-aws.json --out /tmp/tp-smoke-loadcharts.html > /dev/null
 
   # Go - API Gateway (fast core service: vet + tests + build)
   api-gateway:
