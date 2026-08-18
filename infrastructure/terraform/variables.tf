@@ -39,3 +39,21 @@ variable "meilisearch_master_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "enable_opensearch" {
+  description = "Provision the namespaced OpenSearch Serverless collection for the search-service migration (off by default; MeiliSearch remains the default backend)"
+  type        = bool
+  default     = false
+}
+
+variable "opensearch_namespace" {
+  description = "Namespace suffix for the OpenSearch Serverless migration resources"
+  type        = string
+  default     = "os-demo"
+}
+
+variable "opensearch_vpc_endpoint_ids" {
+  description = "OpenSearch Serverless VPC endpoint IDs for the collection's network policy (required in non-dev environments, where the endpoint is VPC-only)"
+  type        = list(string)
+  default     = []
+}

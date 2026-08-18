@@ -144,6 +144,24 @@ module "monitoring" {
 
 # --- MeiliSearch is deployed via ECS; no domain access policy needed. ---
 
+# Namespaced OpenSearch Serverless collection for the search-service migration.
+# Deployed alongside the MeiliSearch module (never replacing it); off by default
+# so main and all shared resources are untouched unless explicitly enabled.
+module "opensearch" {
+  count       = var.enable_opensearch ? 1 : 0
+  source      = "./modules/opensearch"
+  environment = var.environment
+  project     = "otterworks"
+  namespace   = var.opensearch_namespace
+
+  access_principal_arns = [module.irsa.role_arns["search-service"]]
+
+  # Public endpoint only for dev/demo; staging/prod stay VPC-only and must
+  # supply VPC endpoint IDs.
+  allow_public_access = var.environment == "dev"
+  vpc_endpoint_ids    = var.opensearch_vpc_endpoint_ids
+}
+
 module "irsa" {
   source            = "./modules/irsa"
   environment       = var.environment
@@ -391,4 +409,25 @@ module "irsa" {
       ]
     })
   }
+}
+
+# Extends the search-service IRSA role with OpenSearch Serverless data-plane
+# access, scoped to the namespaced migration collection. Attached as a separate
+# policy (rather than inline in the service_accounts map) to avoid a dependency
+# cycle: the collection's data-access policy references the IRSA role ARN.
+resource "aws_iam_role_policy" "search_service_opensearch" {
+  count = var.enable_opensearch ? 1 : 0
+  name  = "otterworks-search-service-opensearch-${var.opensearch_namespace}"
+  role  = module.irsa.role_names["search-service"]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["aoss:APIAccessAll"]
+        Resource = [module.opensearch[0].collection_arn]
+      },
+    ]
+  })
 }
