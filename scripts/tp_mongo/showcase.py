@@ -68,6 +68,13 @@ def apply_validators(client: MongoClient, ns: str) -> None:
     existing population already satisfies the schema (a validator that the
     migrated data cannot pass would be a lie, not a contract)."""
     db = database(client, ns)
+    existing = set(db.list_collection_names())
+    missing = [name for name in VALIDATORS if name not in existing]
+    if missing:
+        raise SystemExit(
+            f"{db.name} has no {', '.join(missing)} collection(s); "
+            "migrate the namespace first, nothing collModded"
+        )
     for name, schema in VALIDATORS.items():
         nonconforming = db[name].count_documents(
             {"$nor": [{"$jsonSchema": schema}]}, limit=1
