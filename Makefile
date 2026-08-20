@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
+.PHONY: portal-up portal-down portal-build portal-parity help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
 
 SHELL := /bin/bash
 
@@ -429,3 +429,26 @@ eq-tests: ## Run the affected module's own suite against the recorded pass list
 eq-record: ## Record the before-state as the reference evidence (REASON="..." required)
 	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make eq-record REASON="baseline before OW-SEC-401 refactor"' >&2; exit 2)
 	$(EQ) record --reason "$(REASON)" $(if $(FINDING),--finding $(FINDING),) $(if $(ALLOW_RERECORD),--allow-rerecord,)
+
+# --- Legacy portal decomposition (strangler fig) ---
+
+PORTAL_COMPOSE = docker compose -f docker-compose.portal.yml -p otterworks-portal-$(NS)
+# Profiles are additive: a context only starts once its Wave 1 service exists.
+PORTAL_PROFILES = --profile legacy --profile announcements --profile user-preferences --profile feedback
+
+portal-up: ## Start the monolith and every extracted portal service (NS=<namespace>)
+	@test -n "$(NS)" || (echo "NS is required, e.g. make portal-up NS=dev" >&2; exit 2)
+	NS=$(NS) $(PORTAL_COMPOSE) $(if $(PROFILE),--profile $(PROFILE),$(PORTAL_PROFILES)) up -d --build --wait
+
+portal-down: ## Stop the portal stack and drop its data (NS=<namespace>)
+	@test -n "$(NS)" || (echo "NS is required, e.g. make portal-down NS=dev" >&2; exit 2)
+	NS=$(NS) $(PORTAL_COMPOSE) $(PORTAL_PROFILES) down -v
+
+portal-build: ## Build and test the extracted portal services
+	cd services/portal && ./mvnw -B verify
+
+portal-parity: ## Replay a context against the monolith and its extracted service (CONTEXT=<context>)
+	@test -n "$(CONTEXT)" || (echo "CONTEXT is required, e.g. make portal-parity CONTEXT=announcements" >&2; exit 2)
+	tests/parity/portal/replay.py --context $(CONTEXT) \
+		--legacy $${PORTAL_LEGACY_URL:-http://localhost:8095} \
+		--candidate $${PORTAL_CANDIDATE_URL:?set PORTAL_CANDIDATE_URL to the extracted service base URL}
