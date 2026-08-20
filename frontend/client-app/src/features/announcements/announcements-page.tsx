@@ -107,7 +107,10 @@ export function AnnouncementsContent() {
           <input
             type="checkbox"
             checked={!publishedOnly}
-            onChange={(event) => setPublishedOnly(!event.target.checked)}
+            onChange={(event) => {
+              setListErrorDismissed(false);
+              setPublishedOnly(!event.target.checked);
+            }}
             className="rounded border-gray-300"
           />
           Show unpublished
