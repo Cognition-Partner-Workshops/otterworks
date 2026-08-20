@@ -6,10 +6,11 @@ shared skeleton, or the compose profile.
 ## Running the container
 
 ```bash
-make portal-up NS=dev PROFILE=announcements     # announcements-service + announcements-db
+make portal-up NS=dev                           # legacy portal + every extracted context
+make portal-up NS=dev PROFILE=announcements     # announcements-service + announcements-db only
 docker compose -f docker-compose.portal.yml -p otterworks-portal-dev ps
 curl -s http://localhost:8101/health            # {"status":"UP","service":"announcements-service"}
-make portal-down NS=dev                         # stops the stack and drops its volume
+make portal-down NS=dev                         # stops the stack and drops its volumes
 ```
 
 The image is a two-stage Temurin 21 build from the `./services/portal` context, runs as the
@@ -25,22 +26,36 @@ Schema and data:
   necessary.`); `ddl-auto` stays `none`, so the container never mutates the schema.
 - The datasource comes only from `SPRING_DATASOURCE_URL/USERNAME/PASSWORD` in the environment.
   The image carries no credentials and no baked datasource.
-- `announcements-db` is the only database the service resolves; no other context's database is
-  reachable from it.
+- The only database the service talks to is `announcements-db`: with the whole stack up, its
+  open connections all target the `announcements-db` container on 5432, and the
+  `announcements` role has no access to the other contexts' databases.
 
-## Two things the module build inside the image has to work around
+## Isolation checks worth repeating
 
-Both are contained in `announcements-service/Dockerfile`; neither changes the module, the
-parent POM, or the compose entry.
+```bash
+# every published port is loopback-only
+docker compose -f docker-compose.portal.yml -p otterworks-portal-dev ps
 
-1. **Module builds go through each POM directly, not the parent reactor.** The build context is
-   `./services/portal` but the image only copies `portal-common` and this context. A reactor
-   build (`-pl … -am`) still requires *every* module named in the parent `<modules>` to exist
-   in the context, so it fails once a second service is listed. The image instead installs the
-   parent (`mvn -N install`), then `portal-common`, then packages this module with
-   `mvn -f announcements-service/pom.xml`. Versions and plugin configuration still come from
-   the parent through the child's `relativePath`.
-2. **Maven Central rate limiting.** Some build hosts get HTTP 429 from Central, which fails the
-   image build with no code change. Resolution is attempted against Central first; only if that
-   fails does the build write a `settings.xml` mirroring Central to Google's read-only Central
-   mirror and retry. A host that can reach Central never writes that file.
+# runtime identity and the only datasource the container knows about
+docker compose -f docker-compose.portal.yml -p otterworks-portal-dev \
+  exec announcements-service sh -c 'id; printenv | grep SPRING_DATASOURCE'
+
+# outbound connections: all to the announcements-db container address on 5432
+docker compose -f docker-compose.portal.yml -p otterworks-portal-dev \
+  exec announcements-service sh -c 'cat /proc/net/tcp6'
+```
+
+Compose puts every portal container on one default network, so sibling database hostnames
+still resolve; separation is per-database and per-credential, not network-level. The
+`announcements` role is rejected by `user-preferences-db` and `feedback-db`.
+
+## Building the image
+
+The image comes from the shared skeleton pattern: the parent POM is installed
+non-recursively (`mvn -B -N install`) and `portal-common` and this module are then built with
+`-f`, so the context never needs the other services' sources. Do not switch this module to a
+`-pl … -am` reactor build.
+
+Maven resolution goes to Maven Central. Hosts that Central rate-limits (HTTP 429) cannot
+build these images without a mirror; configure one at the Docker/host level rather than in
+this module's Dockerfile, which is generated from the shared skeleton.
