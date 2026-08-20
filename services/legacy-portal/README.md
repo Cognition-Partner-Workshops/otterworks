@@ -32,6 +32,25 @@ src/main/java/com/otterworks/legacyportal
 No datasource, no JPA, no database, no schemas: the `announcements`, `user_preferences` and
 `feedback` schemas belong to the extracted services' own databases now.
 
+## Branding settings
+
+The banner served on the unauthenticated `/health` endpoint comes from
+`portal-settings.properties`, read through Commons Configuration by
+`common/PortalBrandingSettings`. Two rules apply to that file:
+
+- Only key-to-key interpolation resolves (`${portal.environment}`). Prefixed lookups
+  (`${env:...}`, `${file:...}`, `${sys:...}`, ...) are not registered on the interpolator the
+  banner is read through, so they are served verbatim — the file cannot be used to read the
+  process environment or the filesystem through `/health`.
+- The packaged classpath copy is the default source. The process working directory (the JAR's
+  install directory under systemd) is never searched. To edit settings without a redeploy,
+  start the service with an explicit absolute path:
+
+  ```bash
+  java -Dportal.settings.path=/etc/legacy-portal/portal-settings.properties \
+       -jar /opt/legacy-portal/legacy-portal.jar
+  ```
+
 ## Build & test
 
 ```bash
