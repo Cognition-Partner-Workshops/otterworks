@@ -31,6 +31,7 @@
          <module>announcements-service</module>
          <module>user-preferences-service</module>
          <module>feedback-service</module> -->
+    <module>feedback-service</module>
   </modules>
 
   <properties>
