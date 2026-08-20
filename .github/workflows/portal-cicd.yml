@@ -277,18 +277,63 @@ jobs:
           docker rm -f lp-pre-retirement || true
 
   # --------------------------------------------------------------------------------------
-  # Required merge gate: the dependency CVE gate, unchanged.
+  # Required merge gates: the dependency advisory, in two parts.
   #
-  # Reused, not reimplemented: deps-remediation.yml is the estate's gate and this workflow
-  # calls it so the two can never drift into disagreeing about the same advisory. It is red
-  # today (report-service on commons-text 1.9 directly, the legacy shell transitively through
-  # commons-configuration2:2.8.0, notification-service unmeasured) and nothing here softens
-  # that — no continue-on-error, no `|| true`, no allowlist. Deploy is downstream of it, so
-  # while it is red this pipeline builds, tests and scans but ships nothing.
+  # The estate's deps-remediation.yml is reused verbatim rather than reimplemented, so the two
+  # can never drift into disagreeing about the same advisory. What it grades, though, is
+  # *behavior*: while the vulnerable version is present it proves the recorded before-state
+  # still reproduces, and passes. That is the right contract for that workflow and it is not
+  # changed here — but it means it goes green over a vulnerable tree, which is not a CVE merge
+  # gate for a pipeline that pushes images.
+  #
+  # So the advisory itself is gated separately below, on its own exit code. That job is red
+  # today and is supposed to be: report-service depends on commons-text 1.9 directly, and
+  # legacy-portal — an image this pipeline pushes — reaches the same version transitively
+  # through commons-configuration2:2.8.0. No continue-on-error, no `|| true`, no allowlist,
+  # and no CVE remediated here. `push` is downstream of both, so until the advisory is
+  # resolved this pipeline builds, tests, replays and scans, and ships nothing.
   # --------------------------------------------------------------------------------------
-  dependency-gate:
-    name: dependency CVE gate (required)
+  dependency-behavior-gate:
+    name: dependency behavior gate (required)
     uses: ./.github/workflows/deps-remediation.yml
+
+  dependency-cve-gate:
+    name: dependency CVE gate (required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      # Same toolchains as deps-remediation.yml: the advisory gate resolves every affected
+      # module's tree, and a module whose tree does not resolve is "no verdict" (exit 2),
+      # never a pass.
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            17
+            11
+      - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
+        with:
+          gradle-version: "8.6"
+      - name: No vulnerable version reachable from any affected module
+        run: |
+          set -euo pipefail
+          # Invoked through the harness directly rather than `make deps-gate`, so the exit
+          # code survives: make would report any recipe failure as its own exit 2, erasing
+          # the difference between "vulnerable" (1) and "no verdict reached" (2).
+          deps=$(make -s deps-command)
+          set +e
+          $deps gate
+          gate=$?
+          set -e
+          case "$gate" in
+            0) echo "::notice::no vulnerable version reachable" ;;
+            1) echo "::error::the vulnerable version is still reachable — see docs/migration/cicd-runbook.md"; exit 1 ;;
+            *) echo "::error::the advisory gate reached no verdict (exit $gate); that is not a pass"; exit "$gate" ;;
+          esac
 
   # --------------------------------------------------------------------------------------
   # ECR repositories are declared in platform/terraform/main.tf and are IMMUTABLE; ECR does
@@ -375,7 +420,7 @@ jobs:
   # --------------------------------------------------------------------------------------
   push:
     name: push (${{ matrix.image.name }})
-    needs: [scan, dependency-gate]
+    needs: [scan, dependency-behavior-gate, dependency-cve-gate]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:

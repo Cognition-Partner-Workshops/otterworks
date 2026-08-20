@@ -54,7 +54,8 @@ the parity harness, the charts, the portal Terraform, or the workflow itself:
 | 1 | `build` | Compiles the three extracted services (Java 21 reactor), the legacy shell (Java 11), and the client app. | Stops. Nothing downstream runs. |
 | 2 | `test` | `make portal-build` — each service's suite, including a Testcontainers PostgreSQL 16 that Flyway migrates from empty, so the schema is proven before a pod ever applies it. Plus the shell's suite and the client app's lint/tests. | Stops. |
 | 3 | `parity` | Starts the **pinned pre-retirement monolith** on 8096 and the extracted services on 8101-8103, then replays all three contexts through the frozen harness (`tests/parity/portal/replay.py`), comparing status and full JSON body. | Stops. Also stops, by design, when the pinned reference is not published — see below. |
-| 4 | `dependency CVE gate` | Calls [`deps-remediation.yml`](../../.github/workflows/deps-remediation.yml) unchanged as a required job. | Blocks the push job. Red today. |
+| 4a | `dependency behavior gate` | Calls [`deps-remediation.yml`](../../.github/workflows/deps-remediation.yml) unchanged as a required job: it proves the recorded before-state still reproduces. | Blocks the push job. Green today. |
+| 4b | `dependency CVE gate` | Runs the same advisory harness and fails on its exit code: vulnerable (1) and no-verdict (2) both fail. | Blocks the push job. **Red today.** |
 | 5 | `ECR repository cross-check` | Asserts every image the workflow pushes has a repository declared in `platform/terraform/main.tf`. | Stops before anything is built. |
 | 6 | `image scan` | Builds each image locally (`load`, not `push`) and scans it with Trivy at CRITICAL/HIGH, same version and `.trivyignore` as `security-scan.yml`. | Stops. An unscanned image never reaches the registry. |
 | 7 | `push` | Pushes each image to `otterworks/<image>:<commit sha>` in ECR. Repositories are IMMUTABLE, so a tag is one exact set of bytes, forever. | Stops. Not run at all for a pull request. |
@@ -67,7 +68,7 @@ Answering the same questions as the list above:
 - **The artifact is the one that was tested.** One image per commit, built once, scanned, then
   pushed under an immutable tag and deployed by digest-stable tag. No host builds anything.
 - **Every check is a gate**, in an order chosen so nothing unproven moves forward: tests before
-  parity, parity before the scan, the scan before the registry, the CVE gate before the push,
+  parity, parity before the scan, the scan before the registry, both dependency gates before the push,
   the push before the cluster.
 - **Rollback is a stored revision, not a hoped-for file.** Helm keeps the previous release
   revision; the previous image still exists in ECR because tags there are immutable. The
@@ -96,20 +97,28 @@ It deliberately does **not** fall back to the shell on 8095. The shell answers 4
 extracted route, so a replay against it would compare 404 to 404 for all 168 cases and report
 perfect parity while proving nothing.
 
-### Why the dependency gate stays red
+### Why the advisory is gated twice
 
-The gate is red for three pre-existing reasons, none of them created by the extraction:
+`deps-remediation.yml` is reused as-is, but note what it actually grades. Its contract is
+*behavioral*: when the vulnerable version is still reachable it grades the recorded **baseline**
+transcript and passes, having proved the documented before-state still reproduces. That is the
+right contract for that workflow and nothing here changes it — but it means it reports success
+over a vulnerable tree, which is not a merge gate for a pipeline that pushes images.
+
+So the advisory itself is gated separately, on the harness's own exit code, where vulnerable (1)
+and no-verdict (2) both fail. That job is red, for pre-existing reasons, none created by the
+extraction:
 
 | Module | Finding |
 |---|---|
 | `report-service` | Depends on `commons-text` 1.9 directly — CVE-2022-42889. |
-| `services/legacy-portal` | Reaches the same vulnerable `commons-text` transitively through `commons-configuration2:2.8.0`. |
-| `notification-service` | Unmeasured: its tree failed to resolve, so the harness returns "no verdict" (exit 2), which is not a pass. |
+| `services/legacy-portal` | Reaches the same vulnerable `commons-text` transitively through `commons-configuration2:2.8.0`. This is an image **this pipeline pushes**. |
+| `notification-service` | Depends on `commons-text` 1.9 directly (`build.gradle.kts:51`). It is unmeasurable locally without Gradle, where the harness returns "no verdict" (exit 2) — also not a pass; in CI its tree resolves and the verdict is VULNERABLE. |
 
-The extracted `services/portal` reactor is measured and clean. The gate is wired here as a
-required job with no `continue-on-error`, no `|| true` and no allowlist, so while it is red this
-pipeline builds, tests, replays and scans, and ships nothing. Making the pipeline green means
-fixing those three modules — in their own change, with their own review.
+The extracted `services/portal` reactor is measured and clean. Neither gate has
+`continue-on-error`, `|| true` or an allowlist, so while the advisory is unresolved this pipeline
+builds, tests, replays and scans, and ships nothing. Making the pipeline green means fixing those
+three modules — in their own change, with their own review.
 
 ---
 
@@ -154,8 +163,8 @@ workflow.
    digest) as a repository variable. Until then the `parity` job fails, and so does everything
    after it. This is also decommission pre-condition 6.
 2. **Fix `report-service`'s direct CVE-2022-42889** (`commons-text` 1.9).
-3. **Make `notification-service` resolvable** so the advisory gate reaches a verdict on it
-   instead of exit 2.
+3. **Fix `notification-service`'s direct `commons-text` 1.9** (`build.gradle.kts:51`). Locally,
+   without Gradle, the harness reaches no verdict on it (exit 2), which the gate also fails.
 4. **Resolve the legacy shell's transitive `commons-text`** through
    `commons-configuration2:2.8.0`, or complete decommission step 6 and delete the shell — which
    also removes its image from this pipeline.
