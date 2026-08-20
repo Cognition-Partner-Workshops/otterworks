@@ -19,6 +19,9 @@ on:
       - "services/auth-service/**"
       - "services/portal/**"
       - "Makefile"
+  # Callable so another pipeline can make this gate one of its own required jobs rather
+  # than re-implementing the advisory check and drifting from it (see portal-cicd.yml).
+  workflow_call:
 
 jobs:
   deps:

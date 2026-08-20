@@ -1,0 +1,561 @@
+name: Portal CI/CD
+
+# Delivery pipeline for the decomposed portal: the three services extracted from
+# services/legacy-portal (announcements 8101, user-preferences 8102, feedback 8103), the
+# legacy shell itself, and the client app that fronts them.
+#
+#   build -> test -> parity -> image scan -> ECR push -> deploy -> health gate -> rollback
+#
+# Two things about this pipeline are deliberate and must not be "fixed" by making them pass:
+#
+#  1. Parity replays against the pinned pre-retirement monolith reference
+#     (docs/migration/decommission.md), which is the last build of legacy-portal that still
+#     served the three contexts. That image exists only on the machine that built it
+#     (validation-report open item 1), so the parity job asserts its presence and fails with
+#     the publish instructions when it is missing. It does not fall back to the shell on
+#     8095: the shell answers 404 for every extracted route, so a replay against it would
+#     compare two wrong answers and call it parity.
+#
+#  2. The dependency CVE gate is a required gate here, and it is red today for reasons that
+#     predate this pipeline. That is the gate working. docs/migration/cicd-runbook.md lists
+#     what has to change in the estate before this workflow can be green.
+#
+# Deploy, health gate and rollback only run for a push to the migration branch (or a manual
+# dispatch), and only when the cluster inputs are configured; a pull request stops after the
+# image scan, having proven the artifacts without shipping them.
+
+on:
+  push:
+    branches:
+      - demo/legacy-portal-migration
+    paths:
+      - "services/portal/**"
+      - "services/legacy-portal/**"
+      - "frontend/client-app/**"
+      - "tests/parity/portal/**"
+      - "infrastructure/helm/announcements-service/**"
+      - "infrastructure/helm/user-preferences-service/**"
+      - "infrastructure/helm/feedback-service/**"
+      - "infrastructure/terraform/modules/portal/**"
+      - "platform/terraform/main.tf"
+      - "docker-compose.portal.yml"
+      - "Makefile"
+      - ".github/workflows/portal-cicd.yml"
+  pull_request:
+    paths:
+      - "services/portal/**"
+      - "services/legacy-portal/**"
+      - "frontend/client-app/**"
+      - "tests/parity/portal/**"
+      - "infrastructure/helm/announcements-service/**"
+      - "infrastructure/helm/user-preferences-service/**"
+      - "infrastructure/helm/feedback-service/**"
+      - "infrastructure/terraform/modules/portal/**"
+      - "platform/terraform/main.tf"
+      - "docker-compose.portal.yml"
+      - "Makefile"
+      - ".github/workflows/portal-cicd.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to the cluster after the artifacts are pushed
+        type: boolean
+        default: false
+
+# One delivery per ref. Two overlapping runs would be two `helm upgrade`s against the same
+# three releases, and a rollback from the loser would restore an image the winner replaced.
+concurrency:
+  group: portal-cicd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  # The extracted services' reactor. `services/legacy-portal` is a separate Java 11 build.
+  PORTAL_DIR: services/portal
+
+jobs:
+  # --------------------------------------------------------------------------------------
+  # 1. build
+  # --------------------------------------------------------------------------------------
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          # Both JDKs: the extracted reactor is Java 21, the shell is Boot 2.7 on Java 11
+          # and does not compile on 21. 21 is listed last so it is the ambient JDK; the
+          # shell's build is pointed at $JAVA_HOME_11_X64 explicitly.
+          java-version: |
+            11
+            21
+          cache: maven
+
+      - name: Build the extracted services
+        run: cd "$PORTAL_DIR" && ./mvnw -B -DskipTests package
+
+      - name: Build the legacy shell
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_11_X64 }}
+        run: cd services/legacy-portal && ./mvnw -B -DskipTests package
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/client-app/package-lock.json
+
+      - name: Build the client app
+        run: cd frontend/client-app && npm ci && npm run build
+
+  # --------------------------------------------------------------------------------------
+  # 2. test
+  # --------------------------------------------------------------------------------------
+  test:
+    name: test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          java-version: |
+            11
+            21
+          cache: maven
+
+      # Each service's integration test starts its own PostgreSQL 16 via Testcontainers and
+      # runs its Flyway migration against it, so this also proves the schema applies to an
+      # empty database — the same thing the first deploy of a new tag does.
+      - name: Test the extracted services
+        run: make portal-build
+
+      - name: Test the legacy shell
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_11_X64 }}
+        run: cd services/legacy-portal && ./mvnw -B test
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/client-app/package-lock.json
+
+      - name: Test the client app
+        run: cd frontend/client-app && npm ci && npm run lint && npm test
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: portal-surefire-reports
+          path: services/portal/*/target/surefire-reports/*
+          if-no-files-found: ignore
+
+  # --------------------------------------------------------------------------------------
+  # 3. parity tests
+  # --------------------------------------------------------------------------------------
+  parity:
+    name: parity
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      # Only to pull the reference image from ECR, if that is where it was published.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+
+      # PRECONDITION, not a soft check. The reference is the pinned pre-retirement build of
+      # the monolith (docs/migration/decommission.md); today it exists only as a local image
+      # on the machine that built it, so this job cannot run anywhere else until a team
+      # publishes it. Failing here, loudly, is the honest outcome: skipping parity would
+      # ship an extraction whose behavior nothing compared, and replaying against the
+      # current shell would compare 404 to 404.
+      - name: Resolve the pinned pre-retirement reference
+        env:
+          # Repository variable, e.g.
+          #   <account>.dkr.ecr.us-east-1.amazonaws.com/otterworks/legacy-portal@sha256:<digest>
+          # A digest is preferred over the :pre-retirement-c07b93bc tag: the reference is the
+          # yardstick every parity claim is measured against, so it must be one exact build.
+          REFERENCE_IMAGE: ${{ vars.PORTAL_REFERENCE_IMAGE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REFERENCE_IMAGE}" ]; then
+            cat >&2 <<'MSG'
+          The pinned pre-retirement monolith reference is not configured, so parity cannot run.
+
+          This is a known open item (docs/migration/validation-report.md, open item 1): the
+          image otterworks/legacy-portal:pre-retirement-c07b93bc was built from commit
+          c07b93bc and never pushed to a registry.
+
+          To resolve, once:
+            1. Build or restore the image from commit c07b93bc:
+                 git worktree add /tmp/lp-pre-retirement c07b93bc
+                 docker build -t otterworks/legacy-portal:pre-retirement-c07b93bc \
+                   /tmp/lp-pre-retirement/services/legacy-portal
+            2. Push it to the otterworks/legacy-portal ECR repository (declared in
+               platform/terraform/main.tf) under the tag pre-retirement-c07b93bc.
+            3. Record the resulting digest as the PORTAL_REFERENCE_IMAGE repository variable.
+
+          Until then this job fails by design. Do not point it at the current shell on 8095:
+          the shell serves no extracted route, so every case would "match" on 404.
+          MSG
+            exit 1
+          fi
+          echo "Reference: ${REFERENCE_IMAGE}"
+
+      # The reference lives in ECR once it is published there; a reference hosted anywhere
+      # public needs no credentials, hence the condition rather than an unconditional login.
+      - name: Configure AWS credentials
+        if: contains(vars.PORTAL_REFERENCE_IMAGE, '.dkr.ecr.')
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        if: contains(vars.PORTAL_REFERENCE_IMAGE, '.dkr.ecr.')
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2
+
+      - name: Start the pre-retirement reference on 8096
+        env:
+          REFERENCE_IMAGE: ${{ vars.PORTAL_REFERENCE_IMAGE }}
+        run: |
+          set -euo pipefail
+          docker pull "${REFERENCE_IMAGE}"
+          # 8096, exactly as docs/migration/decommission.md pins it, so the replay command
+          # below is the one operators run by hand.
+          docker run -d --name lp-pre-retirement -p 8096:8095 "${REFERENCE_IMAGE}"
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8096/health >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::the pre-retirement reference did not become healthy on 8096"
+          docker logs lp-pre-retirement || true
+          exit 1
+
+      - name: Start the extracted services
+        run: make portal-up NS=ci
+
+      # The harness is used exactly as it ships: one context at a time, comparing status and
+      # full JSON body. It is frozen (docs/migration/contracts/README.md) and this pipeline
+      # does not fork, wrap or re-implement it.
+      - name: Replay announcements
+        env:
+          PORTAL_LEGACY_URL: http://localhost:8096
+          PORTAL_CANDIDATE_URL: http://localhost:8101
+        run: make portal-parity CONTEXT=announcements
+
+      - name: Replay user-preferences
+        env:
+          PORTAL_LEGACY_URL: http://localhost:8096
+          PORTAL_CANDIDATE_URL: http://localhost:8102
+        run: make portal-parity CONTEXT=user-preferences
+
+      - name: Replay feedback
+        env:
+          PORTAL_LEGACY_URL: http://localhost:8096
+          PORTAL_CANDIDATE_URL: http://localhost:8103
+        run: make portal-parity CONTEXT=feedback
+
+      - name: Tear down
+        if: always()
+        run: |
+          make portal-down NS=ci || true
+          docker rm -f lp-pre-retirement || true
+
+  # --------------------------------------------------------------------------------------
+  # Required merge gate: the dependency CVE gate, unchanged.
+  #
+  # Reused, not reimplemented: deps-remediation.yml is the estate's gate and this workflow
+  # calls it so the two can never drift into disagreeing about the same advisory. It is red
+  # today (report-service on commons-text 1.9 directly, the legacy shell transitively through
+  # commons-configuration2:2.8.0, notification-service unmeasured) and nothing here softens
+  # that — no continue-on-error, no `|| true`, no allowlist. Deploy is downstream of it, so
+  # while it is red this pipeline builds, tests and scans but ships nothing.
+  # --------------------------------------------------------------------------------------
+  dependency-gate:
+    name: dependency CVE gate (required)
+    uses: ./.github/workflows/deps-remediation.yml
+
+  # --------------------------------------------------------------------------------------
+  # ECR repositories are declared in platform/terraform/main.tf and are IMMUTABLE; ECR does
+  # not create one on push. A repository missing there fails the push step with a bare
+  # RepositoryNotFoundException halfway through the matrix, leaving some contexts pushed and
+  # some not. This job compares the two lists before anything is built.
+  # --------------------------------------------------------------------------------------
+  ecr-repositories:
+    name: ECR repository cross-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Every pushed image has a declared repository
+        run: |
+          set -euo pipefail
+          # The images this workflow pushes, one per matrix entry below.
+          pushed="announcements-service user-preferences-service feedback-service legacy-portal web-app"
+          missing=""
+          for image in $pushed; do
+            grep -qE "^\s*\"${image}\",\s*$" platform/terraform/main.tf || missing="${missing} ${image}"
+          done
+          if [ -n "${missing}" ]; then
+            echo "::error::no ECR repository declared in platform/terraform/main.tf for:${missing}"
+            exit 1
+          fi
+          echo "All pushed images have a declared ECR repository."
+
+  # --------------------------------------------------------------------------------------
+  # 4. container image scan  (before the push: an unscanned image never reaches the registry)
+  # --------------------------------------------------------------------------------------
+  scan:
+    name: image scan (${{ matrix.image.name }})
+    needs: [parity, ecr-repositories]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - { name: announcements-service, context: services/portal, dockerfile: services/portal/announcements-service/Dockerfile }
+          - { name: user-preferences-service, context: services/portal, dockerfile: services/portal/user-preferences-service/Dockerfile }
+          - { name: feedback-service, context: services/portal, dockerfile: services/portal/feedback-service/Dockerfile }
+          - { name: legacy-portal, context: services/legacy-portal, dockerfile: services/legacy-portal/Dockerfile }
+          # frontend/client-app publishes as `web-app`, the name the estate's other
+          # pipelines and every deploy script already use for it.
+          - { name: web-app, context: frontend/client-app, dockerfile: frontend/client-app/Dockerfile }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      # Built locally and loaded, not pushed: the scan is a gate, and a gate that runs after
+      # publication is a report.
+      - name: Build image for scanning
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          push: false
+          load: true
+          platforms: linux/amd64
+          cache-from: type=gha,scope=portal-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=portal-${{ matrix.image.name }}
+          tags: portal-scan/${{ matrix.image.name }}:${{ github.sha }}
+
+      - name: Install Trivy
+        run: |
+          curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v0.71.0/trivy_0.71.0_Linux-64bit.tar.gz \
+            -o /tmp/trivy.tar.gz
+          tar xz -C /usr/local/bin -f /tmp/trivy.tar.gz trivy
+
+      # Same version and severity floor as security-scan.yml, and the same .trivyignore, so
+      # an acknowledgement recorded there means the same thing here.
+      - name: Scan
+        run: |
+          trivy image "portal-scan/${{ matrix.image.name }}:${{ github.sha }}" \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            --ignorefile .trivyignore \
+            --exit-code 1 \
+            --format table
+
+  # --------------------------------------------------------------------------------------
+  # 5. ECR push
+  # --------------------------------------------------------------------------------------
+  push:
+    name: push (${{ matrix.image.name }})
+    needs: [scan, dependency-gate]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - { name: announcements-service, context: services/portal, dockerfile: services/portal/announcements-service/Dockerfile }
+          - { name: user-preferences-service, context: services/portal, dockerfile: services/portal/user-preferences-service/Dockerfile }
+          - { name: feedback-service, context: services/portal, dockerfile: services/portal/feedback-service/Dockerfile }
+          - { name: legacy-portal, context: services/legacy-portal, dockerfile: services/legacy-portal/Dockerfile }
+          # frontend/client-app publishes as `web-app`, the name the estate's other
+          # pipelines and every deploy script already use for it.
+          - { name: web-app, context: frontend/client-app, dockerfile: frontend/client-app/Dockerfile }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      # One tag, the commit SHA, and the repositories are IMMUTABLE. That is what makes the
+      # rollback in docs/migration/traffic-routing.md work: the previous release's tag still
+      # names the exact bytes that were serving before this deploy.
+      - name: Build and push
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          push: true
+          platforms: linux/amd64
+          cache-from: type=gha,scope=portal-${{ matrix.image.name }}
+          tags: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.image.name }}:${{ github.sha }}
+
+  # --------------------------------------------------------------------------------------
+  # 6-8. deploy -> post-deploy health gate -> automatic rollback
+  #
+  # One job, because the rollback has to be able to run: a separate `if: failure()` job would
+  # need its own cluster credentials and would not run if the deploy job were cancelled
+  # mid-upgrade. Helm owns the previous state (`helm rollback <release> 0` restores the
+  # release's previous revision, image tag and config together), so the rollback target is
+  # not something this workflow has to remember or reconstruct.
+  # --------------------------------------------------------------------------------------
+  deploy:
+    name: deploy, health gate, rollback
+    needs: push
+    if: |
+      always() && needs.push.result == 'success' &&
+      (github.event_name == 'workflow_dispatch' && inputs.deploy ||
+       github.event_name == 'push' && github.ref_name == 'demo/legacy-portal-migration')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: portal-migration
+    env:
+      NAMESPACE: ${{ vars.PORTAL_NAMESPACE || 'otterworks-portal' }}
+      CLUSTER: ${{ vars.PORTAL_EKS_CLUSTER || 'otterworks-dev' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2
+
+      - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+        with:
+          version: v3.16.4
+
+      - name: Configure cluster access
+        run: aws eks update-kubeconfig --name "$CLUSTER" --region "$AWS_REGION"
+
+      # Recorded before the upgrade so the summary can say what it rolled back to, and so a
+      # human reading a failed run knows which build is serving now.
+      - name: Record the currently deployed revisions
+        id: before
+        run: |
+          set -euo pipefail
+          for release in announcements-service user-preferences-service feedback-service; do
+            rev="$(helm get metadata "$release" -n "$NAMESPACE" -o json 2>/dev/null | jq -r '.revision' || true)"
+            tag="$(helm get values "$release" -n "$NAMESPACE" -o json 2>/dev/null | jq -r '.image.tag // empty' || true)"
+            echo "${release}: revision=${rev:-none} image.tag=${tag:-none}"
+            echo "${release//-/_}_tag=${tag}" >> "$GITHUB_OUTPUT"
+          done
+
+      # `--wait` only, never `--atomic`: an --atomic rollback happens inside the upgrade, so
+      # the health gate below would grade a release Helm had already reverted, and the run
+      # would go green over a deploy that never took. Rollback here is this workflow's
+      # decision, taken after the gate.
+      - name: Deploy the extracted services
+        id: upgrade
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          # Each service's SPRING_DATASOURCE_URL, as emitted by the portal Terraform module's
+          # `portal_jdbc_urls` output; a JSON object keyed by context.
+          JDBC_URLS: ${{ vars.PORTAL_JDBC_URLS }}
+          DB_PASSWORDS: ${{ secrets.PORTAL_DB_PASSWORDS }}
+        run: |
+          set -euo pipefail
+          for context in announcements user-preferences feedback; do
+            release="${context}-service"
+            # The database user each context owns, as created by the portal Terraform
+            # module (infrastructure/terraform/modules/portal/main.tf).
+            username="${context//-/_}"
+            helm upgrade --install "$release" "infrastructure/helm/${release}" \
+              --namespace "$NAMESPACE" --create-namespace \
+              --set "image.repository=${REGISTRY}/otterworks/${release}" \
+              --set "image.tag=${GITHUB_SHA}" \
+              --set "config.SPRING_DATASOURCE_URL=$(jq -r --arg c "$context" '.[$c]' <<<"$JDBC_URLS")" \
+              --set "config.SPRING_DATASOURCE_USERNAME=${username}" \
+              --set "secrets.SPRING_DATASOURCE_PASSWORD=$(jq -r --arg c "$context" '.[$c]' <<<"$DB_PASSWORDS")" \
+              --wait --timeout 10m
+          done
+
+      # The gate the rollback hangs off. Readiness already passed (helm --wait), so this
+      # answers the question readiness cannot: is the right service answering on the address
+      # the routing values name? /health echoes spring.application.name, so a chart pointed at
+      # the wrong image or a release installed under the wrong name is caught here rather
+      # than by a user reading someone else's announcements.
+      - name: Post-deploy health gate
+        id: health
+        run: |
+          set -euo pipefail
+          fail=0
+          for entry in announcements:8101 user-preferences:8102 feedback:8103; do
+            context="${entry%%:*}"; port="${entry##*:}"
+            release="${context}-service"
+            body="$(kubectl run "healthgate-${context}-${GITHUB_RUN_ID}" -n "$NAMESPACE" \
+              --rm -i --restart=Never --quiet --image=curlimages/curl:8.11.1 -- \
+              curl -fsS --max-time 10 "http://${release}:${port}/health" || true)"
+            echo "${release} -> ${body:-<no response>}"
+            # The identity check: the answer must come from this context's service, on the
+            # name and port docs/migration/traffic-routing.md configures callers with.
+            case "$body" in
+              *"\"service\":\"${release}\""*) ;;
+              *) echo "::error::${release} did not identify itself on http://${release}:${port}/health"; fail=1 ;;
+            esac
+          done
+          exit "$fail"
+
+      # Automatic, unconditional on the gate failing, and it runs on cancellation too: a run
+      # cancelled between the upgrade and the gate leaves an ungraded build serving.
+      - name: Roll back
+        if: failure() || cancelled()
+        run: |
+          set -euo pipefail
+          echo "::warning::health gate did not pass — rolling back to the previous revision"
+          for release in announcements-service user-preferences-service feedback-service; do
+            if ! helm history "$release" -n "$NAMESPACE" >/dev/null 2>&1; then
+              echo "${release}: no release history, nothing to roll back"
+              continue
+            fi
+            # revision 0 = the previous revision, restoring its image tag and config
+            # together. A first install has no previous revision; uninstalling it would be a
+            # bigger action than this workflow should take unattended, so it is left in place
+            # and reported.
+            if [ "$(helm history "$release" -n "$NAMESPACE" -o json | jq 'length')" -lt 2 ]; then
+              echo "::warning::${release} has no previous revision (first install) — left deployed and failing, remove it by hand"
+              continue
+            fi
+            helm rollback "$release" 0 -n "$NAMESPACE" --wait --timeout 10m
+            echo "${release}: rolled back to $(helm get values "$release" -n "$NAMESPACE" -o json | jq -r '.image.tag')"
+          done
+          # The routing values are untouched by all of this: each context still points at its
+          # own service name and port, now serving the previous image. Rolling *routing* back
+          # to the monolith is the break-glass path in docs/migration/traffic-routing.md and
+          # is deliberately a human decision, not this workflow's.
