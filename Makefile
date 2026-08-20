@@ -433,8 +433,12 @@ eq-record: ## Record the before-state as the reference evidence (REASON="..." re
 # --- Legacy portal decomposition (strangler fig) ---
 
 PORTAL_COMPOSE = docker compose -f docker-compose.portal.yml -p otterworks-portal-$(NS)
-# Profiles are additive: a context only starts once its Wave 1 service exists.
-PORTAL_PROFILES = --profile legacy --profile announcements --profile user-preferences --profile feedback
+PORTAL_CONTEXTS = announcements user-preferences feedback
+# Profiles are additive: a context is only started once its Wave 1 service exists, so a
+# partial rollout comes up instead of failing to build a service that is not written yet.
+PORTAL_PROFILES = --profile legacy $(foreach c,$(PORTAL_CONTEXTS),$(if $(wildcard services/portal/$(c)-service/Dockerfile),--profile $(c)))
+# Teardown never builds, so it can name every context unconditionally.
+PORTAL_ALL_PROFILES = --profile legacy $(foreach c,$(PORTAL_CONTEXTS),--profile $(c))
 
 portal-up: ## Start the monolith and every extracted portal service (NS=<namespace>)
 	@test -n "$(NS)" || (echo "NS is required, e.g. make portal-up NS=dev" >&2; exit 2)
@@ -442,7 +446,7 @@ portal-up: ## Start the monolith and every extracted portal service (NS=<namespa
 
 portal-down: ## Stop the portal stack and drop its data (NS=<namespace>)
 	@test -n "$(NS)" || (echo "NS is required, e.g. make portal-down NS=dev" >&2; exit 2)
-	NS=$(NS) $(PORTAL_COMPOSE) $(PORTAL_PROFILES) down -v
+	NS=$(NS) $(PORTAL_COMPOSE) $(PORTAL_ALL_PROFILES) down -v
 
 portal-build: ## Build and test the extracted portal services
 	cd services/portal && ./mvnw -B verify

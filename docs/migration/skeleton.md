@@ -83,6 +83,9 @@ the default envelope match.
   environment; compose supplies local development values.
 - **Route prefixes are unchanged** (`/api/announcements`, `/api/preferences`, `/api/feedback`)
   so the Wave 2 routing switch is a configuration change, not a client change.
+- **The dependency gate already covers you.** `security/deps/modules.yaml` registers the
+  `services/portal` reactor as one module, so a new service is measured the moment it is added
+  to `<modules>`. Do not add a per-service entry and do not exempt anything.
 - **No authentication.** The monolith has none, `userId` is caller-supplied, and adding auth
   would break parity. Extracted services are internal-only, bound to `127.0.0.1` in compose,
   and reachable only through the gateway. Closing this gap is a coordinated contract revision
