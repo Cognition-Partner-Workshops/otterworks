@@ -180,7 +180,7 @@ export function AnnouncementsContent() {
 
       {isLoading ? (
         <PageLoader />
-      ) : announcements.length === 0 ? (
+      ) : announcements.length === 0 && !listError ? (
         <EmptyState
           icon={Megaphone}
           title="No announcements"
