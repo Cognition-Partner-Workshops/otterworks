@@ -31,6 +31,7 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      etl-airflow: ${{ steps.changes.outputs.etl-airflow }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -70,6 +71,8 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            etl-airflow:
+              - 'etl/airflow/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
@@ -415,6 +418,30 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
+
+  # Airflow DAGs migrated from the legacy etl/ cron estate
+  etl-airflow:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.etl-airflow == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: etl/airflow
+    env:
+      AIRFLOW_HOME: ${{ github.workspace }}/etl/airflow/.airflow
+      PYTHONPATH: ${{ github.workspace }}/etl/airflow/plugins
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt -c constraints-2.8.4-python3.11.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m ruff check .
+      - name: DAG import check
+        run: |
+          python -c "from airflow.models import DagBag; b = DagBag('dags', include_examples=False); print(b.import_errors); assert not b.import_errors, b.import_errors"
+      - run: python -m pytest -q
 
   # Black-box API flow test validation
   api-flow-tests:
