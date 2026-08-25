@@ -142,6 +142,15 @@ def self_test() -> None:
     assert doc["name"] == "réport final.pdf"  # byte-transparent, not normalised
     assert doc["orphaned_metadata"] is False
 
+    nested = dict(base, sidecar={"M": {
+        "kept": {"S": "yes"},
+        "dropped": {"NULL": True},
+        "order": {"L": [{"S": "a"}, {"NULL": True}, {"S": "c"}]},
+    }})
+    doc, _ = transform(nested)
+    sidecar = doc["extras"]["sidecar"]
+    assert sidecar == {"kept": "yes", "order": ["a", None, "c"]}, sidecar
+
     spaced = dict(base, s3_key={"S": "demo/files/owner/My Report (final).pdf"})
     doc, _ = transform(spaced)
     assert doc["storage_key"] == "demo/files/owner/My Report (final).pdf"

@@ -162,9 +162,12 @@ def _scalar(attr: dict):
     if kind == "NULL":
         return None
     if kind == "L":
+        # A list member's position is part of its meaning, so a NULL member is
+        # kept in place rather than collapsing the list around it.
         return [_scalar(v) for v in raw]
     if kind == "M":
-        return {k: _scalar(v) for k, v in raw.items()}
+        # Map keys are attributes: a NULL one is omitted, as at the top level.
+        return {k: s for k, v in raw.items() if (s := _scalar(v)) is not None}
     if kind in ("SS", "NS", "BS"):
         return [_scalar({kind[0]: v}) for v in raw]
     raise ValueError(f"unsupported DynamoDB attribute type: {kind}")
