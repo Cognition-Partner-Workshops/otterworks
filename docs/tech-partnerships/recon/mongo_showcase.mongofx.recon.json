@@ -1,0 +1,358 @@
+{
+  "checks": [
+    {
+      "actual": 40,
+      "expected": 40,
+      "id": "customers-count",
+      "result": "pass",
+      "source_of_truth": "manifest CUSTOMER_MASTER rows vs customers documents counted in the target"
+    },
+    {
+      "actual": 30,
+      "expected": 30,
+      "id": "invoices-count",
+      "result": "pass",
+      "source_of_truth": "manifest INVOICE_HEADER rows vs invoices documents counted in the target"
+    },
+    {
+      "actual": "28387b92c03fb45ce7bd30f04e5debc0",
+      "expected": "28387b92c03fb45ce7bd30f04e5debc0",
+      "id": "customers-checksum",
+      "result": "pass",
+      "source_of_truth": "manifest CUSTOMER_MASTER checksum vs md5 over <customer_id>:<current balance> recomputed from the target in key order"
+    },
+    {
+      "actual": 40,
+      "expected": 40,
+      "id": "customers-checksum-coverage",
+      "result": "pass",
+      "source_of_truth": "documents fed into the recomputed customer checksum"
+    },
+    {
+      "actual": 120,
+      "expected": 120,
+      "id": "invoices-embedded-lines",
+      "result": "pass",
+      "source_of_truth": "manifest INVOICE_LINE rows minus the quarantined lines vs lines embedded in the invoice documents"
+    },
+    {
+      "actual": "400df445708e023a24bb4ef843dcd901",
+      "expected": "400df445708e023a24bb4ef843dcd901",
+      "id": "invoice-lines-checksum",
+      "result": "pass",
+      "source_of_truth": "manifest INVOICE_LINE checksum vs md5 over <line_id>:<amount> recomputed from the embedded lines plus the quarantined lines"
+    },
+    {
+      "actual": 122,
+      "expected": 122,
+      "id": "invoice-lines-checksum-coverage",
+      "result": "pass",
+      "source_of_truth": "lines fed into the recomputed invoice-line checksum"
+    },
+    {
+      "actual": {
+        "missing": [],
+        "unexpected": []
+      },
+      "expected": {
+        "missing": [],
+        "unexpected": []
+      },
+      "id": "quarantine-membership",
+      "result": "pass",
+      "source_of_truth": "quarantine ids captured at the green baseline vs quarantine ids recomputed from the target now, compared as sets"
+    },
+    {
+      "actual": {
+        "dirty_dates": 2,
+        "malformed_csv_lists": 1,
+        "orphaned_rows": 2
+      },
+      "expected": {
+        "dirty_dates": 2,
+        "malformed_csv_lists": 1,
+        "orphaned_rows": 2
+      },
+      "id": "planted-anomaly-counts",
+      "result": "pass",
+      "source_of_truth": "manifest planted anomaly counts vs quarantine reasons recomputed from the target"
+    },
+    {
+      "actual": 10,
+      "expected": 10,
+      "id": "documents-count",
+      "result": "pass",
+      "source_of_truth": "documents documents captured at the green baseline vs counted in the target now"
+    },
+    {
+      "actual": 5,
+      "expected": 5,
+      "id": "document-snapshots-count",
+      "result": "pass",
+      "source_of_truth": "document_snapshots documents captured at the green baseline vs counted in the target now"
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "id": "files-count",
+      "result": "pass",
+      "source_of_truth": "files documents captured at the green baseline vs counted in the target now"
+    },
+    {
+      "actual": 0,
+      "expected": 0,
+      "id": "money-bson-type",
+      "result": "pass",
+      "source_of_truth": "count of embedded money and quantity fields whose stored BSON type is not decimal128"
+    },
+    {
+      "actual": {
+        "customers": true,
+        "invoices": true
+      },
+      "expected": {
+        "customers": true,
+        "invoices": true
+      },
+      "id": "validators-applied",
+      "result": "pass",
+      "source_of_truth": "$jsonSchema presence read back from the collections' options"
+    },
+    {
+      "actual": "rejected: server error 121",
+      "expected": "rejected: server error 121",
+      "id": "validator-rejects-legacy-date",
+      "result": "pass",
+      "source_of_truth": "live insert of an invoice carrying the legacy DD-MON-YY string issue date"
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "id": "report-golden-parity",
+      "result": "pass",
+      "source_of_truth": "RPT-114 month-end report from the legacy Oracle estate vs the same report produced by one aggregation pipeline over the migrated invoices, compared row by row to the cent"
+    }
+  ],
+  "failed_checks": [],
+  "generated_at": "2026-08-25T23:54:09Z",
+  "idempotency_rerun": {
+    "evidence": "the report pipeline and the customer checksum were recomputed a second time against the target in the same run and returned identical values",
+    "performed": true,
+    "result": "pass"
+  },
+  "kind": "recon-report",
+  "namespace": "mongofx",
+  "planted_anomaly_detections": {
+    "actual_set": [
+      "dirty_date:mongofx-quarantined-000",
+      "dirty_date:mongofx-quarantined-001",
+      "malformed_csv_list:mongofx-quarantined-002",
+      "orphan_no_header:mongofx-orphan-line-000",
+      "orphan_no_header:mongofx-orphan-line-001"
+    ],
+    "expected_set": [
+      "dirty_date:mongofx-quarantined-000",
+      "dirty_date:mongofx-quarantined-001",
+      "malformed_csv_list:mongofx-quarantined-002",
+      "orphan_no_header:mongofx-orphan-line-000",
+      "orphan_no_header:mongofx-orphan-line-001"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "result": "pass",
+  "run_mode": "fixture",
+  "source": {
+    "baseline": null,
+    "legacy_report": null,
+    "manifest_sha256": null
+  },
+  "target": {
+    "counts": {
+      "customers": 40,
+      "customers_quarantine": 3,
+      "document_snapshots": 5,
+      "documents": 10,
+      "files": 12,
+      "invoice_lines_quarantine": 2,
+      "invoices": 30
+    },
+    "customers_checksum": "28387b92c03fb45ce7bd30f04e5debc0",
+    "database": "ow_tp_mongodb_mongofx",
+    "invoice_lines_checksum": "400df445708e023a24bb4ef843dcd901",
+    "quarantine_database": "ow_tp_mongodb_mongofx_quarantine",
+    "report": {
+      "balances": {
+        "current_balance_total": "13940.00",
+        "customer_count": 40,
+        "past_due_total": "345.00"
+      },
+      "batch_no": 83733991,
+      "by_status": [
+        {
+          "header_total_amt": "2982.00",
+          "invoice_count": 8,
+          "status": "draft"
+        },
+        {
+          "header_total_amt": "3040.00",
+          "invoice_count": 8,
+          "status": "issued"
+        },
+        {
+          "header_total_amt": "2744.25",
+          "invoice_count": 7,
+          "status": "overdue"
+        },
+        {
+          "header_total_amt": "2678.25",
+          "invoice_count": 7,
+          "status": "paid"
+        }
+      ],
+      "by_status_line_type": [
+        {
+          "invoices_touched": 8,
+          "line_amount": "1026.00",
+          "line_count": 8,
+          "line_tax": "85.17",
+          "line_type": "ADJUSTMENT",
+          "status": "draft"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "523.00",
+          "line_count": 8,
+          "line_tax": "43.41",
+          "line_type": "CHARGE",
+          "status": "draft"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "940.00",
+          "line_count": 8,
+          "line_tax": "78.02",
+          "line_type": "CREDIT",
+          "status": "draft"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "493.00",
+          "line_count": 8,
+          "line_tax": "40.91",
+          "line_type": "MISC",
+          "status": "draft"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "782.00",
+          "line_count": 8,
+          "line_tax": "64.91",
+          "line_type": "ADJUSTMENT",
+          "status": "issued"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "409.00",
+          "line_count": 8,
+          "line_tax": "33.96",
+          "line_type": "CHARGE",
+          "status": "issued"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "451.00",
+          "line_count": 8,
+          "line_tax": "37.43",
+          "line_type": "CREDIT",
+          "status": "issued"
+        },
+        {
+          "invoices_touched": 8,
+          "line_amount": "1398.00",
+          "line_count": 8,
+          "line_tax": "116.04",
+          "line_type": "MISC",
+          "status": "issued"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "472.75",
+          "line_count": 7,
+          "line_tax": "39.24",
+          "line_type": "ADJUSTMENT",
+          "status": "overdue"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "925.50",
+          "line_count": 7,
+          "line_tax": "76.82",
+          "line_type": "CHARGE",
+          "status": "overdue"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "971.25",
+          "line_count": 7,
+          "line_tax": "80.62",
+          "line_type": "CREDIT",
+          "status": "overdue"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "374.75",
+          "line_count": 7,
+          "line_tax": "31.10",
+          "line_type": "MISC",
+          "status": "overdue"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "420.75",
+          "line_count": 7,
+          "line_tax": "34.92",
+          "line_type": "ADJUSTMENT",
+          "status": "paid"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "950.25",
+          "line_count": 7,
+          "line_tax": "78.88",
+          "line_type": "CHARGE",
+          "status": "paid"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "489.75",
+          "line_count": 7,
+          "line_tax": "40.65",
+          "line_type": "CREDIT",
+          "status": "paid"
+        },
+        {
+          "invoices_touched": 7,
+          "line_amount": "817.50",
+          "line_count": 7,
+          "line_tax": "67.85",
+          "line_type": "MISC",
+          "status": "paid"
+        }
+      ],
+      "namespace": "mongofx",
+      "report": "month-end-finance",
+      "source": {
+        "detail": "one aggregation pipeline over invoices with embedded lines (RPT-114 equivalent)",
+        "engine": "mongodb",
+        "system": "migrated document store (MongoDB)"
+      }
+    }
+  },
+  "unit": "mongo_showcase",
+  "unverified_paths": [
+    "Postgres document and DynamoDB file manifest targets are reconciled by their own unit recons; this report compares those collections against the green baseline capture only",
+    "this namespace has no legacy estate: its baseline was self-captured from the target, so every check proves drift from the captured green state and none of them proves parity with the legacy source of truth"
+  ],
+  "values_recomputed_from_target": true
+}

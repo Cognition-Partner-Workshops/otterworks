@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity mongo-customers-migrate mongo-customers-recon mongo-customers-test tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity mongo-customers-migrate mongo-customers-recon mongo-customers-test tp-mongo-showcase-report tp-mongo-showcase-recon tp-mongo-showcase-drift tp-mongo-showcase-job tp-mongo-showcase-seed-fixture tp-mongo-showcase-validate-demo tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain
 
 SHELL := /bin/bash
 
@@ -158,6 +158,50 @@ endif
 mongo-customers-test: ## Unit-test the mongo_customers transform (no cluster, no Oracle)
 	uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with pytest==8.3.3 \
 		python -m pytest $(MONGO_CUSTOMERS_DIR)/tests -q
+
+tp-mongo-showcase-report: ## Run the MongoDB showcase finance report (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-report NS=fixture)
+endif
+	$(call validate_ns)
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode $(or $(RUN_MODE),fixture) report $(if $(BASELINE),--baseline $(BASELINE),) $(if $(OUT),--out $(OUT),)
+
+tp-mongo-showcase-recon: ## Reconcile the MongoDB showcase namespace (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-recon NS=fixture)
+endif
+	$(call validate_ns)
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode $(or $(RUN_MODE),fixture) recon $(if $(BASELINE),--baseline $(BASELINE),) $(if $(OUT),--out $(OUT),)
+
+tp-mongo-showcase-drift: ## Stage MongoDB showcase drift (NS=<ns>, KIND=<stale|corrupt|missing>, COUNT=<n>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-drift NS=fixture KIND=missing)
+endif
+	$(call validate_ns)
+	@test -n "$(KIND)" || { echo "KIND is required, e.g. KIND=missing" >&2; exit 2; }
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode $(or $(RUN_MODE),fixture) drift --kind $(KIND) --count $(or $(COUNT),25)
+
+tp-mongo-showcase-job: ## Run the MongoDB showcase recon job (NS=<ns>, BASE_BRANCH=<branch>, RUN_URL=<url>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-job NS=fixture)
+endif
+	$(call validate_ns)
+	@test -n "$(BASE_BRANCH)" || { echo "BASE_BRANCH is required" >&2; exit 2; }
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode $(or $(RUN_MODE),fixture) run-job --base-branch $(BASE_BRANCH) --run-url "$(RUN_URL)" $(if $(OUT),--out $(OUT),) $(if $(WEBHOOK_URL),--webhook-url $(WEBHOOK_URL),) $(if $(DRY_RUN),--dry-run,)
+
+tp-mongo-showcase-seed-fixture: ## Seed the deterministic MongoDB showcase fixture (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-seed-fixture NS=fixture)
+endif
+	$(call validate_ns)
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode fixture seed-fixture
+
+tp-mongo-showcase-validate-demo: ## Prove the MongoDB showcase validators (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-showcase-validate-demo NS=fixture)
+endif
+	$(call validate_ns)
+	scripts/tp-mongo-showcase.sh --ns $(NS) --run-mode $(or $(RUN_MODE),fixture) validate-demo $(if $(OUT),--out $(OUT),)
 
 # --- Local Development ---
 

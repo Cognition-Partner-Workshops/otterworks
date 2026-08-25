@@ -1,0 +1,45 @@
+name: MongoDB showcase reconciliation
+
+on:
+  workflow_dispatch:
+    inputs:
+      ns:
+        description: Namespace to reconcile
+        required: true
+        type: string
+      base_branch:
+        description: Base branch for remediation
+        required: true
+        default: tp-run/mongodb-20260825T204423Z
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - name: Run MongoDB showcase reconciliation
+        env:
+          MONGODB_ATLAS_URI: ${{ secrets.MONGODB_ATLAS_URI }}
+          OW_TP_MONGO_RECON_WEBHOOK_SECRET: ${{ secrets.OW_TP_MONGO_RECON_WEBHOOK_SECRET }}
+          OW_TP_MONGO_RECON_WEBHOOK_URL: ${{ vars.OW_TP_MONGO_RECON_WEBHOOK_URL }}
+        run: |
+          scripts/tp-mongo-showcase.sh \
+            --ns "${{ inputs.ns }}" \
+            --run-mode live \
+            run-job \
+            --base-branch "${{ inputs.base_branch }}" \
+            --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+      - name: Upload recon report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mongo-showcase-recon-${{ inputs.ns }}
+          path: docs/tech-partnerships/recon/mongo_showcase.${{ inputs.ns }}.recon.json
+          if-no-files-found: error

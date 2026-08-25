@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Annotated
 from uuid import UUID
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Path, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pymongo.errors import PyMongoError
 
+from app import docstore, reports
 from app.config import settings
 from app.db import connect, migrate, reset
 from app.docrepo import DocumentRatingRepository
@@ -48,6 +50,22 @@ class PlanChange(BaseModel):
 class RatingPeriod(BaseModel):
     period_start: date
     period_end: date
+
+
+ESTATE_UNAVAILABLE = {
+    "error": "legacy estate unavailable",
+    "detail": "the Oracle billing estate is not reachable; try again later",
+}
+
+
+def _report_timestamp() -> str:
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _estate_database(ns: str):
+    return docstore.client()[
+        reports.estate_database_name(ns, settings.estate_db_prefix)
+    ]
 
 
 def _rating_response(result) -> dict[str, int | str]:
@@ -105,6 +123,28 @@ def health() -> dict[str, str]:
     except PyMongoError as error:
         raise HTTPException(status_code=503, detail="database unavailable") from error
     return {"status": "healthy", "service": settings.app_name}
+
+
+@app.get("/api/reports/month-end")
+def get_month_end_report(ns: Annotated[str, Query()] = "demo") -> dict:
+    try:
+        report = reports.month_end_report(_estate_database(ns), ns)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except PyMongoError:
+        return JSONResponse(status_code=503, content=ESTATE_UNAVAILABLE)
+    return {**report, "generated_at": _report_timestamp()}
+
+
+@app.get("/api/reports/reconciliation")
+def get_reconciliation_report(ns: Annotated[str, Query()] = "demo") -> dict:
+    try:
+        report = reports.reconciliation_report(_estate_database(ns), ns)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except PyMongoError:
+        return JSONResponse(status_code=503, content=ESTATE_UNAVAILABLE)
+    return {**report, "generated_at": _report_timestamp()}
 
 
 @app.post("/internal/reset", status_code=204)
