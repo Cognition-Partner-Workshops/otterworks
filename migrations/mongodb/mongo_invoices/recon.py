@@ -445,6 +445,10 @@ def main() -> int:
         "NULL amount/quantity/foreign-key quarantine: this namespace's source "
         "rows carry no NULLs in those columns, so the null-attribution check is "
         "0-vs-0 and the branch is covered only by selftest.py",
+        "header_unusable quarantine: every INVOICE_HEADER row in this namespace "
+        "carries a parseable issue date, so no header is quarantined and the "
+        "path that carries its lines into quarantine with it is covered only by "
+        "selftest.py",
     ]
     if not args.empty_input_evidence:
         unverified.append("empty-input no-op semantics (not exercised in this run)")

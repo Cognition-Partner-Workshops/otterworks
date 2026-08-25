@@ -245,7 +245,7 @@
     }
   ],
   "failed_checks": [],
-  "generated_at": "2026-08-25T21:37:33Z",
+  "generated_at": "2026-08-25T21:39:09Z",
   "idempotency_rerun": {
     "evidence": "{\"post_rerun_recomputed\": {\"checksum\": \"88a66751f0b08b476b492105a2efc537\", \"documents\": 18750, \"embedded_lines\": 149963, \"quarantined\": {\"orphan_no_header\": 37}}, \"run_1\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}, \"run_2\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}}",
     "performed": true,
@@ -360,7 +360,8 @@
     "live Atlas recon (this report is run_mode=fixture; the live recompute is run by the orchestrating session in an uncontended window)",
     "invalid_encoding quarantine: the estate's INVOICE_LINE text in this namespace decodes cleanly as UTF-8, so the invalid-byte path is covered only by selftest.py and is not exercised against live source rows",
     "invalid_date quarantine for INVOICE_LINE.INVOICE_DT: no unparseable line date is present in this namespace, so that branch is covered only by selftest.py",
-    "NULL amount/quantity/foreign-key quarantine: this namespace's source rows carry no NULLs in those columns, so the null-attribution check is 0-vs-0 and the branch is covered only by selftest.py"
+    "NULL amount/quantity/foreign-key quarantine: this namespace's source rows carry no NULLs in those columns, so the null-attribution check is 0-vs-0 and the branch is covered only by selftest.py",
+    "header_unusable quarantine: every INVOICE_HEADER row in this namespace carries a parseable issue date, so no header is quarantined and the path that carries its lines into quarantine with it is covered only by selftest.py"
   ],
   "values_recomputed_from_target": true,
   "pre_pr_self_check": [
