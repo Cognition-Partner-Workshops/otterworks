@@ -117,7 +117,7 @@ def target_facts(files, ns: str) -> dict:
         ids.add(doc["_id"])
         legacy_ids.add(doc["legacy_id"])
     nulls = files.count_documents({"$or": [
-        {field: None} for field in
+        {field: {"$type": "null"}} for field in
         ("tenant", "storage_key", "modified_at", "created_at", "size_bytes",
          "name", "mime_type", "folder_id", "owner_id", "version", "is_trashed")
     ]})
