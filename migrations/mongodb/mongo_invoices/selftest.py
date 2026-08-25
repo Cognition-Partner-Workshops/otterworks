@@ -116,6 +116,10 @@ def main() -> int:
           recon.classify(raw_line(invoice_id="inv-missing"), header_ids))
     check("classify-orphan-outranks-null-amount", "orphan_no_header",
           recon.classify(raw_line(invoice_id="inv-missing", amount=None), header_ids))
+    check("classify-header-unusable", "header_unusable",
+          recon.classify(raw_line(), set(), {"inv-1"}))
+    check("classify-null-fk-outranks-header", "null_foreign_key",
+          recon.classify(raw_line(invoice_id=None), set(), {"inv-1"}))
     check("classify-null-amount", "null_amount",
           recon.classify(raw_line(tax_amt=None), header_ids))
     check("classify-null-quantity", "null_quantity",

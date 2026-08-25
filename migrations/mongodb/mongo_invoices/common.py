@@ -49,6 +49,7 @@ MONTHS = {
 
 QUARANTINE_REASONS = (
     "orphan_no_header",
+    "header_unusable",
     "null_amount",
     "null_quantity",
     "null_foreign_key",

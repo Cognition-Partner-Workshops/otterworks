@@ -63,18 +63,34 @@ def manifest_baseline(ns: str) -> dict:
     }
 
 
-def classify(line: dict, header_ids: set) -> str | None:
+def header_defect(header: dict) -> str | None:
+    """Whether this header can carry an invoice document at all."""
+    try:
+        issue_date = common.parse_legacy_date(header["invoice_dt"])
+        common.parse_legacy_date(header["due_dt"])
+    except ValueError as exc:
+        return str(exc)
+    if issue_date is None:
+        return "NULL INVOICE_DT is never defaulted"
+    return None
+
+
+def classify(line: dict, header_ids: set, unusable_header_ids: set = frozenset()
+             ) -> str | None:
     """The disposition the contract requires for one source line.
 
     Returns the quarantine reason a line is owed, or None when the line belongs
     embedded in its header. Derived here from the source row itself so the
     expected embedded count and the expected quarantine breakdown never assume
     orphans are the only exclusion. Mirrors the contract's precedence: a NULL
-    foreign key is not an orphan, and an unresolvable header outranks the
-    row-level defects of a line that has nowhere to go anyway.
+    foreign key is not an orphan, a header the estate cannot represent takes its
+    lines with it, and an unusable header outranks the row-level defects of a
+    line that has nowhere to go anyway.
     """
     if line["invoice_id"] is None:
         return "null_foreign_key"
+    if line["invoice_id"] in unusable_header_ids:
+        return "header_unusable"
     if line["invoice_id"] not in header_ids:
         return "orphan_no_header"
     if line["amount"] is None or line["tax_amt"] is None:
@@ -98,10 +114,22 @@ def oracle_facts(ns: str) -> dict:
     cur.arraysize = 5000
     batch = common.batch_no(ns)
 
-    cur.execute("SELECT COUNT(*) FROM invoice_header WHERE batch_no = :b", b=batch)
-    headers = int(cur.fetchone()[0])
-    cur.execute("SELECT invoice_id FROM invoice_header WHERE batch_no = :b", b=batch)
-    header_ids = {row[0] for row in cur}
+    cur.execute("""
+        SELECT invoice_id, invoice_dt, due_dt FROM invoice_header WHERE batch_no = :b
+    """, b=batch)
+    headers = 0
+    header_ids = set()
+    unusable_header_ids = set()
+    expected_quarantine: dict[str, int] = {}
+    for invoice_id, invoice_dt, due_dt in cur:
+        headers += 1
+        if header_defect({"invoice_dt": invoice_dt, "due_dt": due_dt}) is None:
+            header_ids.add(invoice_id)
+            continue
+        # the header is quarantined in its own right, and takes its lines with it
+        unusable_header_ids.add(invoice_id)
+        expected_quarantine["invalid_date"] = (
+            expected_quarantine.get("invalid_date", 0) + 1)
 
     cur.execute("""
         SELECT line_id, invoice_id, amount, tax_amt, qty, unit_price, invoice_dt,
@@ -117,12 +145,11 @@ def oracle_facts(ns: str) -> dict:
     per_invoice: dict[str, tuple] = {}
     source_pairs = {}
     source_text = {}
-    expected_quarantine: dict[str, int] = {}
     for row in cur:
         line = dict(zip(columns, row))
         lines += 1
         source_pairs[line["line_id"]] = line["amount"]
-        reason = classify(line, header_ids)
+        reason = classify(line, header_ids, unusable_header_ids)
         if reason is not None:
             expected_quarantine[reason] = expected_quarantine.get(reason, 0) + 1
             if reason == "orphan_no_header":
@@ -145,6 +172,7 @@ def oracle_facts(ns: str) -> dict:
     conn.close()
     return {
         "headers": headers,
+        "usable_headers": len(header_ids),
         "lines": lines,
         "orphans": sorted(orphans),
         "embedded_line_ids": embedded_line_ids,
@@ -246,9 +274,11 @@ def main() -> int:
 
     checks: list[dict] = []
 
-    add(checks, "doc-count", src["headers"], doc_count,
-        "COUNT(*) of OW_BILLING.INVOICE_HEADER for the namespace batch vs "
-        "countDocuments on the invoices collection")
+    add(checks, "doc-count", src["usable_headers"], doc_count,
+        "OW_BILLING.INVOICE_HEADER rows for the namespace batch that the estate "
+        "can represent as a document -- a header whose issue date is NULL or "
+        "unparseable is quarantined instead -- vs countDocuments on the "
+        "invoices collection")
 
     deterministic_ids = all(
         doc["_id"] == common.invoice_doc_id(ns, doc["source"]["invoice_id"])

@@ -5,7 +5,7 @@
       "expected": 18750,
       "id": "doc-count",
       "result": "pass",
-      "source_of_truth": "COUNT(*) of OW_BILLING.INVOICE_HEADER for the namespace batch vs countDocuments on the invoices collection"
+      "source_of_truth": "OW_BILLING.INVOICE_HEADER rows for the namespace batch that the estate can represent as a document -- a header whose issue date is NULL or unparseable is quarantined instead -- vs countDocuments on the invoices collection"
     },
     {
       "actual": true,
@@ -245,7 +245,7 @@
     }
   ],
   "failed_checks": [],
-  "generated_at": "2026-08-25T21:24:05Z",
+  "generated_at": "2026-08-25T21:37:33Z",
   "idempotency_rerun": {
     "evidence": "{\"post_rerun_recomputed\": {\"checksum\": \"88a66751f0b08b476b492105a2efc537\", \"documents\": 18750, \"embedded_lines\": 149963, \"quarantined\": {\"orphan_no_header\": 37}}, \"run_1\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}, \"run_2\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}}",
     "performed": true,
@@ -367,7 +367,7 @@
     {
       "check": "NULL and missing attribution cannot fail open",
       "result": "pass",
-      "evidence": "null-attribution is 0-vs-0 for this namespace; selftest.py covers NULL amount, quantity, and foreign-key quarantine"
+      "evidence": "null-attribution is 0-vs-0 for this namespace; selftest.py covers NULL foreign keys and precedence over unusable headers"
     },
     {
       "check": "Namespace references use ow_tp or ow-tp prefixes",
@@ -397,12 +397,12 @@
     {
       "check": "Parity-versus-tolerance decision matches the contract",
       "result": "pass",
-      "evidence": "recon applies the contract's exact counts, Decimal128 checks, orphan set, and checksum"
+      "evidence": "recon applies the contract's exact counts, Decimal128 checks, embedded line set, quarantine disposition, orphan set, and checksum"
     },
     {
       "check": "Idempotency proven by an actual rerun",
       "result": "pass",
-      "evidence": "run3.json and run4.json were supplied to recon and the idempotency check passed"
+      "evidence": "run5.json and run6.json were supplied to recon and the idempotency check passed"
     },
     {
       "check": "Recon values recomputed from target platform",
@@ -412,7 +412,7 @@
     {
       "check": "Unverified or untested paths listed",
       "result": "pass",
-      "evidence": "unverified_paths lists live Atlas recon; selftest.py covers invalid encoding, invalid dates, NULL attribution, extra delimited content, and byte transparency"
+      "evidence": "unverified_paths lists live Atlas recon; selftest.py covers invalid encoding, invalid dates, NULL attribution, extra delimited content, byte transparency, and unusable headers"
     },
     {
       "check": "Recon report kind and artifact path",

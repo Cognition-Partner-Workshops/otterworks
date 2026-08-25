@@ -58,6 +58,7 @@ written to the quarantine collection with one of these reasons:
 - `invalid_encoding`
 - `extra_delimited_fields`
 - `invalid_date`
+- `header_unusable`
 
 Quarantine documents retain source identifiers and parsed values where
 available. NULL amounts, quantities, and foreign keys are never replaced with

@@ -177,6 +177,30 @@ def build_line(ns: str, raw: dict, quarantine: Quarantine):
     return line
 
 
+def header_defect(header: dict) -> str | None:
+    """Why this header cannot carry an invoice document, or None.
+
+    Evaluated before any line is transformed, so a header the estate cannot
+    represent takes its lines with it into quarantine instead of dropping them.
+    """
+    try:
+        issue_date = common.parse_legacy_date(header["invoice_dt"])
+        common.parse_legacy_date(header["due_dt"])
+    except ValueError as exc:
+        return str(exc)
+    if issue_date is None:
+        return "NULL INVOICE_DT is never defaulted"
+    return None
+
+
+def header_source(header: dict) -> dict:
+    """The header row shaped as a quarantine source record."""
+    return {"line_id": header["invoice_id"], "invoice_id": header["invoice_id"],
+            "invoice_no": header["invoice_no"], "cust_id": header["cust_id"],
+            "cust_no": None, "tenant_id": header["tenant_id"],
+            "batch_no": header["batch_no"]}
+
+
 def build_invoice(ns: str, header: dict, lines: list[dict], quarantine: Quarantine):
     """Assemble one invoice document, or quarantine an unusable header."""
     try:
@@ -305,11 +329,20 @@ def main() -> int:
     cur.execute(HEADER_SQL, batch_no=batch_no)
     header_cols = [d[0].lower() for d in cur.description]
     headers = {}
+    unusable_headers = {}
     for row in cur:
         header = row_to_line(row, header_cols)
-        headers[header["invoice_id"]] = header
+        defect = header_defect(header)
+        if defect is None:
+            headers[header["invoice_id"]] = header
+        else:
+            unusable_headers[header["invoice_id"]] = (header, defect)
 
     quarantine = Quarantine(ns)
+    for _, (header, defect) in sorted(unusable_headers.items()):
+        quarantine.add("invalid_date", header_source(header),
+                       {"detail": {"table": common.HEADER_TABLE, "error": defect}})
+
     lines_by_invoice: dict[str, list[dict]] = {}
     embedded_lines = 0
 
@@ -322,6 +355,13 @@ def main() -> int:
             # names a header that does not exist, this line names none at all
             quarantine.add("null_foreign_key", raw,
                            {"detail": {"null_column": "invoice_id"}})
+            continue
+        if raw["invoice_id"] in unusable_headers:
+            # the header cannot cross, so its lines are quarantined alongside it
+            # rather than silently dropped or re-parented
+            quarantine.add("header_unusable", raw,
+                           {"detail": {"table": common.HEADER_TABLE,
+                                       "error": unusable_headers[raw["invoice_id"]][1]}})
             continue
         if raw["invoice_id"] not in headers:
             # never attached to a synthesized or guessed header
@@ -340,6 +380,8 @@ def main() -> int:
     max_lines = 0
     for invoice_id, header in sorted(headers.items()):
         lines = lines_by_invoice.get(invoice_id, [])
+        # headers with a defect were separated out before any line was read, so
+        # build_invoice cannot reject one here
         doc = build_invoice(ns, header, lines, quarantine)
         if doc is None:
             continue
