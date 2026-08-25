@@ -54,6 +54,9 @@ raw_base = os.environ.get("TP_ATLAS_API_BASE", "https://cloud.mongodb.com/api/at
 parsed_base = validate_https_endpoint(raw_base, "TP_ATLAS_API_BASE")
 if parsed_base.hostname != "cloud.mongodb.com":
     raise SystemExit("TP_ATLAS_API_BASE must use cloud.mongodb.com")
+webhook_url = os.environ.get("TP_ATLAS_TEST_WEBHOOK_URL",
+                             "https://webhook.example.com/ow-tp-preflight")
+validate_https_endpoint(webhook_url, "TP_ATLAS_TEST_WEBHOOK_URL")
 base = raw_base.rstrip("/")
 project = os.environ["MONGODB_ATLAS_PROJECT_ID"]
 if not re.fullmatch(r"[A-Za-z0-9_-]+", project):
@@ -398,9 +401,6 @@ def alert_webhook_probe():
         return
     check("alert-config-read", "Read project alert configurations", get,
           f"{base}/groups/{project}/alertConfigs")
-    webhook_url = os.environ.get("TP_ATLAS_TEST_WEBHOOK_URL",
-                                 "https://webhook.example.com/ow-tp-preflight")
-    validate_https_endpoint(webhook_url, "TP_ATLAS_TEST_WEBHOOK_URL")
     body = {
         "eventTypeName": "OUTSIDE_METRIC_THRESHOLD",
         "enabled": False,
