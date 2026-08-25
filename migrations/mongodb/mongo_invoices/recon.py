@@ -63,8 +63,36 @@ def manifest_baseline(ns: str) -> dict:
     }
 
 
+def classify(line: dict, header_ids: set) -> str | None:
+    """The disposition the contract requires for one source line.
+
+    Returns the quarantine reason a line is owed, or None when the line belongs
+    embedded in its header. Derived here from the source row itself so the
+    expected embedded count and the expected quarantine breakdown never assume
+    orphans are the only exclusion. Mirrors the contract's precedence: a NULL
+    foreign key is not an orphan, and an unresolvable header outranks the
+    row-level defects of a line that has nowhere to go anyway.
+    """
+    if line["invoice_id"] is None:
+        return "null_foreign_key"
+    if line["invoice_id"] not in header_ids:
+        return "orphan_no_header"
+    if line["amount"] is None or line["tax_amt"] is None:
+        return "null_amount"
+    if line["qty"] is None or line["unit_price"] is None:
+        return "null_quantity"
+    for field in ("item_desc", "cust_name", "service_period", "gl_acct_csv"):
+        if common.undecodable_hex(line[field]) is not None:
+            return "invalid_encoding"
+    try:
+        common.parse_legacy_date(line["invoice_dt"])
+    except ValueError:
+        return "invalid_date"
+    return None
+
+
 def oracle_facts(ns: str) -> dict:
-    """Recount the source estate at recon time."""
+    """Recount and re-classify the source estate at recon time."""
     conn = common.oracle_connect()
     cur = conn.cursor()
     cur.arraysize = 5000
@@ -72,56 +100,58 @@ def oracle_facts(ns: str) -> dict:
 
     cur.execute("SELECT COUNT(*) FROM invoice_header WHERE batch_no = :b", b=batch)
     headers = int(cur.fetchone()[0])
-    cur.execute("SELECT COUNT(*) FROM invoice_line WHERE batch_no = :b", b=batch)
-    lines = int(cur.fetchone()[0])
+    cur.execute("SELECT invoice_id FROM invoice_header WHERE batch_no = :b", b=batch)
+    header_ids = {row[0] for row in cur}
 
     cur.execute("""
-        SELECT l.line_id
-          FROM invoice_line l
-         WHERE l.batch_no = :b
-           AND NOT EXISTS (SELECT 1 FROM invoice_header h
-                            WHERE h.invoice_id = l.invoice_id)
-    """, b=batch)
-    orphans = sorted(row[0] for row in cur)
-
-    cur.execute("""
-        SELECT l.invoice_id, COUNT(*), SUM(l.amount), SUM(l.tax_amt)
-          FROM invoice_line l
-         WHERE l.batch_no = :b
-           AND EXISTS (SELECT 1 FROM invoice_header h
-                        WHERE h.invoice_id = l.invoice_id)
-         GROUP BY l.invoice_id
-    """, b=batch)
-    per_invoice = {row[0]: (int(row[1]), Decimal(row[2]), Decimal(row[3])) for row in cur}
-
-    cur.execute("SELECT line_id, amount FROM invoice_line WHERE batch_no = :b", b=batch)
-    source_pairs = {row[0]: Decimal(row[1]) for row in cur}
-
-    cur.execute("""
-        SELECT COUNT(*) FROM invoice_line
+        SELECT line_id, invoice_id, amount, tax_amt, qty, unit_price, invoice_dt,
+               item_desc, cust_name, service_period, gl_acct_csv
+          FROM invoice_line
          WHERE batch_no = :b
-           AND (amount IS NULL OR tax_amt IS NULL OR qty IS NULL
-                OR unit_price IS NULL OR invoice_id IS NULL)
     """, b=batch)
-    null_rows = int(cur.fetchone()[0])
+    columns = [d[0].lower() for d in cur.description]
 
-    cur.execute("""
-        SELECT line_id, item_desc FROM invoice_line
-         WHERE batch_no = :b AND item_desc IS NOT NULL
-           AND ROWNUM <= 5000
-    """, b=batch)
-    text_samples = {row[0]: row[1] for row in cur}
+    lines = 0
+    orphans = []
+    embedded_line_ids = set()
+    per_invoice: dict[str, tuple] = {}
+    source_pairs = {}
+    source_text = {}
+    expected_quarantine: dict[str, int] = {}
+    for row in cur:
+        line = dict(zip(columns, row))
+        lines += 1
+        source_pairs[line["line_id"]] = line["amount"]
+        reason = classify(line, header_ids)
+        if reason is not None:
+            expected_quarantine[reason] = expected_quarantine.get(reason, 0) + 1
+            if reason == "orphan_no_header":
+                orphans.append(line["line_id"])
+            continue
+        embedded_line_ids.add(line["line_id"])
+        source_text[line["line_id"]] = line["item_desc"]
+        # a migrated line whose delimited GL content does not fully parse is
+        # attributed in quarantine as well as embedded
+        if common.parse_gl_accounts(line["gl_acct_csv"])[1]:
+            expected_quarantine["extra_delimited_fields"] = (
+                expected_quarantine.get("extra_delimited_fields", 0) + 1)
+        count, amount_total, tax_total = per_invoice.get(
+            line["invoice_id"], (0, ZERO, ZERO))
+        per_invoice[line["invoice_id"]] = (count + 1,
+                                          amount_total + line["amount"],
+                                          tax_total + line["tax_amt"])
 
     cur.close()
     conn.close()
     return {
         "headers": headers,
         "lines": lines,
-        "orphans": orphans,
+        "orphans": sorted(orphans),
+        "embedded_line_ids": embedded_line_ids,
         "per_invoice": per_invoice,
         "source_pairs": source_pairs,
-        "null_rows": null_rows,
-        "text_samples": text_samples,
+        "source_text": source_text,
+        "expected_quarantine": expected_quarantine,
     }
 
 
@@ -193,8 +223,7 @@ def main() -> int:
             tax_total += common.money(line["tax_amt"])
             embedded_pairs.append((line["line_id"], common.money_text(amount)))
             embedded_line_ids.add(line["line_id"])
-            expected_text = src["text_samples"].get(line["line_id"])
-            if expected_text is not None and line.get("item_desc") != expected_text:
+            if line.get("item_desc") != src["source_text"].get(line["line_id"]):
                 text_mismatches.append(line["line_id"])
         per_invoice_actual[doc["source"]["invoice_id"]] = (len(lines), amount_total, tax_total)
         max_lines = max(max_lines, len(lines))
@@ -229,10 +258,21 @@ def main() -> int:
         "every stored _id re-derived as uuid5(namespace, INVOICE_ID) from the "
         "document's own source key")
 
-    embedded_expected = src["lines"] - len(src["orphans"])
-    add(checks, "embedded-lines", embedded_expected, len(embedded_pairs),
-        "source INVOICE_LINE rows with a resolvable header vs the sum of "
-        "embedded line items read back from the collection")
+    add(checks, "embedded-lines", len(src["embedded_line_ids"]), len(embedded_pairs),
+        "source INVOICE_LINE rows the contract requires to be embedded -- every "
+        "row re-classified from the source at recon time, excluding orphans and "
+        "every other quarantine disposition -- vs the sum of embedded line items "
+        "read back from the collection")
+    add(checks, "embedded-line-set", [], sorted(
+        src["embedded_line_ids"].symmetric_difference(embedded_line_ids))[:20],
+        "symmetric difference between the source line ids the contract requires "
+        "to be embedded and the line ids actually embedded in the collection")
+    add(checks, "quarantine-disposition",
+        dict(sorted(src["expected_quarantine"].items())),
+        dict(sorted(quarantine_by_reason.items())),
+        "quarantine reason breakdown re-derived by classifying every source row "
+        "against the contract vs the reasons actually stored in the quarantine "
+        "collection")
 
     add(checks, "orphans-quarantined", src["orphans"], actual_orphans,
         "Oracle anti-join for INVOICE_LINE rows without an INVOICE_HEADER vs "
@@ -280,19 +320,22 @@ def main() -> int:
         "lines plus the quarantined lines held in the document store")
     add(checks, "checksum-source-recompute", checksum_of(
         (line_id, common.money_text(amount))
-        for line_id, amount in src["source_pairs"].items()), full_checksum,
+        for line_id, amount in src["source_pairs"].items()
+        if amount is not None), full_checksum,
         "the same checksum recomputed directly from Oracle at recon time, "
         "independent of the baseline document")
 
-    add(checks, "null-attribution", src["null_rows"],
+    add(checks, "null-attribution",
+        sum(src["expected_quarantine"].get(reason, 0)
+            for reason in ("null_amount", "null_quantity", "null_foreign_key")),
         sum(quarantine_by_reason.get(reason, 0)
             for reason in ("null_amount", "null_quantity", "null_foreign_key")),
         "source rows with a NULL amount, quantity or foreign key vs quarantined "
         "documents carrying a null reason code: a NULL is never defaulted to zero")
 
     add(checks, "byte-transparency", [], sorted(text_mismatches)[:20],
-        "free-text line descriptions compared byte-for-byte against the source "
-        "rows for a 5000-row sample")
+        "every embedded line's free-text description compared byte-for-byte "
+        "against its source row")
 
     checks.append({
         "id": "bounded-line-model",
@@ -372,7 +415,6 @@ def main() -> int:
         "NULL amount/quantity/foreign-key quarantine: this namespace's source "
         "rows carry no NULLs in those columns, so the null-attribution check is "
         "0-vs-0 and the branch is covered only by selftest.py",
-        "byte-transparency beyond the 5000-row comparison sample",
     ]
     if not args.empty_input_evidence:
         unverified.append("empty-input no-op semantics (not exercised in this run)")

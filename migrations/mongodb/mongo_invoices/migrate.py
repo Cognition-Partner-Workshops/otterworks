@@ -317,6 +317,12 @@ def main() -> int:
     line_cols = [d[0].lower() for d in cur.description]
     for row in cur:
         raw = row_to_line(row, line_cols)
+        if raw["invoice_id"] is None:
+            # a missing foreign key is its own defect, not an orphan: an orphan
+            # names a header that does not exist, this line names none at all
+            quarantine.add("null_foreign_key", raw,
+                           {"detail": {"null_column": "invoice_id"}})
+            continue
         if raw["invoice_id"] not in headers:
             # never attached to a synthesized or guessed header
             quarantine.add("orphan_no_header", raw)

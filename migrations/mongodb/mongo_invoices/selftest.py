@@ -16,6 +16,7 @@ from decimal import Decimal
 
 import common
 import migrate
+import recon
 
 FAILURES: list[str] = []
 
@@ -104,6 +105,25 @@ def main() -> int:
                         amount=Decimal("0.21"))
     check("money-exact-amount", Decimal("0.21"), line["amount"].to_decimal())
     check("money-exact-unit-price", Decimal("0.0710"), line["unit_price"].to_decimal())
+
+    # recon's own classification of a source row must match the dispositions the
+    # migration applies, including the precedence between them
+    header_ids = {"inv-1"}
+    check("classify-embedded", None, recon.classify(raw_line(), header_ids))
+    check("classify-null-fk", "null_foreign_key",
+          recon.classify(raw_line(invoice_id=None), header_ids))
+    check("classify-orphan", "orphan_no_header",
+          recon.classify(raw_line(invoice_id="inv-missing"), header_ids))
+    check("classify-orphan-outranks-null-amount", "orphan_no_header",
+          recon.classify(raw_line(invoice_id="inv-missing", amount=None), header_ids))
+    check("classify-null-amount", "null_amount",
+          recon.classify(raw_line(tax_amt=None), header_ids))
+    check("classify-null-quantity", "null_quantity",
+          recon.classify(raw_line(qty=None), header_ids))
+    check("classify-invalid-encoding", "invalid_encoding",
+          recon.classify(raw_line(item_desc=undecodable), header_ids))
+    check("classify-invalid-date", "invalid_date",
+          recon.classify(raw_line(invoice_dt="12-13-201"), header_ids))
 
     # ids are derived, so the same source key always yields the same document id
     check("id-deterministic",

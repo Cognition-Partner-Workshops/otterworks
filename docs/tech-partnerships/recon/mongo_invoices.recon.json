@@ -19,7 +19,25 @@
       "expected": 149963,
       "id": "embedded-lines",
       "result": "pass",
-      "source_of_truth": "source INVOICE_LINE rows with a resolvable header vs the sum of embedded line items read back from the collection"
+      "source_of_truth": "source INVOICE_LINE rows the contract requires to be embedded -- every row re-classified from the source at recon time, excluding orphans and every other quarantine disposition -- vs the sum of embedded line items read back from the collection"
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "id": "embedded-line-set",
+      "result": "pass",
+      "source_of_truth": "symmetric difference between the source line ids the contract requires to be embedded and the line ids actually embedded in the collection"
+    },
+    {
+      "actual": {
+        "orphan_no_header": 37
+      },
+      "expected": {
+        "orphan_no_header": 37
+      },
+      "id": "quarantine-disposition",
+      "result": "pass",
+      "source_of_truth": "quarantine reason breakdown re-derived by classifying every source row against the contract vs the reasons actually stored in the quarantine collection"
     },
     {
       "actual": [
@@ -174,7 +192,7 @@
       "expected": [],
       "id": "byte-transparency",
       "result": "pass",
-      "source_of_truth": "free-text line descriptions compared byte-for-byte against the source rows for a 5000-row sample"
+      "source_of_truth": "every embedded line's free-text description compared byte-for-byte against its source row"
     },
     {
       "actual": {
@@ -227,7 +245,7 @@
     }
   ],
   "failed_checks": [],
-  "generated_at": "2026-08-25T21:13:27Z",
+  "generated_at": "2026-08-25T21:24:05Z",
   "idempotency_rerun": {
     "evidence": "{\"post_rerun_recomputed\": {\"checksum\": \"88a66751f0b08b476b492105a2efc537\", \"documents\": 18750, \"embedded_lines\": 149963, \"quarantined\": {\"orphan_no_header\": 37}}, \"run_1\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}, \"run_2\": {\"embedded_lines\": 149963, \"quarantined_by_reason\": {\"orphan_no_header\": 37}, \"source\": {\"headers\": 18750, \"lines\": 150000}, \"written\": {\"invoices\": 18750, \"quarantined\": 37}}}",
     "performed": true,
@@ -342,8 +360,7 @@
     "live Atlas recon (this report is run_mode=fixture; the live recompute is run by the orchestrating session in an uncontended window)",
     "invalid_encoding quarantine: the estate's INVOICE_LINE text in this namespace decodes cleanly as UTF-8, so the invalid-byte path is covered only by selftest.py and is not exercised against live source rows",
     "invalid_date quarantine for INVOICE_LINE.INVOICE_DT: no unparseable line date is present in this namespace, so that branch is covered only by selftest.py",
-    "NULL amount/quantity/foreign-key quarantine: this namespace's source rows carry no NULLs in those columns, so the null-attribution check is 0-vs-0 and the branch is covered only by selftest.py",
-    "byte-transparency beyond the 5000-row comparison sample"
+    "NULL amount/quantity/foreign-key quarantine: this namespace's source rows carry no NULLs in those columns, so the null-attribution check is 0-vs-0 and the branch is covered only by selftest.py"
   ],
   "values_recomputed_from_target": true,
   "pre_pr_self_check": [
@@ -385,17 +402,17 @@
     {
       "check": "Idempotency proven by an actual rerun",
       "result": "pass",
-      "evidence": "run1.json and run2.json were supplied to recon and the idempotency check passed"
+      "evidence": "run3.json and run4.json were supplied to recon and the idempotency check passed"
     },
     {
       "check": "Recon values recomputed from target platform",
       "result": "pass",
-      "evidence": "values_recomputed_from_target=true; counts, orphan set, and checksum were recomputed from MongoDB"
+      "evidence": "values_recomputed_from_target=true; counts, embedded line set, quarantine disposition, and checksum were recomputed from MongoDB"
     },
     {
       "check": "Unverified or untested paths listed",
       "result": "pass",
-      "evidence": "unverified_paths lists live Atlas recon and byte transparency beyond the sample; selftest.py covers invalid encoding, invalid dates, NULL attribution, and extra delimited content"
+      "evidence": "unverified_paths lists live Atlas recon; selftest.py covers invalid encoding, invalid dates, NULL attribution, extra delimited content, and byte transparency"
     },
     {
       "check": "Recon report kind and artifact path",
@@ -410,7 +427,7 @@
     {
       "check": "tp-smoke is green",
       "result": "pass",
-      "evidence": "previously completed make tp-smoke with tp-smoke: all checks passed; no smoke-covered code changed in this follow-up"
+      "evidence": "make tp-smoke completed with tp-smoke: all checks passed"
     }
   ]
 }
