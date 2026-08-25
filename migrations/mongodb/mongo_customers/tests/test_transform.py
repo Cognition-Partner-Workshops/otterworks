@@ -144,6 +144,16 @@ def test_attribute_entry_keeps_unparsable_created_dt_verbatim():
     assert "created_dt" not in entry
 
 
+@pytest.mark.parametrize("created_dt", ["31-FEB-24", "04-JUL-19"])
+def test_validator_covers_attribute_entry_keys(created_dt):
+    entry, error = build_attribute_entry("blue", "STR", created_dt)
+    assert error is None
+    properties = customers_validator()["$jsonSchema"]["properties"]["attributes"][
+        "additionalProperties"
+    ]["items"]["properties"]
+    assert set(entry) <= set(properties)
+
+
 def test_null_attribute_value_is_attributed():
     entry, error = build_attribute_entry(None, "STR", "04-JUL-19")
     assert entry is None and error == "null_attribute_value"

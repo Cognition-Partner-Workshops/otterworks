@@ -138,6 +138,7 @@ def customers_validator() -> dict:
                                 "value": {"bsonType": "string"},
                                 "attr_type": {"bsonType": "string"},
                                 "created_dt": {"bsonType": "date"},
+                                "created_dt_raw": {"bsonType": "string"},
                             },
                         },
                     },
