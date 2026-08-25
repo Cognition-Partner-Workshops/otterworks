@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [ "$#" -lt 1 ]; then
-  echo "usage: $0 migrate|recon [args...]" >&2
+  echo "usage: $0 migrate|recon|selftest [args...]" >&2
   exit 2
 fi
 
@@ -11,12 +11,12 @@ repo_root="$(cd -- "$script_dir/../../.." && pwd)"
 venv_python="$repo_root/.venv-tp-mongo/bin/python"
 
 case "$1" in
-  migrate|recon)
+  migrate|recon|selftest)
     action="$1"
     shift
     ;;
   *)
-    echo "usage: $0 migrate|recon [args...]" >&2
+    echo "usage: $0 migrate|recon|selftest [args...]" >&2
     exit 2
     ;;
 esac

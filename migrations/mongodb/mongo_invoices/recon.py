@@ -364,10 +364,14 @@ def main() -> int:
         "live Atlas recon (this report is run_mode=fixture; the live recompute is "
         "run by the orchestrating session in an uncontended window)",
         "invalid_encoding quarantine: the estate's INVOICE_LINE text in this "
-        "namespace decodes cleanly as UTF-8, so the invalid-byte path is "
-        "implemented and unit-exercised but not triggered by this source set",
+        "namespace decodes cleanly as UTF-8, so the invalid-byte path is covered "
+        "only by selftest.py and is not exercised against live source rows",
         "invalid_date quarantine for INVOICE_LINE.INVOICE_DT: no unparseable line "
-        "date is present in this namespace",
+        "date is present in this namespace, so that branch is covered only by "
+        "selftest.py",
+        "NULL amount/quantity/foreign-key quarantine: this namespace's source "
+        "rows carry no NULLs in those columns, so the null-attribution check is "
+        "0-vs-0 and the branch is covered only by selftest.py",
         "byte-transparency beyond the 5000-row comparison sample",
     ]
     if not args.empty_input_evidence:

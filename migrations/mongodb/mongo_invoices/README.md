@@ -88,5 +88,11 @@ migrations/mongodb/mongo_invoices/run.sh recon \
   --empty-input-evidence /home/ubuntu/tp-evidence/empty-input.json
 ```
 
+Run the pure transform self-test. It does not connect to Oracle or MongoDB:
+
+```bash
+migrations/mongodb/mongo_invoices/run.sh selftest
+```
+
 An empty source namespace is a no-op: existing target documents remain
 untouched and no collection is created solely by the empty run.
