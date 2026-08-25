@@ -77,8 +77,10 @@ def oracle_connect(args):
 
 def discover_batch_no(cur, ns: str):
     """The conversion batch that owns this namespace's slice of the estate."""
+    # SUBSTR avoids treating namespace characters like `_` and `%` as wildcards.
     cur.execute("""SELECT DISTINCT conversion_batch_no FROM customer_master
-                    WHERE cust_no LIKE :prefix""", prefix=f"{ns.upper()}-%")
+                    WHERE SUBSTR(cust_no, 1, LENGTH(:prefix)) = :prefix""",
+                prefix=f"{ns.upper()}-")
     batches = [int(r[0]) for r in cur.fetchall() if r[0] is not None]
     if len(batches) > 1:
         raise SystemExit(f"ambiguous namespace slice: batches {sorted(batches)}")

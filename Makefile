@@ -155,7 +155,7 @@ endif
 		$(foreach s,$(RUN_SUMMARIES),--run-summary $(s))
 
 mongo-customers-test: ## Unit-test the mongo_customers transform (no cluster, no Oracle)
-	uv run --no-project --with pymongo==4.10.1 --with pytest==8.3.3 \
+	uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with pytest==8.3.3 \
 		python -m pytest $(MONGO_CUSTOMERS_DIR)/tests -q
 
 # --- Local Development ---

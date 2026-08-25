@@ -15,6 +15,7 @@ from bson import Decimal128
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from migrate import discover_batch_no  # noqa: E402
 from schema import LEGACY_COLUMNS, MODELLED_COLUMNS, customers_validator  # noqa: E402
 from transform import (ID_NAMESPACE, build_attribute_entry,  # noqa: E402
                        build_document, decode_text, document_id, parse_csv_list,
@@ -187,3 +188,22 @@ def test_validator_rejects_the_two_legacy_shapes_by_construction():
     schema = customers_validator()["$jsonSchema"]
     assert schema["properties"]["signup_dt"]["bsonType"] == "date"
     assert "tax_region_override" not in schema["properties"]
+
+
+def test_discover_batch_no_uses_literal_prefix_matching():
+    class Cursor:
+        def __init__(self):
+            self.statement = None
+            self.binds = None
+
+        def execute(self, statement, **binds):
+            self.statement = statement
+            self.binds = binds
+
+        def fetchall(self):
+            return [(BATCH,)]
+
+    cursor = Cursor()
+    assert discover_batch_no(cursor, "demo") == BATCH
+    assert "LIKE" not in cursor.statement.upper()
+    assert "SUBSTR(cust_no, 1, LENGTH(" in cursor.statement
