@@ -303,7 +303,7 @@
     "by_reason": {},
     "total": 0
   },
-  "run_mode": "fixture",
+  "run_mode": "live",
   "self_check": [
     {
       "evidence": "owner_id, version_number and both timestamps are required per contract; a NULL quarantines the record with reason null_required_field and is never defaulted (migrate_documents.py --self-test covers document, version and snapshot rows).",

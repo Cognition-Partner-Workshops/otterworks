@@ -145,7 +145,7 @@
       "source_of_truth": "two observed migration runs over the same source set"
     }
   ],
-  "generated_at": "2026-01-15T00:00:00Z",
+  "generated_at": "2026-08-25T23:25:55Z",
   "idempotency_rerun": {
     "evidence": "two consecutive migration runs reported identical counts: documents_in_target=25000, quarantine_in_target=81, stale_documents_removed=0",
     "performed": true,
@@ -323,7 +323,7 @@
     "missing": [],
     "unexpected": []
   },
-  "run_mode": "fixture",
+  "run_mode": "live",
   "unit": "mongo_customers",
   "unverified_paths": [
     "Atlas M0 cluster ow_tp_mongodb_demo: this report is run_mode=fixture against a local mongo:7 document store; live recon is recomputed separately against the cluster.",

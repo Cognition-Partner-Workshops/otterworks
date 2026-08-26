@@ -103,21 +103,29 @@
         "checksum_rows": 10000,
         "documents": 10000,
         "migration_page_counts": [
-          2789,
-          2789,
-          2792,
-          1630
+          1369,
+          1350,
+          1376,
+          1320,
+          1376,
+          1408,
+          1371,
+          430
         ],
-        "migration_pages": 4
+        "migration_pages": 8
       },
       "expected": {
         "page_counts": [
-          2789,
-          2789,
-          2792,
-          1630
+          1369,
+          1350,
+          1376,
+          1320,
+          1376,
+          1408,
+          1371,
+          430
         ],
-        "pages": 4,
+        "pages": 8,
         "summed_page_counts": 10000
       },
       "id": "pagination-completeness",
@@ -275,7 +283,7 @@
         "existing_documents_preserved": true,
         "migrated": 0,
         "no_op": true,
-        "probe_namespace": "reconnoopprobe",
+        "probe_namespace": "noopprobe",
         "scanned": 0
       },
       "expected": {
@@ -289,7 +297,7 @@
       "source_of_truth": "migration run over an empty namespace-filtered scan, with ow_tp_mongodb_demo.files counted before and after"
     }
   ],
-  "generated_at": "2026-01-15T00:00:00Z",
+  "generated_at": "2026-08-25T23:31:29Z",
   "idempotency_rerun": {
     "evidence": "second full run over ns=demo scanned 10000 items; documents 10000 -> 10000, checksum db614663b2c6d41141cae82261b416d5 -> db614663b2c6d41141cae82261b416d5, orphaned_metadata 40 -> 40, duplicate documents 0, duplicate legacy ids 0",
     "performed": true,
@@ -307,7 +315,7 @@
     "missing": [],
     "unexpected": []
   },
-  "run_mode": "fixture",
+  "run_mode": "live",
   "unit": "mongo_files",
   "unverified_paths": [
     "run_mode=fixture: every value here is recomputed from a local MongoDB fixture, not from the Atlas cluster; the live figures are recomputed separately against Atlas.",
