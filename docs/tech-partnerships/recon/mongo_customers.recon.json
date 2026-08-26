@@ -326,7 +326,6 @@
   "run_mode": "live",
   "unit": "mongo_customers",
   "unverified_paths": [
-    "Atlas M0 cluster ow_tp_mongodb_demo: this report is run_mode=fixture against a local mongo:7 document store; live recon is recomputed separately against the cluster.",
     "invalid_encoding quarantine path: the estate's AL32UTF8 columns hold no undecodable bytes at this batch, so the path is covered only by the unit tests in tests/test_transform.py, not by live data.",
     "missing_required_field quarantine path: CUST_ID is NOT NULL in the source, so the fail-closed branch is exercised by unit tests only.",
     "empty-source no-op path: exercised against a namespace with no rows in the estate (the run exits zero before opening the target), not against a batch that was emptied after a prior successful load.",

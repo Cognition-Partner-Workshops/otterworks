@@ -386,7 +386,6 @@
   },
   "unit": "mongo_documents",
   "unverified_paths": [
-    "live MongoDB Atlas run: this report is run_mode fixture against a local MongoDB 7 deployment; the live reconciliation is recomputed separately in an uncontended window.",
     "quarantine of malformed source records is not exercised by this estate (every source column is NOT NULL and decodes as UTF-8); the policy paths (null owner/version/timestamp, invalid UTF-8, undecodable snapshot state, unbounded version array, extra source columns) are proven by `migrate_documents.py --self-test` instead of by production rows.",
     "empty-source no-op is proven against an empty namespace, not against the seeded ns=demo estate."
   ],

@@ -318,7 +318,6 @@
   "run_mode": "live",
   "unit": "mongo_files",
   "unverified_paths": [
-    "run_mode=fixture: every value here is recomputed from a local MongoDB fixture, not from the Atlas cluster; the live figures are recomputed separately against Atlas.",
     "anomaly missing_hours (s3.data-lake/events/demo/): the S3 event lake is outside this workload's document model, so no MongoDB unit reads it and this anomaly is uncovered here by contract.",
     "invalid_encoding and the missing_tenant/missing_storage_key/missing_timestamp/invalid_timestamp quarantine reasons are exercised through migrate.py --self-test: the file-service's own metadata holds no such items, so no quarantine document exists in the store to count.",
     "DynamoDB attribute types absent from this table (B/SS/NS/BS, nested L/M) are mapped and asserted in migrate.py --self-test only."
