@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean tp-mongo-migrate-customers tp-mongo-invoices dbx-showcase dbx-showcase-help tp-legacy-pain
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean tp-mongo-migrate-customers tp-mongo-invoices tp-mongo-recon dbx-showcase dbx-showcase-help tp-legacy-pain
 SHELL := /bin/bash
 
 help: ## Show this help
@@ -36,6 +36,13 @@ ifndef NS
 endif
 	$(call validate_ns)
 	NS=$(NS) DB_PORT=$(ORACLE_BILLING_DB_PORT) scripts/tp-mongo-migrate-customers.sh
+
+tp-mongo-recon: ## Reconcile Atlas ow_tp_<NS> against Oracle and the seed manifest (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-recon NS=demo1)
+endif
+	$(call validate_ns)
+	ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 python3 scripts/tp_mongo/recon.py report --ns $(NS)
 
 tp-fixture-land: ## Land source artifacts in the local Databricks transport fixture (NS=<ns>)
 	python3 scripts/tp_databricks/local_fixture.py land --ns $${NS:-fixture} --source $${FIXTURE_SOURCE:-etl/legacy-extra}
