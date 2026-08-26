@@ -301,11 +301,14 @@ def recompute_from_target(db, batch_no):
             {"$group": {"_id": "$scope", "count": {"$sum": 1}}},
         ])
     }
+    line_rows = quarantine.count_documents(
+        {**scope, "scope": "row", "source.table": "INVOICE_LINE"})
     return {
         "invoice_documents": totals["invoices"],
         "embedded_lines": totals["lines"],
         "max_lines_per_invoice": totals["max_lines"] or 0,
         "quarantine_rows": by_scope.get("row", 0),
+        "quarantine_line_rows": line_rows,
         "quarantine_fields": by_scope.get("field", 0),
         "quarantine_by_reason": dict(sorted(by_reason.items())),
     }
@@ -386,7 +389,7 @@ def build_report(manifest, namespace, batch_no, first, second, before, after,
         if a["kind"] == "orphaned_rows"
         and a["target"] == "oracle.OW_BILLING.INVOICE_LINE")
     actual_orphans = after["quarantine_by_reason"].get("ORPHAN_LINE_NO_HEADER", 0)
-    accounted = after["embedded_lines"] + after["quarantine_rows"]
+    accounted = after["embedded_lines"] + after["quarantine_line_rows"]
 
     def check(cid, expected, actual, source):
         return {"id": cid, "expected": expected, "actual": actual,
@@ -398,7 +401,8 @@ def build_report(manifest, namespace, batch_no, first, second, before, after,
               "testdata/legacy/manifests/%s.json vs Atlas ow_tp_%s.invoices"
               % (namespace, namespace)),
         check("line_conservation", expected_lines, accounted,
-              "manifest INVOICE_LINE rows vs embedded lines + quarantined rows in Atlas"),
+              "manifest INVOICE_LINE rows vs embedded lines + quarantined "
+              "INVOICE_LINE rows in Atlas"),
         check("orphan_lines_quarantined", expected_orphans, actual_orphans,
               "manifest orphaned_rows anomaly vs ORPHAN_LINE_NO_HEADER in Atlas"),
         check("no_line_lost_or_duplicated", 0,
@@ -492,11 +496,14 @@ def main():
         raise SystemExit("MONGODB_ATLAS_URI is required")
 
     revoke = ensure_access_list(f"otterworks {UNIT} {args.ns} {uuid.uuid4().hex}")
-    connection = oracledb.connect(user=args.oracle_user, password=args.oracle_password,
-                                  host=args.oracle_host, port=args.oracle_port,
-                                  service_name=args.oracle_service)
-    client = MongoClient(uri, serverSelectionTimeoutMS=20000)
+    connection = None
+    client = None
     try:
+        connection = oracledb.connect(user=args.oracle_user,
+                                      password=args.oracle_password,
+                                      host=args.oracle_host, port=args.oracle_port,
+                                      service_name=args.oracle_service)
+        client = MongoClient(uri, serverSelectionTimeoutMS=20000)
         cursor = connection.cursor()
         db = client[database]
         first = migrate(db, cursor, args.batch_no, "run 1")
@@ -510,8 +517,10 @@ def main():
             after = recompute_from_target(db, args.batch_no)
             print(f"[{label}] recomputed from Atlas: {after}")
     finally:
-        client.close()
-        connection.close()
+        if client is not None:
+            client.close()
+        if connection is not None:
+            connection.close()
         revoke()
 
     unverified = [

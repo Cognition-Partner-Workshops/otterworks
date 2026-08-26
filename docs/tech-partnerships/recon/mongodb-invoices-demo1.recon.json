@@ -12,7 +12,7 @@
       "expected": 150000,
       "id": "line_conservation",
       "result": "pass",
-      "source_of_truth": "manifest INVOICE_LINE rows vs embedded lines + quarantined rows in Atlas"
+      "source_of_truth": "manifest INVOICE_LINE rows vs embedded lines + quarantined INVOICE_LINE rows in Atlas"
     },
     {
       "actual": 37,
@@ -67,6 +67,7 @@
         "ORPHAN_LINE_NO_HEADER": 37
       },
       "quarantine_fields": 0,
+      "quarantine_line_rows": 37,
       "quarantine_rows": 37
     },
     "recomputed_after_run_2": {
@@ -77,6 +78,7 @@
         "ORPHAN_LINE_NO_HEADER": 37
       },
       "quarantine_fields": 0,
+      "quarantine_line_rows": 37,
       "quarantine_rows": 37
     },
     "run_1": {
@@ -119,7 +121,7 @@
       "database": "ow_tp_demo1"
     }
   },
-  "generated_at": "2026-08-26T15:36:21Z",
+  "generated_at": "2026-08-26T15:45:38Z",
   "idempotency_rerun": {
     "evidence": "The migration ran twice against the same batch (23746131). Recounted from Atlas: invoices 18750 -> 18750, embedded lines 149963 -> 149963, quarantine records 37 -> 37.",
     "performed": true,
