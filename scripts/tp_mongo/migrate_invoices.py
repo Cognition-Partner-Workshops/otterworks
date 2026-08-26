@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import ipaddress
 import json
 import os
@@ -91,6 +92,12 @@ def split_gl_accounts(raw):
     if not all(t.isdigit() for t in tokens):
         return None, "NON_NUMERIC_ACCOUNT"
     return tokens, None
+
+
+def content_fingerprint(row):
+    """Stable identity for a row that has no usable key of its own."""
+    payload = json.dumps(row, sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode()).hexdigest()[:32]
 
 
 def as_float(value):
@@ -226,7 +233,7 @@ def read_source(cursor, batch_no):
         if not raw["invoice_id"]:
             stats["header_rows_quarantined"] += 1
             quarantine.row("INVOICE_HEADER", "MISSING_REQUIRED_KEY_INVOICE_ID",
-                           raw, f"missing-invoice-id:{stats['header_rows_read']}")
+                           raw, f"missing-invoice-id:{content_fingerprint(raw)}")
             continue
         headers[raw["invoice_id"]] = raw
 
@@ -242,7 +249,7 @@ def read_source(cursor, batch_no):
             stats["line_rows_quarantined"] += 1
             stats[f"line_rows_quarantined_missing_{missing.lower()}"] += 1
             quarantine.row("INVOICE_LINE", f"MISSING_REQUIRED_KEY_{missing}", raw,
-                           line_id or f"missing-line-id:{stats['line_rows_read']}")
+                           line_id or f"missing-line-id:{content_fingerprint(raw)}")
             continue
         header = headers.get(invoice_id)
         if header is None:
