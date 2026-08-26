@@ -1,0 +1,142 @@
+{
+  "checks": [
+    {
+      "actual": 25000,
+      "expected": 25000,
+      "id": "customer-documents",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers"
+    },
+    {
+      "actual": 8333,
+      "expected": 8333,
+      "id": "eav-rows-accounted",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers.attributes + quarantine"
+    },
+    {
+      "actual": 50,
+      "expected": 50,
+      "id": "invalid-date-quarantine",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers_quarantine"
+    },
+    {
+      "actual": 31,
+      "expected": 31,
+      "id": "malformed-csv-quarantine",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers_quarantine"
+    },
+    {
+      "actual": 0,
+      "expected": 0,
+      "id": "missing-required-key-rows",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers_quarantine"
+    },
+    {
+      "actual": 50,
+      "expected": 50,
+      "id": "documents-missing-signup-dt",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers"
+    },
+    {
+      "actual": 0,
+      "expected": 0,
+      "id": "no-null-valued-fields",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers"
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "id": "no-always-empty-udf-or-flag-keys",
+      "result": "pass",
+      "source_of_truth": "mongodb ow_tp_demo1.customers key universe"
+    }
+  ],
+  "generated_at": "2026-08-26T15:43:21Z",
+  "idempotency_rerun": {
+    "evidence": "migration run twice against the same source batch; sha256 over canonical BSON of every customers + customers_quarantine document: before=00d140e1bbb49d632b62c4687511465ab81a9d596a29c8ced1c0a4f005a9ca14 after=00d140e1bbb49d632b62c4687511465ab81a9d596a29c8ced1c0a4f005a9ca14",
+    "performed": true,
+    "result": "pass"
+  },
+  "kind": "recon-report",
+  "measured": {
+    "attribute_values": 8333,
+    "docs_missing_signup_dt": 50,
+    "docs_with_null_valued_fields": 0,
+    "docs_with_promo_codes": 16612,
+    "docs_with_related_acct_ids": 19942,
+    "documents": 25000,
+    "documents_with_attributes": 7115,
+    "quarantine_by_reason": {
+      "INVALID_DATE": 50,
+      "MALFORMED_CSV": 31
+    },
+    "quarantine_total": 81,
+    "top_level_keys": [
+      "_id",
+      "_migration",
+      "addresses",
+      "attributes",
+      "created_by",
+      "created_dt",
+      "credit_hold_yn",
+      "credit_limit_amt",
+      "cur_bal_amt",
+      "cust_name",
+      "cust_name_upper",
+      "cust_no",
+      "cust_seq_no",
+      "cust_type_cd",
+      "emails",
+      "last_activity_dt",
+      "legacy_sys_key",
+      "legal_name",
+      "mainframe_acct_no",
+      "past_due_amt",
+      "phones",
+      "promo_codes",
+      "region_cd",
+      "related_acct_ids",
+      "row_version_no",
+      "segment_cd",
+      "signup_dt",
+      "status_cd",
+      "sub_status_cd",
+      "tax_exempt_yn",
+      "tenant_id",
+      "updated_by",
+      "updated_dt",
+      "vip_yn",
+      "ytd_billed_amt"
+    ]
+  },
+  "namespace": "demo1",
+  "planted_anomaly_detections": {
+    "actual_set": [
+      "dirty_dates:50",
+      "malformed_csv_lists:31"
+    ],
+    "expected_set": [
+      "dirty_dates:50",
+      "malformed_csv_lists:31"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "run_mode": "live",
+  "unit": "mongodb-customer-master",
+  "unverified_paths": [
+    "MISSING_REQUIRED_KEY row-level quarantine: rule implemented and reported, but the source batch holds no row without CUST_ID, so the path is unexercised on live data.",
+    "EAV_NO_CUSTOMER quarantine: rule implemented and reported, but every in-scope ENTITY_ATTR_VALUE row resolves to a customer in this batch, so the orphan branch is unexercised on live data.",
+    "EAV_UNSUPPORTED_TYPE quarantine: every in-scope ENTITY_ATTR_VALUE row carries ATTR_TYPE='STR', so the non-string branch is unexercised on live data.",
+    "UDF_01..40 / UDF_AMT_01..10 / UDF_DT_01..10 / FLAG_01..20 and the mailing-address, PHONE3/PHONE4, EMAIL_2/EMAIL_3, DBA_NAME, CONTACT_NOTES and TERMINATE_DT columns are NULL for every row in this batch: their optional-field and date-parsing branches are implemented but unexercised on live data.",
+    "ENTITY_ATTR_VALUE.CREATED_DT (a legacy row-audit string) and ATTR_TYPE are not carried onto the customer document; only the attribute name and raw value are folded.",
+    "Only ENTITY_TYPE='CUSTOMER' EAV rows are in scope for this unit; other entity types are out of scope and untouched."
+  ],
+  "values_recomputed_from_target": true
+}
