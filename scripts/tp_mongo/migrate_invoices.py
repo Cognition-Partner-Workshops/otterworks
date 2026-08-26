@@ -170,9 +170,21 @@ def build_line(raw, header, quarantine, stats):
         "amount": as_float(raw["amount"]),
         "tax_amt": as_float(raw["tax_amt"]),
         "service_period": raw["service_period"],
-        "posted": raw["posted_yn"] == "Y",
         "src_system": raw["src_system"],
     }
+
+    # posted_yn is three-valued in the source: Y, N, and NULL (unknown). An
+    # unknown flag is left absent rather than asserted as "not posted".
+    posted = {"Y": True, "N": False}.get(
+        (raw["posted_yn"] or "").strip().upper())
+    if posted is not None:
+        line["posted"] = posted
+    elif raw["posted_yn"] is None or not str(raw["posted_yn"]).strip():
+        stats["line_posted_flag_unknown"] += 1
+    else:
+        stats["line_posted_field_quarantined"] += 1
+        quarantine.field("INVOICE_LINE", "UNUSABLE_POSTED_FLAG",
+                         line_id, "posted_yn", raw["posted_yn"])
 
     invoice_dt, reason = parse_legacy_date(raw["invoice_dt"])
     if reason is None:

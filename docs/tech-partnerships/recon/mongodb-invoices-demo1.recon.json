@@ -89,6 +89,7 @@
       "quarantine_rows": 37,
       "stats": {
         "header_rows_read": 18750,
+        "line_posted_flag_unknown": 29806,
         "line_rows_quarantined": 37,
         "line_rows_quarantined_orphan": 37,
         "line_rows_read": 150000,
@@ -103,6 +104,7 @@
       "quarantine_rows": 37,
       "stats": {
         "header_rows_read": 18750,
+        "line_posted_flag_unknown": 29806,
         "line_rows_quarantined": 37,
         "line_rows_quarantined_orphan": 37,
         "line_rows_read": 150000,
@@ -121,7 +123,7 @@
       "database": "ow_tp_demo1"
     }
   },
-  "generated_at": "2026-08-26T15:53:18Z",
+  "generated_at": "2026-08-26T16:03:12Z",
   "idempotency_rerun": {
     "evidence": "The migration ran twice against the same batch (23746131). Recounted from Atlas: invoices 18750 -> 18750, embedded lines 149963 -> 149963, quarantine records 37 -> 37.",
     "performed": true,
