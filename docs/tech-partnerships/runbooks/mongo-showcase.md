@@ -12,14 +12,15 @@ Use a namespace that is not persistent and has no immutable legacy manifest:
 ```bash
 export NS=mongofx
 export TP_MONGO_FIXTURE_URI='mongodb://localhost:57432/?directConnection=true'
-make procs-up NS=ci
+PROCS_TARGET_DOCS_PORT=57432 make procs-up NS=ci
 ss -ltnp | grep ':57432'
 ```
 
 Expected output includes a healthy `billing-service-docs` container and the
-fixture listener on `127.0.0.1:57432`. The compose default keeps this fixture
-port stable; override `PROCS_TARGET_DOCS_PORT` only when a different host port
-is required.
+fixture listener on `127.0.0.1:57432`. The Makefile derives each procs port
+from the namespace's `PROCS_PORT_OFFSET`; the explicit
+`PROCS_TARGET_DOCS_PORT=57432` override pins this fixture to the
+`57432` URI used throughout this runbook.
 
 Seed the deterministic, validator-backed estate. The command is idempotent and
 only deletes documents carrying `NS` in the two namespace databases:
