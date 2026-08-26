@@ -180,7 +180,7 @@
       "orphan_invoice_lines": 37
     }
   },
-  "generated_at": "2026-08-26T16:38:44Z",
+  "generated_at": "2026-08-26T16:48:07Z",
   "idempotency_rerun": {
     "evidence": "Both migrations were rerun against batch 23746131 after a snapshot of every recomputed target value (counts, checksums, quarantine breakdowns); the post-rerun recomputation is identical. customers 25000 -> 25000, lines accounted 150000 -> 150000, customers checksum unchanged, lines checksum unchanged.",
     "performed": true,

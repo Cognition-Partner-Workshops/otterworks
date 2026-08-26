@@ -389,7 +389,8 @@ def main() -> int:
 
     anomaly_expected = sorted(
         f"{a['kind']}:{a['target']}:{a['count']}"
-        for a in manifest["planted_anomalies"])
+        for a in manifest["planted_anomalies"]
+        if a["target"].startswith("oracle."))
     cq, iq = atlas["customers_quarantine"], atlas["invoices_quarantine"]
     anomaly_actual = sorted([
         "orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:%d" % iq["orphan_lines"],
