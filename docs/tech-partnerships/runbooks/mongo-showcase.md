@@ -12,7 +12,7 @@ Use a namespace that is not persistent and has no immutable legacy manifest:
 ```bash
 export NS=mongofx
 export TP_MONGO_FIXTURE_URI='mongodb://localhost:57432/?directConnection=true'
-PROCS_TARGET_DOCS_PORT=57432 make procs-up NS=ci
+make procs-up NS=ci PROCS_TARGET_DOCS_PORT=57432
 ss -ltnp | grep ':57432'
 ```
 
