@@ -35,7 +35,8 @@ Five invoice documents (`invoice_no` `REHEARSAL-000000000` …
 `REHEARSAL-000000004`, 50 embedded lines) were deleted from
 `ow_tp_mongodb_rehearsal.invoices` after the migration completed — an
 out-of-band deletion recorded in the namespace's operational journal
-collection at `2026-08-26T00:24:40Z`, ~34s after the green baseline capture.
+collection at `2026-08-26T00:24:40Z`, after the migration had completed
+green against the immutable source manifest.
 
 Before the fix:
 
@@ -83,4 +84,5 @@ Recon job re-trigger: `showcase.py --ns rehearsal --run-mode live run-job ...`
 → exit 0, `"notification": "not fired: reconciliation is green"`.
 
 Full green report: [`../recon/mongo_showcase.rehearsal.recon.json`](../recon/mongo_showcase.rehearsal.recon.json).
-Baseline capture: [`../recon/baseline/mongo_showcase.rehearsal.json`](../recon/baseline/mongo_showcase.rehearsal.json).
+Post-remediation baseline snapshot (captured from the restored collections):
+[`../recon/baseline/mongo_showcase.rehearsal.json`](../recon/baseline/mongo_showcase.rehearsal.json).
