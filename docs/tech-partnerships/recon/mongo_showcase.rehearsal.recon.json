@@ -134,7 +134,7 @@
     }
   ],
   "failed_checks": [],
-  "generated_at": "2026-08-26T00:35:54Z",
+  "generated_at": "2026-08-26T00:39:47Z",
   "idempotency_rerun": {
     "evidence": "the report pipeline and the customer checksum were recomputed a second time against the target in the same run and returned identical values",
     "performed": true,

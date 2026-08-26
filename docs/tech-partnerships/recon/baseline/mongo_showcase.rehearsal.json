@@ -1,6 +1,6 @@
 {
   "batch_no": 15871060,
-  "captured_at": "2026-08-26T00:31:32Z",
+  "captured_at": "2026-08-26T00:39:32Z",
   "kind": "mongo-showcase-baseline",
   "legacy_report": {
     "balances": {
@@ -180,7 +180,7 @@
       "documents": 2000,
       "files": 10000,
       "invoice_lines_quarantine": 37,
-      "invoices": 18745
+      "invoices": 18750
     },
     "provenance": {
       "customers": "row count and checksum are the Oracle manifest targets",
