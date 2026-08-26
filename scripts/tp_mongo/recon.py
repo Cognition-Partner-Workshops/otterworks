@@ -347,39 +347,45 @@ def main() -> int:
         print(f"[snapshot] {out}")
         return 0
 
+    if not args.snapshot_before:
+        raise SystemExit(
+            "report requires --snapshot-before (a snapshot captured before "
+            "rerunning both migrations); use scripts/tp-mongo-recon.sh or "
+            "`make tp-mongo-recon NS=<ns>` for the full sequence")
+
     oracle = read_oracle(args, batch_no)
     checks = build_checks(manifest, oracle, atlas)
 
-    idem = {"performed": False, "result": "fail",
-            "evidence": "no pre-rerun snapshot supplied"}
-    if args.snapshot_before:
-        before = json.loads(Path(args.snapshot_before).read_text())
-        same = before == atlas
-        idem = {
-            "performed": True,
-            "result": "pass" if same else "fail",
-            "evidence": (
-                "Both migrations were rerun against batch %d after a snapshot "
-                "of every recomputed target value (counts, checksums, "
-                "quarantine breakdowns); the post-rerun recomputation is %s. "
-                "customers %d -> %d, lines accounted %d -> %d, "
-                "customers checksum %s, lines checksum %s."
-                % (batch_no, "identical" if same else "DIFFERENT",
-                   before["customers"], atlas["customers"],
-                   before["line_rows_accounted"], atlas["line_rows_accounted"],
-                   "unchanged" if before["customers_checksum"]
-                   == atlas["customers_checksum"] else "CHANGED",
-                   "unchanged" if before["lines_checksum"]
-                   == atlas["lines_checksum"] else "CHANGED")),
-        }
-        digest_of = lambda snap: hashlib.md5(
+    before = json.loads(Path(args.snapshot_before).read_text())
+    same = before == atlas
+    idem = {
+        "performed": True,
+        "result": "pass" if same else "fail",
+        "evidence": (
+            "Both migrations were rerun against batch %d after a snapshot "
+            "of every recomputed target value (counts, checksums, "
+            "quarantine breakdowns); the post-rerun recomputation is %s. "
+            "customers %d -> %d, lines accounted %d -> %d, "
+            "customers checksum %s, lines checksum %s."
+            % (batch_no, "identical" if same else "DIFFERENT",
+               before["customers"], atlas["customers"],
+               before["line_rows_accounted"], atlas["line_rows_accounted"],
+               "unchanged" if before["customers_checksum"]
+               == atlas["customers_checksum"] else "CHANGED",
+               "unchanged" if before["lines_checksum"]
+               == atlas["lines_checksum"] else "CHANGED")),
+    }
+
+    def digest_of(snap) -> str:
+        return hashlib.md5(
             json.dumps(snap, sort_keys=True).encode()).hexdigest()
-        checks.append({
-            "id": "idempotency_rerun_converges",
-            "expected": digest_of(before), "actual": digest_of(atlas),
-            "source_of_truth": "md5 of the full recomputed target snapshot "
-                               "before vs after rerunning both migrations",
-            "result": idem["result"]})
+
+    checks.append({
+        "id": "idempotency_rerun_converges",
+        "expected": digest_of(before), "actual": digest_of(atlas),
+        "source_of_truth": "md5 of the full recomputed target snapshot "
+                           "before vs after rerunning both migrations",
+        "result": idem["result"]})
 
     anomaly_expected = sorted(
         f"{a['kind']}:{a['target']}:{a['count']}"

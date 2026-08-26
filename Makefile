@@ -37,12 +37,12 @@ endif
 	$(call validate_ns)
 	NS=$(NS) DB_PORT=$(ORACLE_BILLING_DB_PORT) scripts/tp-mongo-migrate-customers.sh
 
-tp-mongo-recon: ## Reconcile Atlas ow_tp_<NS> against Oracle and the seed manifest (NS=<ns>)
+tp-mongo-recon: ## Snapshot, rerun both migrations, and reconcile Atlas ow_tp_<NS> against Oracle and the seed manifest (NS=<ns>)
 ifndef NS
 	$(error NS is required, e.g. make tp-mongo-recon NS=demo1)
 endif
 	$(call validate_ns)
-	ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 python3 scripts/tp_mongo/recon.py report --ns $(NS)
+	NS=$(NS) ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) scripts/tp-mongo-recon.sh
 
 tp-fixture-land: ## Land source artifacts in the local Databricks transport fixture (NS=<ns>)
 	python3 scripts/tp_databricks/local_fixture.py land --ns $${NS:-fixture} --source $${FIXTURE_SOURCE:-etl/legacy-extra}
