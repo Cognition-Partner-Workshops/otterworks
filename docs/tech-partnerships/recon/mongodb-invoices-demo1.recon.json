@@ -1,0 +1,148 @@
+{
+  "checks": [
+    {
+      "actual": 18750,
+      "expected": 18750,
+      "id": "invoice_documents",
+      "result": "pass",
+      "source_of_truth": "testdata/legacy/manifests/demo1.json vs Atlas ow_tp_demo1.invoices"
+    },
+    {
+      "actual": 150000,
+      "expected": 150000,
+      "id": "line_conservation",
+      "result": "pass",
+      "source_of_truth": "manifest INVOICE_LINE rows vs embedded lines + quarantined rows in Atlas"
+    },
+    {
+      "actual": 37,
+      "expected": 37,
+      "id": "orphan_lines_quarantined",
+      "result": "pass",
+      "source_of_truth": "manifest orphaned_rows anomaly vs ORPHAN_LINE_NO_HEADER in Atlas"
+    },
+    {
+      "actual": 0,
+      "expected": 0,
+      "id": "no_line_lost_or_duplicated",
+      "result": "pass",
+      "source_of_truth": "manifest INVOICE_LINE rows minus lines accounted for in Atlas"
+    },
+    {
+      "actual": true,
+      "expected": true,
+      "id": "embedded_cardinality_bounded",
+      "result": "pass",
+      "source_of_truth": "Atlas $max of $size:$lines (observed 22, bound 23)"
+    },
+    {
+      "actual": 18750,
+      "expected": 18750,
+      "id": "idempotent_rerun_invoice_documents",
+      "result": "pass",
+      "source_of_truth": "Atlas count after run 1 vs run 2"
+    },
+    {
+      "actual": 149963,
+      "expected": 149963,
+      "id": "idempotent_rerun_embedded_lines",
+      "result": "pass",
+      "source_of_truth": "Atlas count after run 1 vs run 2"
+    },
+    {
+      "actual": 37,
+      "expected": 37,
+      "id": "idempotent_rerun_quarantine_records",
+      "result": "pass",
+      "source_of_truth": "Atlas count after run 1 vs run 2"
+    }
+  ],
+  "detail": {
+    "batch_no": 23746131,
+    "recomputed_after_run_1": {
+      "embedded_lines": 149963,
+      "invoice_documents": 18750,
+      "max_lines_per_invoice": 22,
+      "quarantine_by_reason": {
+        "ORPHAN_LINE_NO_HEADER": 37
+      },
+      "quarantine_fields": 0,
+      "quarantine_rows": 37
+    },
+    "recomputed_after_run_2": {
+      "embedded_lines": 149963,
+      "invoice_documents": 18750,
+      "max_lines_per_invoice": 22,
+      "quarantine_by_reason": {
+        "ORPHAN_LINE_NO_HEADER": 37
+      },
+      "quarantine_fields": 0,
+      "quarantine_rows": 37
+    },
+    "run_1": {
+      "invoice_documents_written": 18750,
+      "quarantine_by_reason": {
+        "ORPHAN_LINE_NO_HEADER": 37
+      },
+      "quarantine_rows": 37,
+      "stats": {
+        "header_rows_read": 18750,
+        "line_rows_quarantined": 37,
+        "line_rows_quarantined_orphan": 37,
+        "line_rows_read": 150000,
+        "lines_embedded": 149963
+      }
+    },
+    "run_2": {
+      "invoice_documents_written": 18750,
+      "quarantine_by_reason": {
+        "ORPHAN_LINE_NO_HEADER": 37
+      },
+      "quarantine_rows": 37,
+      "stats": {
+        "header_rows_read": 18750,
+        "line_rows_quarantined": 37,
+        "line_rows_quarantined_orphan": 37,
+        "line_rows_read": 150000,
+        "lines_embedded": 149963
+      }
+    },
+    "source_tables": [
+      "OW_BILLING.INVOICE_HEADER",
+      "OW_BILLING.INVOICE_LINE"
+    ],
+    "target": {
+      "collections": [
+        "invoices",
+        "invoices_quarantine"
+      ],
+      "database": "ow_tp_demo1"
+    }
+  },
+  "generated_at": "2026-08-26T15:36:21Z",
+  "idempotency_rerun": {
+    "evidence": "The migration ran twice against the same batch (23746131). Recounted from Atlas: invoices 18750 -> 18750, embedded lines 149963 -> 149963, quarantine records 37 -> 37.",
+    "performed": true,
+    "result": "pass"
+  },
+  "kind": "recon-report",
+  "namespace": "demo1",
+  "planted_anomaly_detections": {
+    "actual_set": [
+      "orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37"
+    ],
+    "expected_set": [
+      "orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "run_mode": "live",
+  "unit": "mongodb-invoices",
+  "unverified_paths": [
+    "Atlas M0 shared tier: no separate staging cluster, so no cross-cluster restore rehearsal was exercised.",
+    "Only conversion batch 23746131 (namespace demo1) was migrated; other namespaces' batches in the same source tables are untouched and unverified.",
+    "Line-level customer copies (cust_no, cust_name) are dropped, so a consumer needing the point-in-time customer name at line level would have to join CUSTOMER_MASTER; that path is not exercised here."
+  ],
+  "values_recomputed_from_target": true
+}
