@@ -1,5 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean tp-mongo-migrate-customers dbx-showcase dbx-showcase-help tp-legacy-pain
-
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-run-branch demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean tp-mongo-migrate-customers tp-mongo-invoices dbx-showcase dbx-showcase-help tp-legacy-pain
 SHELL := /bin/bash
 
 help: ## Show this help
@@ -124,6 +123,18 @@ ifndef NS
 endif
 	$(call validate_ns)
 	DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) testdata/legacy/oracle_billing_seed.py --ns $(NS) --scale $(or $(SCALE),demo)
+
+TP_MONGO_UV = uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with requests==2.32.3
+
+tp-mongo-invoices: ## Migrate the Oracle invoice estate into Atlas (NS=<namespace>, BATCH_NO=<batch>)
+ifndef NS
+	$(error NS is required, e.g. make tp-mongo-invoices NS=demo1 BATCH_NO=23746131)
+endif
+ifndef BATCH_NO
+	$(error BATCH_NO is required, e.g. make tp-mongo-invoices NS=demo1 BATCH_NO=23746131)
+endif
+	$(call validate_ns)
+	ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) $(TP_MONGO_UV) python3 scripts/tp_mongo/migrate_invoices.py --ns $(NS) --batch-no $(BATCH_NO)
 
 ORACLE_PARITY_UV = uv run --with oracledb==2.5.1 --with pyyaml==6.0.2
 ORACLE_PARITY_RUN = procs/reports/oracle-parity-run
