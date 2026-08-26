@@ -104,7 +104,7 @@ GROUPED_COLUMNS = (
     | {f"phone{i}_type_cd" for i in range(1, PHONE_COUNT + 1)}
     | {f"email_{i}" for i in range(1, EMAIL_COUNT + 1)}
     | set(CSV_ID_COLUMNS) | set(CSV_CODE_COLUMNS)
-    | {"cust_id", "conversion_batch_no"}
+    | {"cust_id", "conversion_batch_no", "source_rowid"}
 )
 
 
@@ -180,15 +180,26 @@ def field_quarantine(cust_id: str, field: str, raw, reason: str,
 
 
 def row_quarantine(row: dict, reason: str, ns: str, batch_no: int) -> dict:
+    """Quarantine a whole source row.
+
+    A row that is quarantined for a missing key has, by definition, no natural
+    key to build a deterministic _id from, and two distinct rows can be
+    byte-identical in their remaining columns. The physical row address carries
+    the identity instead: it is stable across reruns of the same source, so a
+    rerun converges while distinct rows never collide.
+    """
     present = {k: (str(v) if v is not None else None)
-               for k, v in row.items() if not is_null(v)}
-    digest = hashlib.sha1(
+               for k, v in row.items()
+               if k != "source_rowid" and not is_null(v)}
+    source_rowid = row.get("source_rowid")
+    identity = source_rowid or hashlib.sha1(
         json.dumps(present, sort_keys=True).encode()).hexdigest()
     return {
-        "_id": f"row::{reason}::{digest}",
+        "_id": f"row::{reason}::{identity}",
         "scope": "row",
         "reason": reason,
         "source_table": SOURCE_TABLE,
+        "source_rowid": source_rowid,
         "namespace": ns,
         "conversion_batch_no": batch_no,
         "raw_row": present,
@@ -386,8 +397,11 @@ def iter_customer_rows(conn, batch_no: int):
     cur.arraysize = 500
     cur.prefetchrows = 501
     cur.outputtypehandler = number_type_handler
-    cur.execute("SELECT * FROM customer_master WHERE conversion_batch_no = :1",
-                [batch_no])
+    # ROWID accompanies the row so a row with no usable key still has a stable
+    # identity to be quarantined under.
+    cur.execute("""SELECT c.rowid AS source_rowid, c.*
+                     FROM customer_master c
+                    WHERE c.conversion_batch_no = :1""", [batch_no])
     columns = [d[0].lower() for d in cur.description]
     for row in cur:
         yield dict(zip(columns, row))

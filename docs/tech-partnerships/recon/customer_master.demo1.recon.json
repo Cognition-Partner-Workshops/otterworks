@@ -57,7 +57,7 @@
       "source_of_truth": "mongodb ow_tp_demo1.customers key universe"
     }
   ],
-  "generated_at": "2026-08-26T15:43:21Z",
+  "generated_at": "2026-08-26T15:56:50Z",
   "idempotency_rerun": {
     "evidence": "migration run twice against the same source batch; sha256 over canonical BSON of every customers + customers_quarantine document: before=00d140e1bbb49d632b62c4687511465ab81a9d596a29c8ced1c0a4f005a9ca14 after=00d140e1bbb49d632b62c4687511465ab81a9d596a29c8ced1c0a4f005a9ca14",
     "performed": true,
