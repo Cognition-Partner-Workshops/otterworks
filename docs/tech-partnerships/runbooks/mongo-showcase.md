@@ -12,13 +12,14 @@ Use a namespace that is not persistent and has no immutable legacy manifest:
 ```bash
 export NS=mongofx
 export TP_MONGO_FIXTURE_URI='mongodb://localhost:57432/?directConnection=true'
+make procs-up NS=ci
 ss -ltnp | grep ':57432'
-PROCS_TARGET_DOCS_PORT=57432 make procs-up NS=ci
 ```
 
 Expected output includes a healthy `billing-service-docs` container and the
-fixture listener on `127.0.0.1:57432`. The explicit port override keeps the
-fixture URI stable; the Makefile otherwise derives a namespace-specific port.
+fixture listener on `127.0.0.1:57432`. The compose default keeps this fixture
+port stable; override `PROCS_TARGET_DOCS_PORT` only when a different host port
+is required.
 
 Seed the deterministic, validator-backed estate. The command is idempotent and
 only deletes documents carrying `NS` in the two namespace databases:
@@ -160,7 +161,7 @@ The legacy implementation is in `services/legacy-billing/app/reports.py`.
 formats money with `TO_CHAR(..., 'FM999999999999990.00')`. `BALANCES_SQL`
 aggregates customer balances by `conversion_batch_no`.
 
-The migrated implementation is in `migrations/mongodb/finance_report.py`.
+The migrated implementation is in `services/billing-service/app/reports.py`.
 `month_end_pipeline(ns)` matches `ns` and `source.batch_no`, then uses one
 MongoDB `$facet` with `by_status` and `by_status_line_type`; inline expressions
 decode status and line types, and Decimal128 arithmetic preserves cent values.

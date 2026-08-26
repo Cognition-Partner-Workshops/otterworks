@@ -52,9 +52,10 @@ class RatingPeriod(BaseModel):
     period_end: date
 
 
+# the legacy app's error contract, with the store it now names
 ESTATE_UNAVAILABLE = {
     "error": "legacy estate unavailable",
-    "detail": "the Oracle billing estate is not reachable; try again later",
+    "detail": "the migrated document store is not reachable; try again later",
 }
 
 
@@ -125,8 +126,10 @@ def health() -> dict[str, str]:
     return {"status": "healthy", "service": settings.app_name}
 
 
-@app.get("/api/reports/month-end")
-def get_month_end_report(ns: Annotated[str, Query()] = "demo") -> dict:
+@app.get("/api/reports/month-end", response_model=None)
+def get_month_end_report(
+    ns: Annotated[str, Query()] = "demo",
+) -> dict | JSONResponse:
     try:
         report = reports.month_end_report(_estate_database(ns), ns)
     except ValueError as error:
@@ -136,8 +139,10 @@ def get_month_end_report(ns: Annotated[str, Query()] = "demo") -> dict:
     return {**report, "generated_at": _report_timestamp()}
 
 
-@app.get("/api/reports/reconciliation")
-def get_reconciliation_report(ns: Annotated[str, Query()] = "demo") -> dict:
+@app.get("/api/reports/reconciliation", response_model=None)
+def get_reconciliation_report(
+    ns: Annotated[str, Query()] = "demo",
+) -> dict | JSONResponse:
     try:
         report = reports.reconciliation_report(_estate_database(ns), ns)
     except ValueError as error:

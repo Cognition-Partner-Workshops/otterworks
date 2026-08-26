@@ -48,13 +48,19 @@ from decimal import Decimal
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MIGRATIONS = os.path.join(REPO_ROOT, "migrations", "mongodb")
 sys.path.insert(0, MIGRATIONS)
+sys.path.insert(0, os.path.join(MIGRATIONS, "mongo_files"))
+sys.path.insert(0, os.path.join(MIGRATIONS, "mongo_customers"))
 # the report is the billing service's own module: recon reconciles exactly the
 # pipeline the app serves, rather than a second copy of it
 sys.path.insert(0, os.path.join(REPO_ROOT, "services", "billing-service"))
 
+import collection_setup as files_setup
+import migrate as customers_migrate
+import migrate_documents
 import mongo_common as common
 from app import reports as fr
 from bson.decimal128 import Decimal128
+from mongo_invoices import common as invoices_common
 from pymongo import MongoClient
 from pymongo.errors import WriteError
 
@@ -132,15 +138,9 @@ def _fixture_datetime(number: int) -> datetime:
 
 
 def _seed_fixture_units(cli, ns: str):
-    customer_dir = os.path.join(MIGRATIONS, "mongo_customers")
-    files_dir = os.path.join(MIGRATIONS, "mongo_files")
-    sys.path.insert(0, files_dir)
-    import collection_setup as files_setup
-    sys.path.insert(0, customer_dir)
-    import migrate as customers_migrate
-    import migrate_documents
-    from mongo_invoices import common as invoices_common
-
+    """Create the namespace's collections with the migration units' own
+    validators and indexes, so seeded fixture documents are held to exactly the
+    contract the migrated estate enforces."""
     db = cli[common.database_name(ns)]
     quarantine_db = cli[common.quarantine_database_name(ns)]
     customers_migrate.ensure_collection(
