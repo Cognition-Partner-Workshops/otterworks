@@ -61,8 +61,8 @@ services:
         condition: service_healthy
     environment:
       BILLING_SVC_DATABASE_URL: postgresql://billing_svc:billing_svc@billing-service-db:5432/billing_svc_${NS:-dev}
-      BILLING_SVC_DOCUMENT_URI: mongodb://billing-service-docs:27017
-      BILLING_SVC_DOCUMENT_DB: billing_docs_${NS:-dev}
+      BILLING_SVC_DOCUMENT_URI: ${BILLING_SVC_DOCUMENT_URI:-mongodb://billing-service-docs:27017}
+      BILLING_SVC_DOCUMENT_DB: ${BILLING_SVC_DOCUMENT_DB:-billing_docs_${NS:-dev}}
       BILLING_SVC_ESTATE_DB_PREFIX: ow_tp_mongodb
       BILLING_SVC_ALLOW_INTERNAL_RESET: "true"
     ports:

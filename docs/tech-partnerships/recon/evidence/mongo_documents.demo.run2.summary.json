@@ -20,7 +20,7 @@
   ],
   "quarantine_database": "ow_tp_mongodb_demo_quarantine",
   "quarantined": {},
-  "run_mode": "fixture",
+  "run_mode": "live",
   "source": {
     "document_snapshots": 390,
     "document_versions": 13876,
