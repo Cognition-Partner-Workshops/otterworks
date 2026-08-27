@@ -111,17 +111,9 @@ async def _do_create_document(
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
-            )
-        body.owner_id = extracted_id
-
+    owner_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.create(body)
+    document = await service.create(body, owner_id)
     logger.info("document_created", document_id=str(document.id))
     return document
 
@@ -505,11 +497,13 @@ async def export_document(
 async def create_from_template(
     template_id: UUID,
     body: DocumentFromTemplate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Create a document from a template."""
+    owner_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.create_from_template(template_id, body)
+    document = await service.create_from_template(template_id, body, owner_id)
     if not document:
         raise HTTPException(status_code=404, detail="Template not found")
     logger.info(
