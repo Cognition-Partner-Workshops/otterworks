@@ -2,9 +2,9 @@ name: Security Scan
 
 on:
   push:
-    branches: [main]
+    branches: [main, upgrade/eol-2026]
   pull_request:
-    branches: [main]
+    branches: [main, upgrade/eol-2026]
   schedule:
     - cron: '0 6 * * 1' # Weekly Monday 6AM UTC
 
