@@ -69,6 +69,7 @@ BACKEND_SERVICES=(
   admin-service
   audit-service
   report-service
+  legacy-portal
 )
 
 FRONTEND_SERVICES=(
@@ -191,9 +192,10 @@ declare -A CONTAINER_PORT=(
   [api-gateway]=8080 [auth-service]=8081 [file-service]=8082 [document-service]=8083
   [collab-service]=8084 [notification-service]=8086 [search-service]=8087
   [analytics-service]=8088 [admin-service]=8089 [audit-service]=8090 [report-service]=8091
+  [legacy-portal]=8095
 )
 # JVM services need more memory than the namespace default (256Mi) to start.
-JVM_SERVICES=" auth-service report-service notification-service analytics-service "
+JVM_SERVICES=" auth-service report-service notification-service analytics-service legacy-portal "
 
 # Populate the config/secret wiring from the application-infra Terraform outputs
 # (RDS, Redis, S3, DynamoDB, SNS/SQS, IRSA roles). This closes the documented gap
@@ -405,6 +407,25 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.DB_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DB_PORT=${DB_ENDPOINT_PORT}")
       EXTRA_ARGS+=(--set-string "config.DB_NAME=${DB_NAME}" --set-string "config.DB_USER=${DB_USER}")
       add_secret DB_PASSWORD "${DB_PASSWORD}" ;;
+    legacy-portal)
+      # Reached directly on the shared ingress under its own host: the portal's
+      # routes (/api/announcements|preferences|feedback) are not in api-gateway's
+      # route table, and adding them there would change gateway behavior. This
+      # re-enables the Ingress the blanket disable above turned off (last --set
+      # wins) -- still ClusterIP, never a LoadBalancer.
+      EXTRA_ARGS+=(--set ingress.enabled=true --set ingress.className=nginx)
+      EXTRA_ARGS+=(--set-string "ingress.hosts[0].host=$(golden_host "${service}")")
+      EXTRA_ARGS+=(--set-string 'ingress.hosts[0].paths[0].path=/')
+      EXTRA_ARGS+=(--set-string 'ingress.hosts[0].paths[0].pathType=Prefix')
+      EXTRA_ARGS+=(--set 'ingress.tls=null')
+      EXTRA_ARGS+=(--set-string "config.SPRING_PROFILES_ACTIVE=postgres")
+      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${DB_NAME}")
+      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_USERNAME=${DB_USER}")
+      # On-prem, scripts/initdb.sql creates the three per-context schemas at DB
+      # init time. The shared RDS database has no such hook, so Hibernate is
+      # told to create the schemas itself before ddl-auto=update runs.
+      EXTRA_ARGS+=(--set-string "config.JAVA_TOOL_OPTIONS=-Dspring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true")
+      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
   esac
 }
 
@@ -531,6 +552,7 @@ log "Golden app URLs (shared ingress):"
 echo "  web-app:         https://$(golden_host web-app)"
 echo "  admin-dashboard: https://$(golden_host admin-dashboard)"
 echo "  api-gateway:     https://$(golden_host api-gateway)"
+echo "  legacy-portal:   https://$(golden_host legacy-portal)"
 echo ""
 log "Useful commands:"
 echo "  kubectl get pods -n ${NAMESPACE}"
