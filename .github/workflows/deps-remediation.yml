@@ -26,8 +26,8 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
-      # 17 first so $JAVA_HOME_17_X64 exists for the Gradle modules, then 11 as the
-      # ambient JDK the Maven modules build on.
+      # 21 first so $JAVA_HOME_21_X64 exists for auth-service, then 17 for the other
+      # Gradle modules, with 11 last as the ambient JDK the Maven modules build on.
       - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: temurin
@@ -38,9 +38,9 @@ jobs:
       # `gradle` on PATH — the runner image does not carry one.
       - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
         with:
-          # 8.6, matching ci.yml and auth-service's wrapper: the suite counts this job
+          # 8.14.5 keeps this shared harness on Gradle 8.x; auth-service uses 9.7.1.
           # reports have to come from the toolchain the services are built with.
-          gradle-version: "8.6"
+          gradle-version: "8.14.5"
       - run: uv run --with ruff==0.9.10 ruff check security/deps/harness
       - run: make deps-inventory
       - run: make deps-tests
