@@ -106,6 +106,20 @@ fi
 
 if [ "${SKIP_TERRAFORM}" = false ]; then
   DB_PASSWORD="${DB_PASSWORD:?ERROR: DB_PASSWORD must be set when running Terraform}"
+  # The usage-rollup Lambda deploys the analytics-service assembly jar; rebuild
+  # it every deploy (sbt assembly is incremental) so the function ships current
+  # code, and fail loudly rather than deploying a stale or missing artifact.
+  USAGE_ROLLUP_JAR="${REPO_ROOT}/services/analytics-service/target/scala-3.4.0/analytics-service-assembly-0.1.0.jar"
+  if command -v sbt >/dev/null 2>&1; then
+    log "Building analytics-service assembly jar for the usage-rollup Lambda..."
+    (cd "${REPO_ROOT}/services/analytics-service" && sbt -batch assembly) ||
+      { err "sbt assembly failed; aborting so a stale usage-rollup Lambda jar is not deployed."; exit 1; }
+  elif [ ! -f "${USAGE_ROLLUP_JAR}" ]; then
+    err "sbt is unavailable and no jar exists at ${USAGE_ROLLUP_JAR}; aborting. Run 'sbt assembly' in services/analytics-service (or copy a built jar there) and re-run."
+    exit 1
+  else
+    warn "sbt unavailable; deploying the existing jar at ${USAGE_ROLLUP_JAR} (may be stale)."
+  fi
   log "Provisioning application infrastructure (RDS, DynamoDB, S3, SQS, etc.)..."
   cd "${REPO_ROOT}/infrastructure/terraform"
   terraform init -input=false
@@ -215,6 +229,7 @@ load_infra_outputs() {
   DDB_SHARES="$(terraform -chdir="$d" output -raw dynamodb_file_shares_table 2>/dev/null || echo "")"
   SNS_TOPIC="$(terraform -chdir="$d" output -raw sns_events_topic_arn 2>/dev/null || echo "")"
   SQS_NOTIF="$(terraform -chdir="$d" output -raw sqs_notification_queue_url 2>/dev/null || echo "")"
+  USAGE_ROLLUP_BUS="$(terraform -chdir="$d" output -raw usage_rollup_event_bus_name 2>/dev/null || echo "")"
   IRSA_JSON="$(terraform -chdir="$d" output -json irsa_role_arns 2>/dev/null || echo "{}")"
   DB_NAME="${DB_NAME:-otterworks}"; DB_USER="${DB_USER:-otterworks_admin}"
   # MeiliSearch runs in-cluster (see deploy_meilisearch); search-service reaches it by Service DNS.
@@ -381,6 +396,9 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false") ;;
     analytics-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
+      # Publish usage events to the dedicated per-environment bus, not the
+      # shared default bus (which would cross-feed environments in one account).
+      [ -n "${USAGE_ROLLUP_BUS}" ] && EXTRA_ARGS+=(--set-string "config.EVENTBRIDGE_BUS_NAME=${USAGE_ROLLUP_BUS}")
       EXTRA_ARGS+=(--set-string "config.ANALYTICS_HOST=0.0.0.0" --set-string "config.PORT=8088")
       # Flyway again, from the same URL as the Slick pool (AnalyticsDb.migrate),
       # and a failed migration silently falls back to the in-memory store --

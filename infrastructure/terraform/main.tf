@@ -109,6 +109,14 @@ module "messaging" {
   project     = "otterworks"
 }
 
+module "usage_rollup" {
+  source      = "./modules/usage-rollup"
+  environment = var.environment
+  project     = "otterworks"
+
+  lambda_jar_path = var.usage_rollup_lambda_jar_path
+}
+
 module "search" {
   source      = "./modules/search"
   environment = var.environment
@@ -297,6 +305,11 @@ module "irsa" {
             module.storage.data_lake_bucket_arn,
             "${module.storage.data_lake_bucket_arn}/*",
           ]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["events:PutEvents"]
+          Resource = [module.usage_rollup.event_bus_arn]
         },
       ]
     })
