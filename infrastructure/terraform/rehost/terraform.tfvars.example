@@ -1,0 +1,13 @@
+aws_region  = "us-east-1"
+environment = "dev"
+
+instance_type     = "t3.small"
+db_instance_class = "db.t4g.micro"
+
+# The RDS master password is generated and stored by RDS in Secrets Manager
+# (manage_master_user_password); there is no password variable to set.
+
+# Ingress on 8095 is opt-in: the default is no ingress at all. Set this to a
+# trusted CIDR (office/VPN) to reach the app; the endpoints are unauthenticated
+# plain HTTP, so do not open this to 0.0.0.0/0 outside a throwaway demo.
+# app_ingress_cidr_blocks = ["203.0.113.0/24"]
