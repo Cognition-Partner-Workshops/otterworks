@@ -9,7 +9,7 @@ default: &default
 
 development:
   <<: *default
-  database: admin_service_development
+  database: <%= ENV.fetch("DATABASE_NAME", "admin_service_development") %>
 
 test:
   <<: *default
