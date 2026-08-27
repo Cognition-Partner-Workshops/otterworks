@@ -22,6 +22,8 @@ pub struct AwsConfig {
     pub dynamodb_folders_table: String,
     pub dynamodb_versions_table: String,
     pub dynamodb_shares_table: String,
+    pub s3_stalled_stream_grace_secs: u64,
+    pub presigned_upload_expiry_secs: u64,
 }
 
 #[derive(Clone, Debug)]
@@ -68,6 +70,14 @@ impl AwsConfig {
                 .unwrap_or_else(|_| "otterworks-file-versions".into()),
             dynamodb_shares_table: env::var("DYNAMODB_SHARES_TABLE")
                 .unwrap_or_else(|_| "otterworks-file-shares".into()),
+            s3_stalled_stream_grace_secs: env::var("S3_STALLED_STREAM_GRACE_SECS")
+                .unwrap_or_else(|_| "20".into())
+                .parse()
+                .unwrap_or(20),
+            presigned_upload_expiry_secs: env::var("PRESIGNED_UPLOAD_EXPIRY_SECS")
+                .unwrap_or_else(|_| "3600".into())
+                .parse()
+                .unwrap_or(3600),
         }
     }
 }
