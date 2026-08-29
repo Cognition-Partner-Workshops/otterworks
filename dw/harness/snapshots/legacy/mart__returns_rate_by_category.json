@@ -1,0 +1,66 @@
+{
+  "columns": [
+    {
+      "digest": 318326387622675200741973102869853677611,
+      "distinct": 6,
+      "max": "Outdoors",
+      "min": "Apparel",
+      "name": "category",
+      "non_null": 6,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 171329211567420975464082823217220580758,
+      "distinct": 6,
+      "max": "181198",
+      "min": "178806",
+      "name": "sold_items",
+      "non_null": 6,
+      "scale": 0,
+      "sum": "1080002",
+      "type": "bigint"
+    },
+    {
+      "digest": 152783277159830409764753038932432535828,
+      "distinct": 6,
+      "max": "4532",
+      "min": "4462",
+      "name": "returned_items",
+      "non_null": 6,
+      "scale": 0,
+      "sum": "27002",
+      "type": "bigint"
+    },
+    {
+      "digest": 147739758285174250094454033573205313963,
+      "distinct": 6,
+      "max": "2412828.15",
+      "min": "2260331.80",
+      "name": "refund_amount",
+      "non_null": 6,
+      "scale": 2,
+      "sum": "14107686.39",
+      "type": "numeric"
+    },
+    {
+      "digest": 136133969847520829357112111874569066913,
+      "distinct": 2,
+      "max": "0.0251",
+      "min": "0.0250",
+      "name": "return_rate_pct",
+      "non_null": 6,
+      "scale": 4,
+      "sum": "0.1501",
+      "type": "numeric"
+    }
+  ],
+  "engine": "postgres",
+  "fingerprint": "0952e552dd51a309d2fe90723fa11eff3feb67bfc628627c06ab1263ed8deff8",
+  "manifest_format": 4,
+  "ordered": null,
+  "row_count": 6,
+  "row_digest": 48308068981549119238709242187447003954,
+  "table": "mart.returns_rate_by_category"
+}

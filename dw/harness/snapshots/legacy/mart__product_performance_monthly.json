@@ -1,0 +1,99 @@
+{
+  "columns": [
+    {
+      "digest": 338366811175119223366384153563879418561,
+      "distinct": 36,
+      "max": "2025-12-01",
+      "min": "2023-01-01",
+      "name": "revenue_month",
+      "non_null": 280392,
+      "scale": null,
+      "sum": null,
+      "type": "date"
+    },
+    {
+      "digest": 61429367613316607682685123011852022592,
+      "distinct": 8000,
+      "max": "8000",
+      "min": "1",
+      "name": "product_id",
+      "non_null": 280392,
+      "scale": 0,
+      "sum": "1121761814",
+      "type": "bigint"
+    },
+    {
+      "digest": 62782634890039683787990696317658801117,
+      "distinct": 8000,
+      "max": "Product 999",
+      "min": "Product 1",
+      "name": "product_name",
+      "non_null": 280392,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 233173510508303421411782881801508176822,
+      "distinct": 6,
+      "max": "Outdoors",
+      "min": "Apparel",
+      "name": "category",
+      "non_null": 280392,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 259182537220080845799558679682014078051,
+      "distinct": 43,
+      "max": "46",
+      "min": "2",
+      "name": "units_sold",
+      "non_null": 280392,
+      "scale": 0,
+      "sum": "3303351",
+      "type": "bigint"
+    },
+    {
+      "digest": 303060275102268989569481403657888338589,
+      "distinct": 10,
+      "max": "10",
+      "min": "1",
+      "name": "order_count",
+      "non_null": 280392,
+      "scale": 0,
+      "sum": "1080002",
+      "type": "bigint"
+    },
+    {
+      "digest": 247402487837722827047437529312516899066,
+      "distinct": 185366,
+      "max": "15338.46",
+      "min": "13.78",
+      "name": "revenue",
+      "non_null": 280392,
+      "scale": 2,
+      "sum": "565147801.07",
+      "type": "numeric"
+    },
+    {
+      "digest": 18869897075961637701603812530148651894,
+      "distinct": 112365,
+      "max": "4339.40",
+      "min": "3.50",
+      "name": "margin",
+      "non_null": 280392,
+      "scale": 2,
+      "sum": "152516088.26",
+      "type": "numeric"
+    }
+  ],
+  "engine": "postgres",
+  "fingerprint": "5bfe763a9ffea0f66ad1287b157ac2ef2dd62e315b56b0b5caba5ac19bf8b208",
+  "manifest_format": 4,
+  "ordered": null,
+  "row_count": 280392,
+  "row_digest": 23504046729484387178477556968597986398,
+  "table": "mart.product_performance_monthly"
+}
