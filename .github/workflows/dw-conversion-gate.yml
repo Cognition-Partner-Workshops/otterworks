@@ -31,7 +31,6 @@ jobs:
       DW_POSTGRES_DSN: >-
         host=127.0.0.1 port=5432 dbname=analytics_dw user=dw_admin
         password=dw_local_dev sslmode=disable
-      DW_LAKEHOUSE_ROOT: ${{ runner.temp }}/legacy-lakehouse
       SPARK_LOCAL_IP: 127.0.0.1
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -47,6 +46,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install \
             duckdb psycopg2-binary pyspark==3.5.6 delta-spark==3.2.0 pytest
+      - name: Configure local lakehouse path
+        run: echo "DW_LAKEHOUSE_ROOT=$RUNNER_TEMP/legacy-lakehouse" >> "$GITHUB_ENV"
       - name: Restore legacy Postgres estate
         run: |
           psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 -c \
