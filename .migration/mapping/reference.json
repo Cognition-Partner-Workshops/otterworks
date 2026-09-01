@@ -138,6 +138,13 @@
       "indexes": [
         {
           "keys": {
+            "name": 1
+          },
+          "unique": true,
+          "note": "carries UQ_TENANTS_NAME"
+        },
+        {
+          "keys": {
             "status_cd": 1
           }
         }

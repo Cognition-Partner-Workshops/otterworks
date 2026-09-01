@@ -35,25 +35,29 @@ Arithmetic: 20 tables = 19 bucketed into units/shared + 1 excluded. Total source
 
 ## Columns (432)
 
-Every column lands in `fields`, `folded` (a repeating group collapsed into an
-array/subdocument), or `dropped` (with a reason) of exactly one collection —
-`build_mapping_spec.py` fails the build otherwise.
+Every column lands in `fields` (mapped, including the repeating groups folded
+into subdocuments and the child tables folded into arrays) or `dropped` (with
+a reason) of exactly one collection — `build_mapping_spec.py` fails the build
+otherwise.
 
-| Collection | Mapped | Folded | Dropped |
-|---|---:|---:|---:|
-| `codes` | 3 | 0 | 0 |
-| `tenants` | 3 | 0 | 0 |
-| `plans` | 6 | 0 | 0 |
-| `customers` | 195 | 11 | 118 |
-| `subscriptions` | 16 | 0 | 0 |
-| `invoices` | 19 | 0 | 9 |
-| `usage_events` | 4 | 0 | 0 |
-| `rating_periods` | 11 | 0 | 1 |
-| `subscription_invoices` | 12 | 0 | 1 |
-| `credit_notes` | 4 | 0 | 0 |
-| `dunning_attempts` | 5 | 0 | 0 |
-| `notifications` | 3 | 0 | 0 |
-| `billing_audit_log` | 3 | 0 | 0 |
+| Collection | Mapped | Dropped |
+|---|---:|---:|
+| `codes` | 3 | 0 |
+| `tenants` | 4 | 0 |
+| `plans` | 7 | 0 |
+| `customers` | 87 | 233 |
+| `subscriptions` | 16 | 1 |
+| `invoices` | 22 | 7 |
+| `usage_events` | 5 | 0 |
+| `rating_periods` | 12 | 1 |
+| `subscription_invoices` | 13 | 1 |
+| `credit_notes` | 5 | 0 |
+| `dunning_attempts` | 6 | 0 |
+| `notifications` | 4 | 0 |
+| `billing_audit_log` | 4 | 0 |
+| _excluded tables_ | 0 | 1 |
+
+Arithmetic: 188 mapped + 243 dropped + 1 in excluded tables = 432 of 432 source columns.
 
 **proposed-unused: 113 of `CUSTOMER_MASTER`'s 155 columns are NULL in all 25,000 rows** — the whole mailing-address block, `PHONE3`/`PHONE4`, `EMAIL_2`/`EMAIL_3`, `FLAG_01..20`, `UDF_01..40`, `UDF_AMT_01..10`, `UDF_DT_01..10` and 12 others. They are dropped with the population count as evidence (`census/access_patterns.json#customer_master_population`), not carried forward as empty fields. `CUSTOMER_MASTER_HIST` mirrors the same 155 columns plus 3 history columns and holds 0 rows.
 
@@ -91,7 +95,9 @@ Compilation status: 17 PL/SQL objects, 0 invalid. ROWID usage in stored code: 0 
 Source indexes are not migrated mechanically; the target index plan is per
 collection in `03_mapping_spec.json#collections.*.indexes` and is derived from
 the access-pattern evidence, not from the Oracle index list. Every unique
-constraint in the source has a corresponding unique index in the plan.
+constraint in the source does survive: as the collection key, a unique index,
+or a declared element invariant inside an embedded array, asserted by
+`build_mapping_spec.py`.
 
 ## Behavioural baseline
 

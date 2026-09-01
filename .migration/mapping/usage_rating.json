@@ -248,7 +248,9 @@
           "keys": {
             "tenant_id": 1,
             "period_start": -1
-          }
+          },
+          "unique": true,
+          "note": "carries UQ_RATING_PERIODS; descending order serves the latest-period read and does not weaken uniqueness"
         }
       ]
     }

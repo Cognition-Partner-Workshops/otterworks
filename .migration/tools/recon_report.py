@@ -15,8 +15,8 @@ never defaulted to something reassuring.
 Usage:
   recon_report.py --unit reference \
       --result .migration/recon/reference/result.json \
-      --idempotency-evidence "second load + recon rerun, PASS, counts unchanged" \
       --load-report .migration/recon/reference/load.json \
+      --rerun-load-report .migration/recon/reference/load.rerun.json \
       --unverified "derived field X (harness grades the raw column)"
 """
 from __future__ import annotations
@@ -86,8 +86,9 @@ def self_check(unit, result, idempotency_evidence, idempotency_result, unverifie
                      "are created."},
         {"id": "rerun_safe_retention",
          "verdict": "pass",
-         "evidence": "The loader only upserts on natural _id and never deletes, so a rerun "
-                     "cannot remove a newer run's data."},
+         "evidence": "A rerun upserts on natural _id and removes only documents absent from "
+                     "the extract it just read, inside collections this unit exclusively "
+                     "owns; no other unit's or run's data is in reach."},
         {"id": "cleanup_retains_evidence",
          "verdict": "pass",
          "evidence": f"Recon artifacts for this run are committed under "
@@ -126,6 +127,43 @@ def self_check(unit, result, idempotency_evidence, idempotency_result, unverifie
     ]
 
 
+def idempotency(unit, first, rerun):
+    """Decide the idempotency item from the two load reports rather than from an assertion on
+    the command line. A second load of an unchanged source must converge: identical counts and
+    anomalies, and nothing pruned, since a rerun that removes a document was not a no-op. Any
+    difference -- or a rerun that is not actually the later run -- fails the item."""
+    for label, report in (("--load-report", first), ("--rerun-load-report", rerun)):
+        if report["unit"] != unit:
+            sys.exit(f"{label} is for unit '{report['unit']}', not '{unit}'")
+        if report["dry_run"]:
+            sys.exit(f"{label} is a dry run; idempotency cannot be proven without a load")
+    if rerun["completed_at"] <= first["completed_at"]:
+        sys.exit("--rerun-load-report did not complete after --load-report; the two reports "
+                 "are not a load and its rerun")
+
+    graded = ("documents", "embedded", "quarantined", "anomalies")
+    diffs = []
+    by_name = {c["collection"]: c for c in first["collections"]}
+    for after in rerun["collections"]:
+        before = by_name.get(after["collection"])
+        if before is None:
+            diffs.append(f"{after['collection']}: absent from the first load")
+            continue
+        diffs += [f"{after['collection']}.{k}: {before[k]} -> {after[k]}"
+                  for k in graded if before[k] != after[k]]
+        if after["pruned"]:
+            diffs.append(f"{after['collection']}: rerun removed {after['pruned']} documents")
+    if len(rerun["collections"]) != len(first["collections"]):
+        diffs.append("the two loads wrote a different set of collections")
+
+    counts = ", ".join(f"{c['collection']}={c['documents']}" for c in rerun["collections"])
+    if diffs:
+        return "fail", f"rerun at {rerun['completed_at']} diverged: " + "; ".join(diffs)
+    return "pass", (f"second full load at {rerun['completed_at']} converged on the load at "
+                    f"{first['completed_at']}: {counts}, identical embedded and quarantine "
+                    "counts, 0 documents pruned")
+
+
 def anomaly_sets(unit, load_report):
     """Expected comes from the mapping, actual from what the load quarantined. Both are read
     rather than supplied, so this report cannot claim an anomaly was surfaced by a run that
@@ -146,18 +184,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--unit", required=True)
     ap.add_argument("--result", required=True, type=pathlib.Path)
-    ap.add_argument("--idempotency-evidence", required=True,
-                    help="what was rerun and what stayed identical")
-    ap.add_argument("--idempotency-result", default="pass", choices=["pass", "fail"])
     ap.add_argument("--load-report", required=True, type=pathlib.Path,
                     help="the loader's --report-out for this unit; the expected and actual "
                          "anomaly sets are read from it and the mapping, never typed in")
+    ap.add_argument("--rerun-load-report", required=True, type=pathlib.Path,
+                    help="the --report-out of the idempotency rerun; the item is graded by "
+                         "comparing the two loads, so it cannot be asserted")
     ap.add_argument("--unverified", action="append", default=[],
                     help="a path this unit does not prove; repeatable")
     args = ap.parse_args()
 
     result = json.loads(args.result.read_text())
-    expected, actual = anomaly_sets(args.unit, json.loads(args.load_report.read_text()))
+    load_report = json.loads(args.load_report.read_text())
+    expected, actual = anomaly_sets(args.unit, load_report)
+    idem_result, idem_evidence = idempotency(
+        args.unit, load_report, json.loads(args.rerun_load_report.read_text()))
     report = {
         "kind": "recon-report",
         "unit": args.unit,
@@ -168,8 +209,8 @@ def main():
         # The harness reads Atlas back over its own connection; nothing here is carried
         # over from the loader's in-memory documents.
         "values_recomputed_from_target": True,
-        "idempotency_rerun": {"performed": True, "result": args.idempotency_result,
-                              "evidence": args.idempotency_evidence},
+        "idempotency_rerun": {"performed": True, "result": idem_result,
+                              "evidence": idem_evidence},
         "planted_anomaly_detections": {
             "expected_set": expected,
             "actual_set": actual,
@@ -177,8 +218,8 @@ def main():
             "unexpected": [a for a in actual if a not in expected],
         },
         "unverified_paths": args.unverified,
-        "pre_pr_self_check": self_check(args.unit, result, args.idempotency_evidence,
-                                        args.idempotency_result, args.unverified),
+        "pre_pr_self_check": self_check(args.unit, result, idem_evidence, idem_result,
+                                        args.unverified),
     }
 
     failed = [c["id"] for c in report["checks"] if c["result"] == "fail"] \

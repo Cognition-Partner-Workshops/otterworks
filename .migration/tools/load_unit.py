@@ -23,9 +23,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import copy
 import datetime as dt
 import decimal
+import fcntl
 import json
 import os
 import pathlib
@@ -39,6 +41,7 @@ from pymongo import MongoClient, ReplaceOne
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / "03_mapping_spec.json"
 CONVENTIONS_PATH = ROOT / "01_conventions.md"
+EXTRACT_LOCK_PATH = ROOT / ".extract.lock"
 
 # Run parameters are interpolated into SQL text (an Oracle bind cannot appear in every
 # position a scope predicate needs), so the value space is restricted to what a scope
@@ -160,6 +163,28 @@ def designated_database():
         sys.exit(f"no 'Migration database' row in {CONVENTIONS_PATH}; refusing to guess a "
                  "write target")
     return m.group(1)
+
+
+@contextlib.contextmanager
+def extract_lease(path=EXTRACT_LOCK_PATH):
+    """Hold the source-load cap of 1 for the whole extract phase. The ledger row in
+    04_progress.md is a record of who holds it; this is the thing that makes a second
+    concurrent loader wait, since a wave runs three units wide and two of them read enough
+    rows to contend. flock releases on close, so a crashed loader cannot strand the lease."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as fh:
+        try:
+            fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            print(f"waiting for the Oracle extract lease held by another loader ({path})",
+                  file=sys.stderr)
+            fcntl.flock(fh, fcntl.LOCK_EX)
+        fh.write(f"{os.getpid()}\n")
+        fh.flush()
+        try:
+            yield
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)
 
 
 def substitute(text, params):
@@ -350,7 +375,7 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                                                  for d in docs)
                             for e in coll_spec.get("embeds", [])},
                "quarantined": len(quarantined) + len(orphans),
-               "anomalies": anomalies}
+               "anomalies": anomalies, "pruned": 0}
     if dry_run:
         return summary, docs[:1]
 
@@ -362,6 +387,15 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     if docs:
         db[name].bulk_write([ReplaceOne({"_id": d["_id"]}, d, upsert=True) for d in docs],
                             ordered=False)
+
+    # Upsert alone converges on changed and added rows but not on deleted ones: a document
+    # whose source row is gone would survive the rerun and the target would hold a record
+    # the source does not. The extract is the whole of what this unit owns (one collection,
+    # one unit, by the write-target registration), so anything else in it is stale.
+    summary["pruned"] = db[name].delete_many(
+        {"_id": {"$nin": [d["_id"] for d in docs]}}
+    ).deleted_count
+
     qcoll = (coll_spec.get("quarantine") or {}).get("collection")
     if qcoll:
         if qcoll not in db.list_collection_names():
@@ -369,6 +403,12 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
         if quarantined or orphans:
             db[qcoll].bulk_write([ReplaceOne({"_id": d["_id"]}, d, upsert=True)
                                   for d in quarantined + orphans], ordered=False)
+        # An anomaly that has been repaired at source must stop being reported as one,
+        # otherwise the count gate would grade this unit against a healed row.
+        summary["pruned"] += db[qcoll].delete_many(
+            {"collection": name,
+             "_id": {"$nin": [d["_id"] for d in quarantined + orphans]}},
+        ).deleted_count
     for spec_index in coll_spec.get("indexes", []):
         kwargs = {k: v for k, v in spec_index.items() if k in ("unique", "collation",
                                                                "expireAfterSeconds")}
@@ -416,7 +456,8 @@ def main():
     client = None if args.dry_run else MongoClient(os.environ[args.target_uri_secret])
     db = None if args.dry_run else client[args.target_db]
 
-    with (oracledb.connect(user=user, password=password, dsn=conn_str) as con,
+    with (extract_lease(),
+          oracledb.connect(user=user, password=password, dsn=conn_str) as con,
           con.cursor() as cur):
         # CODES is loaded first in wave 0, so the label denormalization every later unit
         # depends on reads it straight from the source rather than from the target.
@@ -436,6 +477,7 @@ def main():
                 print(json.dumps(sample[0], indent=2, default=str))
     if not all(c["matches_census"] for c in report["collections"]):
         sys.exit("loaded document count does not match the census; not proceeding to recon")
+    report["completed_at"] = dt.datetime.now(dt.UTC).isoformat()
     if args.report_out:
         args.report_out.parent.mkdir(parents=True, exist_ok=True)
         args.report_out.write_text(json.dumps(report, indent=2) + "\n")

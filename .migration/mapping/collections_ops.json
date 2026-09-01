@@ -152,7 +152,9 @@
           "keys": {
             "invoice_id": 1,
             "attempt_no": 1
-          }
+          },
+          "unique": true,
+          "note": "carries UQ_DUNNING_ATTEMPTS"
         },
         {
           "keys": {
@@ -218,6 +220,15 @@
       ],
       "expected_documents": 1,
       "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "kind_cd": 1,
+            "sent_at": 1
+          },
+          "unique": true,
+          "note": "carries UQ_NOTIFICATIONS"
+        },
         {
           "keys": {
             "tenant_id": 1,

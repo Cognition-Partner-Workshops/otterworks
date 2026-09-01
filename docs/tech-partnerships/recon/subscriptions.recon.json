@@ -1,8 +1,8 @@
 {
   "kind": "recon-report",
-  "unit": "reference",
+  "unit": "subscriptions",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T04:16:49.356420+00:00",
+  "generated_at": "2026-09-01T04:16:51.510339+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -14,7 +14,7 @@
       "actual": {
         "passed": true,
         "findings": 0,
-        "checks_run": 3,
+        "checks_run": 2,
         "stats": {}
       },
       "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
@@ -29,8 +29,13 @@
       "actual": {
         "passed": true,
         "findings": 0,
-        "checks_run": 14,
-        "stats": {}
+        "checks_run": 7,
+        "stats": {
+          "deferred_to_tier3": [
+            "subscriptions.ends_on",
+            "subscriptions.suspended_on"
+          ]
+        }
       },
       "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
       "result": "pass"
@@ -44,19 +49,14 @@
       "actual": {
         "passed": true,
         "findings": 0,
-        "checks_run": 104,
+        "checks_run": 69,
         "stats": {
-          "codes": {
-            "mode": "full_diff",
-            "population": 32
-          },
-          "tenants": {
+          "subscriptions": {
             "mode": "full_diff",
             "population": 69
           },
-          "plans": {
-            "mode": "full_diff",
-            "population": 3
+          "embeds_graded": {
+            "subscriptions.history": 0
           }
         }
       },
@@ -75,7 +75,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "second full load at 2026-09-01T04:15:31.586802+00:00 converged on the load at 2026-09-01T04:15:26.403454+00:00: codes=32, tenants=69, plans=3, identical embedded and quarantine counts, 0 documents pruned"
+    "evidence": "second full load at 2026-09-01T04:15:34.915179+00:00 converged on the load at 2026-09-01T04:15:33.187889+00:00: subscriptions=69, identical embedded and quarantine counts, 0 documents pruned"
   },
   "planted_anomaly_detections": {
     "expected_set": [],
@@ -84,7 +84,7 @@
     "unexpected": []
   },
   "unverified_paths": [
-    "none: all 104 documents were graded by full keyed diff, no sampling"
+    "none: all 69 documents were graded by full keyed diff; the history embed is declared and graded with 0 elements because SUBSCRIPTIONS_HIST is empty at source"
   ],
   "pre_pr_self_check": [
     {
@@ -110,7 +110,7 @@
     {
       "id": "cleanup_retains_evidence",
       "verdict": "pass",
-      "evidence": "Recon artifacts for this run are committed under .migration/recon/reference/ and are not removed by any load path."
+      "evidence": "Recon artifacts for this run are committed under .migration/recon/subscriptions/ and are not removed by any load path."
     },
     {
       "id": "no_secrets_or_addresses",
@@ -125,17 +125,17 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "second full load at 2026-09-01T04:15:31.586802+00:00 converged on the load at 2026-09-01T04:15:26.403454+00:00: codes=32, tenants=69, plans=3, identical embedded and quarantine counts, 0 documents pruned"
+      "evidence": "second full load at 2026-09-01T04:15:34.915179+00:00 converged on the load at 2026-09-01T04:15:33.187889+00:00: subscriptions=69, identical embedded and quarantine counts, 0 documents pruned"
     },
     {
       "id": "values_recomputed_from_target",
       "verdict": "pass",
-      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'codes': 'full_diff/32', 'tenants': 'full_diff/69', 'plans': 'full_diff/3'}."
+      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'subscriptions': 'full_diff/69'}."
     },
     {
       "id": "unverified_paths_listed",
       "verdict": "pass",
-      "evidence": "none: all 104 documents were graded by full keyed diff, no sampling"
+      "evidence": "none: all 69 documents were graded by full keyed diff; the history embed is declared and graded with 0 elements because SUBSCRIPTIONS_HIST is empty at source"
     },
     {
       "id": "recon_report_schema",

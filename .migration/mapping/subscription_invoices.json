@@ -156,6 +156,12 @@
             }
           ],
           "cardinality": "sum(len(lines)) == 2",
+          "unique_in_array": [
+            [
+              "line_no"
+            ]
+          ],
+          "unique_in_array_note": "UQ_INVOICE_LINES(INVOICE_ID, LINE_NO): with the lines embedded, the invoice document is the INVOICE_ID scope, so the surviving invariant is one line_no per invoice. No index can express it; PKG_INVOICING's converted writer enforces it and the load asserts it.",
           "dropped": [
             {
               "source": "INVOICE_ID",

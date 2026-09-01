@@ -1,5 +1,5 @@
 {
-  "unit": "reference",
+  "unit": "customers",
   "mode": "live",
   "mapping_version": "m1",
   "tolerance_version": "v1",
@@ -7,7 +7,7 @@
   "params": {
     "batch_no": "85559852"
   },
-  "generated_at": "2026-09-01T04:16:49.356420+00:00",
+  "generated_at": "2026-09-01T04:17:07.846125+00:00",
   "tiers": [
     {
       "tier": 1,
@@ -21,27 +21,33 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 14,
-      "stats": {},
+      "checks_run": 40,
+      "stats": {
+        "deferred_to_tier3": [
+          "customers.sub_status_cd",
+          "customers.address.line_2",
+          "customers.address.line_3",
+          "customers.phones.secondary.number",
+          "customers.credit_limit_amt",
+          "customers.legacy.promo_codes_csv",
+          "customers.legacy.related_acct_ids"
+        ]
+      },
       "findings": []
     },
     {
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 104,
+      "checks_run": 33333,
       "stats": {
-        "codes": {
+        "customers": {
           "mode": "full_diff",
-          "population": 32
+          "population": 25000
         },
-        "tenants": {
-          "mode": "full_diff",
-          "population": 69
-        },
-        "plans": {
-          "mode": "full_diff",
-          "population": 3
+        "embeds_graded": {
+          "customers.attributes": 8333,
+          "customers.history": 0
         }
       },
       "findings": []

@@ -44,6 +44,7 @@ def load(name):
 
 COLUMNS = load("columns")
 COUNTS = load("exact_counts")
+INDEXES = load("indexes")
 CODE_TYPES = load("code_types")
 POP = load("access_patterns")["customer_master_population"]
 
@@ -234,7 +235,9 @@ def build():
             code_label("STATUS_CD", "status", "TENANT_STATUS"),
         ],
         "expected_documents": COUNTS["TENANTS"],
-        "indexes": [{"keys": {"status_cd": 1}}],
+        "indexes": [{"keys": {"name": 1}, "unique": True,
+                     "note": "carries UQ_TENANTS_NAME"},
+                    {"keys": {"status_cd": 1}}],
     })
     colls.append({
         "collection": "plans", "unit": "reference", "wave": 0,
@@ -548,7 +551,9 @@ def build():
             "dropped": DROPPED["RATING_RESULTS"],
         }],
         "expected_documents": COUNTS["RATING_PERIODS"],
-        "indexes": [{"keys": {"tenant_id": 1, "period_start": -1}}],
+        "indexes": [{"keys": {"tenant_id": 1, "period_start": -1}, "unique": True,
+                     "note": "carries UQ_RATING_PERIODS; descending order serves the "
+                             "latest-period read and does not weaken uniqueness"}],
     })
 
     # ---- wave 2: the application's own invoices ---------------------------
@@ -572,6 +577,12 @@ def build():
                        fld("INVOICE_LINES", "DESCRIPTION", "description"),
                        fld("INVOICE_LINES", "AMOUNT", "amount")],
             "cardinality": f"sum(len(lines)) == {COUNTS['INVOICE_LINES']}",
+            "unique_in_array": [["line_no"]],
+            "unique_in_array_note": (
+                "UQ_INVOICE_LINES(INVOICE_ID, LINE_NO): with the lines embedded, the "
+                "invoice document is the INVOICE_ID scope, so the surviving invariant is "
+                "one line_no per invoice. No index can express it; PKG_INVOICING's "
+                "converted writer enforces it and the load asserts it."),
             "dropped": DROPPED["INVOICE_LINES"],
         }],
         "expected_documents": COUNTS["INVOICES"],
@@ -586,10 +597,14 @@ def build():
         ("dunning_attempts", "DUNNING_ATTEMPTS",
          ("grows unbounded over an invoice's life and is written by the nightly dunning job "
           "long after issue, so it is referenced rather than embedded into the invoice"),
-         [{"keys": {"invoice_id": 1, "attempt_no": 1}}, {"keys": {"scheduled_for": 1}}]),
+         [{"keys": {"invoice_id": 1, "attempt_no": 1}, "unique": True,
+           "note": "carries UQ_DUNNING_ATTEMPTS"},
+          {"keys": {"scheduled_for": 1}}]),
         ("notifications", "NOTIFICATIONS",
          "append-only outbound log, read by tenant and time window",
-         [{"keys": {"tenant_id": 1, "sent_at": -1}}]),
+         [{"keys": {"tenant_id": 1, "kind_cd": 1, "sent_at": 1}, "unique": True,
+           "note": "carries UQ_NOTIFICATIONS"},
+          {"keys": {"tenant_id": 1, "sent_at": -1}}]),
         ("billing_audit_log", "BILLING_AUDIT_LOG",
          ("written by PKG_OW_UTIL.log_msg, purged by JOB_PURGE_AUDIT_LOG; the job is "
           "replaced by a TTL index on logged_at"),
@@ -680,7 +695,57 @@ def validate(spec):
     missing_tables = sorted(set(COUNTS) - tables)
     if missing_tables:
         problems.append(f"UNBUCKETED tables: {missing_tables}")
+    problems += uniqueness_problems(spec)
     return problems, len(seen)
+
+
+def source_unique_constraints():
+    """Every UNIQUE index in the census, as {table: {index_name: [columns in order]}}."""
+    out: dict[str, dict[str, list]] = {}
+    for r in sorted(INDEXES, key=lambda r: r["column_position"]):
+        if r["uniqueness"] == "UNIQUE":
+            out.setdefault(r["table_name"], {}).setdefault(r["index_name"], []) \
+                .append(r["column_name"])
+    return out
+
+
+def uniqueness_problems(spec):
+    """A UNIQUE constraint is a rule the source enforced on every writer, so dropping one in
+    the target lets a converted writer create a record Oracle would have rejected. Each one
+    has to survive as the collection key, a unique index, or -- for a child table folded into
+    an array, where no index can express it -- a declared element-level invariant."""
+    problems = []
+    constraints = source_unique_constraints()
+    for c in spec["collections"]:
+        target_of = {f["source"]: f["target"] for f in c["fields"]}
+        unique_indexes = [set(i["keys"]) for i in c.get("indexes", []) if i.get("unique")]
+        key_cols = set(c["key"]["source"])
+        for index_name, cols in constraints.get(c["root_table"], {}).items():
+            if set(cols) == key_cols:
+                continue  # carried by _id
+            want = {target_of[col] for col in cols if col in target_of}
+            if len(want) != len(cols) or want not in unique_indexes:
+                problems.append(
+                    f"DROPPED UNIQUENESS {c['root_table']}.{index_name} ({', '.join(cols)}): "
+                    f"{c['collection']} declares no unique index on {sorted(want)}")
+        for e in c.get("embeds", []):
+            child_target = {f["source"]: f["target"] for f in e["fields"]}
+            child_target[e["key"]["source"][0]] = e["key"]["target"]
+            declared = [set(u) for u in e.get("unique_in_array", [])]
+            for index_name, cols in constraints.get(e["child_table"], {}).items():
+                # The parent key is constant inside one document, so a source constraint on
+                # (parent, x) becomes "x is unique within the array".
+                want = {child_target.get(col, col) for col in cols
+                        if col not in e["parent_key"]}
+                if not want:
+                    continue
+                if want in declared or want == {e["key"]["target"]}:
+                    continue
+                problems.append(
+                    f"DROPPED UNIQUENESS {e['child_table']}.{index_name} ({', '.join(cols)}): "
+                    f"{c['collection']}.{e['array_path']} declares no unique_in_array "
+                    f"invariant on {sorted(want)}")
+    return problems
 
 
 def write_unit_specs(spec):
