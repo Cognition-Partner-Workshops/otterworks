@@ -565,4 +565,4 @@ def suspend_overdue(store, as_of):
                     "sent_at": as_of,
                 }
             )
-        store.log("DUNNING", f"suspended tenant={tenant_id}")
+            store.log("DUNNING", f"suspended tenant={tenant_id}")

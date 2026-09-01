@@ -441,6 +441,16 @@ def test_suspension_is_idempotent_for_the_same_day():
     assert store.tenant(TENANT)["status_cd"] == bl.TENANT_SUSPENDED
 
 
+def test_a_dunning_run_with_nothing_to_suspend_logs_nothing_and_completes():
+    """`sp_suspend_overdue` logs one line per tenant it actually suspends, inside the IF -- a
+    nightly run over an estate with nothing overdue is a normal, quiet, successful run."""
+    store = store_with(tenants=[{"_id": TENANT, "status_cd": 10}])
+    bl.suspend_overdue(store, dt.date(2026, 2, 28))
+    assert store.tenant(TENANT)["status_cd"] == bl.TENANT_ACTIVE
+    assert not [e for e in store.collection("billing_audit_log").docs
+                if e["module"] == "DUNNING"]
+
+
 def test_a_cancellation_that_lands_mid_update_is_not_reverted():
     """TRG_SUB_NO_UNCANCEL held for concurrent sessions too. Read-then-write cannot: the row
     is cancelled after this caller read it as active, and an unguarded write would put it

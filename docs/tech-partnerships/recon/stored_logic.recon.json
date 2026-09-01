@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "stored_logic",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T05:04:59.112708+00:00",
+  "generated_at": "2026-09-01T05:12:02.907739+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -108,7 +108,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "the replay at 2026-09-01T05:04:56.062068+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:03:33.915390+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+    "evidence": "the replay at 2026-09-01T05:12:02.546696+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:10:46.628964+00:00 digest for digest, so replaying the converted routines carries no state between runs"
   },
   "planted_anomaly_detections": {
     "expected_set": [],
@@ -161,7 +161,7 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "the replay at 2026-09-01T05:04:56.062068+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:03:33.915390+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+      "evidence": "the replay at 2026-09-01T05:12:02.546696+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:10:46.628964+00:00 digest for digest, so replaying the converted routines carries no state between runs"
     },
     {
       "id": "values_recomputed_from_target",
