@@ -283,7 +283,7 @@ async def run_unit(uid):
             f"open against {RUN_BRANCH}; its head contains .migration/recon/{uid}/result.json with verdict PASS/GREEN, "
             f"mapping_version v1.0.1, tolerance v1, run_mode fixture; the PR body has the required sections and no "
             f"requester identification. Report verdict GREEN with pr_url/branch if all hold, else ESCALATE with what is missing.",
-            phase=f"convert-{uid}", schema=UNIT_SCHEMA, label=f"{u['title']} (resumed-evidence check)", mode="lite",
+            phase=f"convert-{uid}", schema=UNIT_SCHEMA, label=f"{u['title']} (resumed-evidence check)",
         )
     return await agent(
         COMMON + "\n## Your unit\n" + u["spec"] +
