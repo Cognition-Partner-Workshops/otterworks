@@ -4,13 +4,13 @@
 - Mode: `continuous`
 - Mapping version: `1.0.0`
 - Tolerance version: `1`
-- Generated: 2026-09-01T01:53:34.457630+00:00
+- Generated: 2026-09-01T01:59:47.728321+00:00
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
 | 1 | counts_through_mapping | 2 | PASS |
 | 2 | per_field_aggregates | 42 | PASS |
-| 3 | keyed_diffs | 1004 | PASS |
+| 3 | keyed_diffs | 1003 | PASS |
 
 ## Tier 2 coverage
 ```json
@@ -84,8 +84,8 @@
   "customers": {
     "mode": "stratified_sample",
     "population": 25000,
-    "sampled": 1004,
-    "coverage": 0.04016
+    "sampled": 1003,
+    "coverage": 0.04012
   }
 }
 ```

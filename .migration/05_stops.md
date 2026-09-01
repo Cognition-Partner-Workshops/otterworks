@@ -108,6 +108,12 @@ Open items a cutover approval has to answer, all recorded above rather than reso
 
 - D10 declined CDC, so the parallel-run window proves stability against an idle source only; a
   window with live source writes needs the CDC decision reopened.
+- The harness verdict covers root fields and embedded-array cardinality, not embedded child
+  values (H3). Those are verified by `scripts/tp_mongo/embed_diff.py` — 2,882,629 value
+  comparisons, 0 findings — which is evidence, not a merge authority; a mapping version that
+  declares embed child fields would fold it back into the verdict.
+- Each parallel-run cycle samples ~1,004 keys, at seeds 1/2/3 (H4); the full-key guarantee
+  comes from the `live` wave recon, and the cycles add ~11–15% cumulative sampled coverage.
 - `CUST_NAME_UPPER` is retired at cutover per the D6 follow-up, not by a mapping change.
 - Mapping `1.0.0` predicates hard-code the `demo` batch; another namespace needs a version bump.
 - Load throughput at production scale is still unmeasured (G4).

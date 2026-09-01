@@ -1,0 +1,7 @@
+{
+  "unit": "invoices",
+  "mode": "continuous",
+  "ns": "demo",
+  "tier3_seed": 2,
+  "recorded_at": "2026-09-01T01:59:51.398493+00:00"
+}
