@@ -1,0 +1,941 @@
+[
+  {
+    "probe": "codes: independent full value diff (Oracle TO_CHAR text -> spec) ",
+    "ok": true,
+    "detail": {
+      "population": 32,
+      "docs": 32,
+      "diffs": [],
+      "missing_in_target": []
+    }
+  },
+  {
+    "probe": "codes: BSON type per field exactly as spec (int32/long/decimal/string)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "probe": "codes: field-set audit (only spec fields + ns [+ ObjectId _id for codes])",
+    "ok": true,
+    "detail": {}
+  },
+  {
+    "probe": "tenants: independent full value diff (Oracle TO_CHAR text -> spec) ",
+    "ok": true,
+    "detail": {
+      "population": 69,
+      "docs": 69,
+      "diffs": [],
+      "missing_in_target": []
+    }
+  },
+  {
+    "probe": "tenants: BSON type per field exactly as spec (int32/long/decimal/string)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "probe": "tenants: field-set audit (only spec fields + ns [+ ObjectId _id for codes])",
+    "ok": true,
+    "detail": {}
+  },
+  {
+    "probe": "plans: independent full value diff (Oracle TO_CHAR text -> spec) ",
+    "ok": true,
+    "detail": {
+      "population": 3,
+      "docs": 3,
+      "diffs": [],
+      "missing_in_target": []
+    }
+  },
+  {
+    "probe": "plans: BSON type per field exactly as spec (int32/long/decimal/string)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "probe": "plans: field-set audit (only spec fields + ns [+ ObjectId _id for codes])",
+    "ok": true,
+    "detail": {}
+  },
+  {
+    "probe": "plans: Decimal128 textual scale == Oracle TO_CHAR (12,2)/(12,6) \u2014 doc-level check of aggregate-only fields",
+    "ok": true,
+    "detail": {
+      "checked": 6,
+      "values": [
+        [
+          "10000000-0000-0000-0000-000000000001",
+          "49.00",
+          "0.055000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000002",
+          "149.00",
+          "0.035000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000003",
+          "499.00",
+          "0.020000"
+        ]
+      ]
+    }
+  },
+  {
+    "probe": "codes: SUM/MIN/MAX(code_val) doc-level recompute",
+    "ok": true,
+    "detail": {
+      "src": [
+        389,
+        1,
+        99
+      ],
+      "tgt": [
+        389,
+        1,
+        99
+      ]
+    }
+  },
+  {
+    "probe": "codes: null/missing/empty-string distribution per field (src NULL+blank == tgt null+missing; no '' in target)",
+    "ok": true,
+    "detail": {
+      "code_type": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "code_val": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "code_desc": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      }
+    }
+  },
+  {
+    "probe": "tenants: null/missing/empty-string distribution per field (src NULL+blank == tgt null+missing; no '' in target)",
+    "ok": true,
+    "detail": {
+      "id": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "name": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "tax_exempt_yn": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "status_cd": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      }
+    }
+  },
+  {
+    "probe": "plans: null/missing/empty-string distribution per field (src NULL+blank == tgt null+missing; no '' in target)",
+    "ok": true,
+    "detail": {
+      "id": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "code": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "tier_cd": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "monthly_fee": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "included_units": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "overage_rate": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      },
+      "active_yn": {
+        "src_null": 0,
+        "src_blank": 0,
+        "tgt_null": 0,
+        "tgt_missing": 0,
+        "tgt_empty_str": 0
+      }
+    }
+  },
+  {
+    "probe": "codes: no duplicate _key and no duplicate (code_type, code_val)",
+    "ok": true,
+    "detail": {
+      "dup_key": [],
+      "dup_pair": []
+    }
+  },
+  {
+    "probe": "codes: _key == code_type||':'||code_val on every doc (mapping v1.0.1 key expr)",
+    "ok": true,
+    "detail": {
+      "inconsistent": 0
+    }
+  },
+  {
+    "probe": "tenants: _id == id on every doc",
+    "ok": true,
+    "detail": {
+      "mismatch": 0
+    }
+  },
+  {
+    "probe": "plans: _id == id on every doc",
+    "ok": true,
+    "detail": {
+      "mismatch": 0
+    }
+  },
+  {
+    "probe": "tenants: name unique in target (mirrors UQ_TENANTS_NAME)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "probe": "plans: code unique in target (mirrors UQ_PLANS_CODE)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "probe": "min/max boundary docs per field: full-field compare",
+    "ok": true,
+    "detail": [
+      {
+        "coll": "codes",
+        "field": "CODE_TYPE",
+        "agg": "MIN",
+        "key": "CUST_STATUS:1",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "CODE_TYPE",
+        "agg": "MAX",
+        "key": "USAGE_KIND:1",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "CODE_VAL",
+        "agg": "MIN",
+        "key": "CUST_STATUS:1",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "CODE_VAL",
+        "agg": "MAX",
+        "key": "CUST_STATUS:99",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "CODE_DESC",
+        "agg": "MIN",
+        "key": "TENANT_STATUS:10",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "CODE_DESC",
+        "agg": "MAX",
+        "key": "NOTIF_KIND:3",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "LENGTH(CODE_DESC)",
+        "agg": "MIN",
+        "key": "USAGE_KIND:1",
+        "equal": true
+      },
+      {
+        "coll": "codes",
+        "field": "LENGTH(CODE_DESC)",
+        "agg": "MAX",
+        "key": "CUST_STATUS:99",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "ID",
+        "agg": "MIN",
+        "key": "00000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "ID",
+        "agg": "MAX",
+        "key": "fd52ea22-b475-5783-4a84-900e36eb5289",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "NAME",
+        "agg": "MIN",
+        "key": "00000000-0000-0000-0000-000000000008",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "NAME",
+        "agg": "MAX",
+        "key": "3a12dba0-0552-c36f-8b9d-4ae038058ce4",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "STATUS_CD",
+        "agg": "MIN",
+        "key": "00000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "STATUS_CD",
+        "agg": "MAX",
+        "key": "00000000-0000-0000-0000-000000000002",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "LENGTH(NAME)",
+        "agg": "MIN",
+        "key": "00000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "tenants",
+        "field": "LENGTH(NAME)",
+        "agg": "MAX",
+        "key": "fbd4c57e-8413-fb09-5842-22c318e2a5af",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "ID",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "ID",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "CODE",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000002",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "CODE",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "TIER_CD",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "TIER_CD",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "MONTHLY_FEE",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "MONTHLY_FEE",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "INCLUDED_UNITS",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "INCLUDED_UNITS",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "OVERAGE_RATE",
+        "agg": "MIN",
+        "key": "10000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "coll": "plans",
+        "field": "OVERAGE_RATE",
+        "agg": "MAX",
+        "key": "10000000-0000-0000-0000-000000000001",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "probe": "tenants: key extremes identical (BINARY vs simple-collation sort)",
+    "ok": true,
+    "detail": {
+      "src": [
+        "00000000-0000-0000-0000-000000000001",
+        "fd52ea22-b475-5783-4a84-900e36eb5289"
+      ],
+      "tgt": [
+        "00000000-0000-0000-0000-000000000001",
+        "fd52ea22-b475-5783-4a84-900e36eb5289"
+      ]
+    }
+  },
+  {
+    "probe": "plans: key extremes identical (BINARY vs simple-collation sort)",
+    "ok": true,
+    "detail": {
+      "src": [
+        "10000000-0000-0000-0000-000000000001",
+        "10000000-0000-0000-0000-000000000003"
+      ],
+      "tgt": [
+        "10000000-0000-0000-0000-000000000001",
+        "10000000-0000-0000-0000-000000000003"
+      ]
+    }
+  },
+  {
+    "probe": "codes: key extremes identical (BINARY vs simple-collation sort)",
+    "ok": true,
+    "detail": {
+      "src": [
+        "CUST_STATUS:1",
+        "USAGE_KIND:3"
+      ],
+      "tgt": [
+        "CUST_STATUS:1",
+        "USAGE_KIND:3"
+      ]
+    }
+  },
+  {
+    "probe": "CHAR(1) flags: no padded source values (rstrip_spaces is a no-op here) and no whitespace in target",
+    "ok": true,
+    "detail": {
+      "src_padded": 0,
+      "tgt_ws": 0
+    }
+  },
+  {
+    "probe": "VARCHAR2 leading/trailing whitespace preserved 1:1 (src count == tgt count)",
+    "ok": true,
+    "detail": {
+      "src": 0,
+      "tgt": 0
+    }
+  },
+  {
+    "probe": "tenants: value distributions tax_exempt_yn / status_cd",
+    "ok": true,
+    "detail": {
+      "tax_exempt_yn": [
+        {
+          "N": 63,
+          "Y": 6
+        },
+        {
+          "N": 63,
+          "Y": 6
+        }
+      ],
+      "status_cd": [
+        {
+          "10": 68,
+          "20": 1
+        },
+        {
+          "10": 68,
+          "20": 1
+        }
+      ]
+    }
+  },
+  {
+    "probe": "codes: per code_type cardinality",
+    "ok": true,
+    "detail": {
+      "src": {
+        "CUST_STATUS": 4,
+        "CUST_TYPE": 3,
+        "DUN_STATUS": 3,
+        "INV_STATUS": 4,
+        "NOTIF_KIND": 3,
+        "PHONE_TYPE": 4,
+        "PLAN_TIER": 3,
+        "SUB_STATUS": 3,
+        "TENANT_STATUS": 2,
+        "USAGE_KIND": 3
+      },
+      "tgt": {
+        "CUST_STATUS": 4,
+        "CUST_TYPE": 3,
+        "DUN_STATUS": 3,
+        "INV_STATUS": 4,
+        "NOTIF_KIND": 3,
+        "PHONE_TYPE": 4,
+        "PLAN_TIER": 3,
+        "SUB_STATUS": 3,
+        "TENANT_STATUS": 2,
+        "USAGE_KIND": 3
+      }
+    }
+  },
+  {
+    "probe": "ns == 'mongo_205236' on 100 % of U0 docs",
+    "ok": true,
+    "detail": {
+      "codes": 0,
+      "tenants": 0,
+      "plans": 0
+    }
+  },
+  {
+    "probe": "indexes exactly as spec (codes unique(code_type,code_val); tenants/plans _id only)",
+    "ok": true,
+    "detail": {
+      "codes": [
+        [
+          "_id_",
+          false,
+          [
+            [
+              "_id",
+              1
+            ]
+          ]
+        ],
+        [
+          "code_type_1_code_val_1",
+          true,
+          [
+            [
+              "code_type",
+              1
+            ],
+            [
+              "code_val",
+              1
+            ]
+          ]
+        ]
+      ],
+      "tenants": [
+        [
+          "_id_",
+          false,
+          [
+            [
+              "_id",
+              1
+            ]
+          ]
+        ]
+      ],
+      "plans": [
+        [
+          "_id_",
+          false,
+          [
+            [
+              "_id",
+              1
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  {
+    "probe": "quarantine: U0 has no expected classes; SET of U0 quarantine collections == {} and expected count 0",
+    "ok": true,
+    "detail": {
+      "quarantine_collections": [
+        "orphan_document_snapshots"
+      ],
+      "u0_related": [],
+      "expected_u0_quarantine_rows": 0
+    }
+  },
+  {
+    "probe": "no loader residue collections in target db",
+    "ok": true,
+    "detail": {
+      "collections": [
+        "codes",
+        "document_snapshots",
+        "documents",
+        "files",
+        "plans",
+        "tenants"
+      ]
+    }
+  },
+  {
+    "probe": "reload from PR head did not touch other units' collections",
+    "ok": true,
+    "detail": {
+      "documents": 2000,
+      "document_snapshots": 384,
+      "files": 10000
+    }
+  },
+  {
+    "probe": "tenants: manifest says 60 (demo-seeded) \u2014 table has 69 = 60 demo + 9 base-schema rows; root_where is null so all 69 are in scope",
+    "ok": true,
+    "detail": {
+      "manifest": 60,
+      "src_demo": 60,
+      "src_base": 9,
+      "tgt_demo": 60
+    }
+  },
+  {
+    "probe": "excluded object FIXTURE_META not migrated",
+    "ok": true,
+    "detail": {}
+  },
+  {
+    "probe": "cross-unit: shared references (tenant ids / plan ids / code domains) resolve in target U0 collections",
+    "ok": true,
+    "detail": {
+      "CUSTOMER_MASTER.TENANT_ID -> tenants": {
+        "distinct": 50,
+        "unresolved": [
+          "03f8301a-16ab-7aa8-93d7-667c24998b37",
+          "09dfb3cb-3c19-419d-b589-94cad6f10aa5",
+          "1116983f-7b74-6020-ef49-bdbef6b7ecd8",
+          "11adf565-68a3-a742-ccce-474e146140ac",
+          "16a6c0e8-3b8e-6dc4-d9c0-bd4d5d26954a"
+        ]
+      },
+      "CUSTOMER_MASTER.STATUS_CD -> codes[CUST_STATUS]": {
+        "vals": [
+          1,
+          2,
+          3,
+          99
+        ],
+        "unresolved": []
+      },
+      "CUSTOMER_MASTER.REGION_CD -> codes[REGION]": {
+        "vals": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "unresolved": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      },
+      "INVOICE_HEADER.STATUS_CD -> codes[INV_STATUS] (RPT-114 join)": {
+        "vals": [
+          20,
+          30,
+          40
+        ],
+        "unresolved": []
+      },
+      "SUBSCRIPTIONS.TENANT_ID -> tenants": {
+        "distinct": 69,
+        "unresolved": []
+      },
+      "SUBSCRIPTIONS.PLAN_ID -> plans": {
+        "distinct": 3,
+        "unresolved": []
+      },
+      "tenants.status_cd -> codes[TENANT_STATUS]": {
+        "vals": [
+          10,
+          20
+        ],
+        "unresolved": [],
+        "code_types": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "DUN_STATUS",
+          "INV_STATUS",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "SUB_STATUS",
+          "TENANT_STATUS",
+          "USAGE_KIND"
+        ]
+      },
+      "plans.tier_cd -> codes[PLAN_TIER]": {
+        "vals": [
+          1,
+          2,
+          3
+        ],
+        "unresolved": []
+      }
+    }
+  },
+  {
+    "probe": "replay F_CODE_DESC: all 32 codes + 3 miss/null cases equal (mongo side: find_one on the unique index + UNKNOWN(n) fallback)",
+    "ok": true,
+    "detail": {
+      "n": 35
+    }
+  },
+  {
+    "probe": "replay FN_LIST_PLANS (active plans, DECODE tier, ORDER BY monthly_fee, code)",
+    "ok": true,
+    "detail": {
+      "oracle": [
+        [
+          "10000000-0000-0000-0000-000000000001",
+          "STARTER",
+          "starter",
+          "49.00",
+          100,
+          "0.055000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000002",
+          "GROWTH",
+          "growth",
+          "149.00",
+          500,
+          "0.035000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000003",
+          "SCALE",
+          "scale",
+          "499.00",
+          2000,
+          "0.020000"
+        ]
+      ],
+      "mongo": [
+        [
+          "10000000-0000-0000-0000-000000000001",
+          "STARTER",
+          "starter",
+          "49.00",
+          100,
+          "0.055000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000002",
+          "GROWTH",
+          "growth",
+          "149.00",
+          500,
+          "0.035000"
+        ],
+        [
+          "10000000-0000-0000-0000-000000000003",
+          "SCALE",
+          "scale",
+          "499.00",
+          2000,
+          "0.020000"
+        ]
+      ]
+    }
+  },
+  {
+    "probe": "plans: inactive-plan filter parity (NVL(active_yn,'N')<>'Y')",
+    "ok": true,
+    "detail": {
+      "src": 0,
+      "tgt": 0
+    }
+  },
+  {
+    "probe": "replay RPT-114 status decode (INV_STATUS lookup per INVOICE_HEADER.status_cd in batch 85559852)",
+    "ok": true,
+    "detail": {
+      "oracle": {
+        "20": "issued",
+        "30": "paid",
+        "40": "overdue"
+      },
+      "mongo": {
+        "20": "issued",
+        "30": "paid",
+        "40": "overdue"
+      }
+    }
+  },
+  {
+    "probe": "replay tenant lookup by id and by unique name (10 seeded-random tenants)",
+    "ok": true,
+    "detail": [
+      {
+        "id": "0728a5a2-1ea8-a26b-bbc3-ad06e2dc2491",
+        "equal": true
+      },
+      {
+        "id": "e1d694db-41cf-2dcd-ddd0-70cbc916829d",
+        "equal": true
+      },
+      {
+        "id": "e9432728-4d62-20a5-d779-a01e75ce03bc",
+        "equal": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "equal": true
+      },
+      {
+        "id": "7e3fdd61-00ac-ca5e-e40f-9f61cf288740",
+        "equal": true
+      },
+      {
+        "id": "ed1e76b0-27db-87a4-bb5b-8648e639d259",
+        "equal": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000006",
+        "equal": true
+      },
+      {
+        "id": "aad5c229-724a-7a23-7c56-f454994c02a3",
+        "equal": true
+      },
+      {
+        "id": "7a0d6000-bb7f-008f-97e0-936febf27c50",
+        "equal": true
+      },
+      {
+        "id": "3c74f709-9c14-0338-188f-66ace530f3e3",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "probe": "drift triage: source re-counted twice, FIXTURE_META.INITIALIZED_AT unchanged",
+    "ok": true,
+    "detail": {
+      "pass1": [
+        32,
+        69,
+        3
+      ],
+      "pass2": [
+        32,
+        69,
+        3
+      ],
+      "fixture_meta": [
+        [
+          "2026-09-01 20:53:10.961888"
+        ]
+      ]
+    }
+  }
+]
