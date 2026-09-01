@@ -1,0 +1,69 @@
+{
+  "unit": "U2",
+  "batch_no": 85559852,
+  "target_db": "ow_tp_mongodb_205236",
+  "quarantine_db": "ow_tp_mongodb_205236_quarantine",
+  "collections": {
+    "invoices": {
+      "dropped": true,
+      "inserted": 18750
+    },
+    "invoice_feed_orphan_lines": {
+      "dropped": true,
+      "inserted": 37
+    }
+  },
+  "source_counts": {
+    "invoice_header": 18750,
+    "invoice_line": 150000
+  },
+  "embedded_lines": 149963,
+  "quarantined_lines": 37,
+  "quarantined_line_ids": [
+    "0e7a3dc2-d003-464a-9c2b-14125c79cbe9",
+    "0fbd756a-1d5f-bdfb-4cb9-81d2cbb4fee4",
+    "0fe3f0d5-2e0d-87dc-0933-f84887549f80",
+    "1c435cb0-171d-69c3-f600-a5f4bc7e90fe",
+    "21367220-1d41-e396-0f3b-dbf2ae5d91e9",
+    "4b34c0f1-8476-f678-add0-b3f921a7cd5f",
+    "4c826f11-c733-eac0-9318-29ae919beec4",
+    "50526783-22bf-ae7c-f6ba-4f8aa111b611",
+    "57f7b9b0-9e76-4439-48b9-3b71025322a4",
+    "670cd75f-cf78-0b95-5426-a95484ef2a0e",
+    "7242b80f-45f6-4bbf-3153-bb2ce0c6441e",
+    "78572c4c-b635-7daa-183e-5490237ab052",
+    "78f6a5bb-18f3-bf6e-2aa3-92f241f6c5b1",
+    "8c12956a-e778-88e6-67d5-ad44d3b540c3",
+    "8c95dd3d-97ed-420d-1965-cf320c34fb84",
+    "8e85a5db-53c9-a05b-3049-752bb6632003",
+    "90ddc15d-a71e-ea73-9392-338da7255605",
+    "95d5043f-e481-1de8-cd92-bd76bc09dc19",
+    "97f42ec8-39e7-19f2-9a76-84414644efc3",
+    "982209a3-c282-e02f-83ec-ee9d0b474d7f",
+    "9dd7ea2b-091d-c45f-abd6-2a2fb2e43891",
+    "9f1600ed-b570-0274-d42e-c1dab91038c4",
+    "a53ea126-8621-3e3c-a8be-88435d7ca266",
+    "aef7cf16-4fdc-e2bc-7de5-ddbc1782c43a",
+    "b0479162-4897-2f54-82d5-c08044b3a1a7",
+    "b259311b-5098-d0f9-a658-585d6eff8f81",
+    "bddd1f4a-cad4-50cb-a066-9ee465981778",
+    "c08e04e0-0a1c-27fc-12a4-802a2421036c",
+    "c1008e17-8f78-a845-2ba2-bccd154a0b9c",
+    "c4a55285-efd8-3c27-d21e-ab29cdf11eae",
+    "c8ee4242-005d-bf23-d5a0-d8c906ef6f3f",
+    "cfb214f7-cf89-751a-ed4c-8ef1bfa2665d",
+    "d032629f-368d-fc21-534c-13866e7dd45a",
+    "da96e215-3481-a34b-2d84-c4a8f67ee7e3",
+    "e77fefbf-059b-62cb-f889-1c7296f933b5",
+    "f032b198-0c91-8ccd-a23d-3804994faacd",
+    "f2053077-7f8a-ea53-b9ed-7c5e2b9fce88"
+  ],
+  "max_lines_per_invoice": 23,
+  "indexes": [
+    "batch_no_1_status_cd_1",
+    "cust_id_1",
+    "lines.line_id_1"
+  ],
+  "loaded_at": "2026-09-01T23:13:06.693663Z",
+  "duration_s": 56.895
+}

@@ -159,10 +159,18 @@ def build(
             "result": "pass" if same_output else "fail",
             "evidence": ".migration/recon/U2/load_report_run1.json vs load_report.json",
         },
+        "planted_anomaly_detections": {
+            "expected_set": [],
+            "actual_set": [],
+            "missing": [],
+            "unexpected": [],
+        },
         "unverified_paths": [
-            "LIVE-mode recon gate against the parent's uncontended window (parent-run responsibility; this report is run_mode=fixture)",
-            "Tier 4 app-level parity beyond rpt114_parity_u2.py (report-path evidence is separate)",
-            "Atlas source adapter key-strata sampling path (harness-owned)",
+            "Tier 4 app-level parity not in contract; RPT-114 was checked separately by scripts/tp_mongo/rpt114_parity_u2.py (see rpt114_parity.json)",
+            "Harness stratified-sampling path not exercised because 18,750 < full_diff threshold, so full diff was used",
+            "Derived invoice_date, due_date, and lines[].gl_accounts are derived_ungraded per mapping and only loader-unit-tested",
+            "Admin-dashboard UI not exercised",
+            "Live gate is the parent's responsibility",
         ],
     }
     return report
@@ -229,6 +237,10 @@ def main(argv: list[str] | None = None) -> int:
             "- Mode: fixture",
             f"- Mapping `{mapping['version']}` / tolerances `v1` / seed `{report['harness']['seed']}` / params `{report['harness']['params']}`",
             f"- Generated: {report['generated_at']}",
+            f"- Counts: {target['invoices']} invoices / {target['embedded_lines']} embedded lines / {target['quarantine']} quarantined lines = {target['embedded_lines'] + target['quarantine']} source lines",
+            f"- Quarantine rate: {target['quarantine'] / target['invoices']:.3%}",
+            f"- Indexes: `{', '.join(sorted(target['indexes']))}`",
+            f"- Load idempotency: {report['idempotency_rerun']['result'].upper()} (run 1 and run 2 reports match)",
             "",
             "| Check | Result |",
             "|---|---|",
@@ -238,7 +250,16 @@ def main(argv: list[str] | None = None) -> int:
         f"| {item['id']} | {item['result'].upper()} |"
         for item in report["checks"]
     )
-    lines.extend(["", "Full evidence: result.json, load_report.json."])
+    lines.extend(
+        [
+            "",
+            "## Unverified paths",
+            "",
+            *[f"- {item}" for item in report["unverified_paths"]],
+            "",
+            "Full evidence: result.json, load_report.json.",
+        ]
+    )
     (OUT_DIR / "recon.summary.md").write_text("\n".join(lines) + "\n")
     print(f"wrote {args.out}; checks={len(report['checks'])} failed={failed}")
     return 1 if failed else 0
