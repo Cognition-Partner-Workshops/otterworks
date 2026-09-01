@@ -27,3 +27,6 @@
 | 2026-09-01 | Wave 3a closed: U5 merged on independent recon PASS | orchestrator | RECORDED |
 | 2026-09-01 | Wave 3b closed: U6 merged on independent recon PASS | orchestrator | RECORDED |
 | 2026-09-01 | Phase transition: phase 3 (fan-out) COMPLETE — all waves 0/1/2/3a/3b closed, all 8 units MERGED on independent recon PASS (wave 0 DRIFT-EXPLAINED, functionally PASS). Entering phase 4: cutover preparation (!mongo_cutover) ending at STOP C | orchestrator | RECORDED |
+| 2026-09-01 | Phase 4 evidence complete: final full recon at watermark SCN 3244576 GREEN all 8 units (U0 DRIFT-EXPLAINED per approved amendment); parallel-run 3/3 consecutive green cycles over frozen/idle source (.migration/recon/parallel_run/log.md); evidence pack assembled (.migration/recon/wave_reports/) | orchestrator | RECORDED |
+| 2026-09-01 | Independent cutover audit COUNTERSIGNED, 0 findings — non-migrating session re-ran U0/U1/U2/U3/U5 gates from evidence pack alone; branch recon/cutover-audit-20260901 @ 597dba52 | independent audit session | RECORDED |
+| 2026-09-01 | Cutover runbook written: .migration/08_cutover_runbook.md — customer-executed repoint, rollback trigger + procedure, decommission plan incl. principal revocation. STOP C presented | orchestrator | PROPOSED |
