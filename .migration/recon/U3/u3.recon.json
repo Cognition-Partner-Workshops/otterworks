@@ -1,0 +1,133 @@
+{
+  "kind": "recon-report",
+  "unit": "U3",
+  "namespace": "mongo_205236",
+  "generated_at": "2026-09-01T21:45:35.743333+00:00",
+  "run_mode": "fixture",
+  "harness": {
+    "result": ".migration/recon/U3/result.json",
+    "verdict": "PASS",
+    "seed": 714559852,
+    "params": {
+      "batch_no": "85559852",
+      "source_ns": "demo"
+    }
+  },
+  "checks": [
+    {
+      "id": "harness.verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": ".migration/recon/U3/result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.mapping_version",
+      "expected": "v1.0",
+      "actual": "v1.0",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tolerance_version",
+      "expected": "v1",
+      "actual": "v1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier1.counts_through_mapping",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier2.per_field_aggregates",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier3.keyed_diffs",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "target.documents.count",
+      "expected": 2000,
+      "actual": 2000,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "target.documents.versions_embedded",
+      "expected": 13876,
+      "actual": 13876,
+      "source_of_truth": "Atlas $unwind count",
+      "result": "pass"
+    },
+    {
+      "id": "target.document_snapshots.count",
+      "expected": 384,
+      "actual": 384,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "target.quarantine.orphan_document_snapshots.count",
+      "expected": 6,
+      "actual": 6,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "target.ns_tagged_docs",
+      "expected": 2390,
+      "actual": 2390,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "load.version_gaps_reported_not_repaired",
+      "expected": 10,
+      "actual": 10,
+      "source_of_truth": "load_report.json (D7)",
+      "result": "pass"
+    },
+    {
+      "id": "load.orphan_versions",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": ".migration/recon/U3/idempotency.md"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "orphaned_snapshots:6",
+      "version_gaps:10"
+    ],
+    "actual_set": [
+      "orphaned_snapshots:6",
+      "version_gaps:10"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "LIVE-mode recon gate (parent-run responsibility; this report is run_mode=fixture)",
+    "Tier 4 app-level parity (no recorded ops for U3; not in the U3 contract)",
+    "key_strata() of PostgresSourceAdapter (not exercised: Tier 3 ran full_diff below threshold)",
+    "state_b64 payload decode (deliberately byte-transparent per mapping v1.0; never decoded)"
+  ]
+}

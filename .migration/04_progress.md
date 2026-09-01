@@ -26,7 +26,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 0 | U0 reference (`codes`,`tenants`,`plans`) | NOT_STARTED | — | — | — | — | — |
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
-| 1 | U3 documents (Postgres) | REGISTERED | — | — | — | — | — |
+| 1 | U3 documents (Postgres) | RECON_GREEN | PASS (fixture; T1 3/3, T2 18/18, T3 16,260/16,260 incl. 13,876 embedded versions graded) | 1.54% (6/390 snapshots → Q.`orphan_document_snapshots`) | LIVE gate; Tier 4 (none in contract); adapter `key_strata` | 2 recon runs (run 1 red: adapter stat names) | PR pending (u3) |
 | 1 | U4 files (DynamoDB) | NOT_STARTED | — | — | — | — | — |
 | 2 | U5 billing core | NOT_STARTED | — | — | — | — | — |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
