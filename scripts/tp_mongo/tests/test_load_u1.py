@@ -1,0 +1,96 @@
+# ruff: noqa: DTZ001
+import sys
+from datetime import datetime
+from pathlib import Path
+
+from bson import Decimal128, Int64
+
+sys.path.insert(0, str(Path(__file__).parents[1]))
+import load_u1
+
+MAPPING = load_u1.load_mapping()
+
+
+def test_mapping_carries_all_source_columns():
+    assert len(MAPPING["customers"]["fields"]) == 155
+    assert len(MAPPING["customers_history"]["fields"]) == 158
+    assert MAPPING["customers"]["embeds"][0]["key"]["target"] == "eav_id"
+
+
+def test_parse_dd_mon_yy_strict():
+    assert load_u1.parse_dd_mon_yy("22-DEC-22") == datetime(2022, 12, 22)
+    for dirty in ["31-FEB-24", "00-XXX-00", "99-999-99", "1/1/1900", "N/A",
+                  "29-FEB-23", "  -   -  ", "12-13-201"]:
+        assert load_u1.parse_dd_mon_yy(dirty) is None
+    assert load_u1.parse_dd_mon_yy(None) is None
+
+
+def test_split_csv_well_formed_and_malformed():
+    assert load_u1.split_csv("27907,56235,10789") == (["27907", "56235", "10789"], None)
+    assert load_u1.split_csv("SPRING24,LEGACY") == (["SPRING24", "LEGACY"], None)
+    assert load_u1.split_csv(None) == ([], None)
+    for bad in [",,", "12345,,67890,", " , 99 ,", "NULL,NONE,", "0000000000000000000000,"]:
+        assert load_u1.split_csv(bad) == (None, "empty_token")
+    assert load_u1.split_csv("A;B;C") == (None, "invalid_token")
+
+
+def test_convert_types_follow_mapping():
+    fields = {f["source"]: f for f in MAPPING["customers"]["fields"]}
+    assert load_u1.convert(fields["CUST_SEQ_NO"], 100056) == Int64(100056)
+    assert isinstance(load_u1.convert(fields["CUST_SEQ_NO"], 1), Int64)
+    assert load_u1.convert(fields["STATUS_CD"], 1) == 1
+    assert load_u1.convert(fields["CUR_BAL_AMT"], 12.345) == Decimal128("12.34")
+    assert load_u1.convert(fields["TAX_EXEMPT_YN"], "Y ") == "Y"
+    assert load_u1.convert(fields["ADDR_LINE_2"], "") is None
+    assert load_u1.convert(fields["CREATED_DT"], datetime(2022, 4, 12)) == datetime(2022, 4, 12)
+
+
+def _row(**overrides):
+    row = {f["source"]: None for f in MAPPING["customers"]["fields"]}
+    row.update({"CUST_ID": "c1", "CUST_NAME": "Ann Lee", "PHONE1": "555-1", "PHONE1_TYPE_CD": 1,
+                "SIGNUP_DT": "22-DEC-22", "RELATED_ACCT_IDS": "1,2", "PROMO_CODES_CSV": None})
+    row.update(overrides)
+    return row
+
+
+def test_build_customer_embeds_sorted_attributes_and_tags_ns():
+    attrs = [
+        {"EAV_ID": 5, "ENTITY_TYPE": "CUSTOMER", "ENTITY_ID": "c1", "ATTR_NAME": "A",
+         "ATTR_VALUE": "1", "ATTR_TYPE": "STR", "CREATED_DT": "01-JAN-20"},
+        {"EAV_ID": 2, "ENTITY_TYPE": "CUSTOMER", "ENTITY_ID": "c1", "ATTR_NAME": "B",
+         "ATTR_VALUE": "", "ATTR_TYPE": "STR", "CREATED_DT": "01-JAN-21"},
+    ]
+    doc, quarantine = load_u1.build_customer(MAPPING["customers"], _row(), attrs)
+    assert doc["_id"] == "c1" and doc["ns"] == "mongo_205236"
+    assert [a["eav_id"] for a in doc["attributes"]] == [Int64(2), Int64(5)]
+    assert doc["attributes"][0]["attr_value"] is None
+    assert doc["signup_dt"] == "22-DEC-22" and doc["signup_date"] == datetime(2022, 12, 22)
+    assert doc["related_accounts"] == ["1", "2"] and doc["promo_codes"] == []
+    assert doc["phones"] == [{"number": "555-1", "type_cd": 1}]
+    assert "addr_line_1" in doc and doc["addr_line_1"] is None
+    assert quarantine == []
+
+
+def test_build_customer_quarantines_dirty_date_and_bad_csv_keeping_verbatim():
+    doc, quarantine = load_u1.build_customer(
+        MAPPING["customers"], _row(SIGNUP_DT="31-FEB-24", RELATED_ACCT_IDS="A;B;C"), []
+    )
+    assert doc["signup_dt"] == "31-FEB-24" and doc["signup_date"] is None
+    assert doc["related_acct_ids"] == "A;B;C" and doc["related_accounts"] is None
+    assert sorted(q["class"] for q in quarantine) == ["bad_csv_list", "dirty_signup_dt"]
+    assert all(q["ns"] == "mongo_205236" and q["cust_id"] == "c1" for q in quarantine)
+
+
+def test_build_counter_seeds_last_number_as_int64():
+    doc = load_u1.build_counter("SEQ_CUSTOMER_MASTER", 125000)
+    assert doc == {"_id": "seq_customer_master", "seq": Int64(125000),
+                   "source_sequence": "SEQ_CUSTOMER_MASTER", "ns": "mongo_205236"}
+    assert isinstance(doc["seq"], Int64)
+
+
+def test_validate_target_db_rejects_other_databases():
+    try:
+        load_u1.validate_target_db("ow_tp_mongodb_other")
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError")

@@ -12,6 +12,7 @@ import hashlib
 import logging
 import os
 from datetime import datetime, timezone
+from decimal import ROUND_HALF_EVEN, Decimal
 
 from flask import Blueprint, jsonify, request
 
@@ -70,13 +71,39 @@ SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_de
  ORDER BY 1, 2
 """
 
-BALANCES_SQL = """
-SELECT COUNT(*)                                          AS customer_count,
-       TO_CHAR(SUM(cur_bal_amt), 'FM999999999999990.00') AS current_balance_total,
-       TO_CHAR(SUM(past_due_amt), 'FM999999999999990.00') AS past_due_total
-  FROM customer_master
- WHERE conversion_batch_no = :batch_no
-"""
+MONGO_NS = os.getenv("MONGODB_NS", "mongo_205236")
+MONGO_DB = os.getenv("MONGODB_DB", "ow_tp_mongodb_205236")
+
+BALANCES_SOURCE = {
+    "engine": "mongodb",
+    "system": f"Atlas {MONGO_DB}",
+    "detail": "customers aggregation (RPT-114 balances)",
+}
+
+
+def balances_pipeline(batch_no):
+    """RPT-114 balances: COUNT(*), SUM(cur_bal_amt), SUM(past_due_amt) for the batch."""
+    return [
+        {"$match": {"conversion_batch_no": batch_no, "ns": MONGO_NS}},
+        {
+            "$group": {
+                "_id": None,
+                "customer_count": {"$sum": 1},
+                "current_balance_total": {"$sum": "$cur_bal_amt"},
+                "past_due_total": {"$sum": "$past_due_amt"},
+            }
+        },
+        {"$project": {"_id": 0}},
+    ]
+
+
+def fm_amount(value):
+    """Oracle TO_CHAR(x, 'FM999999999999990.00'): no padding, two decimals, NULL -> None."""
+    if value is None:
+        return None
+    if hasattr(value, "to_decimal"):
+        value = value.to_decimal()
+    return str(Decimal(str(value)).quantize(Decimal("0.00"), rounding=ROUND_HALF_EVEN))
 
 
 def ns_batch_no(ns):
@@ -117,6 +144,28 @@ def shape_balances(row):
         "current_balance_total": current_total,
         "past_due_total": past_due_total,
     }
+
+
+def mongo_connect():
+    from pymongo import MongoClient
+
+    uri = os.environ["MONGODB_ATLAS_URI"]
+    return MongoClient(uri, serverSelectionTimeoutMS=int(os.getenv("MONGODB_TIMEOUT_MS", "5000")))
+
+
+def mongo_balances(batch_no):
+    client = mongo_connect()
+    try:
+        rows = list(client[MONGO_DB]["customers"].aggregate(balances_pipeline(batch_no)))
+    finally:
+        client.close()
+    # SUM over an empty group is NULL in Oracle; COUNT(*) is 0.
+    row = rows[0] if rows else {"customer_count": 0}
+    return (
+        row["customer_count"],
+        fm_amount(row.get("current_balance_total")),
+        fm_amount(row.get("past_due_total")),
+    )
 
 
 def oracle_connect():
@@ -168,12 +217,13 @@ def reconciliation():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        balance_rows = oracle_query(BALANCES_SQL, {"batch_no": batch_no})
-    except Exception:
+        balance_row = mongo_balances(batch_no)
+    except Exception:  # target offline: fail closed, never fabricate numbers
         logger.exception("reconciliation report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
     body = report_meta(ns)
-    body["balances"] = shape_balances(balance_rows[0])
+    body["source"] = BALANCES_SOURCE
+    body["balances"] = shape_balances(balance_row)
     # The legacy estate IS the source of truth: there is nothing to reconcile
     # against, so it reports baseline with no checks. Post-migration backends
     # return status pass|fail with per-check results instead.
