@@ -14,10 +14,14 @@ PR is **merged** into `tp-run/mongodb-20260901T033326Z`.
 | 2 | `usage_rating` | USAGE_EVENTS, RATING_PERIODS, RATING_RESULTS | `usage_events`, `rating_periods` | small-embed | recon_pass | 814 + 3 docs + 3 result elements, full keyed diff, 0 findings | 0 (no anomalies in source) | none | _open_ |
 | 2 | `subscription_invoices` | INVOICES, INVOICE_LINES | `subscription_invoices` | small-embed | recon_pass | 3/3 docs + 2 line elements, full keyed diff, 0 findings | 0 (no anomalies in source) | `line_no` uniqueness is an element-level invariant, not an index | _open_ |
 | 3 | `collections_ops` | CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS, BILLING_AUDIT_LOG | `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | reference | recon_pass | 7/7 docs, full keyed diff, 0 findings | 0 (no anomalies in source) | `BILLING_AUDIT_LOG` empty at source, so its collection is graded at 0 | _open_ |
-| 4 | `stored_logic` | 5 packages / 19 routines, 7 triggers, 2 jobs, 5 sequences | code only (no collections) | proc-heavy **XL** | pending | — | — | — | — |
+| 4 | `stored_logic` | 5 packages / 19 routines, 7 triggers, 2 jobs, 5 sequences | code only; replay-scoped `sl_replay_*` (created and dropped per run) | proc-heavy **XL** | recon_pass | 24/24 scenarios across 12 entrypoints match the Oracle transcripts; 19/19 routines, 7/7 triggers, 2/2 jobs, 5/5 sequences dispositioned | n/a (code, not records) | autonomous-transaction logging semantics; the 4 utility routines no scenario calls directly; the nightly scheduler itself | _open_ |
 
 Write targets are disjoint by construction: 13 collections + 2 quarantine collections, no
 collection named by two units. A collision halts the wave immediately.
+
+`stored_logic` loads nothing. Its replay copies the migrated documents a scenario touches into
+`sl_replay_*` collections, runs the converted routines against those, and drops them when the
+run ends — so the prefix is registered here, but no migrated collection is ever written.
 
 Out of scope: `FIXTURE_META` (estate bookkeeping, one row, no business data).
 
@@ -55,4 +59,4 @@ One calibration unit per pattern class; later units of the class are expected to
 | reference | `reference` | — | `collections_ops` | — |
 | wide-embed | `customers` | — | — | — |
 | bulk-load | `invoices` | — | `usage_rating`, `subscription_invoices`, `subscriptions` | — |
-| proc-heavy | `stored_logic` | — | — | — |
+| proc-heavy | `stored_logic` | calibration (only unit of its class) | — | n/a |

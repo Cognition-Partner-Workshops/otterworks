@@ -1,0 +1,229 @@
+{
+  "baseline": "procs/oracle/transcripts (recorded from the running PL/SQL estate)",
+  "by_entrypoint": {
+    "pkg_dunning.fn_overdue_accounts": {
+      "fail": 0,
+      "pass": 1
+    },
+    "pkg_dunning.sp_schedule_dunning": {
+      "fail": 0,
+      "pass": 2
+    },
+    "pkg_dunning.sp_suspend_overdue": {
+      "fail": 0,
+      "pass": 2
+    },
+    "pkg_invoicing.fn_invoice_lines": {
+      "fail": 0,
+      "pass": 1
+    },
+    "pkg_invoicing.fn_invoice_preview": {
+      "fail": 0,
+      "pass": 2
+    },
+    "pkg_invoicing.sp_issue_invoice": {
+      "fail": 0,
+      "pass": 3
+    },
+    "pkg_plans.fn_entitlement": {
+      "fail": 0,
+      "pass": 2
+    },
+    "pkg_plans.fn_list_plans": {
+      "fail": 0,
+      "pass": 1
+    },
+    "pkg_plans.sp_change_plan": {
+      "fail": 0,
+      "pass": 2
+    },
+    "pkg_rating.fn_usage_rating": {
+      "fail": 0,
+      "pass": 6
+    },
+    "pkg_rating.fn_usage_summary": {
+      "fail": 0,
+      "pass": 1
+    },
+    "pkg_rating.sp_finalize_rating": {
+      "fail": 0,
+      "pass": 1
+    }
+  },
+  "generated_at": "2026-09-01T04:38:08+00:00",
+  "scenarios": [
+    {
+      "entrypoint": "pkg_dunning.fn_overdue_accounts",
+      "findings": [],
+      "module": "dunning",
+      "scenario": "DUNNING-001",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_dunning.sp_schedule_dunning",
+      "findings": [],
+      "module": "dunning",
+      "scenario": "DUNNING-002",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_dunning.sp_schedule_dunning",
+      "findings": [],
+      "module": "dunning",
+      "scenario": "DUNNING-003",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_dunning.sp_suspend_overdue",
+      "findings": [],
+      "module": "dunning",
+      "scenario": "DUNNING-004",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_dunning.sp_suspend_overdue",
+      "findings": [],
+      "module": "dunning",
+      "scenario": "DUNNING-005",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.fn_invoice_preview",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-001",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.fn_invoice_preview",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-002",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.sp_issue_invoice",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-003",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.sp_issue_invoice",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-004",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.sp_issue_invoice",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-005",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_invoicing.fn_invoice_lines",
+      "findings": [],
+      "module": "invoicing",
+      "scenario": "INVOICE-006",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_plans.fn_list_plans",
+      "findings": [],
+      "module": "plans",
+      "scenario": "PLANS-001",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_plans.fn_entitlement",
+      "findings": [],
+      "module": "plans",
+      "scenario": "PLANS-002",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_plans.fn_entitlement",
+      "findings": [],
+      "module": "plans",
+      "scenario": "PLANS-003",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_plans.sp_change_plan",
+      "findings": [],
+      "module": "plans",
+      "scenario": "PLANS-004",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_plans.sp_change_plan",
+      "findings": [],
+      "module": "plans",
+      "scenario": "PLANS-005",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-001",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-002",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-003",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-004",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-005",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-006",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.fn_usage_summary",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-007",
+      "verdict": "PASS"
+    },
+    {
+      "entrypoint": "pkg_rating.sp_finalize_rating",
+      "findings": [],
+      "module": "rating",
+      "scenario": "RATING-008",
+      "verdict": "PASS"
+    }
+  ],
+  "scenarios_failed": 0,
+  "scenarios_graded": 24,
+  "unit": "stored_logic",
+  "unrecorded_by_oracle": [],
+  "verdict": "PASS"
+}
