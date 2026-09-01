@@ -50,14 +50,20 @@ def dt2str(value):
 def str2dt(text):
     """`PKG_OW_UTIL.f_str2dt`. The original returns NULL for anything unparseable and tells
     nobody; the migration quarantines those values instead, so this is only ever called on
-    strings that already parsed during the load."""
+    strings that already parsed during the load.
+
+    The original is `TO_DATE(p_str, 'DD-MON-YY')`, whose century is SYSDATE's; `strptime`'s
+    `%y` pivots at 69 instead, which would read `PKG_PLANS`' `31-DEC-99` 'no end date'
+    sentinel as a date 27 years past. The century is taken the way Oracle takes it."""
     if text is None:
         return None
     try:
         # the estate's string dates carry no zone; the session runs UTC (tolerances v1)
-        return dt.datetime.strptime(text.strip(), "%d-%b-%y").replace(tzinfo=dt.UTC).date()
+        parsed = dt.datetime.strptime(text.strip(), "%d-%b-%y").replace(tzinfo=dt.UTC)
     except ValueError:
         return None
+    century = 100 * (dt.datetime.now(dt.UTC).year // 100)
+    return parsed.replace(year=century + parsed.year % 100).date()
 
 
 def rnd(value, places=2):
@@ -319,7 +325,8 @@ def finalize_rating(store, tenant_id, period_start, period_end):
                 "used_units": r.used_units,
                 "quota_units": r.quota_units,
                 # Not the computed rollover: the original writes the unused quota here.
-                "rollover_units": _greatest((r.quota_units or 0) - r.used_units, 0),
+                "rollover_units": _greatest(
+                    None if r.quota_units is None else r.quota_units - r.used_units, 0),
                 "billable_units": r.billable_units,
                 "overage_amount": r.overage_amount,
                 "created_at": period_end,

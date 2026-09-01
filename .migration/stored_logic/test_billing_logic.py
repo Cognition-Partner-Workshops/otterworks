@@ -325,6 +325,25 @@ def test_finalize_records_the_unused_allowance_as_rollover():
     assert (result["used_units"], result["rollover_units"]) == (30, 70)
 
 
+def test_finalize_records_no_rollover_at_all_when_there_is_no_allowance():
+    """`GREATEST(g_quota_units - g_used_units, 0)` on a NULL quota is NULL in Oracle, and the
+    number is read back as next period's banked credit -- writing 0 would be inventing a
+    measured zero where the estate records that it never measured."""
+    store = store_with(subscriptions=[sub_doc()], usage_events=[usage(30)])
+    period_id = bl.finalize_rating(store, TENANT, *FEB)
+    result = store.collection("rating_periods").find_one({"_id": period_id})["results"][0]
+    assert result["quota_units"] is None
+    assert result["rollover_units"] is None
+
+
+def test_the_two_digit_year_reads_as_oracle_reads_it():
+    """`TO_DATE(p_str, 'DD-MON-YY')` takes the century from SYSDATE; `PKG_PLANS`' far-future
+    `31-DEC-99` sentinel is 2099, where `strptime`'s `%y` would pivot it to 1999."""
+    assert bl.str2dt("31-DEC-99") == dt.date(2099, 12, 31)
+    assert bl.str2dt("01-JAN-00") == dt.date(2000, 1, 1)
+    assert bl.str2dt(bl.dt2str(dt.date(2026, 2, 14))) == dt.date(2026, 2, 14)
+
+
 def test_weekend_dunning_is_pushed_to_monday():
     assert bl.next_business_day(dt.date(2026, 2, 14)) == dt.date(2026, 2, 16)  # Sat -> Mon
     assert bl.next_business_day(dt.date(2026, 2, 15)) == dt.date(2026, 2, 16)  # Sun -> Mon
