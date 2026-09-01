@@ -1,0 +1,33 @@
+{
+  "collection": "ow_tp_mongodb_205236.files",
+  "docs_in_collection": 10000,
+  "docs_inserted": 10000,
+  "finished_at": "2026-09-01T22:37:51.000690+00:00",
+  "idempotency": {
+    "collection_existed_before": true,
+    "docs_before_drop": 10000,
+    "strategy": "stage into files__u4_staging, then rename over files (dropTarget)"
+  },
+  "indexes": [
+    "owner_id_1_is_trashed_1",
+    "folder_id_1"
+  ],
+  "items_scanned": 10000,
+  "mapping_spec_sha256": "050d230ad95ff016f781b5af9f5b5e48a4b3a4d4668a0eb4f5c16841f9817548",
+  "mapping_version": "v1.0",
+  "ns": "mongo_205236",
+  "orphaned_metadata": {
+    "count": 40,
+    "detection": "s3_key_convention:/missing/",
+    "disposition": "reported; items migrated"
+  },
+  "run_mode": "fixture",
+  "source": {
+    "endpoint": "http://localhost:4566",
+    "root_where": "ns = '${source_ns}'",
+    "source_ns": "demo",
+    "table": "otterworks-file-metadata"
+  },
+  "started_at": "2026-09-01T22:37:23.013083+00:00",
+  "unit": "U4"
+}

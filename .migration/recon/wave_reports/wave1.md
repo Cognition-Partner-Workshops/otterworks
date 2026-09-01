@@ -1,5 +1,49 @@
 # Wave 1 — independent reconciliation report (U3, U4)
 
+> **Pass 2 (22:37–22:40 UTC) — current attested heads: U3 `dfa5e978` (merged into run branch),
+> U4 `3420f475` (PR #1419, moved past the pass-1 SHA `51f7cca3`). Verdict unchanged: U3 PASS, U4 PASS,
+> wave PASS.** Pass-2 detail is in §0 below; §1–§6 are the pass-1 report (U4 @ `51f7cca3`) kept as
+> history — every pass-1 finding was re-checked in pass 2 and still holds. Evidence for pass 2 is in
+> `wave1_evidence/pass2/<unit>/`.
+
+## 0. Pass 2 — re-attestation at current heads
+
+| Unit | Head attested | Load state | Gate (LIVE, verbatim) | Probes | Verdict |
+|---|---|---|---|---|---|
+| U3 `documents`, `document_snapshots` (+ quarantine `orphan_document_snapshots`) | `dfa5e9781e08718a7707a0a14ef9e8513149ed92` — unchanged since pass 1, merged into `tp-run/mongodb-20260901T205236Z` (`e9d78073`) | existing load from this head (loader unchanged) | **PASS** T1 3/3 · T2 18/18 · T3 16,260/16,260; `result.json` identical to the committed one on the branch | 33/36 ok; same 3 explained flags (A, B) | **PASS** |
+| U4 `files` | `3420f475c29b8889bc8676cebb58a9b4faabff2a` — new head (review round 3: `key_strata` uses the mapped partition; endpoint redaction in load report; staging+rename loader) | **re-loaded by me from this head** (`scripts/tp_mongo/load_u4.py --source-ns demo`, 22:37:23→22:37:51, 10,000 inserted, strategy `stage into files__u4_staging, then rename over files (dropTarget)`) | **PASS** T1 1/1 · T2 12/12 · T3 10,000/10,000; `result.json` identical to the committed `.migration/recon/U4/gate/result.json` at the head | 29/30 ok; 1 flag (C) unchanged | **PASS** |
+| **Wave 1** | | | | | **PASS** |
+
+What changed between `51f7cca3` and `3420f475` (diff read before running): `load_u4.py` now converts
+everything before any target write, loads into `files__u4_staging`, builds indexes there and renames
+over `files` with `dropTarget` (previous `files` retained on failure); the load report now records only
+the endpoint origin (no userinfo/path/query); `dynamo_source.py.key_strata` draws Tier-3 strata from
+the mapped `root_where` partition instead of the whole table (no grading logic changed; still read-only,
+secrets by name). Branch does **not** carry the run-branch grading amendment v1.0.1 (`40e7c54c`, codes key
+expr) — irrelevant to U4 (`files` mapping unchanged; the gate ran with the branch's own spec v1.0,
+`mapping_spec_sha256 050d230a…`).
+
+Pass-2 additional probes for the new loader: no `files__u4_staging` residue; index names after rename
+exactly `_id_`, `folder_id_1`, `owner_id_1_is_trashed_1`; all other collections' counts untouched by the
+reload (codes 32 / tenants 69 / plans 3 / documents 2000 / document_snapshots 384); `source_ns=="demo"`
+on 100 %; `s3_key`→`_id` bijection (10,000 distinct). Independent full value diff: 0 diffs; `size_bytes`
+sum exact 1,268,715,381,927; orphaned_metadata SET == 40 planted; boundary docs equal; 78 replayed
+file-service ops equal.
+
+Cross-unit (pass 2): `ns=="mongo_205236"` on 100 % of all six target collections; U3 owner set (50)
+== source (uuid lower-cased); U4 owner set (50) == source; U3∩U4 owners = ∅ (as seeded); neither U3
+nor U4 carries fields referencing codes/tenants/plans. Drift triage: source re-counted twice (pg
+2000/13,876/390, max(updated_at) 2026-08-01; DynamoDB consistent scan 10,000) — stable both passes.
+
+Cost (pass 2, serial, parent machine): U4 loader ~28 s (1 DynamoDB scan) + gate ~7 s (1 cached
+consistent scan) + probes ~15 s (1 scan); U3 gate ~6 s (count + 18 agg + full keyed fetch of 3
+tables) + probes ~23 s (1 pass); cross-unit ~5 s (1 pg pass + 1 ddb scan). No fixture restart or
+reseed; manifest sha256 re-verified `0f4722866117edd2ea1f5cf933b294bf39a52c755cff222a3a3c6ca5e8e2ee89`.
+
+Grading-only amendments: **none warranted** (unchanged from §6).
+
+---
+
 Run `tp-run/mongodb-20260901T205236Z` · mapping **v1.0** · tolerances **v1** · canonicalization **v1**
 · target `ow_tp_mongodb_205236` (quarantine `ow_tp_mongodb_205236_quarantine`) · secret `MONGODB_ATLAS_URI` (by name)
 · mode **LIVE** on the parent machine's canonical fixtures (manifest sha256
@@ -151,6 +195,7 @@ Setup: venv + harness install ~1 min; no fixture restart or reseed was needed (a
 # Wave-1 close brief (one page)
 
 **Verdict: WAVE 1 (U3, U4) PASS — LIVE, independently reproduced on the parent machine.**
+**Attested heads (pass 2): U3 `dfa5e978` (merged), U4 `3420f475` (re-loaded from this head, then gated).**
 
 - **What was checked.** Both unit gates re-run verbatim from each PR branch's own code against the
   canonical fixtures (manifest checksum verified) and the units' already-loaded target collections.

@@ -1,0 +1,274 @@
+{
+ "U4.source_scan": {
+  "ok": true,
+  "detail": {
+   "items_total": 10000,
+   "ns=demo": 10000,
+   "other_ns": {}
+  }
+ },
+ "U4.keyset_equal": {
+  "ok": true,
+  "detail": {
+   "src_only": 0,
+   "tgt_only": 0
+  }
+ },
+ "U4.null_dist": {
+  "ok": true,
+  "detail": {
+   "src_present": {
+    "name": 10000,
+    "mime_type": 10000,
+    "size_bytes": 10000,
+    "s3_key": 10000,
+    "owner_id": 10000,
+    "folder_id": 10000,
+    "is_trashed": 10000,
+    "version": 10000,
+    "created_at": 10000,
+    "updated_at": 10000,
+    "ns": 10000
+   },
+   "tgt_present": {
+    "name": 10000,
+    "mime_type": 10000,
+    "size_bytes": 10000,
+    "s3_key": 10000,
+    "owner_id": 10000,
+    "folder_id": 10000,
+    "is_trashed": 10000,
+    "version": 10000,
+    "created_at": 10000,
+    "updated_at": 10000,
+    "ns": 10000
+   },
+   "tgt_null": {},
+   "tgt_missing": {}
+  }
+ },
+ "U4.explicit_null_policy(D2)": {
+  "ok": true,
+  "detail": {}
+ },
+ "U4.source_attribute_shape": {
+  "ok": true,
+  "detail": {
+   "('created_at', 'folder_id', 'id', 'is_trashed', 'mime_type', 'name', 'ns', 'owner_id', 's3_key', 'size_bytes', 'updated_at', 'version')": 10000
+  }
+ },
+ "U4.fieldset": {
+  "ok": true,
+  "detail": {
+   "extra": [],
+   "missing": [],
+   "counts": {
+    "_id": 10000,
+    "name": 10000,
+    "mime_type": 10000,
+    "size_bytes": 10000,
+    "s3_key": 10000,
+    "owner_id": 10000,
+    "folder_id": 10000,
+    "is_trashed": 10000,
+    "version": 10000,
+    "created_at": 10000,
+    "updated_at": 10000,
+    "source_ns": 10000,
+    "ns": 10000,
+    "orphaned_metadata": 10000
+   }
+  }
+ },
+ "U4.ns_marker": {
+  "ok": true,
+  "detail": ""
+ },
+ "U4.bson_types(spec: size_bytes long, version int)": {
+  "ok": false,
+  "detail": {
+   "size_bytes": {
+    "int": 10000
+   }
+  }
+ },
+ "U4.dup.s3_key": {
+  "ok": true,
+  "detail": {
+   "src_dup_values": 0,
+   "tgt_dup_values": 0
+  }
+ },
+ "U4.dup.name": {
+  "ok": true,
+  "detail": {
+   "src_dup_values": 0,
+   "tgt_dup_values": 0
+  }
+ },
+ "U4.full_value_diff_independent": {
+  "ok": true,
+  "detail": {
+   "n_diffs": 0,
+   "sample": []
+  }
+ },
+ "U4.timestamp_fraction_info": {
+  "ok": true,
+  "detail": {
+   "src_timestamps_with_fraction": 0,
+   "note": "rule datetime_utc_truncate_ms is a no-op when 0"
+  }
+ },
+ "U4.boundary_docs": {
+  "ok": true,
+  "detail": {
+   "size_bytes": [
+    207988270
+   ],
+   "min_size": 2117,
+   "max_size": 249976485
+  }
+ },
+ "U4.size_bytes_sum_exact": {
+  "ok": true,
+  "detail": {
+   "sum": 1268715381927,
+   "values_gt_int32": 0
+  }
+ },
+ "U4.orphaned_metadata_vs_seed_rule": {
+  "ok": true,
+  "detail": {
+   "marked": 40,
+   "by_prefix": 40,
+   "expected": 40,
+   "symdiff": 0
+  }
+ },
+ "U4.orphaned_metadata_vs_s3(informational)": {
+  "ok": true,
+  "detail": {
+   "buckets": [
+    "otterworks-files",
+    "otterworks-data-lake",
+    "otterworks-audit-archive"
+   ],
+   "bucket_with_demo_prefix": null,
+   "s3_missing": null,
+   "note": "no S3 objects for file keys in LocalStack -> S3 truth unavailable; seed rule used"
+  }
+ },
+ "U4.no_quarantine_expected": {
+  "ok": true,
+  "detail": [
+   "orphan_document_snapshots"
+  ]
+ },
+ "U4.indexes": {
+  "ok": true,
+  "detail": [
+   "_id_",
+   "owner_id_1_is_trashed_1",
+   "folder_id_1"
+  ]
+ },
+ "U4.replay.list_files": {
+  "ok": true,
+  "detail": {
+   "ops": 24,
+   "fails": []
+  }
+ },
+ "U4.replay.list_trashed(sorted updated_at desc)": {
+  "ok": true,
+  "detail": {
+   "ops": 4,
+   "fails": []
+  }
+ },
+ "U4.replay.get_file": {
+  "ok": true,
+  "detail": {
+   "ops": 50
+  }
+ },
+ "U4.replay.storage_cleanup_s3key_set": {
+  "ok": true,
+  "detail": ""
+ },
+ "U4.dist.is_trashed": {
+  "ok": true,
+  "detail": {
+   "false": 9461,
+   "true": 539
+  }
+ },
+ "U4.dist.mime_type": {
+  "ok": true,
+  "detail": {
+   "application/zip": 1036,
+   "image/jpeg": 973,
+   "text/plain": 995,
+   "audio/mpeg": 1022,
+   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": 966,
+   "video/mp4": 1015,
+   "text/markdown": 1035,
+   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": 979,
+   "application/pdf": 978,
+   "image/png": 1001
+  }
+ },
+ "U4.dist.version": {
+  "ok": true,
+  "detail": {
+   "9": 1096,
+   "6": 1124,
+   "2": 1155,
+   "3": 1067,
+   "7": 1126,
+   "4": 1131,
+   "5": 1176,
+   "1": 1075,
+   "8": 1050
+  }
+ },
+ "U4.no_staging_residue": {
+  "ok": true,
+  "detail": [
+   "document_snapshots",
+   "plans",
+   "tenants",
+   "files",
+   "codes",
+   "documents"
+  ]
+ },
+ "U4.only_U4_collection_touched(other collection counts unchanged)": {
+  "ok": true,
+  "detail": {
+   "document_snapshots": 384,
+   "plans": 3,
+   "tenants": 69,
+   "files": 10000,
+   "codes": 32,
+   "documents": 2000
+  }
+ },
+ "U4.index_names_after_rename": {
+  "ok": true,
+  "detail": [
+   "_id_",
+   "folder_id_1",
+   "owner_id_1_is_trashed_1"
+  ]
+ },
+ "U4.no_non_demo_leak": {
+  "ok": true,
+  "detail": ""
+ },
+ "U4.s3_key_to_id_bijection": {
+  "ok": true,
+  "detail": ""
+ }
+}

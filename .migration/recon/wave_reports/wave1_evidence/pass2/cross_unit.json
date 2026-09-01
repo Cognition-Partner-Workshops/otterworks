@@ -1,0 +1,45 @@
+{
+ "ns_all_collections": {
+  "codes": {
+   "total": 32,
+   "ns_ok": 32
+  },
+  "document_snapshots": {
+   "total": 384,
+   "ns_ok": 384
+  },
+  "documents": {
+   "total": 2000,
+   "ns_ok": 2000
+  },
+  "files": {
+   "total": 10000,
+   "ns_ok": 10000
+  },
+  "plans": {
+   "total": 3,
+   "ns_ok": 3
+  },
+  "tenants": {
+   "total": 69,
+   "ns_ok": 69
+  }
+ },
+ "u3_owner_set_equal_src": [
+  false,
+  50
+ ],
+ "u4_owner_set_equal_src": [
+  true,
+  50
+ ],
+ "u3_u4_owner_overlap": 0,
+ "drift_recount_pass2": {
+  "pg_documents": 2000,
+  "pg_max_updated": "2026-08-01 00:00:00+00:00",
+  "pg_versions": 13876,
+  "pg_snapshots": 390,
+  "ddb_items": 10000
+ },
+ "u3u4_fields_referencing_codes_tenants_plans": []
+}
