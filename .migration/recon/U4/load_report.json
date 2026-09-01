@@ -2,11 +2,11 @@
   "collection": "ow_tp_mongodb_205236.files",
   "docs_in_collection": 10000,
   "docs_inserted": 10000,
-  "finished_at": "2026-09-01T21:56:05.218791+00:00",
+  "finished_at": "2026-09-01T22:01:12.239533+00:00",
   "idempotency": {
     "collection_existed_before": true,
     "docs_before_drop": 10000,
-    "strategy": "drop+recreate files only"
+    "strategy": "stage into files__u4_staging, then rename over files (dropTarget)"
   },
   "indexes": [
     "owner_id_1_is_trashed_1",
@@ -28,6 +28,6 @@
     "source_ns": "demo",
     "table": "otterworks-file-metadata"
   },
-  "started_at": "2026-09-01T21:55:33.392824+00:00",
+  "started_at": "2026-09-01T22:00:42.457367+00:00",
   "unit": "U4"
 }

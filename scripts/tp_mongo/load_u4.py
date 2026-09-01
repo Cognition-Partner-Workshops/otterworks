@@ -2,7 +2,7 @@
 """U4: load the DynamoDB `otterworks-file-metadata` partition (ns=<source_ns>) into `files`.
 
 Item-per-document 1:1 per mapping spec v1.0 (D1, D2, D8). Read-only against DynamoDB;
-writes drop+recreate ONLY the `files` collection of the registered target database.
+writes stage into `files__u4_staging` and rename over `files` (dropTarget) in the registered target database.
 Orphaned S3 markers (derived_ungraded `orphaned_metadata`) are reported, never dropped.
 """
 from __future__ import annotations
@@ -20,6 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MAPPING_SPEC = REPO_ROOT / ".migration/03_mapping_spec.json"
 UNIT = "U4"
 COLLECTION = "files"
+STAGING = "files__u4_staging"  # U4-owned scratch collection, swapped into `files` on success
 FILES_BUCKET = "otterworks-files"
 INSERT_BATCH = 1000
 
@@ -186,29 +187,36 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
+    # Convert everything before any target write so a mapping/type error cannot leave a
+    # half-loaded collection behind.
+    docs = [build_document(item, plan, ns_value, s3_client) for item in items]
+    scanned = len(docs)
+    orphans = sum(int(d["orphaned_metadata"]) for d in docs)
+
     client = MongoClient(_secret(args.uri_secret))
     db = client[target_db]
     existed_before = COLLECTION in db.list_collection_names()
     docs_before = db[COLLECTION].estimated_document_count() if existed_before else 0
-    db[COLLECTION].drop()  # ONLY U4's collection
 
+    # Load + index the U4 staging collection; `files` is replaced only by the final rename.
+    staging = db[STAGING]
+    staging.drop()
+    inserted = 0
+    try:
+        for i in range(0, len(docs), INSERT_BATCH):
+            inserted += len(staging.insert_many(docs[i:i + INSERT_BATCH], ordered=True).inserted_ids)
+        index_names = []
+        for idx in entry["indexes"]:
+            keys = [(k, ASCENDING if v == 1 else v) for k, v in idx["keys"].items()]
+            index_names.append(staging.create_index(keys))
+        if inserted != scanned or staging.count_documents({}) != scanned:
+            raise RuntimeError(f"staging incomplete: {inserted}/{scanned} inserted")
+        staging.rename(COLLECTION, dropTarget=True)  # ONLY U4's collection is replaced
+    except Exception:
+        staging.drop()
+        print(f"ERROR: load failed; previous `{COLLECTION}` retained", file=sys.stderr)
+        raise
     coll = db[COLLECTION]
-    batch, inserted, scanned, orphans = [], 0, 0, 0
-    for item in items:
-        scanned += 1
-        doc = build_document(item, plan, ns_value, s3_client)
-        orphans += int(doc["orphaned_metadata"])
-        batch.append(doc)
-        if len(batch) >= INSERT_BATCH:
-            inserted += len(coll.insert_many(batch, ordered=True).inserted_ids)
-            batch = []
-    if batch:
-        inserted += len(coll.insert_many(batch, ordered=True).inserted_ids)
-
-    index_names = []
-    for idx in entry["indexes"]:
-        keys = [(k, ASCENDING if v == 1 else v) for k, v in idx["keys"].items()]
-        index_names.append(coll.create_index(keys))
 
     report = {
         "unit": UNIT,
@@ -219,14 +227,14 @@ def main() -> int:
             "table": entry["root_table"],
             "root_where": entry["root_where"],
             "source_ns": args.source_ns,
-            "endpoint": os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566"),
+            "endpoint": _secret("AWS_ENDPOINT_URL"),
         },
         "ns": ns_value,
         "run_mode": "fixture",
         "started_at": started.isoformat(),
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "idempotency": {
-            "strategy": "drop+recreate files only",
+            "strategy": "stage into files__u4_staging, then rename over files (dropTarget)",
             "collection_existed_before": existed_before,
             "docs_before_drop": docs_before,
         },
