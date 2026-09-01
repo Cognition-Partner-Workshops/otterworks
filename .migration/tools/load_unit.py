@@ -67,8 +67,16 @@ class TransformError(ValueError):
 
 # --------------------------------------------------------------------------- transforms
 def parse_dd_mon_yy(value):
-    """Legacy DD-MON-YY text date. The two-digit year uses the same 1950 pivot the estate's
-    NLS settings imply, so 49 -> 2049 and 50 -> 1950."""
+    """Legacy DD-MON-YY text date, read the way the estate reads it.
+
+    `PKG_UTL.str_to_date` is `TO_DATE(p_str, 'DD-MON-YY')`, and Oracle's `YY` is the century
+    of SYSDATE, not a 1950 pivot -- `PKG_PLANS` relies on it, using `TO_DATE('31-DEC-99',
+    'DD-MON-YY')` as its far-future 'no end date' sentinel, which is 2099. `RR` (the pivoting
+    format) appears nowhere in the estate, so 99 is 2099 here too.
+
+    Only the sentinel-shaped values differ between the two readings; every parseable date in
+    the estate today is 09-25.
+    """
     if value is None:
         return None
     m = DD_MON_YY.match(value)
@@ -77,7 +85,7 @@ def parse_dd_mon_yy(value):
     day, mon, yy = int(m.group(1)), m.group(2).upper(), int(m.group(3))
     if mon not in MONTHS:
         raise TransformError(f"unknown month: {value!r}")
-    year = 2000 + yy if yy < 50 else 1900 + yy
+    year = 100 * (dt.datetime.now(dt.UTC).year // 100) + yy
     try:
         # Oracle session timezone is UTC per the v1 tolerances, so the parsed date is
         # anchored explicitly rather than left naive.

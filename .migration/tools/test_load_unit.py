@@ -134,6 +134,13 @@ def test_transforms_quarantine_rather_than_coerce():
     assert lu.csv_to_array("1001, 1002") == ["1001", "1002"]
 
 
+def test_the_two_digit_year_reads_as_oracle_reads_it():
+    """`TO_DATE(str, 'DD-MON-YY')` takes the century from SYSDATE; the estate's far-future
+    sentinel `31-DEC-99` is 2099, not 1999. A pivoting reading would move it a century."""
+    assert lu.parse_dd_mon_yy("31-DEC-99").year == 2099
+    assert lu.parse_dd_mon_yy("01-JAN-00").year == 2000
+
+
 def test_anomaly_mismatch_flags_missing_excess_and_unexpected():
     spec = {"collection": "invoices",
             "quarantine": {"collection": "invoices_quarantine",
