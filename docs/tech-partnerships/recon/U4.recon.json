@@ -1,0 +1,92 @@
+{
+  "kind": "recon-report",
+  "unit": "U4",
+  "namespace": "mongo_205236",
+  "generated_at": "2026-09-01T21:39:21Z",
+  "run_mode": "fixture",
+  "harness": {
+    "verdict": "PASS",
+    "mapping_version": "v1.0",
+    "tolerance_version": "v1",
+    "seed": 714559852,
+    "params": {
+      "batch_no": "85559852",
+      "source_ns": "demo"
+    },
+    "result": ".migration/recon/U4/gate/result.json"
+  },
+  "checks": [
+    {
+      "id": "u4.counts_through_mapping",
+      "expected": "1/1 pass (files roots 10000)",
+      "actual": "1/1 pass; target docs 10000",
+      "source_of_truth": "harness .migration/recon/U4/gate/result.json (tier1 counts_through_mapping)",
+      "result": "pass"
+    },
+    {
+      "id": "u4.per_field_aggregates",
+      "expected": "12/12 pass",
+      "actual": "12/12 pass; deferred ['files.folder_id']",
+      "source_of_truth": "harness .migration/recon/U4/gate/result.json (tier2 per_field_aggregates)",
+      "result": "pass"
+    },
+    {
+      "id": "u4.keyed_diffs",
+      "expected": "10000/10000 pass, full_diff",
+      "actual": "10000/10000 pass; {'mode': 'full_diff', 'population': 10000}",
+      "source_of_truth": "harness .migration/recon/U4/gate/result.json (tier3 keyed_diffs)",
+      "result": "pass"
+    },
+    {
+      "id": "u4.namespace_tagging",
+      "expected": "10000 files documents tagged mongo_205236",
+      "actual": "10000/10000 tagged mongo_205236",
+      "source_of_truth": "recomputed from target (count_documents ns)",
+      "result": "pass"
+    },
+    {
+      "id": "u4.orphaned_metadata",
+      "expected": "40 markers (manifest planted_anomalies orphaned_metadata); items retained",
+      "actual": "load 40 (s3_key_convention:/missing/); target 40",
+      "source_of_truth": ".migration/recon/U4/load_report.json and recomputed from target",
+      "result": "pass"
+    },
+    {
+      "id": "u4.indexes",
+      "expected": "owner_id_1_is_trashed_1, folder_id_1 (+_id_) per mapping v1.0",
+      "actual": "_id_, folder_id_1, owner_id_1_is_trashed_1",
+      "source_of_truth": "recomputed from target (index_information)",
+      "result": "pass"
+    },
+    {
+      "id": "u4.idempotency_rerun",
+      "expected": "second drop/recreate load has no doubling",
+      "actual": "docs_before_drop 10000, docs after 10000",
+      "source_of_truth": ".migration/recon/U4/load_report.rerun.json",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": ".migration/recon/U4/load_report.rerun.json"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "orphaned_metadata:40"
+    ],
+    "actual_set": [
+      "orphaned_metadata:40"
+    ],
+    "missing": [],
+    "unexpected": [],
+    "orphaned_metadata_ids_sha256_prefix": "b7a256e6d83e4ff5"
+  },
+  "unverified_paths": [
+    "orphaned_metadata via S3 HeadObject: the estate stores file metadata only (files bucket holds no objects for the partition), so markers use the storage-key convention (`<ns>/missing/` prefix) - same rule as testdata/legacy/validate.py; HEAD path untested",
+    "file-service (Rust) read/write path against `files` is not converted or exercised in this unit; data-layer parity only",
+    "DynamoDB attributes absent on an item (null_missing_equiv) - fixture items always carry folder_id, so the missing branch is exercised by canonicalization rules only",
+    "multi-partition sources - only ns='demo' exists in the fixture table"
+  ]
+}
