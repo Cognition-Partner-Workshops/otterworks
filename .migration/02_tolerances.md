@@ -1,6 +1,6 @@
 # 02 — Tolerance Record (parity contract)
 
-Version: **v1 (PROPOSED, awaiting STOP A)**. Every row is FACT or PROPOSED. Amendments
+Version: **v1 (FACT — approved at STOP A, 2026-09-01, decision #3)**. Every row is FACT or PROPOSED. Amendments
 only by explicit approval as a new dated version with re-verification scope, except
 grading-only amendments (no document shape, no tolerance value, no data changed), which
 are pre-authorized: apply, log in 05, report at wave close.

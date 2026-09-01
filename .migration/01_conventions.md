@@ -6,9 +6,9 @@
 |---|---|---|
 | Atlas project | `otterworks-demos` (`MONGODB_ATLAS_PROJECT_ID`) | FACT |
 | Atlas cluster | `otterworks-demo` (existing M0; no cluster creation, no tier change) | VERIFIED (`.tp-preflight/atlas-capabilities.json`, 8 probes / 0 denied) |
-| Migration database | `ow_tp_mongodb_205236` | PROPOSED |
-| Quarantine database | `ow_tp_mongodb_205236_quarantine` | PROPOSED |
-| Namespace field | `ns: "mongo_205236"` on every migrated document | PROPOSED |
+| Migration database | `ow_tp_mongodb_205236` | FACT (STOP A) |
+| Quarantine database | `ow_tp_mongodb_205236_quarantine` | FACT (STOP A) |
+| Namespace field | `ns: "mongo_205236"` on every migrated document | FACT (STOP A) |
 | Scale | SCALE=demo data (~230k source rows/items) fits M0 512 MB | FACT |
 
 Only the two databases above may be written. No grants, users, cluster changes, or writes
