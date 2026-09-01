@@ -1,0 +1,43 @@
+{
+  "insert": {
+    "cust_seq_no": 125001,
+    "cust_name_upper": "ANN LEE",
+    "row_version_no": 1,
+    "ns": "mongo_205236"
+  },
+  "add_attribute": {
+    "eav_id": 11002,
+    "created_dt": "01-SEP-26"
+  },
+  "update": {
+    "cust_name_upper": "ANN LEE-SMITH",
+    "row_version_no": 2
+  },
+  "history": [
+    {
+      "hist_id": 2,
+      "hist_op": "UPD",
+      "hist_dt": "01-SEP-26 23:13:29",
+      "cust_name": "Ann Lee",
+      "row_version_no": 1
+    },
+    {
+      "hist_id": 3,
+      "hist_op": "DEL",
+      "hist_dt": "01-SEP-26 23:13:31",
+      "cust_name": "Ann Lee-Smith",
+      "row_version_no": 2
+    }
+  ],
+  "counters_before": {
+    "seq_customer_master": 125000,
+    "seq_customer_master_hist": 1,
+    "seq_entity_attr_value": 11001
+  },
+  "counters_after": {
+    "seq_customer_master": 125001,
+    "seq_customer_master_hist": 3,
+    "seq_entity_attr_value": 11002
+  },
+  "note": "scratch customer exercised on the unit's own collections, then removed by a full drop+recreate re-load (load run 3) so graded state is unchanged"
+}
