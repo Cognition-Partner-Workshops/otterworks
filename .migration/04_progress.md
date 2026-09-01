@@ -10,13 +10,15 @@ registered target is a collision: halt immediately, do not load, escalate.
 | `ow_tp_demo.customers` | `customers` | STOP A; claimed 2026-09-01 for the wave-1 load | write (delete + insert, scoped to `ns: demo`) | loaded — 25,000 docs, 8,333 embedded `attributes[]` |
 | `ow_tp_demo_quarantine.customers` | `customers` | STOP A; claimed 2026-09-01 for the wave-1 load | write (delete + insert, scoped to `ns: demo`) | loaded — 81 field-level quarantine records |
 | `ow_tp_demo.counters` | `customers` | STOP B, D3 approved 2026-09-01 | write (single upsert, `_id: demo:customers.cust_seq_no`) | loaded — `cust_seq_no` seeded to 125,000 |
-| `ow_tp_demo.invoices` | `invoices` | STOP A | write | not loaded |
-| `ow_tp_demo_quarantine.invoices` | `invoices` | STOP A | write | not loaded |
+| `ow_tp_demo.invoices` | `invoices` | STOP A; claimed 2026-09-01 for the wave-2 load | write (delete + insert, scoped to `ns: demo`) | not loaded |
+| `ow_tp_demo_quarantine.invoices` | `invoices` | STOP A; claimed 2026-09-01 for the wave-2 load | write (delete + insert, scoped to `ns: demo`) | not loaded |
 
-The wave-1 unit writes those three collections and nothing else; `ow_tp_demo.invoices` and
-`ow_tp_demo_quarantine.invoices` stay untouched until wave 2 claims them. No collection is
-claimed by two units, so there is no collision to escalate. The unit never drops a
-collection: it deletes only `{ns: "demo"}` documents before reloading them.
+The wave-1 unit writes the first three collections and nothing else; the wave-2 `invoices`
+unit writes the last two and nothing else — in particular it does not touch
+`ow_tp_demo.customers`, which wave 1 owns, and reads nothing from the migration cluster that
+wave 1 has not already merged. No collection is claimed by two units, so there is no
+collision to escalate. Neither unit drops a collection: each deletes only its own
+`{ns: "demo"}` documents before reloading them.
 
 Playbook 2 wrote nothing to the migration cluster and nothing to the source: the census is
 `SELECT`-only and the mapping spec was validated offline by `recon.config.load_mapping_spec`.
@@ -32,8 +34,8 @@ A write to any of them is a guardrail breach, not a collision to negotiate.
 
 | Wave | Unit | Mapping version | Tolerance version | Recon verdict | PR | Status |
 |---|---|---|---|---|---|---|
-| 1 | `customers` | 1.0.0 (STOP B approved) | 1 | **PASS** (live; T1 2 / T2 42 / T3 25,000 / T4 2 checks) | — | in flight — `!mongo_unit`, loaded + green, PR open |
-| 2 | `invoices` | 1.0.0 (STOP B approved) | 1 | — | — | modeled — not started (wave 2) |
+| 1 | `customers` | 1.0.0 (STOP B approved) | 1 | **PASS** (live; T1 2 / T2 42 / T3 25,000 / T4 2 checks) | [#1392](https://github.com/Cognition-Partner-Workshops/otterworks/pull/1392) | **MERGED** 2026-09-01 into `tp-run/mongodb-20260831T232410Z` (merge commit `83ec971`) with the green verdict attached |
+| 2 | `invoices` | 1.0.0 (STOP B approved) | 1 | — | — | in flight — `!mongo_unit` wave 2, write targets claimed, not loaded |
 
 ### Wave 1 `customers` load record
 
