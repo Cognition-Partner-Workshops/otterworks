@@ -8,7 +8,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 
 | Collection (db.coll) | Unit | Registered (UTC) | Status |
 |---|---|---|---|
-| `codes`, `tenants`, `plans` | U0 | 2026-09-01 21:40 (planned) | PLANNED |
+| `codes`, `tenants`, `plans` | U0 | 2026-09-01 21:18 | REGISTERED |
 | `customers`, `customers_history`, `counters`, Q.`dirty_signup_dt`, Q.`bad_csv_list` | U1 | planned | PLANNED |
 | `invoices`, Q.`invoice_feed_orphan_lines` | U2 | planned | PLANNED |
 | `documents`, `document_snapshots`, Q.`orphan_document_snapshots` | U3 | planned | PLANNED |
@@ -23,7 +23,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 
 | Wave | Unit | Status | Parity (result.json) | Quarantine rate | Unverified paths | Cost | PR |
 |---|---|---|---|---|---|---|---|
-| 0 | U0 reference (`codes`,`tenants`,`plans`) | NOT_STARTED | — | — | — | — | — |
+| 0 | U0 reference (`codes`,`tenants`,`plans`) | CONTRACT | — | — | — | — | — |
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | NOT_STARTED | — | — | — | — | — |
