@@ -8,8 +8,8 @@ PR is **merged** into `tp-run/mongodb-20260901T033326Z`.
 | Wave | Unit | Source objects | Write targets (registered) | Class | Status | Parity | Quarantine | Unverified paths | PR |
 |---|---|---|---|---|---|---|---|---|---|
 | 0 | `reference` | CODES, TENANTS, PLANS | `codes`, `tenants`, `plans` | reference | recon_pass | 104/104 docs, full keyed diff, 0 findings | 0 (no anomalies in source) | none | _open_ |
-| 1 | `customers` | CUSTOMER_MASTER, ENTITY_ATTR_VALUE, CUSTOMER_MASTER_HIST | `customers`, `customers_quarantine` | wide-embed **XL** | pending | — | — | — | — |
-| 1 | `subscriptions` | SUBSCRIPTIONS, SUBSCRIPTIONS_HIST | `subscriptions` | small-embed | pending | — | — | — | — |
+| 1 | `customers` | CUSTOMER_MASTER, ENTITY_ATTR_VALUE, CUSTOMER_MASTER_HIST | `customers`, `customers_quarantine` | wide-embed **XL** | recon_pass | 25,000/25,000 docs + 8,333 attribute elements, 0 findings | 81 (50 unparseable `SIGNUP_DT`, 31 malformed `RELATED_ACCT_IDS`) | history embed empty at source; 113 always-null columns dropped | _open_ |
+| 1 | `subscriptions` | SUBSCRIPTIONS, SUBSCRIPTIONS_HIST | `subscriptions` | small-embed | recon_pass | 69/69 docs, full keyed diff, 0 findings | 0 (no anomalies in source) | history embed empty at source | _open_ |
 | 2 | `invoices` | INVOICE_HEADER, INVOICE_LINE | `invoices`, `invoices_quarantine` | bulk-load **XL** | pending | — | — | — | — |
 | 2 | `usage_rating` | USAGE_EVENTS, RATING_PERIODS, RATING_RESULTS | `usage_events`, `rating_periods` | small-embed | pending | — | — | — | — |
 | 2 | `subscription_invoices` | INVOICES, INVOICE_LINES | `subscription_invoices` | small-embed | pending | — | — | — | — |
@@ -23,13 +23,15 @@ Out of scope: `FIXTURE_META` (estate bookkeeping, one row, no business data).
 
 ## Extract lease (source-load cap = 1)
 
-The STOP A cap of 1 concurrent Oracle query is enforced here, not by narrowing the wave. A
-child claims the lease before streaming from Oracle and releases it before transform/load,
-so waves still run 3-wide. Only `customers` and `invoices` read enough rows to contend.
+The STOP A cap of 1 concurrent Oracle query is enforced by an exclusive `flock` on
+`.migration/.extract.lock`, taken before the Oracle connection is opened and held for the
+whole extract phase; a second loader blocks there instead of reading. The rows below are the
+record of who held it, not the mechanism — a ledger edit cannot stop a concurrent process.
+Waves still run 3-wide; only `customers` and `invoices` read enough rows to contend.
 
 | Lease | Holder | Claimed (UTC) | Released (UTC) |
 |---|---|---|---|
-| `oracle:OW_BILLING` | _free_ | 2026-09-01 (claimed by `reference`) | 2026-09-01 (released) |
+| `oracle:OW_BILLING` | _free_ | 2026-09-01 (claimed by `reference`, `subscriptions`, `customers` in turn) | 2026-09-01 (released) |
 
 ## Wave-boundary checks
 
@@ -38,7 +40,7 @@ Re-checked before each wave starts; a failure halts rather than degrades.
 | Wave | Atlas storage headroom | Recon rerun budget used | Same-class failures |
 |---|---|---|---|
 | 0 | 324.16 MB free (187.84 MB used of 512; wave 0 adds ~104 docs) | 0/3 | 0/3 |
-| 1 | not yet checked | 0/3 | 0/3 |
+| 1 | 336.14 MB free (175.86 MB storage used of 512; `ow_tp_mongodb_orc1` holds 32.14 MB after 25,069 docs) | 0/3 | 0/3 |
 | 2 | not yet checked | 0/3 | 0/3 |
 | 3 | not yet checked | 0/3 | 0/3 |
 | 4 | n/a (code only) | 0/3 | 0/3 |
