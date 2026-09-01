@@ -32,13 +32,10 @@ terraform init
 terraform plan
 ```
 
-`import.sh` attempts imports for `ow_tp`, `ow_tp.bronze`, `ow_tp.silver`,
-`ow_tp.gold`, `ow_tp.bronze.landing`, and the `ow_tp` secret scope. An import
-that returns not-found is ignored so a new object can still be created by a
-later reviewed apply. The four managed tables, notebooks, and job are also
-declared idempotently; import any pre-existing instance of those resources
-with the provider's documented import ID before applying if a workspace
-already contains one.
+`import.sh` classifies each import as imported, already in state, or not found
+(so the plan can create it), exits on any other error, and leaves the four
+managed tables, notebooks, and job idempotent so pre-existing instances can be
+imported with the provider's documented IDs before applying.
 
 ## Resources
 

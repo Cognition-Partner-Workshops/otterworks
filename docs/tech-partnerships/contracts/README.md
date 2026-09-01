@@ -61,6 +61,10 @@ legacy script needs does not exist locally), you must:
 Never synthesize a golden output, never soften a comparison to make it pass, and state
 the provenance of your baseline explicitly in the recon report.
 
+The recon harness accepts repeatable `--waive <check-id>` flags; a skipped required
+check is RED unless it is explicitly waived, and waived skipped checks remain listed
+in `unverified_paths`.
+
 ## Units
 
 Schema-valid JSON contracts (P-B CUSTBILL run, `tp-run/databricks-20260901T205308Z`):

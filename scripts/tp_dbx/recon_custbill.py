@@ -33,16 +33,47 @@ from decimal import Decimal
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from client import Databricks, DbxError, require_ns  # noqa: E402
+from client import Databricks, DbxError, require_custbill_ns  # noqa: E402
 
 CATALOG = "ow_tp"
 UNITS = ("sftp_ingest_poll", "parse_custbill_fixedwidth", "finance_excel_report", "custbill_workflow")
 REPORT_DIR = Path(__file__).resolve().parents[2] / "docs/tech-partnerships/recon"
 JOB_NAME = "ow_tp_custbill"
+REQUIRED = {
+    "sftp_ingest_poll": {"U6-a", "U6-b", "U6-c", "U6-e"},
+    "parse_custbill_fixedwidth": {"U7-a", "U7-b", "U7-c", "U7-d", "U7-e"},
+    "finance_excel_report": {"U8-a", "U8-b", "U8-c", "U8-e"},
+    "custbill_workflow": {
+        "U9-a", "U9-c",
+        "U9-b/U6-a", "U9-b/U6-b", "U9-b/U7-a", "U9-b/U7-b",
+        "U9-b/U7-c", "U9-b/U8-a", "U9-b/U8-b",
+    },
+}
 
 
 def sha256(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
+
+
+def content_fingerprint(rows: list[str]) -> str:
+    return sha256("\n".join(rows).encode())
+
+
+def verdict(unit: str, checks: list[dict], idem_result: str | None, waived: set[str]) -> list[str]:
+    required = REQUIRED[unit]
+    by_id = {check["id"]: check for check in checks}
+    failures = [check["id"] for check in checks if check["result"] == "fail"]
+    for check_id in sorted(required):
+        if check_id in waived:
+            continue
+        check = by_id.get(check_id)
+        if check is None:
+            failures.append(f"{check_id} (missing)")
+        elif check["result"] == "skipped":
+            failures.append(f"{check_id} (skipped, not waived)")
+    if idem_result == "fail":
+        failures.append("idempotency")
+    return failures
 
 
 def q(s: str) -> str:
@@ -140,6 +171,7 @@ class Recon:
         leftovers = sorted(n for n in incoming if any(n.startswith(d["file"]) for d in a_exp))
         self.check("U6-e", [], leftovers, "volume incoming/ listing after run: processed files must be gone")
         self.fingerprint["bronze_rows"] = b_act
+        self.fingerprint["bronze_content"] = c_act
         self.fingerprint["archive"] = a_act
 
     # -- U7 -------------------------------------------------------------------
@@ -158,6 +190,7 @@ class Recon:
         got = self.rows(f"SELECT source_file, count(*) FROM {CATALOG}.silver.custbill_records "
                         f"WHERE ns={q(self.ns)} GROUP BY source_file")
         act_counts = {f: int(n) for f, n in got}
+        silver_content: list[str] = []
         self.check("U7-a", {"total": sum(exp_counts.values()), "per_file": exp_counts},
                    {"total": sum(act_counts.values()), "per_file": act_counts},
                    "wc -l parsed/*.psv vs count(*) silver per source_file")
@@ -170,6 +203,7 @@ class Recon:
                 f"FROM {CATALOG}.silver.custbill_records WHERE ns={q(self.ns)} AND source_file={q(base)} "
                 f"ORDER BY line_no")
             target = ["|".join("" if c is None else str(c) for c in r) for r in rows]
+            silver_content.extend(target)
             for i in range(max(len(lines), len(target))):
                 compared += 1
                 le = lines[i] if i < len(lines) else "<missing>"
@@ -182,7 +216,10 @@ class Recon:
         self.check("U7-b", {"rows_compared": compared, "mismatches": []},
                    {"rows_compared": compared, "mismatches": mismatches},
                    "full row diff: legacy .psv line i vs silver row i (ORDER BY line_no), 6 fields", ok=not mismatches)
-        qn = int(self.rows(f"SELECT count(*) FROM {CATALOG}.silver.custbill_quarantine WHERE ns={q(self.ns)}")[0][0])
+        quarantine_rows = self.rows(
+            f"SELECT source_file, line_no, reason FROM {CATALOG}.silver.custbill_quarantine "
+            f"WHERE ns={q(self.ns)} ORDER BY source_file, line_no, reason")
+        qn = len(quarantine_rows)
         self.check("U7-c", 0, qn, "count(*) quarantine on clean seed (T7)")
         trailer = self.rows(
             f"SELECT source_file, "
@@ -197,6 +234,9 @@ class Recon:
             self.check("U7-d", t_exp, t_act, "bronze TRL cols 4-13 vs BODY row count per file")
         self.fingerprint["silver_counts"] = act_counts
         self.fingerprint["quarantine"] = qn
+        self.fingerprint["silver_content"] = content_fingerprint(silver_content)
+        self.fingerprint["quarantine_content"] = content_fingerprint(
+            ["|".join("" if c is None else str(c) for c in row) for row in quarantine_rows])
         if anomaly_ns and anomaly_root:
             self.anomaly_leg(anomaly_ns, anomaly_root)
         else:
@@ -218,12 +258,13 @@ class Recon:
         excluded = int(self.rows(
             f"SELECT count(*) FROM {CATALOG}.silver.custbill_records WHERE ns={q(ans)}")[0][0])
         row_level = [a for a in expected if a[1] != 0]
-        total_rows = int(manifest.get("total_records", 0)) if isinstance(manifest.get("total_records"), int) else None
-        self.check("U7-e", {"missing": [], "unexpected": [], "silver_rows": None if total_rows is None else total_rows - len(row_level)},
+        total_rows = int(manifest["record_count"])
+        expected_silver_rows = total_rows - len(row_level)
+        self.check("U7-e", {"missing": [], "unexpected": [], "silver_rows": expected_silver_rows},
                    {"missing": self.anomaly["missing"], "unexpected": self.anomaly["unexpected"], "silver_rows": excluded},
                    f"manifest {Path(manifests[0]).name} planted_anomalies (file,row,kind) vs quarantine (source_file,line_no-1,reason) on ns={ans}",
                    ok=not self.anomaly["missing"] and not self.anomaly["unexpected"]
-                   and (total_rows is None or excluded == total_rows - len(row_level)))
+                   and excluded == expected_silver_rows)
 
     # -- U8 -------------------------------------------------------------------
     def unit_finance(self) -> None:
@@ -346,9 +387,10 @@ def main() -> int:
     ap.add_argument("--evidence-json", type=Path, help="workflow unit: child-captured run states")
     ap.add_argument("--previous", type=Path, help="first-pass snapshot to compare for idempotency")
     ap.add_argument("--unverified", action="append", default=[], help="declared gap (repeatable)")
+    ap.add_argument("--waive", action="append", default=[], help="waive a skipped required check (repeatable)")
     ap.add_argument("--out", type=Path)
     a = ap.parse_args()
-    ns = require_ns(a.ns)
+    ns = require_custbill_ns(a.ns)
     if ns == "demo" and a.run_mode != "live":
         raise SystemExit("ns=demo is the parent's live window: --run-mode live")
     if ns != "demo" and a.run_mode == "live":
@@ -363,7 +405,15 @@ def main() -> int:
         r.unit_finance()
     else:
         r.unit_workflow(a.evidence_json)
+    waived = set(a.waive)
     r.unverified.extend(a.unverified)
+    for check in r.checks:
+        if check["result"] == "skipped" and check["id"] in waived:
+            prefix = f"{check['id']}:"
+            r.unverified = [
+                f"{entry} (waived)" if entry.startswith(prefix) and not entry.endswith(" (waived)") else entry
+                for entry in r.unverified
+            ]
     wrote_rows = any(bool(v) and v != 0 for k, v in r.fingerprint.items() if k in ("bronze_rows", "silver_counts", "gold"))
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -372,7 +422,7 @@ def main() -> int:
         snap.write_text(json.dumps({"kind": "recon-snapshot", "unit": a.unit, "namespace": ns, "generated_at": now,
                                     "run_mode": a.run_mode, "checks": r.checks, "fingerprint": r.fingerprint,
                                     "planted_anomaly_detections": r.anomaly, "wrote_rows": wrote_rows}, indent=2) + "\n")
-        fails = [c["id"] for c in r.checks if c["result"] == "fail"]
+        fails = verdict(a.unit, r.checks, None, waived)
         print(f"first pass: {len(r.checks)} checks, {len(fails)} failed {fails}; snapshot {snap}")
         print("re-run the job with no new input, then invoke again with --previous", snap)
         return 1 if fails else 0
@@ -394,7 +444,7 @@ def main() -> int:
     }
     out = a.out or REPORT_DIR / f"{a.unit}.recon.json"
     out.write_text(json.dumps(report, indent=2) + "\n")
-    fails = [c["id"] for c in r.checks if c["result"] == "fail"] + (["idempotency"] if idem["result"] == "fail" else [])
+    fails = verdict(a.unit, r.checks, idem["result"], waived)
     print(f"{'GREEN' if not fails else 'RED'}: {len(r.checks)} checks, failed {fails}; report {out}")
     return 1 if fails else 0
 

@@ -9,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from client import Databricks, DbxError, require_ns
+from client import Databricks, DbxError, require_custbill_ns
 
 CATALOG = "ow_tp"
 LANDING = f"/Volumes/{CATALOG}/bronze/landing"
@@ -258,7 +258,7 @@ def cmd_wipe(dbx: Databricks, args: argparse.Namespace) -> int:
 
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser()
-    cli.add_argument("--ns", required=True, type=require_ns)
+    cli.add_argument("--ns", required=True, type=require_custbill_ns)
     commands = cli.add_subparsers(dest="command", required=True)
 
     commands.add_parser("provision-check")

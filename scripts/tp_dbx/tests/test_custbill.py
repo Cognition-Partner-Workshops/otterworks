@@ -12,7 +12,9 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = SCRIPT_DIR.parents[1]
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from client import require_custbill_ns
 from custbill import bronze_rows_from_file, legacy_dat_files, silver_rows_from_file
+from recon_custbill import REQUIRED, content_fingerprint, verdict
 
 
 @pytest.fixture(scope="session")
@@ -73,3 +75,44 @@ def test_silver_rows_from_generated_psv(generated_root: Path) -> None:
         "source_file", "line_no", "cust_id", "cust_name", "bill_date",
         "bill_amt", "currency", "rec_type",
     }
+
+
+@pytest.mark.parametrize("ns", [
+    "demo", "sftp-ingest-poll-w1", "parse-w2", "parse-w2-anom",
+    "finance-w2", "custbill-workflow-w3",
+])
+def test_custbill_namespaces_accept_registered_values(ns: str) -> None:
+    assert require_custbill_ns(ns) == ns
+
+
+@pytest.mark.parametrize("ns", ["Parse_W2", "-x", "a" * 33, "x;drop"])
+def test_custbill_namespaces_reject_invalid_values(ns: str) -> None:
+    with pytest.raises(SystemExit, match=r"namespace must match"):
+        require_custbill_ns(ns)
+
+
+def test_content_fingerprint_distinguishes_row_fields() -> None:
+    assert content_fingerprint(["a|1", "b|2"]) != content_fingerprint(["a|1", "b|3"])
+
+
+def _checks_with_skipped(unit: str, skipped_id: str) -> list[dict]:
+    return [
+        {"id": check_id, "result": "skipped" if check_id == skipped_id else "pass"}
+        for check_id in REQUIRED[unit]
+    ]
+
+
+def test_verdict_parse_skipped_required_is_red_unless_waived() -> None:
+    checks = _checks_with_skipped("parse_custbill_fixedwidth", "U7-e")
+    assert verdict("parse_custbill_fixedwidth", checks, None, set()) == ["U7-e (skipped, not waived)"]
+    assert verdict("parse_custbill_fixedwidth", checks, None, {"U7-e"}) == []
+
+
+def test_verdict_finance_openpyxl_skip_is_red() -> None:
+    checks = _checks_with_skipped("finance_excel_report", "U8-e")
+    assert verdict("finance_excel_report", checks, None, set()) == ["U8-e (skipped, not waived)"]
+
+
+def test_verdict_workflow_run_state_skip_is_red() -> None:
+    checks = _checks_with_skipped("custbill_workflow", "U9-c")
+    assert verdict("custbill_workflow", checks, None, set()) == ["U9-c (skipped, not waived)"]

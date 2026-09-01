@@ -16,6 +16,7 @@ import urllib.request
 from dataclasses import dataclass
 
 NS_RE = re.compile(r"[a-z0-9_]{1,24}")
+CUSTBILL_NS_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,31}")
 IDENT_RE = re.compile(r"[A-Za-z0-9_]+")
 
 
@@ -26,6 +27,12 @@ class DbxError(RuntimeError):
 def require_ns(ns: str) -> str:
     if not NS_RE.fullmatch(ns):
         raise SystemExit(f"namespace must match [a-z0-9_]{{1,24}}: {ns!r}")
+    return ns
+
+
+def require_custbill_ns(ns: str) -> str:
+    if not CUSTBILL_NS_RE.fullmatch(ns):
+        raise SystemExit(f"namespace must match [a-z0-9][a-z0-9-]{{0,31}}: {ns!r}")
     return ns
 
 
