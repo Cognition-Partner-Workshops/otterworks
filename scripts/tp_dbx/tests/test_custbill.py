@@ -14,7 +14,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import require_custbill_ns
 from custbill import bronze_rows_from_file, legacy_dat_files, silver_rows_from_file
-from recon_custbill import REQUIRED, content_fingerprint, verdict
+from recon_custbill import REQUIRED, content_fingerprint, idempotency_result, verdict
 
 
 @pytest.fixture(scope="session")
@@ -116,3 +116,32 @@ def test_verdict_finance_openpyxl_skip_is_red() -> None:
 def test_verdict_workflow_run_state_skip_is_red() -> None:
     checks = _checks_with_skipped("custbill_workflow", "U9-c")
     assert verdict("custbill_workflow", checks, None, set()) == ["U9-c (skipped, not waived)"]
+
+
+def test_idempotency_same_run_is_fail() -> None:
+    run = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
+    result, reason = idempotency_result(True, True, run, run)
+    assert result == "fail"
+    assert "newer" in reason
+
+
+def test_idempotency_newer_successful_run_is_pass() -> None:
+    previous = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
+    current = {"run_id": 2, "end_time": 200, "result_state": "SUCCESS"}
+    assert idempotency_result(True, True, previous, current) == (
+        "pass", "newer successful ow_tp_custbill run confirmed"
+    )
+
+
+def test_idempotency_newer_run_with_changed_fingerprint_is_fail() -> None:
+    previous = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
+    current = {"run_id": 2, "end_time": 200, "result_state": "SUCCESS"}
+    result, reason = idempotency_result(False, True, previous, current)
+    assert result == "fail"
+    assert reason == "fingerprints differ"
+
+
+def test_idempotency_without_runs_is_fail() -> None:
+    result, reason = idempotency_result(True, True, None, None)
+    assert result == "fail"
+    assert "no newer successful" in reason

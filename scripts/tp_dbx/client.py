@@ -233,6 +233,16 @@ class Databricks:
                 return job
         return None
 
+    def list_runs(self, job_id: int, limit: int = 25) -> list[dict]:
+        payload = self.ok(
+            "GET",
+            f"/api/2.1/jobs/runs/list?job_id={job_id}&completed_only=true&limit={limit}",
+        )
+        return payload.get("runs", [])
+
+    def get_run(self, run_id: int) -> dict:
+        return self.ok("GET", f"/api/2.1/jobs/runs/get?run_id={run_id}")
+
     def upsert_job(self, settings: dict) -> int:
         existing = self.find_job(settings["name"])
         if existing:

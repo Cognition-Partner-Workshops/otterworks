@@ -64,6 +64,8 @@ the provenance of your baseline explicitly in the recon report.
 The recon harness accepts repeatable `--waive <check-id>` flags; a skipped required
 check is RED unless it is explicitly waived, and waived skipped checks remain listed
 in `unverified_paths`.
+Idempotency is GREEN only when the fingerprints match and a newer successful job run
+for the namespace is present after the first pass.
 
 ## Units
 

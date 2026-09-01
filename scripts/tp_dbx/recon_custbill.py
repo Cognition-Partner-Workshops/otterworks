@@ -7,10 +7,7 @@ the deterministic legacy outputs regenerated under OTTERWORKS_LEGACY_ROOT
 target side is recomputed from ow_tp tables / volume files at run time; every
 value on the legacy side is read from the legacy files, never from a document.
 
-Idempotency is mandatory: the first invocation writes a *snapshot*
-(`<unit>.recon.first-pass.json`, not a report). After the job has been re-run
-with no new input, invoke again with `--previous <snapshot>`; only then is a
-schema-valid `<unit>.recon.json` written, with the two fingerprints compared.
+Idempotency requires a first-pass snapshot followed by a no-input job rerun and a second invocation with `--previous <snapshot>` that compares fingerprints and proves a newer successful run.
 
 Usage:
   recon_custbill.py --unit sftp_ingest_poll --ns demo --legacy-root ~/otterworks-legacy-demo --run-mode live
@@ -57,6 +54,25 @@ def sha256(b: bytes) -> str:
 
 def content_fingerprint(rows: list[str]) -> str:
     return sha256("\n".join(rows).encode())
+
+
+def idempotency_result(
+    same: bool,
+    wrote_rows: bool,
+    prev_run: dict | None,
+    cur_run: dict | None,
+) -> tuple[str, str]:
+    if not same:
+        return "fail", "fingerprints differ"
+    if not wrote_rows:
+        return "fail", "first pass did not write rows"
+    if cur_run is None:
+        return "fail", "no newer successful ow_tp_custbill run since first pass"
+    if cur_run.get("result_state") != "SUCCESS":
+        return "fail", "latest matching ow_tp_custbill run did not succeed"
+    if prev_run is not None and cur_run.get("end_time", 0) <= prev_run.get("end_time", 0):
+        return "fail", "no newer successful ow_tp_custbill run since first pass"
+    return "pass", "newer successful ow_tp_custbill run confirmed"
 
 
 def verdict(unit: str, checks: list[dict], idem_result: str | None, waived: set[str]) -> list[str]:
@@ -113,6 +129,40 @@ class Recon:
         self.checks.append({"id": cid, "expected": "n/a", "actual": why,
                             "source_of_truth": truth, "result": "skipped"})
         self.unverified.append(f"{cid}: {why}")
+
+    def latest_run_for_ns(self) -> dict | None:
+        job = self.dbx.find_job(JOB_NAME)
+        if not job:
+            return None
+        matching: list[dict] = []
+        for summary in self.dbx.list_runs(int(job["job_id"])):
+            run_id = summary.get("run_id")
+            if run_id is None:
+                continue
+            run = self.dbx.get_run(int(run_id))
+            params = run.get("job_parameters")
+            run_ns = None
+            if isinstance(params, list):
+                run_ns = next(
+                    (item.get("value") for item in params
+                     if isinstance(item, dict) and item.get("name") == "ns"),
+                    None,
+                )
+            if run_ns is None:
+                job_params = run.get("overriding_parameters", {}).get("job_parameters", {})
+                if isinstance(job_params, dict):
+                    run_ns = job_params.get("ns")
+            if run_ns != self.ns:
+                continue
+            state = run.get("state", {})
+            if state.get("result_state") != "SUCCESS":
+                continue
+            matching.append({
+                "run_id": int(run["run_id"]),
+                "end_time": int(run.get("end_time", 0)),
+                "result_state": state["result_state"],
+            })
+        return max(matching, key=lambda item: item["end_time"]) if matching else None
 
     def legacy_dats(self) -> list[Path]:
         files = sorted(Path(p) for p in glob.glob(str(self.root / "incoming" / "CUSTBILL*.dat*")))
@@ -405,6 +455,7 @@ def main() -> int:
         r.unit_finance()
     else:
         r.unit_workflow(a.evidence_json)
+    latest_run = r.latest_run_for_ns()
     waived = set(a.waive)
     r.unverified.extend(a.unverified)
     for check in r.checks:
@@ -421,7 +472,8 @@ def main() -> int:
         snap = a.out or REPORT_DIR / f"{a.unit}.recon.first-pass.json"
         snap.write_text(json.dumps({"kind": "recon-snapshot", "unit": a.unit, "namespace": ns, "generated_at": now,
                                     "run_mode": a.run_mode, "checks": r.checks, "fingerprint": r.fingerprint,
-                                    "planted_anomaly_detections": r.anomaly, "wrote_rows": wrote_rows}, indent=2) + "\n")
+                                    "planted_anomaly_detections": r.anomaly, "wrote_rows": wrote_rows,
+                                    "latest_run": latest_run}, indent=2) + "\n")
         fails = verdict(a.unit, r.checks, None, waived)
         print(f"first pass: {len(r.checks)} checks, {len(fails)} failed {fails}; snapshot {snap}")
         print("re-run the job with no new input, then invoke again with --previous", snap)
@@ -430,11 +482,21 @@ def main() -> int:
     if prev.get("kind") != "recon-snapshot" or prev.get("unit") != a.unit or prev.get("namespace") != ns:
         raise SystemExit("--previous must be this unit/namespace's first-pass snapshot")
     same = prev.get("fingerprint") == r.fingerprint
+    idem_result, idem_reason = idempotency_result(
+        same, bool(prev.get("wrote_rows")), prev.get("latest_run"), latest_run,
+    )
     idem = {
         "performed": True,
-        "result": "pass" if same and prev.get("wrote_rows") else "fail",
-        "evidence": (f"first pass {prev['generated_at']} wrote_rows={prev.get('wrote_rows')}; "
-                     f"second pass {now} fingerprint {'identical' if same else 'DIFFERS'}: {json.dumps(r.fingerprint, sort_keys=True)[:600]}"),
+        "result": idem_result,
+        "reason": idem_reason,
+        "previous_latest_run": prev.get("latest_run"),
+        "latest_run": latest_run,
+        "evidence": (
+            f"first pass {prev['generated_at']} wrote_rows={prev.get('wrote_rows')}; "
+            f"second pass {now} fingerprint {'identical' if same else 'DIFFERS'}; "
+            f"{idem_reason}; namespace={ns}; "
+            f"fingerprint={json.dumps(r.fingerprint, sort_keys=True)[:600]}"
+        ),
     }
     report = {
         "kind": "recon-report", "unit": a.unit, "namespace": ns, "generated_at": now, "run_mode": a.run_mode,
