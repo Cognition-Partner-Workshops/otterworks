@@ -1,5 +1,5 @@
 {
-  "version": "v1.0",
+  "version": "v1.0.1",
   "namespace": "mongo_205236",
   "target_database": "ow_tp_mongodb_205236",
   "quarantine_database": "ow_tp_mongodb_205236_quarantine",
@@ -22,8 +22,7 @@
       "wave": 0,
       "key": {
         "source": [
-          "CODE_TYPE",
-          "CODE_VAL"
+          "CODE_TYPE||':'||CODE_VAL"
         ],
         "target": "_key"
       },
@@ -222,5 +221,5 @@
       "notes": ""
     }
   ],
-  "projection_note": "Verbatim projection of .migration/03_mapping_spec.json (vv1.0) to unit U0 collections; no entries altered."
+  "projection_note": "Verbatim projection of .migration/03_mapping_spec.json (vv1.0.1) to unit U0 collections; no entries altered."
 }

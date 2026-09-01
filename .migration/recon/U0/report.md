@@ -1,17 +1,17 @@
 # Recon report: unit `U0`
 
-- **Verdict: FAIL**
+- **Verdict: PASS**
 - Mode: `live`
-- Mapping version: `v1.0`
+- Mapping version: `v1.0.1`
 - Tolerance version: `v1`
 - Seed: `714559852` | Params: `{'batch_no': '85559852', 'source_ns': 'demo'}`
-- Generated: 2026-09-01T21:26:38.025245+00:00
+- Generated: 2026-09-01T22:15:45.442205+00:00
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
 | 1 | counts_through_mapping | 3 | PASS |
 | 2 | per_field_aggregates | 14 | PASS |
-| 3 | keyed_diffs | 136 | FAIL (64 findings) |
+| 3 | keyed_diffs | 104 | PASS |
 
 ## Tier 2 coverage
 ```json
@@ -46,56 +46,3 @@
   }
 }
 ```
-
-## Tier 3 findings (64)
-- `codes` missing_doc: key=('CUST_STATUS', 1)
-- `codes` missing_doc: key=('CUST_STATUS', 2)
-- `codes` missing_doc: key=('CUST_STATUS', 3)
-- `codes` missing_doc: key=('CUST_STATUS', 99)
-- `codes` missing_doc: key=('CUST_TYPE', 1)
-- `codes` missing_doc: key=('CUST_TYPE', 2)
-- `codes` missing_doc: key=('CUST_TYPE', 3)
-- `codes` missing_doc: key=('DUN_STATUS', 10)
-- `codes` missing_doc: key=('DUN_STATUS', 20)
-- `codes` missing_doc: key=('DUN_STATUS', 30)
-- `codes` missing_doc: key=('INV_STATUS', 10)
-- `codes` missing_doc: key=('INV_STATUS', 20)
-- `codes` missing_doc: key=('INV_STATUS', 30)
-- `codes` missing_doc: key=('INV_STATUS', 40)
-- `codes` missing_doc: key=('NOTIF_KIND', 1)
-- `codes` missing_doc: key=('NOTIF_KIND', 2)
-- `codes` missing_doc: key=('NOTIF_KIND', 3)
-- `codes` missing_doc: key=('PHONE_TYPE', 1)
-- `codes` missing_doc: key=('PHONE_TYPE', 2)
-- `codes` missing_doc: key=('PHONE_TYPE', 3)
-- `codes` missing_doc: key=('PHONE_TYPE', 4)
-- `codes` missing_doc: key=('PLAN_TIER', 1)
-- `codes` missing_doc: key=('PLAN_TIER', 2)
-- `codes` missing_doc: key=('PLAN_TIER', 3)
-- `codes` missing_doc: key=('SUB_STATUS', 10)
-- `codes` missing_doc: key=('SUB_STATUS', 20)
-- `codes` missing_doc: key=('SUB_STATUS', 30)
-- `codes` missing_doc: key=('TENANT_STATUS', 10)
-- `codes` missing_doc: key=('TENANT_STATUS', 20)
-- `codes` missing_doc: key=('USAGE_KIND', 1)
-- `codes` missing_doc: key=('USAGE_KIND', 2)
-- `codes` missing_doc: key=('USAGE_KIND', 3)
-- `codes` extra_doc: key=('CUST_STATUS:1',)
-- `codes` extra_doc: key=('CUST_STATUS:2',)
-- `codes` extra_doc: key=('CUST_STATUS:3',)
-- `codes` extra_doc: key=('CUST_STATUS:99',)
-- `codes` extra_doc: key=('CUST_TYPE:1',)
-- `codes` extra_doc: key=('CUST_TYPE:2',)
-- `codes` extra_doc: key=('CUST_TYPE:3',)
-- `codes` extra_doc: key=('DUN_STATUS:10',)
-- `codes` extra_doc: key=('DUN_STATUS:20',)
-- `codes` extra_doc: key=('DUN_STATUS:30',)
-- `codes` extra_doc: key=('INV_STATUS:10',)
-- `codes` extra_doc: key=('INV_STATUS:20',)
-- `codes` extra_doc: key=('INV_STATUS:30',)
-- `codes` extra_doc: key=('INV_STATUS:40',)
-- `codes` extra_doc: key=('NOTIF_KIND:1',)
-- `codes` extra_doc: key=('NOTIF_KIND:2',)
-- `codes` extra_doc: key=('NOTIF_KIND:3',)
-- `codes` extra_doc: key=('PHONE_TYPE:1',)
-- ... 14 more in result.json

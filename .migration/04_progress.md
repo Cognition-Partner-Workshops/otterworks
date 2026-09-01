@@ -23,7 +23,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 
 | Wave | Unit | Status | Parity (result.json) | Quarantine rate | Unverified paths | Cost | PR |
 |---|---|---|---|---|---|---|---|
-| 0 | U0 reference (`codes`,`tenants`,`plans`) | HALTED | FAIL (fixture; T1 3/3, T2 14/14 PASS; T3 `codes` 32 missing/32 extra: harness cannot grade composite source key vs string `_key`) | 0% | — | — | ESCALATE (grading-only spec amendment needed) |
+| 0 | U0 reference (`codes`,`tenants`,`plans`) | RECON_GREEN | PASS (fixture; mapping v1.0.1 / tol v1; T1 3/3, T2 14/14, T3 104/104; `.migration/recon/U0/result.json`) | 0% (no quarantine targets) | LIVE gate (parent); Tier 4 (no ops); harness sampling path | 2 recon runs, 4 loads | open |
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | MERGED | GREEN — LIVE PASS (wave1 recon: T1 3/3, T2 18/18, T3 16,260/16,260 incl. 13,876 embedded versions; `tp-run/mongodb-20260901T205236Z--wave1-recon:.migration/recon/wave_reports/wave1.md`) | 1.54% (6/390 snapshots → Q.`orphan_document_snapshots`; 0.037% of unit rows) | LIVE gate (now covered by wave1 recon); Tier 4 (none in contract); adapter `key_strata` (full_diff path only); `state_b64` never decoded | 2 recon runs (run 1 red: adapter stat names) | #1420 |
