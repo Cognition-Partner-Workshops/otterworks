@@ -71,7 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     tol = load_tolerances(args.tolerances)
     rules = load_canon_rules(args.canonicalization)
 
-    source = DynamoSourceAdapter(_field_types(unit_mapping), args.source_endpoint_secret)
+    source = DynamoSourceAdapter(_field_types(unit_mapping), args.source_endpoint_secret,
+                                 table_where={c.root_table: c.root_where for c in spec.collections})
     target = MongoTargetAdapter(args.target_uri_secret, args.target_db)
     result = run_recon(args.unit, args.mode, spec, tol, rules, source, target,
                        out_dir=args.out, seed=args.seed, params=params)

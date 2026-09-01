@@ -49,9 +49,12 @@ def _coerce(value: Any, source_type: str, bson_type: str) -> Any:
 
 class DynamoSourceAdapter:
     def __init__(self, field_types: dict[str, dict[str, tuple[str, str]]],
-                 endpoint_secret: str | None = None):
+                 endpoint_secret: str | None = None,
+                 table_where: dict[str, str | None] | None = None):
         """field_types: {table: {attribute: (source_type, bson_type)}} from the mapping spec.
-        endpoint_secret: ENV VAR NAME holding the endpoint URL (defaults to AWS_ENDPOINT_URL)."""
+        endpoint_secret: ENV VAR NAME holding the endpoint URL (defaults to AWS_ENDPOINT_URL).
+        table_where: {table: resolved root_where}; the protocol's key_strata receives no filter,
+        so strata are drawn from this same partition rather than the whole table."""
         import boto3
 
         name = endpoint_secret or "AWS_ENDPOINT_URL"
@@ -65,6 +68,7 @@ class DynamoSourceAdapter:
         self._ddb = boto3.resource("dynamodb", endpoint_url=endpoint,
                                    region_name=os.getenv("AWS_REGION", "us-east-1"), **creds)
         self._types = field_types
+        self._where = table_where or {}
         self._cache: dict[tuple[str, str | None], list[dict[str, Any]]] = {}
 
     # -- scan (source concurrency 1: one serial consistent scan per table/where, cached) --
@@ -122,7 +126,8 @@ class DynamoSourceAdapter:
                 yield {c: it.get(c) for c in cols}
 
     def key_strata(self, table: str, key_cols: list[str], n_strata: int) -> list[tuple]:
-        keys = sorted({tuple(it[k] for k in key_cols) for it in self._items(table, None)})
+        keys = sorted({tuple(it[k] for k in key_cols)
+                       for it in self._items(table, self._where.get(table))})
         if not keys or n_strata <= 0:
             return []
         step = max(1, len(keys) // n_strata)

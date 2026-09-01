@@ -15,6 +15,7 @@ import sys
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAPPING_SPEC = REPO_ROOT / ".migration/03_mapping_spec.json"
@@ -44,6 +45,13 @@ def _aws(kind: str, service: str):
     factory = boto3.resource if kind == "resource" else boto3.client
     return factory(service, endpoint_url=endpoint,
                    region_name=os.getenv("AWS_REGION", "us-east-1"), **creds)
+
+
+def _endpoint_origin(url: str) -> str:
+    """scheme://host[:port] only; userinfo, path and query never reach reports."""
+    u = urlsplit(url)
+    host = u.hostname or ""
+    return f"{u.scheme}://{host}" + (f":{u.port}" if u.port else "")
 
 
 def to_string(v):
@@ -227,7 +235,7 @@ def main() -> int:
             "table": entry["root_table"],
             "root_where": entry["root_where"],
             "source_ns": args.source_ns,
-            "endpoint": _secret("AWS_ENDPOINT_URL"),
+            "endpoint": _endpoint_origin(_secret("AWS_ENDPOINT_URL")),
         },
         "ns": ns_value,
         "run_mode": "fixture",
