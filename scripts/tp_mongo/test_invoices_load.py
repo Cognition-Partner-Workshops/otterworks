@@ -140,6 +140,12 @@ def test_a_blank_line_date_is_neither_typed_nor_quarantined():
     assert bad_date is None
 
 
+def test_punctuation_that_is_not_the_estates_blank_date_is_quarantined():
+    for raw in ["--", "//", "-", "  -  "]:
+        _, bad_date = line_document(dict(LINE_ROW, INVOICE_ID="INV-A", INVOICE_DT=raw))
+        assert bad_date is not None, raw
+
+
 def test_an_embedded_line_with_a_bad_date_is_still_embedded_and_reported():
     cursor = FakeCursor(lines=[line_row(INVOICE_ID_REF="INV-A", LINE_ID="L-1",
                                         INVOICE_DT="31-FEB-24")])

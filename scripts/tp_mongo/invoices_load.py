@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -80,10 +81,13 @@ LINE_FIELDS = [
 LINE_RULES = {"POSTED_YN": ["rstrip_spaces", "empty_string_is_null"]}
 
 
+# The estate's own rendering of a missing `DD-MON-YY`: the separators with every field
+# blanked. Deliberately narrow — any other punctuation is a malformed date, not an absent one.
+BLANK_LEGACY_DATE = re.compile(r"\s+-\s+-\s+")
+
+
 def absent_legacy_date(raw) -> bool:
-    """The estate writes a missing `DD-MON-YY` date as its own punctuation with the fields
-    blanked (`'  -   -  '`), so a value with no alphanumerics is absent, not malformed."""
-    return raw is None or not any(ch.isalnum() for ch in raw)
+    return raw is None or raw.strip() == "" or BLANK_LEGACY_DATE.fullmatch(raw) is not None
 
 
 def line_document(row: dict) -> tuple[dict, dict | None]:
