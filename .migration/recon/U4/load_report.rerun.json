@@ -2,7 +2,7 @@
   "collection": "ow_tp_mongodb_205236.files",
   "docs_in_collection": 10000,
   "docs_inserted": 10000,
-  "finished_at": "2026-09-01T21:38:09.483038+00:00",
+  "finished_at": "2026-09-01T21:42:21.055522+00:00",
   "idempotency": {
     "collection_existed_before": true,
     "docs_before_drop": 10000,
@@ -27,6 +27,6 @@
     "source_ns": "demo",
     "table": "otterworks-file-metadata"
   },
-  "started_at": "2026-09-01T21:37:41.647168+00:00",
+  "started_at": "2026-09-01T21:41:53.204294+00:00",
   "unit": "U4"
 }

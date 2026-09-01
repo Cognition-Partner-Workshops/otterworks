@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "U4",
   "namespace": "mongo_205236",
-  "generated_at": "2026-09-01T21:39:21Z",
+  "generated_at": "2026-09-01T21:42:36Z",
   "run_mode": "fixture",
   "harness": {
     "verdict": "PASS",

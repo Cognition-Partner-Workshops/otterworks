@@ -18,7 +18,7 @@ from recon.config import load_canon_rules, load_mapping_spec, load_tolerances
 from recon.engine import MODES, run_recon
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from dynamo_source import DynamoSourceAdapter  # noqa: E402
+from dynamo_source import DynamoSourceAdapter
 
 
 def _unit_mapping(spec_path: Path, unit: str, out_path: Path) -> Path:

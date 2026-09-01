@@ -55,7 +55,7 @@ def to_bool(v):
     if v is None:
         return None
     if not isinstance(v, bool):
-        raise RuntimeError(f"expected BOOL, got {type(v).__name__}")
+        raise TypeError(f"expected BOOL, got {type(v).__name__}")
     return v
 
 
@@ -114,11 +114,11 @@ def scan_items(table_name: str, source_ns: str):
 def s3_probe_available(source_ns: str) -> bool:
     """True when the files bucket holds objects for this partition, i.e. a HEAD probe is
     informative. The fixture estate stores metadata only, so this is normally False."""
+    s3 = _aws("client", "s3")
     try:
-        s3 = _aws("client", "s3")
         resp = s3.list_objects_v2(Bucket=FILES_BUCKET, Prefix=f"{source_ns}/", MaxKeys=1)
         return resp.get("KeyCount", 0) > 0
-    except Exception:
+    except (s3.exceptions.NoSuchBucket, s3.exceptions.ClientError):
         return False
 
 

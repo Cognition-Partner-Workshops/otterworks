@@ -22,13 +22,13 @@ MANIFEST = REPO_ROOT / "testdata/legacy/manifests/demo.json"
 OUT = REPO_ROOT / "docs/tech-partnerships/recon/U4.recon.json"
 
 UNVERIFIED = [
-    "orphaned_metadata via S3 HeadObject: the estate stores file metadata only (files bucket "
-    "holds no objects for the partition), so markers use the storage-key convention "
-    "(`<ns>/missing/` prefix) - same rule as testdata/legacy/validate.py; HEAD path untested",
-    "file-service (Rust) read/write path against `files` is not converted or exercised in "
-    "this unit; data-layer parity only",
-    "DynamoDB attributes absent on an item (null_missing_equiv) - fixture items always carry "
-    "folder_id, so the missing branch is exercised by canonicalization rules only",
+    ("orphaned_metadata via S3 HeadObject: the estate stores file metadata only (files bucket "
+     "holds no objects for the partition), so markers use the storage-key convention "
+     "(`<ns>/missing/` prefix) - same rule as testdata/legacy/validate.py; HEAD path untested"),
+    ("file-service (Rust) read/write path against `files` is not converted or exercised in "
+     "this unit; data-layer parity only"),
+    ("DynamoDB attributes absent on an item (null_missing_equiv) - fixture items always carry "
+     "folder_id, so the missing branch is exercised by canonicalization rules only"),
     "multi-partition sources - only ns='demo' exists in the fixture table",
 ]
 

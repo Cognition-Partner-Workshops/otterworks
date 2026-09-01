@@ -12,9 +12,10 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Iterable
+from typing import Any
 
 _COND = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*'([^']*)'\s*$")
 
