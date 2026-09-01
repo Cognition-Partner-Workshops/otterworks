@@ -27,7 +27,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | NOT_STARTED | — | — | — | — | — |
-| 1 | U4 files (DynamoDB) | RECON_GREEN | PASS (fixture; `.migration/recon/U4/gate/result.json`) | 0% (no quarantine) | 4 (see `docs/tech-partnerships/recon/U4.recon.json`) | 2 loads + 1 recon, ~1 min | PR pending |
+| 1 | U4 files (DynamoDB) | RECON_GREEN | PASS (fixture; `.migration/recon/U4/gate/result.json`) | 0% (no quarantine) | 4 (see `docs/tech-partnerships/recon/U4.recon.json`) | 3 loads + 2 recons, ~2 min | #1419 |
 | 2 | U5 billing core | NOT_STARTED | — | — | — | — | — |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
 | 2 | U7 PKG_RATING | NOT_STARTED | — | — | — | — | — |
