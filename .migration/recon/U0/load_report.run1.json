@@ -1,6 +1,6 @@
 {
-  "started_at": "2026-09-01T21:23:30.434182Z",
-  "finished_at": "2026-09-01T21:23:32.766853Z",
+  "started_at": "2026-09-01T21:24:59.508812Z",
+  "finished_at": "2026-09-01T21:25:01.471407Z",
   "target_db": "ow_tp_mongodb_205236",
   "ns": "mongo_205236",
   "secret_names": {
@@ -17,8 +17,7 @@
       "docs_after": 32,
       "ns_docs_after": 32,
       "indexes": [
-        "code_type_1_code_val_1",
-        "_key_1"
+        "code_type_1_code_val_1"
       ]
     },
     "tenants": {

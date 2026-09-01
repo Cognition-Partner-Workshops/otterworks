@@ -165,9 +165,6 @@ def load_collection(database: Any, collection: str, rows: list[dict[str, Any]]) 
                 unique=True,
             )
         )
-        index_names.append(
-            database[collection].create_index([("_key", ASCENDING)], unique=True)
-        )
 
     docs_after = database[collection].count_documents({})
     ns_docs_after = database[collection].count_documents({"ns": NS_VALUE})
