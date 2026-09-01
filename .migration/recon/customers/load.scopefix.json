@@ -1,0 +1,30 @@
+{
+  "unit": "customers",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "customers",
+      "documents": 25000,
+      "embedded": {
+        "attributes": 8333,
+        "history": 0
+      },
+      "quarantined": 81,
+      "anomalies": {
+        "unparseable_signup_dt": 50,
+        "malformed_related_acct_ids": 31
+      },
+      "pruned": 0,
+      "digest": "32dae4324f88461fad0c59cdc3f094799c4da2bdf0449ce964db48824b19c7ca",
+      "expected_documents": 25000,
+      "expected_documents_basis": "scope",
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T05:30:29.761322+00:00"
+}

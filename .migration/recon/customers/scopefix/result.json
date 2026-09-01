@@ -1,0 +1,58 @@
+{
+  "unit": "customers",
+  "mode": "live",
+  "mapping_version": "m1",
+  "tolerance_version": "v1",
+  "seed": 20260901,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "generated_at": "2026-09-01T05:31:29.060550+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 40,
+      "stats": {
+        "deferred_to_tier3": [
+          "customers.sub_status_cd",
+          "customers.address.line_2",
+          "customers.address.line_3",
+          "customers.phones.secondary.number",
+          "customers.credit_limit_amt",
+          "customers.legacy.promo_codes_csv",
+          "customers.legacy.related_acct_ids"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 33333,
+      "stats": {
+        "customers": {
+          "mode": "full_diff",
+          "population": 25000
+        },
+        "embeds_graded": {
+          "customers.attributes": 8333,
+          "customers.history": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

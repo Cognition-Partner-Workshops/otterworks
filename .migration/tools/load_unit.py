@@ -344,6 +344,41 @@ def get_path(doc, path):
     return doc
 
 
+def root_key_census(cur, coll_spec, params):
+    """Read every root key in the table, with the column the scope is cut on, for a scoped
+    extract. Two things need it and neither can be answered from the slice alone:
+
+    * how many rows *this* slice should have. `expected_documents` is the census of the
+      whole table, so gating a batch load on it rejects every valid partial batch; the
+      count for the slice is derived here instead, from a read that is not the extract.
+    * whether a child row without a parent in the slice is an orphan or simply belongs to
+      another slice. Only the full key set can tell those apart, and quarantining the
+      second kind would be quarantining another batch's live data.
+
+    Returns None for an unscoped collection: its extract is the whole table, so the census
+    number already describes it and every parentless child really is parentless.
+    """
+    scope = coll_spec.get("scope")
+    where = coll_spec.get("root_where")
+    if not scope or not where or "${" not in where:
+        return None
+    key = coll_spec["key"]
+    key_cols = key["compose"]["from"] if key.get("compose") else key["source"]
+    column = scope["source_column"]
+    rows = select(cur, coll_spec["root_table"], key_cols + [column], None)
+
+    declared = coll_spec.get("expected_documents")
+    if declared is not None and len(rows) != declared:
+        sys.exit(f"{coll_spec['collection']}: {coll_spec['root_table']} holds {len(rows)} "
+                 f"rows but the approved mapping was built from a census of {declared}; the "
+                 "mapping is stale, so the per-scope counts derived from it cannot be "
+                 "trusted either")
+
+    wanted = str(params[scope["param"]])
+    return {"parents": {tuple(r[c] for c in key_cols) for r in rows},
+            "documents_in_scope": sum(1 for r in rows if str(r[column]) == wanted)}
+
+
 def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     name = coll_spec["collection"]
     root_where = substitute(coll_spec.get("root_where"), params)
@@ -351,6 +386,7 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     compose = key.get("compose")
     key_cols = compose["from"] if compose else key["source"]
 
+    census = root_key_census(cur, coll_spec, params)
     rows = select(cur, coll_spec["root_table"], key_cols + source_columns(coll_spec), root_where)
 
     # `parent_key` names columns on the CHILD table whose values join to the root key --
@@ -397,6 +433,10 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     # predicate let through.
     orphans = []
     parents = {tuple(row[c] for c in key_cols) for row in rows}
+    # For a scoped extract, "no parent in this slice" and "no parent at all" are different
+    # findings: the first is another batch's data and is left alone, the second is the
+    # anomaly. `elsewhere` is the set that separates them.
+    elsewhere = (census["parents"] - parents) if census else set()
     for e in coll_spec.get("embeds", []):
         def orphan_docs(kids, pk, e=e):
             if not e.get("orphan_category"):
@@ -410,7 +450,7 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                      "raw_row": {kk: str(vv) for kk, vv in k.items()}} for k in kids]
 
         for pk, kids in children[e["array_path"]].items():
-            if pk not in parents:
+            if pk not in parents and pk not in elsewhere:
                 orphans += orphan_docs(kids, pk)
         if e.get("orphan_where"):
             hidden: dict[tuple, list] = {}
@@ -419,7 +459,7 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                             substitute(e["orphan_where"], params)):
                 hidden.setdefault(tuple(r[k] for k in e["parent_key"]), []).append(r)
             for pk, kids in hidden.items():
-                if pk in parents:
+                if pk in parents or pk in elsewhere:
                     sys.exit(f"{name}.{e['array_path']}: orphan_where returned rows whose "
                              f"parent {pk} does exist; the predicate does not describe "
                              "orphans and the load would quarantine live data")
@@ -441,9 +481,14 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                "quarantined": len(quarantined) + len(orphans),
                "anomalies": anomalies, "pruned": 0,
                "digest": content_digest(docs + quarantined + orphans)}
-    if "expected_documents" in coll_spec:
-        summary["expected_documents"] = coll_spec["expected_documents"]
-        summary["matches_census"] = len(docs) == coll_spec["expected_documents"]
+    # A scoped extract is graded against the rows its own scope holds, not against the
+    # estate-wide census -- but it is still graded against a number that was read back from
+    # the source separately, so a truncated extract cannot pass by describing itself.
+    expected = census["documents_in_scope"] if census else coll_spec.get("expected_documents")
+    if expected is not None:
+        summary["expected_documents"] = expected
+        summary["expected_documents_basis"] = "scope" if census else "census"
+        summary["matches_census"] = len(docs) == expected
     if dry_run:
         return summary, docs[:1]
 
@@ -453,8 +498,9 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     # valid documents with it.
     problems = anomaly_mismatches(coll_spec, anomalies)
     if summary.get("matches_census") is False:
-        problems.append(f"{name}: extracted {len(docs)} rows, census says "
-                        f"{coll_spec['expected_documents']}")
+        problems.append(f"{name}: extracted {len(docs)} rows, the "
+                        f"{summary['expected_documents_basis']} says "
+                        f"{summary['expected_documents']}")
     if problems:
         sys.exit(f"{name}: the extract does not describe the migration the mapping declares, "
                  "so nothing is written: " + "; ".join(problems))

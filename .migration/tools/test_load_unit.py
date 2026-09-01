@@ -330,6 +330,79 @@ def test_an_extract_that_leaves_the_declared_scope_is_rejected():
         load_batch(FakeMongo(), {"INVOICE_HEADER": HEADERS}, 10, spec)
 
 
+# ------------------------------------------------- scoped extracts and their children
+EMBED_SPEC = {**BATCH_SPEC, "expected_documents": 3,
+              "embeds": [{"array_path": "lines", "child_table": "INVOICE_LINE",
+                          "parent_key": ["INVOICE_ID"],
+                          "key": {"source": ["LINE_ID"], "target": "line_id"},
+                          "fields": [{"source": "LINE_ID", "target": "line_id",
+                                      "bson_type": "long", "rules": []}]}]}
+
+LINES = [{"INVOICE_ID": 1, "LINE_ID": 11}, {"INVOICE_ID": 3, "LINE_ID": 33}]
+
+
+def test_a_child_of_another_batch_is_not_an_orphan():
+    """INVOICE_LINE rows hanging off batch 20 are not parentless just because batch 10 is
+    the slice being loaded; treating them as orphans would quarantine another batch's live
+    data (and here, with no orphan_category declared, would halt the load outright)."""
+    db = FakeMongo()
+    summary = load_batch(db, {"INVOICE_HEADER": HEADERS, "INVOICE_LINE": LINES}, 10,
+                         EMBED_SPEC)
+    assert summary["embedded"]["lines"] == 1
+    assert [d["line_id"] for d in db["invoices"].docs[1]["lines"]] == [11]
+    assert summary["quarantined"] == 0
+
+
+def test_a_child_with_no_parent_anywhere_still_halts_when_the_anomaly_is_unnamed():
+    """The out-of-scope exemption must not swallow the real anomaly: line 99 belongs to no
+    invoice in any batch, and the mapping has not named that anomaly."""
+    tables = {"INVOICE_HEADER": HEADERS,
+              "INVOICE_LINE": LINES + [{"INVOICE_ID": 99, "LINE_ID": 991}]}
+    with pytest.raises(SystemExit):
+        load_batch(FakeMongo(), tables, 10, EMBED_SPEC)
+
+
+def test_a_scoped_extract_is_counted_against_its_own_scope():
+    """`expected_documents` is the census of the whole table. A batch load extracts one
+    slice of it, so gating the slice on the estate-wide total would reject every valid
+    partial batch."""
+    db = FakeMongo()
+    summary = load_batch(db, {"INVOICE_HEADER": HEADERS}, 10, {**BATCH_SPEC,
+                                                               "expected_documents": 3})
+    assert summary["documents"] == 2
+    assert summary["expected_documents"] == 2
+    assert summary["matches_census"] is True
+
+
+def test_a_short_scoped_extract_is_still_rejected():
+    """Scope-aware counting must not become no counting: the root key list is read back
+    independently, so an extract that returns fewer rows than its own scope holds still
+    stops before the write path."""
+    class TruncatingCursor(FakeCursor):
+        """Returns one row short on the scoped extract, and the whole table on the key read
+        -- an extract that died part-way through its fetch."""
+
+        def execute(self, sql):
+            super().execute(sql)
+            if " WHERE " in sql:
+                self.rows = self.rows[:-1]
+
+    db = FakeMongo()
+    spec = {**BATCH_SPEC, "expected_documents": 3}
+    with pytest.raises(SystemExit):
+        lu.load_collection(TruncatingCursor({"INVOICE_HEADER": HEADERS}), db, spec,
+                           {"batch_no": "10"}, {}, dry_run=False)
+    assert db["invoices"].docs == {}
+
+
+def test_a_stale_census_stops_a_scoped_load():
+    """If the table no longer holds the number of rows the approved mapping was built from,
+    the mapping is stale and the scope counts derived from it cannot be trusted either."""
+    with pytest.raises(SystemExit):
+        load_batch(FakeMongo(), {"INVOICE_HEADER": HEADERS}, 10,
+                   {**BATCH_SPEC, "expected_documents": 4})
+
+
 # --------------------------------------------------------------- extract lease
 def test_extract_lease_excludes_a_second_loader(tmp_path):
     """The source-load cap of 1 has to hold across processes: a wave runs three units wide."""
