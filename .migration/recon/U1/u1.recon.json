@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "U1",
   "namespace": "mongo_205236",
-  "generated_at": "2026-09-01T23:30:49.996887+00:00",
+  "generated_at": "2026-09-01T23:39:48.052997+00:00",
   "run_mode": "fixture",
   "harness": {
     "result": ".migration/recon/U1/result.json",

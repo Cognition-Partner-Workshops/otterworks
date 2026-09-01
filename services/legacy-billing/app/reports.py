@@ -100,7 +100,9 @@ def balances_pipeline(batch_no):
                 "_id": None,
                 "customer_count": {"$sum": 1},
                 "current_balance_total": {"$sum": "$cur_bal_amt"},
+                "current_balance_values": {"$sum": {"$cond": [{"$ne": ["$cur_bal_amt", None]}, 1, 0]}},
                 "past_due_total": {"$sum": "$past_due_amt"},
+                "past_due_values": {"$sum": {"$cond": [{"$ne": ["$past_due_amt", None]}, 1, 0]}},
             }
         },
         {"$project": {"_id": 0}},
@@ -164,13 +166,15 @@ def mongo_connect():
 
 
 def shape_balance_row(rows):
-    # SUM over an empty group is NULL in Oracle; COUNT(*) is 0.
+    # Oracle SUM is NULL over an empty group and over an all-NULL column; COUNT(*) is 0.
     row = rows[0] if rows else {"customer_count": 0}
-    return (
-        row["customer_count"],
-        fm_amount(row.get("current_balance_total")),
-        fm_amount(row.get("past_due_total")),
-    )
+
+    def total(name):
+        if not row.get(f"{name}_values"):
+            return None
+        return fm_amount(row.get(f"{name}_total"))
+
+    return row["customer_count"], total("current_balance"), total("past_due")
 
 
 def check(name, expected, actual, ok=None):

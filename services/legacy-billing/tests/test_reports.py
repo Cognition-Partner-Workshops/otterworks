@@ -16,10 +16,12 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
 import reports as reports_module
+from bson import Decimal128
 from flask import Flask
 from reports import (
     ns_batch_no,
     reports,
+    shape_balance_row,
     shape_balances,
     shape_line_rows,
     shape_status_rows,
@@ -75,6 +77,17 @@ def test_shapers():
         "current_balance_total": "8.00",
         "past_due_total": "9.00",
     }
+
+
+def test_shape_balance_row_preserves_oracle_sum_null_semantics():
+    assert shape_balance_row([]) == (0, None, None)
+    all_null = {"customer_count": 3, "current_balance_total": 0, "current_balance_values": 0,
+                "past_due_total": 0, "past_due_values": 0}
+    assert shape_balance_row([all_null]) == (3, None, None)
+    mixed = {"customer_count": 3, "current_balance_total": Decimal128("12.5"),
+             "current_balance_values": 2, "past_due_total": Decimal128("0"),
+             "past_due_values": 1}
+    assert shape_balance_row([mixed]) == (3, "12.50", "0.00")
 
 
 def test_month_end_contract(client):

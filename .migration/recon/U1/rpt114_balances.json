@@ -11,5 +11,19 @@
     "current_balance_total": "39799450.31",
     "past_due_total": "7330214.66"
   },
-  "result": "pass"
+  "result": "pass",
+  "null_semantics_probe": {
+    "batch_no": 1,
+    "oracle": {
+      "customer_count": 0,
+      "current_balance_total": null,
+      "past_due_total": null
+    },
+    "mongodb": {
+      "customer_count": 0,
+      "current_balance_total": null,
+      "past_due_total": null
+    },
+    "result": "pass"
+  }
 }

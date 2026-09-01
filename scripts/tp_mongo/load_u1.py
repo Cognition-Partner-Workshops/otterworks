@@ -244,6 +244,12 @@ def fetch(connection: Any, sql: str, params: Mapping[str, Any] | None = None) ->
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
+def where_clause(root_where: str | None) -> str:
+    if not root_where:
+        return ""
+    return " WHERE " + root_where.replace("${batch_no}", ":batch_no")
+
+
 def extract(connection: Any, mapping: Mapping[str, Mapping[str, Any]], batch_no: int) -> dict[str, Any]:
     customers = mapping["customers"]
     history = mapping["customers_history"]
@@ -267,8 +273,9 @@ def extract(connection: Any, mapping: Mapping[str, Mapping[str, Any]], batch_no:
         ),
         "history": fetch(
             connection,
-            f"SELECT {hist_cols} FROM {history['root_table']} WHERE {root_where} ORDER BY HIST_ID",
-            {"batch_no": batch_no},
+            f"SELECT {hist_cols} FROM {history['root_table']}"
+            f"{where_clause(history.get('root_where'))} ORDER BY HIST_ID",
+            {"batch_no": batch_no} if history.get("root_where") else None,
         ),
         "sequences": fetch(
             connection,

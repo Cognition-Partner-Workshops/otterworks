@@ -111,17 +111,18 @@ class _Cursor:
         self.rows = []
 
     def execute(self, sql, params):
-        assert "SEQUENCE_NAME" in sql or params == {"batch_no": 111}, sql
         if "USER_SEQUENCES" in sql:
             rows = self.tables["sequences"]
+        elif "CUSTOMER_MASTER_HIST" in sql:
+            assert "WHERE" not in sql and params == {}, sql
+            rows = self.tables["history"]
         elif "ENTITY_ATTR_VALUE" in sql:
             assert "ENTITY_ID IN (SELECT CUST_ID FROM CUSTOMER_MASTER" in sql
             parents = {r["CUST_ID"] for r in self.tables["customers"]
                        if r["CONVERSION_BATCH_NO"] == 111}
             rows = [r for r in self.tables["attributes"] if r["ENTITY_ID"] in parents]
-        elif "CUSTOMER_MASTER_HIST" in sql:
-            rows = [r for r in self.tables["history"] if r["CONVERSION_BATCH_NO"] == 111]
         else:
+            assert params == {"batch_no": 111}, sql
             rows = [r for r in self.tables["customers"] if r["CONVERSION_BATCH_NO"] == 111]
         self.description = [(k,) for k in (rows[0] if rows else {})]
         self.rows = [tuple(r.values()) for r in rows]
@@ -154,14 +155,22 @@ def _tables():
     }
 
 
-def test_extract_scopes_attributes_and_history_to_the_batch():
+def test_extract_scopes_attributes_to_the_batch_and_history_per_mapping():
+    assert MAPPING["customers_history"].get("root_where") is None
     source = load_u1.extract(_Connection(_tables()), MAPPING, 111)
     assert [r["CUST_ID"] for r in source["customers"]] == ["c1"]
     assert [r["EAV_ID"] for r in source["attributes"]] == [1]
-    assert source["history"] == []
+    assert [r["HIST_ID"] for r in source["history"]] == [1]
     built = load_u1.build_documents(MAPPING, source, 111)
     assert [d["_id"] for d in built["customers"]] == ["c1"]
-    assert built["embedded_attributes"] == 1 and built["customers_history"] == []
+    assert built["embedded_attributes"] == 1
+    assert [d["_id"] for d in built["customers_history"]] == [1]
+
+
+def test_where_clause_binds_batch_or_is_empty():
+    assert load_u1.where_clause(None) == ""
+    assert load_u1.where_clause("conversion_batch_no = ${batch_no}") == \
+        " WHERE conversion_batch_no = :batch_no"
 
 
 def test_build_documents_rejects_empty_customer_batch():
