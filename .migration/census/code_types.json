@@ -1,0 +1,54 @@
+{
+  "CUST_STATUS": {
+    "1": "active",
+    "2": "suspended",
+    "3": "closed",
+    "99": "conversion-limbo"
+  },
+  "CUST_TYPE": {
+    "1": "individual",
+    "2": "business",
+    "3": "government"
+  },
+  "DUN_STATUS": {
+    "10": "scheduled",
+    "20": "sent",
+    "30": "skipped"
+  },
+  "INV_STATUS": {
+    "10": "draft",
+    "20": "issued",
+    "30": "paid",
+    "40": "overdue"
+  },
+  "NOTIF_KIND": {
+    "1": "invoice",
+    "2": "dunning",
+    "3": "suspension"
+  },
+  "PHONE_TYPE": {
+    "1": "main",
+    "2": "billing",
+    "3": "fax",
+    "4": "after-hours"
+  },
+  "PLAN_TIER": {
+    "1": "starter",
+    "2": "growth",
+    "3": "scale"
+  },
+  "SUB_STATUS": {
+    "10": "active",
+    "20": "suspended",
+    "30": "cancelled"
+  },
+  "TENANT_STATUS": {
+    "10": "active",
+    "20": "suspended"
+  },
+  "USAGE_KIND": {
+    "1": "api",
+    "2": "storage",
+    "3": "compute"
+  }
+}

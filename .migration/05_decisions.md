@@ -13,9 +13,12 @@
 | 2026-09-01 | 2 | Tolerance record promoted from PROPOSED to `v1` ACCEPTED at STOP A; further changes are amendments with re-verification scope | Devin | recorded |
 | 2026-09-01 | 2 | Census run read-only against the live estate (`tools/census_oracle.py`, `tools/probe_access_patterns.py`); coverage table generated at `census/coverage.md`. 20 tables / 432 columns / 17 PL/SQL objects / 7 triggers / 2 jobs / 5 sequences, all bucketed | Devin | recorded |
 | 2026-09-01 | 2 | Census finding: `OW_BILLING` is **two disjoint lineages** (converted legacy estate vs normalized PL/SQL application) with no FK or shared key. Wave plan corrected accordingly — `INVOICES`/`INVOICE_LINES` are the app's own invoices, not a v2 of `INVOICE_HEADER` to retire | Devin | recorded |
-| 2026-09-01 | 2 | Mapping `m1` proposed: 13 collections, 44,750 root documents, natural `_id` throughout, all 5 sequences retired. Generated and coverage-checked by `tools/build_mapping_spec.py` | Devin | PROPOSED |
-| 2026-09-01 | 2 | Fan-out width 3 with the STOP A source-load cap of 1 enforced by an extract lease in `04_progress.md`, rather than collapsing waves to width-1 | Devin | PROPOSED |
-| 2026-09-01 | 2 | **STOP B** — approval of mapping `m1`, the unit/wave plan, fan-out width 3, and the 5 open modeling decisions | user | **awaiting approval** |
+| 2026-09-01 | 2 | Mapping `m1` proposed: 13 collections, 44,750 root documents, natural `_id` throughout, all 5 sequences retired. Generated and coverage-checked by `tools/build_mapping_spec.py` | Devin | ACCEPTED at STOP B |
+| 2026-09-01 | 2 | Fan-out width 3 with the STOP A source-load cap of 1 enforced by an extract lease in `04_progress.md`, rather than collapsing waves to width-1 | Devin | ACCEPTED at STOP B |
+| 2026-09-01 | 2 | **STOP B** — approval of mapping `m1`, the unit/wave plan, fan-out width 3, and the 5 open modeling decisions | user | **APPROVED 2026-09-01** ("Approve all — proceed to phase 3 (fan-out migration)") |
+| 2026-09-01 | 3 | Recon is run per unit against a generated slice of the mapping (`.migration/mapping/<unit>.json`), not the whole spec: `recon run` grades every collection in the file it is handed, so wave 0 would otherwise fail on collections wave 2 has not loaded yet. Slices are generated from the same spec, so they cannot drift from it | Devin | recorded |
+| 2026-09-01 | 3 | The repo's own gates (`tp-validate-contracts`, `tp-validate-recon`) are satisfied by artifacts **derived** from the harness result and mapping spec (`tools/build_contracts.py`, `tools/recon_report.py`) rather than hand-written, so a contract or report cannot disagree with the gate it represents | Devin | recorded |
+| 2026-09-01 | 3 | Wave 0 `reference` loaded and reconciled LIVE: 104/104 documents graded by full keyed diff, 0 findings across tiers 1-3, verdict PASS, idempotency proven by re-running the load and re-grading | Devin | recorded |
 
 Approvals are never inferred from chat history and never carry across reruns; each is
 recorded here with its date and owner before the chain continues.

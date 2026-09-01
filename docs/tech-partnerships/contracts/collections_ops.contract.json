@@ -1,0 +1,56 @@
+{
+  "unit": "collections_ops",
+  "source_artifact_path": "oracle://OW_BILLING/{BILLING_AUDIT_LOG,CREDIT_NOTES,DUNNING_ATTEMPTS,NOTIFICATIONS} (SELECT-only)",
+  "target_objects": [
+    "billing_audit_log",
+    "credit_notes",
+    "dunning_attempts",
+    "notifications"
+  ],
+  "golden_baseline_location": "recomputed live from Oracle by the recon harness at grade time (.migration/recon/collections_ops/result.json); no baseline is derived from migration output",
+  "acceptance_checks": [
+    {
+      "id": "row_count_parity",
+      "description": "Every mapped collection's document count equals its Oracle row count through the mapping (zero tolerance, tolerances v1)."
+    },
+    {
+      "id": "field_parity",
+      "description": "Per-field aggregates and a keyed diff agree after the Oracle canonicalization rules; NUMBER never lands as double."
+    },
+    {
+      "id": "idempotency_rerun",
+      "description": "Re-running the load leaves document counts and content identical (natural _id + upsert), and recon still passes."
+    },
+    {
+      "id": "harness_verdict_gates_merge",
+      "description": "The unit ships only on a PASS in the harness result.json; no loader self-report substitutes for it."
+    },
+    {
+      "id": "empty_source_materialized",
+      "description": "BILLING_AUDIT_LOG is empty at source and must still produce an explicit empty collection with PASS evidence."
+    }
+  ],
+  "planted_anomalies": [
+    {
+      "id": "no_known_source_anomalies",
+      "description": "The census found no data-quality anomalies in BILLING_AUDIT_LOG, CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS.",
+      "status": "coverage_gap",
+      "reason": "This unit's source data is clean, so it contributes no anomaly-detection coverage. Recorded as a gap rather than an invented anomaly so the estate-wide coverage total stays honest."
+    }
+  ],
+  "encoding_policy": {
+    "input_encoding": "Oracle AL32UTF8, read as Python str via python-oracledb",
+    "byte_transparency": "strings are preserved byte-exact; no case folding, no Unicode normalization, no transliteration. CHAR columns are right-trimmed (the padding is Oracle's storage artifact, not data) and Oracle's empty string is NULL, so the target field is omitted.",
+    "invalid_bytes": "none observed in the census; an undecodable value would fail the load loudly rather than being replaced with U+FFFD, since a substitution would silently pass a byte-exact comparison it should fail."
+  },
+  "malformed_record_policy": {
+    "extra_delimited_fields": "tolerate-and-attribute",
+    "null_attribution": "tolerate-and-attribute",
+    "details": "Malformed values are quarantined with the raw source value and its key, never coerced or dropped; quarantine counts are graded against the census. NULL and a missing target field are equivalent for comparison, so an omitted field is not read as data loss."
+  },
+  "empty_input_semantics": {
+    "action": "write-empty-result",
+    "details": "BILLING_AUDIT_LOG is empty at source; the collection is created empty so a downstream count check sees a real zero rather than an absent collection."
+  },
+  "trigger_granularity": "per-batch"
+}

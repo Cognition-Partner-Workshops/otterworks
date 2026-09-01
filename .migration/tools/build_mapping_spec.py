@@ -1,660 +1,679 @@
-"""Emit .migration/03_mapping_spec.json from the census plus the explicit modeling decisions.
+"""Generate .migration/03_mapping_spec.json — the machine-readable mapping spec.
 
-The spec is generated rather than hand-typed so that field coverage is arithmetic, not
-opinion: every column in .migration/census/columns.json lands in exactly one of
-`fields`, `folded_into`, or `dropped` for its collection, and the script fails if it does not.
+The JSON is written to the schema the recon harness loads (`recon.config`), because the
+harness verdict is the merge gate: `collections` is a list, each with `root_table`, a
+single-valued comparison `key`, `fields` of {source,target,source_type,bson_type,rules},
+and `embeds` with `parent_key` + a single-column element `key`. Extra keys (unit, wave,
+access_pattern, cardinality, dropped, derived_fields, ...) are carried for the humans and
+ignored by the loader.
 
-The prose in 03_mapping_spec.md cites this file; the recon harness consumes it directly.
+Two constraints from the harness shape it in ways worth naming, since both were modeling
+changes:
+
+1. Value grading inside an array needs a child TABLE and a single-column element key
+   (`tiers._grade_embeds`). Repeating groups folded out of the root row — ADDR_LINE_1..3,
+   PHONE1/2, EMAIL_1 — have neither, so as arrays they would ship UNGRADED. They become
+   dotted subdocuments (`address.line_1`, `phones.primary.number`) which Tier 3 grades as
+   ordinary fields. Only real child tables become arrays.
+2. The harness compares the RAW source value against the target value under
+   canonicalization rules, so a converted field (string date -> date, CSV -> array,
+   Y/N -> bool) can never compare equal. Each such column is graded byte-exact at
+   `legacy.<column>` and the converted value is an additional derived field, declared in
+   `derived_fields` and verified by the unit's transform assertions plus the quarantine
+   counts. That keeps the count of harness-unverified source columns at zero.
+
+Run: python3 .migration/tools/build_mapping_spec.py
+Exits non-zero if any source column is unaccounted for or accounted for twice.
 """
 
 import json
 import pathlib
 import sys
-from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CENSUS = ROOT / "census"
 OUT = ROOT / "03_mapping_spec.json"
+UNIT_DIR = ROOT / "mapping"
 
 MAPPING_VERSION = "m1"
-DATABASE = "ow_tp_mongodb_orc1"
-
-# Oracle type -> BSON, straight from the oracle profile's type_mappings table.
-def bson_for(col):
-    t = col["data_type"]
-    if t.startswith("TIMESTAMP") or t == "DATE":
-        return "date"
-    if t == "NUMBER":
-        p, s = col["data_precision"], col["data_scale"]
-        if p is None:
-            return "decimal128"
-        return "long" if (s or 0) == 0 and p <= 18 else "decimal128"
-    if t in ("VARCHAR2", "NVARCHAR2", "CHAR", "CLOB", "NCLOB"):
-        return "string"
-    if t in ("BLOB", "RAW"):
-        return "binData"
-    if t in ("FLOAT", "BINARY_FLOAT", "BINARY_DOUBLE"):
-        return "double"
-    raise SystemExit(f"unmapped Oracle type {t} on {col['table_name']}.{col['column_name']}")
-
-
-def transform_for(col, overrides):
-    key = f"{col['table_name']}.{col['column_name']}"
-    if key in overrides:
-        return overrides[key]
-    if col["data_type"] == "CHAR":
-        # every CHAR in this estate is a Y/N flag; blank-padded, so rstrip then coerce
-        return {"bson": "bool", "rule": "yn_to_bool", "canon": ["rstrip_spaces"]}
-    return {"bson": bson_for(col), "rule": "direct", "canon": []}
-
-
-# --- explicit per-column decisions ------------------------------------------------
-# VARCHAR2 columns that hold 'DD-MON-YY' dates: parsed, unparseable values quarantined.
-STRING_DATES = {
-    "CUSTOMER_MASTER.SIGNUP_DT", "CUSTOMER_MASTER.LAST_ACTIVITY_DT",
-    "CUSTOMER_MASTER_HIST.HIST_DT", "SUBSCRIPTIONS_HIST.HIST_DT",
-    "INVOICE_HEADER.INVOICE_DT", "INVOICE_HEADER.DUE_DT",
-    "INVOICE_LINE.INVOICE_DT", "ENTITY_ATTR_VALUE.CREATED_DT",
-}
-# VARCHAR2 columns holding comma-separated lists: split to real arrays.
-CSV_LISTS = {
-    "CUSTOMER_MASTER.RELATED_ACCT_IDS", "CUSTOMER_MASTER.PROMO_CODES_CSV",
-    "INVOICE_LINE.GL_ACCT_CSV",
-}
-OVERRIDES = {
-    **{k: {"bson": "date", "rule": "parse_dd_mon_yy", "canon": ["empty_string_is_null"],
-           "on_error": "quarantine"} for k in STRING_DATES},
-    **{k: {"bson": "array<string>", "rule": "split_csv", "canon": ["trim_elements"],
-           "on_error": "quarantine"} for k in CSV_LISTS},
-}
-
-# Magic-number *_CD columns resolved through CODES. The numeric value is preserved and a
-# denormalized label is added alongside it; the join is by (code_type, code_val).
-CODE_COLUMNS = {
-    "CUSTOMER_MASTER.STATUS_CD": ("CUST_STATUS", "status"),
-    "CUSTOMER_MASTER.CUST_TYPE_CD": ("CUST_TYPE", "customer_type"),
-    "CUSTOMER_MASTER.PHONE1_TYPE_CD": ("PHONE_TYPE", None),
-    "CUSTOMER_MASTER.PHONE2_TYPE_CD": ("PHONE_TYPE", None),
-    "CUSTOMER_MASTER.PHONE3_TYPE_CD": ("PHONE_TYPE", None),
-    "CUSTOMER_MASTER.PHONE4_TYPE_CD": ("PHONE_TYPE", None),
-    "INVOICE_HEADER.STATUS_CD": ("INV_STATUS", "status"),
-    "TENANTS.STATUS_CD": ("TENANT_STATUS", "status"),
-    "PLANS.TIER_CD": ("PLAN_TIER", "tier"),
-    "SUBSCRIPTIONS.STATUS_CD": ("SUB_STATUS", "status"),
-    "SUBSCRIPTIONS_HIST.STATUS_CD": ("SUB_STATUS", "status"),
-    "USAGE_EVENTS.KIND_CD": ("USAGE_KIND", "kind"),
-    "INVOICES.STATUS_CD": ("INV_STATUS", "status"),
-    "DUNNING_ATTEMPTS.STATUS_CD": ("DUN_STATUS", "status"),
-    "NOTIFICATIONS.KIND_CD": ("NOTIF_KIND", "kind"),
-}
-
-# Repeating groups collapsed into arrays / subdocuments on `customers`.
-REPEATING_GROUPS = {
-    "address.lines": ["ADDR_LINE_1", "ADDR_LINE_2", "ADDR_LINE_3",
-                      "ADDR_LINE_4", "ADDR_LINE_5", "ADDR_LINE_6"],
-    "mailing_address.lines": ["MAIL_ADDR_LINE_1", "MAIL_ADDR_LINE_2", "MAIL_ADDR_LINE_3",
-                              "MAIL_ADDR_LINE_4", "MAIL_ADDR_LINE_5", "MAIL_ADDR_LINE_6"],
-    "phones": ["PHONE1", "PHONE2", "PHONE3", "PHONE4",
-               "PHONE1_TYPE_CD", "PHONE2_TYPE_CD", "PHONE3_TYPE_CD", "PHONE4_TYPE_CD"],
-    "emails": ["EMAIL_1", "EMAIL_2", "EMAIL_3"],
-    "address": ["CITY", "STATE_CD", "ZIP", "ZIP4", "COUNTRY_CD"],
-    "mailing_address": ["MAIL_CITY", "MAIL_STATE_CD", "MAIL_ZIP"],
-}
-
-# Columns deliberately not carried, each with the evidence that justifies it.
-DROP_REASONS = {
-    "CUSTOMER_MASTER.CUST_NAME_UPPER": "derived: UPPER(cust_name); replaced by a case-insensitive collation index",
-    "CUSTOMER_MASTER.CONVERSION_BATCH_NO": "run-scoping parameter, promoted to the ${batch_no} root_where placeholder",
-    "INVOICE_HEADER.BATCH_NO": "run-scoping parameter, promoted to the ${batch_no} root_where placeholder",
-    "INVOICE_LINE.BATCH_NO": "run-scoping parameter, inherited from the parent invoice",
-    "INVOICE_LINE.INVOICE_ID": "embed parent key; expressed by containment",
-    "INVOICE_LINE.INVOICE_NO": "denormalized copy of invoice_header.invoice_no on every line",
-    "INVOICE_LINE.CUST_ID": "denormalized copy of the parent header's cust_id",
-    "INVOICE_LINE.CUST_NO": "denormalized copy of the parent customer's cust_no",
-    "INVOICE_LINE.CUST_NAME": "denormalized copy of the parent customer's cust_name",
-    "INVOICE_LINE.TENANT_ID": "denormalized copy of the parent header's tenant_id",
-    "INVOICE_LINE.INVOICE_DT": "denormalized copy of the parent header's invoice_dt",
-    "ENTITY_ATTR_VALUE.EAV_ID": "sequence surrogate; the EAV row becomes an attributes[] element",
-    "ENTITY_ATTR_VALUE.ENTITY_TYPE": "expressed by containment: only CUSTOMER rows exist",
-    "ENTITY_ATTR_VALUE.ENTITY_ID": "embed parent key; expressed by containment",
-    "INVOICE_LINES.INVOICE_ID": "embed parent key; expressed by containment",
-}
 
 
 def load(name):
     return json.loads((CENSUS / f"{name}.json").read_text())
 
 
-def build():
-    columns = load("columns")
-    counts = load("exact_counts")
-    ev = json.loads((CENSUS / "access_patterns.json").read_text())
-    always_null = set(ev["customer_master_population"]["always_null_columns"])
+COLUMNS = load("columns")
+COUNTS = load("exact_counts")
+CODE_TYPES = load("code_types")
+POP = load("access_patterns")["customer_master_population"]
 
-    by_table = defaultdict(list)
-    for c in columns:
-        by_table[c["table_name"]].append(c)
+BY_TABLE = {}
+for _c in COLUMNS:
+    BY_TABLE.setdefault(_c["table_name"], []).append(_c)
+COLTYPE = {(c["table_name"], c["column_name"]): c for c in COLUMNS}
 
-    def field(col, target, note=None):
-        key = f"{col['table_name']}.{col['column_name']}"
-        t = transform_for(col, OVERRIDES)
-        f = {
-            "source_column": col["column_name"],
-            "source_type": col["data_type"],
-            "target_field": target,
-            "bson_type": t["bson"],
-            "transform": t["rule"],
-            "canonicalization": t["canon"],
-        }
-        if "on_error" in t:
-            f["on_error"] = t["on_error"]
-        if key in CODE_COLUMNS:
-            code_type, label = CODE_COLUMNS[key]
-            f["code_lookup"] = {"code_type": code_type, "label_field": label}
-        if note:
-            f["note"] = note
-        return f
+ALWAYS_NULL = set(POP["always_null_columns"])
+NON_NULL = POP["non_null_by_column"]
+TOTAL_CUSTOMERS = POP["total_rows"]
 
-    def simple(table, skip=(), rename=None, prefix=""):
-        rename = rename or {}
-        out = []
-        for c in by_table[table]:
-            if c["column_name"] in skip:
-                continue
-            name = rename.get(c["column_name"], c["column_name"].lower())
-            out.append(field(c, prefix + name))
-        return out
 
-    collections = {}
+# --------------------------------------------------------------------------- types
+def oracle_type(col):
+    t = col["data_type"]
+    if t == "NUMBER" and col.get("data_precision"):
+        return f"NUMBER({col['data_precision']},{col.get('data_scale') or 0})"
+    if t in ("VARCHAR2", "CHAR"):
+        return f"{t}({col['data_length']})"
+    return t
 
-    # ---------------- wave 0: shared reference ----------------
-    collections["codes"] = {
-        "unit": "reference",
-        "wave": 0,
-        "sources": ["CODES"],
-        "model": "reference",
-        "access_pattern": (
-            "Every *_CD column in both sub-estates resolves through CODES by "
-            "(code_type, code_val) — reports.py joins it twice per report and all five "
-            "PL/SQL packages call PKG_OW_UTIL.f_code_desc. Read-mostly, 32 rows: kept as a "
-            "standalone collection AND denormalized as a label beside each code value, so "
-            "the hot read path needs no $lookup."
-        ),
-        "key": {"_id": {"from": ["CODE_TYPE", "CODE_VAL"], "strategy": "compound_natural",
-                        "format": "{code_type}:{code_val}"}},
-        "fields": simple("CODES"),
-        "expected_documents": counts["CODES"],
-        "indexes": [{"keys": {"code_type": 1, "code_val": 1}, "unique": True}],
-    }
-    collections["tenants"] = {
-        "unit": "reference",
-        "wave": 0,
-        "sources": ["TENANTS"],
-        "model": "reference",
-        "access_pattern": (
-            "FK parent of 7 tables (subscriptions, usage_events, rating_periods, invoices, "
-            "credit_notes, dunning_attempts, notifications) and the path parameter of every "
-            "proc entrypoint in procs/routes.yaml. Referenced, never embedded: it is the "
-            "top of the ownership tree."
-        ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("TENANTS", skip=["ID"]),
-        "expected_documents": counts["TENANTS"],
-        "indexes": [{"keys": {"name": 1}, "unique": True}],
-    }
-    collections["plans"] = {
-        "unit": "reference",
-        "wave": 0,
-        "sources": ["PLANS"],
-        "model": "reference",
-        "access_pattern": (
-            "PKG_PLANS.fn_list_plans returns the whole table (GET /api/plans); "
-            "fn_entitlement joins it per tenant. 3 rows, read-only in the app path."
-        ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("PLANS", skip=["ID"]),
-        "expected_documents": counts["PLANS"],
-        "indexes": [{"keys": {"code": 1}, "unique": True}],
-    }
 
-    # ---------------- wave 1: customers (XL, wide-embed class) ----------------
-    cm = by_table["CUSTOMER_MASTER"]
-    grouped = {c for cols in REPEATING_GROUPS.values() for c in cols}
-    cust_fields, folded, dropped = [], [], []
-    for c in cm:
-        name = c["column_name"]
-        key = f"CUSTOMER_MASTER.{name}"
-        if name in always_null:
-            dropped.append({"source_column": name, "reason":
-                            "0/25000 rows populated (proposed-unused; evidence: "
-                            "census/access_patterns.json#customer_master_population)"})
-        elif key in DROP_REASONS:
-            dropped.append({"source_column": name, "reason": DROP_REASONS[key]})
-        elif name in grouped:
-            folded.append({"source_column": name, "folded_into":
-                           next(g for g, cols in REPEATING_GROUPS.items() if name in cols)})
-        elif name == "CUST_ID":
-            continue
+def bson_and_rules(col, has_nulls):
+    """Type mapping from the Oracle profile, plus the canonicalization rules that make the
+    two sides comparable. Null-semantic rules are only attached where the column actually
+    carries nulls: they defer a field's Tier 2 aggregates to the Tier 3 keyed diff, so
+    attaching them everywhere would quietly hollow out Tier 2."""
+    t = col["data_type"]
+    rules = []
+    if t == "NUMBER":
+        scale = col.get("data_scale")
+        if col.get("data_precision") and not scale:
+            bson = "long"
         else:
-            cust_fields.append(field(c, name.lower()))
+            # Decimal128 arrives from pymongo as bson.Decimal128, which is not a Decimal;
+            # decimal_round is what puts both sides on a common Decimal footing.
+            bson, rules = "decimal128", ["decimal_round"]
+    elif t == "DATE" or t.startswith("TIMESTAMP"):
+        bson, rules = "date", ["datetime_utc_truncate_ms"]
+    elif t == "CHAR":
+        bson, rules = "string", ["rstrip_spaces"]
+    else:
+        bson = "string"
+    if has_nulls:
+        if bson == "string":
+            rules = rules + ["empty_string_is_null"]
+        rules = rules + ["null_missing_equiv"]
+    return bson, rules
 
-    collections["customers"] = {
-        "unit": "customers",
-        "wave": 1,
-        "sources": ["CUSTOMER_MASTER", "ENTITY_ATTR_VALUE", "CUSTOMER_MASTER_HIST"],
-        "model": "embed",
-        "pattern_class": "wide-embed",
+
+def has_nulls(table, column):
+    if table == "CUSTOMER_MASTER":
+        return NON_NULL.get(column, 0) < TOTAL_CUSTOMERS
+    return COLTYPE[(table, column)]["nullable"] == "Y"
+
+
+def fld(table, column, target, **extra):
+    col = COLTYPE[(table, column)]
+    bson, rules = bson_and_rules(col, has_nulls(table, column))
+    return {"source": column, "target": target, "source_type": oracle_type(col),
+            "bson_type": bson, "rules": rules, **extra}
+
+
+def auto_fields(table, rename=None, skip=()):
+    """Identity mapping: every column to its lowercased name unless renamed or skipped."""
+    rename = rename or {}
+    return [fld(table, c["column_name"], rename.get(c["column_name"], c["column_name"].lower()))
+            for c in BY_TABLE[table] if c["column_name"] not in skip]
+
+
+def legacy_pair(table, column, derived_target, transform, on_error="quarantine"):
+    """A non-reversible conversion: grade the raw string, derive the typed value."""
+    raw = fld(table, column, f"legacy.{column.lower()}",
+              note=f"raw source value, graded byte-exact; {derived_target} is derived from it")
+    derived = {"source": column, "target": derived_target, "transform": transform,
+               "on_error": on_error,
+               "verified_by": "unit transform assertions + quarantine counts "
+                              "(the harness compares raw values, so it grades "
+                              f"legacy.{column.lower()} instead)"}
+    return raw, derived
+
+
+def code_label(source_column, target, code_type):
+    if code_type not in CODE_TYPES:
+        sys.exit(f"unknown CODE_TYPE '{code_type}' for {source_column}; CODES defines "
+                 f"{sorted(CODE_TYPES)}")
+    return {"source": source_column, "target": target, "transform": "lookup_code_desc",
+            "code_type": code_type,
+            "note": "denormalized label beside the retained numeric code; additive, so the "
+                    "numeric column is still graded on its own target field",
+            "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"}
+
+
+# --------------------------------------------------------------------------- drops
+DROPPED = {}
+
+
+def drop(table, columns, reason):
+    for c in columns:
+        DROPPED.setdefault(table, []).append({"source": c, "reason": reason})
+
+
+UNUSED_REASON = (
+    f"NULL in all {TOTAL_CUSTOMERS:,} rows (census/access_patterns.json"
+    "#customer_master_population). Proposed-unused: dropped rather than carried as an "
+    "always-absent field. If the production estate populates it, the spec needs that "
+    "population census before load."
+)
+
+drop("CUSTOMER_MASTER", sorted(ALWAYS_NULL), UNUSED_REASON)
+drop("CUSTOMER_MASTER", ["CUST_NAME_UPPER"],
+     "shadow column maintained only so the legacy handbook could do a case-insensitive "
+     "lookup; replaced by a collation index on `name` (locale en, strength 2)")
+drop("CUSTOMER_MASTER", ["CUST_SEQ_NO"],
+     "sequence-backed surrogate with no external consumer; `_id` is the natural key and "
+     "SEQ_CUSTOMER_MASTER is retired")
+drop("CUSTOMER_MASTER_HIST", sorted(ALWAYS_NULL | {"CUST_NAME_UPPER", "CUST_SEQ_NO"}),
+     "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as "
+     "the parent column")
+drop("ENTITY_ATTR_VALUE", ["ENTITY_TYPE"],
+     "constant 'CUSTOMER' across all 8,333 rows; the embed's location in the customer "
+     "document carries it")
+drop("ENTITY_ATTR_VALUE", ["ENTITY_ID"],
+     "join key to the parent row; becomes the containing document (declared as the "
+     "embed's parent_key so recon still walks it)")
+drop("INVOICE_LINE", ["INVOICE_ID"],
+     "join key to the header; becomes containment (declared as the embed's parent_key)")
+drop("INVOICE_LINE", ["INVOICE_NO", "CUST_ID", "CUST_NO", "CUST_NAME", "TENANT_ID"],
+     "header values denormalized onto every line by the conversion; the embedding parent "
+     "already carries them, and duplicating them per line reintroduces the update anomaly")
+drop("INVOICE_LINE", ["BATCH_NO"],
+     "conversion scoping, carried by the ${batch_no} run parameter and by the parent "
+     "document's batch field, not per line")
+drop("INVOICE_LINES", ["INVOICE_ID"], "join key to the header; becomes containment")
+drop("RATING_RESULTS", ["PERIOD_ID"], "join key to the period; becomes containment")
+drop("SUBSCRIPTIONS_HIST", ["ID"], "join key to the subscription; becomes containment")
+drop("CUSTOMER_MASTER_HIST", ["CUST_ID"], "join key to the customer; becomes containment")
+drop("FIXTURE_META", ["INITIALIZED_AT"],
+     "table excluded from scope: estate bookkeeping, no business data")
+
+
+# --------------------------------------------------------------------------- collections
+def build():
+    colls = []
+
+    # ---- wave 0: reference ------------------------------------------------
+    colls.append({
+        "collection": "codes", "unit": "reference", "wave": 0,
+        "root_table": "CODES",
+        # CODES has no single-column key (32 rows over 10 types, 9 distinct values), and
+        # the harness compares a single key value per document. An Oracle expression is
+        # reported back under its own text as the column name, so it works as a key column.
+        "key": {"source": ["CODE_TYPE||':'||CODE_VAL"], "target": "_id",
+                "compose": {"from": ["CODE_TYPE", "CODE_VAL"], "sep": ":"}},
+        "access_pattern": "joined twice per month-end report (reports.py STATUS_SQL, "
+                          "LINE_SQL) and by PKG_OW_UTIL.f_code_desc in all five packages. "
+                          "Kept as a collection AND denormalized as a label beside every "
+                          "code value, so no hot read path needs a $lookup on 32 rows.",
+        "fields": auto_fields("CODES"),
+        "expected_documents": COUNTS["CODES"],
+        "indexes": [{"keys": {"code_type": 1, "code_val": 1}, "unique": True}],
+    })
+    colls.append({
+        "collection": "tenants", "unit": "reference", "wave": 0,
+        "root_table": "TENANTS", "key": {"source": ["ID"], "target": "_id"},
+        "access_pattern": "read by tenant id on every request path in both lineages; the "
+                          "only table the converted estate and the application share "
+                          "besides CODES.",
+        "fields": [fld("TENANTS", "ID", "_id"), fld("TENANTS", "NAME", "name"),
+                   fld("TENANTS", "STATUS_CD", "status_cd"),
+                   fld("TENANTS", "TAX_EXEMPT_YN", "legacy.tax_exempt_yn")],
+        "derived_fields": [
+            {"source": "TAX_EXEMPT_YN", "target": "tax_exempt", "transform": "yn_to_bool",
+             "verified_by": "unit transform assertions (harness grades the raw CHAR at "
+                            "legacy.tax_exempt_yn)"},
+            code_label("STATUS_CD", "status", "TENANT_STATUS"),
+        ],
+        "expected_documents": COUNTS["TENANTS"],
+        "indexes": [{"keys": {"status_cd": 1}}],
+    })
+    colls.append({
+        "collection": "plans", "unit": "reference", "wave": 0,
+        "root_table": "PLANS", "key": {"source": ["ID"], "target": "_id"},
+        "access_pattern": "PKG_PLANS.fn_list_plans returns the active plans on every "
+                          "GET /api/plans; fn_entitlement reads one plan by id.",
+        "fields": [fld("PLANS", "ID", "_id"), fld("PLANS", "CODE", "code"),
+                   fld("PLANS", "TIER_CD", "tier_cd"),
+                   fld("PLANS", "MONTHLY_FEE", "monthly_fee"),
+                   fld("PLANS", "INCLUDED_UNITS", "included_units"),
+                   fld("PLANS", "OVERAGE_RATE", "overage_rate"),
+                   fld("PLANS", "ACTIVE_YN", "legacy.active_yn")],
+        "derived_fields": [
+            {"source": "ACTIVE_YN", "target": "active", "transform": "yn_to_bool",
+             "verified_by": "unit transform assertions"},
+            code_label("TIER_CD", "tier", "PLAN_TIER"),
+        ],
+        "expected_documents": COUNTS["PLANS"],
+        "indexes": [{"keys": {"code": 1}, "unique": True}, {"keys": {"active": 1}}],
+    })
+
+    # ---- wave 1: customers (XL, wide-embed) -------------------------------
+    cm_fields = [
+        fld("CUSTOMER_MASTER", "CUST_ID", "_id"),
+        fld("CUSTOMER_MASTER", "CUST_NO", "cust_no"),
+        fld("CUSTOMER_MASTER", "LEGACY_SYS_KEY", "legacy_sys_key"),
+        fld("CUSTOMER_MASTER", "MAINFRAME_ACCT_NO", "mainframe_acct_no"),
+        fld("CUSTOMER_MASTER", "TENANT_ID", "tenant_id"),
+        fld("CUSTOMER_MASTER", "CUST_NAME", "name"),
+        fld("CUSTOMER_MASTER", "LEGAL_NAME", "legal_name"),
+        fld("CUSTOMER_MASTER", "CUST_TYPE_CD", "type_cd"),
+        fld("CUSTOMER_MASTER", "STATUS_CD", "status_cd"),
+        fld("CUSTOMER_MASTER", "SUB_STATUS_CD", "sub_status_cd"),
+        fld("CUSTOMER_MASTER", "REGION_CD", "region_cd"),
+        fld("CUSTOMER_MASTER", "SEGMENT_CD", "segment_cd"),
+        # repeating groups -> dotted subdocuments, not arrays: see the module docstring
+        fld("CUSTOMER_MASTER", "ADDR_LINE_1", "address.line_1"),
+        fld("CUSTOMER_MASTER", "ADDR_LINE_2", "address.line_2"),
+        fld("CUSTOMER_MASTER", "ADDR_LINE_3", "address.line_3"),
+        fld("CUSTOMER_MASTER", "CITY", "address.city"),
+        fld("CUSTOMER_MASTER", "STATE_CD", "address.state_cd"),
+        fld("CUSTOMER_MASTER", "ZIP", "address.zip"),
+        fld("CUSTOMER_MASTER", "PHONE1", "phones.primary.number"),
+        fld("CUSTOMER_MASTER", "PHONE1_TYPE_CD", "phones.primary.type_cd"),
+        fld("CUSTOMER_MASTER", "PHONE2", "phones.secondary.number"),
+        fld("CUSTOMER_MASTER", "PHONE2_TYPE_CD", "phones.secondary.type_cd"),
+        fld("CUSTOMER_MASTER", "EMAIL_1", "email"),
+        fld("CUSTOMER_MASTER", "CREDIT_LIMIT_AMT", "credit_limit_amt"),
+        fld("CUSTOMER_MASTER", "CUR_BAL_AMT", "cur_bal_amt"),
+        fld("CUSTOMER_MASTER", "PAST_DUE_AMT", "past_due_amt"),
+        fld("CUSTOMER_MASTER", "YTD_BILLED_AMT", "ytd_billed_amt"),
+        fld("CUSTOMER_MASTER", "ROW_VERSION_NO", "row_version_no"),
+        fld("CUSTOMER_MASTER", "CONVERSION_BATCH_NO", "conversion_batch_no"),
+        fld("CUSTOMER_MASTER", "CREATED_DT", "created_at"),
+        fld("CUSTOMER_MASTER", "CREATED_BY", "created_by"),
+        fld("CUSTOMER_MASTER", "UPDATED_DT", "updated_at"),
+        fld("CUSTOMER_MASTER", "UPDATED_BY", "updated_by"),
+    ]
+    cm_derived = [code_label("STATUS_CD", "status", "CUST_STATUS"),
+                  code_label("CUST_TYPE_CD", "type", "CUST_TYPE"),
+                  code_label("PHONE1_TYPE_CD", "phones.primary.type", "PHONE_TYPE"),
+                  code_label("PHONE2_TYPE_CD", "phones.secondary.type", "PHONE_TYPE")]
+    for column, target, transform in [
+        ("SIGNUP_DT", "signup_at", "parse_dd_mon_yy"),
+        ("LAST_ACTIVITY_DT", "last_activity_at", "parse_dd_mon_yy"),
+        ("PROMO_CODES_CSV", "promo_codes", "csv_to_array"),
+        ("RELATED_ACCT_IDS", "related_acct_ids", "csv_to_array"),
+        ("CREDIT_HOLD_YN", "credit_hold", "yn_to_bool"),
+        ("TAX_EXEMPT_YN", "tax_exempt", "yn_to_bool"),
+        ("VIP_YN", "vip", "yn_to_bool"),
+    ]:
+        raw, derived = legacy_pair("CUSTOMER_MASTER", column, target, transform,
+                                   on_error="none" if transform == "yn_to_bool" else "quarantine")
+        cm_fields.append(raw)
+        cm_derived.append(derived)
+
+    hist_skip = {d["source"] for d in DROPPED["CUSTOMER_MASTER_HIST"]}
+    colls.append({
+        "collection": "customers", "unit": "customers", "wave": 1,
+        "pattern_class": "wide-embed", "size": "XL",
+        "root_table": "CUSTOMER_MASTER",
+        "root_where": "CONVERSION_BATCH_NO = ${batch_no}",
+        "key": {"source": ["CUST_ID"], "target": "_id"},
         "access_pattern": (
-            "reports.py BALANCES_SQL aggregates cur_bal_amt/past_due_amt across the whole "
-            "batch; the operations handbook's account lookups are by cust_id, cust_no and "
-            "cust_name_upper. Reads are always the whole account record — address, phones "
-            "and EAV attributes are never queried independently of their customer, and the "
-            "EAV table has no consumer of its own — so all of it embeds. Bounded: <=6 "
-            "address lines, <=4 phones, <=3 emails, 7 distinct EAV attribute names."
+            "reports.py BALANCES_SQL aggregates balances across the whole batch; the "
+            "handbook's lookups are by cust_id, cust_no and cust_name_upper. Nothing reads "
+            "a customer's attributes or version history without the customer, and "
+            "ENTITY_ATTR_VALUE has no consumer of its own, so both embed."
         ),
-        "key": {"_id": {"from": ["CUST_ID"], "strategy": "natural",
-                        "note": "VARCHAR2(36) UUID; cust_seq_no is kept as a plain field "
-                                "because SEQ_CUSTOMER_MASTER has no external consumer"}},
-        "root_where": "conversion_batch_no = ${batch_no}",
-        "fields": cust_fields,
-        "folded": folded,
-        "dropped": dropped,
+        "fields": cm_fields,
+        "derived_fields": cm_derived,
+        "dropped": DROPPED["CUSTOMER_MASTER"],
         "embeds": [
             {
-                "target_array": "address.lines",
-                "source": "CUSTOMER_MASTER",
-                "strategy": "repeating_group_to_array",
-                "source_columns": REPEATING_GROUPS["address.lines"],
-                "element_key": "ordinal",
-                "element_fields": [{"target_field": "$element", "bson_type": "string"}],
-                "rule": "NULL and empty lines are omitted, order preserved; the array is "
-                        "absent when every line is NULL",
-                "cardinality": "sum(address.lines[].length) == count of non-null "
-                               "ADDR_LINE_* values",
+                "array_path": "attributes", "child_table": "ENTITY_ATTR_VALUE",
+                "child_where": "ENTITY_TYPE = 'CUSTOMER'",
+                "parent_key": ["ENTITY_ID"],
+                "key": {"source": ["EAV_ID"], "target": "eav_id"},
+                "fields": [fld("ENTITY_ATTR_VALUE", "ATTR_NAME", "name"),
+                           fld("ENTITY_ATTR_VALUE", "ATTR_VALUE", "value"),
+                           fld("ENTITY_ATTR_VALUE", "ATTR_TYPE", "type"),
+                           fld("ENTITY_ATTR_VALUE", "CREATED_DT", "legacy.created_dt")],
+                "derived_fields": [
+                    {"source": "CREATED_DT", "target": "created_at",
+                     "transform": "parse_dd_mon_yy", "on_error": "quarantine",
+                     "verified_by": "unit transform assertions"}],
+                "rule": (
+                    "An ARRAY keyed by EAV_ID, not a subdocument keyed by attr_name: 187 "
+                    "(entity_id, attr_name) pairs carry more than one row (up to 3) across "
+                    "the 8,333 rows / 7,075 customers that have attributes, so a keyed "
+                    "subdocument would keep one value per pair and silently drop the rest. "
+                    "EAV_ID is also what makes the array value-gradable — the harness "
+                    "grades elements by a single-column key."),
+                "cardinality": f"sum(len(attributes)) == {COUNTS['ENTITY_ATTR_VALUE']} "
+                               "(every EAV row; 0 orphans confirmed)",
+                "dropped": DROPPED["ENTITY_ATTR_VALUE"],
             },
             {
-                "target_array": "phones",
-                "source": "CUSTOMER_MASTER",
-                "strategy": "repeating_group_to_array",
-                "source_columns": REPEATING_GROUPS["phones"],
-                "element_key": "ordinal",
-                "element_fields": [
-                    {"target_field": "number", "bson_type": "string",
-                     "from": "PHONE{n}"},
-                    {"target_field": "type_code", "bson_type": "long",
-                     "from": "PHONE{n}_TYPE_CD"},
-                    {"target_field": "type", "bson_type": "string",
-                     "code_lookup": {"code_type": "PHONE_TYPE"}},
-                ],
-                "rule": "one element per non-null PHONE{n}; a type code with no number is "
-                        "dropped and counted",
-                "cardinality": "sum(phones[].length) == count of non-null PHONE1..4",
-            },
-            {
-                "target_array": "emails",
-                "source": "CUSTOMER_MASTER",
-                "strategy": "repeating_group_to_array",
-                "source_columns": REPEATING_GROUPS["emails"],
-                "element_key": "ordinal",
-                "element_fields": [{"target_field": "$element", "bson_type": "string"}],
-                "cardinality": "sum(emails[].length) == count of non-null EMAIL_1..3",
-            },
-            {
-                "target_array": "attributes",
-                "source": "ENTITY_ATTR_VALUE",
-                "strategy": "eav_to_array",
-                "child_where": "entity_type = 'CUSTOMER' AND entity_id = ${_id}",
-                "element_key": ["attr_name", "created_dt"],
-                "element_fields": [
-                    {"source_column": "ATTR_NAME", "target_field": "name",
-                     "bson_type": "string"},
-                    {"source_column": "ATTR_VALUE", "target_field": "value",
-                     "bson_type": "string",
-                     "note": "attr_type is 'STR' for all 8,333 rows; no typed coercion"},
-                    {"source_column": "ATTR_TYPE", "target_field": "type",
-                     "bson_type": "string"},
-                    {"source_column": "CREATED_DT", "target_field": "created_at",
-                     "bson_type": "date", "transform": "parse_dd_mon_yy",
-                     "on_error": "quarantine"},
-                ],
-                "dropped": [{"source_column": c.split(".")[1], "reason": r}
-                            for c, r in DROP_REASONS.items()
-                            if c.startswith("ENTITY_ATTR_VALUE.")],
-                "rule": "ARRAY, not a subdocument keyed by attr_name: 187 "
-                        "(entity_id, attr_name) pairs carry more than one row (up to 3) "
-                        "across the 8,333 rows and 7,075 customers that have attributes. "
-                        "A keyed subdocument would keep one value per pair and silently "
-                        "drop the rest; the array preserves every row and lets recon "
-                        "count elements against source rows.",
-                "cardinality": (
-                    f"sum(customers[].attributes.length) == {counts['ENTITY_ATTR_VALUE']} "
-                    "(every EAV row; 0 orphans confirmed)"
-                ),
-            },
-            {
-                "target_array": "history",
-                "source": "CUSTOMER_MASTER_HIST",
-                "strategy": "child_rows_to_array",
-                "child_where": "cust_id = ${_id}",
-                "element_key": ["hist_id"],
-                "element_fields": [
-                    {"source_column": c["column_name"],
-                     "target_field": c["column_name"].lower(),
-                     "bson_type": transform_for(c, OVERRIDES)["bson"]}
-                    for c in by_table["CUSTOMER_MASTER_HIST"]
-                ],
-                "rule": "0 rows today (the trigger only fires on UPDATE and the fixture "
-                        "never updates). The array is absent, not empty, and the unit "
-                        "records 0 rows -> 0 elements as an explicit PASS per tolerance T14.",
-                "cardinality": f"sum(history[].length) == {counts['CUSTOMER_MASTER_HIST']}",
+                "array_path": "history", "child_table": "CUSTOMER_MASTER_HIST",
+                "parent_key": ["CUST_ID"],
+                "key": {"source": ["HIST_ID"], "target": "hist_id"},
+                "fields": ([fld("CUSTOMER_MASTER_HIST", "HIST_OP", "hist_op"),
+                            fld("CUSTOMER_MASTER_HIST", "HIST_DT", "legacy.hist_dt")]
+                           + [fld("CUSTOMER_MASTER_HIST", c["column_name"],
+                                  c["column_name"].lower())
+                              for c in BY_TABLE["CUSTOMER_MASTER_HIST"]
+                              if c["column_name"] not in hist_skip
+                              | {"HIST_ID", "HIST_OP", "HIST_DT"}]),
+                "rule": "0 rows today: TRG_CUSTOMER_MASTER_HIST fires on UPDATE only and "
+                        "this estate has no updates against the converted batch. The array "
+                        "is absent rather than empty, and the unit records 0 rows -> 0 "
+                        "elements as an explicit PASS per tolerance T14.",
+                "cardinality": f"sum(len(history)) == {COUNTS['CUSTOMER_MASTER_HIST']}",
+                "dropped": DROPPED["CUSTOMER_MASTER_HIST"],
             },
         ],
         "quarantine": {
             "collection": "customers_quarantine",
-            "expected": {
-                "unparseable_signup_dt": ev["unparseable_date_strings"]["SIGNUP_DT"],
-                "malformed_related_acct_ids": ev["malformed_csv"]["RELATED_ACCT_IDS"],
-            },
+            "expected": {"unparseable_signup_dt": 50, "malformed_related_acct_ids": 31},
         },
-        "expected_documents": counts["CUSTOMER_MASTER"],
+        "expected_documents": COUNTS["CUSTOMER_MASTER"],
         "indexes": [
             {"keys": {"cust_no": 1}, "unique": True},
             {"keys": {"tenant_id": 1, "status_cd": 1}},
-            {"keys": {"cust_name": 1},
-             "collation": {"locale": "en", "strength": 2},
+            {"keys": {"name": 1}, "collation": {"locale": "en", "strength": 2},
              "note": "replaces the CUST_NAME_UPPER shadow column"},
-            {"keys": {"legacy_sys_key": 1}, "sparse": True},
+            {"keys": {"legacy_sys_key": 1}},
         ],
-    }
+    })
 
-    # ---------------- wave 1: subscriptions ----------------
-    collections["subscriptions"] = {
-        "unit": "subscriptions",
-        "wave": 1,
-        "sources": ["SUBSCRIPTIONS", "SUBSCRIPTIONS_HIST"],
-        "model": "embed",
-        "access_pattern": (
-            "PKG_PLANS.fn_entitlement reads the one active subscription per tenant as-of a "
-            "date; sp_change_plan closes the current row and inserts the next, and "
-            "TRG_SUBSCRIPTIONS_HIST snapshots the old row. Version history is only ever "
-            "read alongside its subscription, so it embeds."
-        ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("SUBSCRIPTIONS", skip=["ID"]),
+    # ---- wave 1: subscriptions --------------------------------------------
+    colls.append({
+        "collection": "subscriptions", "unit": "subscriptions", "wave": 1,
+        "pattern_class": "small-embed",
+        "root_table": "SUBSCRIPTIONS", "key": {"source": ["ID"], "target": "_id"},
+        "access_pattern": "PKG_PLANS.fn_entitlement reads the one active subscription per "
+                          "tenant as of a date; sp_change_plan closes the current row and "
+                          "inserts the next, and TRG_SUBSCRIPTIONS_HIST snapshots the old "
+                          "one. Version history is only ever read with its subscription.",
+        "fields": auto_fields("SUBSCRIPTIONS", rename={"ID": "_id"}),
+        "derived_fields": [code_label("STATUS_CD", "status", "SUB_STATUS")],
         "embeds": [{
-            "target_array": "history",
-            "source": "SUBSCRIPTIONS_HIST",
-            "strategy": "child_rows_to_array",
-            "child_where": "id = ${_id}",
-            "element_key": ["hist_id"],
-            "element_fields": [
-                {"source_column": c["column_name"],
-                 "target_field": c["column_name"].lower(),
-                 "bson_type": transform_for(c, OVERRIDES)["bson"]}
-                for c in by_table["SUBSCRIPTIONS_HIST"]
-            ],
-            "rule": "0 rows today; empty is an explicit PASS per tolerance T14",
-            "cardinality": f"sum(history[].length) == {counts['SUBSCRIPTIONS_HIST']}",
+            "array_path": "history", "child_table": "SUBSCRIPTIONS_HIST",
+            "parent_key": ["ID"], "key": {"source": ["HIST_ID"], "target": "hist_id"},
+            "fields": [fld("SUBSCRIPTIONS_HIST", "HIST_OP", "hist_op"),
+                       fld("SUBSCRIPTIONS_HIST", "HIST_DT", "legacy.hist_dt"),
+                       fld("SUBSCRIPTIONS_HIST", "TENANT_ID", "tenant_id"),
+                       fld("SUBSCRIPTIONS_HIST", "PLAN_ID", "plan_id"),
+                       fld("SUBSCRIPTIONS_HIST", "STARTS_ON", "starts_on"),
+                       fld("SUBSCRIPTIONS_HIST", "ENDS_ON", "ends_on"),
+                       fld("SUBSCRIPTIONS_HIST", "STATUS_CD", "status_cd"),
+                       fld("SUBSCRIPTIONS_HIST", "SUSPENDED_ON", "suspended_on")],
+            "rule": "0 rows today; explicit empty PASS per tolerance T14",
+            "cardinality": f"sum(len(history)) == {COUNTS['SUBSCRIPTIONS_HIST']}",
+            "dropped": DROPPED["SUBSCRIPTIONS_HIST"],
         }],
-        "expected_documents": counts["SUBSCRIPTIONS"],
-        "indexes": [{"keys": {"tenant_id": 1, "starts_on": -1}},
-                    {"keys": {"plan_id": 1}}],
-    }
+        "expected_documents": COUNTS["SUBSCRIPTIONS"],
+        "indexes": [{"keys": {"tenant_id": 1, "starts_on": -1}}, {"keys": {"plan_id": 1}}],
+    })
 
-    # ---------------- wave 2: invoices (XL, bulk-load class) ----------------
-    collections["invoices"] = {
-        "unit": "invoices",
-        "wave": 2,
-        "sources": ["INVOICE_HEADER", "INVOICE_LINE"],
-        "model": "embed",
-        "pattern_class": "bulk-load",
+    # ---- wave 2: invoices (XL, bulk-load) ---------------------------------
+    colls.append({
+        "collection": "invoices", "unit": "invoices", "wave": 2,
+        "pattern_class": "bulk-load", "size": "XL",
+        "root_table": "INVOICE_HEADER",
+        "root_where": "BATCH_NO = ${batch_no}",
+        "key": {"source": ["INVOICE_ID"], "target": "_id"},
         "access_pattern": (
-            "reports.py LINE_SQL joins header to line on every month-end run and never "
-            "reads a line outside its header; STATUS_SQL aggregates headers alone. Fan-out "
-            f"is bounded and small (min {ev['invoice_line_fanout']['min']}, max "
-            f"{ev['invoice_line_fanout']['max']}, avg "
-            f"{ev['invoice_line_fanout']['avg']:.1f} lines per invoice; longest item_desc "
-            f"{ev['max_text_lengths']['invoice_line.item_desc']} chars), so an embedded "
-            "document stays around 3 KB — three orders of magnitude below the 16 MB limit. "
-            "Embed."
+            "reports.py LINE_SQL joins header to line on every month-end run and no query "
+            "reads a line without its header, so lines embed. Fan-out is min 1 / max 23 / "
+            "avg 8.0 with a 29-character longest item_desc: an embedded invoice is ~3 KB, "
+            "three orders of magnitude under the 16 MB document limit."
         ),
-        "key": {"_id": {"from": ["INVOICE_ID"], "strategy": "natural"}},
-        "root_where": "batch_no = ${batch_no}",
-        "fields": simple("INVOICE_HEADER", skip=["INVOICE_ID", "BATCH_NO"]),
-        "dropped": [{"source_column": "BATCH_NO", "reason": DROP_REASONS["INVOICE_HEADER.BATCH_NO"]}],
-        "embeds": [{
-            "target_array": "lines",
-            "source": "INVOICE_LINE",
-            "strategy": "child_rows_to_array",
-            "child_where": "invoice_id = ${_id}",
-            "element_key": ["line_id"],
-            "element_fields": [
-                field(c, c["column_name"].lower())
-                for c in by_table["INVOICE_LINE"]
-                if f"INVOICE_LINE.{c['column_name']}" not in DROP_REASONS
-            ],
-            "dropped": [{"source_column": c.split(".")[1], "reason": r}
-                        for c, r in DROP_REASONS.items() if c.startswith("INVOICE_LINE.")],
-            "sort": [["line_no", 1]],
-            "cardinality": (
-                f"count(invoices) == {counts['INVOICE_HEADER']} AND "
-                f"sum(invoices[].lines.length) == {counts['INVOICE_LINE']} - "
-                f"{ev['orphan_invoice_lines']} quarantined orphans == "
-                f"{counts['INVOICE_LINE'] - ev['orphan_invoice_lines']}"
-            ),
-        }],
-        "quarantine": {
-            "collection": "invoices_quarantine",
-            "expected": {
-                "orphan_invoice_lines": ev["orphan_invoice_lines"],
-                "note": (
-                    f"{ev['orphan_invoice_lines']} INVOICE_LINE rows point at "
-                    f"{ev['orphan_invoice_lines']} invoice_ids with no INVOICE_HEADER row. "
-                    "They are dropped by the legacy report's inner join, which is exactly "
-                    "why they must be surfaced here rather than inherited silently."
-                ),
-            },
-        },
-        "expected_documents": counts["INVOICE_HEADER"],
-        "indexes": [
-            {"keys": {"invoice_no": 1}, "unique": True},
-            {"keys": {"cust_id": 1, "invoice_dt": -1}},
-            {"keys": {"status_cd": 1}},
+        "fields": [fld("INVOICE_HEADER", "INVOICE_ID", "_id"),
+                   fld("INVOICE_HEADER", "INVOICE_NO", "invoice_no"),
+                   fld("INVOICE_HEADER", "CUST_ID", "cust_id"),
+                   fld("INVOICE_HEADER", "TENANT_ID", "tenant_id"),
+                   fld("INVOICE_HEADER", "STATUS_CD", "status_cd"),
+                   fld("INVOICE_HEADER", "TOTAL_AMT", "total_amt"),
+                   fld("INVOICE_HEADER", "BATCH_NO", "batch_no"),
+                   fld("INVOICE_HEADER", "INVOICE_DT", "legacy.invoice_dt"),
+                   fld("INVOICE_HEADER", "DUE_DT", "legacy.due_dt")],
+        "derived_fields": [
+            code_label("STATUS_CD", "status", "INV_STATUS"),
+            {"source": "INVOICE_DT", "target": "invoice_at", "transform": "parse_dd_mon_yy",
+             "on_error": "quarantine", "verified_by": "unit transform assertions"},
+            {"source": "DUE_DT", "target": "due_at", "transform": "parse_dd_mon_yy",
+             "on_error": "quarantine", "verified_by": "unit transform assertions"},
         ],
-    }
+        "embeds": [{
+            "array_path": "lines", "child_table": "INVOICE_LINE",
+            # Orphans are quarantined, not embedded, so they must be excluded here or Tier 1
+            # would compare 150,000 child rows against 149,963 elements and fail by design.
+            "child_where": "BATCH_NO = ${batch_no} AND INVOICE_ID IN "
+                           "(SELECT INVOICE_ID FROM INVOICE_HEADER)",
+            "parent_key": ["INVOICE_ID"],
+            "key": {"source": ["LINE_ID"], "target": "line_id"},
+            "fields": [fld("INVOICE_LINE", "LINE_NO", "line_no"),
+                       fld("INVOICE_LINE", "LINE_TYPE_CD", "line_type_cd"),
+                       fld("INVOICE_LINE", "ITEM_DESC", "item_desc"),
+                       fld("INVOICE_LINE", "QTY", "qty"),
+                       fld("INVOICE_LINE", "UNIT_PRICE", "unit_price"),
+                       fld("INVOICE_LINE", "AMOUNT", "amount"),
+                       fld("INVOICE_LINE", "TAX_AMT", "tax_amt"),
+                       fld("INVOICE_LINE", "SERVICE_PERIOD", "service_period"),
+                       fld("INVOICE_LINE", "SRC_SYSTEM", "src_system"),
+                       fld("INVOICE_LINE", "INVOICE_DT", "legacy.invoice_dt"),
+                       fld("INVOICE_LINE", "POSTED_YN", "legacy.posted_yn"),
+                       fld("INVOICE_LINE", "GL_ACCT_CSV", "legacy.gl_acct_csv")],
+            "derived_fields": [
+                {"source": "POSTED_YN", "target": "posted", "transform": "yn_to_bool",
+                 "verified_by": "unit transform assertions"},
+                {"source": "GL_ACCT_CSV", "target": "gl_accounts", "transform": "csv_to_array",
+                 "on_error": "quarantine", "verified_by": "unit transform assertions"},
+            ],
+            "cardinality": f"sum(len(lines)) == {COUNTS['INVOICE_LINE']} - 37 == "
+                           f"{COUNTS['INVOICE_LINE'] - 37} (37 orphans quarantined)",
+            "dropped": DROPPED["INVOICE_LINE"],
+        }],
+        "quarantine": {"collection": "invoices_quarantine",
+                       "expected": {"orphan_invoice_lines": 37}},
+        "expected_documents": COUNTS["INVOICE_HEADER"],
+        "indexes": [{"keys": {"invoice_no": 1}, "unique": True},
+                    {"keys": {"cust_id": 1, "invoice_at": -1}},
+                    {"keys": {"batch_no": 1, "status_cd": 1}}],
+    })
 
-    # ---------------- wave 2: usage + rating ----------------
-    collections["usage_events"] = {
-        "unit": "usage_rating",
-        "wave": 2,
-        "sources": ["USAGE_EVENTS"],
-        "model": "reference",
-        "access_pattern": (
-            "PKG_RATING.compute_rating scans events by (tenant_id, occurred_at) over a "
-            "period window and TRG_USAGE_EVENTS_CHECK validates on insert. High-cardinality "
-            "append-only time series with an independent write path: it stays its own "
-            "collection rather than embedding into rating_periods."
-        ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("USAGE_EVENTS", skip=["ID"]),
-        "expected_documents": counts["USAGE_EVENTS"],
+    # ---- wave 2: usage + rating -------------------------------------------
+    colls.append({
+        "collection": "usage_events", "unit": "usage_rating", "wave": 2,
+        "pattern_class": "small-embed",
+        "root_table": "USAGE_EVENTS", "key": {"source": ["ID"], "target": "_id"},
+        "access_pattern": "PKG_RATING.compute_rating scans by (tenant_id, occurred_at) for "
+                          "a period; the table is append-only with its own write path, so "
+                          "it stays referenced rather than embedding into rating periods.",
+        "fields": auto_fields("USAGE_EVENTS", rename={"ID": "_id"}),
+        "derived_fields": [code_label("KIND_CD", "kind", "USAGE_KIND")],
+        "expected_documents": COUNTS["USAGE_EVENTS"],
         "indexes": [{"keys": {"tenant_id": 1, "occurred_at": 1}}],
-    }
-    collections["rating_periods"] = {
-        "unit": "usage_rating",
-        "wave": 2,
-        "sources": ["RATING_PERIODS", "RATING_RESULTS"],
-        "model": "embed",
-        "access_pattern": (
-            "RATING_RESULTS is written only by sp_finalize_rating for its period and read "
-            "only via fn_usage_summary for that same period; there is no cross-period "
-            "result query. Bounded by subscriptions-per-tenant, so results embed in the "
-            "period that owns them."
-        ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("RATING_PERIODS", skip=["ID"]),
+        "validator": "$jsonSchema replacing TRG_USAGE_EVENTS_CHECK (units > 0)",
+    })
+    colls.append({
+        "collection": "rating_periods", "unit": "usage_rating", "wave": 2,
+        "pattern_class": "small-embed",
+        "root_table": "RATING_PERIODS", "key": {"source": ["ID"], "target": "_id"},
+        "access_pattern": "RATING_RESULTS is written only by sp_finalize_rating for its "
+                          "period and read only by fn_usage_summary for that period, so "
+                          "results embed.",
+        "fields": auto_fields("RATING_PERIODS", rename={"ID": "_id"}),
         "embeds": [{
-            "target_array": "results",
-            "source": "RATING_RESULTS",
-            "strategy": "child_rows_to_array",
-            "child_where": "period_id = ${_id}",
-            "element_key": ["id"],
-            "element_fields": [field(c, c["column_name"].lower())
-                               for c in by_table["RATING_RESULTS"]
-                               if c["column_name"] != "PERIOD_ID"],
-            "dropped": [{"source_column": "PERIOD_ID",
-                         "reason": "embed parent key; expressed by containment"}],
-            "cardinality": f"sum(results[].length) == {counts['RATING_RESULTS']}",
+            "array_path": "results", "child_table": "RATING_RESULTS",
+            "parent_key": ["PERIOD_ID"], "key": {"source": ["ID"], "target": "result_id"},
+            "fields": [fld("RATING_RESULTS", "SUBSCRIPTION_ID", "subscription_id"),
+                       fld("RATING_RESULTS", "USED_UNITS", "used_units"),
+                       fld("RATING_RESULTS", "QUOTA_UNITS", "quota_units"),
+                       fld("RATING_RESULTS", "ROLLOVER_UNITS", "rollover_units"),
+                       fld("RATING_RESULTS", "BILLABLE_UNITS", "billable_units"),
+                       fld("RATING_RESULTS", "OVERAGE_AMOUNT", "overage_amount"),
+                       fld("RATING_RESULTS", "CREATED_AT", "created_at")],
+            "cardinality": f"sum(len(results)) == {COUNTS['RATING_RESULTS']}",
+            "dropped": DROPPED["RATING_RESULTS"],
         }],
-        "expected_documents": counts["RATING_PERIODS"],
-        "indexes": [{"keys": {"tenant_id": 1, "period_start": 1}, "unique": True}],
-    }
+        "expected_documents": COUNTS["RATING_PERIODS"],
+        "indexes": [{"keys": {"tenant_id": 1, "period_start": -1}}],
+    })
 
-    # ---------------- wave 2: the normalized proc-estate invoices ----------------
-    collections["subscription_invoices"] = {
-        "unit": "subscription_invoices",
-        "wave": 2,
-        "sources": ["INVOICES", "INVOICE_LINES"],
-        "model": "embed",
+    # ---- wave 2: the application's own invoices ---------------------------
+    colls.append({
+        "collection": "subscription_invoices", "unit": "subscription_invoices", "wave": 2,
+        "pattern_class": "small-embed",
+        "root_table": "INVOICES", "key": {"source": ["ID"], "target": "_id"},
         "access_pattern": (
-            "A SEPARATE lineage from `invoices`: INVOICES is written by "
-            "PKG_INVOICING.sp_issue_invoice against RATING_PERIODS and read back by "
-            "fn_invoice_lines per invoice, and it is the FK parent of DUNNING_ATTEMPTS. "
-            "INVOICE_HEADER (the converted legacy estate) has no FK to it and no shared "
-            "key. Keeping them as two collections preserves that separation instead of "
-            "inventing a merge the source does not make."
+            "PKG_INVOICING.sp_issue_invoice writes a header and its lines in one "
+            "transaction; fn_invoice_lines only ever reads them together. Separate from "
+            "`invoices` because INVOICES and INVOICE_HEADER share no key: they are the "
+            "application's own invoices and the converted legacy estate's, respectively."
         ),
-        "key": {"_id": {"from": ["ID"], "strategy": "natural"}},
-        "fields": simple("INVOICES", skip=["ID"]),
+        "fields": auto_fields("INVOICES", rename={"ID": "_id"}),
+        "derived_fields": [code_label("STATUS_CD", "status", "INV_STATUS")],
         "embeds": [{
-            "target_array": "lines",
-            "source": "INVOICE_LINES",
-            "strategy": "child_rows_to_array",
-            "child_where": "invoice_id = ${_id}",
-            "element_key": ["line_no"],
-            "element_fields": [field(c, c["column_name"].lower())
-                               for c in by_table["INVOICE_LINES"]
-                               if c["column_name"] != "INVOICE_ID"],
-            "dropped": [{"source_column": "INVOICE_ID",
-                         "reason": DROP_REASONS["INVOICE_LINES.INVOICE_ID"]}],
-            "sort": [["line_no", 1]],
-            "cardinality": f"sum(lines[].length) == {counts['INVOICE_LINES']}",
+            "array_path": "lines", "child_table": "INVOICE_LINES",
+            "parent_key": ["INVOICE_ID"], "key": {"source": ["ID"], "target": "line_id"},
+            "fields": [fld("INVOICE_LINES", "LINE_NO", "line_no"),
+                       fld("INVOICE_LINES", "LINE_TYPE", "line_type"),
+                       fld("INVOICE_LINES", "DESCRIPTION", "description"),
+                       fld("INVOICE_LINES", "AMOUNT", "amount")],
+            "cardinality": f"sum(len(lines)) == {COUNTS['INVOICE_LINES']}",
+            "dropped": DROPPED["INVOICE_LINES"],
         }],
-        "expected_documents": counts["INVOICES"],
-        "indexes": [{"keys": {"tenant_id": 1, "issued_at": -1}},
-                    {"keys": {"period_id": 1}}],
-    }
+        "expected_documents": COUNTS["INVOICES"],
+        "indexes": [{"keys": {"tenant_id": 1, "issued_at": -1}}, {"keys": {"period_id": 1}}],
+    })
 
-    # ---------------- wave 3: collections / ops ----------------
-    for coll, table, ap, idx in [
+    # ---- wave 3: collections ops ------------------------------------------
+    for name, table, access, indexes in [
         ("credit_notes", "CREDIT_NOTES",
-         "Read per tenant when applying credit; no child rows.",
+         "read by tenant when applying credit at invoice issue; no child rows",
          [{"keys": {"tenant_id": 1, "issued_on": -1}}]),
         ("dunning_attempts", "DUNNING_ATTEMPTS",
-         ("PKG_DUNNING.sp_schedule_dunning inserts one row per (invoice, attempt_no) and "
-         "JOB_NIGHTLY_DUNNING drives it. Referenced by invoice, never embedded: attempts "
-         "grow unbounded over an invoice's life and are written long after the invoice."),
-         [{"keys": {"invoice_id": 1, "attempt_no": 1}, "unique": True},
-          {"keys": {"tenant_id": 1, "scheduled_for": 1}}]),
+         ("grows unbounded over an invoice's life and is written by the nightly dunning job "
+          "long after issue, so it is referenced rather than embedded into the invoice"),
+         [{"keys": {"invoice_id": 1, "attempt_no": 1}}, {"keys": {"scheduled_for": 1}}]),
         ("notifications", "NOTIFICATIONS",
-         "Append-only outbound log keyed (tenant_id, kind_cd, sent_at); read by time range.",
-         [{"keys": {"tenant_id": 1, "kind_cd": 1, "sent_at": 1}, "unique": True}]),
+         "append-only outbound log, read by tenant and time window",
+         [{"keys": {"tenant_id": 1, "sent_at": -1}}]),
         ("billing_audit_log", "BILLING_AUDIT_LOG",
-         ("PKG_OW_UTIL.log_msg appends here from every package; JOB_PURGE_AUDIT_LOG trims "
-         "it. Empty today (0 rows) because the fixture load path does not log — an "
-         "explicit empty-collection PASS per tolerance T14, not a skip."),
-         [{"keys": {"logged_at": -1}}, {"keys": {"module": 1}}]),
+         ("written by PKG_OW_UTIL.log_msg, purged by JOB_PURGE_AUDIT_LOG; the job is "
+          "replaced by a TTL index on logged_at"),
+         [{"keys": {"logged_at": 1}, "expireAfterSeconds": 7776000,
+           "note": "TTL index replacing JOB_PURGE_AUDIT_LOG (90 days)"}]),
     ]:
-        collections[coll] = {
-            "unit": "collections_ops",
-            "wave": 3,
-            "sources": [table],
-            "model": "reference",
-            "access_pattern": ap,
-            "key": {"_id": {"from": ["ID" if table != "BILLING_AUDIT_LOG" else "LOG_ID"],
-                            "strategy": "natural"}},
-            "fields": simple(table, skip=["ID", "LOG_ID"]),
-            "expected_documents": counts[table],
-            "indexes": idx,
-        }
+        keycol = "LOG_ID" if table == "BILLING_AUDIT_LOG" else "ID"
+        colls.append({
+            "collection": name, "unit": "collections_ops", "wave": 3,
+            "pattern_class": "reference",
+            "root_table": table, "key": {"source": [keycol], "target": "_id"},
+            "access_pattern": access,
+            "fields": auto_fields(table, rename={keycol: "_id"}),
+            "expected_documents": COUNTS[table],
+            "indexes": indexes,
+        })
+    for c in colls:
+        if c["collection"] == "dunning_attempts":
+            c["derived_fields"] = [code_label("STATUS_CD", "status", "DUN_STATUS")]
+        if c["collection"] == "notifications":
+            c["derived_fields"] = [code_label("KIND_CD", "kind", "NOTIF_KIND")]
 
-    spec = {
-        "mapping_version": MAPPING_VERSION,
-        "status": "PROPOSED — pending STOP B",
+    return {
+        "version": MAPPING_VERSION,
         "tolerance_version": "v1",
-        "source": {"family": "oracle", "schema": "OW_BILLING",
-                   "profile": "mongo-migration/profiles/oracle.md"},
-        "target": {"database": DATABASE, "cluster": "otterworks-demos M0"},
+        "source": {"family": "oracle", "schema": "OW_BILLING"},
+        "target": {"database": "ow_tp_mongodb_orc1"},
         "parameters": {
             "batch_no": {
-                "type": "long",
-                "resolved_per_run": True,
-                "current_value": int(next(iter(
-                    json.loads((CENSUS / "access_patterns.json").read_text())
-                    ["invoice_header_batches"]))),
-                "derivation": "sha256(NS)[:8] % 90_000_000 + 1_000_000, NS=demo "
-                              "(reports.py:ns_batch_no)",
-                "note": "never hard-coded in a mapping row; validated against the ledger "
-                        "at the start of every unit",
-            }
+                "description": "conversion batch scope. reports.py:ns_batch_no derives it "
+                               "from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it "
+                               "is a run parameter and never a literal in a mapping row.",
+                "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag",
+            },
         },
-        "collections": collections,
+        "excluded_tables": [{"table": "FIXTURE_META",
+                             "reason": DROPPED["FIXTURE_META"][0]["reason"]}],
+        "collections": colls,
     }
-    return spec
 
 
+# --------------------------------------------------------------------------- validation
 def validate(spec):
-    """Coverage arithmetic: every census column is accounted for exactly once."""
-    columns = load("columns")
-    src_cols = {(c["table_name"], c["column_name"]) for c in columns
-                if c["table_name"] != "FIXTURE_META"}
-    seen = set()
-    dupes = []
-    for coll in spec["collections"].values():
-        tables = coll["sources"]
-        root = tables[0]
+    """Every source column is accounted for exactly once, and the spec loads under the
+    harness's own config loader. Coverage is the whole point of the census, so a gap is a
+    build failure rather than a warning."""
+    seen = {}
+    problems = []
 
-        def mark(table, col):
-            k = (table, col)
-            if k in seen:
-                dupes.append(k)
-            seen.add(k)
+    def account(table, column, how, where):
+        key = (table, column)
+        if key in seen:
+            problems.append(f"DOUBLE-COUNTED {table}.{column}: {seen[key]} and {how} in {where}")
+        seen[key] = f"{how} in {where}"
 
-        for f in coll.get("fields", []):
-            mark(root, f["source_column"])
-        for d in coll.get("dropped", []) + coll.get("folded", []):
-            mark(root, d["source_column"])
-        for k in coll.get("key", {}).get("_id", {}).get("from", []):
-            mark(root, k)
-        for emb in coll.get("embeds", []):
-            t = emb["source"]
-            for f in emb.get("element_fields", []):
-                if "source_column" in f:
-                    mark(t, f["source_column"])
-                elif f.get("from", "").startswith("PHONE"):
-                    for n in range(1, 5):
-                        mark(t, f["from"].replace("{n}", str(n)))
-            for d in emb.get("dropped", []):
-                mark(t, d["source_column"])
-            for sc in emb.get("source_columns", []):
-                mark(t, sc)
+    for c in spec["collections"]:
+        root = c["root_table"]
+        for f in c["fields"]:
+            account(root, f["source"], "mapped", c["collection"])
+        for d in c.get("dropped", []):
+            account(root, d["source"], "dropped", c["collection"])
+        for e in c.get("embeds", []):
+            child = e["child_table"]
+            for k in e["key"]["source"]:
+                account(child, k, "element key", f"{c['collection']}.{e['array_path']}")
+            for f in e["fields"]:
+                account(child, f["source"], "mapped", f"{c['collection']}.{e['array_path']}")
+            for d in e.get("dropped", []):
+                account(child, d["source"], "dropped", f"{c['collection']}.{e['array_path']}")
+            if len(e["key"]["source"]) != 1 or not e.get("parent_key") or not e.get("fields"):
+                problems.append(
+                    f"UNGRADABLE EMBED {c['collection']}.{e['array_path']}: the harness "
+                    "value-grades an array only with a parent_key, exactly one element key "
+                    "column, and declared fields")
+    for t in spec["excluded_tables"]:
+        for d in DROPPED[t["table"]]:
+            account(t["table"], d["source"], "excluded", t["table"])
 
-    missing = sorted(src_cols - seen)
-    extra = sorted(seen - src_cols)
-    return missing, extra, sorted(set(dupes))
+    uncovered = sorted(f"{c['table_name']}.{c['column_name']}" for c in COLUMNS
+                       if (c["table_name"], c["column_name"]) not in seen)
+    if uncovered:
+        problems.append(f"UNCOVERED source columns ({len(uncovered)}):\n   "
+                        + "\n   ".join(uncovered))
+
+    tables = {c["root_table"] for c in spec["collections"]}
+    tables |= {e["child_table"] for c in spec["collections"] for e in c.get("embeds", [])}
+    tables |= {t["table"] for t in spec["excluded_tables"]}
+    missing_tables = sorted(set(COUNTS) - tables)
+    if missing_tables:
+        problems.append(f"UNBUCKETED tables: {missing_tables}")
+    return problems, len(seen)
+
+
+def write_unit_specs(spec):
+    """Per-unit slices of the same spec. `recon run --unit X` grades every collection in the
+    mapping file it is handed, so a unit's gate has to be run against that unit's slice --
+    otherwise wave 0 fails on collections wave 2 has not loaded yet. Slicing here rather
+    than hand-maintaining a file per unit is what keeps the gate and the loader honest
+    about grading the same mapping."""
+    UNIT_DIR.mkdir(exist_ok=True)
+    units = {}
+    for c in spec["collections"]:
+        units.setdefault(c["unit"], []).append(c)
+    for unit, colls in units.items():
+        (UNIT_DIR / f"{unit}.json").write_text(json.dumps(
+            {**spec, "unit": unit,
+             "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)",
+             "collections": colls}, indent=2))
+    return units
+
+
+def main():
+    spec = build()
+    problems, n_cols = validate(spec)
+    OUT.write_text(json.dumps(spec, indent=2))
+    units = write_unit_specs(spec)
+    print(f"collections: {len(spec['collections'])}  "
+          f"root documents: {sum(c['expected_documents'] for c in spec['collections']):,}  "
+          f"source columns accounted for: {n_cols}/{len(COLUMNS)}")
+    if problems:
+        print("\n".join(problems), file=sys.stderr)
+        sys.exit(1)
+    print(f"wrote {OUT} and {len(units)} unit slices in {UNIT_DIR}/ "
+          f"({', '.join(sorted(units))})")
 
 
 if __name__ == "__main__":
-    spec = build()
-    missing, extra, dupes = validate(spec)
-    OUT.write_text(json.dumps(spec, indent=2))
-    print(f"collections: {len(spec['collections'])}")
-    print(f"expected docs: {sum(c['expected_documents'] for c in spec['collections'].values())}")
-    if missing:
-        print(f"UNCOVERED source columns ({len(missing)}):")
-        for m in missing:
-            print("  ", ".".join(m))
-    if extra:
-        print(f"phantom columns ({len(extra)}): {extra}")
-    print(f"wrote {OUT}")
-    sys.exit(1 if (missing or extra) else 0)
+    main()

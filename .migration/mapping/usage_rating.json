@@ -1,0 +1,234 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "usage_events",
+      "unit": "usage_rating",
+      "wave": 2,
+      "pattern_class": "small-embed",
+      "root_table": "USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "PKG_RATING.compute_rating scans by (tenant_id, occurred_at) for a period; the table is append-only with its own write path, so it stays referenced rather than embedding into rating periods.",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurred_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "KIND_CD",
+          "target": "kind",
+          "transform": "lookup_code_desc",
+          "code_type": "USAGE_KIND",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ],
+      "expected_documents": 814,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "occurred_at": 1
+          }
+        }
+      ],
+      "validator": "$jsonSchema replacing TRG_USAGE_EVENTS_CHECK (units > 0)"
+    },
+    {
+      "collection": "rating_periods",
+      "unit": "usage_rating",
+      "wave": 2,
+      "pattern_class": "small-embed",
+      "root_table": "RATING_PERIODS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "RATING_RESULTS is written only by sp_finalize_rating for its period and read only by fn_usage_summary for that period, so results embed.",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "PERIOD_START",
+          "target": "period_start",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "PERIOD_END",
+          "target": "period_end",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "results",
+          "child_table": "RATING_RESULTS",
+          "parent_key": [
+            "PERIOD_ID"
+          ],
+          "key": {
+            "source": [
+              "ID"
+            ],
+            "target": "result_id"
+          },
+          "fields": [
+            {
+              "source": "SUBSCRIPTION_ID",
+              "target": "subscription_id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "USED_UNITS",
+              "target": "used_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "QUOTA_UNITS",
+              "target": "quota_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "ROLLOVER_UNITS",
+              "target": "rollover_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "BILLABLE_UNITS",
+              "target": "billable_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "OVERAGE_AMOUNT",
+              "target": "overage_amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "CREATED_AT",
+              "target": "created_at",
+              "source_type": "TIMESTAMP(6)",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            }
+          ],
+          "cardinality": "sum(len(results)) == 3",
+          "dropped": [
+            {
+              "source": "PERIOD_ID",
+              "reason": "join key to the period; becomes containment"
+            }
+          ]
+        }
+      ],
+      "expected_documents": 3,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "period_start": -1
+          }
+        }
+      ]
+    }
+  ],
+  "unit": "usage_rating",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

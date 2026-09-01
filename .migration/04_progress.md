@@ -1,13 +1,13 @@
 # 04 — Progress ledger
 
-Mapping version: `m1` (PROPOSED, pending STOP B) · Tolerance version: `v1` (ACCEPTED at STOP A) · Recon mode: LIVE
+Mapping version: `m1` (ACCEPTED at STOP B, 2026-09-01) · Tolerance version: `v1` (ACCEPTED at STOP A) · Recon mode: LIVE
 
 Status: `pending` → `in_progress` → `recon_pass` → `merged`. A unit is done only when its
 PR is **merged** into `tp-run/mongodb-20260901T033326Z`.
 
 | Wave | Unit | Source objects | Write targets (registered) | Class | Status | Parity | Quarantine | Unverified paths | PR |
 |---|---|---|---|---|---|---|---|---|---|
-| 0 | `reference` | CODES, TENANTS, PLANS | `codes`, `tenants`, `plans` | reference | pending | — | — | — | — |
+| 0 | `reference` | CODES, TENANTS, PLANS | `codes`, `tenants`, `plans` | reference | recon_pass | 104/104 docs, full keyed diff, 0 findings | 0 (no anomalies in source) | none | _open_ |
 | 1 | `customers` | CUSTOMER_MASTER, ENTITY_ATTR_VALUE, CUSTOMER_MASTER_HIST | `customers`, `customers_quarantine` | wide-embed **XL** | pending | — | — | — | — |
 | 1 | `subscriptions` | SUBSCRIPTIONS, SUBSCRIPTIONS_HIST | `subscriptions` | small-embed | pending | — | — | — | — |
 | 2 | `invoices` | INVOICE_HEADER, INVOICE_LINE | `invoices`, `invoices_quarantine` | bulk-load **XL** | pending | — | — | — | — |
@@ -29,7 +29,7 @@ so waves still run 3-wide. Only `customers` and `invoices` read enough rows to c
 
 | Lease | Holder | Claimed (UTC) | Released (UTC) |
 |---|---|---|---|
-| `oracle:OW_BILLING` | _free_ | — | — |
+| `oracle:OW_BILLING` | _free_ | 2026-09-01 (claimed by `reference`) | 2026-09-01 (released) |
 
 ## Wave-boundary checks
 
@@ -37,7 +37,7 @@ Re-checked before each wave starts; a failure halts rather than degrades.
 
 | Wave | Atlas storage headroom | Recon rerun budget used | Same-class failures |
 |---|---|---|---|
-| 0 | not yet checked | 0/3 | 0/3 |
+| 0 | 324.16 MB free (187.84 MB used of 512; wave 0 adds ~104 docs) | 0/3 | 0/3 |
 | 1 | not yet checked | 0/3 | 0/3 |
 | 2 | not yet checked | 0/3 | 0/3 |
 | 3 | not yet checked | 0/3 | 0/3 |

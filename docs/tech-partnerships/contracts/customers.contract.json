@@ -1,0 +1,67 @@
+{
+  "unit": "customers",
+  "source_artifact_path": "oracle://OW_BILLING/{CUSTOMER_MASTER,CUSTOMER_MASTER_HIST,ENTITY_ATTR_VALUE} (SELECT-only)",
+  "target_objects": [
+    "customers",
+    "customers_quarantine"
+  ],
+  "golden_baseline_location": "recomputed live from Oracle by the recon harness at grade time (.migration/recon/customers/result.json); no baseline is derived from migration output",
+  "acceptance_checks": [
+    {
+      "id": "row_count_parity",
+      "description": "Every mapped collection's document count equals its Oracle row count through the mapping (zero tolerance, tolerances v1)."
+    },
+    {
+      "id": "field_parity",
+      "description": "Per-field aggregates and a keyed diff agree after the Oracle canonicalization rules; NUMBER never lands as double."
+    },
+    {
+      "id": "idempotency_rerun",
+      "description": "Re-running the load leaves document counts and content identical (natural _id + upsert), and recon still passes."
+    },
+    {
+      "id": "harness_verdict_gates_merge",
+      "description": "The unit ships only on a PASS in the harness result.json; no loader self-report substitutes for it."
+    },
+    {
+      "id": "embedded_cardinality",
+      "description": "Every embedded array is graded on parent key, element key and mapped fields; an UNGRADED embed blocks the unit."
+    },
+    {
+      "id": "empty_source_materialized",
+      "description": "CUSTOMER_MASTER_HIST is empty at source and must still produce an explicit empty collection with PASS evidence."
+    }
+  ],
+  "planted_anomalies": [
+    {
+      "id": "bad_signup_dt",
+      "description": "50 CUSTOMER_MASTER.SIGNUP_DT values are not parseable DD-MON-YY; each is quarantined with its raw string preserved, never coerced to a plausible date",
+      "status": "must-detect"
+    },
+    {
+      "id": "malformed_related_acct_ids",
+      "description": "31 RELATED_ACCT_IDS CSV values are malformed; quarantined with the raw value, the rest become arrays",
+      "status": "must-detect"
+    },
+    {
+      "id": "eav_duplicate_attr_pairs",
+      "description": "187 (entity_id, attr_name) pairs repeat, up to 3 rows each; attributes is an array so no duplicate is silently collapsed",
+      "status": "must-detect"
+    }
+  ],
+  "encoding_policy": {
+    "input_encoding": "Oracle AL32UTF8, read as Python str via python-oracledb",
+    "byte_transparency": "strings are preserved byte-exact; no case folding, no Unicode normalization, no transliteration. CHAR columns are right-trimmed (the padding is Oracle's storage artifact, not data) and Oracle's empty string is NULL, so the target field is omitted.",
+    "invalid_bytes": "none observed in the census; an undecodable value would fail the load loudly rather than being replaced with U+FFFD, since a substitution would silently pass a byte-exact comparison it should fail."
+  },
+  "malformed_record_policy": {
+    "extra_delimited_fields": "tolerate-and-attribute",
+    "null_attribution": "tolerate-and-attribute",
+    "details": "Malformed values are quarantined with the raw source value and its key, never coerced or dropped; quarantine counts are graded against the census. NULL and a missing target field are equivalent for comparison, so an omitted field is not read as data loss."
+  },
+  "empty_input_semantics": {
+    "action": "write-empty-result",
+    "details": "CUSTOMER_MASTER_HIST is empty at source; the collection is created empty so a downstream count check sees a real zero rather than an absent collection."
+  },
+  "trigger_granularity": "per-batch"
+}

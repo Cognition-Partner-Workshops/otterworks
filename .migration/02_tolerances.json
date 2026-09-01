@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "_accepted": "STOP A, 2026-09-01. Machine-readable companion to 02_tolerances.md; the prose record is authoritative for the rules the harness does not take as numbers (quarantine classes, empty-collection PASS, rerun and circuit-breaker budgets).",
+
+  "full_diff_row_threshold": 100000,
+  "_full_diff_row_threshold": "Every collection is under this, so all 13 get a full keyed diff rather than a sample: the largest root is CUSTOMER_MASTER at 25,000. INVOICE_LINE's 149,963 embedded elements are graded in full regardless, since embeds are graded per element and not sampled.",
+
+  "sample_size": 1000,
+  "_sample_size": "Unused at the current scale; kept so a production-sized rerun is a parameter change and not a tolerance amendment.",
+
+  "numeric_abs_tol": 0.0,
+  "aggregate_rel_tol": 0.0,
+  "_zero_tolerance": "Counts and values are exact. NUMBER(p,s) maps to Decimal128 and never to double, so there is no float drift to absorb.",
+
+  "source_concurrency": 1,
+  "_source_concurrency": "STOP A source-load cap. The harness runs serially; the cap across concurrent units is enforced by the extract lease in 04_progress.md."
+}
