@@ -81,13 +81,14 @@ LINE_FIELDS = [
 LINE_RULES = {"POSTED_YN": ["rstrip_spaces", "empty_string_is_null"]}
 
 
-# The estate's own rendering of a missing `DD-MON-YY`: the separators with every field
-# blanked. Deliberately narrow — any other punctuation is a malformed date, not an absent one.
-BLANK_LEGACY_DATE = re.compile(r"\s+-\s+-\s+")
+# The estate's own rendering of a missing `DD-MON-YY`: the separators in place with each
+# field blanked to its own width, right-trim tolerated. Deliberately exact — anything else,
+# punctuation included, is a malformed date and is quarantined.
+BLANK_LEGACY_DATE = re.compile(r" {2}- {3}- {0,2}")
 
 
 def absent_legacy_date(raw) -> bool:
-    return raw is None or raw.strip() == "" or BLANK_LEGACY_DATE.fullmatch(raw) is not None
+    return raw is None or raw == "" or BLANK_LEGACY_DATE.fullmatch(raw) is not None
 
 
 def line_document(row: dict) -> tuple[dict, dict | None]:

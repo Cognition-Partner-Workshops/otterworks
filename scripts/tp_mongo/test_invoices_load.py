@@ -141,7 +141,7 @@ def test_a_blank_line_date_is_neither_typed_nor_quarantined():
 
 
 def test_punctuation_that_is_not_the_estates_blank_date_is_quarantined():
-    for raw in ["--", "//", "-", "  -  "]:
+    for raw in ["--", "//", "-", "  -  ", " - - ", "   -   -   ", "N/A"]:
         _, bad_date = line_document(dict(LINE_ROW, INVOICE_ID="INV-A", INVOICE_DT=raw))
         assert bad_date is not None, raw
 
