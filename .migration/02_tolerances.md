@@ -18,8 +18,8 @@ waves.
 | T6 | Oracle empty string == NULL | Target policy: **field omitted** (no `null`, no `""`). Recon rule `empty_string_is_null` with `target_policy=missing` | PROPOSED |
 | T7 | NULL vs missing field | Equivalent for comparison: a source NULL matches an absent target field. Explicit `null` is never written | PROPOSED |
 | T8 | String collation | Byte-exact after T5/T6; no case folding (no NLS case-insensitive comparison found in the census probe) | PROPOSED |
-| T9 | `VARCHAR2` `DD-MON-YY` string dates (e.g. `SIGNUP_DT`) | Parsed to BSON `date` when valid; unparseable values (50 planted, e.g. `31-FEB-24`, `N/A`) go to quarantine with the original string preserved — never coerced, never dropped silently | PROPOSED |
-| T10 | CSV list columns (`RELATED_ACCT_IDS`, `PROMO_CODES_CSV`) | Split to real arrays on `,`, elements trimmed; empty → field omitted; malformed lists (31 planted) quarantined with the raw string preserved | PROPOSED |
+| T9 | `VARCHAR2` `DD-MON-YY` string dates (e.g. `SIGNUP_DT`) | Parsed to BSON `date` when valid; unparseable values (50 known, e.g. `31-FEB-24`, `N/A`) go to quarantine with the original string preserved — never coerced, never dropped silently | PROPOSED |
+| T10 | CSV list columns (`RELATED_ACCT_IDS`, `PROMO_CODES_CSV`) | Split to real arrays on `,`, elements trimmed; empty → field omitted; malformed lists (31 known) quarantined with the raw string preserved | PROPOSED |
 | T11 | EAV rows (`ENTITY_ATTR_VALUE`) | Folded into an `attributes` subdocument on the owning root doc; values stay strings (source `attr_type` is always `STR`) unless the mapping spec declares a typed coercion per attribute | PROPOSED |
 | T12 | Orphaned child rows (37 `INVOICE_LINE`, and any other FK-violating child) | Quarantined, enumerated, and counted; never embedded, never dropped silently | PROPOSED |
 | T13 | Byte transparency | UTF-8 end to end; non-ASCII bytes preserved exactly; no transliteration | PROPOSED |
@@ -46,7 +46,7 @@ Only `INVOICE_LINE` (150,000) is Large at `SCALE=demo`; it is graded as embedded
 
 ## Anomaly ledger (must be found, not tolerated)
 
-The seed manifest enumerates the estate's known defects. Recon must surface exactly these
+The estate manifest enumerates the data defects carried by the legacy estate. Recon must surface exactly these
 counts on the Oracle side — no more, no fewer: 37 orphaned `INVOICE_LINE` rows, 50 dirty
 `SIGNUP_DT` strings, 31 malformed CSV lists. Any anomaly no unit ingests is declared a
 coverage gap in the mapping spec, not discovered at rollup.
