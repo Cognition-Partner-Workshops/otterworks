@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CENSUS = ROOT / ".migration" / "census" / "oracle_census.json"
 OUT = ROOT / ".migration" / "03_mapping_spec.json"
 
-VERSION = "v1.0-proposed"
+VERSION = "v1.0"
 NS = "mongo_205236"
 
 

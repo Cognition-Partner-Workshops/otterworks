@@ -1,5 +1,5 @@
 {
- "version": "v1.0-proposed",
+ "version": "v1.0",
  "namespace": "mongo_205236",
  "target_database": "ow_tp_mongodb_205236",
  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
