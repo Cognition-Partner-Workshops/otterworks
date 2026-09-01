@@ -271,6 +271,11 @@ resource "databricks_job" "ow_tp_custbill" {
     default = "demo"
   }
 
+  parameter {
+    name    = "report_date"
+    default = ""
+  }
+
   task {
     task_key = "ingest"
     notebook_task {
@@ -298,8 +303,11 @@ resource "databricks_job" "ow_tp_custbill" {
       task_key = "parse"
     }
     notebook_task {
-      notebook_path   = databricks_notebook.finance.path
-      base_parameters = { ns = "{{job.parameters.ns}}" }
+      notebook_path = databricks_notebook.finance.path
+      base_parameters = {
+        ns          = "{{job.parameters.ns}}"
+        report_date = "{{job.parameters.report_date}}"
+      }
     }
     environment_key = "default"
   }

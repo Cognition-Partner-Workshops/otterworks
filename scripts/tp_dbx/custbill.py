@@ -26,12 +26,29 @@ def esc(value: str) -> str:
     return value.replace("\\", "\\\\").replace("'", "''")
 
 
-def bronze_rows_from_file(path: Path) -> list[dict]:
+def legacy_dat_files(root: Path) -> list[tuple[str, Path]]:
+    candidates = sorted((root / "incoming").glob("CUSTBILL*.dat*"))
+    if not candidates:
+        candidates = sorted((root / "sftp-drop" / "upload").glob("CUSTBILL*.dat"))
+    by_name: dict[str, Path] = {}
+    for path in candidates:
+        if not path.is_file():
+            continue
+        marker = path.name.find(".dat")
+        normalized = path.name[:marker + len(".dat")] if marker >= 0 else f"{path.name}.dat"
+        by_name.setdefault(normalized, path)
+    return sorted(by_name.items())
+
+
+def bronze_rows_from_file(path: Path, source_file: str) -> list[dict]:
     payload = path.read_bytes()
     digest = hashlib.sha256(payload).hexdigest()
+    lines = payload.split(b"\n")
+    if lines and lines[-1] == b"":
+        lines.pop()
     rows = []
-    for line_no, raw in enumerate(payload.splitlines(), start=1):
-        text = raw.decode("utf-8")
+    for line_no, raw in enumerate(lines, start=1):
+        text = raw.decode("latin-1")
         if text.startswith("HDR"):
             kind = "HDR"
         elif text.startswith("TRL"):
@@ -39,7 +56,7 @@ def bronze_rows_from_file(path: Path) -> list[dict]:
         else:
             kind = "BODY"
         rows.append({
-            "source_file": path.name,
+            "source_file": source_file,
             "line_no": line_no,
             "record_kind": kind,
             "raw_line": text,
@@ -108,13 +125,6 @@ def _clean_landing(dbx: Databricks, ns: str) -> None:
             raise DbxError(f"DELETE {_landing_root(ns, part)} -> HTTP {status}")
 
 
-def _legacy_files(root: Path, suffix: str, fallback: str | None = None) -> list[Path]:
-    files = sorted((root / suffix).glob("CUSTBILL*.dat"))
-    if not files and fallback:
-        files = sorted((root / fallback).glob("CUSTBILL*.dat"))
-    return [path for path in files if path.is_file()]
-
-
 def _listed_names(result, preferred: tuple[str, ...], fallback_index: int = -1) -> set[str]:
     names = set()
     for index, row in enumerate(result.dicts()):
@@ -162,10 +172,9 @@ def cmd_land(dbx: Databricks, args: argparse.Namespace) -> int:
         print(f"cleaned landing directories for ns={args.ns}")
         return 0
     root = Path(args.legacy_root)
-    files = sorted((root / "sftp-drop" / "upload").glob("CUSTBILL*.dat"))
-    files = [path for path in files if path.is_file()]
-    for path in files:
-        dbx.put_file(f"{_landing_root(args.ns, 'incoming')}/{path.name}", path.read_bytes())
+    files = legacy_dat_files(root)
+    for source_file, path in files:
+        dbx.put_file(f"{_landing_root(args.ns, 'incoming')}/{source_file}", path.read_bytes())
     print(f"uploaded {len(files)} CUSTBILL file(s) for ns={args.ns}")
     return 0
 
@@ -175,8 +184,9 @@ def cmd_seed_fixture(dbx: Databricks, args: argparse.Namespace) -> int:
         raise SystemExit("seed-fixture refuses --ns demo; use a non-demo fixture namespace")
     root = Path(args.legacy_root)
     if args.layer == "bronze":
-        files = _legacy_files(root, "incoming", "sftp-drop/upload")
-        rows = [row for path in files for row in bronze_rows_from_file(path)]
+        files = legacy_dat_files(root)
+        rows = [row for source_file, path in files
+                for row in bronze_rows_from_file(path, source_file)]
         table = BRONZE
         columns = ("ns", "source_file", "line_no", "record_kind", "raw_line",
                    "file_sha256", "ingested_at")
@@ -209,7 +219,10 @@ def cmd_run_job(dbx: Databricks, args: argparse.Namespace) -> int:
     job = dbx.find_job("ow_tp_custbill")
     if not job:
         raise SystemExit("job ow_tp_custbill not found")
-    run_id = dbx.run_job(int(job["job_id"]), {"ns": args.ns})
+    params = {"ns": args.ns}
+    if args.report_date:
+        params["report_date"] = args.report_date
+    run_id = dbx.run_job(int(job["job_id"]), params)
     print(f"triggered run: {dbx.run_url(run_id)}")
     if not args.wait:
         return 0
@@ -257,6 +270,7 @@ def parser() -> argparse.ArgumentParser:
     seed.add_argument("--legacy-root", required=True)
     run = commands.add_parser("run-job")
     run.add_argument("--wait", action="store_true")
+    run.add_argument("--report-date", type=_date_literal)
     commands.add_parser("verify-trigger")
     wipe = commands.add_parser("wipe")
     wipe.add_argument("--i-mean-demo", action="store_true")
