@@ -130,6 +130,13 @@ def validate_target_db(target_db: str) -> None:
         raise ValueError(f"--target-db must be {TARGET_DB!r}, got {target_db!r}")
 
 
+def validate_quarantine_db(quarantine_db: str) -> None:
+    if quarantine_db != QUARANTINE_DB:
+        raise ValueError(
+            f"--quarantine-db must be {QUARANTINE_DB!r}, got {quarantine_db!r}"
+        )
+
+
 def secret_value(name: str) -> str:
     value = os.environ.get(name)
     if not value:
@@ -198,6 +205,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     try:
         validate_target_db(args.target_db)
+        validate_quarantine_db(args.quarantine_db)
     except ValueError as exc:
         parser.error(str(exc))
     return args
@@ -206,6 +214,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def run(args: argparse.Namespace) -> dict[str, Any]:
     started_at = utc_now()
     validate_target_db(args.target_db)
+    validate_quarantine_db(args.quarantine_db)
     dsn = secret_value(args.dsn_secret)
     uri = secret_value(args.uri_secret)
 

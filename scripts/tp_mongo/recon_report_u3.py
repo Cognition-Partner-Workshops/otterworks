@@ -123,8 +123,13 @@ def main(argv: list[str] | None = None) -> int:
                    counts, json.loads(MANIFEST.read_text()))
     Path(args.out).write_text(json.dumps(report, indent=2) + "\n")
     failed = [c["id"] for c in report["checks"] if c["result"] != "pass"]
-    print(f"wrote {args.out}; checks={len(report['checks'])} failed={failed}")
-    return 1 if failed else 0
+    anomaly_failures = (report["planted_anomaly_detections"]["missing"]
+                        + report["planted_anomaly_detections"]["unexpected"])
+    idempotency_failed = report["idempotency_rerun"]["result"] != "pass"
+    print(f"wrote {args.out}; checks={len(report['checks'])} failed={failed} "
+          f"anomaly_failures={anomaly_failures} "
+          f"idempotency_failed={idempotency_failed}")
+    return 1 if failed or anomaly_failures or idempotency_failed else 0
 
 
 if __name__ == "__main__":

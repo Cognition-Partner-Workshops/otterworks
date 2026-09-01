@@ -134,6 +134,11 @@ def test_target_db_guard_rejects_other_databases():
         load_u3.validate_target_db("other-db")
 
 
+def test_quarantine_db_guard_rejects_other_databases():
+    with pytest.raises(ValueError):
+        load_u3.validate_quarantine_db("other-quarantine-db")
+
+
 def test_owned_collection_names_are_exact():
     assert load_u3.UNIT_COLLECTIONS == ("documents", "document_snapshots")
     assert load_u3.QUARANTINE_COLLECTIONS == ("orphan_document_snapshots",)
