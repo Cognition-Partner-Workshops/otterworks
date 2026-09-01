@@ -13,7 +13,7 @@ PR is **merged** into `tp-run/mongodb-20260901T033326Z`.
 | 2 | `invoices` | INVOICE_HEADER, INVOICE_LINE | `invoices`, `invoices_quarantine` | bulk-load **XL** | recon_pass | 18,750/18,750 docs + 149,963 line elements, full keyed diff, 0 findings | 37 (orphan `INVOICE_LINE` rows) | none | _open_ |
 | 2 | `usage_rating` | USAGE_EVENTS, RATING_PERIODS, RATING_RESULTS | `usage_events`, `rating_periods` | small-embed | recon_pass | 814 + 3 docs + 3 result elements, full keyed diff, 0 findings | 0 (no anomalies in source) | none | _open_ |
 | 2 | `subscription_invoices` | INVOICES, INVOICE_LINES | `subscription_invoices` | small-embed | recon_pass | 3/3 docs + 2 line elements, full keyed diff, 0 findings | 0 (no anomalies in source) | `line_no` uniqueness is an element-level invariant, not an index | _open_ |
-| 3 | `collections_ops` | CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS, BILLING_AUDIT_LOG | `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | reference | pending | — | — | — | — |
+| 3 | `collections_ops` | CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS, BILLING_AUDIT_LOG | `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | reference | recon_pass | 7/7 docs, full keyed diff, 0 findings | 0 (no anomalies in source) | `BILLING_AUDIT_LOG` empty at source, so its collection is graded at 0 | _open_ |
 | 4 | `stored_logic` | 5 packages / 19 routines, 7 triggers, 2 jobs, 5 sequences | code only (no collections) | proc-heavy **XL** | pending | — | — | — | — |
 
 Write targets are disjoint by construction: 13 collections + 2 quarantine collections, no
@@ -31,7 +31,7 @@ Waves still run 3-wide; only `customers` and `invoices` read enough rows to cont
 
 | Lease | Holder | Claimed (UTC) | Released (UTC) |
 |---|---|---|---|
-| `oracle:OW_BILLING` | _free_ | 2026-09-01 (claimed by all six loaded units in turn) | 2026-09-01 (released) |
+| `oracle:OW_BILLING` | _free_ | 2026-09-01 (claimed by all seven data units in turn) | 2026-09-01 (released) |
 
 ## Wave-boundary checks
 
@@ -42,7 +42,7 @@ Re-checked before each wave starts; a failure halts rather than degrades.
 | 0 | 324.16 MB free (187.84 MB used of 512; wave 0 adds ~104 docs) | 0/3 | 0/3 |
 | 1 | 336.14 MB free (175.86 MB storage used of 512; `ow_tp_mongodb_orc1` holds 32.14 MB after 25,069 docs) | 0/3 | 0/3 |
 | 2 | 221.68 MB free (290.32 MB storage used of 512; `ow_tp_mongodb_orc1` holds 93.07 MB after 44,639 docs) | 0/3 | 0/3 |
-| 3 | not yet checked | 0/3 | 0/3 |
+| 3 | 220.23 MB free (291.77 MB storage used of 512; `ow_tp_mongodb_orc1` holds 94.52 MB after 44,646 docs) | 0/3 | 0/3 |
 | 4 | n/a (code only) | 0/3 | 0/3 |
 
 ## Calibration cost ledger
