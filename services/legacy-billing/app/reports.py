@@ -1,19 +1,22 @@
-"""Month-end finance reporting served straight from the Oracle billing estate.
+"""Month-end finance reporting served from MongoDB, with Oracle reconciliation.
 
 The report is the legacy RPT-114 rollup (see
 db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt and the CODES lookup conventions):
 invoice counts and header totals by status, plus a line rollup by status and
-line type. Orphaned INVOICE_LINE rows fall out of the join, exactly as finance
-always ran it. Rows are namespace-scoped through the deterministic
-conversion batch number.
+line type. Orphaned invoice feed rows are quarantined and therefore fall out of
+the embedded-line rollup, exactly as finance always ran it. Rows are
+namespace-scoped through the deterministic conversion batch number.
 """
 
 import hashlib
 import logging
 import os
 from datetime import datetime, timezone
+from decimal import Decimal
 
+from bson import Decimal128
 from flask import Blueprint, jsonify, request
+from pymongo import MongoClient
 
 reports = Blueprint("reports", __name__)
 logger = logging.getLogger(__name__)
@@ -29,46 +32,14 @@ SOURCE = {
     "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
 }
 
-STATUS_SQL = """
-SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_desc,
-       COUNT(*)                                   AS invoice_count,
-       TO_CHAR(SUM(h.total_amt), 'FM999999999999990.00') AS header_total_amt
-  FROM invoice_header h,
-       codes st
- WHERE h.batch_no = :batch_no
-   AND st.code_type (+) = 'INV_STATUS'
-   AND st.code_val  (+) = h.status_cd
- GROUP BY NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')')
- ORDER BY 1
-"""
-
-LINE_SQL = """
-SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_desc,
-       DECODE(l.line_type_cd, 1, 'CHARGE',
-                              2, 'CREDIT',
-                              3, 'ADJUSTMENT',
-                              9, 'MISC',
-                              'UNKNOWN(' || TO_CHAR(l.line_type_cd) || ')')
-                                                  AS line_type,
-       COUNT(*)                                   AS line_count,
-       TO_CHAR(SUM(l.amount),  'FM999999999999990.00') AS line_amount,
-       TO_CHAR(SUM(l.tax_amt), 'FM999999999999990.00') AS line_tax,
-       COUNT(DISTINCT h.invoice_id)               AS invoices_touched
-  FROM invoice_header h,
-       invoice_line   l,
-       codes          st
- WHERE h.batch_no = :batch_no
-   AND h.invoice_id = l.invoice_id
-   AND st.code_type (+) = 'INV_STATUS'
-   AND st.code_val  (+) = h.status_cd
- GROUP BY NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')'),
-          DECODE(l.line_type_cd, 1, 'CHARGE',
-                                 2, 'CREDIT',
-                                 3, 'ADJUSTMENT',
-                                 9, 'MISC',
-                                 'UNKNOWN(' || TO_CHAR(l.line_type_cd) || ')')
- ORDER BY 1, 2
-"""
+MONGO_SOURCE = {
+    "engine": "mongodb",
+    "system": "MongoDB Atlas ow_tp_mongodb_205236",
+    "detail": "invoices (lines[] embedded) with codes lookup (RPT-114)",
+}
+MIGRATION_NS = "mongo_205236"
+LINE_TYPES = {1: "CHARGE", 2: "CREDIT", 3: "ADJUSTMENT", 9: "MISC"}
+_MONGO_CLIENT = None
 
 BALANCES_SQL = """
 SELECT COUNT(*)                                          AS customer_count,
@@ -137,13 +108,166 @@ def oracle_query(sql, params):
         return cursor.fetchall()
 
 
-def report_meta(ns):
+def report_meta(ns, source=SOURCE):
     return {
         "namespace": ns,
         "batch_no": ns_batch_no(ns),
-        "source": SOURCE,
+        "source": source,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
+
+
+def mongo_db():
+    global _MONGO_CLIENT
+    if _MONGO_CLIENT is None:
+        _MONGO_CLIENT = MongoClient(
+            os.environ["MONGODB_ATLAS_URI"],
+            serverSelectionTimeoutMS=int(os.getenv("MONGODB_TIMEOUT_MS", "5000")),
+        )
+    return _MONGO_CLIENT[os.getenv("MONGODB_DB", "ow_tp_mongodb_205236")]
+
+
+def status_desc(codes, cd):
+    return codes.get(cd) or f"UNKNOWN({'' if cd is None else cd})"
+
+
+def line_type(cd):
+    return LINE_TYPES.get(cd) or f"UNKNOWN({'' if cd is None else cd})"
+
+
+def fmt_amt(value):
+    if value is None:
+        return None
+    if isinstance(value, Decimal128):
+        value = value.to_decimal()
+    return f"{value:.2f}"
+
+
+def inv_status_codes(db):
+    return {
+        document["code_val"]: document["code_desc"]
+        for document in db.codes.find(
+            {"code_type": "INV_STATUS"}, {"code_val": 1, "code_desc": 1}
+        )
+    }
+
+
+def _amount_total(value, nonnull):
+    return fmt_amt(value if nonnull else None)
+
+
+def status_rows_mongo(db, batch_no):
+    codes = inv_status_codes(db)
+    grouped = {}
+    pipeline = [
+        {"$match": {"ns": MIGRATION_NS, "batch_no": batch_no}},
+        {
+            "$group": {
+                "_id": "$status_cd",
+                "invoice_count": {"$sum": 1},
+                "header_total_amt": {"$sum": "$total_amt"},
+                "nonnull": {
+                    "$sum": {
+                        "$cond": [{"$ne": ["$total_amt", None]}, 1, 0]
+                    }
+                },
+            }
+        },
+    ]
+    for item in db.invoices.aggregate(pipeline):
+        status = status_desc(codes, item["_id"])
+        existing = grouped.setdefault(
+            status, {"count": 0, "total": Decimal(0), "nonnull": 0}
+        )
+        existing["count"] += item["invoice_count"]
+        existing["nonnull"] += item["nonnull"]
+        if item["nonnull"]:
+            total = item["header_total_amt"]
+            if isinstance(total, Decimal128):
+                total = total.to_decimal()
+            existing["total"] += total
+    return [
+        (
+            status,
+            values["count"],
+            _amount_total(values["total"], values["nonnull"]),
+        )
+        for status, values in sorted(grouped.items())
+    ]
+
+
+def line_rows_mongo(db, batch_no):
+    codes = inv_status_codes(db)
+    grouped = {}
+    pipeline = [
+        {"$match": {"ns": MIGRATION_NS, "batch_no": batch_no}},
+        {"$unwind": "$lines"},
+        {
+            "$group": {
+                "_id": {"s": "$status_cd", "t": "$lines.line_type_cd"},
+                "line_count": {"$sum": 1},
+                "line_amount": {"$sum": "$lines.amount"},
+                "amount_nonnull": {
+                    "$sum": {
+                        "$cond": [{"$ne": ["$lines.amount", None]}, 1, 0]
+                    }
+                },
+                "line_tax": {"$sum": "$lines.tax_amt"},
+                "tax_nonnull": {
+                    "$sum": {
+                        "$cond": [{"$ne": ["$lines.tax_amt", None]}, 1, 0]
+                    }
+                },
+                "invoices": {"$addToSet": "$_id"},
+            }
+        },
+    ]
+    for item in db.invoices.aggregate(pipeline):
+        key = (
+            status_desc(codes, item["_id"]["s"]),
+            line_type(item["_id"]["t"]),
+        )
+        existing = grouped.setdefault(
+            key,
+            {
+                "count": 0,
+                "amount": Decimal(0),
+                "amount_nonnull": 0,
+                "tax": Decimal(0),
+                "tax_nonnull": 0,
+                "invoices": set(),
+            },
+        )
+        existing["count"] += item["line_count"]
+        existing["amount_nonnull"] += item["amount_nonnull"]
+        existing["tax_nonnull"] += item["tax_nonnull"]
+        if item["amount_nonnull"]:
+            amount = item["line_amount"]
+            if isinstance(amount, Decimal128):
+                amount = amount.to_decimal()
+            existing["amount"] += amount
+        if item["tax_nonnull"]:
+            tax = item["line_tax"]
+            if isinstance(tax, Decimal128):
+                tax = tax.to_decimal()
+            existing["tax"] += tax
+        existing["invoices"].update(item["invoices"])
+    return [
+        (
+            status,
+            line,
+            values["count"],
+            _amount_total(values["amount"], values["amount_nonnull"]),
+            _amount_total(values["tax"], values["tax_nonnull"]),
+            len(values["invoices"]),
+        )
+        for (status, line), values in sorted(grouped.items())
+    ]
+
+
+def mongo_report_rows(batch_no):
+    db = mongo_db()
+    return status_rows_mongo(db, batch_no), line_rows_mongo(db, batch_no)
 
 
 @reports.get("/api/reports/month-end")
@@ -151,12 +275,11 @@ def month_end():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
-        line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
+        status_rows, line_rows = mongo_report_rows(batch_no)
     except Exception:  # estate offline: fail closed, never fabricate numbers
         logger.exception("month-end report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
-    body = report_meta(ns)
+    body = report_meta(ns, source=MONGO_SOURCE)
     body["report"] = "month-end-finance"
     body["by_status"] = shape_status_rows(status_rows)
     body["by_status_line_type"] = shape_line_rows(line_rows)
@@ -172,7 +295,7 @@ def reconciliation():
     except Exception:
         logger.exception("reconciliation report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
-    body = report_meta(ns)
+    body = report_meta(ns, source=SOURCE)
     body["balances"] = shape_balances(balance_rows[0])
     # The legacy estate IS the source of truth: there is nothing to reconcile
     # against, so it reports baseline with no checks. Post-migration backends

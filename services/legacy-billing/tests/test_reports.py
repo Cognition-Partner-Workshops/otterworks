@@ -28,12 +28,21 @@ from reports import (
 
 @pytest.fixture
 def client(monkeypatch):
-    fixtures = {
-        reports_module.STATUS_SQL: [("ISSUED", 100, "12345.00"), ("PAID", 50, "999.00")],
-        reports_module.LINE_SQL: [("ISSUED", "CHARGE", 400, "12000.00", "345.00", 100)],
-        reports_module.BALANCES_SQL: [(25000, "1234567.00", "8901.00")],
-    }
-    monkeypatch.setattr(reports_module, "oracle_query", lambda sql, params: fixtures[sql])
+    monkeypatch.setattr(
+        reports_module,
+        "mongo_report_rows",
+        lambda batch_no: (
+            [("ISSUED", 100, "12345.00"), ("PAID", 50, "999.00")],
+            [("ISSUED", "CHARGE", 400, "12000.00", "345.00", 100)],
+        ),
+    )
+    monkeypatch.setattr(
+        reports_module,
+        "oracle_query",
+        lambda sql, params: {
+            reports_module.BALANCES_SQL: [(25000, "1234567.00", "8901.00")]
+        }[sql],
+    )
     app = Flask(__name__)
     app.register_blueprint(reports)
     return app.test_client()
@@ -74,7 +83,7 @@ def test_month_end_contract(client):
     assert body["report"] == "month-end-finance"
     assert body["namespace"] == "demo"
     assert body["batch_no"] == ns_batch_no("demo")
-    assert body["source"]["engine"] == "oracle"
+    assert body["source"]["engine"] == "mongodb"
     assert body["by_status"][0] == {
         "status": "ISSUED", "invoice_count": 100, "header_total_amt": "12345.00"
     }
@@ -95,10 +104,24 @@ def test_reconciliation_contract(client):
 
 
 def test_estate_offline_returns_503(client, monkeypatch):
-    def boom(sql, params):
-        raise RuntimeError("ORA-12541: no listener")
+    def boom(batch_no):
+        raise RuntimeError("MongoDB unavailable")
 
-    monkeypatch.setattr(reports_module, "oracle_query", boom)
+    monkeypatch.setattr(reports_module, "mongo_report_rows", boom)
     response = client.get("/api/reports/month-end")
     assert response.status_code == 503
     assert response.get_json()["error"] == "legacy estate unavailable"
+
+
+def test_report_fallbacks():
+    assert reports_module.status_desc({}, None) == "UNKNOWN()"
+    assert reports_module.status_desc({}, 7) == "UNKNOWN(7)"
+    assert reports_module.line_type(None) == "UNKNOWN()"
+    assert reports_module.line_type(7) == "UNKNOWN(7)"
+
+
+def test_fmt_amt():
+    from bson import Decimal128
+
+    assert reports_module.fmt_amt(Decimal128("12.5")) == "12.50"
+    assert reports_module.fmt_amt(None) is None
