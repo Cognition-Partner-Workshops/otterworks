@@ -61,6 +61,7 @@ def idempotency_result(
     wrote_rows: bool,
     prev_run: dict | None,
     cur_run: dict | None,
+    snapshot_time_ms: int,
 ) -> tuple[str, str]:
     if not same:
         return "fail", "fingerprints differ"
@@ -70,6 +71,8 @@ def idempotency_result(
         return "fail", "no newer successful ow_tp_custbill run since first pass"
     if cur_run.get("result_state") != "SUCCESS":
         return "fail", "latest matching ow_tp_custbill run did not succeed"
+    if cur_run.get("end_time", 0) <= snapshot_time_ms:
+        return "fail", "latest successful run ended before the first-pass snapshot"
     if prev_run is not None and cur_run.get("end_time", 0) <= prev_run.get("end_time", 0):
         return "fail", "no newer successful ow_tp_custbill run since first pass"
     return "pass", "newer successful ow_tp_custbill run confirmed"
@@ -466,14 +469,17 @@ def main() -> int:
                 for entry in r.unverified
             ]
     wrote_rows = any(bool(v) and v != 0 for k, v in r.fingerprint.items() if k in ("bronze_rows", "silver_counts", "gold"))
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    now_dt = datetime.now(timezone.utc)
+    now = now_dt.isoformat(timespec="seconds")
+    snapshot_time_ms = int(now_dt.timestamp() * 1000)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     if a.previous is None:
         snap = a.out or REPORT_DIR / f"{a.unit}.recon.first-pass.json"
         snap.write_text(json.dumps({"kind": "recon-snapshot", "unit": a.unit, "namespace": ns, "generated_at": now,
                                     "run_mode": a.run_mode, "checks": r.checks, "fingerprint": r.fingerprint,
                                     "planted_anomaly_detections": r.anomaly, "wrote_rows": wrote_rows,
-                                    "latest_run": latest_run}, indent=2) + "\n")
+                                    "latest_run": latest_run,
+                                    "snapshot_time_ms": snapshot_time_ms}, indent=2) + "\n")
         fails = verdict(a.unit, r.checks, None, waived)
         print(f"first pass: {len(r.checks)} checks, {len(fails)} failed {fails}; snapshot {snap}")
         print("re-run the job with no new input, then invoke again with --previous", snap)
@@ -482,15 +488,24 @@ def main() -> int:
     if prev.get("kind") != "recon-snapshot" or prev.get("unit") != a.unit or prev.get("namespace") != ns:
         raise SystemExit("--previous must be this unit/namespace's first-pass snapshot")
     same = prev.get("fingerprint") == r.fingerprint
-    idem_result, idem_reason = idempotency_result(
-        same, bool(prev.get("wrote_rows")), prev.get("latest_run"), latest_run,
-    )
+    previous_snapshot_time = prev.get("snapshot_time_ms")
+    if isinstance(previous_snapshot_time, int):
+        idem_result, idem_reason = idempotency_result(
+            same, bool(prev.get("wrote_rows")), prev.get("latest_run"), latest_run,
+            previous_snapshot_time,
+        )
+    else:
+        idem_result, idem_reason = (
+            "fail",
+            "first-pass snapshot lacks snapshot_time_ms; regenerate",
+        )
     idem = {
         "performed": True,
         "result": idem_result,
         "reason": idem_reason,
         "previous_latest_run": prev.get("latest_run"),
         "latest_run": latest_run,
+        "snapshot_time_ms": previous_snapshot_time,
         "evidence": (
             f"first pass {prev['generated_at']} wrote_rows={prev.get('wrote_rows')}; "
             f"second pass {now} fingerprint {'identical' if same else 'DIFFERS'}; "

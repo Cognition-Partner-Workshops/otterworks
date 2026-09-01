@@ -120,7 +120,7 @@ def test_verdict_workflow_run_state_skip_is_red() -> None:
 
 def test_idempotency_same_run_is_fail() -> None:
     run = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
-    result, reason = idempotency_result(True, True, run, run)
+    result, reason = idempotency_result(True, True, run, run, 50)
     assert result == "fail"
     assert "newer" in reason
 
@@ -128,7 +128,7 @@ def test_idempotency_same_run_is_fail() -> None:
 def test_idempotency_newer_successful_run_is_pass() -> None:
     previous = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
     current = {"run_id": 2, "end_time": 200, "result_state": "SUCCESS"}
-    assert idempotency_result(True, True, previous, current) == (
+    assert idempotency_result(True, True, previous, current, 150) == (
         "pass", "newer successful ow_tp_custbill run confirmed"
     )
 
@@ -136,12 +136,26 @@ def test_idempotency_newer_successful_run_is_pass() -> None:
 def test_idempotency_newer_run_with_changed_fingerprint_is_fail() -> None:
     previous = {"run_id": 1, "end_time": 100, "result_state": "SUCCESS"}
     current = {"run_id": 2, "end_time": 200, "result_state": "SUCCESS"}
-    result, reason = idempotency_result(False, True, previous, current)
+    result, reason = idempotency_result(False, True, previous, current, 150)
     assert result == "fail"
     assert reason == "fingerprints differ"
 
 
 def test_idempotency_without_runs_is_fail() -> None:
-    result, reason = idempotency_result(True, True, None, None)
+    result, reason = idempotency_result(True, True, None, None, 100)
     assert result == "fail"
     assert "no newer successful" in reason
+
+
+def test_idempotency_run_ending_before_snapshot_is_fail() -> None:
+    current = {"run_id": 2, "end_time": 100, "result_state": "SUCCESS"}
+    result, reason = idempotency_result(True, True, None, current, 200)
+    assert result == "fail"
+    assert reason == "latest successful run ended before the first-pass snapshot"
+
+
+def test_idempotency_run_ending_after_snapshot_is_pass() -> None:
+    current = {"run_id": 2, "end_time": 300, "result_state": "SUCCESS"}
+    assert idempotency_result(True, True, None, current, 200) == (
+        "pass", "newer successful ow_tp_custbill run confirmed"
+    )
