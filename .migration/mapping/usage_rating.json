@@ -92,7 +92,31 @@
           }
         }
       ],
-      "validator": "$jsonSchema replacing TRG_USAGE_EVENTS_CHECK (units > 0)"
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": [
+            "units",
+            "kind_cd"
+          ],
+          "properties": {
+            "units": {
+              "bsonType": "long",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "description": "units must be > 0 (ORA-20001)"
+            },
+            "kind_cd": {
+              "bsonType": "long",
+              "description": "must be a CODES USAGE_KIND value (ORA-20002)"
+            }
+          }
+        }
+      },
+      "validator_enum_from_codes": {
+        "kind_cd": "USAGE_KIND"
+      },
+      "replaces": "TRG_USAGE_EVENTS_CHECK"
     },
     {
       "collection": "rating_periods",

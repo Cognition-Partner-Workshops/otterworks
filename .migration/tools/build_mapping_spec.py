@@ -115,12 +115,23 @@ def auto_fields(table, rename=None, skip=()):
             for c in BY_TABLE[table] if c["column_name"] not in skip]
 
 
+# Every conversion that can fail names the anomaly it produces, so the loader can count
+# quarantined rows per category and hold them against the counts the census established.
+QUARANTINE_CATEGORY = {"parse_dd_mon_yy": "unparseable_{col}", "csv_to_array": "malformed_{col}"}
+
+
+def quarantine_category(transform, column):
+    return QUARANTINE_CATEGORY[transform].format(col=column.lower())
+
+
 def legacy_pair(table, column, derived_target, transform, on_error="quarantine"):
     """A non-reversible conversion: grade the raw string, derive the typed value."""
     raw = fld(table, column, f"legacy.{column.lower()}",
               note=f"raw source value, graded byte-exact; {derived_target} is derived from it")
     derived = {"source": column, "target": derived_target, "transform": transform,
                "on_error": on_error,
+               **({"quarantine_category": quarantine_category(transform, column)}
+                  if on_error == "quarantine" else {}),
                "verified_by": "unit transform assertions + quarantine counts "
                               "(the harness compares raw values, so it grades "
                               f"legacy.{column.lower()} instead)"}
@@ -329,6 +340,8 @@ def build():
                 "derived_fields": [
                     {"source": "CREATED_DT", "target": "created_at",
                      "transform": "parse_dd_mon_yy", "on_error": "quarantine",
+                     "quarantine_category": quarantine_category("parse_dd_mon_yy",
+                                                                "EAV_CREATED_DT"),
                      "verified_by": "unit transform assertions"}],
                 "rule": (
                     "An ARRAY keyed by EAV_ID, not a subdocument keyed by attr_name: 187 "
@@ -429,16 +442,26 @@ def build():
         "derived_fields": [
             code_label("STATUS_CD", "status", "INV_STATUS"),
             {"source": "INVOICE_DT", "target": "invoice_at", "transform": "parse_dd_mon_yy",
-             "on_error": "quarantine", "verified_by": "unit transform assertions"},
+             "on_error": "quarantine",
+             "quarantine_category": quarantine_category("parse_dd_mon_yy", "INVOICE_DT"),
+             "verified_by": "unit transform assertions"},
             {"source": "DUE_DT", "target": "due_at", "transform": "parse_dd_mon_yy",
-             "on_error": "quarantine", "verified_by": "unit transform assertions"},
+             "on_error": "quarantine",
+             "quarantine_category": quarantine_category("parse_dd_mon_yy", "DUE_DT"),
+             "verified_by": "unit transform assertions"},
         ],
         "embeds": [{
             "array_path": "lines", "child_table": "INVOICE_LINE",
             # Orphans are quarantined, not embedded, so they must be excluded here or Tier 1
             # would compare 150,000 child rows against 149,963 elements and fail by design.
+            # `orphan_where` is the complement: the loader runs it as its own extract so the
+            # 37 parentless lines are quarantined with their raw rows instead of being
+            # filtered out of the migration entirely.
             "child_where": "BATCH_NO = ${batch_no} AND INVOICE_ID IN "
                            "(SELECT INVOICE_ID FROM INVOICE_HEADER)",
+            "orphan_where": "BATCH_NO = ${batch_no} AND INVOICE_ID NOT IN "
+                            "(SELECT INVOICE_ID FROM INVOICE_HEADER)",
+            "orphan_category": "orphan_invoice_lines",
             "parent_key": ["INVOICE_ID"],
             "key": {"source": ["LINE_ID"], "target": "line_id"},
             "fields": [fld("INVOICE_LINE", "LINE_NO", "line_no"),
@@ -457,7 +480,9 @@ def build():
                 {"source": "POSTED_YN", "target": "posted", "transform": "yn_to_bool",
                  "verified_by": "unit transform assertions"},
                 {"source": "GL_ACCT_CSV", "target": "gl_accounts", "transform": "csv_to_array",
-                 "on_error": "quarantine", "verified_by": "unit transform assertions"},
+                 "on_error": "quarantine",
+                 "quarantine_category": quarantine_category("csv_to_array", "GL_ACCT_CSV"),
+                 "verified_by": "unit transform assertions"},
             ],
             "cardinality": f"sum(len(lines)) == {COUNTS['INVOICE_LINE']} - 37 == "
                            f"{COUNTS['INVOICE_LINE'] - 37} (37 orphans quarantined)",
@@ -483,7 +508,23 @@ def build():
         "derived_fields": [code_label("KIND_CD", "kind", "USAGE_KIND")],
         "expected_documents": COUNTS["USAGE_EVENTS"],
         "indexes": [{"keys": {"tenant_id": 1, "occurred_at": 1}}],
-        "validator": "$jsonSchema replacing TRG_USAGE_EVENTS_CHECK (units > 0)",
+        # TRG_USAGE_EVENTS_CHECK rejected the insert; a note in a spec would not, so the
+        # invariant is emitted as an executable validator the loader installs on the
+        # collection. Its second half -- kind_cd must exist in CODES(USAGE_KIND) -- is a
+        # cross-collection lookup no $jsonSchema can express, so the loader resolves it to
+        # an enum from CODES at load time.
+        "validator": {"$jsonSchema": {
+            "bsonType": "object",
+            "required": ["units", "kind_cd"],
+            "properties": {
+                "units": {"bsonType": "long", "minimum": 0, "exclusiveMinimum": True,
+                          "description": "units must be > 0 (ORA-20001)"},
+                "kind_cd": {"bsonType": "long",
+                            "description": "must be a CODES USAGE_KIND value (ORA-20002)"},
+            },
+        }},
+        "validator_enum_from_codes": {"kind_cd": "USAGE_KIND"},
+        "replaces": "TRG_USAGE_EVENTS_CHECK",
     })
     colls.append({
         "collection": "rating_periods", "unit": "usage_rating", "wave": 2,

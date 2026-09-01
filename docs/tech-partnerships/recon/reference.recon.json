@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "reference",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T03:55:11.256897+00:00",
+  "generated_at": "2026-09-01T04:06:33.512540+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -75,7 +75,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "load re-run twice against the already-loaded target (ReplaceOne upsert on natural _id); document counts stayed 32/69/3 and recon returned PASS on every run"
+    "evidence": "load re-run against the already-loaded target (ReplaceOne upsert on natural _id); document counts stayed 32/69/3 and recon returned PASS on every run"
   },
   "planted_anomaly_detections": {
     "expected_set": [],
@@ -125,12 +125,12 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "load re-run twice against the already-loaded target (ReplaceOne upsert on natural _id); document counts stayed 32/69/3 and recon returned PASS on every run"
+      "evidence": "load re-run against the already-loaded target (ReplaceOne upsert on natural _id); document counts stayed 32/69/3 and recon returned PASS on every run"
     },
     {
       "id": "values_recomputed_from_target",
       "verdict": "pass",
-      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'codes': 'full_diff', 'tenants': 'full_diff', 'plans': 'full_diff'}."
+      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'codes': 'full_diff/32', 'tenants': 'full_diff/69', 'plans': 'full_diff/3'}."
     },
     {
       "id": "unverified_paths_listed",

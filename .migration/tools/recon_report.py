@@ -16,7 +16,7 @@ Usage:
   recon_report.py --unit reference \
       --result .migration/recon/reference/result.json \
       --idempotency-evidence "second load + recon rerun, PASS, counts unchanged" \
-      --expected-anomaly orphan_invoice_lines=37 \
+      --load-report .migration/recon/reference/load.json \
       --unverified "derived field X (harness grades the raw column)"
 """
 from __future__ import annotations
@@ -59,12 +59,13 @@ def checks_from(result):
     return checks
 
 
-def self_check(unit, result, idempotency_evidence, unverified):
+def self_check(unit, result, idempotency_evidence, idempotency_result, unverified):
     """The `tp-pre-pr-self-check` checklist, answered with evidence and attached to the
     report as that skill requires. Items whose evidence comes from this run are derived
     rather than asserted, so the block cannot claim green for a run that was not green."""
-    graded = {c: s.get("mode") for t in result["tiers"]
-              for c, s in t["stats"].items()} if result["tiers"] else {}
+    graded = {c: f"{s['mode']}/{s['population']}" for t in result["tiers"]
+              for c, s in t["stats"].items()
+              if isinstance(s, dict) and "mode" in s}
     return [
         {"id": "null_attribution_cannot_fail_open",
          "verdict": "pass",
@@ -101,7 +102,11 @@ def self_check(unit, result, idempotency_evidence, unverified):
                      "(accepted at STOP A) and the unit contract; it was not chosen during "
                      "implementation."},
         {"id": "idempotency_proven_by_rerun",
-         "verdict": "pass", "evidence": idempotency_evidence},
+         # A rerun that changed the target disproves idempotency. Recording the failure and
+         # still calling the item green would make the checklist the one place the run looks
+         # clean, so the reported verdict is the rerun's own.
+         "verdict": "pass" if idempotency_result == "pass" else "fail",
+         "evidence": idempotency_evidence},
         {"id": "values_recomputed_from_target",
          "verdict": "pass",
          "evidence": "The harness opens its own connections to Oracle and Atlas and "
@@ -121,6 +126,22 @@ def self_check(unit, result, idempotency_evidence, unverified):
     ]
 
 
+def anomaly_sets(unit, load_report):
+    """Expected comes from the mapping, actual from what the load quarantined. Both are read
+    rather than supplied, so this report cannot claim an anomaly was surfaced by a run that
+    did not surface it -- the two sets are the same evidence the loader gates on."""
+    if load_report["unit"] != unit:
+        sys.exit(f"load report is for unit '{load_report['unit']}', not '{unit}'")
+    spec = json.loads((ROOT / ".migration" / "03_mapping_spec.json").read_text())
+    by_name = {c["collection"]: c for c in spec["collections"] if c.get("unit") == unit}
+    expected, actual = [], []
+    for summary in load_report["collections"]:
+        declared = (by_name[summary["collection"]].get("quarantine") or {}).get("expected", {})
+        expected += [f"{k}={v}" for k, v in declared.items()]
+        actual += [f"{k}={v}" for k, v in summary["anomalies"].items()]
+    return sorted(expected), sorted(actual)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--unit", required=True)
@@ -128,19 +149,15 @@ def main():
     ap.add_argument("--idempotency-evidence", required=True,
                     help="what was rerun and what stayed identical")
     ap.add_argument("--idempotency-result", default="pass", choices=["pass", "fail"])
-    ap.add_argument("--expected-anomaly", action="append", default=[], metavar="NAME=COUNT",
-                    help="known source-data anomaly this unit must surface, e.g. "
-                         "orphan_invoice_lines=37")
-    ap.add_argument("--actual-anomaly", action="append", default=[], metavar="NAME=COUNT",
-                    help="what the load actually quarantined; defaults to the expected set "
-                         "only when the unit has no anomalies at all")
+    ap.add_argument("--load-report", required=True, type=pathlib.Path,
+                    help="the loader's --report-out for this unit; the expected and actual "
+                         "anomaly sets are read from it and the mapping, never typed in")
     ap.add_argument("--unverified", action="append", default=[],
                     help="a path this unit does not prove; repeatable")
     args = ap.parse_args()
 
     result = json.loads(args.result.read_text())
-    expected = sorted(args.expected_anomaly)
-    actual = sorted(args.actual_anomaly)
+    expected, actual = anomaly_sets(args.unit, json.loads(args.load_report.read_text()))
     report = {
         "kind": "recon-report",
         "unit": args.unit,
@@ -161,7 +178,7 @@ def main():
         },
         "unverified_paths": args.unverified,
         "pre_pr_self_check": self_check(args.unit, result, args.idempotency_evidence,
-                                        args.unverified),
+                                        args.idempotency_result, args.unverified),
     }
 
     failed = [c["id"] for c in report["checks"] if c["result"] == "fail"] \

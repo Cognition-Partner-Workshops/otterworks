@@ -399,6 +399,7 @@
           "target": "signup_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_signup_dt",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.signup_dt instead)"
         },
         {
@@ -406,6 +407,7 @@
           "target": "last_activity_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_last_activity_dt",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.last_activity_dt instead)"
         },
         {
@@ -413,6 +415,7 @@
           "target": "promo_codes",
           "transform": "csv_to_array",
           "on_error": "quarantine",
+          "quarantine_category": "malformed_promo_codes_csv",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.promo_codes_csv instead)"
         },
         {
@@ -420,6 +423,7 @@
           "target": "related_acct_ids",
           "transform": "csv_to_array",
           "on_error": "quarantine",
+          "quarantine_category": "malformed_related_acct_ids",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.related_acct_ids instead)"
         },
         {
@@ -965,6 +969,7 @@
               "target": "created_at",
               "transform": "parse_dd_mon_yy",
               "on_error": "quarantine",
+              "quarantine_category": "unparseable_eav_created_dt",
               "verified_by": "unit transform assertions"
             }
           ],

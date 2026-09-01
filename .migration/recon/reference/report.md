@@ -4,8 +4,8 @@
 - Mode: `live`
 - Mapping version: `m1`
 - Tolerance version: `v1`
-- Seed: `20260901`
-- Generated: 2026-09-01T03:55:11.256897+00:00
+- Seed: `20260901` | Params: `{'batch_no': '85559852'}`
+- Generated: 2026-09-01T04:06:33.512540+00:00
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|

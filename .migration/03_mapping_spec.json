@@ -621,6 +621,7 @@
           "target": "signup_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_signup_dt",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.signup_dt instead)"
         },
         {
@@ -628,6 +629,7 @@
           "target": "last_activity_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_last_activity_dt",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.last_activity_dt instead)"
         },
         {
@@ -635,6 +637,7 @@
           "target": "promo_codes",
           "transform": "csv_to_array",
           "on_error": "quarantine",
+          "quarantine_category": "malformed_promo_codes_csv",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.promo_codes_csv instead)"
         },
         {
@@ -642,6 +645,7 @@
           "target": "related_acct_ids",
           "transform": "csv_to_array",
           "on_error": "quarantine",
+          "quarantine_category": "malformed_related_acct_ids",
           "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.related_acct_ids instead)"
         },
         {
@@ -1187,6 +1191,7 @@
               "target": "created_at",
               "transform": "parse_dd_mon_yy",
               "on_error": "quarantine",
+              "quarantine_category": "unparseable_eav_created_dt",
               "verified_by": "unit transform assertions"
             }
           ],
@@ -2446,6 +2451,7 @@
           "target": "invoice_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_invoice_dt",
           "verified_by": "unit transform assertions"
         },
         {
@@ -2453,6 +2459,7 @@
           "target": "due_at",
           "transform": "parse_dd_mon_yy",
           "on_error": "quarantine",
+          "quarantine_category": "unparseable_due_dt",
           "verified_by": "unit transform assertions"
         }
       ],
@@ -2461,6 +2468,8 @@
           "array_path": "lines",
           "child_table": "INVOICE_LINE",
           "child_where": "BATCH_NO = ${batch_no} AND INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+          "orphan_where": "BATCH_NO = ${batch_no} AND INVOICE_ID NOT IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+          "orphan_category": "orphan_invoice_lines",
           "parent_key": [
             "INVOICE_ID"
           ],
@@ -2603,6 +2612,7 @@
               "target": "gl_accounts",
               "transform": "csv_to_array",
               "on_error": "quarantine",
+              "quarantine_category": "malformed_gl_acct_csv",
               "verified_by": "unit transform assertions"
             }
           ],
@@ -2738,7 +2748,31 @@
           }
         }
       ],
-      "validator": "$jsonSchema replacing TRG_USAGE_EVENTS_CHECK (units > 0)"
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": [
+            "units",
+            "kind_cd"
+          ],
+          "properties": {
+            "units": {
+              "bsonType": "long",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "description": "units must be > 0 (ORA-20001)"
+            },
+            "kind_cd": {
+              "bsonType": "long",
+              "description": "must be a CODES USAGE_KIND value (ORA-20002)"
+            }
+          }
+        }
+      },
+      "validator_enum_from_codes": {
+        "kind_cd": "USAGE_KIND"
+      },
+      "replaces": "TRG_USAGE_EVENTS_CHECK"
     },
     {
       "collection": "rating_periods",

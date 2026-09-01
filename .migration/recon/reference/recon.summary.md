@@ -1,8 +1,8 @@
 # Recon summary: `reference` - **PASS**
 
 - Mode: `live`
-- Mapping `m1` / tolerances `v1` / seed `20260901`
-- Generated: 2026-09-01T03:55:11.256897+00:00
+- Mapping `m1` / tolerances `v1` / seed `20260901` / params `{'batch_no': '85559852'}`
+- Generated: 2026-09-01T04:06:33.512540+00:00
 
 | Tier | Checks | Result |
 |---|---|---|

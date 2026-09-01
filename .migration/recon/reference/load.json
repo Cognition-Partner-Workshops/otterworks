@@ -1,0 +1,38 @@
+{
+  "unit": "reference",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "codes",
+      "documents": 32,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "expected_documents": 32,
+      "matches_census": true
+    },
+    {
+      "collection": "tenants",
+      "documents": 69,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "expected_documents": 69,
+      "matches_census": true
+    },
+    {
+      "collection": "plans",
+      "documents": 3,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "expected_documents": 3,
+      "matches_census": true
+    }
+  ]
+}

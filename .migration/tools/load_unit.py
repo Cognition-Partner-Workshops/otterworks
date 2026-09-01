@@ -23,7 +23,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
+import decimal
 import json
 import os
 import pathlib
@@ -36,6 +38,12 @@ from pymongo import MongoClient, ReplaceOne
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / "03_mapping_spec.json"
+CONVENTIONS_PATH = ROOT / "01_conventions.md"
+
+# Run parameters are interpolated into SQL text (an Oracle bind cannot appear in every
+# position a scope predicate needs), so the value space is restricted to what a scope
+# parameter legitimately is. Anything else would be a way to widen the extract.
+PARAM_VALUE = re.compile(r"^[A-Za-z0-9_.:-]+$")
 
 # Exact numerics all the way through: without this oracledb hands back a float for
 # NUMBER(14,2) and the Decimal128 written to Mongo would carry the float's artifacts.
@@ -96,7 +104,7 @@ TRANSFORMS = {"parse_dd_mon_yy": parse_dd_mon_yy, "csv_to_array": csv_to_array,
 
 
 # --------------------------------------------------------------------------- bson coercion
-def to_bson(value, bson_type):
+def to_bson(value, bson_type, rules=()):
     if value is None:
         return None
     if bson_type == "decimal128":
@@ -104,10 +112,28 @@ def to_bson(value, bson_type):
     if bson_type == "long":
         return int(value)
     if bson_type == "string":
-        # Oracle CHAR is blank-padded; tolerance v1 strips the padding and treats the
-        # resulting empty string as the absent value Oracle already considers it to be.
-        s = value.rstrip(" ") if isinstance(value, str) else value
-        return s or None
+        # Blank padding is stripped only where the mapping says so -- that rule is attached
+        # to CHAR, which Oracle pads, and recon canonicalizes both sides the same way. A
+        # VARCHAR2 stays byte-exact: its trailing spaces are data the source chose to store,
+        # and stripping them turns ' - - ' into a value that no longer matches the source.
+        if isinstance(value, str) and "rstrip_spaces" in rules:
+            return value.rstrip(" ") or None
+        return value
+    return value
+
+
+def key_to_bson(value, what):
+    """Coerce an identifier to the BSON type tolerance v1 gives it. Oracle hands back every
+    NUMBER as a Decimal, and a Decimal is not BSON-encodable, so an unconverted key aborts
+    the write rather than storing a wrong type -- but a key with a fractional part is a
+    modelling error, not something to round into an _id."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, decimal.Decimal):
+        if value != value.to_integral_value():
+            sys.exit(f"{what} is {value}, which is not integer-safe; a key must not carry a "
+                     "fractional part")
+        return int(value)
     return value
 
 
@@ -124,6 +150,18 @@ def set_path(doc, path, value):
 
 
 # --------------------------------------------------------------------------- source reads
+def designated_database():
+    """The one database this run may write to, read from 01_conventions.md so the guard and
+    the record cannot drift. Anything else -- including the two existing demo databases on
+    the same cluster -- is out of bounds for this loader."""
+    m = re.search(r"^\|\s*Migration database\s*\|\s*`([^`]+)`", CONVENTIONS_PATH.read_text(),
+                  re.MULTILINE)
+    if not m:
+        sys.exit(f"no 'Migration database' row in {CONVENTIONS_PATH}; refusing to guess a "
+                 "write target")
+    return m.group(1)
+
+
 def substitute(text, params):
     if text is None:
         return None
@@ -149,7 +187,8 @@ def source_columns(block):
 
 def build_element(row, embed, code_desc, quarantine):
     el = {}
-    set_path(el, embed["key"]["target"], row[embed["key"]["source"][0]])
+    src = embed["key"]["source"][0]
+    set_path(el, embed["key"]["target"], key_to_bson(row[src], f"{embed['child_table']}.{src}"))
     apply_block(row, embed, el, code_desc, quarantine)
     return el
 
@@ -159,7 +198,7 @@ def apply_block(row, block, doc, code_desc, quarantine):
     reason and leaves the derived field absent; the raw value still lands, so the record is
     never lost and recon still grades the source column."""
     for f in block.get("fields", []):
-        set_path(doc, f["target"], to_bson(row[f["source"]], f["bson_type"]))
+        set_path(doc, f["target"], to_bson(row[f["source"]], f["bson_type"], f.get("rules", ())))
     for d in block.get("derived_fields", []):
         if d["transform"] == "lookup_code_desc":
             code = row.get(d["source"])
@@ -178,10 +217,50 @@ def apply_block(row, block, doc, code_desc, quarantine):
             set_path(doc, d["target"], TRANSFORMS[d["transform"]](row[d["source"]]))
         except TransformError as exc:
             quarantine.append({"source_column": d["source"], "raw_value": row[d["source"]],
-                               "target_field": d["target"], "reason": str(exc)})
+                               "target_field": d["target"], "reason": str(exc),
+                               "category": d["quarantine_category"]})
 
 
 # --------------------------------------------------------------------------- load
+def anomaly_mismatches(coll_spec, actual):
+    """The mapping declares how many of each known source anomaly this unit must surface.
+    A load that quarantines fewer has silently dropped or repaired something; one that
+    quarantines more has found an anomaly nobody signed off on. Both stop the unit here,
+    before recon, rather than being retyped by hand into the recon report later."""
+    expected = (coll_spec.get("quarantine") or {}).get("expected", {})
+    out = []
+    for category, want in expected.items():
+        got = actual.get(category, 0)
+        if got != want:
+            out.append(f"{coll_spec['collection']}.{category}: expected {want}, got {got}")
+    for category, got in actual.items():
+        if category not in expected:
+            out.append(f"{coll_spec['collection']}.{category}: {got} quarantined but the "
+                       "mapping declares no such anomaly")
+    return out
+
+
+def install_validator(db, coll_spec, code_desc):
+    """Install the collection's declared $jsonSchema before its documents are written. The
+    Oracle trigger these replace rejected the offending INSERT, so the target has to reject
+    it too: a validator installed after the load would leave the invariant unenforced for
+    exactly the rows the migration itself wrote."""
+    validator = coll_spec.get("validator")
+    if not validator:
+        return
+    validator = copy.deepcopy(validator)
+    # A trigger could query CODES; $jsonSchema cannot cross collections, so the reference
+    # set is resolved to an enum here, from the same source rows the labels come from.
+    for field, code_type in (coll_spec.get("validator_enum_from_codes") or {}).items():
+        allowed = sorted(int(v) for (t, v) in code_desc if t == code_type)
+        if not allowed:
+            sys.exit(f"{coll_spec['collection']}.{field}: CODES has no '{code_type}' rows, so "
+                     "the validator would accept every value the trigger rejected")
+        validator["$jsonSchema"]["properties"][field]["enum"] = allowed
+    db.command("collMod", coll_spec["collection"], validator=validator,
+               validationLevel="strict", validationAction="error")
+
+
 def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     name = coll_spec["collection"]
     root_where = substitute(coll_spec.get("root_where"), params)
@@ -191,9 +270,15 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
 
     rows = select(cur, coll_spec["root_table"], key_cols + source_columns(coll_spec), root_where)
 
+    # `parent_key` names columns on the CHILD table whose values join to the root key --
+    # the two sides are named differently (ENTITY_ATTR_VALUE.ENTITY_ID -> CUSTOMER_MASTER
+    # .CUST_ID), so the child is grouped by parent_key and looked up by the root key.
     # One query per embed, drained before the next: the source-load cap is 1.
     children: dict[str, dict[tuple, list]] = {}
     for e in coll_spec.get("embeds", []):
+        if len(e["parent_key"]) != len(key_cols):
+            sys.exit(f"{name}.{e['array_path']}: parent_key {e['parent_key']} does not have "
+                     f"the arity of the root key {key_cols}; the embed cannot be joined")
         grouped: dict[tuple, list] = {}
         for r in select(cur, e["child_table"],
                         e["parent_key"] + e["key"]["source"] + source_columns(e),
@@ -206,13 +291,13 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
         if compose:
             _id = compose["sep"].join(str(row[c]) for c in compose["from"])
         else:
-            _id = to_bson(row[key_cols[0]], "string" if isinstance(row[key_cols[0]], str) else "")
+            _id = key_to_bson(row[key_cols[0]], f"{coll_spec['root_table']}.{key_cols[0]}")
         q: list[dict] = []
         doc = {}
         apply_block(row, coll_spec, doc, code_desc, q)
         doc[key["target"]] = _id
         for e in coll_spec.get("embeds", []):
-            kids = children[e["array_path"]].get(tuple(row[c] for c in e["parent_key"]), [])
+            kids = children[e["array_path"]].get(tuple(row[c] for c in key_cols), [])
             elems = [build_element(k, e, code_desc, q) for k in kids]
             if elems:
                 doc[e["array_path"]] = elems
@@ -221,21 +306,51 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                                 "collection": name, "document_id": _id, **entry})
         docs.append(doc)
 
+    # Orphans are found two ways, and both are needed. An embed's `child_where` may itself
+    # exclude parentless rows (it has to: the graded array must contain exactly the children
+    # the harness counts on the source side), so a separate `orphan_where` pass goes back for
+    # the rows that predicate hides -- otherwise the anomaly would simply never be extracted
+    # and would look like clean data. The set difference below still catches anything the
+    # predicate let through.
     orphans = []
+    parents = {tuple(row[c] for c in key_cols) for row in rows}
     for e in coll_spec.get("embeds", []):
-        parents = {tuple(row[c] for c in e["parent_key"]) for row in rows}
+        def orphan_docs(kids, pk, e=e):
+            if not e.get("orphan_category"):
+                sys.exit(f"{name}.{e['array_path']}: parentless {e['child_table']} rows exist "
+                         "but the mapping declares no orphan_category for them; the anomaly "
+                         "has to be named and counted before it can be quarantined")
+            return [{"_id": f"{name}:orphan:{e['child_table']}:{k[e['key']['source'][0]]}",
+                     "collection": name, "category": e["orphan_category"],
+                     "reason": f"orphan child row: no root row for parent key {pk}",
+                     "child_table": e["child_table"],
+                     "raw_row": {kk: str(vv) for kk, vv in k.items()}} for k in kids]
+
         for pk, kids in children[e["array_path"]].items():
             if pk not in parents:
-                orphans += [{"_id": f"{name}:orphan:{e['child_table']}:{k[e['key']['source'][0]]}",
-                             "collection": name, "reason": "orphan child row: no root row for "
-                             f"parent key {pk}", "child_table": e["child_table"],
-                             "raw_row": {kk: str(vv) for kk, vv in k.items()}} for k in kids]
+                orphans += orphan_docs(kids, pk)
+        if e.get("orphan_where"):
+            hidden: dict[tuple, list] = {}
+            for r in select(cur, e["child_table"],
+                            e["parent_key"] + e["key"]["source"] + source_columns(e),
+                            substitute(e["orphan_where"], params)):
+                hidden.setdefault(tuple(r[k] for k in e["parent_key"]), []).append(r)
+            for pk, kids in hidden.items():
+                if pk in parents:
+                    sys.exit(f"{name}.{e['array_path']}: orphan_where returned rows whose "
+                             f"parent {pk} does exist; the predicate does not describe "
+                             "orphans and the load would quarantine live data")
+                orphans += orphan_docs(kids, pk)
 
+    anomalies: dict[str, int] = {}
+    for entry in quarantined + orphans:
+        anomalies[entry["category"]] = anomalies.get(entry["category"], 0) + 1
     summary = {"collection": name, "documents": len(docs),
                "embedded": {e["array_path"]: sum(len(d.get(e["array_path"], []))
                                                  for d in docs)
                             for e in coll_spec.get("embeds", [])},
-               "quarantined": len(quarantined) + len(orphans)}
+               "quarantined": len(quarantined) + len(orphans),
+               "anomalies": anomalies}
     if dry_run:
         return summary, docs[:1]
 
@@ -243,6 +358,7 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     # real zero rather than an absent collection it could read as "not loaded yet".
     if name not in db.list_collection_names():
         db.create_collection(name)
+    install_validator(db, coll_spec, code_desc)
     if docs:
         db[name].bulk_write([ReplaceOne({"_id": d["_id"]}, d, upsert=True) for d in docs],
                             ordered=False)
@@ -267,10 +383,24 @@ def main():
     ap.add_argument("--source-dsn-secret", default="OW_ORACLE_BILLING_DSN")
     ap.add_argument("--target-uri-secret", default="MONGODB_ATLAS_URI")
     ap.add_argument("--param", action="append", default=[], metavar="NAME=VALUE")
+    ap.add_argument("--report-out", type=pathlib.Path,
+                    help="write the load report here so the recon report can derive the "
+                         "anomaly counts from the load instead of restating them by hand")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     params = dict(p.split("=", 1) for p in args.param)
+    for k, v in params.items():
+        if not PARAM_VALUE.match(v):
+            sys.exit(f"--param {k}={v!r} is not a scope value; run parameters are "
+                     f"interpolated into SQL and must match {PARAM_VALUE.pattern}")
+
+    designated = designated_database()
+    if args.target_db != designated:
+        sys.exit(f"--target-db {args.target_db!r} is not the designated migration database "
+                 f"{designated!r} recorded in {CONVENTIONS_PATH.name}; refusing to write "
+                 "outside it")
+
     spec = json.loads(SPEC_PATH.read_text())
     colls = [c for c in spec["collections"] if c.get("unit") == args.unit]
     if not colls:
@@ -281,7 +411,9 @@ def main():
         sys.exit(f"secret '{args.source_dsn_secret}' not in environment; secrets by name only")
     user, password, conn_str = dsn.split("/", 2)
 
-    client = None if args.dry_run else MongoClient(os.environ["MONGODB_ATLAS_URI"])
+    if not args.dry_run and args.target_uri_secret not in os.environ:
+        sys.exit(f"secret '{args.target_uri_secret}' not in environment; secrets by name only")
+    client = None if args.dry_run else MongoClient(os.environ[args.target_uri_secret])
     db = None if args.dry_run else client[args.target_db]
 
     with (oracledb.connect(user=user, password=password, dsn=conn_str) as con,
@@ -304,6 +436,14 @@ def main():
                 print(json.dumps(sample[0], indent=2, default=str))
     if not all(c["matches_census"] for c in report["collections"]):
         sys.exit("loaded document count does not match the census; not proceeding to recon")
+    if args.report_out:
+        args.report_out.parent.mkdir(parents=True, exist_ok=True)
+        args.report_out.write_text(json.dumps(report, indent=2) + "\n")
+    bad = [m for c, s in zip(colls, report["collections"], strict=True)
+           for m in anomaly_mismatches(c, s["anomalies"])]
+    if bad:
+        sys.exit("quarantine counts do not match the mapping's declared anomalies, so the "
+                 "load is not the migration the contract describes: " + "; ".join(bad))
 
 
 if __name__ == "__main__":
