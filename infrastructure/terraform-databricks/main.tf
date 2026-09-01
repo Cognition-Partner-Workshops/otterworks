@@ -1,24 +1,42 @@
 resource "databricks_catalog" "ow_tp" {
   name    = "ow_tp"
   comment = "OtterWorks tech-partnerships CUSTBILL migration objects"
+
+  # The catalog is shared with sibling showcases and adopted via import.sh;
+  # metastore-assigned storage and account defaults must never force a replace.
+  lifecycle {
+    ignore_changes = [storage_root, storage_location, properties, comment, owner, isolation_mode, enable_predictive_optimization]
+  }
 }
 
 resource "databricks_schema" "ow_tp_bronze" {
   catalog_name = databricks_catalog.ow_tp.name
   name         = "bronze"
   comment      = "Raw landed CUSTBILL records"
+
+  lifecycle {
+    ignore_changes = [comment, owner, properties]
+  }
 }
 
 resource "databricks_schema" "ow_tp_silver" {
   catalog_name = databricks_catalog.ow_tp.name
   name         = "silver"
   comment      = "Parsed and quarantined CUSTBILL records"
+
+  lifecycle {
+    ignore_changes = [comment, owner, properties]
+  }
 }
 
 resource "databricks_schema" "ow_tp_gold" {
   catalog_name = databricks_catalog.ow_tp.name
   name         = "gold"
   comment      = "Finance-facing CUSTBILL aggregates"
+
+  lifecycle {
+    ignore_changes = [comment, owner, properties]
+  }
 }
 
 resource "databricks_volume" "ow_tp_bronze_landing" {
@@ -27,6 +45,10 @@ resource "databricks_volume" "ow_tp_bronze_landing" {
   name         = "landing"
   volume_type  = "MANAGED"
   comment      = "Landing files and finance exports for the CUSTBILL workflow"
+
+  lifecycle {
+    ignore_changes = [comment, owner]
+  }
 }
 
 resource "databricks_secret_scope" "ow_tp" {

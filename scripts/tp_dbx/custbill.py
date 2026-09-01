@@ -205,7 +205,7 @@ def cmd_seed_fixture(dbx: Databricks, args: argparse.Namespace) -> int:
         values = [
             f"('{esc(args.ns)}','{esc(row['source_file'])}',{row['line_no']},"
             f"'{esc(row['cust_id'])}','{esc(row['cust_name'])}',DATE '{row['bill_date']}',"
-            f"DECIMAL '{row['bill_amt']}','{esc(row['currency'])}',"
+            f"CAST('{row['bill_amt']}' AS DECIMAL(12,2)),'{esc(row['currency'])}',"
             f"'{esc(row['rec_type'])}',current_timestamp())"
             for row in rows
         ]
