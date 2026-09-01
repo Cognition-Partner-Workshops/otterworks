@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "rules": [
+    {"rule": "decimal_round", "applies_to": "NUMBER->Decimal128", "params": {"mode": "half_even"}},
+    {"rule": "datetime_utc_truncate_ms", "applies_to": "DATE,TIMESTAMP*,timestamptz,iso8601->date", "params": {"precision": "ms"}},
+    {"rule": "rstrip_spaces", "applies_to": "CHAR->string", "params": {}},
+    {"rule": "empty_string_is_null", "applies_to": "VARCHAR2,NVARCHAR2,CHAR->string", "params": {"target_policy": "explicit_null"}},
+    {"rule": "null_missing_equiv", "applies_to": "*", "params": {"policy": "equivalent"}},
+    {"rule": "uuid_normalize", "applies_to": "uuid->string", "params": {"case": "lower"}},
+    {"rule": "collation_casefold", "applies_to": "string", "params": {"enabled_if": "NLS case-insensitive comparisons found in census", "enabled": false, "evidence": "NLS_COMP=BINARY, NLS_SORT=BINARY"}}
+  ]
+}

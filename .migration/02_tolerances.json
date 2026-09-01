@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "approved_at": "STOP A (05_decisions.md #3)",
+  "full_diff_row_threshold": 100000,
+  "sample_size": 1000,
+  "numeric_abs_tol": 0.0,
+  "aggregate_rel_tol": 0.0,
+  "source_concurrency": 1,
+  "rerun_cap": 3,
+  "green_cycles_before_stop_c": 3,
+  "quarantine_ceiling_pct": 0.5
+}

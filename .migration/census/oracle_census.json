@@ -1,0 +1,6115 @@
+{
+ "tables": [
+  {
+   "owner": "OW_BILLING",
+   "table_name": "RATING_PERIODS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "INVOICES",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "CREDIT_NOTES",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "CODES",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "TENANTS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "PLANS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "SUBSCRIPTIONS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "USAGE_EVENTS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "DUNNING_ATTEMPTS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "NOTIFICATIONS",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "INVOICE_LINES",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "FIXTURE_META",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "CUSTOMER_MASTER",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "ENTITY_ATTR_VALUE",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "INVOICE_HEADER",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "INVOICE_LINE",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "BILLING_AUDIT_LOG",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "num_rows": null
+  },
+  {
+   "owner": "OW_BILLING",
+   "table_name": "RATING_RESULTS",
+   "num_rows": null
+  }
+ ],
+ "columns": [
+  {
+   "table_name": "BILLING_AUDIT_LOG",
+   "column_name": "LOG_ID",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 1
+  },
+  {
+   "table_name": "BILLING_AUDIT_LOG",
+   "column_name": "LOGGED_AT",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 2
+  },
+  {
+   "table_name": "BILLING_AUDIT_LOG",
+   "column_name": "MODULE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 3
+  },
+  {
+   "table_name": "BILLING_AUDIT_LOG",
+   "column_name": "MESSAGE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4000,
+   "column_id": 4
+  },
+  {
+   "table_name": "CODES",
+   "column_name": "CODE_TYPE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 1
+  },
+  {
+   "table_name": "CODES",
+   "column_name": "CODE_VAL",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 2
+  },
+  {
+   "table_name": "CODES",
+   "column_name": "CODE_DESC",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 80,
+   "column_id": 3
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "column_name": "ISSUED_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 3
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "column_name": "AMOUNT",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "column_name": "REMAINING_AMOUNT",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_SEQ_NO",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 2
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 4
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 5
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_NAME_UPPER",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 6
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LEGAL_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 7
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "DBA_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 8
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 9
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 10
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 11
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 12
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_5",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 13
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ADDR_LINE_6",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 14
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CITY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 80,
+   "column_id": 15
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "STATE_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 16
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ZIP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 12,
+   "column_id": 17
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ZIP4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 6,
+   "column_id": 18
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "COUNTRY_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 19
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 20
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 21
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 22
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 23
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_5",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 24
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ADDR_LINE_6",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 25
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_CITY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 80,
+   "column_id": 26
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_STATE_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 27
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAIL_ZIP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 12,
+   "column_id": 28
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 29
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 30
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 31
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 32
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE1_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 33
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE2_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 34
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE3_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 35
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PHONE4_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 36
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FAX",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 37
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "EMAIL_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 38
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "EMAIL_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 39
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "EMAIL_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 40
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "SIGNUP_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 41
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LAST_ACTIVITY_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 42
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LAST_INVOICE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 43
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LAST_PAYMENT_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 44
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "TERMINATE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 45
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 46
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "SUB_STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 47
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 48
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "SEGMENT_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 49
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "REGION_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 50
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "TERRITORY_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 51
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CHANNEL_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 52
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "RATE_CLASS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 53
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "TAX_EXEMPT_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 54
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CREDIT_HOLD_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 55
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "DUNNING_EXEMPT_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 56
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "VIP_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 57
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUR_BAL_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 58
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PAST_DUE_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 59
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "YTD_BILLED_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 60
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LTD_BILLED_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 61
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "YTD_PAID_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 62
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CREDIT_LIMIT_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 63
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "RELATED_ACCT_IDS",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 2000,
+   "column_id": 64
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CHILD_ACCT_IDS",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 2000,
+   "column_id": 65
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "PROMO_CODES_CSV",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1000,
+   "column_id": 66
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CONTACT_NOTES",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4000,
+   "column_id": 67
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "LEGACY_SYS_KEY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 50,
+   "column_id": 68
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "MAINFRAME_ACCT_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 69
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CONVERSION_BATCH_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 70
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_01",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 71
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_02",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 72
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_03",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 73
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_04",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 74
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_05",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 75
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_06",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 76
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_07",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 77
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_08",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 78
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_09",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 79
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_10",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 80
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_11",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 81
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_12",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 82
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_13",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 83
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_14",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 84
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_15",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 85
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_16",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 86
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_17",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 87
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_18",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 88
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_19",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 89
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "FLAG_20",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 90
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_01",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 91
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_02",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 92
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_03",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 93
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_04",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 94
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_05",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 95
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_06",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 96
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_07",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 97
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_08",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 98
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_09",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 99
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_10",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 100
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_11",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 101
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_12",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 102
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_13",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 103
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_14",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 104
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_15",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 105
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_16",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 106
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_17",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 107
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_18",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 108
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_19",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 109
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_20",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 110
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_21",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 111
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_22",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 112
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_23",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 113
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_24",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 114
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_25",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 115
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_26",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 116
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_27",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 117
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_28",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 118
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_29",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 119
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_30",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 120
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_31",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 121
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_32",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 122
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_33",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 123
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_34",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 124
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_35",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 125
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_36",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 126
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_37",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 127
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_38",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 128
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_39",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 129
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_40",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 130
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_01",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 131
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_02",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 132
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_03",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 133
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_04",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 134
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_05",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 135
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_06",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 136
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_07",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 137
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_08",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 138
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_09",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 139
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_AMT_10",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 140
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_01",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 141
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_02",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 142
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_03",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 143
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_04",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 144
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_05",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 145
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_06",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 146
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_07",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 147
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_08",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 148
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_09",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 149
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UDF_DT_10",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 150
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CREATED_BY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 151
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CREATED_DT",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 152
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UPDATED_BY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 153
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "UPDATED_DT",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 154
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "ROW_VERSION_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 155
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "HIST_ID",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 1
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "HIST_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 2
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "HIST_OP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 3,
+   "column_id": 3
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 4
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_SEQ_NO",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 6
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 7
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 8
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_NAME_UPPER",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 9
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LEGAL_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 10
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "DBA_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 11
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 12
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 13
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 14
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 15
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_5",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 16
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ADDR_LINE_6",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 17
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CITY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 80,
+   "column_id": 18
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "STATE_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 19
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ZIP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 12,
+   "column_id": 20
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ZIP4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 6,
+   "column_id": 21
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "COUNTRY_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 22
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 23
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 24
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 25
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 26
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_5",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 27
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ADDR_LINE_6",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 120,
+   "column_id": 28
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_CITY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 80,
+   "column_id": 29
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_STATE_CD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4,
+   "column_id": 30
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAIL_ZIP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 12,
+   "column_id": 31
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 32
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 33
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 34
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE4",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 35
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE1_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 36
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE2_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 37
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE3_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 38
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PHONE4_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 39
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FAX",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 25,
+   "column_id": 40
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "EMAIL_1",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 41
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "EMAIL_2",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 42
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "EMAIL_3",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 43
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "SIGNUP_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 44
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LAST_ACTIVITY_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 45
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LAST_INVOICE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 46
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LAST_PAYMENT_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 47
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "TERMINATE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 48
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 49
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "SUB_STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 50
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUST_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 51
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "SEGMENT_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 52
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "REGION_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 53
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "TERRITORY_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 54
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CHANNEL_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 55
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "RATE_CLASS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 56
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "TAX_EXEMPT_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 57
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CREDIT_HOLD_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 58
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "DUNNING_EXEMPT_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 59
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "VIP_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 60
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CUR_BAL_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 61
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PAST_DUE_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 62
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "YTD_BILLED_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 63
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LTD_BILLED_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 64
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "YTD_PAID_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 65
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CREDIT_LIMIT_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 66
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "RELATED_ACCT_IDS",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 2000,
+   "column_id": 67
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CHILD_ACCT_IDS",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 2000,
+   "column_id": 68
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "PROMO_CODES_CSV",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1000,
+   "column_id": 69
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CONTACT_NOTES",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4000,
+   "column_id": 70
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "LEGACY_SYS_KEY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 50,
+   "column_id": 71
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "MAINFRAME_ACCT_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 72
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CONVERSION_BATCH_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 73
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_01",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 74
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_02",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 75
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_03",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 76
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_04",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 77
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_05",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 78
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_06",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 79
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_07",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 80
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_08",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 81
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_09",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 82
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_10",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 83
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_11",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 84
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_12",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 85
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_13",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 86
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_14",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 87
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_15",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 88
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_16",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 89
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_17",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 90
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_18",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 91
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_19",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 92
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "FLAG_20",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 93
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_01",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 94
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_02",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 95
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_03",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 96
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_04",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 97
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_05",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 98
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_06",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 99
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_07",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 100
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_08",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 101
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_09",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 102
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_10",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 103
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_11",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 104
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_12",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 105
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_13",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 106
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_14",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 107
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_15",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 108
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_16",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 109
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_17",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 110
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_18",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 111
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_19",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 112
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_20",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 113
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_21",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 114
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_22",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 115
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_23",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 116
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_24",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 117
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_25",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 118
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_26",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 119
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_27",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 120
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_28",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 121
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_29",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 122
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_30",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 123
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_31",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 124
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_32",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 125
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_33",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 126
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_34",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 127
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_35",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 128
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_36",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 129
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_37",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 130
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_38",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 131
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_39",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 132
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_40",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 133
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_01",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 134
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_02",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 135
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_03",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 136
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_04",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 137
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_05",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 138
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_06",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 139
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_07",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 140
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_08",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 141
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_09",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 142
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_AMT_10",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 143
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_01",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 144
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_02",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 145
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_03",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 146
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_04",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 147
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_05",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 148
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_06",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 149
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_07",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 150
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_08",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 151
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_09",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 152
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UDF_DT_10",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 153
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CREATED_BY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 154
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "CREATED_DT",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 155
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UPDATED_BY",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 156
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "UPDATED_DT",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 157
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "ROW_VERSION_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 158
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "INVOICE_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "ATTEMPT_NO",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "SCHEDULED_FOR",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 5
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "EAV_ID",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 1
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "ENTITY_TYPE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 2
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "ENTITY_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "ATTR_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 100,
+   "column_id": 4
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "ATTR_VALUE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 4000,
+   "column_id": 5
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "ATTR_TYPE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 10,
+   "column_id": 6
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "CREATED_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 7
+  },
+  {
+   "table_name": "FIXTURE_META",
+   "column_name": "INITIALIZED_AT",
+   "data_type": "TIMESTAMP(6)",
+   "data_precision": null,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 11,
+   "column_id": 1
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "PERIOD_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "ISSUED_AT",
+   "data_type": "TIMESTAMP(6)",
+   "data_precision": null,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 11,
+   "column_id": 4
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "SUBTOTAL",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "TAX",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "TOTAL",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 7
+  },
+  {
+   "table_name": "INVOICES",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 8
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "INVOICE_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "INVOICE_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 2
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "CUST_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 4
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "INVOICE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 5
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "DUE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 6
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 7
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "TOTAL_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 8
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "column_name": "BATCH_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 9
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "LINE_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "INVOICE_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 30,
+   "column_id": 2
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "INVOICE_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "CUST_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 4
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "CUST_NO",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 5
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "CUST_NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 6
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 7
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "LINE_NO",
+   "data_type": "NUMBER",
+   "data_precision": 6,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 8
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "LINE_TYPE_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 9
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "ITEM_DESC",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 400,
+   "column_id": 10
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "QTY",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 3,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 11
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "UNIT_PRICE",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 4,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 12
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "AMOUNT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 13
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "TAX_AMT",
+   "data_type": "NUMBER",
+   "data_precision": 14,
+   "data_scale": 2,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 14
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "INVOICE_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 9,
+   "column_id": 15
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "SERVICE_PERIOD",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 16
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "POSTED_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 17
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "GL_ACCT_CSV",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 18
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "BATCH_NO",
+   "data_type": "NUMBER",
+   "data_precision": 8,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 19
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "column_name": "SRC_SYSTEM",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 10,
+   "column_id": 20
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "INVOICE_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "LINE_NO",
+   "data_type": "NUMBER",
+   "data_precision": 6,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 3
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "LINE_TYPE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 10,
+   "column_id": 4
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "DESCRIPTION",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 400,
+   "column_id": 5
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "column_name": "AMOUNT",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "column_name": "KIND_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 3
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "column_name": "SENT_AT",
+   "data_type": "TIMESTAMP(6)",
+   "data_precision": null,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 11,
+   "column_id": 4
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "CODE",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 50,
+   "column_id": 2
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "TIER_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 3
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "MONTHLY_FEE",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "INCLUDED_UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "OVERAGE_RATE",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "PLANS",
+   "column_name": "ACTIVE_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 7
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "column_name": "PERIOD_START",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 3
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "column_name": "PERIOD_END",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 4
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "PERIOD_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "SUBSCRIPTION_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "USED_UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "QUOTA_UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "ROLLOVER_UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "BILLABLE_UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 7
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "OVERAGE_AMOUNT",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 2,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 8
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "column_name": "CREATED_AT",
+   "data_type": "TIMESTAMP(6)",
+   "data_precision": null,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 11,
+   "column_id": 9
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "PLAN_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 3
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "STARTS_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 4
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "ENDS_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 5
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 6
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "SUSPENDED_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 7
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "HIST_ID",
+   "data_type": "NUMBER",
+   "data_precision": 12,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "HIST_DT",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 20,
+   "column_id": 2
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "HIST_OP",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 3,
+   "column_id": 3
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 4
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 5
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "PLAN_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 6
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "STARTS_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 7
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "ENDS_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 8
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 9
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "SUSPENDED_ON",
+   "data_type": "DATE",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "Y",
+   "char_used": null,
+   "data_length": 7,
+   "column_id": 10
+  },
+  {
+   "table_name": "TENANTS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "TENANTS",
+   "column_name": "NAME",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 200,
+   "column_id": 2
+  },
+  {
+   "table_name": "TENANTS",
+   "column_name": "TAX_EXEMPT_YN",
+   "data_type": "CHAR",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 1,
+   "column_id": 3
+  },
+  {
+   "table_name": "TENANTS",
+   "column_name": "STATUS_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "column_name": "ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 1
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "column_name": "TENANT_ID",
+   "data_type": "VARCHAR2",
+   "data_precision": null,
+   "data_scale": null,
+   "nullable": "N",
+   "char_used": "B",
+   "data_length": 36,
+   "column_id": 2
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "column_name": "OCCURRED_AT",
+   "data_type": "TIMESTAMP(6)",
+   "data_precision": null,
+   "data_scale": 6,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 11,
+   "column_id": 3
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "column_name": "UNITS",
+   "data_type": "NUMBER",
+   "data_precision": 10,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 4
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "column_name": "KIND_CD",
+   "data_type": "NUMBER",
+   "data_precision": 4,
+   "data_scale": 0,
+   "nullable": "N",
+   "char_used": null,
+   "data_length": 22,
+   "column_id": 5
+  }
+ ],
+ "constraints": [
+  {
+   "table_name": "BILLING_AUDIT_LOG",
+   "constraint_name": "PK_BILLING_AUDIT_LOG",
+   "constraint_type": "P",
+   "column_name": "LOG_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "CODES",
+   "constraint_name": "PK_CODES",
+   "constraint_type": "P",
+   "column_name": "CODE_TYPE",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "CODES",
+   "constraint_name": "PK_CODES",
+   "constraint_type": "P",
+   "column_name": "CODE_VAL",
+   "r_constraint_name": null,
+   "position": 2
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "constraint_name": "PK_CREDIT_NOTES",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "CREDIT_NOTES",
+   "constraint_name": "FK_CN_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "CUSTOMER_MASTER",
+   "constraint_name": "PK_CUSTOMER_MASTER",
+   "constraint_type": "P",
+   "column_name": "CUST_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "constraint_name": "PK_CUSTOMER_MASTER_HIST",
+   "constraint_type": "P",
+   "column_name": "HIST_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "constraint_name": "UQ_DUNNING_ATTEMPTS",
+   "constraint_type": "U",
+   "column_name": "INVOICE_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "constraint_name": "FK_DA_INVOICE",
+   "constraint_type": "R",
+   "column_name": "INVOICE_ID",
+   "r_constraint_name": "PK_INVOICES",
+   "position": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "constraint_name": "PK_DUNNING_ATTEMPTS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "constraint_name": "FK_DA_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "DUNNING_ATTEMPTS",
+   "constraint_name": "UQ_DUNNING_ATTEMPTS",
+   "constraint_type": "U",
+   "column_name": "ATTEMPT_NO",
+   "r_constraint_name": null,
+   "position": 2
+  },
+  {
+   "table_name": "ENTITY_ATTR_VALUE",
+   "constraint_name": "PK_ENTITY_ATTR_VALUE",
+   "constraint_type": "P",
+   "column_name": "EAV_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICES",
+   "constraint_name": "PK_INVOICES",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICES",
+   "constraint_name": "FK_INV_PERIOD",
+   "constraint_type": "R",
+   "column_name": "PERIOD_ID",
+   "r_constraint_name": "PK_RATING_PERIODS",
+   "position": 1
+  },
+  {
+   "table_name": "INVOICES",
+   "constraint_name": "FK_INV_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_HEADER",
+   "constraint_name": "PK_INVOICE_HEADER",
+   "constraint_type": "P",
+   "column_name": "INVOICE_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_LINE",
+   "constraint_name": "PK_INVOICE_LINE",
+   "constraint_type": "P",
+   "column_name": "LINE_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "constraint_name": "UQ_INVOICE_LINES",
+   "constraint_type": "U",
+   "column_name": "INVOICE_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "constraint_name": "FK_IL_INVOICE",
+   "constraint_type": "R",
+   "column_name": "INVOICE_ID",
+   "r_constraint_name": "PK_INVOICES",
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "constraint_name": "PK_INVOICE_LINES",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "INVOICE_LINES",
+   "constraint_name": "UQ_INVOICE_LINES",
+   "constraint_type": "U",
+   "column_name": "LINE_NO",
+   "r_constraint_name": null,
+   "position": 2
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "constraint_name": "PK_NOTIFICATIONS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "constraint_name": "FK_NOTIF_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "constraint_name": "UQ_NOTIFICATIONS",
+   "constraint_type": "U",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "constraint_name": "UQ_NOTIFICATIONS",
+   "constraint_type": "U",
+   "column_name": "KIND_CD",
+   "r_constraint_name": null,
+   "position": 2
+  },
+  {
+   "table_name": "NOTIFICATIONS",
+   "constraint_name": "UQ_NOTIFICATIONS",
+   "constraint_type": "U",
+   "column_name": "SENT_AT",
+   "r_constraint_name": null,
+   "position": 3
+  },
+  {
+   "table_name": "PLANS",
+   "constraint_name": "PK_PLANS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "PLANS",
+   "constraint_name": "UQ_PLANS_CODE",
+   "constraint_type": "U",
+   "column_name": "CODE",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "constraint_name": "PK_RATING_PERIODS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "constraint_name": "UQ_RATING_PERIODS",
+   "constraint_type": "U",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "constraint_name": "FK_RP_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "RATING_PERIODS",
+   "constraint_name": "UQ_RATING_PERIODS",
+   "constraint_type": "U",
+   "column_name": "PERIOD_START",
+   "r_constraint_name": null,
+   "position": 2
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "constraint_name": "PK_RATING_RESULTS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "constraint_name": "FK_RR_SUB",
+   "constraint_type": "R",
+   "column_name": "SUBSCRIPTION_ID",
+   "r_constraint_name": "PK_SUBSCRIPTIONS",
+   "position": 1
+  },
+  {
+   "table_name": "RATING_RESULTS",
+   "constraint_name": "FK_RR_PERIOD",
+   "constraint_type": "R",
+   "column_name": "PERIOD_ID",
+   "r_constraint_name": "PK_RATING_PERIODS",
+   "position": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "constraint_name": "FK_SUB_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "constraint_name": "PK_SUBSCRIPTIONS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS",
+   "constraint_name": "FK_SUB_PLAN",
+   "constraint_type": "R",
+   "column_name": "PLAN_ID",
+   "r_constraint_name": "PK_PLANS",
+   "position": 1
+  },
+  {
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "constraint_name": "PK_SUBSCRIPTIONS_HIST",
+   "constraint_type": "P",
+   "column_name": "HIST_ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "TENANTS",
+   "constraint_name": "UQ_TENANTS_NAME",
+   "constraint_type": "U",
+   "column_name": "NAME",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "TENANTS",
+   "constraint_name": "PK_TENANTS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "constraint_name": "FK_USAGE_TENANT",
+   "constraint_type": "R",
+   "column_name": "TENANT_ID",
+   "r_constraint_name": "PK_TENANTS",
+   "position": 1
+  },
+  {
+   "table_name": "USAGE_EVENTS",
+   "constraint_name": "PK_USAGE_EVENTS",
+   "constraint_type": "P",
+   "column_name": "ID",
+   "r_constraint_name": null,
+   "position": 1
+  }
+ ],
+ "indexes": [
+  {
+   "index_name": "UQ_RATING_PERIODS",
+   "table_name": "RATING_PERIODS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_RATING_PERIODS",
+   "table_name": "RATING_PERIODS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_RATING_RESULTS",
+   "table_name": "RATING_RESULTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_INVOICES",
+   "table_name": "INVOICES",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_CODES",
+   "table_name": "CODES",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "UQ_TENANTS_NAME",
+   "table_name": "TENANTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_TENANTS",
+   "table_name": "TENANTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "UQ_PLANS_CODE",
+   "table_name": "PLANS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_PLANS",
+   "table_name": "PLANS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_SUBSCRIPTIONS",
+   "table_name": "SUBSCRIPTIONS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_USAGE_EVENTS",
+   "table_name": "USAGE_EVENTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_CREDIT_NOTES",
+   "table_name": "CREDIT_NOTES",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "UQ_DUNNING_ATTEMPTS",
+   "table_name": "DUNNING_ATTEMPTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_DUNNING_ATTEMPTS",
+   "table_name": "DUNNING_ATTEMPTS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "UQ_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "UQ_INVOICE_LINES",
+   "table_name": "INVOICE_LINES",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_INVOICE_LINES",
+   "table_name": "INVOICE_LINES",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_CUSTOMER_MASTER",
+   "table_name": "CUSTOMER_MASTER",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_ENTITY_ATTR_VALUE",
+   "table_name": "ENTITY_ATTR_VALUE",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_INVOICE_HEADER",
+   "table_name": "INVOICE_HEADER",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_INVOICE_LINE",
+   "table_name": "INVOICE_LINE",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_BILLING_AUDIT_LOG",
+   "table_name": "BILLING_AUDIT_LOG",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_SUBSCRIPTIONS_HIST",
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  },
+  {
+   "index_name": "PK_CUSTOMER_MASTER_HIST",
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "uniqueness": "UNIQUE",
+   "index_type": "NORMAL"
+  }
+ ],
+ "plsql": [
+  {
+   "object_name": "TRG_BILLING_AUDIT_LOG_ID",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_SUBSCRIPTIONS_HIST",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_SUB_NO_UNCANCEL",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_USAGE_EVENTS_CHECK",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_CUSTOMER_MASTER_SEQ",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_CUSTOMER_MASTER_HIST",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+   "object_type": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_OW_UTIL",
+   "object_type": "PACKAGE",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_OW_UTIL",
+   "object_type": "PACKAGE BODY",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_PLANS",
+   "object_type": "PACKAGE",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_PLANS",
+   "object_type": "PACKAGE BODY",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_RATING",
+   "object_type": "PACKAGE",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_RATING",
+   "object_type": "PACKAGE BODY",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_INVOICING",
+   "object_type": "PACKAGE",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_INVOICING",
+   "object_type": "PACKAGE BODY",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_DUNNING",
+   "object_type": "PACKAGE",
+   "status": "VALID"
+  },
+  {
+   "object_name": "PKG_DUNNING",
+   "object_type": "PACKAGE BODY",
+   "status": "VALID"
+  }
+ ],
+ "dependencies": [
+  {
+   "name": "TRG_BILLING_AUDIT_LOG_ID",
+   "type": "TRIGGER",
+   "referenced_name": "BILLING_AUDIT_LOG",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_BILLING_AUDIT_LOG_ID",
+   "type": "TRIGGER",
+   "referenced_name": "SEQ_BILLING_AUDIT_LOG",
+   "referenced_type": "SEQUENCE"
+  },
+  {
+   "name": "TRG_SUBSCRIPTIONS_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "SUBSCRIPTIONS_HIST",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_SUBSCRIPTIONS_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_SUBSCRIPTIONS_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "SEQ_SUBSCRIPTIONS_HIST",
+   "referenced_type": "SEQUENCE"
+  },
+  {
+   "name": "TRG_SUB_NO_UNCANCEL",
+   "type": "TRIGGER",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_USAGE_EVENTS_CHECK",
+   "type": "TRIGGER",
+   "referenced_name": "USAGE_EVENTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_USAGE_EVENTS_CHECK",
+   "type": "TRIGGER",
+   "referenced_name": "CODES",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_SEQ",
+   "type": "TRIGGER",
+   "referenced_name": "CUSTOMER_MASTER",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_SEQ",
+   "type": "TRIGGER",
+   "referenced_name": "SEQ_CUSTOMER_MASTER",
+   "referenced_type": "SEQUENCE"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "CUSTOMER_MASTER",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "CUSTOMER_MASTER_HIST",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_HIST",
+   "type": "TRIGGER",
+   "referenced_name": "SEQ_CUSTOMER_MASTER_HIST",
+   "referenced_type": "SEQUENCE"
+  },
+  {
+   "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+   "type": "TRIGGER",
+   "referenced_name": "ENTITY_ATTR_VALUE",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+   "type": "TRIGGER",
+   "referenced_name": "SEQ_ENTITY_ATTR_VALUE",
+   "referenced_type": "SEQUENCE"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_OW_UTIL",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "referenced_name": "BILLING_AUDIT_LOG",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_PLANS",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_OW_UTIL",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PLANS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "referenced_name": "TENANTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_RATING",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PLANS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "USAGE_EVENTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "RATING_PERIODS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "RATING_RESULTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_RATING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_OW_UTIL",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_INVOICING",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PLANS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_RATING",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "CREDIT_NOTES",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "TENANTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "INVOICE_LINES",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_OW_UTIL",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_INVOICING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "INVOICES",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_DUNNING",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "TENANTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "INVOICES",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "DUNNING_ATTEMPTS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "PKG_OW_UTIL",
+   "referenced_type": "PACKAGE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "SUBSCRIPTIONS",
+   "referenced_type": "TABLE"
+  },
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "referenced_name": "NOTIFICATIONS",
+   "referenced_type": "TABLE"
+  }
+ ],
+ "sequences": [
+  {
+   "sequence_name": "SEQ_BILLING_AUDIT_LOG",
+   "last_number": 1,
+   "increment_by": 1
+  },
+  {
+   "sequence_name": "SEQ_SUBSCRIPTIONS_HIST",
+   "last_number": 1,
+   "increment_by": 1
+  },
+  {
+   "sequence_name": "SEQ_CUSTOMER_MASTER",
+   "last_number": 125000,
+   "increment_by": 1
+  },
+  {
+   "sequence_name": "SEQ_CUSTOMER_MASTER_HIST",
+   "last_number": 1,
+   "increment_by": 1
+  },
+  {
+   "sequence_name": "SEQ_ENTITY_ATTR_VALUE",
+   "last_number": 11001,
+   "increment_by": 1
+  }
+ ],
+ "rowid_usage": [],
+ "scheduler_jobs": [
+  {
+   "job_name": "JOB_NIGHTLY_DUNNING",
+   "job_type": "PLSQL_BLOCK",
+   "job_action": "BEGIN pkg_dunning.sp_schedule_dunning(TRUNC(SYSDATE)); pkg_dunning.sp_suspend_overdue(TRUNC(SYSDATE)); END;",
+   "enabled": "FALSE"
+  },
+  {
+   "job_name": "JOB_PURGE_AUDIT_LOG",
+   "job_type": "PLSQL_BLOCK",
+   "job_action": "BEGIN DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90; COMMIT; EXCEPTION WHEN OTHERS THEN NULL; END;",
+   "enabled": "FALSE"
+  }
+ ],
+ "triggers": [
+  {
+   "trigger_name": "TRG_BILLING_AUDIT_LOG_ID",
+   "trigger_type": "BEFORE EACH ROW",
+   "triggering_event": "INSERT",
+   "table_name": "BILLING_AUDIT_LOG",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_SUBSCRIPTIONS_HIST",
+   "trigger_type": "AFTER EACH ROW",
+   "triggering_event": "UPDATE OR DELETE",
+   "table_name": "SUBSCRIPTIONS",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_SUB_NO_UNCANCEL",
+   "trigger_type": "BEFORE EACH ROW",
+   "triggering_event": "UPDATE",
+   "table_name": "SUBSCRIPTIONS",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_USAGE_EVENTS_CHECK",
+   "trigger_type": "BEFORE EACH ROW",
+   "triggering_event": "INSERT",
+   "table_name": "USAGE_EVENTS",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_CUSTOMER_MASTER_SEQ",
+   "trigger_type": "BEFORE EACH ROW",
+   "triggering_event": "INSERT",
+   "table_name": "CUSTOMER_MASTER",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_CUSTOMER_MASTER_HIST",
+   "trigger_type": "AFTER EACH ROW",
+   "triggering_event": "UPDATE OR DELETE",
+   "table_name": "CUSTOMER_MASTER",
+   "status": "ENABLED"
+  },
+  {
+   "trigger_name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+   "trigger_type": "BEFORE EACH ROW",
+   "triggering_event": "INSERT",
+   "table_name": "ENTITY_ATTR_VALUE",
+   "status": "ENABLED"
+  }
+ ],
+ "index_columns": [
+  {
+   "index_name": "PK_BILLING_AUDIT_LOG",
+   "table_name": "BILLING_AUDIT_LOG",
+   "column_name": "LOG_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_CODES",
+   "table_name": "CODES",
+   "column_name": "CODE_TYPE",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_CODES",
+   "table_name": "CODES",
+   "column_name": "CODE_VAL",
+   "column_position": 2
+  },
+  {
+   "index_name": "PK_CREDIT_NOTES",
+   "table_name": "CREDIT_NOTES",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_CUSTOMER_MASTER",
+   "table_name": "CUSTOMER_MASTER",
+   "column_name": "CUST_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_CUSTOMER_MASTER_HIST",
+   "table_name": "CUSTOMER_MASTER_HIST",
+   "column_name": "HIST_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_DUNNING_ATTEMPTS",
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_ENTITY_ATTR_VALUE",
+   "table_name": "ENTITY_ATTR_VALUE",
+   "column_name": "EAV_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_INVOICES",
+   "table_name": "INVOICES",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_INVOICE_HEADER",
+   "table_name": "INVOICE_HEADER",
+   "column_name": "INVOICE_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_INVOICE_LINE",
+   "table_name": "INVOICE_LINE",
+   "column_name": "LINE_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_INVOICE_LINES",
+   "table_name": "INVOICE_LINES",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_PLANS",
+   "table_name": "PLANS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_RATING_PERIODS",
+   "table_name": "RATING_PERIODS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_RATING_RESULTS",
+   "table_name": "RATING_RESULTS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_SUBSCRIPTIONS",
+   "table_name": "SUBSCRIPTIONS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_SUBSCRIPTIONS_HIST",
+   "table_name": "SUBSCRIPTIONS_HIST",
+   "column_name": "HIST_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_TENANTS",
+   "table_name": "TENANTS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "PK_USAGE_EVENTS",
+   "table_name": "USAGE_EVENTS",
+   "column_name": "ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_DUNNING_ATTEMPTS",
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "INVOICE_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_DUNNING_ATTEMPTS",
+   "table_name": "DUNNING_ATTEMPTS",
+   "column_name": "ATTEMPT_NO",
+   "column_position": 2
+  },
+  {
+   "index_name": "UQ_INVOICE_LINES",
+   "table_name": "INVOICE_LINES",
+   "column_name": "INVOICE_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_INVOICE_LINES",
+   "table_name": "INVOICE_LINES",
+   "column_name": "LINE_NO",
+   "column_position": 2
+  },
+  {
+   "index_name": "UQ_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "column_name": "TENANT_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "column_name": "KIND_CD",
+   "column_position": 2
+  },
+  {
+   "index_name": "UQ_NOTIFICATIONS",
+   "table_name": "NOTIFICATIONS",
+   "column_name": "SENT_AT",
+   "column_position": 3
+  },
+  {
+   "index_name": "UQ_PLANS_CODE",
+   "table_name": "PLANS",
+   "column_name": "CODE",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_RATING_PERIODS",
+   "table_name": "RATING_PERIODS",
+   "column_name": "TENANT_ID",
+   "column_position": 1
+  },
+  {
+   "index_name": "UQ_RATING_PERIODS",
+   "table_name": "RATING_PERIODS",
+   "column_name": "PERIOD_START",
+   "column_position": 2
+  },
+  {
+   "index_name": "UQ_TENANTS_NAME",
+   "table_name": "TENANTS",
+   "column_name": "NAME",
+   "column_position": 1
+  }
+ ],
+ "nls_patterns": [
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_SEQ",
+   "type": "TRIGGER"
+  }
+ ],
+ "trap_patterns": [
+  {
+   "name": "PKG_DUNNING",
+   "type": "PACKAGE BODY",
+   "line": 49,
+   "text": "                WHEN OTHERS THEN NULL;\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 7,
+   "text": "        SELECT LOWER(RAWTOHEX(STANDARD_HASH(UTL_RAW.CAST_TO_RAW(p_input), 'MD5')))\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 40,
+   "text": "        WHEN OTHERS THEN\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 45,
+   "text": "    -- Autonomous-transaction \"logging\". Commits on its own, and if logging\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 48,
+   "text": "        PRAGMA AUTONOMOUS_TRANSACTION;\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 55,
+   "text": "        -- Still swallowed, but the autonomous transaction must be closed or\n"
+  },
+  {
+   "name": "PKG_OW_UTIL",
+   "type": "PACKAGE BODY",
+   "line": 57,
+   "text": "        WHEN OTHERS THEN ROLLBACK;\n"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "line": 32,
+   "text": "            WHEN OTHERS THEN NULL;\n"
+  },
+  {
+   "name": "PKG_PLANS",
+   "type": "PACKAGE BODY",
+   "line": 63,
+   "text": "               FOR UPDATE;\n"
+  },
+  {
+   "name": "TRG_CUSTOMER_MASTER_HIST",
+   "type": "TRIGGER",
+   "line": 13,
+   "text": "        TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS'), v_op,\n"
+  },
+  {
+   "name": "TRG_SUBSCRIPTIONS_HIST",
+   "type": "TRIGGER",
+   "line": 13,
+   "text": "        TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS'),\n"
+  }
+ ],
+ "exact_counts": {
+  "RATING_PERIODS": 3,
+  "CUSTOMER_MASTER_HIST": 0,
+  "INVOICES": 3,
+  "CREDIT_NOTES": 5,
+  "CODES": 32,
+  "TENANTS": 69,
+  "PLANS": 3,
+  "SUBSCRIPTIONS": 69,
+  "USAGE_EVENTS": 814,
+  "DUNNING_ATTEMPTS": 1,
+  "NOTIFICATIONS": 1,
+  "INVOICE_LINES": 2,
+  "FIXTURE_META": 1,
+  "CUSTOMER_MASTER": 25000,
+  "ENTITY_ATTR_VALUE": 8333,
+  "INVOICE_HEADER": 18750,
+  "INVOICE_LINE": 150000,
+  "BILLING_AUDIT_LOG": 0,
+  "SUBSCRIPTIONS_HIST": 0,
+  "RATING_RESULTS": 3
+ },
+ "nls": {
+  "NLS_COMP": "BINARY",
+  "NLS_SORT": "BINARY",
+  "NLS_DATE_FORMAT": "DD-MON-RR",
+  "NLS_NCHAR_CHARACTERSET": "AL16UTF16",
+  "NLS_CHARACTERSET": "AL32UTF8"
+ },
+ "timezone": [
+  "+00:00",
+  "+00:00"
+ ]
+}
