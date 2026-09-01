@@ -1,0 +1,140 @@
+{
+  "started_at": "2026-09-01T21:42:22.027851Z",
+  "finished_at": "2026-09-01T21:42:34.186074Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "quarantine_db": "ow_tp_mongodb_205236_quarantine",
+  "ns": "mongo_205236",
+  "secret_names": {
+    "dsn": "OW_PG_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  },
+  "collections": {
+    "documents": {
+      "root_table": "otterworks_demo.documents",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 2000,
+      "inserted": 2000,
+      "docs_after": 2000,
+      "ns_docs_after": 2000,
+      "indexes": [
+        "owner_id_1",
+        "folder_id_1",
+        "versions.id_1"
+      ]
+    },
+    "document_snapshots": {
+      "root_table": "otterworks_demo.document_snapshots",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 384,
+      "inserted": 384,
+      "docs_after": 384,
+      "ns_docs_after": 384,
+      "indexes": [
+        "document_id_1_created_at_-1"
+      ]
+    },
+    "orphan_document_snapshots": {
+      "root_table": "otterworks_demo.document_snapshots",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 6,
+      "inserted": 6,
+      "docs_after": 6,
+      "ns_docs_after": 6,
+      "indexes": [
+        "document_id_1"
+      ]
+    }
+  },
+  "embedded_versions": 13876,
+  "orphan_versions": 0,
+  "quarantined_snapshots": 6,
+  "quarantined_snapshot_ids": [
+    "60bfc8b6-ef1b-4ecf-bf98-49267e67054d",
+    "9e6c9aa9-2522-4008-b8de-d94a2964917c",
+    "ae8c479d-8de3-46f8-bfc8-a942df697f2f",
+    "cce98042-94a1-4e9a-98b9-4b1069a76fa1",
+    "e0de8004-a5ec-472f-b008-150408e83560",
+    "e61553f8-e4ea-4caf-b7d7-863fa9547358"
+  ],
+  "documents_declared_version_mismatch": 10,
+  "version_gaps": {
+    "definition": "missing version numbers in 1..max(documents.version, max(versions.version_number)); reported only, never repaired (D7)",
+    "documents_with_gaps": 10,
+    "total_missing_numbers": 10,
+    "detail": [
+      {
+        "document_id": "4e73d26c-1b17-4c29-a972-723f6a81d5a6",
+        "max_version": 12,
+        "missing": [
+          3
+        ]
+      },
+      {
+        "document_id": "54f581c5-c84d-4e03-9d49-8a53205d5468",
+        "max_version": 6,
+        "missing": [
+          6
+        ]
+      },
+      {
+        "document_id": "55651142-8ab8-4fc3-93f7-2f53b8924e79",
+        "max_version": 3,
+        "missing": [
+          2
+        ]
+      },
+      {
+        "document_id": "5908ebb5-dbb7-45f5-b6c7-0e35421f3512",
+        "max_version": 4,
+        "missing": [
+          2
+        ]
+      },
+      {
+        "document_id": "83683854-d16e-42ff-a6cd-dba0778c8ebc",
+        "max_version": 6,
+        "missing": [
+          5
+        ]
+      },
+      {
+        "document_id": "91e0ef71-06e8-4176-8634-b3d37c66435b",
+        "max_version": 5,
+        "missing": [
+          3
+        ]
+      },
+      {
+        "document_id": "9e712908-6721-4e4a-837d-a235146eb26b",
+        "max_version": 9,
+        "missing": [
+          4
+        ]
+      },
+      {
+        "document_id": "cf385bde-c00f-43f4-ba79-5e734af2a082",
+        "max_version": 3,
+        "missing": [
+          3
+        ]
+      },
+      {
+        "document_id": "d03d71b1-a7e5-494a-bb12-c1e79866b084",
+        "max_version": 10,
+        "missing": [
+          9
+        ]
+      },
+      {
+        "document_id": "fb541d99-8a4a-4911-a0e3-934d4bbf312d",
+        "max_version": 6,
+        "missing": [
+          2
+        ]
+      }
+    ]
+  }
+}
