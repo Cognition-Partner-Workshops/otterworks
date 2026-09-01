@@ -151,6 +151,7 @@ def build(result: dict, load: dict, run1: dict, target: dict[str, Any],
             "RPT-114 /api/reports/reconciliation balances aggregation: Oracle BALANCES_SQL vs aggregation compared once in .migration/recon/U1/rpt114_balances.json and via Flask test client (200 + 503 fail-closed); route not exercised under gunicorn",
             "Stratified sampling path of the harness (Tier 3 ran full_diff: 25,000 < 100,000 threshold)",
             "counters are not in the mapping spec's collections (D11 seeds); graded here by comparison to USER_SEQUENCES.LAST_NUMBER, not by the harness",
+            "Load swap: per-collection staging+rename is atomic per collection only; a reader may observe a partially swapped unit during the five renames. Write path: a history insert failing after a committed mutation loses the image (no phantom history)",
         ],
     }
 
