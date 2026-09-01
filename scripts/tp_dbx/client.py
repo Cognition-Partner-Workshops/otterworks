@@ -13,6 +13,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 NS_RE = re.compile(r"[a-z0-9_]{1,24}")
@@ -233,26 +234,33 @@ class Databricks:
                 return job
         return None
 
-    def list_runs(self, job_id: int, limit: int = 25) -> list[dict]:
-        runs: list[dict] = []
+    def list_runs(
+        self,
+        job_id: int,
+        start_time_from_ms: int | None = None,
+        limit: int = 25,
+    ) -> Iterator[dict]:
         page_token: str | None = None
         while True:
             path = (
                 f"/api/2.1/jobs/runs/list?job_id={job_id}"
                 f"&completed_only=true&limit={limit}"
             )
+            if start_time_from_ms is not None:
+                path += f"&start_time_from={start_time_from_ms}"
             if page_token:
                 path += f"&page_token={urllib.parse.quote(page_token, safe='')}"
             payload = self.ok("GET", path)
             page_runs = payload.get("runs") or []
-            if len(runs) + len(page_runs) > 1000:
-                raise DbxError(f"job {job_id} has more than 1000 completed runs")
-            runs.extend(page_runs)
-            page_token = payload.get("next_page_token")
-            if not payload.get("has_more", bool(page_token)) and not page_token:
-                return runs
-            if not page_token:
+            yield from page_runs
+            next_page_token = payload.get("next_page_token")
+            if not payload.get("has_more", bool(next_page_token)):
+                return
+            if not next_page_token:
                 raise DbxError(f"job {job_id} run listing has_more without next_page_token")
+            if next_page_token == page_token:
+                raise DbxError(f"job {job_id} run listing repeated page token")
+            page_token = next_page_token
 
     def get_run(self, run_id: int) -> dict:
         return self.ok("GET", f"/api/2.1/jobs/runs/get?run_id={run_id}")

@@ -36,6 +36,7 @@ CATALOG = "ow_tp"
 UNITS = ("sftp_ingest_poll", "parse_custbill_fixedwidth", "finance_excel_report", "custbill_workflow")
 REPORT_DIR = Path(__file__).resolve().parents[2] / "docs/tech-partnerships/recon"
 JOB_NAME = "ow_tp_custbill"
+RUN_LOOKBACK_MS = 30 * 24 * 3600 * 1000
 REQUIRED = {
     "sftp_ingest_poll": {"U6-a", "U6-b", "U6-c", "U6-e"},
     "parse_custbill_fixedwidth": {"U7-a", "U7-b", "U7-c", "U7-d", "U7-e"},
@@ -133,12 +134,12 @@ class Recon:
                             "source_of_truth": truth, "result": "skipped"})
         self.unverified.append(f"{cid}: {why}")
 
-    def latest_run_for_ns(self) -> dict | None:
+    def latest_run_for_ns(self, start_time_from_ms: int | None) -> dict | None:
         job = self.dbx.find_job(JOB_NAME)
         if not job:
             return None
         matching: list[dict] = []
-        for summary in self.dbx.list_runs(int(job["job_id"])):
+        for summary in self.dbx.list_runs(int(job["job_id"]), start_time_from_ms):
             run_id = summary.get("run_id")
             if run_id is None:
                 continue
@@ -458,7 +459,6 @@ def main() -> int:
         r.unit_finance()
     else:
         r.unit_workflow(a.evidence_json)
-    latest_run = r.latest_run_for_ns()
     waived = set(a.waive)
     r.unverified.extend(a.unverified)
     for check in r.checks:
@@ -472,6 +472,17 @@ def main() -> int:
     now_dt = datetime.now(timezone.utc)
     now = now_dt.isoformat(timespec="seconds")
     snapshot_time_ms = int(now_dt.timestamp() * 1000)
+    prev = None
+    if a.previous is None:
+        run_start_time_ms = snapshot_time_ms - RUN_LOOKBACK_MS
+    else:
+        prev = json.loads(a.previous.read_text())
+        if prev.get("kind") != "recon-snapshot" or prev.get("unit") != a.unit or prev.get("namespace") != ns:
+            raise SystemExit("--previous must be this unit/namespace's first-pass snapshot")
+        run_start_time_ms = prev.get("snapshot_time_ms")
+        if not isinstance(run_start_time_ms, int):
+            run_start_time_ms = None
+    latest_run = r.latest_run_for_ns(run_start_time_ms)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     if a.previous is None:
         snap = a.out or REPORT_DIR / f"{a.unit}.recon.first-pass.json"
@@ -484,9 +495,6 @@ def main() -> int:
         print(f"first pass: {len(r.checks)} checks, {len(fails)} failed {fails}; snapshot {snap}")
         print("re-run the job with no new input, then invoke again with --previous", snap)
         return 1 if fails else 0
-    prev = json.loads(a.previous.read_text())
-    if prev.get("kind") != "recon-snapshot" or prev.get("unit") != a.unit or prev.get("namespace") != ns:
-        raise SystemExit("--previous must be this unit/namespace's first-pass snapshot")
     same = prev.get("fingerprint") == r.fingerprint
     previous_snapshot_time = prev.get("snapshot_time_ms")
     if isinstance(previous_snapshot_time, int):
