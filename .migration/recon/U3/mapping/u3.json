@@ -1,0 +1,307 @@
+{
+  "version": "v1.0",
+  "namespace": "mongo_205236",
+  "target_database": "ow_tp_mongodb_205236",
+  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
+  "params": {
+    "batch_no": "Oracle conversion/batch number for the namespace (85559852 for NS=demo)",
+    "source_ns": "DynamoDB ns partition value (demo)"
+  },
+  "excluded_objects": [
+    {
+      "object": "FIXTURE_META",
+      "reason": "fixture bookkeeping (INITIALIZED_AT, non-deterministic); no application reader"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "documents",
+      "root_table": "otterworks_demo.documents",
+      "family": "postgres",
+      "unit": "U3",
+      "wave": 1,
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "id",
+          "target": "_id",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize"
+          ]
+        },
+        {
+          "source": "title",
+          "target": "title",
+          "source_type": "varchar",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "content",
+          "target": "content",
+          "source_type": "text",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "content_type",
+          "target": "content_type",
+          "source_type": "varchar",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "owner_id",
+          "target": "owner_id",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize"
+          ]
+        },
+        {
+          "source": "folder_id",
+          "target": "folder_id",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "is_deleted",
+          "target": "is_deleted",
+          "source_type": "boolean",
+          "bson_type": "bool",
+          "rules": []
+        },
+        {
+          "source": "is_template",
+          "target": "is_template",
+          "source_type": "boolean",
+          "bson_type": "bool",
+          "rules": []
+        },
+        {
+          "source": "word_count",
+          "target": "word_count",
+          "source_type": "integer",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "version",
+          "target": "version",
+          "source_type": "integer",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "created_at",
+          "target": "created_at",
+          "source_type": "timestamptz",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "updated_at",
+          "target": "updated_at",
+          "source_type": "timestamptz",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "versions",
+          "child_table": "otterworks_demo.document_versions",
+          "child_where": null,
+          "parent_key": [
+            "document_id"
+          ],
+          "key": {
+            "source": [
+              "id"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "uuid",
+              "bson_type": "string",
+              "rules": [
+                "uuid_normalize"
+              ]
+            },
+            {
+              "source": "version_number",
+              "target": "version_number",
+              "source_type": "integer",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "title",
+              "target": "title",
+              "source_type": "varchar",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "content",
+              "target": "content",
+              "source_type": "text",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "created_by",
+              "target": "created_by",
+              "source_type": "uuid",
+              "bson_type": "string",
+              "rules": [
+                "uuid_normalize"
+              ]
+            },
+            {
+              "source": "created_at",
+              "target": "created_at",
+              "source_type": "timestamptz",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            }
+          ]
+        }
+      ],
+      "derived_ungraded": [
+        {
+          "target": "version_gaps",
+          "from": "versions[].version_number",
+          "rule": "list of missing version numbers between 1..max; reported (10 expected), never repaired"
+        }
+      ],
+      "indexes": [
+        {
+          "keys": {
+            "owner_id": 1
+          }
+        },
+        {
+          "keys": {
+            "folder_id": 1
+          }
+        },
+        {
+          "keys": {
+            "versions.id": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "Versions embedded (avg 7, max 12 per document \u2014 bounded). Snapshots are a separate referenced collection (state_b64 payloads can be large)."
+    },
+    {
+      "collection": "document_snapshots",
+      "root_table": "otterworks_demo.document_snapshots",
+      "family": "postgres",
+      "unit": "U3",
+      "wave": 1,
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "root_where": "document_id IN (SELECT id FROM otterworks_demo.documents)",
+      "fields": [
+        {
+          "source": "id",
+          "target": "_id",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize"
+          ]
+        },
+        {
+          "source": "document_id",
+          "target": "document_id",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize"
+          ]
+        },
+        {
+          "source": "state_b64",
+          "target": "state_b64",
+          "source_type": "text",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "label",
+          "target": "label",
+          "source_type": "varchar",
+          "bson_type": "string",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "created_by",
+          "target": "created_by",
+          "source_type": "uuid",
+          "bson_type": "string",
+          "rules": [
+            "uuid_normalize"
+          ]
+        },
+        {
+          "source": "created_at",
+          "target": "created_at",
+          "source_type": "timestamptz",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "document_id": 1,
+            "created_at": -1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "state_b64 carried byte-transparent as the original base64 string (no decode). Snapshots whose document_id has no documents row -> quarantine.orphan_document_snapshots (6 expected)."
+    }
+  ]
+}

@@ -11,7 +11,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | `codes`, `tenants`, `plans` | U0 | 2026-09-01 21:40 (planned) | PLANNED |
 | `customers`, `customers_history`, `counters`, Q.`dirty_signup_dt`, Q.`bad_csv_list` | U1 | planned | PLANNED |
 | `invoices`, Q.`invoice_feed_orphan_lines` | U2 | planned | PLANNED |
-| `documents`, `document_snapshots`, Q.`orphan_document_snapshots` | U3 | planned | PLANNED |
+| `documents`, `document_snapshots`, Q.`orphan_document_snapshots` | U3 | 2026-09-01 21:34 | REGISTERED |
 | `files` | U4 | planned | PLANNED |
 | `subscriptions`, `subscriptions_history`, `usage_events`, `rating_periods`, `billing_invoices`, `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | U5 | planned | PLANNED |
 | `replay_u6_*` (clone of U5 set for Tier-4 replay) | U6 | planned | PLANNED |
@@ -26,7 +26,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 0 | U0 reference (`codes`,`tenants`,`plans`) | NOT_STARTED | — | — | — | — | — |
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
-| 1 | U3 documents (Postgres) | NOT_STARTED | — | — | — | — | — |
+| 1 | U3 documents (Postgres) | RECON_GREEN | PASS (fixture; T1 3/3, T2 18/18, T3 16,260/16,260 incl. 13,876 embedded versions graded) | 1.54% (6/390 snapshots → Q.`orphan_document_snapshots`) | LIVE gate; Tier 4 (none in contract); adapter `key_strata` | 2 recon runs (run 1 red: adapter stat names) | PR pending (u3) |
 | 1 | U4 files (DynamoDB) | NOT_STARTED | — | — | — | — | — |
 | 2 | U5 billing core | NOT_STARTED | — | — | — | — | — |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
