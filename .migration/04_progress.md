@@ -23,7 +23,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 
 | Wave | Unit | Status | Parity (result.json) | Quarantine rate | Unverified paths | Cost | PR |
 |---|---|---|---|---|---|---|---|
-| 0 | U0 reference (`codes`,`tenants`,`plans`) | CONTRACT | — | — | — | — | — |
+| 0 | U0 reference (`codes`,`tenants`,`plans`) | HALTED | FAIL (fixture; T1 3/3, T2 14/14 PASS; T3 `codes` 32 missing/32 extra: harness cannot grade composite source key vs string `_key`) | 0% | — | — | ESCALATE (grading-only spec amendment needed) |
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | NOT_STARTED | — | — | — | — | — |

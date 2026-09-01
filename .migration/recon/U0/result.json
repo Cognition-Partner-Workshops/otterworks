@@ -1,0 +1,577 @@
+{
+  "unit": "U0",
+  "mode": "live",
+  "mapping_version": "v1.0",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-01T21:26:38.025245+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 14,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.code_type",
+          "codes.code_desc",
+          "tenants.id",
+          "tenants.name",
+          "tenants.tax_exempt_yn",
+          "plans.id",
+          "plans.code",
+          "plans.active_yn"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": false,
+      "checks_run": 136,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 69
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3
+        }
+      },
+      "findings": [
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_STATUS', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_STATUS', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_STATUS', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_STATUS', 99)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_TYPE', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_TYPE', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('CUST_TYPE', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('DUN_STATUS', 10)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('DUN_STATUS', 20)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('DUN_STATUS', 30)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('INV_STATUS', 10)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('INV_STATUS', 20)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('INV_STATUS', 30)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('INV_STATUS', 40)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('NOTIF_KIND', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('NOTIF_KIND', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('NOTIF_KIND', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PHONE_TYPE', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PHONE_TYPE', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PHONE_TYPE', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PHONE_TYPE', 4)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PLAN_TIER', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PLAN_TIER', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('PLAN_TIER', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('SUB_STATUS', 10)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('SUB_STATUS', 20)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('SUB_STATUS', 30)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('TENANT_STATUS', 10)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('TENANT_STATUS', 20)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('USAGE_KIND', 1)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('USAGE_KIND', 2)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "key=('USAGE_KIND', 3)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_STATUS:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_STATUS:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_STATUS:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_STATUS:99',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_TYPE:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_TYPE:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('CUST_TYPE:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('DUN_STATUS:10',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('DUN_STATUS:20',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('DUN_STATUS:30',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('INV_STATUS:10',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('INV_STATUS:20',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('INV_STATUS:30',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('INV_STATUS:40',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('NOTIF_KIND:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('NOTIF_KIND:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('NOTIF_KIND:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PHONE_TYPE:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PHONE_TYPE:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PHONE_TYPE:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PHONE_TYPE:4',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PLAN_TIER:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PLAN_TIER:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('PLAN_TIER:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('SUB_STATUS:10',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('SUB_STATUS:20',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('SUB_STATUS:30',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('TENANT_STATUS:10',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('TENANT_STATUS:20',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('USAGE_KIND:1',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('USAGE_KIND:2',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "key=('USAGE_KIND:3',)",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL"
+}
