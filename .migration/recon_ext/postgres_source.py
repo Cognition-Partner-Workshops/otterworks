@@ -99,8 +99,9 @@ class PostgresSourceAdapter:
                 total = cur.fetchone()[0]
             except psycopg.Error:
                 total = None
-        return {"count": int(n), "non_null": int(nn), "nulls": int(n) - int(nn),
-                "distinct": int(nd), "min": mn, "max": mx, "sum": total}
+        n = int(n)
+        return {"count": n, "null_rate": (n - int(nn)) / n if n else 0.0,
+                "min": mn, "max": mx, "distinct_count": int(nd), "sum": total}
 
     def fetch_keyed(self, table: str, key_cols: list[str], columns: list[str],
                     where: str | None = None, keys: list[tuple] | None = None) -> Iterable[dict[str, Any]]:
