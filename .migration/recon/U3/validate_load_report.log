@@ -1,0 +1,26 @@
+uv run --no-project --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4 python3 scripts/tp_validate.py recon .migration/recon/U3/load_report.json
+WARN `--no-project` was provided, but no project was found
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 4.25.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 0.1.4 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(3) @ 26.1.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(4) @ 2025.9.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(5) @ 0.37.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(6) @ 2026.6.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(7) @ 1.17.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(8) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(9) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(10) @ 4.16.0 without checking dependencies    
+validated 1 recon file(s)
+.migration/recon/U3/load_report.json: <root>: 'kind' is a required property
+.migration/recon/U3/load_report.json: <root>: 'unit' is a required property
+.migration/recon/U3/load_report.json: <root>: 'namespace' is a required property
+.migration/recon/U3/load_report.json: <root>: 'generated_at' is a required property
+.migration/recon/U3/load_report.json: <root>: 'run_mode' is a required property
+.migration/recon/U3/load_report.json: <root>: 'checks' is a required property
+.migration/recon/U3/load_report.json: <root>: 'values_recomputed_from_target' is a required property
+.migration/recon/U3/load_report.json: <root>: 'idempotency_rerun' is a required property
+.migration/recon/U3/load_report.json: <root>: 'planted_anomaly_detections' is a required property
+.migration/recon/U3/load_report.json: <root>: 'unverified_paths' is a required property
+FAIL: 10 validation error(s)
+make: *** [Makefile:32: tp-validate-recon] Error 1

@@ -1,5 +1,5 @@
 {
- "version": "v1.0",
+ "version": "v1.0.1",
  "namespace": "mongo_205236",
  "target_database": "ow_tp_mongodb_205236",
  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
@@ -22,8 +22,7 @@
    "wave": 0,
    "key": {
     "source": [
-     "CODE_TYPE",
-     "CODE_VAL"
+     "CODE_TYPE||':'||CODE_VAL"
     ],
     "target": "_key"
    },

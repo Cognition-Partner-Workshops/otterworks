@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CENSUS = ROOT / ".migration" / "census" / "oracle_census.json"
 OUT = ROOT / ".migration" / "03_mapping_spec.json"
 
-VERSION = "v1.0"
+VERSION = "v1.0.1"
 NS = "mongo_205236"
 
 
@@ -58,11 +58,11 @@ def fields_for(census: dict, table: str, exclude: set[str] = frozenset()) -> lis
 
 
 def oracle_collection(census, collection, table, key_cols, *, root_where=None, embeds=(),
-                      unit, wave, derived=(), indexes=(), notes=""):
+                      unit, wave, derived=(), indexes=(), notes="", key_target=None):
     return {
         "collection": collection, "root_table": table, "family": "oracle",
         "unit": unit, "wave": wave,
-        "key": {"source": key_cols, "target": "_id" if len(key_cols) == 1 else "_key"},
+        "key": {"source": key_cols, "target": key_target or ("_id" if len(key_cols) == 1 else "_key")},
         "root_where": root_where,
         "fields": fields_for(census, table),
         "embeds": list(embeds),
@@ -85,7 +85,10 @@ def main() -> None:
     cols = []
 
     # ---- wave 0: reference data (unit U0) -------------------------------------------
-    cols.append(oracle_collection(census, "codes", "CODES", ["CODE_TYPE", "CODE_VAL"], unit="U0", wave=0,
+    # composite key graded as ONE source expression vs the loader-composed scalar `_key`
+    # (Oracle reports the unaliased expression name with spaces stripped — keep it space-free)
+    cols.append(oracle_collection(census, "codes", "CODES", ["CODE_TYPE||':'||CODE_VAL"], key_target="_key",
+                                  unit="U0", wave=0,
                                   indexes=[{"keys": {"code_type": 1, "code_val": 1}, "unique": True}],
                                   notes="Lookup used by PKG_OW_UTL.F_CODE_DESC and RPT-114; _key = 'CODE_TYPE:CODE_VAL'."))
     cols.append(oracle_collection(census, "tenants", "TENANTS", ["ID"], unit="U0", wave=0))
