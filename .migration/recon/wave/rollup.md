@@ -6,7 +6,7 @@ comes from a fresh run in this window, not from the per-unit evidence the PRs ca
 
 - Window: 2026-09-01T02:01:27Z → 2026-09-01T02:01:51Z (wave recon),
   2026-09-01T01:59:32Z → 2026-09-01T02:00:06Z (parallel-run cycles),
-  2026-09-01T02:03Z (embedded-child verification)
+  2026-09-01T02:07:00Z (embedded-child verification)
 - Mode `live` (wave recon) / `continuous` (cycles) · mapping `1.0.0` · tolerances `1`
 - Source concurrency `1` (STOP A cap) · harness: vendored pinned copy,
   `.migration/vendor/mongo-recon-harness` (H1 fix only)

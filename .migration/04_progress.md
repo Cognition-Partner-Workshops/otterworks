@@ -64,7 +64,7 @@ A write to any of them is a guardrail breach, not a collision to negotiate.
 | Fact | Value |
 |---|---|
 | Wave verdict | **PASS** — both units re-verified in one uncontended window after loading was quiesced, not carried over from the unit PRs |
-| Window | wave recon 2026-09-01T02:01:27Z–02:01:51Z (`live`), parallel-run cycles 01:59:32Z–02:00:06Z (`continuous`), embedded-child verification 02:03Z |
+| Window | wave recon 2026-09-01T02:01:27Z–02:01:51Z (`live`), parallel-run cycles 01:59:32Z–02:00:06Z (`continuous`), embedded-child verification 02:07:00Z |
 | Inputs | mapping `1.0.0`, tolerances `1`, source concurrency `1`, vendored pinned harness |
 | Per-unit | `customers` PASS (T1 2 / T2 42 / T3 25,000 **root-field** full diff / T4 2), `invoices` PASS (T1 2 / T2 9 / T3 18,750 **root-field** full diff / T4 2) |
 | Embedded children | outside every recon tier (H3): verified separately by `scripts/tp_mongo/embed_diff.py` — 149,963 `lines[]` × 20 fields (the derived `invoice_at` included) and 8,333 `attributes[]` × 4 fields, 0 findings; supplementary evidence, not a merge authority |
