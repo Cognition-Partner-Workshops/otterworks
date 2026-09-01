@@ -80,20 +80,37 @@ LINE_FIELDS = [
 LINE_RULES = {"POSTED_YN": ["rstrip_spaces", "empty_string_is_null"]}
 
 
-def line_document(row: dict) -> dict:
+def absent_legacy_date(raw) -> bool:
+    """The estate writes a missing `DD-MON-YY` date as its own punctuation with the fields
+    blanked (`'  -   -  '`), so a value with no alphanumerics is absent, not malformed."""
+    return raw is None or not any(ch.isalnum() for ch in raw)
+
+
+def line_document(row: dict) -> tuple[dict, dict | None]:
+    """One embedded line, plus the quarantine record for its legacy date if the estate's own
+    conversion could not parse it (D4, the same field-level policy the headers follow).
+
+    The raw string is preserved either way; only the typed `invoice_at` is withheld, and the
+    anomaly is counted rather than disappearing.
+    """
     line: dict = {}
     for column, target, bson_type in LINE_FIELDS:
         put(line, target, canonical(row[column], bson_type, LINE_RULES.get(column, [])))
     raw = row["INVOICE_DT"]
-    parsed = parse_legacy_date(raw) if raw and raw.strip() else None
-    if parsed is not None:
-        line["invoice_at"] = parsed
-    return line
+    if absent_legacy_date(raw):
+        return line, None
+    parsed = parse_legacy_date(raw)
+    if parsed is None:
+        return line, {"field": "INVOICE_DT", "reason": "unparseable_legacy_date",
+                      "raw_value": raw, "line_id": row["LINE_ID"],
+                      "invoice_id": row["INVOICE_ID"]}
+    line["invoice_at"] = parsed
+    return line, None
 
 
-def fetch_lines(cursor, batch_no: int) -> tuple[dict[str, list[dict]], list[dict]]:
-    """This batch's lines, grouped by the invoice they belong to, plus the ones that belong to
-    no invoice at all.
+def fetch_lines(cursor, batch_no: int) -> tuple[dict[str, list[dict]], list[dict], list[dict]]:
+    """This batch's lines, grouped by the invoice they belong to, the ones that belong to no
+    invoice at all, and the field-level quarantine records the embedded ones raised.
 
     Ordered by `LINE_ID`, not `LINE_NO`: `LINE_NO` repeats within an invoice, so it is not a
     line identity and cannot order the array deterministically.
@@ -108,15 +125,20 @@ def fetch_lines(cursor, batch_no: int) -> tuple[dict[str, list[dict]], list[dict
 
     by_invoice: dict[str, list[dict]] = {}
     orphans: list[dict] = []
+    quarantine: list[dict] = []
     for row in cursor:
         record = dict(zip(["INVOICE_ID"] + columns + ["HAS_HEADER"], row))
-        line = line_document(record)
+        line, bad_date = line_document(record)
         if record["HAS_HEADER"]:
             by_invoice.setdefault(record["INVOICE_ID"], []).append(line)
+            # An orphan's whole line is quarantined below, so a second record for its date
+            # would double-count the same row.
+            if bad_date is not None:
+                quarantine.append(bad_date)
         else:
             orphans.append({"reason": "orphan_invoice_line",
                             "invoice_id": record["INVOICE_ID"], "line": line})
-    return by_invoice, orphans
+    return by_invoice, orphans, quarantine
 
 
 def build_document(row: dict, fields, lines: list[dict], ns: str) -> tuple[dict, list[dict]]:
@@ -127,7 +149,7 @@ def build_document(row: dict, fields, lines: list[dict], ns: str) -> tuple[dict,
 
     for column, target in DERIVED_DATES:
         raw = row[column]
-        if raw is None or raw.strip() == "":
+        if absent_legacy_date(raw):
             continue
         parsed = parse_legacy_date(raw)
         if parsed is None:
@@ -142,6 +164,10 @@ def build_document(row: dict, fields, lines: list[dict], ns: str) -> tuple[dict,
     for q in quarantine:
         q.update({"ns": ns, "unit": UNIT})
     return doc, quarantine
+
+
+def line_quarantine_document(record: dict, ns: str) -> dict:
+    return dict(record, _id=f"{ns}:{record['line_id']}:{record['field']}", ns=ns, unit=UNIT)
 
 
 def orphan_document(orphan: dict, ns: str) -> dict:
@@ -211,7 +237,7 @@ def load(ns: str, source_dsn_secret: str, target_uri_secret: str, target_db: str
         columns = [f[0] for f in fields]
         assert_source_slice(cursor, batch_no, set(columns))
 
-        lines_by_invoice, orphans = fetch_lines(cursor, batch_no)
+        lines_by_invoice, orphans, line_quarantine = fetch_lines(cursor, batch_no)
 
         cursor.execute(f"SELECT {', '.join(columns)} FROM {ROOT_TABLE} "
                        f" WHERE BATCH_NO = :b ORDER BY INVOICE_ID", b=batch_no)
@@ -224,6 +250,7 @@ def load(ns: str, source_dsn_secret: str, target_uri_secret: str, target_db: str
         loaded = embedded = 0
         docs: list[InsertOne] = []
         quarantine_docs = [InsertOne(orphan_document(o, ns)) for o in orphans]
+        quarantine_docs += [InsertOne(line_quarantine_document(q, ns)) for q in line_quarantine]
         for row in cursor:
             record = dict(zip(names, row))
             doc, quarantine = build_document(

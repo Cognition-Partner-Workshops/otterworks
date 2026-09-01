@@ -18,6 +18,7 @@ from invoices_load import (
     assert_source_slice,
     fetch_lines,
     line_document,
+    line_quarantine_document,
     load,
     orphan_document,
 )
@@ -93,7 +94,8 @@ def test_a_line_whose_header_is_missing_is_quarantined_not_embedded():
         line_row(INVOICE_ID_REF="INV-A", LINE_ID="L-1"),
         line_row(INVOICE_ID_REF="INV-GONE", LINE_ID="L-2", has_header=0),
     ])
-    by_invoice, orphans = fetch_lines(cursor, 85559852)
+    by_invoice, orphans, quarantine = fetch_lines(cursor, 85559852)
+    assert quarantine == []
 
     assert [line["line_id"] for line in by_invoice["INV-A"]] == ["L-1"]
     assert "INV-GONE" not in by_invoice
@@ -107,7 +109,8 @@ def test_a_line_whose_header_is_missing_is_quarantined_not_embedded():
 
 
 def test_line_money_is_decimal128_and_the_legacy_text_is_preserved():
-    line = line_document(LINE_ROW)
+    line, bad_date = line_document(dict(LINE_ROW, INVOICE_ID="INV-A"))
+    assert bad_date is None
     assert line["amount"] == Decimal128("31.00")
     assert line["unit_price"] == Decimal128("15.5000")
     assert line["qty"] == Decimal128("2.000")
@@ -118,10 +121,41 @@ def test_line_money_is_decimal128_and_the_legacy_text_is_preserved():
     assert line["posted_yn"] == "Y"
 
 
-def test_an_unparseable_line_date_leaves_the_raw_value_and_no_typed_field():
-    line = line_document(dict(LINE_ROW, INVOICE_DT="  -   -  "))
+def test_an_unparseable_line_date_is_quarantined_and_the_raw_value_kept():
+    line, bad_date = line_document(dict(LINE_ROW, INVOICE_ID="INV-A", INVOICE_DT="31-FEB-24"))
+    assert line["legacy"]["invoice_dt"] == "31-FEB-24"
+    assert "invoice_at" not in line
+
+    record = line_quarantine_document(bad_date, "demo")
+    assert record["reason"] == "unparseable_legacy_date"
+    assert record["raw_value"] == "31-FEB-24"
+    # Distinct from the orphan record's `demo:<line id>`, so a line can raise both.
+    assert record["_id"] == "demo:L-1:INVOICE_DT"
+
+
+def test_a_blank_line_date_is_neither_typed_nor_quarantined():
+    line, bad_date = line_document(dict(LINE_ROW, INVOICE_ID="INV-A", INVOICE_DT="  -   -  "))
     assert line["legacy"]["invoice_dt"] == "  -   -  "
     assert "invoice_at" not in line
+    assert bad_date is None
+
+
+def test_an_embedded_line_with_a_bad_date_is_still_embedded_and_reported():
+    cursor = FakeCursor(lines=[line_row(INVOICE_ID_REF="INV-A", LINE_ID="L-1",
+                                        INVOICE_DT="31-FEB-24")])
+    by_invoice, orphans, quarantine = fetch_lines(cursor, 85559852)
+    assert [line["line_id"] for line in by_invoice["INV-A"]] == ["L-1"]
+    assert orphans == []
+    assert [(q["line_id"], q["reason"]) for q in quarantine] == [
+        ("L-1", "unparseable_legacy_date")]
+
+
+def test_an_orphan_with_a_bad_date_is_reported_once_as_an_orphan():
+    cursor = FakeCursor(lines=[line_row(INVOICE_ID_REF="INV-GONE", LINE_ID="L-2",
+                                        INVOICE_DT="31-FEB-24", has_header=0)])
+    _, orphans, quarantine = fetch_lines(cursor, 85559852)
+    assert len(orphans) == 1
+    assert quarantine == []
 
 
 @pytest.mark.parametrize("target_db,quarantine_db", [
