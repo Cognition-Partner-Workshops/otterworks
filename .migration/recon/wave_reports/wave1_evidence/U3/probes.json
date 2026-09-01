@@ -1,0 +1,255 @@
+{
+ "U3.null_dist.documents": {
+  "ok": true,
+  "detail": "{\"folder_id\": {\"src_null\": 404, \"src_empty\": 0, \"tgt_null\": 0, \"tgt_missing\": 404, \"tgt_empty\": 0}}"
+ },
+ "U3.explicit_null_policy.documents(D2)": {
+  "ok": false,
+  "detail": {
+   "folder_id": 404
+  }
+ },
+ "U3.null_dist.document_snapshots": {
+  "ok": true,
+  "detail": "{}"
+ },
+ "U3.explicit_null_policy.document_snapshots(D2)": {
+  "ok": true,
+  "detail": {}
+ },
+ "U3.null_dist.versions[]": {
+  "ok": true,
+  "detail": {
+   "src": [
+    0,
+    0,
+    0
+   ],
+   "tgt": [
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "U3.dup.versions.id_global": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.dup.(doc,version_number)": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.type._id_string": {
+  "ok": true,
+  "detail": ""
+ },
+ "U3.embed_len_per_doc": {
+  "ok": true,
+  "detail": {
+   "mismatches": [],
+   "n_mismatch": 0,
+   "docs_zero_versions_src": 0
+  }
+ },
+ "U3.embed_len_distribution": {
+  "ok": true,
+  "detail": {
+   "tgt": {
+    "2": 183,
+    "3": 200,
+    "4": 178,
+    "5": 167,
+    "6": 182,
+    "7": 194,
+    "8": 191,
+    "9": 187,
+    "10": 169,
+    "11": 176,
+    "12": 173
+   },
+   "min": 2,
+   "max": 12
+  }
+ },
+ "U3.versions_sorted_asc(informational)": {
+  "ok": true,
+  "detail": {
+   "unordered_docs": 0
+  }
+ },
+ "U3.fieldset.documents": {
+  "ok": true,
+  "detail": {
+   "extra": [],
+   "missing": [],
+   "counts": {
+    "version_gaps": 2000,
+    "word_count": 2000,
+    "version": 2000,
+    "content_type": 2000,
+    "title": 2000,
+    "created_at": 2000,
+    "is_template": 2000,
+    "owner_id": 2000,
+    "content": 2000,
+    "_id": 2000,
+    "folder_id": 1596,
+    "updated_at": 2000,
+    "ns": 2000,
+    "is_deleted": 2000,
+    "versions": 2000
+   }
+  }
+ },
+ "U3.fieldset.versions[]": {
+  "ok": true,
+  "detail": {
+   "extra": [],
+   "missing": []
+  }
+ },
+ "U3.fieldset.document_snapshots": {
+  "ok": true,
+  "detail": {
+   "extra": [],
+   "missing": []
+  }
+ },
+ "U3.ns_marker.documents": {
+  "ok": true,
+  "detail": {
+   "docs_without_ns": 0
+  }
+ },
+ "U3.ns_marker.document_snapshots": {
+  "ok": true,
+  "detail": {
+   "docs_without_ns": 0
+  }
+ },
+ "U3.bson_types": {
+  "ok": false,
+  "detail": {
+   "documents.folder_id": {
+    "missing": 404,
+    "string": 1596
+   }
+  }
+ },
+ "U3.boundary_docs.documents": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.boundary_docs.document_snapshots": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.state_b64_hash": {
+  "ok": true,
+  "detail": {
+   "src_len": 3072,
+   "tgt_len": 3072
+  }
+ },
+ "U3.version_gaps_derived": {
+  "ok": false,
+  "detail": {
+   "src_docs_with_gaps": 8,
+   "tgt_docs_with_gaps": 10,
+   "manifest_expected": 10,
+   "docs_where_root_version<>max(version_number)_src": 2,
+   "docs_where_root_version<>count(versions)_src": 10
+  }
+ },
+ "U3.quarantine_set.orphan_document_snapshots": {
+  "ok": true,
+  "detail": {
+   "src_orphans": 6,
+   "quarantined": 6,
+   "expected": 6,
+   "orphans_in_main": 0,
+   "main+quarantine==source": true,
+   "overlap": 0
+  }
+ },
+ "U3.quarantine_classes": {
+  "ok": true,
+  "detail": {
+   "('orphan_parent', 'U3', 'otterworks_demo.document_snapshots')": 6
+  }
+ },
+ "U3.quarantine_row_fidelity": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.quarantine_no_unexpected_collections": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.quarantine_ceiling(0.5%)": {
+  "ok": true,
+  "detail": {
+   "pct_of_source_rows": 1.538,
+   "ceiling_pct": 0.5,
+   "note": "orphan class planted by fixture (6/390 = 1.54% of the snapshots table, 0.037% of unit rows 16266)"
+  }
+ },
+ "U3.docs_without_versions_array": {
+  "ok": true,
+  "detail": {
+   "src_docs_with_zero_versions": 0
+  }
+ },
+ "U3.indexes": {
+  "ok": true,
+  "detail": "declared indexes present"
+ },
+ "U3.snapshot_document_id_resolves": {
+  "ok": true,
+  "detail": {
+   "dangling": 0
+  }
+ },
+ "U3.replay.list_documents(owner,folder,page)": {
+  "ok": true,
+  "detail": {
+   "ops": 24,
+   "fails": []
+  }
+ },
+ "U3.replay.versions+get": {
+  "ok": true,
+  "detail": {
+   "docs": 60,
+   "fails": []
+  }
+ },
+ "U3.replay.search": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.replay.latest_snapshot": {
+  "ok": true,
+  "detail": []
+ },
+ "U3.dist.is_deleted": {
+  "ok": true,
+  "detail": {
+   "true": 67,
+   "false": 1933
+  }
+ },
+ "U3.dist.is_template": {
+  "ok": true,
+  "detail": {
+   "false": 2000
+  }
+ },
+ "U3.dist.content_type": {
+  "ok": true,
+  "detail": {
+   "text/markdown": 2000
+  }
+ }
+}
