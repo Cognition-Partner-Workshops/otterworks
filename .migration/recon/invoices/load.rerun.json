@@ -18,10 +18,10 @@
         "orphan_invoice_lines": 37
       },
       "pruned": 0,
-      "digest": "7a99f8aab47d1c4d014edb20ac9b25648d877c9f37af6aafbbe564cceb3460a8",
+      "digest": "375648d6e9a4b2e1121a34d08b36cf153faffdd9237fd7cf5cae21ea0548fa3a",
       "expected_documents": 18750,
       "matches_census": true
     }
   ],
-  "completed_at": "2026-09-01T04:25:08.244830+00:00"
+  "completed_at": "2026-09-01T04:42:31.952606+00:00"
 }

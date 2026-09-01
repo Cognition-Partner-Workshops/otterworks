@@ -46,9 +46,9 @@ class FakeCollection:
 
     def delete_many(self, flt):
         keep = set(flt["_id"]["$nin"])
-        scope = flt.get("collection")
+        scope = {k: v for k, v in flt.items() if k != "_id"}
         gone = [k for k, d in self.docs.items()
-                if k not in keep and (scope is None or d.get("collection") == scope)]
+                if k not in keep and all(dotted(d, p) == v for p, v in scope.items())]
         for k in gone:
             del self.docs[k]
         return FakeResult(len(gone))
@@ -72,8 +72,19 @@ class FakeMongo(FakeDB):
         self.colls.setdefault(name, FakeCollection())
 
 
+def dotted(doc, path):
+    for part in path.split("."):
+        doc = (doc or {}).get(part)
+    return doc
+
+
 class FakeCursor:
-    """Serves rows per table; the loader's SELECTs are `SELECT cols FROM <table> [WHERE]`."""
+    """Serves rows per table; the loader's SELECTs are `SELECT cols FROM <table> [WHERE]`.
+
+    A `COL = value` WHERE clause is honoured, so a scoped extract really does come back with
+    only its own batch -- without that the batch-isolation tests would pass for the wrong
+    reason.
+    """
 
     def __init__(self, tables):
         self.tables = tables
@@ -83,8 +94,16 @@ class FakeCursor:
     def execute(self, sql):
         cols = sql.split("SELECT ", 1)[1].split(" FROM ")[0].replace('"', "").split(", ")
         table = sql.split(" FROM ")[1].split(" WHERE ")[0].strip()
+        rows = self.tables[table]
+        if " WHERE " in sql:
+            predicate = sql.split(" WHERE ")[1]
+            operator = ">=" if ">=" in predicate else "="
+            column, value = (part.strip() for part in predicate.split(operator, 1))
+            rows = [r for r in rows
+                    if (str(r[column]) == value if operator == "="
+                        else r[column] >= type(r[column])(value))]
         self.description = [(c,) for c in cols]
-        self.rows = [tuple(r[c] for c in cols) for r in self.tables[table]]
+        self.rows = [tuple(r[c] for c in cols) for r in rows]
 
     def __iter__(self):
         return iter(self.rows)
@@ -222,6 +241,93 @@ def test_rerun_removes_a_quarantine_record_for_a_repaired_row():
     summary, _ = lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
     assert summary["pruned"] == 1
     assert list(db["tenants_quarantine"].docs) == ["other:1:X"]
+
+
+# --------------------------------------------------------------- batch scoping
+BATCH_SPEC = {
+    "collection": "invoices", "root_table": "INVOICE_HEADER",
+    "root_where": "BATCH_NO = ${batch_no}",
+    "scope": {"source_column": "BATCH_NO", "target_field": "batch_no", "param": "batch_no"},
+    "key": {"source": ["INVOICE_ID"], "target": "_id"},
+    "fields": [{"source": "INVOICE_ID", "target": "_id", "bson_type": "long", "rules": []},
+               {"source": "BATCH_NO", "target": "batch_no", "bson_type": "long",
+                "rules": []},
+               {"source": "REF", "target": "ref", "bson_type": "string", "rules": []}],
+    "quarantine": {"collection": "invoices_quarantine", "expected": {}},
+    "indexes": [],
+}
+
+HEADERS = [{"INVOICE_ID": 1, "BATCH_NO": 10, "REF": "a"},
+           {"INVOICE_ID": 2, "BATCH_NO": 10, "REF": "b"},
+           {"INVOICE_ID": 3, "BATCH_NO": 20, "REF": "c"}]
+
+
+def load_batch(db, tables, batch, spec=BATCH_SPEC):
+    return lu.load_collection(FakeCursor(tables), db, spec, {"batch_no": str(batch)}, {},
+                              dry_run=False)[0]
+
+
+def test_reloading_one_batch_leaves_the_other_batches_alone():
+    """The extract is scoped to a batch, so everything outside it is not stale -- it is
+    another batch's live data, which a rerun must not touch."""
+    db = FakeMongo()
+    tables = {"INVOICE_HEADER": HEADERS}
+    load_batch(db, tables, 10)
+    load_batch(db, tables, 20)
+    assert set(db["invoices"].docs) == {1, 2, 3}
+
+    assert load_batch(db, tables, 10)["pruned"] == 0
+    assert set(db["invoices"].docs) == {1, 2, 3}
+    assert load_batch(db, tables, 20)["pruned"] == 0
+    assert set(db["invoices"].docs) == {1, 2, 3}
+
+
+def test_a_scoped_rerun_still_prunes_its_own_deleted_rows():
+    db = FakeMongo()
+    tables = {"INVOICE_HEADER": HEADERS}
+    load_batch(db, tables, 10)
+    load_batch(db, tables, 20)
+
+    tables["INVOICE_HEADER"] = [r for r in HEADERS if r["INVOICE_ID"] != 2]
+    assert load_batch(db, tables, 10)["pruned"] == 1
+    assert set(db["invoices"].docs) == {1, 3}
+
+
+def test_quarantine_evidence_from_another_batch_survives_a_reload():
+    spec = {**BATCH_SPEC,
+            "derived_fields": [{"source": "SIGNED", "target": "signed_at",
+                                "transform": "parse_dd_mon_yy", "on_error": "quarantine",
+                                "quarantine_category": "unparseable_signed"}],
+            "quarantine": {"collection": "invoices_quarantine",
+                           "expected": {"unparseable_signed": 1}}}
+    db = FakeMongo()
+    tables = {"INVOICE_HEADER": [{"INVOICE_ID": 1, "BATCH_NO": 10, "REF": "a",
+                                  "SIGNED": "  -   -  "},
+                                 {"INVOICE_ID": 3, "BATCH_NO": 20, "REF": "c",
+                                  "SIGNED": "  -   -  "}]}
+    load_batch(db, tables, 10, spec)
+    load_batch(db, tables, 20, spec)
+    assert len(db["invoices_quarantine"].docs) == 2
+
+    assert load_batch(db, tables, 10, spec)["pruned"] == 0
+    assert len(db["invoices_quarantine"].docs) == 2, "a reload erased another batch's evidence"
+
+
+def test_a_scoped_collection_must_declare_what_its_scope_is():
+    """Without a declared scope the loader cannot tell another batch's documents from stale
+    ones, so it stops instead of guessing."""
+    spec = {k: v for k, v in BATCH_SPEC.items() if k != "scope"}
+    with pytest.raises(SystemExit):
+        load_batch(FakeMongo(), {"INVOICE_HEADER": HEADERS}, 10, spec)
+
+
+def test_an_extract_that_leaves_the_declared_scope_is_rejected():
+    """The scope filter is only safe if the extract really is confined to it. Here the
+    predicate takes in later batches too, so the filter would delete the rows it just read
+    -- the load stops instead."""
+    spec = {**BATCH_SPEC, "root_where": "BATCH_NO >= ${batch_no}"}
+    with pytest.raises(SystemExit):
+        load_batch(FakeMongo(), {"INVOICE_HEADER": HEADERS}, 10, spec)
 
 
 # --------------------------------------------------------------- extract lease

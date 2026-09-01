@@ -29,6 +29,11 @@
       "size": "XL",
       "root_table": "CUSTOMER_MASTER",
       "root_where": "CONVERSION_BATCH_NO = ${batch_no}",
+      "scope": {
+        "source_column": "CONVERSION_BATCH_NO",
+        "target_field": "conversion_batch_no",
+        "param": "batch_no"
+      },
       "key": {
         "source": [
           "CUST_ID"

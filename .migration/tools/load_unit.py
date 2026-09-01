@@ -301,6 +301,49 @@ def install_validator(db, coll_spec, code_desc):
                validationLevel="strict", validationAction="error")
 
 
+def scope_of(coll_spec, params, docs):
+    """The part of the collection this extract owns, as a Mongo filter.
+
+    A `root_where` carrying a run parameter means the extract is one slice of a collection
+    that holds several -- `invoices` is loaded a batch at a time -- so the documents outside
+    the slice are another batch's live data, not stale rows. Pruning has to be confined to
+    the slice, and the loader refuses to guess where it ends: a scoped collection that does
+    not declare its scope stops the load, and an extract that returned a row from outside
+    the declared scope stops it too, since the filter would then delete live documents.
+
+    An unscoped collection returns an empty filter: its extract is the whole collection.
+    """
+    where = coll_spec.get("root_where")
+    scope = coll_spec.get("scope")
+    if not where or "${" not in where:
+        return {}
+    if not scope:
+        sys.exit(f"{coll_spec['collection']}: root_where {where!r} scopes the extract to one "
+                 "slice of the collection, but the mapping declares no scope; the loader "
+                 "cannot tell another slice's documents from stale ones")
+    field = scope["target_field"]
+    declared = [f for f in coll_spec.get("fields", []) if f["source"] == scope["source_column"]]
+    if not declared:
+        sys.exit(f"{coll_spec['collection']}: scope column {scope['source_column']} is not a "
+                 "graded field, so the scope cannot be identified in the target")
+    raw = params[scope["param"]]
+    bson_type = declared[0]["bson_type"]
+    value = to_bson(decimal.Decimal(raw) if bson_type in ("long", "decimal128") else raw,
+                    bson_type)
+    stray = {get_path(d, field) for d in docs} - {value}
+    if stray:
+        sys.exit(f"{coll_spec['collection']}: the extract returned {field} values outside the "
+                 f"declared scope {value} ({sorted(map(str, stray))}); the scope filter would "
+                 "delete live documents")
+    return {field: value}
+
+
+def get_path(doc, path):
+    for part in path.split("."):
+        doc = (doc or {}).get(part)
+    return doc
+
+
 def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
     name = coll_spec["collection"]
     root_where = substitute(coll_spec.get("root_where"), params)
@@ -382,6 +425,12 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                              "orphans and the load would quarantine live data")
                 orphans += orphan_docs(kids, pk)
 
+    # Scope is settled before the summary so the digest covers it: two batches' quarantine
+    # records differ by the scope they were found in, not only by their ids.
+    scope = scope_of(coll_spec, params, docs)
+    for entry in quarantined + orphans:
+        entry["scope"] = scope
+
     anomalies: dict[str, int] = {}
     for entry in quarantined + orphans:
         anomalies[entry["category"]] = anomalies.get(entry["category"], 0) + 1
@@ -421,10 +470,11 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
 
     # Upsert alone converges on changed and added rows but not on deleted ones: a document
     # whose source row is gone would survive the rerun and the target would hold a record
-    # the source does not. The extract is the whole of what this unit owns (one collection,
-    # one unit, by the write-target registration), so anything else in it is stale.
+    # the source does not. Within this extract's scope the unit owns everything (one
+    # collection, one unit, by the write-target registration), so anything else in scope is
+    # stale -- and anything outside it belongs to another batch and is left alone.
     summary["pruned"] = db[name].delete_many(
-        {"_id": {"$nin": [d["_id"] for d in docs]}}
+        {**scope, "_id": {"$nin": [d["_id"] for d in docs]}}
     ).deleted_count
 
     qcoll = (coll_spec.get("quarantine") or {}).get("collection")
@@ -435,9 +485,12 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
             db[qcoll].bulk_write([ReplaceOne({"_id": d["_id"]}, d, upsert=True)
                                   for d in quarantined + orphans], ordered=False)
         # An anomaly that has been repaired at source must stop being reported as one,
-        # otherwise the count gate would grade this unit against a healed row.
+        # otherwise the count gate would grade this unit against a healed row. Scoped the
+        # same way as the documents: each record carries the scope it was found in, so a
+        # later batch's load cannot erase an earlier batch's evidence.
         summary["pruned"] += db[qcoll].delete_many(
             {"collection": name,
+             **{f"scope.{field}": value for field, value in scope.items()},
              "_id": {"$nin": [d["_id"] for d in quarantined + orphans]}},
         ).deleted_count
     for spec_index in coll_spec.get("indexes", []):

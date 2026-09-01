@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "customers",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T04:25:57.512872+00:00",
+  "generated_at": "2026-09-01T04:42:52.341332+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -81,7 +81,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "second full load at 2026-09-01T04:24:31.547625+00:00 converged on the load at 2026-09-01T04:23:23.139781+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=ef3a15fd998d)"
+    "evidence": "second full load at 2026-09-01T04:41:19.231301+00:00 converged on the load at 2026-09-01T04:40:59.865068+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=32dae4324f88)"
   },
   "planted_anomaly_detections": {
     "expected_set": [
@@ -96,7 +96,8 @@
     "unexpected": []
   },
   "unverified_paths": [
-    "CUSTOMER_MASTER_HIST embed: 0 source rows, so the history array is declared and graded empty rather than exercised; the 113 always-null CUSTOMER_MASTER columns are dropped by the mapping; they are verified null at source, not carried to the target"
+    "CUSTOMER_MASTER_HIST is empty at source, so the history embed is graded at 0 elements",
+    "113 always-null CUSTOMER_MASTER columns are dropped; a production census must re-check them before load"
   ],
   "pre_pr_self_check": [
     {
@@ -137,7 +138,7 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "second full load at 2026-09-01T04:24:31.547625+00:00 converged on the load at 2026-09-01T04:23:23.139781+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=ef3a15fd998d)"
+      "evidence": "second full load at 2026-09-01T04:41:19.231301+00:00 converged on the load at 2026-09-01T04:40:59.865068+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=32dae4324f88)"
     },
     {
       "id": "values_recomputed_from_target",
@@ -147,7 +148,7 @@
     {
       "id": "unverified_paths_listed",
       "verdict": "pass",
-      "evidence": "CUSTOMER_MASTER_HIST embed: 0 source rows, so the history array is declared and graded empty rather than exercised; the 113 always-null CUSTOMER_MASTER columns are dropped by the mapping; they are verified null at source, not carried to the target"
+      "evidence": "CUSTOMER_MASTER_HIST is empty at source, so the history embed is graded at 0 elements; 113 always-null CUSTOMER_MASTER columns are dropped; a production census must re-check them before load"
     },
     {
       "id": "recon_report_schema",

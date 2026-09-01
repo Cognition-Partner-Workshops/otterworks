@@ -29,6 +29,11 @@
       "size": "XL",
       "root_table": "INVOICE_HEADER",
       "root_where": "BATCH_NO = ${batch_no}",
+      "scope": {
+        "source_column": "BATCH_NO",
+        "target_field": "batch_no",
+        "param": "batch_no"
+      },
       "key": {
         "source": [
           "INVOICE_ID"

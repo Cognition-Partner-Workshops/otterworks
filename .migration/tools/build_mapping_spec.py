@@ -320,6 +320,9 @@ def build():
         "pattern_class": "wide-embed", "size": "XL",
         "root_table": "CUSTOMER_MASTER",
         "root_where": "CONVERSION_BATCH_NO = ${batch_no}",
+        # The extract is one conversion batch, so a reload prunes only inside that batch.
+        "scope": {"source_column": "CONVERSION_BATCH_NO", "target_field": "conversion_batch_no",
+                  "param": "batch_no"},
         "key": {"source": ["CUST_ID"], "target": "_id"},
         "access_pattern": (
             "reports.py BALANCES_SQL aggregates balances across the whole batch; the "
@@ -426,6 +429,8 @@ def build():
         "pattern_class": "bulk-load", "size": "XL",
         "root_table": "INVOICE_HEADER",
         "root_where": "BATCH_NO = ${batch_no}",
+        "scope": {"source_column": "BATCH_NO", "target_field": "batch_no",
+                  "param": "batch_no"},
         "key": {"source": ["INVOICE_ID"], "target": "_id"},
         "access_pattern": (
             "reports.py LINE_SQL joins header to line on every month-end run and no query "

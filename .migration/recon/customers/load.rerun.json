@@ -20,10 +20,10 @@
         "malformed_related_acct_ids": 31
       },
       "pruned": 0,
-      "digest": "ef3a15fd998d9eb07c839aff81ea7f2d675f956b50f3fbdd398cfe85c9205b22",
+      "digest": "32dae4324f88461fad0c59cdc3f094799c4da2bdf0449ce964db48824b19c7ca",
       "expected_documents": 25000,
       "matches_census": true
     }
   ],
-  "completed_at": "2026-09-01T04:24:31.547625+00:00"
+  "completed_at": "2026-09-01T04:41:19.231301+00:00"
 }
