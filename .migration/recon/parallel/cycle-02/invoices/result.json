@@ -1,0 +1,58 @@
+{
+  "unit": "invoices",
+  "mode": "continuous",
+  "mapping_version": "1.0.0",
+  "tolerance_version": "1",
+  "generated_at": "2026-09-01T01:53:38.149053+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 9,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoices._id",
+          "invoices.invoice_no",
+          "invoices.cust_id",
+          "invoices.tenant_id",
+          "invoices.legacy.invoice_dt",
+          "invoices.legacy.due_dt"
+        ],
+        "sum_not_comparable": [
+          "invoices._id",
+          "invoices.invoice_no",
+          "invoices.cust_id",
+          "invoices.tenant_id",
+          "invoices.legacy.invoice_dt",
+          "invoices.legacy.due_dt"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 1004,
+      "stats": {
+        "invoices": {
+          "mode": "stratified_sample",
+          "population": 18750,
+          "sampled": 1004,
+          "coverage": 0.053547
+        }
+      },
+      "findings": []
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -59,6 +59,19 @@ A write to any of them is a guardrail breach, not a collision to negotiate.
 | Recon evidence | `.migration/recon/invoices/result.json`, `report.md`, `recon.summary.md` |
 | Harness | vendored pinned copy, `.migration/vendor/mongo-recon-harness` (H1 fix only) |
 
+### Wave status — CLOSED, green (playbook 4, 2026-09-01)
+
+| Fact | Value |
+|---|---|
+| Wave verdict | **PASS** — both units re-verified in one uncontended window after loading was quiesced, not carried over from the unit PRs |
+| Window | wave recon 2026-09-01T01:52:40Z–01:53:00Z (`live`), parallel-run cycles 01:53:08Z–01:53:53Z (`continuous`) |
+| Inputs | mapping `1.0.0`, tolerances `1`, source concurrency `1`, vendored pinned harness |
+| Per-unit | `customers` PASS (T1 2 / T2 42 / T3 25,000 full diff / T4 2), `invoices` PASS (T1 2 / T2 9 / T3 18,750 full diff / T4 2) |
+| Parallel run | 3 hand-triggered cycles per unit, drift 0 in every cycle and flat, not monotonic; D10 declined CDC, so the window proves stability against an idle source, not a sync path |
+| Infra check | no Terraform governs the Atlas target, so the boundary gate is `make tp-smoke` — passed |
+| Evidence | `.migration/recon/wave/rollup.md`, `.migration/recon/wave/{1/customers,2/invoices}/`, `.migration/recon/parallel/cycle-0{1,2,3}/` |
+| Cutover | **eligible** for `!mongo_cutover`; readiness is not authorization — a human starts playbook 5 with the customer-held cutover principal |
+
 A unit is **done** only when its PR is merged into `tp-run/mongodb-20260831T232410Z` with a
 green harness verdict recorded above. "Code written" and "recon run locally" are not done.
 
