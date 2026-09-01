@@ -1,0 +1,87 @@
+[
+  {
+    "object_name": "PKG_DUNNING",
+    "object_type": "PACKAGE",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_INVOICING",
+    "object_type": "PACKAGE",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_OW_UTIL",
+    "object_type": "PACKAGE",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_PLANS",
+    "object_type": "PACKAGE",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_RATING",
+    "object_type": "PACKAGE",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_DUNNING",
+    "object_type": "PACKAGE BODY",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_INVOICING",
+    "object_type": "PACKAGE BODY",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_OW_UTIL",
+    "object_type": "PACKAGE BODY",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_PLANS",
+    "object_type": "PACKAGE BODY",
+    "status": "VALID"
+  },
+  {
+    "object_name": "PKG_RATING",
+    "object_type": "PACKAGE BODY",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_BILLING_AUDIT_LOG_ID",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_CUSTOMER_MASTER_HIST",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_CUSTOMER_MASTER_SEQ",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_SUBSCRIPTIONS_HIST",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_SUB_NO_UNCANCEL",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  },
+  {
+    "object_name": "TRG_USAGE_EVENTS_CHECK",
+    "object_type": "TRIGGER",
+    "status": "VALID"
+  }
+]

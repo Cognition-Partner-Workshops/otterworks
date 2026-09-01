@@ -1,0 +1,42 @@
+[
+  {
+    "sequence_name": "SEQ_BILLING_AUDIT_LOG",
+    "last_number": 1,
+    "increment_by": 1,
+    "min_value": 1,
+    "max_value": 9999999999999999999999999999,
+    "cycle_flag": "N"
+  },
+  {
+    "sequence_name": "SEQ_CUSTOMER_MASTER",
+    "last_number": 125000,
+    "increment_by": 1,
+    "min_value": 1,
+    "max_value": 9999999999999999999999999999,
+    "cycle_flag": "N"
+  },
+  {
+    "sequence_name": "SEQ_CUSTOMER_MASTER_HIST",
+    "last_number": 1,
+    "increment_by": 1,
+    "min_value": 1,
+    "max_value": 9999999999999999999999999999,
+    "cycle_flag": "N"
+  },
+  {
+    "sequence_name": "SEQ_ENTITY_ATTR_VALUE",
+    "last_number": 11001,
+    "increment_by": 1,
+    "min_value": 1,
+    "max_value": 9999999999999999999999999999,
+    "cycle_flag": "N"
+  },
+  {
+    "sequence_name": "SEQ_SUBSCRIPTIONS_HIST",
+    "last_number": 1,
+    "increment_by": 1,
+    "min_value": 1,
+    "max_value": 9999999999999999999999999999,
+    "cycle_flag": "N"
+  }
+]

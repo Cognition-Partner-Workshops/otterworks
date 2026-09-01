@@ -1,0 +1,3015 @@
+{
+  "mapping_version": "m1",
+  "status": "PROPOSED \u2014 pending STOP B",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING",
+    "profile": "mongo-migration/profiles/oracle.md"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1",
+    "cluster": "otterworks-demos M0"
+  },
+  "parameters": {
+    "batch_no": {
+      "type": "long",
+      "resolved_per_run": true,
+      "current_value": 85559852,
+      "derivation": "sha256(NS)[:8] % 90_000_000 + 1_000_000, NS=demo (reports.py:ns_batch_no)",
+      "note": "never hard-coded in a mapping row; validated against the ledger at the start of every unit"
+    }
+  },
+  "collections": {
+    "codes": {
+      "unit": "reference",
+      "wave": 0,
+      "sources": [
+        "CODES"
+      ],
+      "model": "reference",
+      "access_pattern": "Every *_CD column in both sub-estates resolves through CODES by (code_type, code_val) \u2014 reports.py joins it twice per report and all five PL/SQL packages call PKG_OW_UTIL.f_code_desc. Read-mostly, 32 rows: kept as a standalone collection AND denormalized as a label beside each code value, so the hot read path needs no $lookup.",
+      "key": {
+        "_id": {
+          "from": [
+            "CODE_TYPE",
+            "CODE_VAL"
+          ],
+          "strategy": "compound_natural",
+          "format": "{code_type}:{code_val}"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "CODE_TYPE",
+          "source_type": "VARCHAR2",
+          "target_field": "code_type",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CODE_VAL",
+          "source_type": "NUMBER",
+          "target_field": "code_val",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CODE_DESC",
+          "source_type": "VARCHAR2",
+          "target_field": "code_desc",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "expected_documents": 32,
+      "indexes": [
+        {
+          "keys": {
+            "code_type": 1,
+            "code_val": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    "tenants": {
+      "unit": "reference",
+      "wave": 0,
+      "sources": [
+        "TENANTS"
+      ],
+      "model": "reference",
+      "access_pattern": "FK parent of 7 tables (subscriptions, usage_events, rating_periods, invoices, credit_notes, dunning_attempts, notifications) and the path parameter of every proc entrypoint in procs/routes.yaml. Referenced, never embedded: it is the top of the ownership tree.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "NAME",
+          "source_type": "VARCHAR2",
+          "target_field": "name",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TAX_EXEMPT_YN",
+          "source_type": "CHAR",
+          "target_field": "tax_exempt_yn",
+          "bson_type": "bool",
+          "transform": "yn_to_bool",
+          "canonicalization": [
+            "rstrip_spaces"
+          ]
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "TENANT_STATUS",
+            "label_field": "status"
+          }
+        }
+      ],
+      "expected_documents": 69,
+      "indexes": [
+        {
+          "keys": {
+            "name": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    "plans": {
+      "unit": "reference",
+      "wave": 0,
+      "sources": [
+        "PLANS"
+      ],
+      "model": "reference",
+      "access_pattern": "PKG_PLANS.fn_list_plans returns the whole table (GET /api/plans); fn_entitlement joins it per tenant. 3 rows, read-only in the app path.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "CODE",
+          "source_type": "VARCHAR2",
+          "target_field": "code",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TIER_CD",
+          "source_type": "NUMBER",
+          "target_field": "tier_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "PLAN_TIER",
+            "label_field": "tier"
+          }
+        },
+        {
+          "source_column": "MONTHLY_FEE",
+          "source_type": "NUMBER",
+          "target_field": "monthly_fee",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "INCLUDED_UNITS",
+          "source_type": "NUMBER",
+          "target_field": "included_units",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "OVERAGE_RATE",
+          "source_type": "NUMBER",
+          "target_field": "overage_rate",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ACTIVE_YN",
+          "source_type": "CHAR",
+          "target_field": "active_yn",
+          "bson_type": "bool",
+          "transform": "yn_to_bool",
+          "canonicalization": [
+            "rstrip_spaces"
+          ]
+        }
+      ],
+      "expected_documents": 3,
+      "indexes": [
+        {
+          "keys": {
+            "code": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    "customers": {
+      "unit": "customers",
+      "wave": 1,
+      "sources": [
+        "CUSTOMER_MASTER",
+        "ENTITY_ATTR_VALUE",
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "model": "embed",
+      "pattern_class": "wide-embed",
+      "access_pattern": "reports.py BALANCES_SQL aggregates cur_bal_amt/past_due_amt across the whole batch; the operations handbook's account lookups are by cust_id, cust_no and cust_name_upper. Reads are always the whole account record \u2014 address, phones and EAV attributes are never queried independently of their customer, and the EAV table has no consumer of its own \u2014 so all of it embeds. Bounded: <=6 address lines, <=4 phones, <=3 emails, 7 distinct EAV attribute names.",
+      "key": {
+        "_id": {
+          "from": [
+            "CUST_ID"
+          ],
+          "strategy": "natural",
+          "note": "VARCHAR2(36) UUID; cust_seq_no is kept as a plain field because SEQ_CUSTOMER_MASTER has no external consumer"
+        }
+      },
+      "root_where": "conversion_batch_no = ${batch_no}",
+      "fields": [
+        {
+          "source_column": "CUST_SEQ_NO",
+          "source_type": "NUMBER",
+          "target_field": "cust_seq_no",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CUST_NO",
+          "source_type": "VARCHAR2",
+          "target_field": "cust_no",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CUST_NAME",
+          "source_type": "VARCHAR2",
+          "target_field": "cust_name",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "LEGAL_NAME",
+          "source_type": "VARCHAR2",
+          "target_field": "legal_name",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "SIGNUP_DT",
+          "source_type": "VARCHAR2",
+          "target_field": "signup_dt",
+          "bson_type": "date",
+          "transform": "parse_dd_mon_yy",
+          "canonicalization": [
+            "empty_string_is_null"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "LAST_ACTIVITY_DT",
+          "source_type": "VARCHAR2",
+          "target_field": "last_activity_dt",
+          "bson_type": "date",
+          "transform": "parse_dd_mon_yy",
+          "canonicalization": [
+            "empty_string_is_null"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "CUST_STATUS",
+            "label_field": "status"
+          }
+        },
+        {
+          "source_column": "SUB_STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "sub_status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CUST_TYPE_CD",
+          "source_type": "NUMBER",
+          "target_field": "cust_type_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "CUST_TYPE",
+            "label_field": "customer_type"
+          }
+        },
+        {
+          "source_column": "SEGMENT_CD",
+          "source_type": "NUMBER",
+          "target_field": "segment_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "REGION_CD",
+          "source_type": "NUMBER",
+          "target_field": "region_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TAX_EXEMPT_YN",
+          "source_type": "CHAR",
+          "target_field": "tax_exempt_yn",
+          "bson_type": "bool",
+          "transform": "yn_to_bool",
+          "canonicalization": [
+            "rstrip_spaces"
+          ]
+        },
+        {
+          "source_column": "CREDIT_HOLD_YN",
+          "source_type": "CHAR",
+          "target_field": "credit_hold_yn",
+          "bson_type": "bool",
+          "transform": "yn_to_bool",
+          "canonicalization": [
+            "rstrip_spaces"
+          ]
+        },
+        {
+          "source_column": "VIP_YN",
+          "source_type": "CHAR",
+          "target_field": "vip_yn",
+          "bson_type": "bool",
+          "transform": "yn_to_bool",
+          "canonicalization": [
+            "rstrip_spaces"
+          ]
+        },
+        {
+          "source_column": "CUR_BAL_AMT",
+          "source_type": "NUMBER",
+          "target_field": "cur_bal_amt",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "PAST_DUE_AMT",
+          "source_type": "NUMBER",
+          "target_field": "past_due_amt",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "YTD_BILLED_AMT",
+          "source_type": "NUMBER",
+          "target_field": "ytd_billed_amt",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CREDIT_LIMIT_AMT",
+          "source_type": "NUMBER",
+          "target_field": "credit_limit_amt",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "RELATED_ACCT_IDS",
+          "source_type": "VARCHAR2",
+          "target_field": "related_acct_ids",
+          "bson_type": "array<string>",
+          "transform": "split_csv",
+          "canonicalization": [
+            "trim_elements"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "PROMO_CODES_CSV",
+          "source_type": "VARCHAR2",
+          "target_field": "promo_codes_csv",
+          "bson_type": "array<string>",
+          "transform": "split_csv",
+          "canonicalization": [
+            "trim_elements"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "LEGACY_SYS_KEY",
+          "source_type": "VARCHAR2",
+          "target_field": "legacy_sys_key",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "MAINFRAME_ACCT_NO",
+          "source_type": "VARCHAR2",
+          "target_field": "mainframe_acct_no",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CREATED_BY",
+          "source_type": "VARCHAR2",
+          "target_field": "created_by",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CREATED_DT",
+          "source_type": "DATE",
+          "target_field": "created_dt",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "UPDATED_BY",
+          "source_type": "VARCHAR2",
+          "target_field": "updated_by",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "UPDATED_DT",
+          "source_type": "DATE",
+          "target_field": "updated_dt",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ROW_VERSION_NO",
+          "source_type": "NUMBER",
+          "target_field": "row_version_no",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "folded": [
+        {
+          "source_column": "ADDR_LINE_1",
+          "folded_into": "address.lines"
+        },
+        {
+          "source_column": "ADDR_LINE_2",
+          "folded_into": "address.lines"
+        },
+        {
+          "source_column": "ADDR_LINE_3",
+          "folded_into": "address.lines"
+        },
+        {
+          "source_column": "CITY",
+          "folded_into": "address"
+        },
+        {
+          "source_column": "STATE_CD",
+          "folded_into": "address"
+        },
+        {
+          "source_column": "ZIP",
+          "folded_into": "address"
+        },
+        {
+          "source_column": "PHONE1",
+          "folded_into": "phones"
+        },
+        {
+          "source_column": "PHONE2",
+          "folded_into": "phones"
+        },
+        {
+          "source_column": "PHONE1_TYPE_CD",
+          "folded_into": "phones"
+        },
+        {
+          "source_column": "PHONE2_TYPE_CD",
+          "folded_into": "phones"
+        },
+        {
+          "source_column": "EMAIL_1",
+          "folded_into": "emails"
+        }
+      ],
+      "dropped": [
+        {
+          "source_column": "CUST_NAME_UPPER",
+          "reason": "derived: UPPER(cust_name); replaced by a case-insensitive collation index"
+        },
+        {
+          "source_column": "DBA_NAME",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "ADDR_LINE_4",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "ADDR_LINE_5",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "ADDR_LINE_6",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "ZIP4",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "COUNTRY_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_1",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_2",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_3",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_4",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_5",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ADDR_LINE_6",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_CITY",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_STATE_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "MAIL_ZIP",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "PHONE3",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "PHONE4",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "PHONE3_TYPE_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "PHONE4_TYPE_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FAX",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "EMAIL_2",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "EMAIL_3",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "LAST_INVOICE_DT",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "LAST_PAYMENT_DT",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "TERMINATE_DT",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "TERRITORY_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "CHANNEL_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "RATE_CLASS_CD",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "DUNNING_EXEMPT_YN",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "LTD_BILLED_AMT",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "YTD_PAID_AMT",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "CHILD_ACCT_IDS",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "CONTACT_NOTES",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "CONVERSION_BATCH_NO",
+          "reason": "run-scoping parameter, promoted to the ${batch_no} root_where placeholder"
+        },
+        {
+          "source_column": "FLAG_01",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_02",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_03",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_04",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_05",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_06",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_07",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_08",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_09",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_10",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_11",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_12",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_13",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_14",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_15",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_16",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_17",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_18",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_19",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "FLAG_20",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_01",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_02",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_03",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_04",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_05",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_06",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_07",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_08",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_09",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_10",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_11",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_12",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_13",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_14",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_15",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_16",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_17",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_18",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_19",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_20",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_21",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_22",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_23",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_24",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_25",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_26",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_27",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_28",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_29",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_30",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_31",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_32",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_33",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_34",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_35",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_36",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_37",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_38",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_39",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_40",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_01",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_02",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_03",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_04",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_05",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_06",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_07",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_08",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_09",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_AMT_10",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_01",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_02",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_03",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_04",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_05",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_06",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_07",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_08",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_09",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        },
+        {
+          "source_column": "UDF_DT_10",
+          "reason": "0/25000 rows populated (proposed-unused; evidence: census/access_patterns.json#customer_master_population)"
+        }
+      ],
+      "embeds": [
+        {
+          "target_array": "address.lines",
+          "source": "CUSTOMER_MASTER",
+          "strategy": "repeating_group_to_array",
+          "source_columns": [
+            "ADDR_LINE_1",
+            "ADDR_LINE_2",
+            "ADDR_LINE_3",
+            "ADDR_LINE_4",
+            "ADDR_LINE_5",
+            "ADDR_LINE_6"
+          ],
+          "element_key": "ordinal",
+          "element_fields": [
+            {
+              "target_field": "$element",
+              "bson_type": "string"
+            }
+          ],
+          "rule": "NULL and empty lines are omitted, order preserved; the array is absent when every line is NULL",
+          "cardinality": "sum(address.lines[].length) == count of non-null ADDR_LINE_* values"
+        },
+        {
+          "target_array": "phones",
+          "source": "CUSTOMER_MASTER",
+          "strategy": "repeating_group_to_array",
+          "source_columns": [
+            "PHONE1",
+            "PHONE2",
+            "PHONE3",
+            "PHONE4",
+            "PHONE1_TYPE_CD",
+            "PHONE2_TYPE_CD",
+            "PHONE3_TYPE_CD",
+            "PHONE4_TYPE_CD"
+          ],
+          "element_key": "ordinal",
+          "element_fields": [
+            {
+              "target_field": "number",
+              "bson_type": "string",
+              "from": "PHONE{n}"
+            },
+            {
+              "target_field": "type_code",
+              "bson_type": "long",
+              "from": "PHONE{n}_TYPE_CD"
+            },
+            {
+              "target_field": "type",
+              "bson_type": "string",
+              "code_lookup": {
+                "code_type": "PHONE_TYPE"
+              }
+            }
+          ],
+          "rule": "one element per non-null PHONE{n}; a type code with no number is dropped and counted",
+          "cardinality": "sum(phones[].length) == count of non-null PHONE1..4"
+        },
+        {
+          "target_array": "emails",
+          "source": "CUSTOMER_MASTER",
+          "strategy": "repeating_group_to_array",
+          "source_columns": [
+            "EMAIL_1",
+            "EMAIL_2",
+            "EMAIL_3"
+          ],
+          "element_key": "ordinal",
+          "element_fields": [
+            {
+              "target_field": "$element",
+              "bson_type": "string"
+            }
+          ],
+          "cardinality": "sum(emails[].length) == count of non-null EMAIL_1..3"
+        },
+        {
+          "target_array": "attributes",
+          "source": "ENTITY_ATTR_VALUE",
+          "strategy": "eav_to_array",
+          "child_where": "entity_type = 'CUSTOMER' AND entity_id = ${_id}",
+          "element_key": [
+            "attr_name",
+            "created_dt"
+          ],
+          "element_fields": [
+            {
+              "source_column": "ATTR_NAME",
+              "target_field": "name",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ATTR_VALUE",
+              "target_field": "value",
+              "bson_type": "string",
+              "note": "attr_type is 'STR' for all 8,333 rows; no typed coercion"
+            },
+            {
+              "source_column": "ATTR_TYPE",
+              "target_field": "type",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CREATED_DT",
+              "target_field": "created_at",
+              "bson_type": "date",
+              "transform": "parse_dd_mon_yy",
+              "on_error": "quarantine"
+            }
+          ],
+          "dropped": [
+            {
+              "source_column": "EAV_ID",
+              "reason": "sequence surrogate; the EAV row becomes an attributes[] element"
+            },
+            {
+              "source_column": "ENTITY_TYPE",
+              "reason": "expressed by containment: only CUSTOMER rows exist"
+            },
+            {
+              "source_column": "ENTITY_ID",
+              "reason": "embed parent key; expressed by containment"
+            }
+          ],
+          "rule": "ARRAY, not a subdocument keyed by attr_name: 187 (entity_id, attr_name) pairs carry more than one row (up to 3) across the 8,333 rows and 7,075 customers that have attributes. A keyed subdocument would keep one value per pair and silently drop the rest; the array preserves every row and lets recon count elements against source rows.",
+          "cardinality": "sum(customers[].attributes.length) == 8333 (every EAV row; 0 orphans confirmed)"
+        },
+        {
+          "target_array": "history",
+          "source": "CUSTOMER_MASTER_HIST",
+          "strategy": "child_rows_to_array",
+          "child_where": "cust_id = ${_id}",
+          "element_key": [
+            "hist_id"
+          ],
+          "element_fields": [
+            {
+              "source_column": "HIST_ID",
+              "target_field": "hist_id",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "HIST_DT",
+              "target_field": "hist_dt",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "HIST_OP",
+              "target_field": "hist_op",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CUST_ID",
+              "target_field": "cust_id",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CUST_SEQ_NO",
+              "target_field": "cust_seq_no",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "TENANT_ID",
+              "target_field": "tenant_id",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CUST_NO",
+              "target_field": "cust_no",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CUST_NAME",
+              "target_field": "cust_name",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CUST_NAME_UPPER",
+              "target_field": "cust_name_upper",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "LEGAL_NAME",
+              "target_field": "legal_name",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "DBA_NAME",
+              "target_field": "dba_name",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_1",
+              "target_field": "addr_line_1",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_2",
+              "target_field": "addr_line_2",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_3",
+              "target_field": "addr_line_3",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_4",
+              "target_field": "addr_line_4",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_5",
+              "target_field": "addr_line_5",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ADDR_LINE_6",
+              "target_field": "addr_line_6",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CITY",
+              "target_field": "city",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "STATE_CD",
+              "target_field": "state_cd",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ZIP",
+              "target_field": "zip",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ZIP4",
+              "target_field": "zip4",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "COUNTRY_CD",
+              "target_field": "country_cd",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_1",
+              "target_field": "mail_addr_line_1",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_2",
+              "target_field": "mail_addr_line_2",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_3",
+              "target_field": "mail_addr_line_3",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_4",
+              "target_field": "mail_addr_line_4",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_5",
+              "target_field": "mail_addr_line_5",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ADDR_LINE_6",
+              "target_field": "mail_addr_line_6",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_CITY",
+              "target_field": "mail_city",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_STATE_CD",
+              "target_field": "mail_state_cd",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAIL_ZIP",
+              "target_field": "mail_zip",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PHONE1",
+              "target_field": "phone1",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PHONE2",
+              "target_field": "phone2",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PHONE3",
+              "target_field": "phone3",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PHONE4",
+              "target_field": "phone4",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PHONE1_TYPE_CD",
+              "target_field": "phone1_type_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "PHONE2_TYPE_CD",
+              "target_field": "phone2_type_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "PHONE3_TYPE_CD",
+              "target_field": "phone3_type_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "PHONE4_TYPE_CD",
+              "target_field": "phone4_type_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "FAX",
+              "target_field": "fax",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "EMAIL_1",
+              "target_field": "email_1",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "EMAIL_2",
+              "target_field": "email_2",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "EMAIL_3",
+              "target_field": "email_3",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "SIGNUP_DT",
+              "target_field": "signup_dt",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "LAST_ACTIVITY_DT",
+              "target_field": "last_activity_dt",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "LAST_INVOICE_DT",
+              "target_field": "last_invoice_dt",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "LAST_PAYMENT_DT",
+              "target_field": "last_payment_dt",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "TERMINATE_DT",
+              "target_field": "terminate_dt",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "STATUS_CD",
+              "target_field": "status_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "SUB_STATUS_CD",
+              "target_field": "sub_status_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "CUST_TYPE_CD",
+              "target_field": "cust_type_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "SEGMENT_CD",
+              "target_field": "segment_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "REGION_CD",
+              "target_field": "region_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "TERRITORY_CD",
+              "target_field": "territory_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "CHANNEL_CD",
+              "target_field": "channel_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "RATE_CLASS_CD",
+              "target_field": "rate_class_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "TAX_EXEMPT_YN",
+              "target_field": "tax_exempt_yn",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "CREDIT_HOLD_YN",
+              "target_field": "credit_hold_yn",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "DUNNING_EXEMPT_YN",
+              "target_field": "dunning_exempt_yn",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "VIP_YN",
+              "target_field": "vip_yn",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "CUR_BAL_AMT",
+              "target_field": "cur_bal_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "PAST_DUE_AMT",
+              "target_field": "past_due_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "YTD_BILLED_AMT",
+              "target_field": "ytd_billed_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "LTD_BILLED_AMT",
+              "target_field": "ltd_billed_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "YTD_PAID_AMT",
+              "target_field": "ytd_paid_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "CREDIT_LIMIT_AMT",
+              "target_field": "credit_limit_amt",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "RELATED_ACCT_IDS",
+              "target_field": "related_acct_ids",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CHILD_ACCT_IDS",
+              "target_field": "child_acct_ids",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PROMO_CODES_CSV",
+              "target_field": "promo_codes_csv",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CONTACT_NOTES",
+              "target_field": "contact_notes",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "LEGACY_SYS_KEY",
+              "target_field": "legacy_sys_key",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "MAINFRAME_ACCT_NO",
+              "target_field": "mainframe_acct_no",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CONVERSION_BATCH_NO",
+              "target_field": "conversion_batch_no",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "FLAG_01",
+              "target_field": "flag_01",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_02",
+              "target_field": "flag_02",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_03",
+              "target_field": "flag_03",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_04",
+              "target_field": "flag_04",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_05",
+              "target_field": "flag_05",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_06",
+              "target_field": "flag_06",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_07",
+              "target_field": "flag_07",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_08",
+              "target_field": "flag_08",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_09",
+              "target_field": "flag_09",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_10",
+              "target_field": "flag_10",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_11",
+              "target_field": "flag_11",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_12",
+              "target_field": "flag_12",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_13",
+              "target_field": "flag_13",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_14",
+              "target_field": "flag_14",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_15",
+              "target_field": "flag_15",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_16",
+              "target_field": "flag_16",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_17",
+              "target_field": "flag_17",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_18",
+              "target_field": "flag_18",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_19",
+              "target_field": "flag_19",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "FLAG_20",
+              "target_field": "flag_20",
+              "bson_type": "bool"
+            },
+            {
+              "source_column": "UDF_01",
+              "target_field": "udf_01",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_02",
+              "target_field": "udf_02",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_03",
+              "target_field": "udf_03",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_04",
+              "target_field": "udf_04",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_05",
+              "target_field": "udf_05",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_06",
+              "target_field": "udf_06",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_07",
+              "target_field": "udf_07",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_08",
+              "target_field": "udf_08",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_09",
+              "target_field": "udf_09",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_10",
+              "target_field": "udf_10",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_11",
+              "target_field": "udf_11",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_12",
+              "target_field": "udf_12",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_13",
+              "target_field": "udf_13",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_14",
+              "target_field": "udf_14",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_15",
+              "target_field": "udf_15",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_16",
+              "target_field": "udf_16",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_17",
+              "target_field": "udf_17",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_18",
+              "target_field": "udf_18",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_19",
+              "target_field": "udf_19",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_20",
+              "target_field": "udf_20",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_21",
+              "target_field": "udf_21",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_22",
+              "target_field": "udf_22",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_23",
+              "target_field": "udf_23",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_24",
+              "target_field": "udf_24",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_25",
+              "target_field": "udf_25",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_26",
+              "target_field": "udf_26",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_27",
+              "target_field": "udf_27",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_28",
+              "target_field": "udf_28",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_29",
+              "target_field": "udf_29",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_30",
+              "target_field": "udf_30",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_31",
+              "target_field": "udf_31",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_32",
+              "target_field": "udf_32",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_33",
+              "target_field": "udf_33",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_34",
+              "target_field": "udf_34",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_35",
+              "target_field": "udf_35",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_36",
+              "target_field": "udf_36",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_37",
+              "target_field": "udf_37",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_38",
+              "target_field": "udf_38",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_39",
+              "target_field": "udf_39",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_40",
+              "target_field": "udf_40",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_AMT_01",
+              "target_field": "udf_amt_01",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_02",
+              "target_field": "udf_amt_02",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_03",
+              "target_field": "udf_amt_03",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_04",
+              "target_field": "udf_amt_04",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_05",
+              "target_field": "udf_amt_05",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_06",
+              "target_field": "udf_amt_06",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_07",
+              "target_field": "udf_amt_07",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_08",
+              "target_field": "udf_amt_08",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_09",
+              "target_field": "udf_amt_09",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_AMT_10",
+              "target_field": "udf_amt_10",
+              "bson_type": "decimal128"
+            },
+            {
+              "source_column": "UDF_DT_01",
+              "target_field": "udf_dt_01",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_02",
+              "target_field": "udf_dt_02",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_03",
+              "target_field": "udf_dt_03",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_04",
+              "target_field": "udf_dt_04",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_05",
+              "target_field": "udf_dt_05",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_06",
+              "target_field": "udf_dt_06",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_07",
+              "target_field": "udf_dt_07",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_08",
+              "target_field": "udf_dt_08",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_09",
+              "target_field": "udf_dt_09",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UDF_DT_10",
+              "target_field": "udf_dt_10",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CREATED_BY",
+              "target_field": "created_by",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "CREATED_DT",
+              "target_field": "created_dt",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "UPDATED_BY",
+              "target_field": "updated_by",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "UPDATED_DT",
+              "target_field": "updated_dt",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "ROW_VERSION_NO",
+              "target_field": "row_version_no",
+              "bson_type": "long"
+            }
+          ],
+          "rule": "0 rows today (the trigger only fires on UPDATE and the fixture never updates). The array is absent, not empty, and the unit records 0 rows -> 0 elements as an explicit PASS per tolerance T14.",
+          "cardinality": "sum(history[].length) == 0"
+        }
+      ],
+      "quarantine": {
+        "collection": "customers_quarantine",
+        "expected": {
+          "unparseable_signup_dt": 50,
+          "malformed_related_acct_ids": 31
+        }
+      },
+      "expected_documents": 25000,
+      "indexes": [
+        {
+          "keys": {
+            "cust_no": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "tenant_id": 1,
+            "status_cd": 1
+          }
+        },
+        {
+          "keys": {
+            "cust_name": 1
+          },
+          "collation": {
+            "locale": "en",
+            "strength": 2
+          },
+          "note": "replaces the CUST_NAME_UPPER shadow column"
+        },
+        {
+          "keys": {
+            "legacy_sys_key": 1
+          },
+          "sparse": true
+        }
+      ]
+    },
+    "subscriptions": {
+      "unit": "subscriptions",
+      "wave": 1,
+      "sources": [
+        "SUBSCRIPTIONS",
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "model": "embed",
+      "access_pattern": "PKG_PLANS.fn_entitlement reads the one active subscription per tenant as-of a date; sp_change_plan closes the current row and inserts the next, and TRG_SUBSCRIPTIONS_HIST snapshots the old row. Version history is only ever read alongside its subscription, so it embeds.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "PLAN_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "plan_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "STARTS_ON",
+          "source_type": "DATE",
+          "target_field": "starts_on",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ENDS_ON",
+          "source_type": "DATE",
+          "target_field": "ends_on",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "SUB_STATUS",
+            "label_field": "status"
+          }
+        },
+        {
+          "source_column": "SUSPENDED_ON",
+          "source_type": "DATE",
+          "target_field": "suspended_on",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "embeds": [
+        {
+          "target_array": "history",
+          "source": "SUBSCRIPTIONS_HIST",
+          "strategy": "child_rows_to_array",
+          "child_where": "id = ${_id}",
+          "element_key": [
+            "hist_id"
+          ],
+          "element_fields": [
+            {
+              "source_column": "HIST_ID",
+              "target_field": "hist_id",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "HIST_DT",
+              "target_field": "hist_dt",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "HIST_OP",
+              "target_field": "hist_op",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "ID",
+              "target_field": "id",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "TENANT_ID",
+              "target_field": "tenant_id",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "PLAN_ID",
+              "target_field": "plan_id",
+              "bson_type": "string"
+            },
+            {
+              "source_column": "STARTS_ON",
+              "target_field": "starts_on",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "ENDS_ON",
+              "target_field": "ends_on",
+              "bson_type": "date"
+            },
+            {
+              "source_column": "STATUS_CD",
+              "target_field": "status_cd",
+              "bson_type": "long"
+            },
+            {
+              "source_column": "SUSPENDED_ON",
+              "target_field": "suspended_on",
+              "bson_type": "date"
+            }
+          ],
+          "rule": "0 rows today; empty is an explicit PASS per tolerance T14",
+          "cardinality": "sum(history[].length) == 0"
+        }
+      ],
+      "expected_documents": 69,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "starts_on": -1
+          }
+        },
+        {
+          "keys": {
+            "plan_id": 1
+          }
+        }
+      ]
+    },
+    "invoices": {
+      "unit": "invoices",
+      "wave": 2,
+      "sources": [
+        "INVOICE_HEADER",
+        "INVOICE_LINE"
+      ],
+      "model": "embed",
+      "pattern_class": "bulk-load",
+      "access_pattern": "reports.py LINE_SQL joins header to line on every month-end run and never reads a line outside its header; STATUS_SQL aggregates headers alone. Fan-out is bounded and small (min 1, max 23, avg 8.0 lines per invoice; longest item_desc 29 chars), so an embedded document stays around 3 KB \u2014 three orders of magnitude below the 16 MB limit. Embed.",
+      "key": {
+        "_id": {
+          "from": [
+            "INVOICE_ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "root_where": "batch_no = ${batch_no}",
+      "fields": [
+        {
+          "source_column": "INVOICE_NO",
+          "source_type": "VARCHAR2",
+          "target_field": "invoice_no",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "CUST_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "cust_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "INVOICE_DT",
+          "source_type": "VARCHAR2",
+          "target_field": "invoice_dt",
+          "bson_type": "date",
+          "transform": "parse_dd_mon_yy",
+          "canonicalization": [
+            "empty_string_is_null"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "DUE_DT",
+          "source_type": "VARCHAR2",
+          "target_field": "due_dt",
+          "bson_type": "date",
+          "transform": "parse_dd_mon_yy",
+          "canonicalization": [
+            "empty_string_is_null"
+          ],
+          "on_error": "quarantine"
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "INV_STATUS",
+            "label_field": "status"
+          }
+        },
+        {
+          "source_column": "TOTAL_AMT",
+          "source_type": "NUMBER",
+          "target_field": "total_amt",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "dropped": [
+        {
+          "source_column": "BATCH_NO",
+          "reason": "run-scoping parameter, promoted to the ${batch_no} root_where placeholder"
+        }
+      ],
+      "embeds": [
+        {
+          "target_array": "lines",
+          "source": "INVOICE_LINE",
+          "strategy": "child_rows_to_array",
+          "child_where": "invoice_id = ${_id}",
+          "element_key": [
+            "line_id"
+          ],
+          "element_fields": [
+            {
+              "source_column": "LINE_ID",
+              "source_type": "VARCHAR2",
+              "target_field": "line_id",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "LINE_NO",
+              "source_type": "NUMBER",
+              "target_field": "line_no",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "LINE_TYPE_CD",
+              "source_type": "NUMBER",
+              "target_field": "line_type_cd",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "ITEM_DESC",
+              "source_type": "VARCHAR2",
+              "target_field": "item_desc",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "QTY",
+              "source_type": "NUMBER",
+              "target_field": "qty",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "UNIT_PRICE",
+              "source_type": "NUMBER",
+              "target_field": "unit_price",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "AMOUNT",
+              "source_type": "NUMBER",
+              "target_field": "amount",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "TAX_AMT",
+              "source_type": "NUMBER",
+              "target_field": "tax_amt",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "SERVICE_PERIOD",
+              "source_type": "VARCHAR2",
+              "target_field": "service_period",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "POSTED_YN",
+              "source_type": "CHAR",
+              "target_field": "posted_yn",
+              "bson_type": "bool",
+              "transform": "yn_to_bool",
+              "canonicalization": [
+                "rstrip_spaces"
+              ]
+            },
+            {
+              "source_column": "GL_ACCT_CSV",
+              "source_type": "VARCHAR2",
+              "target_field": "gl_acct_csv",
+              "bson_type": "array<string>",
+              "transform": "split_csv",
+              "canonicalization": [
+                "trim_elements"
+              ],
+              "on_error": "quarantine"
+            },
+            {
+              "source_column": "SRC_SYSTEM",
+              "source_type": "VARCHAR2",
+              "target_field": "src_system",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            }
+          ],
+          "dropped": [
+            {
+              "source_column": "BATCH_NO",
+              "reason": "run-scoping parameter, inherited from the parent invoice"
+            },
+            {
+              "source_column": "INVOICE_ID",
+              "reason": "embed parent key; expressed by containment"
+            },
+            {
+              "source_column": "INVOICE_NO",
+              "reason": "denormalized copy of invoice_header.invoice_no on every line"
+            },
+            {
+              "source_column": "CUST_ID",
+              "reason": "denormalized copy of the parent header's cust_id"
+            },
+            {
+              "source_column": "CUST_NO",
+              "reason": "denormalized copy of the parent customer's cust_no"
+            },
+            {
+              "source_column": "CUST_NAME",
+              "reason": "denormalized copy of the parent customer's cust_name"
+            },
+            {
+              "source_column": "TENANT_ID",
+              "reason": "denormalized copy of the parent header's tenant_id"
+            },
+            {
+              "source_column": "INVOICE_DT",
+              "reason": "denormalized copy of the parent header's invoice_dt"
+            }
+          ],
+          "sort": [
+            [
+              "line_no",
+              1
+            ]
+          ],
+          "cardinality": "count(invoices) == 18750 AND sum(invoices[].lines.length) == 150000 - 37 quarantined orphans == 149963"
+        }
+      ],
+      "quarantine": {
+        "collection": "invoices_quarantine",
+        "expected": {
+          "orphan_invoice_lines": 37,
+          "note": "37 INVOICE_LINE rows point at 37 invoice_ids with no INVOICE_HEADER row. They are dropped by the legacy report's inner join, which is exactly why they must be surfaced here rather than inherited silently."
+        }
+      },
+      "expected_documents": 18750,
+      "indexes": [
+        {
+          "keys": {
+            "invoice_no": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "cust_id": 1,
+            "invoice_dt": -1
+          }
+        },
+        {
+          "keys": {
+            "status_cd": 1
+          }
+        }
+      ]
+    },
+    "usage_events": {
+      "unit": "usage_rating",
+      "wave": 2,
+      "sources": [
+        "USAGE_EVENTS"
+      ],
+      "model": "reference",
+      "access_pattern": "PKG_RATING.compute_rating scans events by (tenant_id, occurred_at) over a period window and TRG_USAGE_EVENTS_CHECK validates on insert. High-cardinality append-only time series with an independent write path: it stays its own collection rather than embedding into rating_periods.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "OCCURRED_AT",
+          "source_type": "TIMESTAMP(6)",
+          "target_field": "occurred_at",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "UNITS",
+          "source_type": "NUMBER",
+          "target_field": "units",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "KIND_CD",
+          "source_type": "NUMBER",
+          "target_field": "kind_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "USAGE_KIND",
+            "label_field": "kind"
+          }
+        }
+      ],
+      "expected_documents": 814,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "occurred_at": 1
+          }
+        }
+      ]
+    },
+    "rating_periods": {
+      "unit": "usage_rating",
+      "wave": 2,
+      "sources": [
+        "RATING_PERIODS",
+        "RATING_RESULTS"
+      ],
+      "model": "embed",
+      "access_pattern": "RATING_RESULTS is written only by sp_finalize_rating for its period and read only via fn_usage_summary for that same period; there is no cross-period result query. Bounded by subscriptions-per-tenant, so results embed in the period that owns them.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "PERIOD_START",
+          "source_type": "DATE",
+          "target_field": "period_start",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "PERIOD_END",
+          "source_type": "DATE",
+          "target_field": "period_end",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "embeds": [
+        {
+          "target_array": "results",
+          "source": "RATING_RESULTS",
+          "strategy": "child_rows_to_array",
+          "child_where": "period_id = ${_id}",
+          "element_key": [
+            "id"
+          ],
+          "element_fields": [
+            {
+              "source_column": "ID",
+              "source_type": "VARCHAR2",
+              "target_field": "id",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "SUBSCRIPTION_ID",
+              "source_type": "VARCHAR2",
+              "target_field": "subscription_id",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "USED_UNITS",
+              "source_type": "NUMBER",
+              "target_field": "used_units",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "QUOTA_UNITS",
+              "source_type": "NUMBER",
+              "target_field": "quota_units",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "ROLLOVER_UNITS",
+              "source_type": "NUMBER",
+              "target_field": "rollover_units",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "BILLABLE_UNITS",
+              "source_type": "NUMBER",
+              "target_field": "billable_units",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "OVERAGE_AMOUNT",
+              "source_type": "NUMBER",
+              "target_field": "overage_amount",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "CREATED_AT",
+              "source_type": "TIMESTAMP(6)",
+              "target_field": "created_at",
+              "bson_type": "date",
+              "transform": "direct",
+              "canonicalization": []
+            }
+          ],
+          "dropped": [
+            {
+              "source_column": "PERIOD_ID",
+              "reason": "embed parent key; expressed by containment"
+            }
+          ],
+          "cardinality": "sum(results[].length) == 3"
+        }
+      ],
+      "expected_documents": 3,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "period_start": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    "subscription_invoices": {
+      "unit": "subscription_invoices",
+      "wave": 2,
+      "sources": [
+        "INVOICES",
+        "INVOICE_LINES"
+      ],
+      "model": "embed",
+      "access_pattern": "A SEPARATE lineage from `invoices`: INVOICES is written by PKG_INVOICING.sp_issue_invoice against RATING_PERIODS and read back by fn_invoice_lines per invoice, and it is the FK parent of DUNNING_ATTEMPTS. INVOICE_HEADER (the converted legacy estate) has no FK to it and no shared key. Keeping them as two collections preserves that separation instead of inventing a merge the source does not make.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "PERIOD_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "period_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ISSUED_AT",
+          "source_type": "TIMESTAMP(6)",
+          "target_field": "issued_at",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "SUBTOTAL",
+          "source_type": "NUMBER",
+          "target_field": "subtotal",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TAX",
+          "source_type": "NUMBER",
+          "target_field": "tax",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "TOTAL",
+          "source_type": "NUMBER",
+          "target_field": "total",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "INV_STATUS",
+            "label_field": "status"
+          }
+        }
+      ],
+      "embeds": [
+        {
+          "target_array": "lines",
+          "source": "INVOICE_LINES",
+          "strategy": "child_rows_to_array",
+          "child_where": "invoice_id = ${_id}",
+          "element_key": [
+            "line_no"
+          ],
+          "element_fields": [
+            {
+              "source_column": "ID",
+              "source_type": "VARCHAR2",
+              "target_field": "id",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "LINE_NO",
+              "source_type": "NUMBER",
+              "target_field": "line_no",
+              "bson_type": "long",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "LINE_TYPE",
+              "source_type": "VARCHAR2",
+              "target_field": "line_type",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "DESCRIPTION",
+              "source_type": "VARCHAR2",
+              "target_field": "description",
+              "bson_type": "string",
+              "transform": "direct",
+              "canonicalization": []
+            },
+            {
+              "source_column": "AMOUNT",
+              "source_type": "NUMBER",
+              "target_field": "amount",
+              "bson_type": "decimal128",
+              "transform": "direct",
+              "canonicalization": []
+            }
+          ],
+          "dropped": [
+            {
+              "source_column": "INVOICE_ID",
+              "reason": "embed parent key; expressed by containment"
+            }
+          ],
+          "sort": [
+            [
+              "line_no",
+              1
+            ]
+          ],
+          "cardinality": "sum(lines[].length) == 2"
+        }
+      ],
+      "expected_documents": 3,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_at": -1
+          }
+        },
+        {
+          "keys": {
+            "period_id": 1
+          }
+        }
+      ]
+    },
+    "credit_notes": {
+      "unit": "collections_ops",
+      "wave": 3,
+      "sources": [
+        "CREDIT_NOTES"
+      ],
+      "model": "reference",
+      "access_pattern": "Read per tenant when applying credit; no child rows.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ISSUED_ON",
+          "source_type": "DATE",
+          "target_field": "issued_on",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "AMOUNT",
+          "source_type": "NUMBER",
+          "target_field": "amount",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "REMAINING_AMOUNT",
+          "source_type": "NUMBER",
+          "target_field": "remaining_amount",
+          "bson_type": "decimal128",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "expected_documents": 5,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_on": -1
+          }
+        }
+      ]
+    },
+    "dunning_attempts": {
+      "unit": "collections_ops",
+      "wave": 3,
+      "sources": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "model": "reference",
+      "access_pattern": "PKG_DUNNING.sp_schedule_dunning inserts one row per (invoice, attempt_no) and JOB_NIGHTLY_DUNNING drives it. Referenced by invoice, never embedded: attempts grow unbounded over an invoice's life and are written long after the invoice.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "INVOICE_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "invoice_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "ATTEMPT_NO",
+          "source_type": "NUMBER",
+          "target_field": "attempt_no",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "SCHEDULED_FOR",
+          "source_type": "DATE",
+          "target_field": "scheduled_for",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "STATUS_CD",
+          "source_type": "NUMBER",
+          "target_field": "status_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "DUN_STATUS",
+            "label_field": "status"
+          }
+        }
+      ],
+      "expected_documents": 1,
+      "indexes": [
+        {
+          "keys": {
+            "invoice_id": 1,
+            "attempt_no": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "tenant_id": 1,
+            "scheduled_for": 1
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "unit": "collections_ops",
+      "wave": 3,
+      "sources": [
+        "NOTIFICATIONS"
+      ],
+      "model": "reference",
+      "access_pattern": "Append-only outbound log keyed (tenant_id, kind_cd, sent_at); read by time range.",
+      "key": {
+        "_id": {
+          "from": [
+            "ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "TENANT_ID",
+          "source_type": "VARCHAR2",
+          "target_field": "tenant_id",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "KIND_CD",
+          "source_type": "NUMBER",
+          "target_field": "kind_cd",
+          "bson_type": "long",
+          "transform": "direct",
+          "canonicalization": [],
+          "code_lookup": {
+            "code_type": "NOTIF_KIND",
+            "label_field": "kind"
+          }
+        },
+        {
+          "source_column": "SENT_AT",
+          "source_type": "TIMESTAMP(6)",
+          "target_field": "sent_at",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "expected_documents": 1,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "kind_cd": 1,
+            "sent_at": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    "billing_audit_log": {
+      "unit": "collections_ops",
+      "wave": 3,
+      "sources": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "model": "reference",
+      "access_pattern": "PKG_OW_UTIL.log_msg appends here from every package; JOB_PURGE_AUDIT_LOG trims it. Empty today (0 rows) because the fixture load path does not log \u2014 an explicit empty-collection PASS per tolerance T14, not a skip.",
+      "key": {
+        "_id": {
+          "from": [
+            "LOG_ID"
+          ],
+          "strategy": "natural"
+        }
+      },
+      "fields": [
+        {
+          "source_column": "LOGGED_AT",
+          "source_type": "DATE",
+          "target_field": "logged_at",
+          "bson_type": "date",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "MODULE",
+          "source_type": "VARCHAR2",
+          "target_field": "module",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        },
+        {
+          "source_column": "MESSAGE",
+          "source_type": "VARCHAR2",
+          "target_field": "message",
+          "bson_type": "string",
+          "transform": "direct",
+          "canonicalization": []
+        }
+      ],
+      "expected_documents": 0,
+      "indexes": [
+        {
+          "keys": {
+            "logged_at": -1
+          }
+        },
+        {
+          "keys": {
+            "module": 1
+          }
+        }
+      ]
+    }
+  }
+}

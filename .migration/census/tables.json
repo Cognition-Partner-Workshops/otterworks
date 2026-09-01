@@ -1,0 +1,102 @@
+[
+  {
+    "owner": "OW_BILLING",
+    "table_name": "BILLING_AUDIT_LOG",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "CODES",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "CREDIT_NOTES",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "CUSTOMER_MASTER",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "CUSTOMER_MASTER_HIST",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "DUNNING_ATTEMPTS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "ENTITY_ATTR_VALUE",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "FIXTURE_META",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "INVOICES",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "INVOICE_HEADER",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "INVOICE_LINE",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "INVOICE_LINES",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "NOTIFICATIONS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "PLANS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "RATING_PERIODS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "RATING_RESULTS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "SUBSCRIPTIONS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "SUBSCRIPTIONS_HIST",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "TENANTS",
+    "num_rows": null
+  },
+  {
+    "owner": "OW_BILLING",
+    "table_name": "USAGE_EVENTS",
+    "num_rows": null
+  }
+]

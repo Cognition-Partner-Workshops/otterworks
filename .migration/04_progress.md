@@ -1,23 +1,56 @@
 # 04 — Progress ledger
 
-Mapping version: _pending STOP B_ · Tolerance version: `v1` · Recon mode: LIVE
+Mapping version: `m1` (PROPOSED, pending STOP B) · Tolerance version: `v1` (ACCEPTED at STOP A) · Recon mode: LIVE
 
 Status: `pending` → `in_progress` → `recon_pass` → `merged`. A unit is done only when its
 PR is **merged** into `tp-run/mongodb-20260901T033326Z`.
 
-| Wave | Unit | Source objects | Write targets (registered) | Status | Parity | Quarantine rate | Unverified paths | PR |
-|---|---|---|---|---|---|---|---|---|
-| 1 | `reference` | CODES, PLANS, TENANTS | `codes`, `plans`, `tenants` | pending | — | — | — | — |
-| 2 | `customers` | CUSTOMER_MASTER, ENTITY_ATTR_VALUE, CUSTOMER_MASTER_HIST | `customers`, `customers_quarantine` | pending | — | — | — | — |
-| 2 | `invoices` | INVOICE_HEADER, INVOICE_LINE | `invoices`, `invoices_quarantine` | pending | — | — | — | — |
-| 2 | `subscriptions` | SUBSCRIPTIONS, SUBSCRIPTIONS_HIST | `subscriptions` | pending | — | — | — | — |
-| 3 | `usage_rating` | USAGE_EVENTS, RATING_PERIODS, RATING_RESULTS | `usage_events`, `rating_results` | pending | — | — | — | — |
-| 3 | `collections_ops` | CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS, BILLING_AUDIT_LOG | `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | pending | — | — | — | — |
-| 3 | `legacy_invoices_v2` | INVOICES, INVOICE_LINES (3/2 rows) | disposition decided in census (fold or retire) | pending | — | — | — | — |
-| 4 | `stored_logic` | PKG_OW_UTIL, PKG_PLANS, PKG_RATING, PKG_INVOICING, PKG_DUNNING, 7 triggers, 2 jobs, 5 sequences | code only (no collections) | pending | — | — | — | — |
+| Wave | Unit | Source objects | Write targets (registered) | Class | Status | Parity | Quarantine | Unverified paths | PR |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | `reference` | CODES, TENANTS, PLANS | `codes`, `tenants`, `plans` | reference | pending | — | — | — | — |
+| 1 | `customers` | CUSTOMER_MASTER, ENTITY_ATTR_VALUE, CUSTOMER_MASTER_HIST | `customers`, `customers_quarantine` | wide-embed **XL** | pending | — | — | — | — |
+| 1 | `subscriptions` | SUBSCRIPTIONS, SUBSCRIPTIONS_HIST | `subscriptions` | small-embed | pending | — | — | — | — |
+| 2 | `invoices` | INVOICE_HEADER, INVOICE_LINE | `invoices`, `invoices_quarantine` | bulk-load **XL** | pending | — | — | — | — |
+| 2 | `usage_rating` | USAGE_EVENTS, RATING_PERIODS, RATING_RESULTS | `usage_events`, `rating_periods` | small-embed | pending | — | — | — | — |
+| 2 | `subscription_invoices` | INVOICES, INVOICE_LINES | `subscription_invoices` | small-embed | pending | — | — | — | — |
+| 3 | `collections_ops` | CREDIT_NOTES, DUNNING_ATTEMPTS, NOTIFICATIONS, BILLING_AUDIT_LOG | `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | reference | pending | — | — | — | — |
+| 4 | `stored_logic` | 5 packages / 19 routines, 7 triggers, 2 jobs, 5 sequences | code only (no collections) | proc-heavy **XL** | pending | — | — | — | — |
 
-Out of scope (proposed): `FIXTURE_META` (fixture bookkeeping, not business data).
+Write targets are disjoint by construction: 13 collections + 2 quarantine collections, no
+collection named by two units. A collision halts the wave immediately.
 
-Waves are dependency-ordered; shared state is re-checked at each wave boundary (Atlas
-storage headroom, `terraform plan` cleanliness where applicable). Write-target collisions
-halt the wave immediately.
+Out of scope: `FIXTURE_META` (estate bookkeeping, one row, no business data).
+
+## Extract lease (source-load cap = 1)
+
+The STOP A cap of 1 concurrent Oracle query is enforced here, not by narrowing the wave. A
+child claims the lease before streaming from Oracle and releases it before transform/load,
+so waves still run 3-wide. Only `customers` and `invoices` read enough rows to contend.
+
+| Lease | Holder | Claimed (UTC) | Released (UTC) |
+|---|---|---|---|
+| `oracle:OW_BILLING` | _free_ | — | — |
+
+## Wave-boundary checks
+
+Re-checked before each wave starts; a failure halts rather than degrades.
+
+| Wave | Atlas storage headroom | Recon rerun budget used | Same-class failures |
+|---|---|---|---|
+| 0 | not yet checked | 0/3 | 0/3 |
+| 1 | not yet checked | 0/3 | 0/3 |
+| 2 | not yet checked | 0/3 | 0/3 |
+| 3 | not yet checked | 0/3 | 0/3 |
+| 4 | n/a (code only) | 0/3 | 0/3 |
+
+## Calibration cost ledger
+
+One calibration unit per pattern class; later units of the class are expected to land
+30–50% cheaper. A smaller discount is a regression, visible here.
+
+| Class | Calibration unit | Calibration cost | Later units | Observed discount |
+|---|---|---|---|---|
+| reference | `reference` | — | `collections_ops` | — |
+| wide-embed | `customers` | — | — | — |
+| bulk-load | `invoices` | — | `usage_rating`, `subscription_invoices`, `subscriptions` | — |
+| proc-heavy | `stored_logic` | — | — | — |

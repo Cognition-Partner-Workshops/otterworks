@@ -1,0 +1,51 @@
+[
+  {
+    "trigger_name": "TRG_BILLING_AUDIT_LOG_ID",
+    "table_name": "BILLING_AUDIT_LOG",
+    "trigger_type": "BEFORE EACH ROW",
+    "triggering_event": "INSERT",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_CUSTOMER_MASTER_HIST",
+    "table_name": "CUSTOMER_MASTER",
+    "trigger_type": "AFTER EACH ROW",
+    "triggering_event": "UPDATE OR DELETE",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_CUSTOMER_MASTER_SEQ",
+    "table_name": "CUSTOMER_MASTER",
+    "trigger_type": "BEFORE EACH ROW",
+    "triggering_event": "INSERT",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+    "table_name": "ENTITY_ATTR_VALUE",
+    "trigger_type": "BEFORE EACH ROW",
+    "triggering_event": "INSERT",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_SUBSCRIPTIONS_HIST",
+    "table_name": "SUBSCRIPTIONS",
+    "trigger_type": "AFTER EACH ROW",
+    "triggering_event": "UPDATE OR DELETE",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_SUB_NO_UNCANCEL",
+    "table_name": "SUBSCRIPTIONS",
+    "trigger_type": "BEFORE EACH ROW",
+    "triggering_event": "UPDATE",
+    "status": "ENABLED"
+  },
+  {
+    "trigger_name": "TRG_USAGE_EVENTS_CHECK",
+    "table_name": "USAGE_EVENTS",
+    "trigger_type": "BEFORE EACH ROW",
+    "triggering_event": "INSERT",
+    "status": "ENABLED"
+  }
+]

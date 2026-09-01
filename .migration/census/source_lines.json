@@ -1,0 +1,87 @@
+[
+  {
+    "name": "PKG_DUNNING",
+    "type": "PACKAGE",
+    "lines": 8
+  },
+  {
+    "name": "PKG_DUNNING",
+    "type": "PACKAGE BODY",
+    "lines": 87
+  },
+  {
+    "name": "PKG_INVOICING",
+    "type": "PACKAGE",
+    "lines": 17
+  },
+  {
+    "name": "PKG_INVOICING",
+    "type": "PACKAGE BODY",
+    "lines": 173
+  },
+  {
+    "name": "PKG_OW_UTIL",
+    "type": "PACKAGE",
+    "lines": 12
+  },
+  {
+    "name": "PKG_OW_UTIL",
+    "type": "PACKAGE BODY",
+    "lines": 60
+  },
+  {
+    "name": "PKG_PLANS",
+    "type": "PACKAGE",
+    "lines": 11
+  },
+  {
+    "name": "PKG_PLANS",
+    "type": "PACKAGE BODY",
+    "lines": 90
+  },
+  {
+    "name": "PKG_RATING",
+    "type": "PACKAGE",
+    "lines": 23
+  },
+  {
+    "name": "PKG_RATING",
+    "type": "PACKAGE BODY",
+    "lines": 190
+  },
+  {
+    "name": "TRG_BILLING_AUDIT_LOG_ID",
+    "type": "TRIGGER",
+    "lines": 8
+  },
+  {
+    "name": "TRG_CUSTOMER_MASTER_HIST",
+    "type": "TRIGGER",
+    "lines": 16
+  },
+  {
+    "name": "TRG_CUSTOMER_MASTER_SEQ",
+    "type": "TRIGGER",
+    "lines": 10
+  },
+  {
+    "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+    "type": "TRIGGER",
+    "lines": 8
+  },
+  {
+    "name": "TRG_SUBSCRIPTIONS_HIST",
+    "type": "TRIGGER",
+    "lines": 18
+  },
+  {
+    "name": "TRG_SUB_NO_UNCANCEL",
+    "type": "TRIGGER",
+    "lines": 8
+  },
+  {
+    "name": "TRG_USAGE_EVENTS_CHECK",
+    "type": "TRIGGER",
+    "lines": 15
+  }
+]

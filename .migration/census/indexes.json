@@ -1,0 +1,250 @@
+[
+  {
+    "index_name": "PK_BILLING_AUDIT_LOG",
+    "table_name": "BILLING_AUDIT_LOG",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "LOG_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_CODES",
+    "table_name": "CODES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "CODE_TYPE",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_CODES",
+    "table_name": "CODES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "CODE_VAL",
+    "column_position": 2
+  },
+  {
+    "index_name": "PK_CREDIT_NOTES",
+    "table_name": "CREDIT_NOTES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_CUSTOMER_MASTER",
+    "table_name": "CUSTOMER_MASTER",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "CUST_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_CUSTOMER_MASTER_HIST",
+    "table_name": "CUSTOMER_MASTER_HIST",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "HIST_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_DUNNING_ATTEMPTS",
+    "table_name": "DUNNING_ATTEMPTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_DUNNING_ATTEMPTS",
+    "table_name": "DUNNING_ATTEMPTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "INVOICE_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_DUNNING_ATTEMPTS",
+    "table_name": "DUNNING_ATTEMPTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ATTEMPT_NO",
+    "column_position": 2
+  },
+  {
+    "index_name": "PK_ENTITY_ATTR_VALUE",
+    "table_name": "ENTITY_ATTR_VALUE",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "EAV_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_INVOICES",
+    "table_name": "INVOICES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_INVOICE_HEADER",
+    "table_name": "INVOICE_HEADER",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "INVOICE_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_INVOICE_LINE",
+    "table_name": "INVOICE_LINE",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "LINE_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_INVOICE_LINES",
+    "table_name": "INVOICE_LINES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_INVOICE_LINES",
+    "table_name": "INVOICE_LINES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "INVOICE_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_INVOICE_LINES",
+    "table_name": "INVOICE_LINES",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "LINE_NO",
+    "column_position": 2
+  },
+  {
+    "index_name": "PK_NOTIFICATIONS",
+    "table_name": "NOTIFICATIONS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_NOTIFICATIONS",
+    "table_name": "NOTIFICATIONS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "TENANT_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_NOTIFICATIONS",
+    "table_name": "NOTIFICATIONS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "KIND_CD",
+    "column_position": 2
+  },
+  {
+    "index_name": "UQ_NOTIFICATIONS",
+    "table_name": "NOTIFICATIONS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "SENT_AT",
+    "column_position": 3
+  },
+  {
+    "index_name": "PK_PLANS",
+    "table_name": "PLANS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_PLANS_CODE",
+    "table_name": "PLANS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "CODE",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_RATING_PERIODS",
+    "table_name": "RATING_PERIODS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_RATING_PERIODS",
+    "table_name": "RATING_PERIODS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "TENANT_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_RATING_PERIODS",
+    "table_name": "RATING_PERIODS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "PERIOD_START",
+    "column_position": 2
+  },
+  {
+    "index_name": "PK_RATING_RESULTS",
+    "table_name": "RATING_RESULTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_SUBSCRIPTIONS",
+    "table_name": "SUBSCRIPTIONS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_SUBSCRIPTIONS_HIST",
+    "table_name": "SUBSCRIPTIONS_HIST",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "HIST_ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_TENANTS",
+    "table_name": "TENANTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  },
+  {
+    "index_name": "UQ_TENANTS_NAME",
+    "table_name": "TENANTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "NAME",
+    "column_position": 1
+  },
+  {
+    "index_name": "PK_USAGE_EVENTS",
+    "table_name": "USAGE_EVENTS",
+    "uniqueness": "UNIQUE",
+    "index_type": "NORMAL",
+    "column_name": "ID",
+    "column_position": 1
+  }
+]
