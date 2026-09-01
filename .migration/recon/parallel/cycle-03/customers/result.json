@@ -1,0 +1,102 @@
+{
+  "unit": "customers",
+  "mode": "continuous",
+  "mapping_version": "1.0.0",
+  "tolerance_version": "1",
+  "generated_at": "2026-09-01T02:00:02.734052+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 42,
+      "stats": {
+        "deferred_to_tier3": [
+          "customers.cust_id",
+          "customers.tenant_id",
+          "customers._id",
+          "customers.cust_name",
+          "customers.cust_name_upper",
+          "customers.legal_name",
+          "customers.addr_line_1",
+          "customers.addr_line_2",
+          "customers.addr_line_3",
+          "customers.city",
+          "customers.state_cd",
+          "customers.zip",
+          "customers.phone1",
+          "customers.phone2",
+          "customers.email_1",
+          "customers.legacy.signup_dt",
+          "customers.legacy.last_activity_dt",
+          "customers.sub_status_cd",
+          "customers.tax_exempt_yn",
+          "customers.credit_hold_yn",
+          "customers.vip_yn",
+          "customers.credit_limit_amt",
+          "customers.legacy.related_acct_ids",
+          "customers.legacy.promo_codes_csv",
+          "customers.legacy_sys_key",
+          "customers.mainframe_acct_no",
+          "customers.created_by",
+          "customers.updated_by"
+        ],
+        "sum_not_comparable": [
+          "customers.cust_id",
+          "customers.tenant_id",
+          "customers._id",
+          "customers.cust_name",
+          "customers.cust_name_upper",
+          "customers.legal_name",
+          "customers.addr_line_1",
+          "customers.addr_line_2",
+          "customers.addr_line_3",
+          "customers.city",
+          "customers.state_cd",
+          "customers.zip",
+          "customers.phone1",
+          "customers.phone2",
+          "customers.email_1",
+          "customers.legacy.signup_dt",
+          "customers.legacy.last_activity_dt",
+          "customers.tax_exempt_yn",
+          "customers.credit_hold_yn",
+          "customers.vip_yn",
+          "customers.legacy.related_acct_ids",
+          "customers.legacy.promo_codes_csv",
+          "customers.legacy_sys_key",
+          "customers.mainframe_acct_no",
+          "customers.created_by",
+          "customers.created_at",
+          "customers.updated_by",
+          "customers.updated_at"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 1004,
+      "stats": {
+        "customers": {
+          "mode": "stratified_sample",
+          "population": 25000,
+          "sampled": 1004,
+          "coverage": 0.04016
+        }
+      },
+      "findings": []
+    }
+  ],
+  "verdict": "PASS"
+}

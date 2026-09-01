@@ -1,0 +1,7 @@
+{
+  "unit": "customers",
+  "mode": "continuous",
+  "ns": "demo",
+  "tier3_seed": 2,
+  "recorded_at": "2026-09-01T01:59:47.730228+00:00"
+}

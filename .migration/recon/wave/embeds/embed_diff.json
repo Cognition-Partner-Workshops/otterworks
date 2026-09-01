@@ -1,0 +1,29 @@
+{
+  "check": "embedded_child_fields",
+  "ns": "demo",
+  "generated_at": "2026-09-01T02:07:00.102074+00:00",
+  "note": "supplementary evidence for census finding H3; the recon harness verdict remains the only merge authority",
+  "units": {
+    "invoices": {
+      "array_path": "invoices.lines",
+      "verdict": "PASS",
+      "parents_compared": 18750,
+      "children_compared": 149963,
+      "value_comparisons": 2999260,
+      "finding_count": 0,
+      "findings_reported": 0,
+      "findings": []
+    },
+    "customers": {
+      "array_path": "customers.attributes",
+      "verdict": "PASS",
+      "parents_compared": 25000,
+      "children_compared": 8333,
+      "value_comparisons": 33332,
+      "finding_count": 0,
+      "findings_reported": 0,
+      "findings": []
+    }
+  },
+  "verdict": "PASS"
+}

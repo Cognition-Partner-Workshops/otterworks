@@ -59,6 +59,20 @@ A write to any of them is a guardrail breach, not a collision to negotiate.
 | Recon evidence | `.migration/recon/invoices/result.json`, `report.md`, `recon.summary.md` |
 | Harness | vendored pinned copy, `.migration/vendor/mongo-recon-harness` (H1 fix only) |
 
+### Wave status — CLOSED, green (playbook 4, 2026-09-01)
+
+| Fact | Value |
+|---|---|
+| Wave verdict | **PASS** — both units re-verified in one uncontended window after loading was quiesced, not carried over from the unit PRs |
+| Window | wave recon 2026-09-01T02:01:27Z–02:01:51Z (`live`), parallel-run cycles 01:59:32Z–02:00:06Z (`continuous`), embedded-child verification 02:07:00Z |
+| Inputs | mapping `1.0.0`, tolerances `1`, source concurrency `1`, vendored pinned harness |
+| Per-unit | `customers` PASS (T1 2 / T2 42 / T3 25,000 **root-field** full diff / T4 2), `invoices` PASS (T1 2 / T2 9 / T3 18,750 **root-field** full diff / T4 2) |
+| Embedded children | outside every recon tier (H3): verified separately by `scripts/tp_mongo/embed_diff.py` — 149,963 `lines[]` × 20 fields (the derived `invoice_at` included) and 8,333 `attributes[]` × 4 fields, 0 findings; supplementary evidence, not a merge authority |
+| Parallel run | 3 hand-triggered cycles per unit at Tier 3 seeds 1/2/3 (H4), ~1,004 keys each, cumulatively 2,875 distinct `customers` and 2,852 distinct `invoices` keys; drift 0 in every cycle and flat, not monotonic; D10 declined CDC, so the window proves stability against an idle source, not a sync path |
+| Infra check | no Terraform governs the Atlas target, so the boundary gate is `make tp-smoke` — passed |
+| Evidence | `.migration/recon/wave/rollup.md`, `.migration/recon/wave/1/{customers,invoices}/`, `.migration/recon/wave/embeds/embed_diff.json`, `.migration/recon/parallel/cycle-0{1,2,3}/` (each with `run_meta.json` recording its seed) |
+| Cutover | **eligible** for `!mongo_cutover`; readiness is not authorization — a human starts playbook 5 with the customer-held cutover principal |
+
 A unit is **done** only when its PR is merged into `tp-run/mongodb-20260831T232410Z` with a
 green harness verdict recorded above. "Code written" and "recon run locally" are not done.
 

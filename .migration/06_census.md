@@ -191,12 +191,18 @@ modern shape.
 | D12 | Tolerance change | **None proposed.** Tolerances stay at version `1` | Exact-money comparison at `numeric_abs_tol = 0.0` is achievable with Decimal128 |
 | D13 | 113 all-NULL columns retired | Declared coverage gap (§1) rather than 113 always-absent fields | `COUNT(col) = 0` over 25,000 rows for each |
 
-### Blocking harness findings (must be resolved before any unit can go green)
+### Harness findings
+
+H1 and H2 are blocking findings from the census (resolved before any unit went green); H3 and
+H4 were found at wave close, when the question stopped being "does the harness pass" and became
+"what did passing actually prove".
 
 | # | Finding | Impact | Recommendation |
 |---|---|---|---|
 | **H1** | Tier 2's `sum` check is not type-aware. `_SqlAdapterBase.field_aggregates` catches Oracle's `ORA-01722` on `SUM(<non-numeric>)` and records `sum = None`; `MongoTargetAdapter` uses `$sum`, which ignores non-numeric values and returns **0**. `_agg_close(None, 0)` is False → an `aggregate_sum` finding for **every string, date and all-NULL field**, on a perfectly correct load. Verified both sides: `SUM(CUST_NAME)` → `ORA-01722`, `SUM(UDF_AMT_01)` → `NULL`; `$sum` over a string field on mongo:7 → `0` | 40 of 42 `customers` fields and 7 of 9 `invoices` fields would fail Tier 2 no matter how good the load is. No mapping-spec option avoids it: `NULL_SEMANTIC` rules reduce the checked stats to `("sum",)` — precisely the broken one | Skip `sum` when the source side reports `None` (or compare only when both sides are numeric). Filed as PROFILE/HARNESS FEEDBACK. **Choose at STOP B:** (a) wait for the plugin release, or (b) run wave 1 against a repo-vendored copy of the harness carrying only this fix, so the harness verdict stays the merge authority |
 | **H2** | No canonicalization rule can compare a `DD-MON-YY` string to a BSON date, or a CSV string to an array | The migration's whole point — typing the string dates and CSV lists — is invisible to recon | Worked around in v1.0.0 by mapping the raw source value to a preserved `legacy.*` field (§5). Proposed profile rules for a future version: `oracle_ddmonyy_to_date` and `csv_to_array` |
+| **H3** | Tier 3 compares only the fields in a collection's `fields` list, which are root fields; `EmbedMapping` carries `child_table`/`child_where` for Tier 1 cardinality but has no child-field declarations, so no tier compares embedded child **values**. Found at wave close: both units were green while 3,032,592 embedded field values were ungraded | The two collections that carry the estate's real conversion work (`lines[]` 20 fields × 149,963 rows, `attributes[]` 4 fields × 8,333 rows) are verified for element count and nothing else | Add `fields` to `EmbedMapping` with a child identity, and grade them in Tier 3 like root fields. Until then the gap is covered outside the verdict by `scripts/tp_mongo/embed_diff.py` (evidence `.migration/recon/wave/embeds/embed_diff.json`), which is explicitly not a merge authority |
+| **H4** | `run_recon`'s Tier 3 `seed` is not surfaced by the CLI and is not written into `result.json`. Every `continuous` cycle therefore samples the same keys, and the evidence cannot say which keys a cycle inspected | A multi-cycle parallel-run window reads as growing coverage but re-checks one fixed sample; a drift outside that sample is invisible no matter how many cycles run | Expose `--seed` and record it in `result.json`. Worked around here by a `--seed` argument on the unit runners plus a `run_meta.json` sidecar, with cycles run at seeds 1/2/3 |
 
 ---
 
@@ -213,7 +219,17 @@ For the `oracle` profile / recon harness (do not patch locally — these are ups
    `VARCHAR2` → array, with an empty-token policy). Legacy Oracle estates store dates and
    lists as strings constantly; without these, every real conversion has to be modeled as a
    preserved raw field to stay recon-visible.
-3. **`discovery_commands` gaps.** Add to the profile:
+3. **Embedded children are outside the verdict (H3).** `EmbedMapping` should accept a child
+   identity plus a `fields` list and Tier 3 should grade child values against child rows.
+   Every embed-vs-reference decision a migration makes turns child rows into array elements,
+   so today the harness grades least where the modelling risk is highest. A wave can be green
+   on every tier while no embedded value has ever been compared.
+4. **Per-cycle sampling in `continuous` mode (H4).** Surface the Tier 3 `seed` on the CLI and
+   write it (or the sampled keys) into `result.json`. Cycles that all default to seed `0`
+   re-inspect one fixed sample, so a parallel-run window accumulates cycles without
+   accumulating coverage, and the evidence cannot be reproduced key-for-key afterwards.
+   Distinct or cumulative per-cycle samples are what make the window mean anything.
+5. **`discovery_commands` gaps.** Add to the profile:
    - per-column population (`SELECT COUNT(col) …`) — 113 of 155 columns here are 100% NULL,
      which changes the model, the mapping and the coverage gaps. Nothing in the current
      command set reveals it.
@@ -224,12 +240,12 @@ For the `oracle` profile / recon harness (do not patch locally — these are ups
      `NOT EXISTS` counts. Suggest an anti-join template in `conversion_patterns`.
    - `all_tables.num_rows` is NULL without gathered statistics (gap G5) — the profile should
      say "verify with `COUNT(*)`", not present it as a row estimate.
-4. **`known_incompatibilities` addition — trigger-maintained shadow-uppercase columns.**
+6. **`known_incompatibilities` addition — trigger-maintained shadow-uppercase columns.**
    The NLS row only catches `NLS_COMP`/`NLS_SORT`. Estates that compare case-insensitively
    with a `*_UPPER` column plus a trigger look binary-collated to the census and quietly
    migrate a derived column as data. Suggested required decision: collation-aware index,
    drop the shadow column.
-5. **`known_incompatibilities` addition — unenforced relationships.** "No FK constraint but
+7. **`known_incompatibilities` addition — unenforced relationships.** "No FK constraint but
    an application-level parent/child" deserves its own row: it decides embed cardinality
    (`child_where`) and the orphan quarantine policy, and it is invisible to the constraints
    query.

@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import datetime as dt
 import decimal
+import json
 import sys
 from pathlib import Path
 
@@ -113,6 +115,19 @@ def unit_spec(spec):
     return dataclasses.replace(spec, collections=collections)
 
 
+def write_run_meta(out: Path, unit: str, mode: str, seed: int, ns: str) -> None:
+    """Sidecar beside the harness's own output: which sample this cycle drew.
+
+    `result.json` is the harness's verdict and is never edited here, and it does not record
+    the Tier 3 sampling seed — so a `continuous` drift log cannot otherwise say whether two
+    cycles inspected the same keys or different ones. The seed lives beside the verdict.
+    """
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "run_meta.json").write_text(json.dumps(
+        {"unit": unit, "mode": mode, "ns": ns, "tier3_seed": seed,
+         "recorded_at": dt.datetime.now(dt.timezone.utc).isoformat()}, indent=2) + "\n")
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="recon_customers")
     p.add_argument("--ns", default="demo")
@@ -126,6 +141,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--mode", default="live")
     p.add_argument("--name-pattern", default="A%",
                    help="LIKE pattern for the Tier 4 case-insensitive lookup")
+    p.add_argument("--seed", type=int, default=0,
+                   help="Tier 3 sampling seed; give each continuous cycle its own, so the "
+                        "cycles inspect different keys instead of re-checking one sample")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args(argv)
 
@@ -146,7 +164,9 @@ def main(argv: list[str] | None = None) -> int:
         result = run_recon(UNIT, args.mode, spec, tol, rules, source, target,
                            ops=build_ops(args.name_pattern),
                            run_source=source_runner(connection, ns_batch_no(args.ns)),
-                           run_target=target_runner(db, args.ns), out_dir=args.out)
+                           run_target=target_runner(db, args.ns), out_dir=args.out,
+                           seed=args.seed)
+    write_run_meta(args.out, UNIT, args.mode, args.seed, args.ns)
     print(f"recon {result['verdict']}: unit={UNIT} mode={args.mode} "
           f"mapping={spec.version} tolerances={tol.version} -> {args.out}/result.json")
     return 0 if result["verdict"] == "PASS" else 1
