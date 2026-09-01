@@ -5,15 +5,15 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections.abc import Mapping
 from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import oracledb
 from bson import Decimal128, Int64
 from pymongo import ASCENDING, MongoClient
-
 
 NS_VALUE = "mongo_205236"
 TARGET_DB = "ow_tp_mongodb_205236"
