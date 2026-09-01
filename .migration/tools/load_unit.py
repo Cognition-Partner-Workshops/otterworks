@@ -28,6 +28,7 @@ import copy
 import datetime as dt
 import decimal
 import fcntl
+import hashlib
 import json
 import os
 import pathlib
@@ -36,6 +37,7 @@ import sys
 
 import oracledb
 from bson.decimal128 import Decimal128
+from bson.int64 import Int64
 from pymongo import MongoClient, ReplaceOne
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -113,7 +115,9 @@ def to_bson(value, bson_type, rules=()):
     if bson_type == "decimal128":
         return Decimal128(value if hasattr(value, "as_tuple") else str(value))
     if bson_type == "long":
-        return int(value)
+        # Int64, not int: pymongo encodes a small Python int as int32, which is not the type
+        # the mapping declares and not the type the target's validator accepts.
+        return Int64(value)
     if bson_type == "string":
         # Blank padding is stripped only where the mapping says so -- that rule is attached
         # to CHAR, which Oracle pads, and recon canonicalizes both sides the same way. A
@@ -136,7 +140,7 @@ def key_to_bson(value, what):
         if value != value.to_integral_value():
             sys.exit(f"{what} is {value}, which is not integer-safe; a key must not carry a "
                      "fractional part")
-        return int(value)
+        return Int64(value)
     return value
 
 
@@ -265,6 +269,17 @@ def anomaly_mismatches(coll_spec, actual):
     return out
 
 
+def content_digest(docs):
+    """A digest of the documents this load would publish. Equal counts do not prove equal
+    content, so the rerun comparison that grades idempotency needs the content itself; the
+    documents are hashed in key order so the digest does not depend on extract order."""
+    h = hashlib.sha256()
+    for d in sorted(docs, key=lambda d: str(d["_id"])):
+        h.update(json.dumps(d, sort_keys=True, default=str).encode())
+        h.update(b"\0")
+    return h.hexdigest()
+
+
 def install_validator(db, coll_spec, code_desc):
     """Install the collection's declared $jsonSchema before its documents are written. The
     Oracle trigger these replace rejected the offending INSERT, so the target has to reject
@@ -375,9 +390,25 @@ def load_collection(cur, db, coll_spec, params, code_desc, dry_run):
                                                  for d in docs)
                             for e in coll_spec.get("embeds", [])},
                "quarantined": len(quarantined) + len(orphans),
-               "anomalies": anomalies, "pruned": 0}
+               "anomalies": anomalies, "pruned": 0,
+               "digest": content_digest(docs + quarantined + orphans)}
+    if "expected_documents" in coll_spec:
+        summary["expected_documents"] = coll_spec["expected_documents"]
+        summary["matches_census"] = len(docs) == coll_spec["expected_documents"]
     if dry_run:
         return summary, docs[:1]
+
+    # Every gate runs on the extract before the target is touched. A scoped or truncated
+    # extract must not reach the write path at all: the prune below deletes whatever this
+    # load did not just read, so a short extract that got as far as writing would take the
+    # valid documents with it.
+    problems = anomaly_mismatches(coll_spec, anomalies)
+    if summary.get("matches_census") is False:
+        problems.append(f"{name}: extracted {len(docs)} rows, census says "
+                        f"{coll_spec['expected_documents']}")
+    if problems:
+        sys.exit(f"{name}: the extract does not describe the migration the mapping declares, "
+                 "so nothing is written: " + "; ".join(problems))
 
     # An empty source still materializes its collection: a downstream count check must see a
     # real zero rather than an absent collection it could read as "not loaded yet".
@@ -468,9 +499,6 @@ def main():
                   "params": params, "collections": []}
         for c in colls:
             summary, sample = load_collection(cur, db, c, params, code_desc, args.dry_run)
-            expected = c["expected_documents"]
-            summary["expected_documents"] = expected
-            summary["matches_census"] = summary["documents"] == expected
             report["collections"].append(summary)
             print(json.dumps(summary))
             if args.dry_run and sample:

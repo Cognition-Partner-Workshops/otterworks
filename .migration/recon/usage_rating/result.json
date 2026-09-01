@@ -1,5 +1,5 @@
 {
-  "unit": "reference",
+  "unit": "usage_rating",
   "mode": "live",
   "mapping_version": "m1",
   "tolerance_version": "v1",
@@ -7,7 +7,7 @@
   "params": {
     "batch_no": "85559852"
   },
-  "generated_at": "2026-09-01T04:25:38.548818+00:00",
+  "generated_at": "2026-09-01T04:26:27.692283+00:00",
   "tiers": [
     {
       "tier": 1,
@@ -21,7 +21,7 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 14,
+      "checks_run": 9,
       "stats": {},
       "findings": []
     },
@@ -29,19 +29,18 @@
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 104,
+      "checks_run": 820,
       "stats": {
-        "codes": {
+        "usage_events": {
           "mode": "full_diff",
-          "population": 32
+          "population": 814
         },
-        "tenants": {
-          "mode": "full_diff",
-          "population": 69
-        },
-        "plans": {
+        "rating_periods": {
           "mode": "full_diff",
           "population": 3
+        },
+        "embeds_graded": {
+          "rating_periods.results": 3
         }
       },
       "findings": []

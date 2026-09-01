@@ -1,5 +1,5 @@
 {
-  "unit": "reference",
+  "unit": "subscription_invoices",
   "mode": "live",
   "mapping_version": "m1",
   "tolerance_version": "v1",
@@ -7,13 +7,13 @@
   "params": {
     "batch_no": "85559852"
   },
-  "generated_at": "2026-09-01T04:25:38.548818+00:00",
+  "generated_at": "2026-09-01T04:26:29.992918+00:00",
   "tiers": [
     {
       "tier": 1,
       "name": "counts_through_mapping",
       "passed": true,
-      "checks_run": 3,
+      "checks_run": 2,
       "stats": {},
       "findings": []
     },
@@ -21,7 +21,7 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 14,
+      "checks_run": 8,
       "stats": {},
       "findings": []
     },
@@ -29,19 +29,14 @@
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 104,
+      "checks_run": 5,
       "stats": {
-        "codes": {
-          "mode": "full_diff",
-          "population": 32
-        },
-        "tenants": {
-          "mode": "full_diff",
-          "population": 69
-        },
-        "plans": {
+        "subscription_invoices": {
           "mode": "full_diff",
           "population": 3
+        },
+        "embeds_graded": {
+          "subscription_invoices.lines": 2
         }
       },
       "findings": []

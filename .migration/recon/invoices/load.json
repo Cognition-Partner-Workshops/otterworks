@@ -1,0 +1,27 @@
+{
+  "unit": "invoices",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "invoices",
+      "documents": 18750,
+      "embedded": {
+        "lines": 149963
+      },
+      "quarantined": 37,
+      "anomalies": {
+        "orphan_invoice_lines": 37
+      },
+      "pruned": 0,
+      "digest": "7a99f8aab47d1c4d014edb20ac9b25648d877c9f37af6aafbbe564cceb3460a8",
+      "expected_documents": 18750,
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T04:23:59.572192+00:00"
+}

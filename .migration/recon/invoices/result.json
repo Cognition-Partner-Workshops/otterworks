@@ -1,5 +1,5 @@
 {
-  "unit": "reference",
+  "unit": "invoices",
   "mode": "live",
   "mapping_version": "m1",
   "tolerance_version": "v1",
@@ -7,13 +7,13 @@
   "params": {
     "batch_no": "85559852"
   },
-  "generated_at": "2026-09-01T04:25:38.548818+00:00",
+  "generated_at": "2026-09-01T04:26:24.492212+00:00",
   "tiers": [
     {
       "tier": 1,
       "name": "counts_through_mapping",
       "passed": true,
-      "checks_run": 3,
+      "checks_run": 2,
       "stats": {},
       "findings": []
     },
@@ -21,27 +21,33 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 14,
-      "stats": {},
+      "checks_run": 9,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoices.invoice_no",
+          "invoices.cust_id",
+          "invoices.tenant_id",
+          "invoices.status_cd",
+          "invoices.total_amt",
+          "invoices.batch_no",
+          "invoices.legacy.invoice_dt",
+          "invoices.legacy.due_dt"
+        ]
+      },
       "findings": []
     },
     {
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 104,
+      "checks_run": 168713,
       "stats": {
-        "codes": {
+        "invoices": {
           "mode": "full_diff",
-          "population": 32
+          "population": 18750
         },
-        "tenants": {
-          "mode": "full_diff",
-          "population": 69
-        },
-        "plans": {
-          "mode": "full_diff",
-          "population": 3
+        "embeds_graded": {
+          "invoices.lines": 149963
         }
       },
       "findings": []

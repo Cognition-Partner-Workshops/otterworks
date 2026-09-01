@@ -16,9 +16,10 @@
       "quarantined": 0,
       "anomalies": {},
       "pruned": 0,
+      "digest": "1f11deb3288503512ef2c6ec54da82718e9dc9ec47d3fe0165bdaa7d30af01c1",
       "expected_documents": 69,
       "matches_census": true
     }
   ],
-  "completed_at": "2026-09-01T04:15:34.915179+00:00"
+  "completed_at": "2026-09-01T04:24:13.624774+00:00"
 }

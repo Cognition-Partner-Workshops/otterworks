@@ -7,6 +7,7 @@ trigger. Parity itself is not tested here; the recon harness owns that verdict.
 """
 from __future__ import annotations
 
+import decimal
 import subprocess
 import sys
 import textwrap
@@ -14,6 +15,7 @@ import textwrap
 import load_unit as lu
 import pytest
 import recon_report as rr
+from bson.int64 import Int64
 
 
 class FakeDB:
@@ -213,7 +215,10 @@ def test_rerun_removes_a_quarantine_record_for_a_repaired_row():
     assert [k for k, d in db["tenants_quarantine"].docs.items()
             if d.get("collection") == "tenants"]
 
+    # The row is repaired at source and the census refreshed, so the mapping now declares no
+    # anomaly for it -- the load has to agree, and the old record has to go.
     tables["TENANTS"] = [{"ID": 1, "NAME": "acme", "SIGNUP": "03-FEB-24"}]
+    spec = {**spec, "quarantine": {"collection": "tenants_quarantine", "expected": {}}}
     summary, _ = lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
     assert summary["pruned"] == 1
     assert list(db["tenants_quarantine"].docs) == ["other:1:X"]
@@ -251,8 +256,11 @@ def test_extract_lease_is_released_when_the_load_raises(tmp_path):
 # --------------------------------------------------------------- idempotency evidence
 def load_report(**over):
     base = {"unit": "reference", "dry_run": False, "completed_at": "2026-09-01T04:00:00+00:00",
+            "mapping_version": "m1", "target_db": "ow_tp_mongodb_orc1",
+            "params": {"batch_no": "85559852"},
             "collections": [{"collection": "tenants", "documents": 69, "embedded": {},
-                             "quarantined": 0, "anomalies": {}, "pruned": 0}]}
+                             "quarantined": 0, "anomalies": {}, "pruned": 0,
+                             "digest": "cafe"}]}
     return {**base, **over}
 
 
@@ -264,15 +272,10 @@ def test_idempotency_is_derived_from_two_loads():
     assert "tenants=69" in evidence
 
 
-@pytest.mark.parametrize("bad_collection", [
-    {"collection": "tenants", "documents": 70, "embedded": {}, "quarantined": 0,
-     "anomalies": {}, "pruned": 0},
-    {"collection": "tenants", "documents": 69, "embedded": {}, "quarantined": 0,
-     "anomalies": {}, "pruned": 2},
-])
-def test_a_rerun_that_changed_the_target_fails_idempotency(bad_collection):
+@pytest.mark.parametrize("difference", [{"documents": 70}, {"pruned": 2}])
+def test_a_rerun_that_changed_the_target_fails_idempotency(difference):
     rerun = load_report(completed_at="2026-09-01T05:00:00+00:00",
-                        collections=[bad_collection])
+                        collections=[{**load_report()["collections"][0], **difference}])
     verdict, evidence = rr.idempotency("reference", load_report(), rerun)
     assert verdict == "fail"
     assert "diverged" in evidence
@@ -283,3 +286,81 @@ def test_idempotency_needs_a_later_rerun_and_a_real_load():
         rr.idempotency("reference", load_report(), load_report())
     with pytest.raises(SystemExit):
         rr.idempotency("reference", load_report(dry_run=True), load_report())
+
+
+# --------------------------------------------------------------- bson types
+def test_a_long_field_is_encoded_as_a_bson_long():
+    """tolerance v1 maps integer-safe NUMBER(p,0) to BSON long. A plain Python int is
+    encoded as int32 when it is small, which is a different BSON type from the one the
+    mapping declares and the one the target's validator requires."""
+    assert isinstance(lu.to_bson(decimal.Decimal(420), "long"), Int64)
+    assert lu.to_bson(decimal.Decimal(420), "long") == 420
+
+
+def test_a_numeric_key_is_encoded_as_a_bson_long():
+    assert isinstance(lu.key_to_bson(decimal.Decimal(7302), "CUSTOMER_MASTER.CUST_ID"),
+                      Int64)
+    assert lu.key_to_bson("a-uuid", "USAGE_EVENTS.EVENT_ID") == "a-uuid"
+
+
+# --------------------------------------------------------------- gates before writes
+def test_a_short_extract_is_rejected_before_anything_is_written():
+    """The count and anomaly gates have to run before the target is touched: an extract that
+    came back short would otherwise upsert what it has and then delete every valid document
+    it did not see."""
+    db = FakeMongo()
+    tables = {"TENANTS": [{"ID": 1, "NAME": "acme"}, {"ID": 2, "NAME": "globex"}]}
+    spec = {**TENANT_SPEC, "expected_documents": 2}
+    lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+
+    tables["TENANTS"] = [{"ID": 1, "NAME": "acme"}]
+    with pytest.raises(SystemExit):
+        lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+    assert set(db["tenants"].docs) == {1, 2}, "a failed extract erased valid documents"
+
+
+def test_an_anomaly_count_mismatch_is_rejected_before_anything_is_written():
+    db = FakeMongo()
+    spec = {**TENANT_SPEC, "expected_documents": 1,
+            "derived_fields": [{"source": "SIGNUP", "target": "signup_at",
+                                "transform": "parse_dd_mon_yy", "on_error": "quarantine",
+                                "quarantine_category": "unparseable_signup"}],
+            "quarantine": {"collection": "tenants_quarantine",
+                           "expected": {"unparseable_signup": 1}}}
+    tables = {"TENANTS": [{"ID": 1, "NAME": "acme", "SIGNUP": "03-FEB-24"}]}
+    with pytest.raises(SystemExit):
+        lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+    assert db["tenants"].docs == {}
+
+
+# --------------------------------------------------------------- content evidence
+def test_the_load_report_carries_a_content_digest():
+    """Equal document counts do not prove equal documents, so the rerun comparison needs the
+    content itself: same rows in, same digest out; a changed value changes it."""
+    db = FakeMongo()
+    spec = {**TENANT_SPEC, "expected_documents": 1}
+    tables = {"TENANTS": [{"ID": 1, "NAME": "acme"}]}
+    first, _ = lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+    same, _ = lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+    tables["TENANTS"] = [{"ID": 1, "NAME": "acme renamed"}]
+    changed, _ = lu.load_collection(FakeCursor(tables), db, spec, {}, {}, dry_run=False)
+    assert first["digest"] == same["digest"]
+    assert changed["digest"] != first["digest"]
+
+
+def test_a_rerun_with_changed_values_fails_idempotency():
+    rerun = load_report(completed_at="2026-09-01T05:00:00+00:00",
+                        collections=[{**load_report()["collections"][0], "digest": "beef"}])
+    verdict, _ = rr.idempotency("reference", load_report(), rerun)
+    assert verdict == "fail"
+
+
+@pytest.mark.parametrize("differing", [{"mapping_version": "m2"},
+                                       {"target_db": "somewhere_else"},
+                                       {"params": {"batch_no": "1"}}])
+def test_the_two_loads_must_describe_the_same_migration(differing):
+    """Two loads of different mappings, databases, or scopes are not a load and its rerun,
+    however well their counts agree."""
+    with pytest.raises(SystemExit):
+        rr.idempotency("reference", load_report(),
+                       load_report(completed_at="2026-09-01T05:00:00+00:00", **differing))

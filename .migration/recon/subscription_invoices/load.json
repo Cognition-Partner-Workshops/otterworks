@@ -1,5 +1,5 @@
 {
-  "unit": "subscriptions",
+  "unit": "subscription_invoices",
   "mapping_version": "m1",
   "target_db": "ow_tp_mongodb_orc1",
   "dry_run": false,
@@ -8,18 +8,18 @@
   },
   "collections": [
     {
-      "collection": "subscriptions",
-      "documents": 69,
+      "collection": "subscription_invoices",
+      "documents": 3,
       "embedded": {
-        "history": 0
+        "lines": 2
       },
       "quarantined": 0,
       "anomalies": {},
       "pruned": 0,
-      "digest": "1f11deb3288503512ef2c6ec54da82718e9dc9ec47d3fe0165bdaa7d30af01c1",
-      "expected_documents": 69,
+      "digest": "4dd5c401bc691017168fe4b3faea12d3f20620ac406f637b46e96c79e3a2e4d0",
+      "expected_documents": 3,
       "matches_census": true
     }
   ],
-  "completed_at": "2026-09-01T04:23:04.585671+00:00"
+  "completed_at": "2026-09-01T04:24:05.855363+00:00"
 }

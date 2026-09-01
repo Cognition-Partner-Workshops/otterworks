@@ -140,8 +140,17 @@ def idempotency(unit, first, rerun):
     if rerun["completed_at"] <= first["completed_at"]:
         sys.exit("--rerun-load-report did not complete after --load-report; the two reports "
                  "are not a load and its rerun")
+    # Two loads of a different mapping, database, or scope are not a load and its rerun, so
+    # their agreement proves nothing about idempotency.
+    for field in ("mapping_version", "target_db", "params"):
+        if first[field] != rerun[field]:
+            sys.exit(f"the two load reports disagree on {field} "
+                     f"({first[field]!r} vs {rerun[field]!r}); they are not the same "
+                     "migration run twice")
 
-    graded = ("documents", "embedded", "quarantined", "anomalies")
+    # `digest` is the content itself, hashed by the loader: equal counts do not prove equal
+    # documents, and a rerun that rewrote a value is not idempotent.
+    graded = ("documents", "embedded", "quarantined", "anomalies", "digest")
     diffs = []
     by_name = {c["collection"]: c for c in first["collections"]}
     for after in rerun["collections"]:
@@ -159,9 +168,10 @@ def idempotency(unit, first, rerun):
     counts = ", ".join(f"{c['collection']}={c['documents']}" for c in rerun["collections"])
     if diffs:
         return "fail", f"rerun at {rerun['completed_at']} diverged: " + "; ".join(diffs)
+    digests = ", ".join(f"{c['collection']}={c['digest'][:12]}" for c in rerun["collections"])
     return "pass", (f"second full load at {rerun['completed_at']} converged on the load at "
                     f"{first['completed_at']}: {counts}, identical embedded and quarantine "
-                    "counts, 0 documents pruned")
+                    f"counts, 0 documents pruned, identical content digests ({digests})")
 
 
 def anomaly_sets(unit, load_report):

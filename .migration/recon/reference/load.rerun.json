@@ -14,6 +14,7 @@
       "quarantined": 0,
       "anomalies": {},
       "pruned": 0,
+      "digest": "4785607abf3c9b95d36b4e7293a811d0496c0aa21dc9eba995055155f5bb5b01",
       "expected_documents": 32,
       "matches_census": true
     },
@@ -24,6 +25,7 @@
       "quarantined": 0,
       "anomalies": {},
       "pruned": 0,
+      "digest": "d4cc611140b83509ce14733d3e620f98773eb1a0a6be94f713ea3e6e219ced5e",
       "expected_documents": 69,
       "matches_census": true
     },
@@ -34,9 +36,10 @@
       "quarantined": 0,
       "anomalies": {},
       "pruned": 0,
+      "digest": "9da8a173cf4b0d979c203901935541acb398389e914ae4a07b654fb2e5071722",
       "expected_documents": 3,
       "matches_census": true
     }
   ],
-  "completed_at": "2026-09-01T04:15:31.586802+00:00"
+  "completed_at": "2026-09-01T04:24:12.055561+00:00"
 }

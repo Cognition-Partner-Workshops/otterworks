@@ -1,8 +1,8 @@
 {
   "kind": "recon-report",
-  "unit": "customers",
+  "unit": "usage_rating",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T04:25:57.512872+00:00",
+  "generated_at": "2026-09-01T04:26:27.692283+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -29,18 +29,8 @@
       "actual": {
         "passed": true,
         "findings": 0,
-        "checks_run": 40,
-        "stats": {
-          "deferred_to_tier3": [
-            "customers.sub_status_cd",
-            "customers.address.line_2",
-            "customers.address.line_3",
-            "customers.phones.secondary.number",
-            "customers.credit_limit_amt",
-            "customers.legacy.promo_codes_csv",
-            "customers.legacy.related_acct_ids"
-          ]
-        }
+        "checks_run": 9,
+        "stats": {}
       },
       "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
       "result": "pass"
@@ -54,15 +44,18 @@
       "actual": {
         "passed": true,
         "findings": 0,
-        "checks_run": 33333,
+        "checks_run": 820,
         "stats": {
-          "customers": {
+          "usage_events": {
             "mode": "full_diff",
-            "population": 25000
+            "population": 814
+          },
+          "rating_periods": {
+            "mode": "full_diff",
+            "population": 3
           },
           "embeds_graded": {
-            "customers.attributes": 8333,
-            "customers.history": 0
+            "rating_periods.results": 3
           }
         }
       },
@@ -81,22 +74,16 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "second full load at 2026-09-01T04:24:31.547625+00:00 converged on the load at 2026-09-01T04:23:23.139781+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=ef3a15fd998d)"
+    "evidence": "second full load at 2026-09-01T04:25:12.782315+00:00 converged on the load at 2026-09-01T04:24:04.261296+00:00: usage_events=814, rating_periods=3, identical embedded and quarantine counts, 0 documents pruned, identical content digests (usage_events=a51544e043dd, rating_periods=eecb4ef082f1)"
   },
   "planted_anomaly_detections": {
-    "expected_set": [
-      "malformed_related_acct_ids=31",
-      "unparseable_signup_dt=50"
-    ],
-    "actual_set": [
-      "malformed_related_acct_ids=31",
-      "unparseable_signup_dt=50"
-    ],
+    "expected_set": [],
+    "actual_set": [],
     "missing": [],
     "unexpected": []
   },
   "unverified_paths": [
-    "CUSTOMER_MASTER_HIST embed: 0 source rows, so the history array is declared and graded empty rather than exercised; the 113 always-null CUSTOMER_MASTER columns are dropped by the mapping; they are verified null at source, not carried to the target"
+    "none: all 814 usage events and 3 rating periods were graded by full keyed diff"
   ],
   "pre_pr_self_check": [
     {
@@ -122,7 +109,7 @@
     {
       "id": "cleanup_retains_evidence",
       "verdict": "pass",
-      "evidence": "Recon artifacts for this run are committed under .migration/recon/customers/ and are not removed by any load path."
+      "evidence": "Recon artifacts for this run are committed under .migration/recon/usage_rating/ and are not removed by any load path."
     },
     {
       "id": "no_secrets_or_addresses",
@@ -137,17 +124,17 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "second full load at 2026-09-01T04:24:31.547625+00:00 converged on the load at 2026-09-01T04:23:23.139781+00:00: customers=25000, identical embedded and quarantine counts, 0 documents pruned, identical content digests (customers=ef3a15fd998d)"
+      "evidence": "second full load at 2026-09-01T04:25:12.782315+00:00 converged on the load at 2026-09-01T04:24:04.261296+00:00: usage_events=814, rating_periods=3, identical embedded and quarantine counts, 0 documents pruned, identical content digests (usage_events=a51544e043dd, rating_periods=eecb4ef082f1)"
     },
     {
       "id": "values_recomputed_from_target",
       "verdict": "pass",
-      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'customers': 'full_diff/25000'}."
+      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'usage_events': 'full_diff/814', 'rating_periods': 'full_diff/3'}."
     },
     {
       "id": "unverified_paths_listed",
       "verdict": "pass",
-      "evidence": "CUSTOMER_MASTER_HIST embed: 0 source rows, so the history array is declared and graded empty rather than exercised; the 113 always-null CUSTOMER_MASTER columns are dropped by the mapping; they are verified null at source, not carried to the target"
+      "evidence": "none: all 814 usage events and 3 rating periods were graded by full keyed diff"
     },
     {
       "id": "recon_report_schema",
