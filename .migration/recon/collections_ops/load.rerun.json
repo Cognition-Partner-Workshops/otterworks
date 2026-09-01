@@ -1,0 +1,56 @@
+{
+  "unit": "collections_ops",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "credit_notes",
+      "documents": 5,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "5784b6fb51dfc18378f979b25065f0834b072798b233cda87b84ed3da8286044",
+      "expected_documents": 5,
+      "matches_census": true
+    },
+    {
+      "collection": "dunning_attempts",
+      "documents": 1,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "a87d9d280721472d8a03e15fccd6010b2dbb1c6982554a584b44487a52bb97bd",
+      "expected_documents": 1,
+      "matches_census": true
+    },
+    {
+      "collection": "notifications",
+      "documents": 1,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "c3b0094b0c2b6420dbbdd9961c2b37e71f90b0309b68f573d3b87349bb9e261b",
+      "expected_documents": 1,
+      "matches_census": true
+    },
+    {
+      "collection": "billing_audit_log",
+      "documents": 0,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_documents": 0,
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T04:27:37.163760+00:00"
+}

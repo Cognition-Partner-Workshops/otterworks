@@ -1,0 +1,1923 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "customers",
+      "unit": "customers",
+      "wave": 1,
+      "pattern_class": "wide-embed",
+      "size": "XL",
+      "root_table": "CUSTOMER_MASTER",
+      "root_where": "CONVERSION_BATCH_NO = ${batch_no}",
+      "scope": {
+        "source_column": "CONVERSION_BATCH_NO",
+        "target_field": "conversion_batch_no",
+        "param": "batch_no"
+      },
+      "key": {
+        "source": [
+          "CUST_ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "reports.py BALANCES_SQL aggregates balances across the whole batch; the handbook's lookups are by cust_id, cust_no and cust_name_upper. Nothing reads a customer's attributes or version history without the customer, and ENTITY_ATTR_VALUE has no consumer of its own, so both embed.",
+      "fields": [
+        {
+          "source": "CUST_ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CUST_NO",
+          "target": "cust_no",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "LEGACY_SYS_KEY",
+          "target": "legacy_sys_key",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "MAINFRAME_ACCT_NO",
+          "target": "mainframe_acct_no",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "LEGAL_NAME",
+          "target": "legal_name",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CUST_TYPE_CD",
+          "target": "type_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SUB_STATUS_CD",
+          "target": "sub_status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "REGION_CD",
+          "target": "region_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SEGMENT_CD",
+          "target": "segment_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "ADDR_LINE_1",
+          "target": "address.line_1",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "ADDR_LINE_2",
+          "target": "address.line_2",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_3",
+          "target": "address.line_3",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CITY",
+          "target": "address.city",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "STATE_CD",
+          "target": "address.state_cd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "ZIP",
+          "target": "address.zip",
+          "source_type": "VARCHAR2(12)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "PHONE1",
+          "target": "phones.primary.number",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "PHONE1_TYPE_CD",
+          "target": "phones.primary.type_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "PHONE2",
+          "target": "phones.secondary.number",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE2_TYPE_CD",
+          "target": "phones.secondary.type_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "EMAIL_1",
+          "target": "email",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CREDIT_LIMIT_AMT",
+          "target": "credit_limit_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUR_BAL_AMT",
+          "target": "cur_bal_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "PAST_DUE_AMT",
+          "target": "past_due_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "YTD_BILLED_AMT",
+          "target": "ytd_billed_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "ROW_VERSION_NO",
+          "target": "row_version_no",
+          "source_type": "NUMBER(8,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "CONVERSION_BATCH_NO",
+          "target": "conversion_batch_no",
+          "source_type": "NUMBER(8,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "CREATED_DT",
+          "target": "created_at",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "CREATED_BY",
+          "target": "created_by",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "UPDATED_DT",
+          "target": "updated_at",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "UPDATED_BY",
+          "target": "updated_by",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "SIGNUP_DT",
+          "target": "legacy.signup_dt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [],
+          "note": "raw source value, graded byte-exact; signup_at is derived from it"
+        },
+        {
+          "source": "LAST_ACTIVITY_DT",
+          "target": "legacy.last_activity_dt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [],
+          "note": "raw source value, graded byte-exact; last_activity_at is derived from it"
+        },
+        {
+          "source": "PROMO_CODES_CSV",
+          "target": "legacy.promo_codes_csv",
+          "source_type": "VARCHAR2(1000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ],
+          "note": "raw source value, graded byte-exact; promo_codes is derived from it"
+        },
+        {
+          "source": "RELATED_ACCT_IDS",
+          "target": "legacy.related_acct_ids",
+          "source_type": "VARCHAR2(2000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ],
+          "note": "raw source value, graded byte-exact; related_acct_ids is derived from it"
+        },
+        {
+          "source": "CREDIT_HOLD_YN",
+          "target": "legacy.credit_hold_yn",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces"
+          ],
+          "note": "raw source value, graded byte-exact; credit_hold is derived from it"
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "legacy.tax_exempt_yn",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces"
+          ],
+          "note": "raw source value, graded byte-exact; tax_exempt is derived from it"
+        },
+        {
+          "source": "VIP_YN",
+          "target": "legacy.vip_yn",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces"
+          ],
+          "note": "raw source value, graded byte-exact; vip is derived from it"
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "STATUS_CD",
+          "target": "status",
+          "transform": "lookup_code_desc",
+          "code_type": "CUST_STATUS",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        },
+        {
+          "source": "CUST_TYPE_CD",
+          "target": "type",
+          "transform": "lookup_code_desc",
+          "code_type": "CUST_TYPE",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        },
+        {
+          "source": "PHONE1_TYPE_CD",
+          "target": "phones.primary.type",
+          "transform": "lookup_code_desc",
+          "code_type": "PHONE_TYPE",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        },
+        {
+          "source": "PHONE2_TYPE_CD",
+          "target": "phones.secondary.type",
+          "transform": "lookup_code_desc",
+          "code_type": "PHONE_TYPE",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        },
+        {
+          "source": "SIGNUP_DT",
+          "target": "signup_at",
+          "transform": "parse_dd_mon_yy",
+          "on_error": "quarantine",
+          "quarantine_category": "unparseable_signup_dt",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.signup_dt instead)"
+        },
+        {
+          "source": "LAST_ACTIVITY_DT",
+          "target": "last_activity_at",
+          "transform": "parse_dd_mon_yy",
+          "on_error": "quarantine",
+          "quarantine_category": "unparseable_last_activity_dt",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.last_activity_dt instead)"
+        },
+        {
+          "source": "PROMO_CODES_CSV",
+          "target": "promo_codes",
+          "transform": "csv_to_array",
+          "on_error": "quarantine",
+          "quarantine_category": "malformed_promo_codes_csv",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.promo_codes_csv instead)"
+        },
+        {
+          "source": "RELATED_ACCT_IDS",
+          "target": "related_acct_ids",
+          "transform": "csv_to_array",
+          "on_error": "quarantine",
+          "quarantine_category": "malformed_related_acct_ids",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.related_acct_ids instead)"
+        },
+        {
+          "source": "CREDIT_HOLD_YN",
+          "target": "credit_hold",
+          "transform": "yn_to_bool",
+          "on_error": "none",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.credit_hold_yn instead)"
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt",
+          "transform": "yn_to_bool",
+          "on_error": "none",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.tax_exempt_yn instead)"
+        },
+        {
+          "source": "VIP_YN",
+          "target": "vip",
+          "transform": "yn_to_bool",
+          "on_error": "none",
+          "verified_by": "unit transform assertions + quarantine counts (the harness compares raw values, so it grades legacy.vip_yn instead)"
+        }
+      ],
+      "dropped": [
+        {
+          "source": "ADDR_LINE_4",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "ADDR_LINE_5",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "ADDR_LINE_6",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "CHANNEL_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "CHILD_ACCT_IDS",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "CONTACT_NOTES",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "COUNTRY_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "DBA_NAME",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "DUNNING_EXEMPT_YN",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "EMAIL_2",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "EMAIL_3",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FAX",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_01",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_02",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_03",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_04",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_05",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_06",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_07",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_08",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_09",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_10",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_11",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_12",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_13",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_14",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_15",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_16",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_17",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_18",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_19",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "FLAG_20",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "LAST_INVOICE_DT",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "LAST_PAYMENT_DT",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "LTD_BILLED_AMT",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_1",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_2",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_3",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_4",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_5",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ADDR_LINE_6",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_CITY",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_STATE_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "MAIL_ZIP",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "PHONE3",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "PHONE3_TYPE_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "PHONE4",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "PHONE4_TYPE_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "RATE_CLASS_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "TERMINATE_DT",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "TERRITORY_CD",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_01",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_02",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_03",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_04",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_05",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_06",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_07",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_08",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_09",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_10",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_11",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_12",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_13",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_14",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_15",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_16",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_17",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_18",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_19",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_20",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_21",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_22",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_23",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_24",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_25",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_26",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_27",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_28",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_29",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_30",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_31",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_32",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_33",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_34",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_35",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_36",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_37",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_38",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_39",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_40",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_01",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_02",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_03",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_04",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_05",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_06",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_07",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_08",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_09",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_AMT_10",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_01",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_02",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_03",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_04",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_05",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_06",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_07",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_08",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_09",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "UDF_DT_10",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "YTD_PAID_AMT",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "ZIP4",
+          "reason": "NULL in all 25,000 rows (census/access_patterns.json#customer_master_population). Proposed-unused: dropped rather than carried as an always-absent field. If the production estate populates it, the spec needs that population census before load."
+        },
+        {
+          "source": "CUST_NAME_UPPER",
+          "reason": "shadow column maintained only so the legacy handbook could do a case-insensitive lookup; replaced by a collation index on `name` (locale en, strength 2)"
+        },
+        {
+          "source": "CUST_SEQ_NO",
+          "reason": "sequence-backed surrogate with no external consumer; `_id` is the natural key and SEQ_CUSTOMER_MASTER is retired"
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "attributes",
+          "child_table": "ENTITY_ATTR_VALUE",
+          "child_where": "ENTITY_TYPE = 'CUSTOMER'",
+          "parent_key": [
+            "ENTITY_ID"
+          ],
+          "key": {
+            "source": [
+              "EAV_ID"
+            ],
+            "target": "eav_id"
+          },
+          "fields": [
+            {
+              "source": "ATTR_NAME",
+              "target": "name",
+              "source_type": "VARCHAR2(100)",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "ATTR_VALUE",
+              "target": "value",
+              "source_type": "VARCHAR2(4000)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ATTR_TYPE",
+              "target": "type",
+              "source_type": "VARCHAR2(10)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CREATED_DT",
+              "target": "legacy.created_dt",
+              "source_type": "VARCHAR2(9)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            }
+          ],
+          "derived_fields": [
+            {
+              "source": "CREATED_DT",
+              "target": "created_at",
+              "transform": "parse_dd_mon_yy",
+              "on_error": "quarantine",
+              "quarantine_category": "unparseable_eav_created_dt",
+              "verified_by": "unit transform assertions"
+            }
+          ],
+          "rule": "An ARRAY keyed by EAV_ID, not a subdocument keyed by attr_name: 187 (entity_id, attr_name) pairs carry more than one row (up to 3) across the 8,333 rows / 7,075 customers that have attributes, so a keyed subdocument would keep one value per pair and silently drop the rest. EAV_ID is also what makes the array value-gradable \u2014 the harness grades elements by a single-column key.",
+          "cardinality": "sum(len(attributes)) == 8333 (every EAV row; 0 orphans confirmed)",
+          "dropped": [
+            {
+              "source": "ENTITY_TYPE",
+              "reason": "constant 'CUSTOMER' across all 8,333 rows; the embed's location in the customer document carries it"
+            },
+            {
+              "source": "ENTITY_ID",
+              "reason": "join key to the parent row; becomes the containing document (declared as the embed's parent_key so recon still walks it)"
+            }
+          ]
+        },
+        {
+          "array_path": "history",
+          "child_table": "CUSTOMER_MASTER_HIST",
+          "parent_key": [
+            "CUST_ID"
+          ],
+          "key": {
+            "source": [
+              "HIST_ID"
+            ],
+            "target": "hist_id"
+          },
+          "fields": [
+            {
+              "source": "HIST_OP",
+              "target": "hist_op",
+              "source_type": "VARCHAR2(3)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "HIST_DT",
+              "target": "legacy.hist_dt",
+              "source_type": "VARCHAR2(20)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "TENANT_ID",
+              "target": "tenant_id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CUST_NO",
+              "target": "cust_no",
+              "source_type": "VARCHAR2(20)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CUST_NAME",
+              "target": "cust_name",
+              "source_type": "VARCHAR2(200)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "LEGAL_NAME",
+              "target": "legal_name",
+              "source_type": "VARCHAR2(200)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ADDR_LINE_1",
+              "target": "addr_line_1",
+              "source_type": "VARCHAR2(120)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ADDR_LINE_2",
+              "target": "addr_line_2",
+              "source_type": "VARCHAR2(120)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ADDR_LINE_3",
+              "target": "addr_line_3",
+              "source_type": "VARCHAR2(120)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CITY",
+              "target": "city",
+              "source_type": "VARCHAR2(80)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "STATE_CD",
+              "target": "state_cd",
+              "source_type": "VARCHAR2(4)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ZIP",
+              "target": "zip",
+              "source_type": "VARCHAR2(12)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PHONE1",
+              "target": "phone1",
+              "source_type": "VARCHAR2(25)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PHONE2",
+              "target": "phone2",
+              "source_type": "VARCHAR2(25)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PHONE1_TYPE_CD",
+              "target": "phone1_type_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PHONE2_TYPE_CD",
+              "target": "phone2_type_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "EMAIL_1",
+              "target": "email_1",
+              "source_type": "VARCHAR2(200)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SIGNUP_DT",
+              "target": "signup_dt",
+              "source_type": "VARCHAR2(9)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "LAST_ACTIVITY_DT",
+              "target": "last_activity_dt",
+              "source_type": "VARCHAR2(9)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "STATUS_CD",
+              "target": "status_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SUB_STATUS_CD",
+              "target": "sub_status_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CUST_TYPE_CD",
+              "target": "cust_type_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SEGMENT_CD",
+              "target": "segment_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "REGION_CD",
+              "target": "region_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "TAX_EXEMPT_YN",
+              "target": "tax_exempt_yn",
+              "source_type": "CHAR(1)",
+              "bson_type": "string",
+              "rules": [
+                "rstrip_spaces",
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CREDIT_HOLD_YN",
+              "target": "credit_hold_yn",
+              "source_type": "CHAR(1)",
+              "bson_type": "string",
+              "rules": [
+                "rstrip_spaces",
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "VIP_YN",
+              "target": "vip_yn",
+              "source_type": "CHAR(1)",
+              "bson_type": "string",
+              "rules": [
+                "rstrip_spaces",
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CUR_BAL_AMT",
+              "target": "cur_bal_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PAST_DUE_AMT",
+              "target": "past_due_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "YTD_BILLED_AMT",
+              "target": "ytd_billed_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CREDIT_LIMIT_AMT",
+              "target": "credit_limit_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "RELATED_ACCT_IDS",
+              "target": "related_acct_ids",
+              "source_type": "VARCHAR2(2000)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PROMO_CODES_CSV",
+              "target": "promo_codes_csv",
+              "source_type": "VARCHAR2(1000)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "LEGACY_SYS_KEY",
+              "target": "legacy_sys_key",
+              "source_type": "VARCHAR2(50)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "MAINFRAME_ACCT_NO",
+              "target": "mainframe_acct_no",
+              "source_type": "VARCHAR2(30)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CONVERSION_BATCH_NO",
+              "target": "conversion_batch_no",
+              "source_type": "NUMBER(8,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CREATED_BY",
+              "target": "created_by",
+              "source_type": "VARCHAR2(30)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "CREATED_DT",
+              "target": "created_dt",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "UPDATED_BY",
+              "target": "updated_by",
+              "source_type": "VARCHAR2(30)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "UPDATED_DT",
+              "target": "updated_dt",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ROW_VERSION_NO",
+              "target": "row_version_no",
+              "source_type": "NUMBER(8,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            }
+          ],
+          "rule": "0 rows today: TRG_CUSTOMER_MASTER_HIST fires on UPDATE only and this estate has no updates against the converted batch. The array is absent rather than empty, and the unit records 0 rows -> 0 elements as an explicit PASS per tolerance T14.",
+          "cardinality": "sum(len(history)) == 0",
+          "dropped": [
+            {
+              "source": "ADDR_LINE_4",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "ADDR_LINE_5",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "ADDR_LINE_6",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CHANNEL_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CHILD_ACCT_IDS",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CONTACT_NOTES",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "COUNTRY_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CUST_NAME_UPPER",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CUST_SEQ_NO",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "DBA_NAME",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "DUNNING_EXEMPT_YN",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "EMAIL_2",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "EMAIL_3",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FAX",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_01",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_02",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_03",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_04",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_05",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_06",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_07",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_08",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_09",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_10",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_11",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_12",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_13",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_14",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_15",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_16",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_17",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_18",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_19",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "FLAG_20",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "LAST_INVOICE_DT",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "LAST_PAYMENT_DT",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "LTD_BILLED_AMT",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_1",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_2",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_3",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_4",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_5",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ADDR_LINE_6",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_CITY",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_STATE_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "MAIL_ZIP",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "PHONE3",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "PHONE3_TYPE_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "PHONE4",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "PHONE4_TYPE_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "RATE_CLASS_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "TERMINATE_DT",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "TERRITORY_CD",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_01",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_02",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_03",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_04",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_05",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_06",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_07",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_08",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_09",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_10",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_11",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_12",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_13",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_14",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_15",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_16",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_17",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_18",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_19",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_20",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_21",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_22",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_23",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_24",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_25",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_26",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_27",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_28",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_29",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_30",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_31",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_32",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_33",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_34",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_35",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_36",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_37",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_38",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_39",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_40",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_01",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_02",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_03",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_04",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_05",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_06",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_07",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_08",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_09",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_AMT_10",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_01",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_02",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_03",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_04",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_05",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_06",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_07",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_08",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_09",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "UDF_DT_10",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "YTD_PAID_AMT",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "ZIP4",
+              "reason": "snapshot mirrors CUSTOMER_MASTER column for column; dropped for the same reason as the parent column"
+            },
+            {
+              "source": "CUST_ID",
+              "reason": "join key to the customer; becomes containment"
+            }
+          ]
+        }
+      ],
+      "quarantine": {
+        "collection": "customers_quarantine",
+        "expected": {
+          "unparseable_signup_dt": 50,
+          "malformed_related_acct_ids": 31
+        }
+      },
+      "expected_documents": 25000,
+      "indexes": [
+        {
+          "keys": {
+            "cust_no": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "tenant_id": 1,
+            "status_cd": 1
+          }
+        },
+        {
+          "keys": {
+            "name": 1
+          },
+          "collation": {
+            "locale": "en",
+            "strength": 2
+          },
+          "note": "replaces the CUST_NAME_UPPER shadow column"
+        },
+        {
+          "keys": {
+            "legacy_sys_key": 1
+          }
+        }
+      ]
+    }
+  ],
+  "unit": "customers",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

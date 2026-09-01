@@ -1,0 +1,256 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "codes",
+      "unit": "reference",
+      "wave": 0,
+      "root_table": "CODES",
+      "key": {
+        "source": [
+          "CODE_TYPE||':'||CODE_VAL"
+        ],
+        "target": "_id",
+        "compose": {
+          "from": [
+            "CODE_TYPE",
+            "CODE_VAL"
+          ],
+          "sep": ":"
+        }
+      },
+      "access_pattern": "joined twice per month-end report (reports.py STATUS_SQL, LINE_SQL) and by PKG_OW_UTIL.f_code_desc in all five packages. Kept as a collection AND denormalized as a label beside every code value, so no hot read path needs a $lookup on 32 rows.",
+      "fields": [
+        {
+          "source": "CODE_TYPE",
+          "target": "code_type",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CODE_VAL",
+          "target": "code_val",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "CODE_DESC",
+          "target": "code_desc",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "expected_documents": 32,
+      "indexes": [
+        {
+          "keys": {
+            "code_type": 1,
+            "code_val": 1
+          },
+          "unique": true
+        }
+      ]
+    },
+    {
+      "collection": "tenants",
+      "unit": "reference",
+      "wave": 0,
+      "root_table": "TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "read by tenant id on every request path in both lineages; the only table the converted estate and the application share besides CODES.",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "legacy.tax_exempt_yn",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces"
+          ]
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt",
+          "transform": "yn_to_bool",
+          "verified_by": "unit transform assertions (harness grades the raw CHAR at legacy.tax_exempt_yn)"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status",
+          "transform": "lookup_code_desc",
+          "code_type": "TENANT_STATUS",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ],
+      "expected_documents": 69,
+      "indexes": [
+        {
+          "keys": {
+            "name": 1
+          },
+          "unique": true,
+          "note": "carries UQ_TENANTS_NAME"
+        },
+        {
+          "keys": {
+            "status_cd": 1
+          }
+        }
+      ]
+    },
+    {
+      "collection": "plans",
+      "unit": "reference",
+      "wave": 0,
+      "root_table": "PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "PKG_PLANS.fn_list_plans returns the active plans on every GET /api/plans; fn_entitlement reads one plan by id.",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "CODE",
+          "target": "code",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tier_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "MONTHLY_FEE",
+          "target": "monthly_fee",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "INCLUDED_UNITS",
+          "target": "included_units",
+          "source_type": "NUMBER(10,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "OVERAGE_RATE",
+          "target": "overage_rate",
+          "source_type": "NUMBER(12,6)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "ACTIVE_YN",
+          "target": "legacy.active_yn",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces"
+          ]
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "ACTIVE_YN",
+          "target": "active",
+          "transform": "yn_to_bool",
+          "verified_by": "unit transform assertions"
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tier",
+          "transform": "lookup_code_desc",
+          "code_type": "PLAN_TIER",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ],
+      "expected_documents": 3,
+      "indexes": [
+        {
+          "keys": {
+            "code": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "active": 1
+          }
+        }
+      ]
+    }
+  ],
+  "unit": "reference",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

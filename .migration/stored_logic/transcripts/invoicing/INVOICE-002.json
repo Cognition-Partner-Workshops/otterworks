@@ -1,0 +1,28 @@
+{
+  "business_fields": {
+    "line_types": [
+      "plan",
+      "usage",
+      "tax",
+      "tax",
+      "credit"
+    ],
+    "tax_amount": [
+      "0.00",
+      "0.00",
+      "0.00",
+      "0.00",
+      "0.00"
+    ]
+  },
+  "entrypoint": "billing.fn_invoice_preview",
+  "inputs": {
+    "period_end": "2026-02-28",
+    "period_start": "2026-02-01",
+    "tenant_id": "00000000-0000-0000-0000-000000000003"
+  },
+  "module": "invoicing",
+  "oracle_entrypoint": "pkg_invoicing.fn_invoice_preview",
+  "probes": {},
+  "scenario": "INVOICE-002"
+}

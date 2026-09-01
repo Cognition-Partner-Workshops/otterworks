@@ -1,0 +1,52 @@
+{
+  "unit": "reference",
+  "mode": "live",
+  "mapping_version": "m1",
+  "tolerance_version": "v1",
+  "seed": 20260901,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "generated_at": "2026-09-01T04:25:38.548818+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 14,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 104,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 69
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

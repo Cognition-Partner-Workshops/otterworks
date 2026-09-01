@@ -109,3 +109,6 @@ __pycache__/
 
 # Legacy seed manifests (runtime artifacts)
 testdata/legacy/manifests/*.json
+
+# mongo migration: extract lease lock file (runtime only)
+.migration/.extract.lock

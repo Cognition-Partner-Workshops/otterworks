@@ -1,0 +1,315 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "credit_notes",
+      "unit": "collections_ops",
+      "wave": 3,
+      "pattern_class": "reference",
+      "root_table": "CREDIT_NOTES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "read by tenant when applying credit at invoice issue; no child rows",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "ISSUED_ON",
+          "target": "issued_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "REMAINING_AMOUNT",
+          "target": "remaining_amount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round"
+          ]
+        }
+      ],
+      "expected_documents": 5,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_on": -1
+          }
+        }
+      ]
+    },
+    {
+      "collection": "dunning_attempts",
+      "unit": "collections_ops",
+      "wave": 3,
+      "pattern_class": "reference",
+      "root_table": "DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "grows unbounded over an invoice's life and is written by the nightly dunning job long after issue, so it is referenced rather than embedded into the invoice",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attempt_no",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduled_for",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "expected_documents": 1,
+      "indexes": [
+        {
+          "keys": {
+            "invoice_id": 1,
+            "attempt_no": 1
+          },
+          "unique": true,
+          "note": "carries UQ_DUNNING_ATTEMPTS"
+        },
+        {
+          "keys": {
+            "scheduled_for": 1
+          }
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "STATUS_CD",
+          "target": "status",
+          "transform": "lookup_code_desc",
+          "code_type": "DUN_STATUS",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ]
+    },
+    {
+      "collection": "notifications",
+      "unit": "collections_ops",
+      "wave": 3,
+      "pattern_class": "reference",
+      "root_table": "NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "append-only outbound log, read by tenant and time window",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sent_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "expected_documents": 1,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "kind_cd": 1,
+            "sent_at": 1
+          },
+          "unique": true,
+          "note": "carries UQ_NOTIFICATIONS"
+        },
+        {
+          "keys": {
+            "tenant_id": 1,
+            "sent_at": -1
+          }
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "KIND_CD",
+          "target": "kind",
+          "transform": "lookup_code_desc",
+          "code_type": "NOTIF_KIND",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ]
+    },
+    {
+      "collection": "billing_audit_log",
+      "unit": "collections_ops",
+      "wave": 3,
+      "pattern_class": "reference",
+      "root_table": "BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "written by PKG_OW_UTIL.log_msg, purged by JOB_PURGE_AUDIT_LOG; the job is replaced by a TTL index on logged_at",
+      "fields": [
+        {
+          "source": "LOG_ID",
+          "target": "_id",
+          "source_type": "NUMBER(12,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "LOGGED_AT",
+          "target": "logged_at",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "expected_documents": 0,
+      "indexes": [
+        {
+          "keys": {
+            "logged_at": 1
+          },
+          "expireAfterSeconds": 7776000,
+          "note": "TTL index replacing JOB_PURGE_AUDIT_LOG (90 days)"
+        }
+      ]
+    }
+  ],
+  "unit": "collections_ops",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

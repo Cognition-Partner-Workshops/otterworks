@@ -1,6 +1,6 @@
 # 03 — Mapping specification
 
-**Mapping version:** `m1` · **Tolerance version:** `v1` · **Status:** PROPOSED, pending STOP B
+**Mapping version:** `m1` · **Tolerance version:** `v1` · **Status:** ACCEPTED at STOP B (2026-09-01)
 **Target database:** `ow_tp_mongodb_orc1` · **Source:** Oracle `OW_BILLING` (profile `mongo-migration/profiles/oracle.md`)
 
 The authoritative, machine-readable spec is **`03_mapping_spec.json`** — that is what the

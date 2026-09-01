@@ -1,0 +1,192 @@
+{
+  "kind": "recon-report",
+  "unit": "stored_logic",
+  "namespace": "ow_tp_mongodb_orc1",
+  "generated_at": "2026-09-01T05:43:04.199507+00:00",
+  "run_mode": "live",
+  "checks": [
+    {
+      "id": "behavioural_equivalence",
+      "expected": {
+        "scenarios_graded": 24,
+        "scenarios_failed": 0
+      },
+      "actual": {
+        "scenarios_graded": 24,
+        "scenarios_failed": 0,
+        "entrypoints": 12,
+        "unrecorded_by_oracle": []
+      },
+      "source_of_truth": "procs/oracle/transcripts (recorded from the running PL/SQL estate) vs .migration/stored_logic/transcripts, compared field for field by mongo_parity.py",
+      "result": "pass"
+    },
+    {
+      "id": "trigger_effects_preserved",
+      "expected": {
+        "triggers": 7,
+        "undispositioned": 0
+      },
+      "actual": {
+        "triggers": 7,
+        "reproduced": [
+          "trg_sub_no_uncancel",
+          "trg_subscriptions_hist",
+          "trg_usage_events_check",
+          "trg_customer_master_hist"
+        ],
+        "retired": [
+          "trg_billing_audit_log_id",
+          "trg_customer_master_seq",
+          "trg_entity_attr_value_seq"
+        ]
+      },
+      "source_of_truth": "inventory.py parses the estate's DDL and matches every trigger to a disposition carrying both its effect and a reason",
+      "result": "pass"
+    },
+    {
+      "id": "scheduler_jobs_rehomed",
+      "expected": {
+        "jobs": 2,
+        "named_replacements": 2
+      },
+      "actual": {
+        "jobs": 2,
+        "replacements": {
+          "JOB_NIGHTLY_DUNNING": "billing_logic.nightly_dunning",
+          "JOB_PURGE_AUDIT_LOG": "TTL index on billing_audit_log.logged_at (mongo_store.MongoStore.ensure_indexes)"
+        }
+      },
+      "source_of_truth": "dispositions.json, checked by inventory.py against the jobs parsed from schema/04_jobs.sql",
+      "result": "pass"
+    },
+    {
+      "id": "sequences_retired",
+      "expected": {
+        "sequences": 5,
+        "still_in_use": 0
+      },
+      "actual": {
+        "sequences": 5,
+        "natural_keys": {
+          "seq_billing_audit_log": "billing_audit_log._id",
+          "seq_customer_master": "customers._id (CUST_ID)",
+          "seq_customer_master_hist": "customers.history[] (containment)",
+          "seq_entity_attr_value": "customers.attributes[] (containment)",
+          "seq_subscriptions_hist": "subscriptions.history[].hist_id (position within its subscription)"
+        }
+      },
+      "source_of_truth": "dispositions.json; the natural keys are the _id values the data units loaded, so no caller is left reading a surrogate",
+      "result": "pass"
+    },
+    {
+      "id": "estate_fully_dispositioned",
+      "expected": {
+        "problems": []
+      },
+      "actual": {
+        "counts": {
+          "jobs": 2,
+          "packages": 5,
+          "routines": 19,
+          "sequences": 5,
+          "triggers": 7
+        },
+        "problems": []
+      },
+      "source_of_truth": "inventory.py: every parsed object has a disposition, every disposition names a target symbol that resolves, and a short parse fails rather than reporting an empty estate",
+      "result": "pass"
+    },
+    {
+      "id": "harness_verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": ".migration/recon/stored_logic/result.json",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "the replay at 2026-09-01T05:43:03.818784+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:41:44.851458+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [],
+    "actual_set": [],
+    "missing": [],
+    "unexpected": [],
+    "note": "Conversion correctness here is behavioural, not data-quality; it is graded by replay rather than by anomaly detection."
+  },
+  "unverified_paths": [
+    "PKG_OW_UTIL's autonomous-transaction logging keeps its independence -- the converted log write carries no session, so an audit row still survives a rolled-back caller -- but its WHEN OTHERS THEN NULL is deliberately not reproduced, and no recorded scenario observes a failing audit write",
+    "the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) are graded through their callers' transcripts and by unit test, not by a transcript of their own",
+    "JOB_NIGHTLY_DUNNING's replacement is the converted entrypoint pair; the scheduler that will invoke it nightly is a cutover deliverable and is not exercised here"
+  ],
+  "pre_pr_self_check": [
+    {
+      "id": "null_attribution_cannot_fail_open",
+      "verdict": "pass",
+      "evidence": "A code lookup that misses raises rather than returning a NULL description, and the converted rating keeps the estate's distinction between a zero allowance and no plan at all."
+    },
+    {
+      "id": "namespace_scoping",
+      "verdict": "pass",
+      "evidence": "The replay reads the migrated collections in ow_tp_mongodb_orc1 and writes only to sl_replay_* copies inside it, dropped when the run ends; the migrated collections are never written."
+    },
+    {
+      "id": "no_ddl_on_shared_objects",
+      "verdict": "pass",
+      "evidence": "Oracle is SELECT-only: the packages were read, not dropped or recompiled, and the estate's triggers, jobs and sequences are all still in place."
+    },
+    {
+      "id": "rerun_safe_retention",
+      "verdict": "pass",
+      "evidence": "Each scenario recreates its replay collections from the migrated data before it runs, so a replay cannot see another scenario's writes or leave any behind."
+    },
+    {
+      "id": "cleanup_retains_evidence",
+      "verdict": "pass",
+      "evidence": "The Oracle transcripts under procs/oracle/transcripts are immutable and untouched; the converted transcripts and both replay reports are committed under .migration/."
+    },
+    {
+      "id": "no_secrets_or_addresses",
+      "verdict": "pass",
+      "evidence": "MONGODB_ATLAS_URI is read by name from the environment; no credential value or address appears in code, transcripts, or artifacts."
+    },
+    {
+      "id": "parity_decision_from_contract",
+      "verdict": "pass",
+      "evidence": "The acceptance checks come from stored_logic.contract.json, written at STOP B; parity is graded against Oracle recordings made before the conversion existed."
+    },
+    {
+      "id": "idempotency_proven_by_rerun",
+      "verdict": "pass",
+      "evidence": "the replay at 2026-09-01T05:43:03.818784+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:41:44.851458+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+    },
+    {
+      "id": "values_recomputed_from_target",
+      "verdict": "pass",
+      "evidence": "The converted routines run against MongoDB and their output is captured fresh; 24 scenarios across 12 entrypoints were compared with the Oracle baseline."
+    },
+    {
+      "id": "unverified_paths_listed",
+      "verdict": "pass",
+      "evidence": "PKG_OW_UTIL's autonomous-transaction logging keeps its independence -- the converted log write carries no session, so an audit row still survives a rolled-back caller -- but its WHEN OTHERS THEN NULL is deliberately not reproduced, and no recorded scenario observes a failing audit write; the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) are graded through their callers' transcripts and by unit test, not by a transcript of their own; JOB_NIGHTLY_DUNNING's replacement is the converted entrypoint pair; the scheduler that will invoke it nightly is a cutover deliverable and is not exercised here"
+    },
+    {
+      "id": "recon_report_schema",
+      "verdict": "pass",
+      "evidence": "Emitted as docs/tech-partnerships/recon/stored_logic.recon.json with \"kind\": \"recon-report\"; validated by make tp-validate-recon."
+    },
+    {
+      "id": "capability_preflight",
+      "verdict": "pass",
+      "evidence": "Atlas preflight ran 8 probes with 0 denied; Oracle read access and the recon harness selftest were verified before live work."
+    },
+    {
+      "id": "tp_smoke_green",
+      "verdict": "pass",
+      "evidence": "make tp-smoke: all checks passed."
+    }
+  ]
+}

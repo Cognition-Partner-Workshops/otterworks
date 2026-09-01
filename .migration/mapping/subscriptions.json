@@ -1,0 +1,228 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "subscriptions",
+      "unit": "subscriptions",
+      "wave": 1,
+      "pattern_class": "small-embed",
+      "root_table": "SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "PKG_PLANS.fn_entitlement reads the one active subscription per tenant as of a date; sp_change_plan closes the current row and inserts the next, and TRG_SUBSCRIPTIONS_HIST snapshots the old one. Version history is only ever read with its subscription.",
+      "fields": [
+        {
+          "source": "ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "STATUS_CD",
+          "target": "status",
+          "transform": "lookup_code_desc",
+          "code_type": "SUB_STATUS",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "history",
+          "child_table": "SUBSCRIPTIONS_HIST",
+          "parent_key": [
+            "ID"
+          ],
+          "key": {
+            "source": [
+              "HIST_ID"
+            ],
+            "target": "hist_id"
+          },
+          "fields": [
+            {
+              "source": "HIST_OP",
+              "target": "hist_op",
+              "source_type": "VARCHAR2(3)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "HIST_DT",
+              "target": "legacy.hist_dt",
+              "source_type": "VARCHAR2(20)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "TENANT_ID",
+              "target": "tenant_id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "PLAN_ID",
+              "target": "plan_id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "STARTS_ON",
+              "target": "starts_on",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ENDS_ON",
+              "target": "ends_on",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "STATUS_CD",
+              "target": "status_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SUSPENDED_ON",
+              "target": "suspended_on",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms",
+                "null_missing_equiv"
+              ]
+            }
+          ],
+          "rule": "0 rows today; explicit empty PASS per tolerance T14",
+          "cardinality": "sum(len(history)) == 0",
+          "dropped": [
+            {
+              "source": "ID",
+              "reason": "join key to the subscription; becomes containment"
+            }
+          ]
+        }
+      ],
+      "expected_documents": 69,
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "starts_on": -1
+          }
+        },
+        {
+          "keys": {
+            "plan_id": 1
+          }
+        }
+      ]
+    }
+  ],
+  "unit": "subscriptions",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

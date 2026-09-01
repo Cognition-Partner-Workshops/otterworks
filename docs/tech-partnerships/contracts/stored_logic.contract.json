@@ -1,0 +1,49 @@
+{
+  "unit": "stored_logic",
+  "source_artifact_path": "oracle://OW_BILLING/{5 packages, 19 routines, 7 triggers, 2 scheduler jobs, 5 sequences} (SELECT-only, DBA_SOURCE)",
+  "target_objects": [
+    "application code (no collections)"
+  ],
+  "golden_baseline_location": "the routines' observable behaviour on Oracle, replayed against the target by the harness's Tier 4 application-operation checks",
+  "acceptance_checks": [
+    {
+      "id": "behavioural_equivalence",
+      "description": "Each converted routine reproduces the Oracle routine's observable output for the same inputs; PKG_RATING's per-period rating results are compared row for row."
+    },
+    {
+      "id": "trigger_effects_preserved",
+      "description": "Each of the 7 triggers' side effects is either reproduced in application code or explicitly retired with a reason."
+    },
+    {
+      "id": "scheduler_jobs_rehomed",
+      "description": "Both scheduler jobs have a named replacement (JOB_PURGE_AUDIT_LOG becomes a TTL index)."
+    },
+    {
+      "id": "sequences_retired",
+      "description": "All 5 sequences are retired in favour of natural keys, with no remaining caller depending on a surrogate value."
+    }
+  ],
+  "planted_anomalies": [
+    {
+      "id": "no_invalid_plsql_objects",
+      "description": "The census found 0 invalid PL/SQL objects and 0 ROWID dependencies, so there is no broken-source anomaly to detect.",
+      "status": "coverage_gap",
+      "reason": "Conversion correctness here is behavioural, not data-quality; it is graded by replay rather than by anomaly detection."
+    }
+  ],
+  "encoding_policy": {
+    "input_encoding": "Oracle AL32UTF8 source text read from the data dictionary",
+    "byte_transparency": "source text is read verbatim; string literals inside routines are carried across unchanged so converted logic compares values identically.",
+    "invalid_bytes": "none observed; conversion halts rather than substituting."
+  },
+  "malformed_record_policy": {
+    "extra_delimited_fields": "fail",
+    "null_attribution": "fail",
+    "details": "This unit processes code, not records. A routine that cannot be parsed or whose behaviour cannot be established halts the unit rather than shipping a partial conversion."
+  },
+  "empty_input_semantics": {
+    "action": "fail",
+    "details": "An empty extract of the data dictionary would mean the census or the connection is wrong, not that the estate has no logic; 17 PL/SQL objects are known to exist, so zero is a failure."
+  },
+  "trigger_granularity": "per-batch"
+}

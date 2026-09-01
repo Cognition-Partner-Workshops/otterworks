@@ -1,0 +1,94 @@
+{
+  "unit": "stored_logic",
+  "mode": "live",
+  "mapping_version": "m1",
+  "tolerance_version": "v1",
+  "generated_at": "2026-09-01T05:43:04.199507+00:00",
+  "graded_by": "transcript parity and object disposition; this unit writes no collections, so there are no row counts to reconcile",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "object_inventory",
+      "passed": true,
+      "checks_run": 38,
+      "stats": {
+        "jobs": 2,
+        "packages": 5,
+        "routines": 19,
+        "sequences": 5,
+        "triggers": 7
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "behavioural_parity_by_entrypoint",
+      "passed": true,
+      "checks_run": 12,
+      "stats": {
+        "pkg_dunning.fn_overdue_accounts": {
+          "fail": 0,
+          "pass": 1
+        },
+        "pkg_dunning.sp_schedule_dunning": {
+          "fail": 0,
+          "pass": 2
+        },
+        "pkg_dunning.sp_suspend_overdue": {
+          "fail": 0,
+          "pass": 2
+        },
+        "pkg_invoicing.fn_invoice_lines": {
+          "fail": 0,
+          "pass": 1
+        },
+        "pkg_invoicing.fn_invoice_preview": {
+          "fail": 0,
+          "pass": 2
+        },
+        "pkg_invoicing.sp_issue_invoice": {
+          "fail": 0,
+          "pass": 3
+        },
+        "pkg_plans.fn_entitlement": {
+          "fail": 0,
+          "pass": 2
+        },
+        "pkg_plans.fn_list_plans": {
+          "fail": 0,
+          "pass": 1
+        },
+        "pkg_plans.sp_change_plan": {
+          "fail": 0,
+          "pass": 2
+        },
+        "pkg_rating.fn_usage_rating": {
+          "fail": 0,
+          "pass": 6
+        },
+        "pkg_rating.fn_usage_summary": {
+          "fail": 0,
+          "pass": 1
+        },
+        "pkg_rating.sp_finalize_rating": {
+          "fail": 0,
+          "pass": 1
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "transcript_diff_by_scenario",
+      "passed": true,
+      "checks_run": 24,
+      "stats": {
+        "scenarios_graded": 24,
+        "unrecorded_by_oracle": []
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

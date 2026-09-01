@@ -1,0 +1,36 @@
+{
+  "unit": "usage_rating",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "usage_events",
+      "documents": 814,
+      "embedded": {},
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "a51544e043ddc1136815daf5cba301a25d96bc5ad7ba409a0dfad0f7c038de60",
+      "expected_documents": 814,
+      "matches_census": true
+    },
+    {
+      "collection": "rating_periods",
+      "documents": 3,
+      "embedded": {
+        "results": 3
+      },
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "eecb4ef082f1c1d134142c9a70f0e8c08a490b70ec5162708fbf642c3ee4f507",
+      "expected_documents": 3,
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T04:24:04.261296+00:00"
+}

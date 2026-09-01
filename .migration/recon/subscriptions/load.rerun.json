@@ -1,0 +1,25 @@
+{
+  "unit": "subscriptions",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "subscriptions",
+      "documents": 69,
+      "embedded": {
+        "history": 0
+      },
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "1f11deb3288503512ef2c6ec54da82718e9dc9ec47d3fe0165bdaa7d30af01c1",
+      "expected_documents": 69,
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T04:24:13.624774+00:00"
+}

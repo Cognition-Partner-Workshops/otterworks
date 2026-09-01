@@ -1,0 +1,374 @@
+{
+  "version": "m1",
+  "tolerance_version": "v1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "target": {
+    "database": "ow_tp_mongodb_orc1"
+  },
+  "parameters": {
+    "batch_no": {
+      "description": "conversion batch scope. reports.py:ns_batch_no derives it from the namespace as sha256(ns)[:8] %% 90e6 + 1e6, so it is a run parameter and never a literal in a mapping row.",
+      "resolved_by": "recon --param batch_no=<value> / the loader's --batch flag"
+    }
+  },
+  "excluded_tables": [
+    {
+      "table": "FIXTURE_META",
+      "reason": "table excluded from scope: estate bookkeeping, no business data"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "invoices",
+      "unit": "invoices",
+      "wave": 2,
+      "pattern_class": "bulk-load",
+      "size": "XL",
+      "root_table": "INVOICE_HEADER",
+      "root_where": "BATCH_NO = ${batch_no}",
+      "scope": {
+        "source_column": "BATCH_NO",
+        "target_field": "batch_no",
+        "param": "batch_no"
+      },
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": "_id"
+      },
+      "access_pattern": "reports.py LINE_SQL joins header to line on every month-end run and no query reads a line without its header, so lines embed. Fan-out is min 1 / max 23 / avg 8.0 with a 29-character longest item_desc: an embedded invoice is ~3 KB, three orders of magnitude under the 16 MB document limit.",
+      "fields": [
+        {
+          "source": "INVOICE_ID",
+          "target": "_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "INVOICE_NO",
+          "target": "invoice_no",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TOTAL_AMT",
+          "target": "total_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal128",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batch_no",
+          "source_type": "NUMBER(8,0)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "legacy.invoice_dt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "legacy.due_dt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "derived_fields": [
+        {
+          "source": "STATUS_CD",
+          "target": "status",
+          "transform": "lookup_code_desc",
+          "code_type": "INV_STATUS",
+          "note": "denormalized label beside the retained numeric code; additive, so the numeric column is still graded on its own target field",
+          "verified_by": "reference unit parity (CODES is loaded and graded in wave 0)"
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_at",
+          "transform": "parse_dd_mon_yy",
+          "on_error": "quarantine",
+          "quarantine_category": "unparseable_invoice_dt",
+          "verified_by": "unit transform assertions"
+        },
+        {
+          "source": "DUE_DT",
+          "target": "due_at",
+          "transform": "parse_dd_mon_yy",
+          "on_error": "quarantine",
+          "quarantine_category": "unparseable_due_dt",
+          "verified_by": "unit transform assertions"
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINE",
+          "child_where": "BATCH_NO = ${batch_no} AND INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+          "orphan_where": "BATCH_NO = ${batch_no} AND INVOICE_ID NOT IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+          "orphan_category": "orphan_invoice_lines",
+          "parent_key": [
+            "INVOICE_ID"
+          ],
+          "key": {
+            "source": [
+              "LINE_ID"
+            ],
+            "target": "line_id"
+          },
+          "fields": [
+            {
+              "source": "LINE_NO",
+              "target": "line_no",
+              "source_type": "NUMBER(6,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "LINE_TYPE_CD",
+              "target": "line_type_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "ITEM_DESC",
+              "target": "item_desc",
+              "source_type": "VARCHAR2(400)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "QTY",
+              "target": "qty",
+              "source_type": "NUMBER(12,3)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "UNIT_PRICE",
+              "target": "unit_price",
+              "source_type": "NUMBER(14,4)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "TAX_AMT",
+              "target": "tax_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal128",
+              "rules": [
+                "decimal_round",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SERVICE_PERIOD",
+              "target": "service_period",
+              "source_type": "VARCHAR2(20)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "SRC_SYSTEM",
+              "target": "src_system",
+              "source_type": "VARCHAR2(10)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "INVOICE_DT",
+              "target": "legacy.invoice_dt",
+              "source_type": "VARCHAR2(9)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "POSTED_YN",
+              "target": "legacy.posted_yn",
+              "source_type": "CHAR(1)",
+              "bson_type": "string",
+              "rules": [
+                "rstrip_spaces",
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            },
+            {
+              "source": "GL_ACCT_CSV",
+              "target": "legacy.gl_acct_csv",
+              "source_type": "VARCHAR2(200)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null",
+                "null_missing_equiv"
+              ]
+            }
+          ],
+          "derived_fields": [
+            {
+              "source": "POSTED_YN",
+              "target": "posted",
+              "transform": "yn_to_bool",
+              "verified_by": "unit transform assertions"
+            },
+            {
+              "source": "GL_ACCT_CSV",
+              "target": "gl_accounts",
+              "transform": "csv_to_array",
+              "on_error": "quarantine",
+              "quarantine_category": "malformed_gl_acct_csv",
+              "verified_by": "unit transform assertions"
+            }
+          ],
+          "cardinality": "sum(len(lines)) == 150000 - 37 == 149963 (37 orphans quarantined)",
+          "dropped": [
+            {
+              "source": "INVOICE_ID",
+              "reason": "join key to the header; becomes containment (declared as the embed's parent_key)"
+            },
+            {
+              "source": "INVOICE_NO",
+              "reason": "header values denormalized onto every line by the conversion; the embedding parent already carries them, and duplicating them per line reintroduces the update anomaly"
+            },
+            {
+              "source": "CUST_ID",
+              "reason": "header values denormalized onto every line by the conversion; the embedding parent already carries them, and duplicating them per line reintroduces the update anomaly"
+            },
+            {
+              "source": "CUST_NO",
+              "reason": "header values denormalized onto every line by the conversion; the embedding parent already carries them, and duplicating them per line reintroduces the update anomaly"
+            },
+            {
+              "source": "CUST_NAME",
+              "reason": "header values denormalized onto every line by the conversion; the embedding parent already carries them, and duplicating them per line reintroduces the update anomaly"
+            },
+            {
+              "source": "TENANT_ID",
+              "reason": "header values denormalized onto every line by the conversion; the embedding parent already carries them, and duplicating them per line reintroduces the update anomaly"
+            },
+            {
+              "source": "BATCH_NO",
+              "reason": "conversion scoping, carried by the ${batch_no} run parameter and by the parent document's batch field, not per line"
+            }
+          ]
+        }
+      ],
+      "quarantine": {
+        "collection": "invoices_quarantine",
+        "expected": {
+          "orphan_invoice_lines": 37
+        }
+      },
+      "expected_documents": 18750,
+      "indexes": [
+        {
+          "keys": {
+            "invoice_no": 1
+          },
+          "unique": true
+        },
+        {
+          "keys": {
+            "cust_id": 1,
+            "invoice_at": -1
+          }
+        },
+        {
+          "keys": {
+            "batch_no": 1,
+            "status_cd": 1
+          }
+        }
+      ]
+    }
+  ],
+  "unit": "invoices",
+  "_sliced_from": "03_mapping_spec.json (generated; do not hand-edit)"
+}

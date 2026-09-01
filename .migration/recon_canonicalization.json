@@ -1,0 +1,12 @@
+{
+  "_source": "mongo-migration/profiles/oracle.md#recon_canonicalization, passed through to the harness as data",
+  "_stop_a": "The profile ships two params as SET_AT_STOP_A; both are resolved here from the tolerance record v1. collation_casefold is present but referenced by no field: tolerance v1 keeps strings byte-exact and the census found no NLS case-insensitive comparison, so the case-insensitive customer-name lookup is served by a collation index instead.",
+  "rules": [
+    {"rule": "decimal_round", "applies_to": "NUMBER->Decimal128", "params": {"mode": "half_even", "places": 10}},
+    {"rule": "datetime_utc_truncate_ms", "applies_to": "DATE,TIMESTAMP*->date", "params": {"precision": "ms"}},
+    {"rule": "rstrip_spaces", "applies_to": "CHAR->string", "params": {}},
+    {"rule": "empty_string_is_null", "applies_to": "VARCHAR2,NVARCHAR2,CHAR->string", "params": {"target_policy": "omit_field"}},
+    {"rule": "null_missing_equiv", "applies_to": "*", "params": {"policy": "null_and_missing_are_equal"}},
+    {"rule": "collation_casefold", "applies_to": "string", "params": {"enabled_if": "NLS case-insensitive comparisons found in census"}}
+  ]
+}

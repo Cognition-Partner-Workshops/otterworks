@@ -1,0 +1,25 @@
+{
+  "unit": "subscription_invoices",
+  "mapping_version": "m1",
+  "target_db": "ow_tp_mongodb_orc1",
+  "dry_run": false,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "collections": [
+    {
+      "collection": "subscription_invoices",
+      "documents": 3,
+      "embedded": {
+        "lines": 2
+      },
+      "quarantined": 0,
+      "anomalies": {},
+      "pruned": 0,
+      "digest": "4dd5c401bc691017168fe4b3faea12d3f20620ac406f637b46e96c79e3a2e4d0",
+      "expected_documents": 3,
+      "matches_census": true
+    }
+  ],
+  "completed_at": "2026-09-01T04:25:14.321200+00:00"
+}

@@ -1,0 +1,64 @@
+{
+  "counts": {
+    "jobs": 2,
+    "packages": 5,
+    "routines": 19,
+    "sequences": 5,
+    "triggers": 7
+  },
+  "generated_at": "2026-09-01T04:38:08+00:00",
+  "objects": {
+    "jobs": [
+      "JOB_NIGHTLY_DUNNING",
+      "JOB_PURGE_AUDIT_LOG"
+    ],
+    "packages": [
+      "pkg_dunning",
+      "pkg_invoicing",
+      "pkg_ow_util",
+      "pkg_plans",
+      "pkg_rating"
+    ],
+    "routines": [
+      "pkg_dunning.fn_overdue_accounts",
+      "pkg_dunning.sp_schedule_dunning",
+      "pkg_dunning.sp_suspend_overdue",
+      "pkg_invoicing.compute_preview",
+      "pkg_invoicing.fn_invoice_lines",
+      "pkg_invoicing.fn_invoice_preview",
+      "pkg_invoicing.sp_issue_invoice",
+      "pkg_ow_util.f_code_desc",
+      "pkg_ow_util.f_dt2str",
+      "pkg_ow_util.f_md5_uuid",
+      "pkg_ow_util.f_str2dt",
+      "pkg_ow_util.log_msg",
+      "pkg_plans.fn_entitlement",
+      "pkg_plans.fn_list_plans",
+      "pkg_plans.sp_change_plan",
+      "pkg_rating.compute_rating",
+      "pkg_rating.fn_usage_rating",
+      "pkg_rating.fn_usage_summary",
+      "pkg_rating.sp_finalize_rating"
+    ],
+    "sequences": [
+      "seq_billing_audit_log",
+      "seq_customer_master",
+      "seq_customer_master_hist",
+      "seq_entity_attr_value",
+      "seq_subscriptions_hist"
+    ],
+    "triggers": [
+      "trg_billing_audit_log_id",
+      "trg_customer_master_hist",
+      "trg_customer_master_seq",
+      "trg_entity_attr_value_seq",
+      "trg_sub_no_uncancel",
+      "trg_subscriptions_hist",
+      "trg_usage_events_check"
+    ]
+  },
+  "problems": [],
+  "source_tree": "services/legacy-billing/db/oracle",
+  "unit": "stored_logic",
+  "verdict": "PASS"
+}

@@ -1,0 +1,164 @@
+{
+  "kind": "recon-report",
+  "unit": "invoices",
+  "namespace": "ow_tp_mongodb_orc1",
+  "generated_at": "2026-09-01T04:43:18.706567+00:00",
+  "run_mode": "live",
+  "checks": [
+    {
+      "id": "tier1_counts_through_mapping",
+      "expected": {
+        "passed": true,
+        "findings": 0
+      },
+      "actual": {
+        "passed": true,
+        "findings": 0,
+        "checks_run": 2,
+        "stats": {}
+      },
+      "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
+      "result": "pass"
+    },
+    {
+      "id": "tier2_per_field_aggregates",
+      "expected": {
+        "passed": true,
+        "findings": 0
+      },
+      "actual": {
+        "passed": true,
+        "findings": 0,
+        "checks_run": 9,
+        "stats": {
+          "deferred_to_tier3": [
+            "invoices.invoice_no",
+            "invoices.cust_id",
+            "invoices.tenant_id",
+            "invoices.status_cd",
+            "invoices.total_amt",
+            "invoices.batch_no",
+            "invoices.legacy.invoice_dt",
+            "invoices.legacy.due_dt"
+          ]
+        }
+      },
+      "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
+      "result": "pass"
+    },
+    {
+      "id": "tier3_keyed_diffs",
+      "expected": {
+        "passed": true,
+        "findings": 0
+      },
+      "actual": {
+        "passed": true,
+        "findings": 0,
+        "checks_run": 168713,
+        "stats": {
+          "invoices": {
+            "mode": "full_diff",
+            "population": 18750
+          },
+          "embeds_graded": {
+            "invoices.lines": 149963
+          }
+        }
+      },
+      "source_of_truth": "recon harness (live), recomputed from Oracle and Atlas",
+      "result": "pass"
+    },
+    {
+      "id": "harness_verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": "recon harness result.json (mapping m1, tolerances v1)",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "second full load at 2026-09-01T04:42:31.952606+00:00 converged on the load at 2026-09-01T04:41:55.762363+00:00: invoices=18750, identical embedded and quarantine counts, 0 documents pruned, identical content digests (invoices=375648d6e9a4)"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "orphan_invoice_lines=37"
+    ],
+    "actual_set": [
+      "orphan_invoice_lines=37"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [],
+  "pre_pr_self_check": [
+    {
+      "id": "null_attribution_cannot_fail_open",
+      "verdict": "pass",
+      "evidence": "A transform failure quarantines the row with its raw value; a code lookup that misses no longer omits the field but halts the load. NULL/missing equivalence is declared in the unit contract, not decided at load time."
+    },
+    {
+      "id": "namespace_scoping",
+      "verdict": "pass",
+      "evidence": "All writes go to the migration database ow_tp_mongodb_orc1, which carries the ow_tp prefix; collections are unprefixed inside it per 01_conventions.md. No write touches ow_tp_mongodb_demo or ow_tp_demo1."
+    },
+    {
+      "id": "no_ddl_on_shared_objects",
+      "verdict": "pass",
+      "evidence": "Oracle is SELECT-only; no DDL or DML is issued against the source. On the target, only this unit's registered collections and indexes are created."
+    },
+    {
+      "id": "rerun_safe_retention",
+      "verdict": "pass",
+      "evidence": "A rerun upserts on natural _id and removes only documents absent from the extract it just read, inside collections this unit exclusively owns; no other unit's or run's data is in reach."
+    },
+    {
+      "id": "cleanup_retains_evidence",
+      "verdict": "pass",
+      "evidence": "Recon artifacts for this run are committed under .migration/recon/invoices/ and are not removed by any load path."
+    },
+    {
+      "id": "no_secrets_or_addresses",
+      "verdict": "pass",
+      "evidence": "Secrets are referenced by name only; no credential value, token, or real email address appears in source, artifacts, or commits."
+    },
+    {
+      "id": "parity_decision_from_contract",
+      "verdict": "pass",
+      "evidence": "Zero-tolerance parity comes from tolerances v1 (accepted at STOP A) and the unit contract; it was not chosen during implementation."
+    },
+    {
+      "id": "idempotency_proven_by_rerun",
+      "verdict": "pass",
+      "evidence": "second full load at 2026-09-01T04:42:31.952606+00:00 converged on the load at 2026-09-01T04:41:55.762363+00:00: invoices=18750, identical embedded and quarantine counts, 0 documents pruned, identical content digests (invoices=375648d6e9a4)"
+    },
+    {
+      "id": "values_recomputed_from_target",
+      "verdict": "pass",
+      "evidence": "The harness opens its own connections to Oracle and Atlas and recomputes both sides; graded collections: {'invoices': 'full_diff/18750'}."
+    },
+    {
+      "id": "unverified_paths_listed",
+      "verdict": "pass",
+      "evidence": "none"
+    },
+    {
+      "id": "recon_report_schema",
+      "verdict": "pass",
+      "evidence": "Emitted as docs/tech-partnerships/recon/<unit>.recon.json with \"kind\": \"recon-report\"; validated by make tp-validate-recon."
+    },
+    {
+      "id": "capability_preflight",
+      "verdict": "pass",
+      "evidence": "Atlas preflight ran 8 probes with 0 denied; Oracle read access and the recon harness selftest were verified before live work."
+    },
+    {
+      "id": "tp_smoke_green",
+      "verdict": "pass",
+      "evidence": "make tp-smoke: 41 passed, all checks passed."
+    }
+  ]
+}
