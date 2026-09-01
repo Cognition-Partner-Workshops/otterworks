@@ -19,14 +19,15 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import hashlib
 import json
 import os
 import pathlib
 import sys
+import uuid
 from decimal import ROUND_HALF_UP, Decimal
 
 import billing_logic as bl
+import transcripts as tr
 import yaml
 from mongo_store import MongoStore
 from pymongo import MongoClient
@@ -415,16 +416,22 @@ def main():
     if not uri:
         sys.exit(f"{args.target_uri_secret} is not set in the environment")
 
+    selection = {"module": args.module, "scenario": args.scenario}
+    scenarios = load_scenarios(args.module, args.scenario)
+    run_id = uuid.uuid4().hex
+
+    # Withdraw the previous publication before touching anything: if this run dies partway,
+    # the transcripts it leaves behind must not be gradable as though they were current.
+    tr.invalidate(args.out)
+
     db = MongoClient(uri)[args.target_db]
-    records = [run_scenario(db, scenario) for scenario in load_scenarios(args.module, args.scenario)]
+    records = [run_scenario(db, scenario) for scenario in scenarios]
     drop_replay(db)
 
-    args.out.mkdir(parents=True, exist_ok=True)
-    for record in records:
-        destination = args.out / record["module"] / f"{record['scenario']}.json"
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
-    print(f"recorded {len(records)} converted transcript(s) -> {args.out.relative_to(ROOT)}")
+    manifest = tr.publish(records, args.out, run_id, selection,
+                          [scenario["id"] for scenario in scenarios])
+    print(f"recorded {len(records)} converted transcript(s) -> {args.out.relative_to(ROOT)} "
+          f"(run {run_id})")
 
     if args.report_out:
         # A per-scenario digest, not one over the whole set: a replay that drifts names the
@@ -432,15 +439,11 @@ def main():
         report = {
             "unit": "stored_logic",
             "target_db": args.target_db,
-            "selection": {"module": args.module, "scenario": args.scenario},
+            "selection": selection,
+            "run_id": run_id,
             "completed_at": dt.datetime.now(dt.UTC).isoformat(),
             "scenarios": len(records),
-            "digests": {
-                record["scenario"]: hashlib.sha256(
-                    json.dumps(record, sort_keys=True).encode()
-                ).hexdigest()
-                for record in records
-            },
+            "digests": manifest["digests"],
         }
         args.report_out.parent.mkdir(parents=True, exist_ok=True)
         args.report_out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

@@ -50,7 +50,9 @@
       "pass": 1
     }
   },
-  "generated_at": "2026-09-01T04:38:08+00:00",
+  "generated_at": "2026-09-01T05:04:59+00:00",
+  "replay_recorded_at": "2026-09-01T05:04:56+00:00",
+  "replay_run_id": "4cbbf9c6c1f44344b4fb81eed8c4cf59",
   "scenarios": [
     {
       "entrypoint": "pkg_dunning.fn_overdue_accounts",

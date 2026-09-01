@@ -31,9 +31,10 @@ REPO_OUT = ROOT / "docs" / "tech-partnerships" / "recon" / "stored_logic.recon.j
 NAMESPACE = "ow_tp_mongodb_orc1"
 
 UNVERIFIED = [
-    ("PKG_OW_UTIL's autonomous-transaction logging is converted as an ordinary write: the "
-     "estate's audit rows survive a rolled-back caller and the converted ones do not, which "
-     "no recorded scenario observes"),
+    ("PKG_OW_UTIL's autonomous-transaction logging keeps its independence -- the converted "
+     "log write carries no session, so an audit row still survives a rolled-back caller -- "
+     "but its WHEN OTHERS THEN NULL is deliberately not reproduced, and no recorded scenario "
+     "observes a failing audit write"),
     ("the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) "
      "are graded through their callers' transcripts and by unit test, not by a transcript of "
      "their own"),

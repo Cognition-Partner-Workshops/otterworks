@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "stored_logic",
   "namespace": "ow_tp_mongodb_orc1",
-  "generated_at": "2026-09-01T04:38:35.704943+00:00",
+  "generated_at": "2026-09-01T05:04:59.112708+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -108,7 +108,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "the replay at 2026-09-01T04:38:07.887795+00:00 reproduced the 24 transcripts recorded at 2026-09-01T04:36:57.001424+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+    "evidence": "the replay at 2026-09-01T05:04:56.062068+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:03:33.915390+00:00 digest for digest, so replaying the converted routines carries no state between runs"
   },
   "planted_anomaly_detections": {
     "expected_set": [],
@@ -118,7 +118,7 @@
     "note": "Conversion correctness here is behavioural, not data-quality; it is graded by replay rather than by anomaly detection."
   },
   "unverified_paths": [
-    "PKG_OW_UTIL's autonomous-transaction logging is converted as an ordinary write: the estate's audit rows survive a rolled-back caller and the converted ones do not, which no recorded scenario observes",
+    "PKG_OW_UTIL's autonomous-transaction logging keeps its independence -- the converted log write carries no session, so an audit row still survives a rolled-back caller -- but its WHEN OTHERS THEN NULL is deliberately not reproduced, and no recorded scenario observes a failing audit write",
     "the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) are graded through their callers' transcripts and by unit test, not by a transcript of their own",
     "JOB_NIGHTLY_DUNNING's replacement is the converted entrypoint pair; the scheduler that will invoke it nightly is a cutover deliverable and is not exercised here"
   ],
@@ -161,7 +161,7 @@
     {
       "id": "idempotency_proven_by_rerun",
       "verdict": "pass",
-      "evidence": "the replay at 2026-09-01T04:38:07.887795+00:00 reproduced the 24 transcripts recorded at 2026-09-01T04:36:57.001424+00:00 digest for digest, so replaying the converted routines carries no state between runs"
+      "evidence": "the replay at 2026-09-01T05:04:56.062068+00:00 reproduced the 24 transcripts recorded at 2026-09-01T05:03:33.915390+00:00 digest for digest, so replaying the converted routines carries no state between runs"
     },
     {
       "id": "values_recomputed_from_target",
@@ -171,7 +171,7 @@
     {
       "id": "unverified_paths_listed",
       "verdict": "pass",
-      "evidence": "PKG_OW_UTIL's autonomous-transaction logging is converted as an ordinary write: the estate's audit rows survive a rolled-back caller and the converted ones do not, which no recorded scenario observes; the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) are graded through their callers' transcripts and by unit test, not by a transcript of their own; JOB_NIGHTLY_DUNNING's replacement is the converted entrypoint pair; the scheduler that will invoke it nightly is a cutover deliverable and is not exercised here"
+      "evidence": "PKG_OW_UTIL's autonomous-transaction logging keeps its independence -- the converted log write carries no session, so an audit row still survives a rolled-back caller -- but its WHEN OTHERS THEN NULL is deliberately not reproduced, and no recorded scenario observes a failing audit write; the 4 routines no scenario calls directly (f_md5_uuid, f_dt2str, f_str2dt, f_code_desc) are graded through their callers' transcripts and by unit test, not by a transcript of their own; JOB_NIGHTLY_DUNNING's replacement is the converted entrypoint pair; the scheduler that will invoke it nightly is a cutover deliverable and is not exercised here"
     },
     {
       "id": "recon_report_schema",

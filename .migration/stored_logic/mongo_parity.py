@@ -18,6 +18,8 @@ import json
 import pathlib
 import sys
 
+import transcripts as tr
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ORACLE = ROOT / "procs" / "oracle" / "transcripts"
 CONVERTED = pathlib.Path(__file__).resolve().parent / "transcripts"
@@ -80,11 +82,12 @@ def main():
     ap.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     args = ap.parse_args()
 
-    oracle, converted = load(ORACLE), load(CONVERTED)
+    oracle = load(ORACLE)
     if not oracle:
         sys.exit("no oracle transcripts to grade against")
-    if not converted:
-        sys.exit("no converted transcripts; run mongo_record.py first")
+    # Not just "the files that are there": the converted side is graded only as the run that
+    # published it, so an interrupted or superseded recording cannot pass as current.
+    manifest, converted = tr.published(CONVERTED)
 
     scenarios, unrecorded = grade(oracle, converted)
     failed = [s for s in scenarios if s["verdict"] == "FAIL"]
@@ -97,6 +100,8 @@ def main():
         "unit": "stored_logic",
         "generated_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "baseline": "procs/oracle/transcripts (recorded from the running PL/SQL estate)",
+        "replay_run_id": manifest["run_id"],
+        "replay_recorded_at": manifest["recorded_at"],
         "verdict": "FAIL" if failed or unrecorded else "PASS",
         "scenarios_graded": len(scenarios),
         "scenarios_failed": len(failed),

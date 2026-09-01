@@ -155,26 +155,27 @@ def change_plan(store, tenant_id, plan_id, effective_on):
         "PLANS",
         f"sp_change_plan tenant={tenant_id} plan={plan_id} eff={effective_on.isoformat()}",
     )
-    for sub in store.subscriptions(tenant_id):
-        if sub.get("ends_on") is None and _as_date(sub["starts_on"]) < effective_on:
-            store.update_subscription(
-                sub["_id"],
-                {
-                    "ends_on": effective_on - dt.timedelta(days=1),
-                    "status_cd": SUB_CANCELLED
-                    if sub["status_cd"] == SUB_CANCELLED
-                    else SUB_ACTIVE,
-                },
-            )
-    store.insert_subscription(
-        {
-            "_id": md5_uuid(f"{tenant_id}{plan_id}{effective_on.isoformat()}"),
-            "tenant_id": tenant_id,
-            "plan_id": plan_id,
-            "starts_on": effective_on,
-            "status_cd": SUB_ACTIVE,
-        }
-    )
+    with store.unit_of_work():
+        for sub in store.subscriptions(tenant_id):
+            if sub.get("ends_on") is None and _as_date(sub["starts_on"]) < effective_on:
+                store.update_subscription(
+                    sub["_id"],
+                    {
+                        "ends_on": effective_on - dt.timedelta(days=1),
+                        "status_cd": SUB_CANCELLED
+                        if sub["status_cd"] == SUB_CANCELLED
+                        else SUB_ACTIVE,
+                    },
+                )
+        store.insert_subscription(
+            {
+                "_id": md5_uuid(f"{tenant_id}{plan_id}{effective_on.isoformat()}"),
+                "tenant_id": tenant_id,
+                "plan_id": plan_id,
+                "starts_on": effective_on,
+                "status_cd": SUB_ACTIVE,
+            }
+        )
 
 
 # --- PKG_RATING -----------------------------------------------------------------------
@@ -307,22 +308,23 @@ def finalize_rating(store, tenant_id, period_start, period_end):
     because it is never read without it."""
     period_start, period_end = _as_date(period_start), _as_date(period_end)
     period_id = md5_uuid(f"{tenant_id}{period_start.isoformat()}")
-    store.upsert_rating_period(period_id, tenant_id, period_start, period_end)
-    r = compute_rating(store, tenant_id, period_start, period_end)
-    store.upsert_rating_result(
-        period_id,
-        {
-            "result_id": md5_uuid(period_id),
-            "subscription_id": r.subscription_id,
-            "used_units": r.used_units,
-            "quota_units": r.quota_units,
-            # Not the computed rollover: the original writes the unused quota here.
-            "rollover_units": _greatest((r.quota_units or 0) - r.used_units, 0),
-            "billable_units": r.billable_units,
-            "overage_amount": r.overage_amount,
-            "created_at": period_end,
-        },
-    )
+    with store.unit_of_work():
+        store.upsert_rating_period(period_id, tenant_id, period_start, period_end)
+        r = compute_rating(store, tenant_id, period_start, period_end)
+        store.upsert_rating_result(
+            period_id,
+            {
+                "result_id": md5_uuid(period_id),
+                "subscription_id": r.subscription_id,
+                "used_units": r.used_units,
+                "quota_units": r.quota_units,
+                # Not the computed rollover: the original writes the unused quota here.
+                "rollover_units": _greatest((r.quota_units or 0) - r.used_units, 0),
+                "billable_units": r.billable_units,
+                "overage_amount": r.overage_amount,
+                "created_at": period_end,
+            },
+        )
     store.log("RATING", f"finalized period={period_id}")
     return period_id
 
@@ -410,50 +412,54 @@ def invoice_lines(store, invoice_id):
 
 
 def issue_invoice(store, tenant_id, period_start, period_end):
-    """`PKG_INVOICING.sp_issue_invoice`."""
+    """`PKG_INVOICING.sp_issue_invoice`. One transaction, as the procedure was: the rating
+    period, the invoice, its lines, its totals and the credit burn-down commit together or
+    not at all -- a half-issued invoice whose credits were already spent would bill a
+    different total on the retry."""
     period_start, period_end = _as_date(period_start), _as_date(period_end)
     period_id = md5_uuid(f"{tenant_id}{period_start.isoformat()}")
     invoice_id = md5_uuid(f"{period_id}invoice")
 
-    finalize_rating(store, tenant_id, period_start, period_end)
-    store.upsert_invoice(invoice_id, tenant_id, period_id, period_end, INVOICE_ISSUED)
+    with store.unit_of_work():
+        finalize_rating(store, tenant_id, period_start, period_end)
+        store.upsert_invoice(invoice_id, tenant_id, period_id, period_end, INVOICE_ISSUED)
 
-    subtotal = tax = Decimal(0)
-    credit = Decimal(0)
-    lines = []
-    for line in invoice_preview(store, tenant_id, period_start, period_end):
-        amount = line["total"] if line["line_type"] == "credit" else line["amount"]
-        lines.append(
-            {
-                "line_id": md5_uuid(f"{invoice_id}{line['line_no']}"),
-                "line_no": line["line_no"],
-                "line_type": line["line_type"],
-                "description": line["description"],
-                "amount": amount,
-            }
-        )
-        if line["line_type"] in ("plan", "usage"):
-            subtotal += rnd(line["amount"]) or Decimal(0)
-        elif line["line_type"] == "tax":
-            tax += rnd(line["amount"]) or Decimal(0)
-        elif line["line_type"] == "credit":
-            credit = line["credit_applied"]
-    store.set_invoice_lines(invoice_id, lines)
+        subtotal = tax = Decimal(0)
+        credit = Decimal(0)
+        lines = []
+        for line in invoice_preview(store, tenant_id, period_start, period_end):
+            amount = line["total"] if line["line_type"] == "credit" else line["amount"]
+            lines.append(
+                {
+                    "line_id": md5_uuid(f"{invoice_id}{line['line_no']}"),
+                    "line_no": line["line_no"],
+                    "line_type": line["line_type"],
+                    "description": line["description"],
+                    "amount": amount,
+                }
+            )
+            if line["line_type"] in ("plan", "usage"):
+                subtotal += rnd(line["amount"]) or Decimal(0)
+            elif line["line_type"] == "tax":
+                tax += rnd(line["amount"]) or Decimal(0)
+            elif line["line_type"] == "credit":
+                credit = line["credit_applied"]
+        store.set_invoice_lines(invoice_id, lines)
 
-    total = rnd(subtotal + tax - credit)
-    store.update_invoice_totals(invoice_id, rnd(subtotal), rnd(tax), total)
+        total = rnd(subtotal + tax - credit)
+        store.update_invoice_totals(invoice_id, rnd(subtotal), rnd(tax), total)
 
-    # Oldest credit note first, decrementing the same running counter the original does:
-    # the second note is reduced by the *undiminished* balance, not by what is left.
-    for note in sorted(
-        (c for c in store.credit_notes(tenant_id) if Decimal(str(c["remaining_amount"])) > 0),
-        key=lambda c: (_as_date(c["issued_on"]), c["_id"]),
-    ):
-        if credit <= 0:
-            break
-        remaining = Decimal(str(note["remaining_amount"]))
-        store.update_credit_note(note["_id"], max(remaining - credit, Decimal(0)))
-        credit = max(credit - remaining, Decimal(0))
+        # Oldest credit note first, decrementing the same running counter the original does:
+        # the second note is reduced by the *undiminished* balance, not by what is left.
+        for note in sorted(
+            (c for c in store.credit_notes(tenant_id) if Decimal(str(c["remaining_amount"])) > 0),
+            key=lambda c: (_as_date(c["issued_on"]), c["_id"]),
+        ):
+            if credit <= 0:
+                break
+            remaining = Decimal(str(note["remaining_amount"]))
+            store.update_credit_note(note["_id"], max(remaining - credit, Decimal(0)))
+            credit = max(credit - remaining, Decimal(0))
 
     store.log("INVOICING", f"issued invoice={invoice_id} total={total or 0}")
     return invoice_id
@@ -499,23 +505,24 @@ def schedule_dunning(store, as_of):
     so explicitly and only that conflict is ignored."""
     as_of = _as_date(as_of)
     scheduled = 0
-    for invoice in sorted(
-        store.invoices_by_status(INVOICE_OVERDUE),
-        key=lambda i: (_as_date(i["issued_at"]), i["_id"]),
-    ):
-        attempts = store.dunning_attempts(invoice["_id"])
-        attempt_no = max((a["attempt_no"] for a in attempts), default=0) + 1
-        if store.insert_dunning_attempt(
-            {
-                "_id": md5_uuid(f"{invoice['_id']}{attempt_no}"),
-                "tenant_id": invoice["tenant_id"],
-                "invoice_id": invoice["_id"],
-                "attempt_no": attempt_no,
-                "scheduled_for": next_business_day(as_of),
-                "status_cd": DUNNING_SCHEDULED,
-            }
+    with store.unit_of_work():
+        for invoice in sorted(
+            store.invoices_by_status(INVOICE_OVERDUE),
+            key=lambda i: (_as_date(i["issued_at"]), i["_id"]),
         ):
-            scheduled += 1
+            attempts = store.dunning_attempts(invoice["_id"])
+            attempt_no = max((a["attempt_no"] for a in attempts), default=0) + 1
+            if store.insert_dunning_attempt(
+                {
+                    "_id": md5_uuid(f"{invoice['_id']}{attempt_no}"),
+                    "tenant_id": invoice["tenant_id"],
+                    "invoice_id": invoice["_id"],
+                    "attempt_no": attempt_no,
+                    "scheduled_for": next_business_day(as_of),
+                    "status_cd": DUNNING_SCHEDULED,
+                }
+            ):
+                scheduled += 1
     store.log("DUNNING", f"scheduled {scheduled} attempts as of {dt2str(as_of)}")
     return scheduled
 
@@ -539,22 +546,23 @@ def suspend_overdue(store, as_of):
             if _ymd(invoice["issued_at"]) <= _ymd(cutoff)
         }
     )
-    for tenant_id in tenant_ids:
-        tenant = store.tenant(tenant_id)
-        if tenant is None or tenant["status_cd"] != TENANT_ACTIVE:
-            continue
-        store.update_tenant_status(tenant_id, TENANT_SUSPENDED)
-        for sub in store.subscriptions(tenant_id):
-            if sub["status_cd"] == SUB_ACTIVE:
-                store.update_subscription(
-                    sub["_id"], {"status_cd": SUB_SUSPENDED, "suspended_on": as_of}
-                )
-        store.insert_notification_once(
-            {
-                "_id": md5_uuid(f"{tenant_id}suspension{as_of.isoformat()}"),
-                "tenant_id": tenant_id,
-                "kind_cd": NOTIFY_SUSPENSION,
-                "sent_at": as_of,
-            }
-        )
+    with store.unit_of_work():
+        for tenant_id in tenant_ids:
+            tenant = store.tenant(tenant_id)
+            if tenant is None or tenant["status_cd"] != TENANT_ACTIVE:
+                continue
+            store.update_tenant_status(tenant_id, TENANT_SUSPENDED)
+            for sub in store.subscriptions(tenant_id):
+                if sub["status_cd"] == SUB_ACTIVE:
+                    store.update_subscription(
+                        sub["_id"], {"status_cd": SUB_SUSPENDED, "suspended_on": as_of}
+                    )
+            store.insert_notification_once(
+                {
+                    "_id": md5_uuid(f"{tenant_id}suspension{as_of.isoformat()}"),
+                    "tenant_id": tenant_id,
+                    "kind_cd": NOTIFY_SUSPENSION,
+                    "sent_at": as_of,
+                }
+            )
         store.log("DUNNING", f"suspended tenant={tenant_id}")
