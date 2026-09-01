@@ -12,7 +12,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | `customers`, `customers_history`, `counters`, Q.`dirty_signup_dt`, Q.`bad_csv_list` | U1 | planned | PLANNED |
 | `invoices`, Q.`invoice_feed_orphan_lines` | U2 | planned | PLANNED |
 | `documents`, `document_snapshots`, Q.`orphan_document_snapshots` | U3 | 2026-09-01 21:34 | REGISTERED |
-| `files` | U4 | planned | PLANNED |
+| `files` | U4 | 2026-09-01 21:33 | REGISTERED |
 | `subscriptions`, `subscriptions_history`, `usage_events`, `rating_periods`, `billing_invoices`, `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | U5 | planned | PLANNED |
 | `replay_u6_*` (clone of U5 set for Tier-4 replay) | U6 | planned | PLANNED |
 | `replay_u7_*` | U7 | planned | PLANNED |
@@ -27,7 +27,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | MERGED | GREEN — LIVE PASS (wave1 recon: T1 3/3, T2 18/18, T3 16,260/16,260 incl. 13,876 embedded versions; `tp-run/mongodb-20260901T205236Z--wave1-recon:.migration/recon/wave_reports/wave1.md`) | 1.54% (6/390 snapshots → Q.`orphan_document_snapshots`; 0.037% of unit rows) | LIVE gate (now covered by wave1 recon); Tier 4 (none in contract); adapter `key_strata` (full_diff path only); `state_b64` never decoded | 2 recon runs (run 1 red: adapter stat names) | #1420 |
-| 1 | U4 files (DynamoDB) | NOT_STARTED | — | — | — | — | — |
+| 1 | U4 files (DynamoDB) | RECON_GREEN | PASS (fixture; `.migration/recon/U4/gate/result.json`) | 0% (no quarantine) | 4 (see `docs/tech-partnerships/recon/U4.recon.json`) | 7 loads + 4 recons, ~6 min | #1419 |
 | 2 | U5 billing core | NOT_STARTED | — | — | — | — | — |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
 | 2 | U7 PKG_RATING | NOT_STARTED | — | — | — | — | — |
