@@ -12,7 +12,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | `customers`, `customers_history`, `counters`, Q.`dirty_signup_dt`, Q.`bad_csv_list` | U1 | planned | PLANNED |
 | `invoices`, Q.`invoice_feed_orphan_lines` | U2 | planned | PLANNED |
 | `documents`, `document_snapshots`, Q.`orphan_document_snapshots` | U3 | planned | PLANNED |
-| `files` | U4 | planned | PLANNED |
+| `files` | U4 | 2026-09-01 21:33 | REGISTERED |
 | `subscriptions`, `subscriptions_history`, `usage_events`, `rating_periods`, `billing_invoices`, `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | U5 | planned | PLANNED |
 | `replay_u6_*` (clone of U5 set for Tier-4 replay) | U6 | planned | PLANNED |
 | `replay_u7_*` | U7 | planned | PLANNED |
@@ -27,7 +27,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 1 | U1 customers (XL) | NOT_STARTED | — | — | — | — | — |
 | 1 | U2 invoices | NOT_STARTED | — | — | — | — | — |
 | 1 | U3 documents (Postgres) | NOT_STARTED | — | — | — | — | — |
-| 1 | U4 files (DynamoDB) | NOT_STARTED | — | — | — | — | — |
+| 1 | U4 files (DynamoDB) | CONTRACT | — | — | — | — | — |
 | 2 | U5 billing core | NOT_STARTED | — | — | — | — | — |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
 | 2 | U7 PKG_RATING | NOT_STARTED | — | — | — | — | — |
