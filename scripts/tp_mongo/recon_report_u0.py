@@ -62,9 +62,12 @@ def build(result: dict, load: dict, run1: dict, target: dict[str, Any],
         f"{a['kind']}:{a['count']}" for a in manifest["planted_anomalies"]
         if a["target"].startswith("oracle.OW_BILLING.")
         and a["target"].split(".")[2] in U0_SOURCE_TABLES)
-    same_counts = all(
-        load["collections"][c]["docs_after"] == run1["collections"][c]["docs_after"]
-        and load["collections"][c]["dropped"] and load["collections"][c]["recreated"]
+    same_output = all(
+        all(load["collections"][c][field] == run1["collections"][c][field]
+            for field in ("source_rows", "inserted", "docs_after", "ns_docs_after"))
+        and sorted(load["collections"][c]["indexes"]) == sorted(run1["collections"][c]["indexes"])
+        and all(load["collections"][c][field] and run1["collections"][c][field]
+                for field in ("dropped", "recreated"))
         for c in UNIT_COLLECTIONS)
     return {
         "kind": "recon-report",
@@ -79,8 +82,12 @@ def build(result: dict, load: dict, run1: dict, target: dict[str, Any],
         "values_recomputed_from_target": True,
         "idempotency_rerun": {
             "performed": True,
-            "result": "pass" if same_counts else "fail",
-            "evidence": ".migration/recon/U0/load_report.run1.json vs load_report.json",
+            "result": "pass" if same_output else "fail",
+            "evidence": (
+                ".migration/recon/U0/load_report.run1.json vs load_report.json "
+                "(source_rows/inserted/docs_after/ns_docs_after/indexes equal; "
+                "both runs dropped+recreated); final-state content graded by harness result.json"
+            ),
         },
         "planted_anomaly_detections": {
             "expected_set": planted,
@@ -120,9 +127,13 @@ def main(argv: list[str] | None = None) -> int:
     Path(args.out).write_text(json.dumps(report, indent=2) + "\n")
     failed = [c["id"] for c in report["checks"] if c["result"] != "pass"]
     idempotency_failed = report["idempotency_rerun"]["result"] != "pass"
+    anomaly_failures = (
+        report["planted_anomaly_detections"]["missing"]
+        + report["planted_anomaly_detections"]["unexpected"]
+    )
     print(f"wrote {args.out}; checks={len(report['checks'])} failed={failed} "
-          f"idempotency_failed={idempotency_failed}")
-    return 1 if failed or idempotency_failed else 0
+          f"idempotency_failed={idempotency_failed} anomaly_failures={anomaly_failures}")
+    return 1 if failed or anomaly_failures or idempotency_failed else 0
 
 
 if __name__ == "__main__":

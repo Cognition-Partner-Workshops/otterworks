@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "U0",
   "namespace": "mongo_205236",
-  "generated_at": "2026-09-01T22:16:45.259832+00:00",
+  "generated_at": "2026-09-01T22:25:18.350812+00:00",
   "run_mode": "fixture",
   "harness": {
     "result": ".migration/recon/U0/result.json",
@@ -152,7 +152,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": ".migration/recon/U0/load_report.run1.json vs load_report.json"
+    "evidence": ".migration/recon/U0/load_report.run1.json vs load_report.json (source_rows/inserted/docs_after/ns_docs_after/indexes equal; both runs dropped+recreated); final-state content graded by harness result.json"
   },
   "planted_anomaly_detections": {
     "expected_set": [],
