@@ -1,17 +1,17 @@
 {
   "check": "embedded_child_fields",
   "ns": "demo",
-  "generated_at": "2026-09-01T02:01:11.099380+00:00",
-  "note": "supplementary evidence for census finding H4; the recon harness verdict remains the only merge authority",
+  "generated_at": "2026-09-01T02:07:00.102074+00:00",
+  "note": "supplementary evidence for census finding H3; the recon harness verdict remains the only merge authority",
   "units": {
     "invoices": {
       "array_path": "invoices.lines",
       "verdict": "PASS",
       "parents_compared": 18750,
       "children_compared": 149963,
-      "fields_per_child": 19,
-      "value_comparisons": 2849297,
+      "value_comparisons": 2999260,
       "finding_count": 0,
+      "findings_reported": 0,
       "findings": []
     },
     "customers": {
@@ -19,9 +19,9 @@
       "verdict": "PASS",
       "parents_compared": 25000,
       "children_compared": 8333,
-      "fields_per_child": 4,
       "value_comparisons": 33332,
       "finding_count": 0,
+      "findings_reported": 0,
       "findings": []
     }
   },

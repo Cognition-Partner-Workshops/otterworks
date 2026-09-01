@@ -33,11 +33,12 @@ embedded-field equality.
 That gap is closed by a separate verifier, `scripts/tp_mongo/embed_diff.py`, run in the same
 window. It reads every non-orphan child row from the source with the loaders' own predicates
 and compares it to the stored array element by identity, parent, order and every declared
-field (Decimal128 by value, datetimes in UTC):
+field (Decimal128 by value, datetimes in UTC), including the derived `invoice_at` a line is
+required to carry when its legacy date parses:
 
 | Array | Parents | Children | Fields/child | Value comparisons | Findings |
 |---|---|---|---|---|---|
-| `invoices.lines` | 18,750 | 149,963 | 19 | 2,849,297 | **0** |
+| `invoices.lines` | 18,750 | 149,963 | 20 | 2,999,260 | **0** |
 | `customers.attributes` | 25,000 | 8,333 | 4 | 33,332 | **0** |
 
 Evidence: `.migration/recon/wave/embeds/embed_diff.json`. This is supplementary evidence, not

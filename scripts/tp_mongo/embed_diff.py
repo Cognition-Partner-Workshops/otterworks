@@ -6,7 +6,7 @@ compares the root document's mapped fields. Nothing in the approved mapping cont
 child field, so no tier compares one. Tier 4 sees lines only through the month-end report's
 grouped totals and never reads `attributes[]` at all.
 
-That is a gap in the *evidence*, not a harness defect (raised as H4 in the census), and it is
+That is a gap in the *evidence*, not a harness defect (raised as H3 in the census), and it is
 not closed by widening a tolerance or editing a verdict. This runner closes it the only way
 available without a mapping version bump: it re-reads both sides independently and compares
 every embedded child field, positionally, keyed by the child's own identity.
@@ -45,10 +45,11 @@ from common import (
     mongo_database,
     ns_batch_no,
     oracle_connect,
+    parse_legacy_date,
 )
 from customers_load import EAV_TABLE
 from customers_load import ROOT_TABLE as CUSTOMER_TABLE
-from invoices_load import LINE_FIELDS, LINE_RULES, LINE_TABLE
+from invoices_load import LINE_FIELDS, LINE_RULES, LINE_TABLE, absent_legacy_date
 from invoices_load import ROOT_TABLE as INVOICE_TABLE
 
 MAX_REPORTED = 20
@@ -69,36 +70,61 @@ def comparable(value):
 
 
 def diff_children(expected: dict[str, list[dict]], actual: dict[str, list[dict]],
-                  array_path: str, identity: str) -> list[dict]:
+                  array_path: str, identity: str, limit: int = MAX_REPORTED) -> dict:
     """Compare each parent's child array element by element, in order.
 
     Both sides are keyed by parent, so a child attached to the wrong parent shows up twice —
     missing from one array, extra in the other — rather than cancelling out.
+
+    Every mismatch is counted but only the first `limit` are kept: a wholesale corruption of
+    2.9M compared values would otherwise be diagnosed by a run that dies before it can write
+    anything down.
     """
     findings: list[dict] = []
+    finding_count = 0
+    comparisons = 0
+
+    def record(finding: dict) -> None:
+        nonlocal finding_count
+        finding_count += 1
+        if len(findings) < limit:
+            findings.append(finding)
+
     for parent in sorted(set(expected) | set(actual)):
         want, got = expected.get(parent, []), actual.get(parent, [])
         if len(want) != len(got):
-            findings.append({"parent": parent, "kind": "child_count",
-                             "array_path": array_path,
-                             "expected": len(want), "actual": len(got)})
+            record({"parent": parent, "kind": "child_count", "array_path": array_path,
+                    "expected": len(want), "actual": len(got)})
             continue
         for position, (want_child, got_child) in enumerate(zip(want, got)):
             if want_child.get(identity) != got_child.get(identity):
-                findings.append({"parent": parent, "kind": "child_order_or_identity",
-                                 "array_path": array_path, "position": position,
-                                 "expected": str(want_child.get(identity)),
-                                 "actual": str(got_child.get(identity))})
+                record({"parent": parent, "kind": "child_order_or_identity",
+                        "array_path": array_path, "position": position,
+                        "expected": str(want_child.get(identity)),
+                        "actual": str(got_child.get(identity))})
                 continue
             for field in sorted(set(want_child) | set(got_child)):
                 want_value, got_value = want_child.get(field), got_child.get(field)
+                comparisons += 1
                 if comparable(want_value) != comparable(got_value):
-                    findings.append({
-                        "parent": parent, "kind": "child_field_diff",
-                        "array_path": f"{array_path}.{field}",
-                        "child": str(want_child.get(identity)),
-                        "expected": str(want_value), "actual": str(got_value)})
-    return findings
+                    record({"parent": parent, "kind": "child_field_diff",
+                            "array_path": f"{array_path}.{field}",
+                            "child": str(want_child.get(identity)),
+                            "expected": str(want_value), "actual": str(got_value)})
+    return {"comparisons": comparisons, "finding_count": finding_count, "findings": findings}
+
+
+def derived_invoice_at(raw) -> dict:
+    """The typed date a correctly loaded line carries for this raw legacy string, if any.
+
+    D4's field-level policy: a blank legacy rendering and an unparseable one both leave the
+    line without `invoice_at` (the unparseable one also raises a quarantine record, which the
+    loader's own tests cover). Anything else must be present and must be the parsed value.
+    """
+    if absent_legacy_date(raw):
+        return {}
+    parsed = parse_legacy_date(raw)
+    return {} if parsed is None else {"invoice_at": parsed}
 
 
 def flatten(document: dict, prefix: str = "") -> dict:
@@ -134,17 +160,19 @@ def source_lines(cursor, batch_no: int) -> dict[str, list[dict]]:
         record = dict(zip(["INVOICE_ID"] + columns, row))
         child = {target: canonical(record[column], bson_type, LINE_RULES.get(column, []))
                  for column, target, bson_type in LINE_FIELDS}
+        child.update(derived_invoice_at(record["INVOICE_DT"]))
         by_invoice.setdefault(record["INVOICE_ID"], []).append(flatten(child))
     return by_invoice
 
 
 def target_lines(db, ns: str) -> dict[str, list[dict]]:
-    """The stored lines, restricted to the loader's declared child fields.
+    """The stored lines, restricted to the child fields the loader states.
 
-    `invoice_at` is dropped on purpose: it is derived from `legacy.invoice_dt`, which is
-    compared, and its absence is the D4 quarantine policy rather than a missing value.
+    `invoice_at` is one of them: an absent or mistyped derived date is exactly the kind of
+    conversion defect this check exists for, and comparing the preserved `legacy.invoice_dt`
+    string says nothing about it.
     """
-    declared = {target for _, target, _ in LINE_FIELDS}
+    declared = {target for _, target, _ in LINE_FIELDS} | {"invoice_at"}
     by_invoice: dict[str, list[dict]] = {}
     for doc in db["invoices"].find({"ns": ns}, {"lines": 1}):
         by_invoice[doc["_id"]] = [
@@ -177,26 +205,26 @@ def target_attributes(db, ns: str) -> dict[str, list[dict]]:
 
 
 def unit_report(expected: dict[str, list[dict]], actual: dict[str, list[dict]],
-                array_path: str, identity: str, fields: int) -> dict:
+                array_path: str, identity: str) -> dict:
     """One unit's embedded-child report, including what was compared.
 
     The compared counts are part of the evidence, not decoration: a verifier that silently
     read nothing would otherwise report the same clean verdict as one that read everything.
     """
-    findings = diff_children(expected, actual, array_path, identity)
+    diff = diff_children(expected, actual, array_path, identity)
     children = sum(len(v) for v in expected.values())
     if not children:
         raise SystemExit(f"{array_path}: no source children read; refusing to report a "
                          f"verdict over an empty comparison")
     return {
         "array_path": array_path,
-        "verdict": "PASS" if not findings else "FAIL",
+        "verdict": "PASS" if not diff["finding_count"] else "FAIL",
         "parents_compared": len(set(expected) | set(actual)),
         "children_compared": children,
-        "fields_per_child": fields,
-        "value_comparisons": children * fields,
-        "finding_count": len(findings),
-        "findings": findings[:MAX_REPORTED],
+        "value_comparisons": diff["comparisons"],
+        "finding_count": diff["finding_count"],
+        "findings_reported": len(diff["findings"]),
+        "findings": diff["findings"],
     }
 
 
@@ -204,9 +232,9 @@ def run(connection, db, ns: str) -> dict:
     batch_no = ns_batch_no(ns)
     with connection.cursor() as cursor:
         lines = unit_report(source_lines(cursor, batch_no), target_lines(db, ns),
-                            "invoices.lines", "line_id", len(LINE_FIELDS))
+                            "invoices.lines", "line_id")
         attributes = unit_report(source_attributes(cursor, batch_no),
-                                 target_attributes(db, ns), "customers.attributes", "name", 4)
+                                 target_attributes(db, ns), "customers.attributes", "name")
     return {
         "check": "embedded_child_fields",
         "ns": ns,
