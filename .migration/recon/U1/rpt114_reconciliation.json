@@ -1,0 +1,34 @@
+{
+  "status_code": 200,
+  "status": "pass",
+  "balances": {
+    "current_balance_total": "39799450.31",
+    "customer_count": 25000,
+    "past_due_total": "7330214.66"
+  },
+  "checks": [
+    {
+      "actual": 25000,
+      "expected": "> 0",
+      "name": "customers-populated",
+      "status": "pass"
+    },
+    {
+      "actual": 25000,
+      "expected": 25000,
+      "name": "customers-namespaced",
+      "status": "pass"
+    },
+    {
+      "actual": 125000,
+      "expected": ">= 124999",
+      "name": "customer-counter-seeded",
+      "status": "pass"
+    }
+  ],
+  "source": {
+    "detail": "customers aggregation (RPT-114 balances)",
+    "engine": "mongodb",
+    "system": "Atlas ow_tp_mongodb_205236"
+  }
+}

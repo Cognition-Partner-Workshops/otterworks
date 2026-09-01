@@ -34,6 +34,14 @@ def client(monkeypatch):
         reports_module.BALANCES_SQL: [(25000, "1234567.00", "8901.00")],
     }
     monkeypatch.setattr(reports_module, "oracle_query", lambda sql, params: fixtures[sql])
+    checks = [
+        {"name": "customers-populated", "status": "pass", "expected": "> 0", "actual": 25000},
+        {"name": "customers-namespaced", "status": "pass", "expected": 25000, "actual": 25000},
+    ]
+    monkeypatch.setattr(
+        reports_module, "mongo_reconciliation",
+        lambda batch_no: (fixtures[reports_module.BALANCES_SQL][0], checks),
+    )
     app = Flask(__name__)
     app.register_blueprint(reports)
     return app.test_client()
@@ -84,14 +92,35 @@ def test_month_end_contract(client):
 
 def test_reconciliation_contract(client):
     body = client.get("/api/reports/reconciliation?ns=demo").get_json()
-    assert body["source"]["engine"] == "oracle"
+    assert body["source"]["engine"] == "mongodb"
     assert body["balances"] == {
         "customer_count": 25000,
         "current_balance_total": "1234567.00",
         "past_due_total": "8901.00",
     }
-    assert body["status"] == "baseline"
-    assert body["checks"] == []
+    assert body["status"] == "pass"
+    assert [c["name"] for c in body["checks"]] == ["customers-populated", "customers-namespaced"]
+    assert all(c["status"] == "pass" for c in body["checks"])
+
+
+def test_reconciliation_fails_when_a_check_fails(client, monkeypatch):
+    checks = [{"name": "customers-namespaced", "status": "fail", "expected": 25000, "actual": 24999}]
+    monkeypatch.setattr(
+        reports_module, "mongo_reconciliation", lambda batch_no: ((24999, "1.00", "0.00"), checks)
+    )
+    body = client.get("/api/reports/reconciliation?ns=demo").get_json()
+    assert body["status"] == "fail"
+    assert body["checks"] == checks
+
+
+def test_reconciliation_target_offline_returns_503(client, monkeypatch):
+    def boom(batch_no):
+        raise RuntimeError("ServerSelectionTimeoutError")
+
+    monkeypatch.setattr(reports_module, "mongo_reconciliation", boom)
+    response = client.get("/api/reports/reconciliation")
+    assert response.status_code == 503
+    assert response.get_json()["error"] == "legacy estate unavailable"
 
 
 def test_estate_offline_returns_503(client, monkeypatch):

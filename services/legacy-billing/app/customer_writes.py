@@ -83,20 +83,25 @@ def update_customer(database, cust_id, changes):
         name = changes["cust_name"]
         changes["cust_name_upper"] = name.upper() if name is not None else None
     changes["row_version_no"] = int(prior.get("row_version_no") or 0) + 1
-    database["customers_history"].insert_one(history_document(database, prior, "UPD"))
-    return database["customers"].find_one_and_update(
+    # Mutate first under the optimistic row_version_no guard; the history image is
+    # appended only for the exact prior document the update actually replaced.
+    replaced = database["customers"].find_one_and_update(
         {"_id": cust_id, "row_version_no": prior.get("row_version_no")},
         {"$set": changes},
-        return_document=ReturnDocument.AFTER,
+        return_document=ReturnDocument.BEFORE,
     )
+    if replaced is None:
+        return None
+    database["customers_history"].insert_one(history_document(database, replaced, "UPD"))
+    return database["customers"].find_one({"_id": cust_id})
 
 
 def delete_customer(database, cust_id):
-    prior = database["customers"].find_one({"_id": cust_id})
+    prior = database["customers"].find_one_and_delete({"_id": cust_id})
     if prior is None:
         return False
     database["customers_history"].insert_one(history_document(database, prior, "DEL"))
-    return database["customers"].delete_one({"_id": cust_id}).deleted_count == 1
+    return True
 
 
 def add_attribute(database, cust_id, attr_name, attr_value, attr_type="STR", now=None):

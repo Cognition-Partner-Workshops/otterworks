@@ -29,6 +29,7 @@ QUARANTINE_DB = "ow_tp_mongodb_205236_quarantine"
 UNIT_COLLECTIONS = ("customers", "customers_history", "counters")
 QUARANTINE_COLLECTIONS = ("dirty_signup_dt", "bad_csv_list")
 BATCH_NO = 85559852
+STAGING_SUFFIX = "__staging"
 
 ROOT = Path(__file__).resolve().parents[2]
 MAPPING_PATH = ROOT / ".migration/03_mapping_spec.json"
@@ -184,7 +185,8 @@ def derive(document: dict[str, Any], row: Mapping[str, Any]) -> list[dict[str, A
 
 
 def build_customer(mapping: Mapping[str, Any], row: Mapping[str, Any],
-                   attributes: list[Mapping[str, Any]]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+                   attributes: list[Mapping[str, Any]],
+                   batch_no: int = BATCH_NO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     document = {"_id": row["CUST_ID"]}
     document.update(transform_row(mapping["fields"], row))
     embed = mapping["embeds"][0]
@@ -196,7 +198,7 @@ def build_customer(mapping: Mapping[str, Any], row: Mapping[str, Any],
     document["ns"] = NS_VALUE
     for record in quarantine:
         record["ns"] = NS_VALUE
-        record["batch_no"] = BATCH_NO
+        record["batch_no"] = batch_no
     return document, quarantine
 
 
@@ -259,9 +261,15 @@ def extract(connection: Any, mapping: Mapping[str, Mapping[str, Any]], batch_no:
         "attributes": fetch(
             connection,
             f"SELECT {child_cols} FROM {embed['child_table']} WHERE {embed['child_where']} "
+            f"AND ENTITY_ID IN (SELECT CUST_ID FROM {customers['root_table']} WHERE {root_where}) "
             "ORDER BY EAV_ID",
+            {"batch_no": batch_no},
         ),
-        "history": fetch(connection, f"SELECT {hist_cols} FROM {history['root_table']} ORDER BY HIST_ID"),
+        "history": fetch(
+            connection,
+            f"SELECT {hist_cols} FROM {history['root_table']} WHERE {root_where} ORDER BY HIST_ID",
+            {"batch_no": batch_no},
+        ),
         "sequences": fetch(
             connection,
             "SELECT SEQUENCE_NAME, LAST_NUMBER FROM USER_SEQUENCES "
@@ -271,7 +279,13 @@ def extract(connection: Any, mapping: Mapping[str, Mapping[str, Any]], batch_no:
     }
 
 
-def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[str, Any]) -> dict[str, Any]:
+def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[str, Any],
+                    batch_no: int = BATCH_NO) -> dict[str, Any]:
+    if not source["customers"]:
+        raise RuntimeError(
+            f"CUSTOMER_MASTER has no rows for conversion_batch_no={batch_no}; refusing to replace "
+            "the target collections with an empty batch"
+        )
     by_parent: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for attribute in source["attributes"]:
         by_parent[attribute["ENTITY_ID"]].append(attribute)
@@ -282,7 +296,7 @@ def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[st
     for row in source["customers"]:
         attributes = by_parent.pop(row["CUST_ID"], [])
         embedded += len(attributes)
-        document, records = build_customer(mapping["customers"], row, attributes)
+        document, records = build_customer(mapping["customers"], row, attributes, batch_no)
         customers.append(document)
         for record in records:
             quarantine[record["class"]].append(record)
@@ -310,22 +324,33 @@ def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[st
 def replace_collection(database: Any, name: str, documents: list[dict[str, Any]],
                        indexes: list[list[tuple[str, int]]] | None = None,
                        unique_first: bool = False) -> dict[str, Any]:
-    database.drop_collection(name)
-    database.create_collection(name)
-    if documents:
-        database[name].insert_many(documents, ordered=True)
-    index_names: list[str] = []
-    for position, keys in enumerate(indexes or []):
-        index_names.append(
-            database[name].create_index(keys, unique=(unique_first and position == 0))
-        )
-    docs_after = database[name].count_documents({})
-    ns_docs_after = database[name].count_documents({"ns": NS_VALUE})
-    if docs_after != len(documents) or ns_docs_after != len(documents):
-        raise RuntimeError(
-            f"{name}: expected {len(documents)} documents, got {docs_after} "
-            f"({ns_docs_after} namespaced)"
-        )
+    """Build `<name>__staging` fully, verify it, then rename it over `name` (dropTarget).
+
+    The previous good copy of `name` is only removed by the final rename, so a failure while
+    inserting or indexing leaves the destination untouched and drops the staging copy.
+    """
+    staging = f"{name}{STAGING_SUFFIX}"
+    database.drop_collection(staging)
+    database.create_collection(staging)
+    try:
+        if documents:
+            database[staging].insert_many(documents, ordered=True)
+        index_names: list[str] = []
+        for position, keys in enumerate(indexes or []):
+            index_names.append(
+                database[staging].create_index(keys, unique=(unique_first and position == 0))
+            )
+        docs_after = database[staging].count_documents({})
+        ns_docs_after = database[staging].count_documents({"ns": NS_VALUE})
+        if docs_after != len(documents) or ns_docs_after != len(documents):
+            raise RuntimeError(
+                f"{name}: expected {len(documents)} documents, got {docs_after} "
+                f"({ns_docs_after} namespaced)"
+            )
+    except Exception:
+        database.drop_collection(staging)
+        raise
+    database[staging].rename(name, dropTarget=True)
     return {"dropped": True, "recreated": True, "inserted": len(documents),
             "docs_after": docs_after, "ns_docs_after": ns_docs_after, "indexes": index_names}
 
@@ -393,7 +418,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     with oracledb.connect(user=user, password=password, dsn=dsn) as oracle:
         source = extract(oracle, mapping, args.batch_no)
-    built = build_documents(mapping, source)
+    built = build_documents(mapping, source, args.batch_no)
 
     client = MongoClient(uri)
     try:

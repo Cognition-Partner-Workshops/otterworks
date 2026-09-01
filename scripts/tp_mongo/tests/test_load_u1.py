@@ -94,3 +94,133 @@ def test_validate_target_db_rejects_other_databases():
     except ValueError:
         return
     raise AssertionError("expected ValueError")
+
+
+def test_build_customer_quarantine_carries_runtime_batch():
+    _, quarantine = load_u1.build_customer(
+        MAPPING["customers"], _row(SIGNUP_DT="N/A", CONVERSION_BATCH_NO=12345678), [], 12345678
+    )
+    assert [q["batch_no"] for q in quarantine] == [12345678]
+
+
+class _Cursor:
+    def __init__(self, tables):
+        self.tables = tables
+        self.arraysize = 0
+        self.description = []
+        self.rows = []
+
+    def execute(self, sql, params):
+        assert "SEQUENCE_NAME" in sql or params == {"batch_no": 111}, sql
+        if "USER_SEQUENCES" in sql:
+            rows = self.tables["sequences"]
+        elif "ENTITY_ATTR_VALUE" in sql:
+            assert "ENTITY_ID IN (SELECT CUST_ID FROM CUSTOMER_MASTER" in sql
+            parents = {r["CUST_ID"] for r in self.tables["customers"]
+                       if r["CONVERSION_BATCH_NO"] == 111}
+            rows = [r for r in self.tables["attributes"] if r["ENTITY_ID"] in parents]
+        elif "CUSTOMER_MASTER_HIST" in sql:
+            rows = [r for r in self.tables["history"] if r["CONVERSION_BATCH_NO"] == 111]
+        else:
+            rows = [r for r in self.tables["customers"] if r["CONVERSION_BATCH_NO"] == 111]
+        self.description = [(k,) for k in (rows[0] if rows else {})]
+        self.rows = [tuple(r.values()) for r in rows]
+
+    def fetchall(self):
+        return self.rows
+
+
+class _Connection:
+    def __init__(self, tables):
+        self.tables = tables
+
+    def cursor(self):
+        return _Cursor(self.tables)
+
+
+def _tables():
+    hist_cols = {f["source"]: None for f in MAPPING["customers_history"]["fields"]}
+    return {
+        "customers": [_row(CUST_ID="c1", CONVERSION_BATCH_NO=111),
+                      _row(CUST_ID="c2", CONVERSION_BATCH_NO=222)],
+        "attributes": [
+            {"EAV_ID": 1, "ENTITY_TYPE": "CUSTOMER", "ENTITY_ID": "c1", "ATTR_NAME": "A",
+             "ATTR_VALUE": "1", "ATTR_TYPE": "STR", "CREATED_DT": "01-JAN-20"},
+            {"EAV_ID": 2, "ENTITY_TYPE": "CUSTOMER", "ENTITY_ID": "c2", "ATTR_NAME": "A",
+             "ATTR_VALUE": "1", "ATTR_TYPE": "STR", "CREATED_DT": "01-JAN-20"},
+        ],
+        "history": [dict(hist_cols, HIST_ID=1, CUST_ID="c2", CONVERSION_BATCH_NO=222)],
+        "sequences": [{"SEQUENCE_NAME": n, "LAST_NUMBER": 5} for n in load_u1.SEQUENCES],
+    }
+
+
+def test_extract_scopes_attributes_and_history_to_the_batch():
+    source = load_u1.extract(_Connection(_tables()), MAPPING, 111)
+    assert [r["CUST_ID"] for r in source["customers"]] == ["c1"]
+    assert [r["EAV_ID"] for r in source["attributes"]] == [1]
+    assert source["history"] == []
+    built = load_u1.build_documents(MAPPING, source, 111)
+    assert [d["_id"] for d in built["customers"]] == ["c1"]
+    assert built["embedded_attributes"] == 1 and built["customers_history"] == []
+
+
+def test_build_documents_rejects_empty_customer_batch():
+    tables = _tables()
+    source = {"customers": [], "attributes": [], "history": [], "sequences": tables["sequences"]}
+    try:
+        load_u1.build_documents(MAPPING, source, 999)
+    except RuntimeError as exc:
+        assert "999" in str(exc)
+        return
+    raise AssertionError("expected RuntimeError")
+
+
+class _FakeCollection:
+    def __init__(self, db, name):
+        self.db, self.name, self.docs, self.indexes = db, name, [], []
+
+    def insert_many(self, docs, ordered=True):
+        if any(d.get("boom") for d in docs):
+            raise RuntimeError("insert failed")
+        self.docs.extend(docs)
+
+    def create_index(self, keys, unique=False):
+        self.indexes.append(keys)
+        return "_".join(f"{k}_{v}" for k, v in keys)
+
+    def count_documents(self, query):
+        return sum(all(d.get(k) == v for k, v in query.items()) for d in self.docs)
+
+    def rename(self, new_name, dropTarget=False):
+        self.db.collections.pop(new_name, None)
+        self.db.collections[new_name] = self.db.collections.pop(self.name)
+        self.name = new_name
+
+
+class _FakeDatabase:
+    def __init__(self):
+        self.collections = {}
+
+    def drop_collection(self, name):
+        self.collections.pop(name, None)
+
+    def create_collection(self, name):
+        self.collections[name] = _FakeCollection(self, name)
+
+    def __getitem__(self, name):
+        return self.collections[name]
+
+
+def test_replace_collection_swaps_via_staging_and_keeps_old_copy_on_failure():
+    db = _FakeDatabase()
+    good = [{"_id": 1, "ns": load_u1.NS_VALUE}]
+    report = load_u1.replace_collection(db, "customers", good, [[("a", 1)]], unique_first=True)
+    assert report["inserted"] == 1 and list(db.collections) == ["customers"]
+    try:
+        load_u1.replace_collection(db, "customers", [{"_id": 2, "ns": load_u1.NS_VALUE, "boom": True}])
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("expected RuntimeError")
+    assert list(db.collections) == ["customers"]
+    assert db["customers"].docs == good

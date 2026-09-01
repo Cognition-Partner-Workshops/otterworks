@@ -71,6 +71,16 @@ SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_de
  ORDER BY 1, 2
 """
 
+# Legacy RPT-114 balances query; retained as the Oracle reference the MongoDB
+# aggregation below is graded against (see .migration/recon/U1/rpt114_balances.json).
+BALANCES_SQL = """
+SELECT COUNT(*)                                          AS customer_count,
+       TO_CHAR(SUM(cur_bal_amt), 'FM999999999999990.00') AS current_balance_total,
+       TO_CHAR(SUM(past_due_amt), 'FM999999999999990.00') AS past_due_total
+  FROM customer_master
+ WHERE conversion_batch_no = :batch_no
+"""
+
 MONGO_NS = os.getenv("MONGODB_NS", "mongo_205236")
 MONGO_DB = os.getenv("MONGODB_DB", "ow_tp_mongodb_205236")
 
@@ -153,12 +163,7 @@ def mongo_connect():
     return MongoClient(uri, serverSelectionTimeoutMS=int(os.getenv("MONGODB_TIMEOUT_MS", "5000")))
 
 
-def mongo_balances(batch_no):
-    client = mongo_connect()
-    try:
-        rows = list(client[MONGO_DB]["customers"].aggregate(balances_pipeline(batch_no)))
-    finally:
-        client.close()
+def shape_balance_row(rows):
     # SUM over an empty group is NULL in Oracle; COUNT(*) is 0.
     row = rows[0] if rows else {"customer_count": 0}
     return (
@@ -166,6 +171,44 @@ def mongo_balances(batch_no):
         fm_amount(row.get("current_balance_total")),
         fm_amount(row.get("past_due_total")),
     )
+
+
+def check(name, expected, actual, ok=None):
+    ok = (expected == actual) if ok is None else ok
+    return {"name": name, "status": "pass" if ok else "fail",
+            "expected": expected, "actual": actual}
+
+
+def reconciliation_checks(database, batch_no, customer_count):
+    """Post-migration checks the contract's pass|fail status is derived from."""
+    customers = database["customers"]
+    in_batch = customers.count_documents({"conversion_batch_no": batch_no})
+    max_seq = next(iter(customers.aggregate([
+        {"$match": {"conversion_batch_no": batch_no, "ns": MONGO_NS}},
+        {"$group": {"_id": None, "max_seq": {"$max": "$cust_seq_no"}}},
+    ])), {}).get("max_seq")
+    counter = database["counters"].find_one({"_id": "seq_customer_master", "ns": MONGO_NS})
+    counter_seq = None if counter is None else int(counter["seq"])
+    return [
+        check("customers-populated", "> 0", customer_count, customer_count > 0),
+        check("customers-namespaced", in_batch, customer_count),
+        check("customer-counter-seeded", f">= {max_seq}", counter_seq,
+              counter_seq is not None and max_seq is not None
+              and counter_seq >= int(max_seq)),
+    ]
+
+
+def mongo_reconciliation(batch_no):
+    """Return (balance_row, checks) from the migrated customers collection."""
+    client = mongo_connect()
+    try:
+        database = client[MONGO_DB]
+        rows = list(database["customers"].aggregate(balances_pipeline(batch_no)))
+        balance_row = shape_balance_row(rows)
+        checks = reconciliation_checks(database, batch_no, balance_row[0])
+    finally:
+        client.close()
+    return balance_row, checks
 
 
 def oracle_connect():
@@ -217,16 +260,15 @@ def reconciliation():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        balance_row = mongo_balances(batch_no)
+        balance_row, checks = mongo_reconciliation(batch_no)
     except Exception:  # target offline: fail closed, never fabricate numbers
         logger.exception("reconciliation report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
     body = report_meta(ns)
     body["source"] = BALANCES_SOURCE
     body["balances"] = shape_balances(balance_row)
-    # The legacy estate IS the source of truth: there is nothing to reconcile
-    # against, so it reports baseline with no checks. Post-migration backends
-    # return status pass|fail with per-check results instead.
-    body["status"] = "baseline"
-    body["checks"] = []
+    # Migrated backend: status is derived from the executed checks (contract:
+    # pass when every check passes, fail otherwise; baseline is legacy-only).
+    body["status"] = "pass" if all(c["status"] == "pass" for c in checks) else "fail"
+    body["checks"] = checks
     return jsonify(body)
