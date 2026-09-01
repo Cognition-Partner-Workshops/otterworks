@@ -54,14 +54,16 @@ class DynamoSourceAdapter:
         endpoint_secret: ENV VAR NAME holding the endpoint URL (defaults to AWS_ENDPOINT_URL)."""
         import boto3
 
-        endpoint = os.environ.get(endpoint_secret or "AWS_ENDPOINT_URL", "http://localhost:4566")
-        self._ddb = boto3.resource(
-            "dynamodb",
-            endpoint_url=endpoint,
-            region_name=os.getenv("AWS_REGION", "us-east-1"),
-            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test"),
-            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test"),
-        )
+        name = endpoint_secret or "AWS_ENDPOINT_URL"
+        endpoint = os.environ.get(name)
+        if not endpoint:
+            raise RuntimeError(f"secret '{name}' not found in environment; pass secrets by name only")
+        # LocalStack placeholder credentials only for a loopback endpoint; otherwise boto3's
+        # own credential chain applies (fail closed, never silent test/test).
+        loopback = endpoint.split("//", 1)[-1].split(":")[0] in ("localhost", "127.0.0.1")
+        creds = {"aws_access_key_id": "test", "aws_secret_access_key": "test"} if loopback else {}
+        self._ddb = boto3.resource("dynamodb", endpoint_url=endpoint,
+                                   region_name=os.getenv("AWS_REGION", "us-east-1"), **creds)
         self._types = field_types
         self._cache: dict[tuple[str, str | None], list[dict[str, Any]]] = {}
 

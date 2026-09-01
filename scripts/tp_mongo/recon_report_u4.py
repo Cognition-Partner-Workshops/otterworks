@@ -115,6 +115,7 @@ def main() -> int:
         "harness": {
             "verdict": result["verdict"],
             "mapping_version": result["mapping_version"],
+            "mapping_spec_sha256": load["mapping_spec_sha256"],
             "tolerance_version": result["tolerance_version"],
             "seed": result["seed"],
             "params": result["params"],

@@ -8,6 +8,7 @@ Orphaned S3 markers (derived_ungraded `orphaned_metadata`) are reported, never d
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -31,16 +32,17 @@ def _secret(name: str) -> str:
 
 
 def _aws(kind: str, service: str):
+    """Fixture-only AWS client: the endpoint must be named explicitly, and the LocalStack
+    placeholder credentials apply only to a loopback endpoint; anything else fails closed to
+    boto3's own credential chain (no silent test/test)."""
     import boto3
 
+    endpoint = _secret("AWS_ENDPOINT_URL")
+    loopback = endpoint.split("//", 1)[-1].split(":")[0] in ("localhost", "127.0.0.1")
+    creds = {"aws_access_key_id": "test", "aws_secret_access_key": "test"} if loopback else {}
     factory = boto3.resource if kind == "resource" else boto3.client
-    return factory(
-        service,
-        endpoint_url=os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566"),
-        region_name=os.getenv("AWS_REGION", "us-east-1"),
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test"),
-    )
+    return factory(service, endpoint_url=endpoint,
+                   region_name=os.getenv("AWS_REGION", "us-east-1"), **creds)
 
 
 def to_string(v):
@@ -132,8 +134,10 @@ def orphan_marker(s3_key: str | None, s3_client) -> bool:
     try:
         s3_client.head_object(Bucket=FILES_BUCKET, Key=s3_key)
         return False
-    except s3_client.exceptions.ClientError:
-        return True
+    except s3_client.exceptions.ClientError as exc:
+        if exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode") == 404:
+            return True
+        raise
 
 
 def build_document(item: dict, plan: dict, ns_value: str, s3_client) -> dict:
@@ -148,7 +152,6 @@ def build_document(item: dict, plan: dict, ns_value: str, s3_client) -> dict:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--uri-secret", default="MONGODB_ATLAS_URI")
-    p.add_argument("--target-db", default=None)
     p.add_argument("--source-ns", default="demo")
     p.add_argument("--report", type=Path, default=REPO_ROOT / ".migration/recon/U4/load_report.json")
     args = p.parse_args()
@@ -157,7 +160,7 @@ def main() -> int:
 
     loaded = load_entry()
     entry = loaded["entry"]
-    target_db = args.target_db or json.loads(MAPPING_SPEC.read_text())["target_database"]
+    target_db = json.loads(MAPPING_SPEC.read_text())["target_database"]  # registered in 04_progress.md; not overridable
     ns_value = entry["namespace_field"]["value"]
     if entry["namespace_field"]["target"] != "ns":
         raise RuntimeError("namespace field must be `ns` (D8)")
@@ -175,6 +178,14 @@ def main() -> int:
     started = datetime.now(timezone.utc)
     s3_client = _aws("client", "s3") if s3_probe_available(args.source_ns) else None
 
+    # Source preflight: materialize the partition before touching the target so an empty or
+    # unreachable source can never replace an existing collection.
+    items = list(scan_items(entry["root_table"], args.source_ns))
+    if not items:
+        print(f"ERROR: source partition ns={args.source_ns!r} is empty; target left untouched",
+              file=sys.stderr)
+        return 2
+
     client = MongoClient(_secret(args.uri_secret))
     db = client[target_db]
     existed_before = COLLECTION in db.list_collection_names()
@@ -183,7 +194,7 @@ def main() -> int:
 
     coll = db[COLLECTION]
     batch, inserted, scanned, orphans = [], 0, 0, 0
-    for item in scan_items(entry["root_table"], args.source_ns):
+    for item in items:
         scanned += 1
         doc = build_document(item, plan, ns_value, s3_client)
         orphans += int(doc["orphaned_metadata"])
@@ -203,6 +214,7 @@ def main() -> int:
         "unit": UNIT,
         "collection": f"{target_db}.{COLLECTION}",
         "mapping_version": loaded["spec_version"],
+        "mapping_spec_sha256": hashlib.sha256(MAPPING_SPEC.read_bytes()).hexdigest(),
         "source": {
             "table": entry["root_table"],
             "root_where": entry["root_where"],
