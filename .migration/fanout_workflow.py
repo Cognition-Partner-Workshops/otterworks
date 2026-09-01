@@ -70,7 +70,11 @@ in .migration/04_progress.md (RECON_GREEN only with a green fixture result.json)
 
 # Units whose ORIGINAL child was resumed by orchestrator message after an escalation (never relaunched).
 # The workflow re-ingests that child's finished evidence via a lightweight verifier instead of redoing work.
-RESUMED = {}
+RESUMED = {
+    "U0": {"session": "devin-4a712cd3cdda4e22add668ce6fa915ca",
+           "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1423",
+           "branch": "tp-run/mongodb-20260901T205236Z--u0"},
+}
 
 UNIT_SCHEMA = {
     "type": "object",
