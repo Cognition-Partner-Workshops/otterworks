@@ -1,0 +1,61 @@
+{
+  "unit": "collections_ops",
+  "mode": "live",
+  "mapping_version": "m1",
+  "tolerance_version": "v1",
+  "seed": 20260901,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "generated_at": "2026-09-01T05:14:10.569279+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 19,
+      "stats": {
+        "deferred_to_tier3": [
+          "billing_audit_log.module",
+          "billing_audit_log.message"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 7,
+      "stats": {
+        "credit_notes": {
+          "mode": "full_diff",
+          "population": 5
+        },
+        "dunning_attempts": {
+          "mode": "full_diff",
+          "population": 1
+        },
+        "notifications": {
+          "mode": "full_diff",
+          "population": 1
+        },
+        "billing_audit_log": {
+          "mode": "full_diff",
+          "population": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

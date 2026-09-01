@@ -1,0 +1,52 @@
+{
+  "unit": "subscriptions",
+  "mode": "live",
+  "mapping_version": "m1",
+  "tolerance_version": "v1",
+  "seed": 20260901,
+  "params": {
+    "batch_no": "85559852"
+  },
+  "generated_at": "2026-09-01T05:13:36.243080+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 7,
+      "stats": {
+        "deferred_to_tier3": [
+          "subscriptions.ends_on",
+          "subscriptions.suspended_on"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 69,
+      "stats": {
+        "subscriptions": {
+          "mode": "full_diff",
+          "population": 69
+        },
+        "embeds_graded": {
+          "subscriptions.history": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

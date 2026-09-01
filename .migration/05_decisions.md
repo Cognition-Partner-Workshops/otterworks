@@ -19,6 +19,12 @@
 | 2026-09-01 | 3 | Recon is run per unit against a generated slice of the mapping (`.migration/mapping/<unit>.json`), not the whole spec: `recon run` grades every collection in the file it is handed, so wave 0 would otherwise fail on collections wave 2 has not loaded yet. Slices are generated from the same spec, so they cannot drift from it | Devin | recorded |
 | 2026-09-01 | 3 | The repo's own gates (`tp-validate-contracts`, `tp-validate-recon`) are satisfied by artifacts **derived** from the harness result and mapping spec (`tools/build_contracts.py`, `tools/recon_report.py`) rather than hand-written, so a contract or report cannot disagree with the gate it represents | Devin | recorded |
 | 2026-09-01 | 3 | Wave 0 `reference` loaded and reconciled LIVE: 104/104 documents graded by full keyed diff, 0 findings across tiers 1-3, verdict PASS, idempotency proven by re-running the load and re-grading | Devin | recorded |
+| 2026-09-01 | 3 | Waves 1-4 complete: all 7 data units and `stored_logic` graded LIVE, verdict PASS each (44,646 documents, 158,301 embedded elements, 118 quarantined records, 24/24 transcript scenarios) | Devin | recorded |
+| 2026-09-01 | routing | Phase 3 closed; entered phase 4 (`!mongo_cutover`) | Devin (orchestrator) | recorded |
+| 2026-09-01 | 4 | Final delta catch-up executed as a **watermark re-grade** rather than a source freeze: the estate takes no live writes this run, so at watermark 2026-09-01T05:13:14Z every loaded unit was re-graded live against Oracle (`tools/watermark_recon.sh`). 7/7 PASS, 203,176 checks, 0 findings, 0 delta against the wave loads | Devin | recorded |
+| 2026-09-01 | 4 | Evidence pack assembled at `07_evidence_pack.md` and the customer-executed runbook at `08_cutover_runbook.md`; the runbook's first section states which paths the repoint covers and which keep reading Oracle | Devin | recorded |
+| 2026-09-01 | 4 | Independent audit commissioned in a session that performed no migration work, grading a sampled subset of gates from the evidence pack alone | Devin | pending countersignature |
+| 2026-09-01 | 4 | **STOP C** — customer authorization of the cutover window, freeze-vs-watermark choice, rollback trigger, the no-live-write-parity tradeoff, and the partial repoint scope | user | **PENDING** |
 
 Approvals are never inferred from chat history and never carry across reruns; each is
 recorded here with its date and owner before the chain continues.
