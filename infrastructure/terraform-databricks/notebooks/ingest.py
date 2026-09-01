@@ -75,8 +75,10 @@ def bronze_rows(ns: str, source_file: str, data: bytes, digest: str) -> list[tup
     ]
 
 
-def should_skip_as_duplicate(digest: str, known_digests: set[str]) -> bool:
-    return digest in known_digests
+def should_skip_as_duplicate(digest: str, known_digests: set[str], archive_exists: bool = False) -> bool:
+    """Bronze digests cover non-empty files; the content-addressed archive entry is the
+    durable marker for files that produced no rows (zero-byte input)."""
+    return digest in known_digests or archive_exists
 
 
 RUN_LOG: list[str] = []
@@ -139,6 +141,7 @@ def main() -> None:
             log(file=name, action="non_utf8", sha256=digest, note="loaded via latin-1")
 
         archive_path = f"{archive_dir}/{archive_name(name, digest)}"
+        already_archived = os.path.isfile(archive_path)
         with open(archive_path, "wb") as handle:
             handle.write(data)
         with open(archive_path, "rb") as handle:
@@ -147,7 +150,7 @@ def main() -> None:
             raise RuntimeError(f"archive verification failed for {name}: {archived_digest} != {digest}")
         log(file=name, action="archived", archive=archive_path, sha256_verified=True)
 
-        if should_skip_as_duplicate(digest, known):
+        if should_skip_as_duplicate(digest, known, already_archived):
             log(file=name, action="duplicate", sha256=digest, rows_inserted=0)
         else:
             rows = bronze_rows(ns, name, data, digest)

@@ -91,6 +91,13 @@ def test_duplicate_decision_uses_ns_known_digests() -> None:
     assert not ingest.should_skip_as_duplicate("a" * 64, set())
 
 
+def test_duplicate_decision_falls_back_to_archive_marker_for_rowless_files() -> None:
+    empty_digest = ingest.sha256_hex(b"")
+    assert ingest.bronze_rows("ns", "CUSTBILL_X.dat", b"", empty_digest) == []
+    assert not ingest.should_skip_as_duplicate(empty_digest, set(), archive_exists=False)
+    assert ingest.should_skip_as_duplicate(empty_digest, set(), archive_exists=True)
+
+
 @pytest.mark.parametrize("ns", ["demo", "sftp-ingest-poll-w1", "a" * 32])
 def test_require_ns_accepts(ns: str) -> None:
     assert ingest.require_ns(ns) == ns
