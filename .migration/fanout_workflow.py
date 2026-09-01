@@ -68,6 +68,10 @@ loads drop+recreate ONLY your unit's collections and were actually re-run). Run 
 in .migration/04_progress.md (RECON_GREEN only with a green fixture result.json) in the PR.
 """
 
+# Units whose ORIGINAL child was resumed by orchestrator message after an escalation (never relaunched).
+# The workflow re-ingests that child's finished evidence via a lightweight verifier instead of redoing work.
+RESUMED = {}
+
 UNIT_SCHEMA = {
     "type": "object",
     "properties": {
@@ -90,10 +94,11 @@ WAVE_SCHEMA = {
         "wave_verdict": {"type": "string", "description": "PASS | FAIL | DRIFT-EXPLAINED"},
         "unit_verdicts": {"type": "string", "description": "JSON object unit->PASS|FAIL|DRIFT-EXPLAINED"},
         "report_path": {"type": "string", "description": "branch:path of the wave report"},
+        "attested_heads": {"type": "string", "description": "JSON object unit->exact PR head SHA the LIVE recon ran against"},
         "findings": {"type": "string"},
         "grading_amendments": {"type": "string", "description": "grading-only amendments applied (none if empty)"},
     },
-    "required": ["wave", "wave_verdict", "unit_verdicts", "report_path"],
+    "required": ["wave", "wave_verdict", "unit_verdicts", "report_path", "attested_heads"],
 }
 
 MERGE_SCHEMA = {
@@ -265,6 +270,17 @@ never duplicate ledger/decision rows; if all done, verify and return OK.
 
 async def run_unit(uid):
     u = UNITS[uid]
+    if uid in RESUMED:
+        r = RESUMED[uid]
+        return await agent(
+            f"Repo {REPO}. Unit {uid} ({u['title']}) of the OtterWorks MongoDB migration was completed by its "
+            f"original child session {r['session']} after an orchestrator-approved resume; PR: {r['pr_url']} "
+            f"(branch {r['branch']}, base {RUN_BRANCH}). Do NOT redo or re-run the migration. Verify only: the PR is "
+            f"open against {RUN_BRANCH}; its head contains .migration/recon/{uid}/result.json with verdict PASS/GREEN, "
+            f"mapping_version v1.0.1, tolerance v1, run_mode fixture; the PR body has the required sections and no "
+            f"requester identification. Report verdict GREEN with pr_url/branch if all hold, else ESCALATE with what is missing.",
+            phase=f"convert-{uid}", schema=UNIT_SCHEMA, label=f"{u['title']} (resumed-evidence check)", mode="lite",
+        )
     return await agent(
         COMMON + "\n## Your unit\n" + u["spec"] +
         f"\n\nPR branch: `{RUN_BRANCH}--{uid.lower()}`. Report verdict GREEN only with a green fixture "
@@ -281,7 +297,9 @@ async def wave_recon(wave_name, unit_results):
     prs = json.dumps({r["unit"]: {"pr": r["pr_url"], "branch": r["branch"]} for r in unit_results}, sort_keys=True)
     return await agent(
         WAVE_RECON_COMMON + f"\n## Wave under review: {wave_name}\nUnit PRs/branches:\n{prs}\n"
-        "Fetch each PR branch and run the gates against ITS code+load state.",
+        "Fetch each PR branch at its CURRENT head, record the exact head SHA per unit in attested_heads, and run the "
+        "gates against THAT code+load state (re-run the unit loader from the PR head into the target first if the "
+        "loaded data predates the head). Units whose PR is already merged into the run branch: attest the merged head and grade them too.",
         phase=f"recon-{wave_name}",
         schema=WAVE_SCHEMA,
         label=f"independent LIVE recon {wave_name}",
@@ -294,6 +312,7 @@ async def merge_wave(wave_name, unit_results, recon):
     return await agent(
         MERGE_PROMPT + f"\nWave: {wave_name}\nPRs in merge order: {order}\n"
         f"Wave report: {recon['report_path']}\nUnit verdicts: {recon['unit_verdicts']}\n"
+        f"Attested heads (merge a PR ONLY if its current head equals the attested SHA; otherwise BLOCKED for that unit): {recon['attested_heads']}\n"
         f"Grading amendments: {recon.get('grading_amendments') or 'none'}",
         phase=f"merge-{wave_name}",
         schema=MERGE_SCHEMA,
