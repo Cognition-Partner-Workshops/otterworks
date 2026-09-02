@@ -1,0 +1,362 @@
+{
+  "kind": "recon-report",
+  "unit": "U9",
+  "namespace": "mongo_205236",
+  "prefix": "replay_u9_",
+  "generated_at": "2026-09-02T02:51:24.804503+00:00",
+  "run_mode": "fixture",
+  "harness": {
+    "result": ".migration/recon/U9/result.json",
+    "verdict": "PASS",
+    "seed": 714559852,
+    "params": {
+      "batch_no": "85559852",
+      "source_ns": "demo"
+    },
+    "harness_cli_mode": "live"
+  },
+  "checks": [
+    {
+      "id": "harness.verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.mapping_version",
+      "expected": "v1.0.1",
+      "actual": "v1.0.1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tolerance_version",
+      "expected": "v1",
+      "actual": "v1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier4.ops_replayed",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "tier4.transcripts.oracle_source_sha_matches_repo",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "tier4_provenance.json",
+      "result": "pass"
+    },
+    {
+      "id": "tier4.transcripts.scenarios",
+      "expected": [
+        "DUNNING-001",
+        "DUNNING-002",
+        "DUNNING-003",
+        "DUNNING-004",
+        "DUNNING-005"
+      ],
+      "actual": [
+        "DUNNING-001",
+        "DUNNING-002",
+        "DUNNING-003",
+        "DUNNING-004",
+        "DUNNING-005"
+      ],
+      "source_of_truth": "tier4_provenance.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier1.counts_through_mapping",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier2.per_field_aggregates",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier3.keyed_diffs",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier4.app_level_parity",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_invoices.count",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_invoices.ns_tagged",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_invoices.indexes",
+      "expected": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "actual": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_tenants.count",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_tenants.ns_tagged",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_tenants.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions.count",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions.ns_tagged",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions.indexes",
+      "expected": [
+        "tenant_id_1_starts_on_-1"
+      ],
+      "actual": [
+        "tenant_id_1_starts_on_-1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions_history.count",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions_history.ns_tagged",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions_history.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_dunning_attempts.count",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_dunning_attempts.ns_tagged",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_dunning_attempts.indexes",
+      "expected": [
+        "invoice_id_1_attempt_no_1"
+      ],
+      "actual": [
+        "invoice_id_1_attempt_no_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_notifications.count",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_notifications.ns_tagged",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_notifications.indexes",
+      "expected": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ],
+      "actual": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_audit_log.count",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_audit_log.ns_tagged",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_billing_audit_log.indexes",
+      "expected": [
+        "logged_at_1"
+      ],
+      "actual": [
+        "logged_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_counters.count",
+      "expected": 2,
+      "actual": 2,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_counters.ns_tagged",
+      "expected": 2,
+      "actual": 2,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_counters.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
+      "id": "golden.billing_invoices.untouched",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.tenants.untouched",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.subscriptions.untouched",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.subscriptions_history.untouched",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.dunning_attempts.untouched",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.notifications.untouched",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.billing_audit_log.untouched",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": ".migration/recon/U9/load_report.run1.json vs load_report.json (populations, indexes, embedded counts, dropped and recreated equal)"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [],
+    "actual_set": [],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "billing_audit_log excluded from T1-T3 as a write-only sink",
+    "Tier-4 source is recorded transcripts, not live PL/SQL",
+    "scheduler job never activated or scheduled; CLI gate only",
+    "HTTP blueprint routes unit-tested with fakes only; Tier 4 uses direct calls",
+    "concurrent notification insert race (DuplicateKeyError would surface like ORA-00001) unit-tested only",
+    "non-duplicate error propagation unit-tested only",
+    "counters seeded in U6 contract (F-X-1) for the clone only"
+  ]
+}

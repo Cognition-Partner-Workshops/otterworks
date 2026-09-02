@@ -1,0 +1,156 @@
+{
+  "unit": "U8",
+  "started_at": "2026-09-02T03:12:37.462731Z",
+  "finished_at": "2026-09-02T03:12:46.733571Z",
+  "generated_at": "2026-09-02T03:12:46.733591Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "ns": "mongo_205236",
+  "collections": {
+    "replay_u8_subscriptions": {
+      "cloned_from": "subscriptions",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": [
+        "tenant_id_1_starts_on_-1"
+      ]
+    },
+    "replay_u8_subscriptions_history": {
+      "cloned_from": "subscriptions_history",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 0,
+      "inserted": 0,
+      "docs_after": 0,
+      "ns_docs_after": 0,
+      "indexes": []
+    },
+    "replay_u8_usage_events": {
+      "cloned_from": "usage_events",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 814,
+      "inserted": 814,
+      "docs_after": 814,
+      "ns_docs_after": 814,
+      "indexes": [
+        "tenant_id_1_occurred_at_1"
+      ]
+    },
+    "replay_u8_rating_periods": {
+      "cloned_from": "rating_periods",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "tenant_id_1_period_start_1"
+      ],
+      "embedded": {
+        "results": 3
+      }
+    },
+    "replay_u8_billing_invoices": {
+      "cloned_from": "billing_invoices",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "embedded": {
+        "lines": 2
+      }
+    },
+    "replay_u8_credit_notes": {
+      "cloned_from": "credit_notes",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 5,
+      "inserted": 5,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": [
+        "tenant_id_1_issued_on_1__id_1"
+      ]
+    },
+    "replay_u8_dunning_attempts": {
+      "cloned_from": "dunning_attempts",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "invoice_id_1_attempt_no_1"
+      ]
+    },
+    "replay_u8_notifications": {
+      "cloned_from": "notifications",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ]
+    },
+    "replay_u8_billing_audit_log": {
+      "cloned_from": "billing_audit_log",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "logged_at_1"
+      ]
+    },
+    "replay_u8_plans": {
+      "cloned_from": "plans",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": []
+    },
+    "replay_u8_tenants": {
+      "cloned_from": "tenants",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": []
+    },
+    "replay_u8_counters": {
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [],
+      "sequence_start": 1
+    }
+  },
+  "secret_names": {
+    "uri": "MONGODB_ATLAS_URI"
+  }
+}

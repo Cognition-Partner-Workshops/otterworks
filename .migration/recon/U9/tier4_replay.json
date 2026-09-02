@@ -1,0 +1,203 @@
+[
+  {
+    "name": "DUNNING-001",
+    "source": [
+      {
+        "days_overdue": [
+          27,
+          15
+        ],
+        "tenant_ids": [
+          "00000000-0000-0000-0000-000000000002",
+          "00000000-0000-0000-0000-000000000005"
+        ]
+      }
+    ],
+    "target": [
+      {
+        "tenant_ids": [
+          "00000000-0000-0000-0000-000000000002",
+          "00000000-0000-0000-0000-000000000005"
+        ],
+        "days_overdue": [
+          27,
+          15
+        ]
+      }
+    ]
+  },
+  {
+    "name": "DUNNING-002",
+    "source": [
+      {
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 1,
+        "invoice_id": "60000000-0000-0000-0000-000000000001",
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 1,
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "scheduled_for": "2026-02-16",
+        "status": "sent"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 2,
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      }
+    ],
+    "target": [
+      {
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000001",
+        "attempt_no": 1,
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "attempt_no": 1,
+        "scheduled_for": "2026-02-16",
+        "status": "sent"
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "attempt_no": 2,
+        "scheduled_for": "2026-02-16",
+        "status": "scheduled"
+      }
+    ]
+  },
+  {
+    "name": "DUNNING-003",
+    "source": [
+      {
+        "attempt_no": 2,
+        "scheduled_for": "2026-02-17"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 1,
+        "invoice_id": "60000000-0000-0000-0000-000000000001",
+        "scheduled_for": "2026-02-17",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 1,
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "scheduled_for": "2026-02-16",
+        "status": "sent"
+      },
+      {
+        "probe": "schedule_rows",
+        "attempt_no": 2,
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "scheduled_for": "2026-02-17",
+        "status": "scheduled"
+      }
+    ],
+    "target": [
+      {
+        "scheduled_for": "2026-02-17",
+        "attempt_no": 2
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000001",
+        "attempt_no": 1,
+        "scheduled_for": "2026-02-17",
+        "status": "scheduled"
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "attempt_no": 1,
+        "scheduled_for": "2026-02-16",
+        "status": "sent"
+      },
+      {
+        "probe": "schedule_rows",
+        "invoice_id": "60000000-0000-0000-0000-000000000002",
+        "attempt_no": 2,
+        "scheduled_for": "2026-02-17",
+        "status": "scheduled"
+      }
+    ]
+  },
+  {
+    "name": "DUNNING-004",
+    "source": [
+      {
+        "status": "suspended",
+        "suspended_on": "2026-02-28"
+      },
+      {
+        "probe": "suspension_notifications",
+        "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+        "kind": "suspension",
+        "sent_at": "2026-02-28T00:00:00Z",
+        "tenant_id": "00000000-0000-0000-0000-000000000005"
+      }
+    ],
+    "target": [
+      {
+        "status": "suspended",
+        "suspended_on": "2026-02-28"
+      },
+      {
+        "probe": "suspension_notifications",
+        "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+        "tenant_id": "00000000-0000-0000-0000-000000000005",
+        "kind": "suspension",
+        "sent_at": "2026-02-28T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "name": "DUNNING-005",
+    "source": [
+      {
+        "notification_kinds": [
+          "suspension"
+        ]
+      },
+      {
+        "probe": "suspension_notifications",
+        "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+        "kind": "suspension",
+        "sent_at": "2026-02-28T00:00:00Z",
+        "tenant_id": "00000000-0000-0000-0000-000000000005"
+      }
+    ],
+    "target": [
+      {
+        "notification_kinds": [
+          "suspension"
+        ]
+      },
+      {
+        "probe": "suspension_notifications",
+        "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+        "tenant_id": "00000000-0000-0000-0000-000000000005",
+        "kind": "suspension",
+        "sent_at": "2026-02-28T00:00:00Z"
+      }
+    ]
+  }
+]
