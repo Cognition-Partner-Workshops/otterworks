@@ -1,0 +1,397 @@
+{
+ "ok": 65,
+ "total": 65,
+ "seconds": 43.0,
+ "probes": [
+  {
+   "group": "baseline",
+   "probe": "7 clone collections canonical-sha-equal to golden",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "baseline",
+   "probe": "index specs equal golden; dunning_attempts has unique (invoice_id, attempt_no) [UQ_DUNNING_ATTEMPTS]",
+   "ok": true,
+   "detail": "([], [((('_id', 1),), False), ((('invoice_id', 1), ('attempt_no', 1)), True)])"
+  },
+  {
+   "group": "baseline",
+   "probe": "notifications unique index mirrors UQ_NOTIFICATIONS",
+   "ok": true,
+   "detail": "[((('_id', 1),), False), ((('tenant_id', 1), ('kind_cd', 1), ('sent_at', 1)), True)]"
+  },
+  {
+   "group": "baseline",
+   "probe": "counters seeded U6-shape {_id:seq_billing_audit_log|seq_subscriptions_hist, seq, ns}; seq == max(log_id)/max(hist_id) == Oracle last_number-1",
+   "ok": true,
+   "detail": "({'seq_billing_audit_log': {'_id': 'seq_billing_audit_log', 'seq': 1, 'ns': 'mongo_205236'}, 'seq_subscriptions_hist': {'_id': 'seq_subscriptions_hist', 'seq': 0, 'ns': 'mongo_205236'}}, {'SEQ_BILLING_AUDIT_LOG': 2, 'SEQ_CUSTOMER_MASTER': 125000, 'SEQ_CUSTOMER_MASTER_HIST': 1, 'SEQ_ENTITY_ATTR_VALUE': 11001, 'SEQ_SUBSCRIPTIONS_HIST': 1})"
+  },
+  {
+   "group": "baseline",
+   "probe": "no stray replay_u9 collections",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "nulls",
+   "probe": "dunning_attempts: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'scheduled_for': 0, 'status_cd': 0, 'attempt_no': 0}, {'scheduled_for': 0, 'status_cd': 0, 'attempt_no': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "dunning_attempts: no duplicate business id, _id==id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "nulls",
+   "probe": "notifications: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'sent_at': 0, 'kind_cd': 0}, {'sent_at': 0, 'kind_cd': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "notifications: no duplicate business id, _id==id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "nulls",
+   "probe": "tenants: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'status_cd': 0, 'name': 0}, {'status_cd': 0, 'name': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "tenants: no duplicate business id, _id==id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "nulls",
+   "probe": "subscriptions: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'ends_on': 69, 'suspended_on': 68, 'status_cd': 0}, {'ends_on': 69, 'suspended_on': 68, 'status_cd': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "subscriptions: no duplicate business id, _id==id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "dist",
+   "probe": "tenants.status_cd distribution source==target",
+   "ok": true,
+   "detail": "{10: 68, 20: 1}"
+  },
+  {
+   "group": "dist",
+   "probe": "subscriptions.status_cd distribution source==target",
+   "ok": true,
+   "detail": "{10: 68, 20: 1}"
+  },
+  {
+   "group": "dist",
+   "probe": "billing_invoices.status_cd distribution source==target",
+   "ok": true,
+   "detail": "{40: 2, 20: 1}"
+  },
+  {
+   "group": "dist",
+   "probe": "dunning_attempts.status_cd distribution source==target",
+   "ok": true,
+   "detail": "{20: 1}"
+  },
+  {
+   "group": "dist",
+   "probe": "notifications.kind_cd distribution source==target",
+   "ok": true,
+   "detail": "{2: 1}"
+  },
+  {
+   "group": "boundary",
+   "probe": "dunning_attempts min/max scheduled_for & attempt_no source==target",
+   "ok": true,
+   "detail": "({'mn': '2026-02-16', 'mx': '2026-02-16', 'a': 1, 'b': 1}, {'_id': None, 'mn': datetime.datetime(2026, 2, 16, 0, 0), 'mx': datetime.datetime(2026, 2, 16, 0, 0), 'a': 1, 'b': 1})"
+  },
+  {
+   "group": "boundary",
+   "probe": "notifications.sent_at preserves the 09:00 time-of-day (TIMESTAMP(6) -> BSON date)",
+   "ok": true,
+   "detail": "('2026-02-16 09:00:00.000000', datetime.datetime(2026, 2, 16, 9, 0))"
+  },
+  {
+   "group": "types",
+   "probe": "dunning_attempts/notifications fields typed: attempt_no/status_cd/kind_cd int, dates BSON date, tenant_id refs exist in tenants",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "parity",
+   "probe": "fn_overdue_accounts == PL/SQL SQL on 16 as_of values (day-string boundary, time-of-day, far past/future), all cols incl. days_overdue & DECODE status",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "parity",
+   "probe": "outer-join semantics: invoice whose tenant is missing still listed with tenant_status UNKNOWN; tenant status 30 -> UNKNOWN (DECODE default)",
+   "ok": true,
+   "detail": "[{'tenant_id': 'ffffffff-0000-0000-0000-00000000dead', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'total': Decimal('161.29'), 'days_overdue': 28, 'tenant_status': 'UNKNOWN'}, {'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'total': Decimal('161.29'), 'days_overdue': 16, 'tenant_status': 'UNKNOWN'}]"
+  },
+  {
+   "group": "parity",
+   "probe": "empty result: as_of before every issued_at -> [] (no exception)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "parity",
+   "probe": "date (not datetime) input accepted and equals midnight datetime",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "schedule",
+   "probe": "DUNNING-002-like weekday 2026-03-02 (Mon): 60..02 gets attempt 2 (fixture attempt 1 exists), 60..01 gets attempt 1: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '35737ff3-1220-b903-45dc-e4051972899b', 'id': '35737ff3-1220-b903-45dc-e4051972899b', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 1, 'scheduled_for': datetime.datetime(2026, 3, 2, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': '6118c817-d22e-6eb3-832a-96f21a646a7a', 'id': '6118c817-d22e-6eb3-832a-96f21a646a7a', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 2, 'scheduled_for': datetime.datetime(2026, 3, 2, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '35737ff3-1220-b903-45dc-e4051972899b', 'id': '35737ff3-1220-b903-45dc-e4051972899b', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "DUNNING-002-like weekday 2026-03-02 (Mon): 60..02 gets attempt 2 (fixture attempt 1 exists), 60..01 gets attempt 1: exactly one DUNNING audit row 'scheduled 2 attempts as of 02-MAR-26' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 02-MAR-26', 'scheduled 2 attempts as of 02-MAR-26')"
+  },
+  {
+   "group": "schedule",
+   "probe": "same day again -> attempt_no increments (no dedupe by day), 2 more rows: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '70e0e4d2-99b7-47b3-9a09-37a6cc57dde0', 'id': '70e0e4d2-99b7-47b3-9a09-37a6cc57dde0', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 3, 'scheduled_for': datetime.datetime(2026, 3, 2, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': 'bdeccf71-00a7-7207-c613-a30b243c2176', 'id': 'bdeccf71-00a7-7207-c613-a30b243c2176', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 2, 'scheduled_for': datetime.datetime(2026, 3, 2, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '70e0e4d2-99b7-47b3-9a09-37a6cc57dde0', 'id': '70e0e4d2-99b7-47b3-9a09-37a6cc57dde0', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "same day again -> attempt_no increments (no dedupe by day), 2 more rows: exactly one DUNNING audit row 'scheduled 2 attempts as of 02-MAR-26' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 02-MAR-26', 'scheduled 2 attempts as of 02-MAR-26')"
+  },
+  {
+   "group": "schedule",
+   "probe": "Saturday 2026-03-07 -> scheduled_for Monday 03-09: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '1f1d890b-1d01-e0d1-5561-22b63d5c2f82', 'id': '1f1d890b-1d01-e0d1-5561-22b63d5c2f82', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 3, 'scheduled_for': datetime.datetime(2026, 3, 9, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': '632782f9-9a53-2624-36f6-f1e612ddff20', 'id': '632782f9-9a53-2624-36f6-f1e612ddff20', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 4, 'scheduled_for': datetime.datetime(2026, 3, 9, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '1f1d890b-1d01-e0d1-5561-22b63d5c2f82', 'id': '1f1d890b-1d01-e0d1-5561-22b63d5c2f82', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "Saturday 2026-03-07 -> scheduled_for Monday 03-09: exactly one DUNNING audit row 'scheduled 2 attempts as of 07-MAR-26' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 07-MAR-26', 'scheduled 2 attempts as of 07-MAR-26')"
+  },
+  {
+   "group": "schedule",
+   "probe": "Sunday 2026-03-08 -> scheduled_for Monday 03-09: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '8a8c991f-619b-60a6-1372-3cddf3d6221a', 'id': '8a8c991f-619b-60a6-1372-3cddf3d6221a', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 5, 'scheduled_for': datetime.datetime(2026, 3, 9, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': '8d010aff-79f2-e638-1653-266d13b6066a', 'id': '8d010aff-79f2-e638-1653-266d13b6066a', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 4, 'scheduled_for': datetime.datetime(2026, 3, 9, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '8a8c991f-619b-60a6-1372-3cddf3d6221a', 'id': '8a8c991f-619b-60a6-1372-3cddf3d6221a', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "Sunday 2026-03-08 -> scheduled_for Monday 03-09: exactly one DUNNING audit row 'scheduled 2 attempts as of 08-MAR-26' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 08-MAR-26', 'scheduled 2 attempts as of 08-MAR-26')"
+  },
+  {
+   "group": "schedule",
+   "probe": "Friday 2026-03-06 -> no shift: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '2d78af39-af51-d43e-43b8-9afada04cd5c', 'id': '2d78af39-af51-d43e-43b8-9afada04cd5c', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 5, 'scheduled_for': datetime.datetime(2026, 3, 6, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': '8cb1c4f3-1685-ecd1-7313-6b7937ccfc10', 'id': '8cb1c4f3-1685-ecd1-7313-6b7937ccfc10', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 6, 'scheduled_for': datetime.datetime(2026, 3, 6, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '2d78af39-af51-d43e-43b8-9afada04cd5c', 'id': '2d78af39-af51-d43e-43b8-9afada04cd5c', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "Friday 2026-03-06 -> no shift: exactly one DUNNING audit row 'scheduled 2 attempts as of 06-MAR-26' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 06-MAR-26', 'scheduled 2 attempts as of 06-MAR-26')"
+  },
+  {
+   "group": "schedule",
+   "probe": "as_of before any invoice (2020-01-01): status filter only, still schedules both overdue invoices: inserted attempts (id=md5(invoice||attempt_no), attempt_no=max+1, scheduled_for weekend-shifted, status 10, ns) == simulation; return 2==2",
+   "ok": true,
+   "detail": "([{'_id': '2fe99486-0374-9c1d-d263-9f6e9e2756ad', 'id': '2fe99486-0374-9c1d-d263-9f6e9e2756ad', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0000-0000-0000-000000000001', 'attempt_no': 6, 'scheduled_for': datetime.datetime(2020, 1, 1, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}, {'_id': '9e38e0a4-f623-cda4-9794-d86e7bfc6291', 'id': '9e38e0a4-f623-cda4-9794-d86e7bfc6291', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'invoice_id': '60000000-0000-0000-0000-000000000002', 'attempt_no': 7, 'scheduled_for': datetime.datetime(2020, 1, 1, 0, 0), 'status_cd': 10, 'ns': 'mongo_205236'}], [{'_id': '2fe99486-0374-9c1d-d263-9f6e9e2756ad', 'id': '2fe99486-0374-9c1d-d263-9f6e9e2756ad', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'invoice_id': '60000000-0"
+  },
+  {
+   "group": "schedule",
+   "probe": "as_of before any invoice (2020-01-01): status filter only, still schedules both overdue invoices: exactly one DUNNING audit row 'scheduled 2 attempts as of 01-JAN-20' (TO_CHAR DD-MON-YY), log_id == counter.seq",
+   "ok": true,
+   "detail": "('scheduled 2 attempts as of 01-JAN-20', 'scheduled 2 attempts as of 01-JAN-20')"
+  },
+  {
+   "group": "schedule",
+   "probe": "WHEN OTHERS THEN NULL path: PK collision on one invoice's attempt is swallowed, the other invoice is still scheduled, count excludes the swallowed one (1), log still written",
+   "ok": true,
+   "detail": "1"
+  },
+  {
+   "group": "schedule",
+   "probe": "empty-set behaviour: no status-40 invoices -> 0 scheduled, 'scheduled 0 attempts as of 10-MAR-26' still logged",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "post",
+   "probe": "after all scheduling: (invoice_id, attempt_no) unique, attempt_no contiguous 1..k per invoice, _id==id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-26 (cutoff 02-12): 60..01 qualifies but tenant 2 already suspended -> nothing: returned suspended tenants == PL/SQL candidates with status 10 [] (candidates ['00000000-0000-0000-0000-000000000002'])",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-26 (cutoff 02-12): 60..01 qualifies but tenant 2 already suspended -> nothing: tenants->20, ACTIVE subs->20 with suspended_on=TRUNC(as_of), trg_subscriptions_hist rows (OLD image, UPD, hist_dt 'DD-MON-YY HH24:MI:SS', seq id), notification id=md5(tenant||'suspension'||YYYY-MM-DD) sent_at=TRUNC(as_of) kind 3",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-26 (cutoff 02-12): 60..01 qualifies but tenant 2 already suspended -> nothing: non-active subscriptions (20/30) untouched; history rows added == suspended active subs (0); hist counter advanced by same",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-26 (cutoff 02-12): 60..01 qualifies but tenant 2 already suspended -> nothing: one 'suspended tenant=<id>' DUNNING audit row per suspended tenant, nothing else",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-27 (cutoff 02-13 == issued_at, <= boundary): tenant 5 suspended, tenant 2 skipped: returned suspended tenants == PL/SQL candidates with status 10 ['00000000-0000-0000-0000-000000000005'] (candidates ['00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005'])",
+   "ok": true,
+   "detail": "['00000000-0000-0000-0000-000000000005']"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-27 (cutoff 02-13 == issued_at, <= boundary): tenant 5 suspended, tenant 2 skipped: tenants->20, ACTIVE subs->20 with suspended_on=TRUNC(as_of), trg_subscriptions_hist rows (OLD image, UPD, hist_dt 'DD-MON-YY HH24:MI:SS', seq id), notification id=md5(tenant||'suspension'||YYYY-MM-DD) sent_at=TRUNC(as_of) kind 3",
+   "ok": true,
+   "detail": "[('00000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', {'_id': 1, 'hist_id': 1, 'hist_dt': '02-SEP-26 03:47:10', 'hist_op': 'UPD', 'id': '20000000-0000-0000-0000-000000000005', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': datetime.datetime(2026, 1, 1, 0, 0), 'ends_on': None, 'status_cd': 10, 'suspended_on': None, 'ns': 'mongo_205236'})]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-27 (cutoff 02-13 == issued_at, <= boundary): tenant 5 suspended, tenant 2 skipped: non-active subscriptions (20/30) untouched; history rows added == suspended active subs (1); hist counter advanced by same",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-27 (cutoff 02-13 == issued_at, <= boundary): tenant 5 suspended, tenant 2 skipped: one 'suspended tenant=<id>' DUNNING audit row per suspended tenant, nothing else",
+   "ok": true,
+   "detail": "['suspended tenant=00000000-0000-0000-0000-000000000005']"
+  },
+  {
+   "group": "suspend",
+   "probe": "rerun same as_of: idempotent (tenant 5 now 20), no dupe notification/history: returned suspended tenants == PL/SQL candidates with status 10 [] (candidates ['00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005'])",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "rerun same as_of: idempotent (tenant 5 now 20), no dupe notification/history: tenants->20, ACTIVE subs->20 with suspended_on=TRUNC(as_of), trg_subscriptions_hist rows (OLD image, UPD, hist_dt 'DD-MON-YY HH24:MI:SS', seq id), notification id=md5(tenant||'suspension'||YYYY-MM-DD) sent_at=TRUNC(as_of) kind 3",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "rerun same as_of: idempotent (tenant 5 now 20), no dupe notification/history: non-active subscriptions (20/30) untouched; history rows added == suspended active subs (0); hist counter advanced by same",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "suspend",
+   "probe": "rerun same as_of: idempotent (tenant 5 now 20), no dupe notification/history: one 'suspended tenant=<id>' DUNNING audit row per suspended tenant, nothing else",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "tenant 5 re-activated with 2 active + 1 cancelled sub, as_of 2026-03-01: both active suspended, cancelled untouched, notification for 03-01 new; 02-27 notification kept: returned suspended tenants == PL/SQL candidates with status 10 ['00000000-0000-0000-0000-000000000005'] (candidates ['00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005'])",
+   "ok": true,
+   "detail": "['00000000-0000-0000-0000-000000000005']"
+  },
+  {
+   "group": "suspend",
+   "probe": "tenant 5 re-activated with 2 active + 1 cancelled sub, as_of 2026-03-01: both active suspended, cancelled untouched, notification for 03-01 new; 02-27 notification kept: tenants->20, ACTIVE subs->20 with suspended_on=TRUNC(as_of), trg_subscriptions_hist rows (OLD image, UPD, hist_dt 'DD-MON-YY HH24:MI:SS', seq id), notification id=md5(tenant||'suspension'||YYYY-MM-DD) sent_at=TRUNC(as_of) kind 3",
+   "ok": true,
+   "detail": "[('00000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', {'_id': 2, 'hist_id': 2, 'hist_dt': '02-SEP-26 03:47:13', 'hist_op': 'UPD', 'id': '20000000-0000-0000-0000-000000000005', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': datetime.datetime(2026, 1, 1, 0, 0), 'ends_on': None, 'status_cd': 10, 'suspended_on': None, 'ns': 'mongo_205236'}), ('00000000-0000-0000-0000-000000000005', 'probe-sub-active', {'_id': 3, 'hist_id': 3, 'hist_dt': '02-SEP-26 03:47:13', 'hist_op': 'UPD', 'id': 'probe-sub-active', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': datetime.datetime(2026, 1, 1, 0, 0), 'ends_on': None, 'status_cd': 10, 'suspended_"
+  },
+  {
+   "group": "suspend",
+   "probe": "tenant 5 re-activated with 2 active + 1 cancelled sub, as_of 2026-03-01: both active suspended, cancelled untouched, notification for 03-01 new; 02-27 notification kept: non-active subscriptions (20/30) untouched; history rows added == suspended active subs (2); hist counter advanced by same",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "suspend",
+   "probe": "tenant 5 re-activated with 2 active + 1 cancelled sub, as_of 2026-03-01: both active suspended, cancelled untouched, notification for 03-01 new; 02-27 notification kept: one 'suspended tenant=<id>' DUNNING audit row per suspended tenant, nothing else",
+   "ok": true,
+   "detail": "['suspended tenant=00000000-0000-0000-0000-000000000005']"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-14 (cutoff 01-31 < all issued_at): no candidates -> [] and no writes: returned suspended tenants == PL/SQL candidates with status 10 [] (candidates [])",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-14 (cutoff 01-31 < all issued_at): no candidates -> [] and no writes: tenants->20, ACTIVE subs->20 with suspended_on=TRUNC(as_of), trg_subscriptions_hist rows (OLD image, UPD, hist_dt 'DD-MON-YY HH24:MI:SS', seq id), notification id=md5(tenant||'suspension'||YYYY-MM-DD) sent_at=TRUNC(as_of) kind 3",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-14 (cutoff 01-31 < all issued_at): no candidates -> [] and no writes: non-active subscriptions (20/30) untouched; history rows added == suspended active subs (0); hist counter advanced by same",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "suspend",
+   "probe": "as_of 2026-02-14 (cutoff 01-31 < all issued_at): no candidates -> [] and no writes: one 'suspended tenant=<id>' DUNNING audit row per suspended tenant, nothing else",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "suspend",
+   "probe": "notifications now: fixture 90..01 + 2 suspension rows (02-27, 03-01) for tenant 5; each (tenant, kind, sent_at) unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "post",
+   "probe": "billing_audit_log log_ids contiguous from 1, _id==log_id, module DUNNING for all new rows",
+   "ok": true,
+   "detail": "(1, 11)"
+  },
+  {
+   "group": "golden",
+   "probe": "golden + quarantine collections byte-identical to the wave-3 pre-fingerprint (23 collections)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "golden",
+   "probe": "quarantine SETS == {bad_csv_list:31, dirty_signup_dt:50, invoice_feed_orphan_lines:37, orphan_document_snapshots:6}; U9 declares none",
+   "ok": true,
+   "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+  },
+  {
+   "group": "golden",
+   "probe": "Oracle source untouched: DUNNING_ATTEMPTS 1, NOTIFICATIONS 1, SUBSCRIPTIONS_HIST 0, BILLING_AUDIT_LOG 1, suspended tenants 1, FIXTURE_META unchanged",
+   "ok": true,
+   "detail": "{'d': 1, 'n': 1, 'h': 0, 'a': 1, 'ts': 1, 'fm': '2026-09-01 20:53:10.961888'}"
+  }
+ ]
+}

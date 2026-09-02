@@ -1,0 +1,517 @@
+{
+ "ok": 76,
+ "total": 85,
+ "seconds": 225.8,
+ "probes": [
+  {
+   "group": "baseline",
+   "probe": "11 clone collections canonical-sha-equal to golden (docs incl. _id)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "baseline",
+   "probe": "index specs (keys/unique/TTL) equal golden",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "baseline",
+   "probe": "usage_events $jsonSchema validator cloned",
+   "ok": true,
+   "detail": "{'$jsonSchema': {'bsonType': 'object', 'required': ['_id', 'id', 'tenant_id', 'occurred_at', 'units', 'kind_cd', 'ns'], 'properties': {'units': {'bsonType': 'long', 'minimum': 1, 'description': 'units must be > 0 (TRG_USAGE_EVENTS_CHECK)'}, 'kind_cd': {'bsonType': 'int'}, 'occurred_at': {'bsonType': 'date'}, 'tenant_id': {'bsonType': 'string'}, 'ns': {'enum': ['mongo_205236']}}}}"
+  },
+  {
+   "group": "baseline",
+   "probe": "no *__staging / stray replay_u8 collections",
+   "ok": true,
+   "detail": "['replay_u8_billing_audit_log', 'replay_u8_billing_invoices', 'replay_u8_counters', 'replay_u8_credit_notes', 'replay_u8_dunning_attempts', 'replay_u8_notifications', 'replay_u8_plans', 'replay_u8_rating_periods', 'replay_u8_subscriptions', 'replay_u8_subscriptions_history', 'replay_u8_tenants', 'replay_u8_usage_events']"
+  },
+  {
+   "group": "baseline",
+   "probe": "counter {_id:SEQ_BILLING_AUDIT_LOG,value} == max(log_id) == USER_SEQUENCES.last_number-1 (U7 contract, Int64)",
+   "ok": true,
+   "detail": "([{'_id': 'SEQ_BILLING_AUDIT_LOG', 'value': 1, 'ns': 'mongo_205236'}], 1, 2)"
+  },
+  {
+   "group": "nulls",
+   "probe": "credit_notes: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'issued_on': 0, 'amount': 0, 'remaining_amount': 0}, {'issued_on': 0, 'amount': 0, 'remaining_amount': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "credit_notes: no duplicate business id, _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "nulls",
+   "probe": "billing_invoices: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'issued_at': 0, 'subtotal': 0, 'tax': 0, 'total': 0, 'status_cd': 0, 'period_id': 0}, {'issued_at': 0, 'subtotal': 0, 'tax': 0, 'total': 0, 'status_cd': 0, 'period_id': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "billing_invoices: no duplicate business id, _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "nulls",
+   "probe": "tenants: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'tax_exempt_yn': 0, 'status_cd': 0, 'name': 0}, {'tax_exempt_yn': 0, 'status_cd': 0, 'name': 0})"
+  },
+  {
+   "group": "dupes",
+   "probe": "tenants: no duplicate business id, _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "embed",
+   "probe": "billing_invoices.lines[] length distribution == INVOICE_LINES child rows per header",
+   "ok": true,
+   "detail": "({0: 2, 2: 1}, {2: 1, 0: 2})"
+  },
+  {
+   "group": "embed",
+   "probe": "lines[] (invoice, line_no) unique (UQ_INVOICE_LINES) and lines[].invoice_id == parent _id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "boundary",
+   "probe": "billing_invoices min/max issued_at, sum(total/tax/subtotal) source==target",
+   "ok": true,
+   "detail": "({'mn': '2026-02-01 00:00:00', 'mx': '2026-02-28 00:00:00', 'st': 375.62, 'sx': 28.62, 'ss': 347}, {'_id': None, 'mn': datetime.datetime(2026, 2, 1, 0, 0), 'mx': datetime.datetime(2026, 2, 28, 0, 0), 'st': Decimal128('375.62'), 'sx': Decimal128('28.62'), 'ss': Decimal128('347.00')})"
+  },
+  {
+   "group": "boundary",
+   "probe": "credit_notes sum(remaining), min/max issued_on, distinct tenants, positive count source==target",
+   "ok": true,
+   "detail": "({'s': 145, 'mn': datetime.datetime(2026, 1, 31, 0, 0), 'mx': datetime.datetime(2026, 2, 2, 0, 0), 'nt': 3, 'pos': 5}, {'_id': None, 's': Decimal128('145.00'), 'mn': datetime.datetime(2026, 1, 31, 0, 0), 'mx': datetime.datetime(2026, 2, 2, 0, 0), 'nt': ['00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000003'], 'pos': 5})"
+  },
+  {
+   "group": "dist",
+   "probe": "invoices.status_cd distribution source==target (20 issued / 40 overdue; no 10 draft / 30 paid in data -- recorded)",
+   "ok": true,
+   "detail": "{40: 2, 20: 1}"
+  },
+  {
+   "group": "dist",
+   "probe": "tenants.tax_exempt_yn distribution source==target (exempt branch is live in data)",
+   "ok": true,
+   "detail": "{'N': 63, 'Y': 6}"
+  },
+  {
+   "group": "types",
+   "probe": "billing_invoices money fields Decimal128, issued_at BSON date, lines.amount Decimal128 / line_no int",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "parity",
+   "probe": "fn_invoice_preview == PL/SQL re-expression on 280 ops (70 tenants x 4 windows), all 5 rows x 7 cols exact (unrounded tax/2)",
+   "ok": true,
+   "detail": "({'no_plan': 4, 'exempt': 24, 'credit_capped': 8, 'credit_full': 4, 'nonzero_overage': 120, 'odd_half_tax': 251}, [])"
+  },
+  {
+   "group": "parity",
+   "probe": "fn_invoice_lines == INVOICE_LINES for all 3 invoices (incl. 2 with zero lines) + unknown id -> []",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'tenant_id': '00000000-0000-0000-0000-000000000009', 'period_id': '5dc02199-0345-1f48-ab13-8eeefeba5910', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '0', 'status_cd': 20}, {'_id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'tenant_id': '00000000-0000-0000-0000-000000000009', 'period_id': '5dc02199-0345-1f48-ab13-8eeefeba5910', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '0', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '4b8a97a6-c20e-b1b8-de54-612eae0464f0', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '09d2f943-fd52-e644-1210-509825b89260', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '0'}, {'id': '40d7d145-9ed7-c727-c584-d112dc76796e', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.02'}, {'id': '7db70219-7443-f55b-3340-1128fb34d227', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.02'}, {'id': '319146eb-32e5-8342-c882-b44fcbd6aa32', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '-53.04'}], [{'id': '4b8a97a6-c20e-b1b8-de54-612eae0464f0', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '09d2f943-fd5"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=53.04",
+   "ok": true,
+   "detail": "({'70000000-0000-0000-0000-000000000005': '0', '70000000-0000-0000-0000-000000000006': '6.96'}, {'70000000-0000-0000-0000-000000000005': '0', '70000000-0000-0000-0000-000000000006': '6.96'})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=f947416b-6478-ac32-911a-12ca7f03a6fb total=0', 'issued invoice=f947416b-6478-ac32-911a-12ca7f03a6fb total=0')"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-003 tenant 9 (two credit dates, credit > cap): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'a4511ff5-6f77-90d0-0496-c188ef600b7b', 'id': 'a4511ff5-6f77-90d0-0496-c188ef600b7b', 'tenant_id': '00000000-0000-0000-0000-000000000004', 'period_id': '93503474-dde4-608b-cda9-1a7dbeedb1df', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '0', 'status_cd': 20}, {'_id': 'a4511ff5-6f77-90d0-0496-c188ef600b7b', 'id': 'a4511ff5-6f77-90d0-0496-c188ef600b7b', 'tenant_id': '00000000-0000-0000-0000-000000000004', 'period_id': '93503474-dde4-608b-cda9-1a7dbeedb1df', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '0', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '1bc306f8-5789-96ea-f29e-5c7fa10519e5', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': 'e8859bad-3910-d56a-bafb-f469163170af', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '0'}, {'id': 'a0b91dc8-d304-064c-6f59-2470c70a0af9', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.02'}, {'id': '6d26d028-642d-f04f-1cb7-54574b097e9d', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.02'}, {'id': '844b2ce7-d648-7861-5d7d-1cda8c6c3125', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '-53.04'}], [{'id': '1bc306f8-5789-96ea-f29e-5c7fa10519e5', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': 'e8859bad-391"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=53.04",
+   "ok": true,
+   "detail": "({'70000000-0000-0000-0000-000000000001': '0', '70000000-0000-0000-0000-000000000002': '6.96'}, {'70000000-0000-0000-0000-000000000001': '0', '70000000-0000-0000-0000-000000000002': '6.96'})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=a4511ff5-6f77-90d0-0496-c188ef600b7b total=0', 'issued invoice=a4511ff5-6f77-90d0-0496-c188ef600b7b total=0')"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-004 tenant 4 (equal issued_on ties -> id order): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'ec9434d5-6b88-cc45-051d-2187049adc12', 'id': 'ec9434d5-6b88-cc45-051d-2187049adc12', 'tenant_id': '00000000-0000-0000-0000-000000000006', 'period_id': '1b886a8c-7ca6-751b-6c6f-d9435d323eb1', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '54.56', 'tax': '4.5', 'total': '59.06', 'status_cd': 20}, {'_id': 'ec9434d5-6b88-cc45-051d-2187049adc12', 'id': 'ec9434d5-6b88-cc45-051d-2187049adc12', 'tenant_id': '00000000-0000-0000-0000-000000000006', 'period_id': '1b886a8c-7ca6-751b-6c6f-d9435d323eb1', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '54.56', 'tax': '4.5', 'total': '59.06', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': 'fdcfba40-b3a1-f198-fcd8-51e75ae397a8', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '1220931c-9c09-2468-c822-d45db75bc793', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '5.56'}, {'id': '3e6bc074-d34b-f5d4-35f1-95149cb98694', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.25'}, {'id': 'c68623db-5cde-9799-4d76-3f694a102ea0', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.25'}, {'id': '9a10b2cd-9be8-a511-4f73-a78d427f651e', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '0'}], [{'id': 'fdcfba40-b3a1-f198-fcd8-51e75ae397a8', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '1220931c-9c09-"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=0",
+   "ok": true,
+   "detail": "({}, {})"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=ec9434d5-6b88-cc45-051d-2187049adc12 total=59.06', 'issued invoice=ec9434d5-6b88-cc45-051d-2187049adc12 total=59.06')"
+  },
+  {
+   "group": "issue",
+   "probe": "INVOICE-005 tenant 6 (no credit; re-issue of EXISTING invoice 60..03 -> DUP_VAL_ON_INDEX path keeps issued_at/tenant/period): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'a4ef6e84-14d9-3de7-292e-8276687bef7a', 'id': 'a4ef6e84-14d9-3de7-292e-8276687bef7a', 'tenant_id': '00000000-0000-0000-0000-000000000003', 'period_id': '2b5f6b15-fd06-e41a-62c0-a3c8c59613a7', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '504.02', 'tax': '0', 'total': '479.02', 'status_cd': 20}, {'_id': 'a4ef6e84-14d9-3de7-292e-8276687bef7a', 'id': 'a4ef6e84-14d9-3de7-292e-8276687bef7a', 'tenant_id': '00000000-0000-0000-0000-000000000003', 'period_id': '2b5f6b15-fd06-e41a-62c0-a3c8c59613a7', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '504.02', 'tax': '0', 'total': '479.02', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '5ca27ee9-ef97-e1cb-66be-cbe9d48b699c', 'line_no': 1, 'line_type': 'plan', 'description': 'SCALE', 'amount': '499'}, {'id': 'b91555ac-9a92-7ded-fdca-d87a17f17005', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '5.02'}, {'id': '3f2c5f2e-c8c6-3d98-6fda-343569579bf2', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '0'}, {'id': '5ec4b00c-5e16-96f0-211c-21ff04f5a378', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '0'}, {'id': '3b78c885-f9c4-b245-ee50-224266e45e13', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '-25'}], [{'id': '5ca27ee9-ef97-e1cb-66be-cbe9d48b699c', 'line_no': 1, 'line_type': 'plan', 'description': 'SCALE', 'amount': '499'}, {'id': 'b91555ac-9a92-7ded-f"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=25",
+   "ok": true,
+   "detail": "({'70000000-0000-0000-0000-000000000004': '0'}, {'70000000-0000-0000-0000-000000000004': '0'})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=a4ef6e84-14d9-3de7-292e-8276687bef7a total=479.02', 'issued invoice=a4ef6e84-14d9-3de7-292e-8276687bef7a total=479.02')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 3 (TAX EXEMPT, credit 25 < cap -> full credit applied, tax lines 0): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'b09d72c5-e3dd-b75f-4019-863721e8b63a', 'id': 'b09d72c5-e3dd-b75f-4019-863721e8b63a', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'period_id': 'd0a28620-e069-c023-6976-04338ccc3014', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '153.37', 'tax': '12.66', 'total': '166.03', 'status_cd': 20}, {'_id': 'b09d72c5-e3dd-b75f-4019-863721e8b63a', 'id': 'b09d72c5-e3dd-b75f-4019-863721e8b63a', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'period_id': 'd0a28620-e069-c023-6976-04338ccc3014', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '153.37', 'tax': '12.66', 'total': '166.03', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '6c1c88c3-602c-e0fb-3df1-e8503fb4d4c3', 'line_no': 1, 'line_type': 'plan', 'description': 'GROWTH', 'amount': '149'}, {'id': '5803838b-e86a-b0d7-0a41-2d8c947205c3', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '4.37'}, {'id': '9d9f8d1f-1260-3a65-24e5-44df205e4d89', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '6.33'}, {'id': '1054f5c4-348a-4ab4-aa50-fd1b8dc20ea8', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '6.33'}, {'id': '824dfcc7-4dc6-202e-a67a-c930d231e131', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '0'}], [{'id': '6c1c88c3-602c-e0fb-3df1-e8503fb4d4c3', 'line_no': 1, 'line_type': 'plan', 'description': 'GROWTH', 'amount': '149'}, {'id': '5803838b-e86a-"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=0",
+   "ok": true,
+   "detail": "({}, {})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=b09d72c5-e3dd-b75f-4019-863721e8b63a total=166.03', 'issued invoice=b09d72c5-e3dd-b75f-4019-863721e8b63a total=166.03')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 2 (SUSPENDED sub, existing OVERDUE invoice 60..01 for period 40..01 -> re-issue flips 40->20; suspension factor): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'tenant_id': '00000000-0000-0000-0000-000000000009', 'period_id': '5dc02199-0345-1f48-ab13-8eeefeba5910', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '46.08', 'status_cd': 20}, {'_id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'id': 'f947416b-6478-ac32-911a-12ca7f03a6fb', 'tenant_id': '00000000-0000-0000-0000-000000000009', 'period_id': '5dc02199-0345-1f48-ab13-8eeefeba5910', 'issued_at': datetime.datetime(2026, 2, 28, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '46.08', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '4b8a97a6-c20e-b1b8-de54-612eae0464f0', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '09d2f943-fd52-e644-1210-509825b89260', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '0'}, {'id': '40d7d145-9ed7-c727-c584-d112dc76796e', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.02'}, {'id': '7db70219-7443-f55b-3340-1128fb34d227', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.02'}, {'id': '319146eb-32e5-8342-c882-b44fcbd6aa32', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '-6.96'}], [{'id': '4b8a97a6-c20e-b1b8-de54-612eae0464f0', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '09d2f943-fd52"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=6.96",
+   "ok": true,
+   "detail": "({'70000000-0000-0000-0000-000000000005': '0', '70000000-0000-0000-0000-000000000006': '0'}, {'70000000-0000-0000-0000-000000000005': '0', '70000000-0000-0000-0000-000000000006': '0'})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=f947416b-6478-ac32-911a-12ca7f03a6fb total=46.08', 'issued invoice=f947416b-6478-ac32-911a-12ca7f03a6fb total=46.08')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 9 AGAIN (idempotency quirk: less credit left -> higher total, same ids, lines rebuilt): rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': '022c42d9-3666-61fc-fbf2-3b9a96227a6e', 'id': '022c42d9-3666-61fc-fbf2-3b9a96227a6e', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'period_id': 'c352effc-be89-64b7-bdbb-ebe71826318d', 'issued_at': datetime.datetime(2026, 1, 31, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '53.04', 'status_cd': 20}, {'_id': '022c42d9-3666-61fc-fbf2-3b9a96227a6e', 'id': '022c42d9-3666-61fc-fbf2-3b9a96227a6e', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'period_id': 'c352effc-be89-64b7-bdbb-ebe71826318d', 'issued_at': datetime.datetime(2026, 1, 31, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '53.04', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': '7c7e6250-418a-3b8a-65f7-49df029c737e', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '1308c288-51fb-4f81-1d59-fc09c470612c', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '0'}, {'id': '11041b7d-2dfc-7018-f763-a3339d6f2138', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.02'}, {'id': '8cbf5dfa-4f9b-2480-88ed-f446d8c7f2f9', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.02'}, {'id': '3f157623-9038-fa77-3b12-05e2eb9185c0', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '0'}], [{'id': '7c7e6250-418a-3b8a-65f7-49df029c737e', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': '1308c288-51fb-4f8"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=0",
+   "ok": true,
+   "detail": "({}, {})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=022c42d9-3666-61fc-fbf2-3b9a96227a6e total=53.04', 'issued invoice=022c42d9-3666-61fc-fbf2-3b9a96227a6e total=53.04')"
+  },
+  {
+   "group": "F-U8-2",
+   "probe": "tenant 1 January window (rollover from Dec/Jan, no credit): DIVERGENCE (inherited U7 F-U7-1): fixture period 40000000-0000-0000-0000-000000000002 != md5 c352effc-be89-64b7-bdbb-ebe71826318d; Oracle -> ORA-02291, no invoice. Port issued invoice with period_id=c352effc-be89-64b7-bdbb-ebe71826318d (dangling) and appended results[] element period_id=c352effc-be89-64b7-bdbb-ebe71826318d (len=2)",
+   "ok": false,
+   "detail": "invoice exists=1, rating_periods with _id=c352effc-be89-64b7-bdbb-ebe71826318d: 0"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: invoice header (id/tenant/period/issued_at/subtotal/tax/total/status) == PL/SQL simulation",
+   "ok": true,
+   "detail": "(None, {'_id': 'f219ba66-c75e-9630-a01c-b6e76a91489e', 'id': 'f219ba66-c75e-9630-a01c-b6e76a91489e', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'period_id': '83c49434-ad7a-b282-a989-e4514dcb5c0b', 'issued_at': datetime.datetime(2026, 3, 15, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '53.04', 'status_cd': 20}, {'_id': 'f219ba66-c75e-9630-a01c-b6e76a91489e', 'id': 'f219ba66-c75e-9630-a01c-b6e76a91489e', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'period_id': '83c49434-ad7a-b282-a989-e4514dcb5c0b', 'issued_at': datetime.datetime(2026, 3, 15, 0, 0), 'subtotal': '49', 'tax': '4.04', 'total': '53.04', 'status_cd': 20})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: 5 lines (ids md5(invoice||line_no), types, descriptions, amounts incl. credit line = -credit_applied, tax halves rounded to NUMBER(12,2)) == simulation",
+   "ok": true,
+   "detail": "([{'id': 'c836fc9e-2966-486e-6d07-67a905c339b1', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': 'cba115b9-16d8-690b-ae11-68e0cb392cc1', 'line_no': 2, 'line_type': 'usage', 'description': 'usage overage', 'amount': '0'}, {'id': 'b8c5ba73-010e-99a4-bbae-22b60e6d73df', 'line_no': 3, 'line_type': 'tax', 'description': 'regional tax', 'amount': '2.02'}, {'id': '0bdd9fbc-e2dd-8766-32cc-66647ed83f29', 'line_no': 4, 'line_type': 'tax', 'description': 'local tax', 'amount': '2.02'}, {'id': 'ea931022-e4a7-cb89-3854-4fa85ce9904c', 'line_no': 5, 'line_type': 'credit', 'description': 'credit notes', 'amount': '0'}], [{'id': 'c836fc9e-2966-486e-6d07-67a905c339b1', 'line_no': 1, 'line_type': 'plan', 'description': 'STARTER', 'amount': '49'}, {'id': 'cba115b9-16d8-690"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: credit-note burn-down (oldest first, GREATEST(remaining - v_credit, 0), running counter quirk) == simulation; credit_app=0",
+   "ok": true,
+   "detail": "({}, {})"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: invoice doc shape: ns, top-level keys exactly as mapped, status int",
+   "ok": true,
+   "detail": "['_id', 'id', 'issued_at', 'lines', 'ns', 'period_id', 'status_cd', 'subtotal', 'tax', 'tenant_id', 'total']"
+  },
+  {
+   "group": "shape-F-U8-1",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: rebuilt lines[] elements carry invoice_id (loader-embedded INVOICE_LINES rows do: keys id,invoice_id,line_no,line_type,description,amount)",
+   "ok": false,
+   "detail": "{'line_keys': ['amount', 'description', 'id', 'line_no', 'line_type']}"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: exactly one INVOICING audit row 'issued invoice=<id> total=<TO_CHAR(NVL(total,0))>' appended after the RATING rows, log_id sequential",
+   "ok": true,
+   "detail": "('issued invoice=f219ba66-c75e-9630-a01c-b6e76a91489e total=53.04', 'issued invoice=f219ba66-c75e-9630-a01c-b6e76a91489e total=53.04')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 1 Feb-15..Mar-15 straddling window: rating period finalized: rating_periods.{_id=md5(tenant||start)} exists with one results[] element, invoice.period_id references it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "issue",
+   "probe": "unknown tenant (no plan -> NULL plan line): PL/SQL raises ORA-01400 in sp_finalize_rating (RATING_RESULTS.SUBSCRIPTION_ID NOT NULL) -> port raises RatingIntegrityError, no invoice written, credit notes untouched, no rating-period residue, exactly the one autonomous RATING 'compute' audit row persists (as Oracle's autonomous log_msg would)",
+   "ok": true,
+   "detail": "('RatingIntegrityError: rating_results.subscription_id cannot be NULL (tenant=ffffffff-0000-0000-0000-000000000000 period=993e5e2c-3898-7f7d-e1cd-2a36c8f5bac9)', 'rating_periods 9 -> 9 ; audit +1')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenant 01 Dec-2025 (real tenant, no covering subscription -> NULL plan): PL/SQL raises ORA-01400 in sp_finalize_rating (RATING_RESULTS.SUBSCRIPTION_ID NOT NULL) -> port raises RatingIntegrityError, no invoice written, credit notes untouched, no rating-period residue, exactly the one autonomous RATING 'compute' audit row persists (as Oracle's autonomous log_msg would)",
+   "ok": true,
+   "detail": "('RatingIntegrityError: rating_results.subscription_id cannot be NULL (tenant=00000000-0000-0000-0000-000000000001 period=a0173203-a594-6681-229d-6038c08e2938)', 'rating_periods 9 -> 9 ; audit +1')"
+  },
+  {
+   "group": "issue",
+   "probe": "tenants with no covering subscription for Dec-2025 exist in data (NULL-plan branch exercised on real tenants)",
+   "ok": true,
+   "detail": "69"
+  },
+  {
+   "group": "post",
+   "probe": "after issues: every invoice _id==id, lines (invoice,line_no) unique, status in {20,40}, no invoice for unknown tenant",
+   "ok": true,
+   "detail": "10"
+  },
+  {
+   "group": "post",
+   "probe": "credit_notes: remaining_amount never negative, never exceeds amount, Decimal128 2dp",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "group": "post",
+   "probe": "billing_audit_log log_ids strictly sequential from the seeded counter, all Int64, ns set",
+   "ok": true,
+   "detail": "(1, 315, 315)"
+  },
+  {
+   "group": "golden",
+   "probe": "golden + quarantine collections byte-identical to the wave-3 pre-fingerprint (23 collections)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "golden",
+   "probe": "quarantine SETS == {bad_csv_list:31, dirty_signup_dt:50, invoice_feed_orphan_lines:37, orphan_document_snapshots:6}; U8 declares none (0 new)",
+   "ok": true,
+   "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+  },
+  {
+   "group": "golden",
+   "probe": "Oracle source untouched (plain SQL only): INVOICES 3, INVOICE_LINES 2, CREDIT_NOTES 5, BILLING_AUDIT_LOG 1, RATING_PERIODS 3, FIXTURE_META unchanged",
+   "ok": true,
+   "detail": "{'i': 3, 'l': 2, 'c': 5, 'a': 1, 'rp': 3, 'fm': '2026-09-01 20:53:10.961888'}"
+  }
+ ]
+}

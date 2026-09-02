@@ -1,0 +1,180 @@
+{
+ "ok": 28,
+ "total": 29,
+ "probes": [
+  {
+   "group": "refs",
+   "probe": "codes SET source==golden (32 rows)",
+   "ok": true,
+   "detail": "set()"
+  },
+  {
+   "group": "refs",
+   "probe": "every code value U8/U9 write (INV_STATUS 20/40, TENANT_STATUS 10/20, DUN_STATUS 10, NOTIF_KIND 3, SUB_STATUS 10/20) exists in shared codes",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden billing_invoices.tenant_id -> tenants._id all resolve (3 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden billing_invoices.period_id -> rating_periods._id all resolve (2 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden credit_notes.tenant_id -> tenants._id all resolve (3 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden dunning_attempts.tenant_id -> tenants._id all resolve (1 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden dunning_attempts.invoice_id -> billing_invoices._id all resolve (1 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden notifications.tenant_id -> tenants._id all resolve (1 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden subscriptions.plan_id -> plans._id all resolve (3 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden subscriptions.tenant_id -> tenants._id all resolve (69 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden rating_periods.tenant_id -> tenants._id all resolve (1 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden usage_events.tenant_id -> tenants._id all resolve (69 distinct)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden rating_periods.results[].period_id == parent _id (no dangling embed refs)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "refs",
+   "probe": "golden invoices.period_id resolve to rating_periods AND (tenant, period_start) agree",
+   "ok": false,
+   "detail": ""
+  },
+  {
+   "group": "refs",
+   "probe": "tenants.id distinct SET source==golden (69)",
+   "ok": true,
+   "detail": "set()"
+  },
+  {
+   "group": "refs",
+   "probe": "plans.id distinct SET source==golden (3)",
+   "ok": true,
+   "detail": "set()"
+  },
+  {
+   "group": "refs",
+   "probe": "subscriptions.plan_id distinct SET source==golden (3)",
+   "ok": true,
+   "detail": "set()"
+  },
+  {
+   "group": "F-X-1",
+   "probe": "U8 logs through rating.log_msg with counter _id 'SEQ_BILLING_AUDIT_LOG'/field 'value'; U9 through util.log_msg with 'seq_billing_audit_log'/field 'seq' (incompatible)",
+   "ok": true,
+   "detail": "('SEQ_BILLING_AUDIT_LOG', 'seq_billing_audit_log')"
+  },
+  {
+   "group": "F-X-1",
+   "probe": "shared golden `counters` has NEITHER audit-sequence document (both units seed their own clone counter)",
+   "ok": true,
+   "detail": "['seq_customer_master', 'seq_customer_master_hist', 'seq_entity_attr_value']"
+  },
+  {
+   "group": "F-X-1",
+   "probe": "LIVE: on one store, U8 logger (value counter) then U9 logger (seq counter) both compute log_id=max+1 -> U9 write fails DuplicateKeyError (U8 swallows silently in the reverse order)",
+   "ok": true,
+   "detail": "('DuplicateKeyError', {'seq_billing_audit_log': {'seq': 2, 'ns': 'mongo_205236'}, 'seq_subscriptions_hist': {'seq': 0, 'ns': 'mongo_205236'}, 'SEQ_BILLING_AUDIT_LOG': {'ns': 'mongo_205236', 'value': 2}})"
+  },
+  {
+   "group": "F-X-1",
+   "probe": "audit doc shapes agree otherwise (_id==log_id Int64, logged_at date, module, message, ns) so only the counter contract diverges",
+   "ok": true,
+   "detail": "['_id', 'log_id', 'logged_at', 'message', 'module', 'ns']"
+  },
+  {
+   "group": "app",
+   "probe": "GET /api/dunning/overdue?as_of=... (7 dates) == Oracle fn_overdue_accounts SQL, money as 2dp strings, order issued_at,id",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "group": "app",
+   "probe": "GET /api/dunning/overdue invalid as_of -> 400 {detail:'invalid as_of'}",
+   "ok": true,
+   "detail": "{'detail': 'invalid as_of'}"
+  },
+  {
+   "group": "app",
+   "probe": "GET /api/dunning/overdue default as_of=2026-02-28 (2 overdue rows)",
+   "ok": true,
+   "detail": "[{'days_overdue': 27, 'invoice_id': '60000000-0000-0000-0000-000000000001', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'tenant_status': 'suspended', 'total': '161.29'}, {'days_overdue': 15, 'invoice_id': '60000000-0000-0000-0000-000000000002', 'tenant_id': '00000000-0000-0000-0000-000000000005', 'tenant_status': 'active', 'total': '161.29'}]"
+  },
+  {
+   "group": "app",
+   "probe": "POST /api/dunning/schedule {as_of} -> {status:scheduled, scheduled:2}; 2 attempts inserted via the route",
+   "ok": true,
+   "detail": "{'scheduled': 2, 'status': 'scheduled'}"
+  },
+  {
+   "group": "app",
+   "probe": "POST /api/dunning/suspend {as_of:2026-02-27} -> {status:suspended, tenant_ids:[tenant 5]}; tenant 5 status now 20 via the route",
+   "ok": true,
+   "detail": "{'status': 'suspended', 'tenant_ids': ['00000000-0000-0000-0000-000000000005']}"
+  },
+  {
+   "group": "app",
+   "probe": "POST /api/dunning/suspend bad date -> 400",
+   "ok": true,
+   "detail": "(400, {'detail': 'invalid as_of'})"
+  },
+  {
+   "group": "app",
+   "probe": "golden app.py /api/invoices/* routes still call Postgres billing.fn_invoice_preview/sp_issue_invoice/fn_invoice_lines (U8 exposes no Mongo HTTP route; informational)",
+   "ok": true,
+   "detail": "['\"SELECT * FROM billing.fn_invoice_preview(%s, %s, %s)\",', '\"CALL billing.sp_issue_invoice(%s, %s, %s)\",', 'return jsonify(select(\"SELECT * FROM billing.fn_invoice_lines(%s)\", (invoice_id,)))']"
+  },
+  {
+   "group": "golden",
+   "probe": "golden + quarantine byte-identical to wave-3 pre-fingerprint after all U8/U9 gates+probes (23 collections)",
+   "ok": true,
+   "detail": "[]"
+  }
+ ]
+}
