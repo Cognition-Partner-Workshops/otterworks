@@ -212,7 +212,13 @@ def workspace_relative(relative: str) -> str:
 def deploy(dbx: Databricks, ns: str, with_webhook: bool) -> int:
     source_settings = json.loads((HERE / "job.json").read_text(encoding="utf-8"))
     settings = json.loads(json.dumps(source_settings).replace("cdw", ns))
-    settings["schedule"]["pause_status"] = "PAUSED"
+    existing = dbx.find_job(settings["name"])
+    if existing:
+        settings["schedule"]["pause_status"] = (
+            existing.get("settings", {}).get("schedule", {}).get("pause_status", "PAUSED")
+        )
+    else:
+        settings["schedule"]["pause_status"] = "PAUSED"
     if with_webhook and not ensure_webhook_secrets(dbx):
         raise SystemExit(
             f"--with-webhook needs {WEBHOOK_URL_ENV} and {WEBHOOK_SECRET_ENV} in the environment"
@@ -242,9 +248,28 @@ def deploy(dbx: Databricks, ns: str, with_webhook: bool) -> int:
         )
     job_id = dbx.upsert_job(settings)
     print(
-        f"job_id={job_id} name={settings['name']} pause_status=PAUSED "
+        f"job_id={job_id} name={settings['name']} "
+        f"pause_status={settings['schedule']['pause_status']} "
         f"webhook={'wired' if with_webhook else 'none'}"
     )
+    return 0
+
+
+def schedule(dbx: Databricks, ns: str, pause_status: str) -> int:
+    job_name = JOB_NAME.replace("_cdw_", f"_{ns}_")
+    job = dbx.find_job(job_name)
+    if not job:
+        raise SystemExit(f"job not found: {job_name}")
+    job_id = int(job["job_id"])
+    existing_schedule = dict(job.get("settings", {}).get("schedule", {}))
+    existing_schedule["pause_status"] = pause_status
+    dbx.ok("POST", "/api/2.1/jobs/update", {
+        "job_id": job_id,
+        "new_settings": {"schedule": existing_schedule},
+    })
+    updated = dbx.ok("GET", f"/api/2.1/jobs/get?job_id={job_id}")
+    effective = updated.get("settings", {}).get("schedule", {}).get("pause_status")
+    print(f"job_id={job_id} pause_status={effective}")
     return 0
 
 
@@ -327,6 +352,15 @@ def main() -> int:
     status_parser.add_argument("--ns", default="cdw")
     status_parser.add_argument("--warehouse", default=WAREHOUSE)
 
+    schedule_parser = subparsers.add_parser(
+        "schedule", help="pause or unpause the existing job"
+    )
+    schedule_parser.add_argument("--ns", default="cdw")
+    schedule_parser.add_argument("--warehouse", default=WAREHOUSE)
+    schedule_group = schedule_parser.add_mutually_exclusive_group(required=True)
+    schedule_group.add_argument("--unpause", action="store_true")
+    schedule_group.add_argument("--pause", action="store_true")
+
     args = parser.parse_args()
     ns = require_ns(args.ns)
     dbx = Databricks(warehouse_id=args.warehouse)
@@ -334,6 +368,8 @@ def main() -> int:
         return deploy(dbx, ns, args.with_webhook)
     if args.command == "trigger":
         return trigger(dbx, ns, args.staged_red)
+    if args.command == "schedule":
+        return schedule(dbx, ns, "UNPAUSED" if args.unpause else "PAUSED")
     return status(dbx, ns)
 
 
