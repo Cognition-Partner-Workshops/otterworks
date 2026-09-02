@@ -10,7 +10,7 @@ complete cycles. Nothing from the superseded run (nor from any child/wave sessio
 Run `tp-run/mongodb-20260901T205236Z` · target `ow_tp_mongodb_205236` (quarantine `ow_tp_mongodb_205236_quarantine`) · `ns = mongo_205236` ·
 mapping **v1.0.1** (`03_mapping_spec.json` sha256 `57de55f24c241c51…7bb45`) · tolerances **v1** (`d67ccdda431baa5d…4ada7`) ·
 canonicalization **v1** (`527cf87c699275bd…3eb9`) — all three byte-identical to the files every wave report and the superseded
-run gated · harness `mongo-migration-plugin-6d021e15/0.2.1` (`recon selftest PASS: 9 canonicalization rules exercised`) ·
+run gated · harness **pinned** to plugin repo `Cognition-Partner-Workshops/mongo-migration-plugin` commit `8d4f787151ad460659d139c081ddc1284c08552c` (package `skills/mongo-recon-harness/harness`, content sha256 `ddaaeec35359b2bee98989a2b49de4b5aff63cdedea5edf7384a031c03dddabb`; the cache label at run time was `mongo-migration-plugin-6d021e15/0.2.1`, which is not a stable identifier — audit F-A-1; `recon selftest PASS: 9 canonicalization rules exercised`) ·
 mode **LIVE** on the parent machine's canonical fixtures (Oracle `localhost:52521/FREEPDB1` user `ow_billing`; Postgres
 `localhost:5432/otterworks` schema `otterworks_demo`; LocalStack DynamoDB `localhost:4566` table `otterworks-file-metadata`) ·
 secrets by NAME only (`MONGODB_ATLAS_URI`, `OW_BILLING_FIXTURE_DSN`, `OW_PG_DSN`, `AWS_ENDPOINT_URL`) · recon params

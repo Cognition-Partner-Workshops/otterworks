@@ -117,7 +117,7 @@ out = {
     "phase": "[MONGO v1] Reconciliation & Parallel Run Part 2 / Cutover step 1 (parallel run + final recon at watermark)",
     "target_db": "ow_tp_mongodb_205236", "quarantine_db": "ow_tp_mongodb_205236_quarantine", "ns": "mongo_205236",
     "secrets_by_name_only": ["MONGODB_ATLAS_URI", "OW_BILLING_FIXTURE_DSN", "OW_PG_DSN", "AWS_ENDPOINT_URL"],
-    "harness": "mongo-migration-plugin-6d021e15/0.2.1 mongo-recon-harness (recon selftest PASS: 9 canonicalization rules exercised)",
+    "harness": "mongo-recon-harness pinned to plugin repo Cognition-Partner-Workshops/mongo-migration-plugin commit 8d4f787151ad460659d139c081ddc1284c08552c, package content sha256 ddaaeec35359b2bee98989a2b49de4b5aff63cdedea5edf7384a031c03dddabb (cache label at run time: mongo-migration-plugin-6d021e15/0.2.1, not an identifier; recon selftest PASS: 9 canonicalization rules exercised)",
     "parallel_run_definition": "STOP A / 02_tolerances: 3 consecutive GREEN full-estate recon cycles against the idle static fixture (no CDC)",
     "watermark": watermark,
     "full_estate_load": load,
