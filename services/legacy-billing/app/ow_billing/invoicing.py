@@ -94,20 +94,11 @@ def log_msg(store: rating.RatingStore, module: str, message: str) -> None:
 def _positive_credit_notes(
     store: InvoicingStore, tenant_id: str, *, oldest_first: bool = False
 ) -> list[dict[str, Any]]:
-    query = {
-        "tenant_id": tenant_id,
-        "remaining_amount": {"$gt": Decimal128("0")},
-    }
-    try:
-        notes = list(store.credit_notes.find(query))
-    except NotImplementedError:
-        # Older mongomock releases cannot compare Decimal128 values. Keep the
-        # production query above and only fall back for that test double.
-        notes = [
-            note
-            for note in store.credit_notes.find({"tenant_id": tenant_id})
-            if (to_decimal(note.get("remaining_amount")) or Decimal(0)) > 0
-        ]
+    notes = [
+        note
+        for note in store.credit_notes.find({"tenant_id": tenant_id})
+        if (to_decimal(note.get("remaining_amount")) or Decimal(0)) > 0
+    ]
     if oldest_first:
         notes.sort(key=lambda note: (note["issued_on"], str(note.get("_id"))))
     return notes
@@ -340,7 +331,7 @@ def invoice_state_rows(
 
 def credit_note_rows(store: InvoicingStore, tenant_id: str) -> list[dict[str, Any]]:
     rows = store.credit_notes.find({"tenant_id": tenant_id}).sort(
-        [("issued_on", ASCENDING), ("id", ASCENDING)]
+        [("issued_on", ASCENDING), ("_id", ASCENDING)]
     )
     return [
         {
