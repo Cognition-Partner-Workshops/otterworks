@@ -1,0 +1,244 @@
+{
+ "collections": {
+  "billing_audit_log": 1,
+  "billing_invoices": 3,
+  "codes": 32,
+  "counters": 3,
+  "credit_notes": 5,
+  "customers": 25000,
+  "customers_history": 0,
+  "document_snapshots": 384,
+  "documents": 2000,
+  "dunning_attempts": 1,
+  "files": 10000,
+  "invoices": 18750,
+  "notifications": 1,
+  "plans": 3,
+  "rating_periods": 3,
+  "replay_u6_billing_audit_log": 1,
+  "replay_u6_billing_invoices": 3,
+  "replay_u6_codes": 32,
+  "replay_u6_counters": 2,
+  "replay_u6_credit_notes": 5,
+  "replay_u6_dunning_attempts": 1,
+  "replay_u6_notifications": 1,
+  "replay_u6_plans": 3,
+  "replay_u6_rating_periods": 3,
+  "replay_u6_subscriptions": 69,
+  "replay_u6_subscriptions_history": 0,
+  "replay_u6_tenants": 69,
+  "replay_u6_usage_events": 814,
+  "replay_u7_billing_audit_log": 1,
+  "replay_u7_billing_invoices": 3,
+  "replay_u7_counters": 1,
+  "replay_u7_credit_notes": 5,
+  "replay_u7_dunning_attempts": 1,
+  "replay_u7_notifications": 1,
+  "replay_u7_plans": 3,
+  "replay_u7_rating_periods": 3,
+  "replay_u7_subscriptions": 69,
+  "replay_u7_subscriptions_history": 0,
+  "replay_u7_tenants": 69,
+  "replay_u7_usage_events": 814,
+  "replay_u8_billing_audit_log": 1,
+  "replay_u8_billing_invoices": 3,
+  "replay_u8_counters": 1,
+  "replay_u8_credit_notes": 5,
+  "replay_u8_dunning_attempts": 1,
+  "replay_u8_notifications": 1,
+  "replay_u8_plans": 3,
+  "replay_u8_rating_periods": 3,
+  "replay_u8_subscriptions": 69,
+  "replay_u8_subscriptions_history": 0,
+  "replay_u8_tenants": 69,
+  "replay_u8_usage_events": 814,
+  "replay_u9_billing_audit_log": 1,
+  "replay_u9_billing_invoices": 3,
+  "replay_u9_counters": 2,
+  "replay_u9_dunning_attempts": 1,
+  "replay_u9_notifications": 1,
+  "replay_u9_subscriptions": 69,
+  "replay_u9_subscriptions_history": 0,
+  "replay_u9_tenants": 69,
+  "subscriptions": 69,
+  "subscriptions_history": 0,
+  "tenants": 69,
+  "usage_events": 814
+ },
+ "sum_results_len": 3,
+ "sum_lines_len": 2,
+ "counters": [
+  {
+   "_id": "seq_customer_master",
+   "seq": 125000,
+   "source_sequence": "SEQ_CUSTOMER_MASTER",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_customer_master_hist",
+   "seq": 1,
+   "source_sequence": "SEQ_CUSTOMER_MASTER_HIST",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_entity_attr_value",
+   "seq": 11001,
+   "source_sequence": "SEQ_ENTITY_ATTR_VALUE",
+   "ns": "mongo_205236"
+  }
+ ],
+ "audit_ids": [
+  1
+ ],
+ "replay_u6_sum_results_len": 3,
+ "replay_u6_sum_lines_len": 2,
+ "replay_u6_counters": [
+  {
+   "_id": "seq_billing_audit_log",
+   "seq": 1
+  },
+  {
+   "_id": "seq_subscriptions_hist",
+   "seq": 0
+  }
+ ],
+ "replay_u6_audit_ids": [
+  1
+ ],
+ "replay_u7_sum_results_len": 3,
+ "replay_u7_sum_lines_len": 2,
+ "replay_u7_counters": [
+  {
+   "_id": "SEQ_BILLING_AUDIT_LOG",
+   "value": 1,
+   "ns": "mongo_205236"
+  }
+ ],
+ "replay_u7_audit_ids": [
+  1
+ ],
+ "staging_residue": [],
+ "quarantine_all": {
+  "bad_csv_list": 31,
+  "dirty_signup_dt": 50,
+  "invoice_feed_orphan_lines": 37,
+  "orphan_document_snapshots": 6
+ },
+ "clone_vs_golden": {
+  "replay_u6_billing_audit_log": {
+   "clone": "13095f47be60fcf9",
+   "golden": "13095f47be60fcf9",
+   "equal": true
+  },
+  "replay_u6_billing_invoices": {
+   "clone": "fb5f94967d5326c3",
+   "golden": "fb5f94967d5326c3",
+   "equal": true
+  },
+  "replay_u6_codes": {
+   "clone": "53bd8a1e8ffc4a7d",
+   "golden": "53bd8a1e8ffc4a7d",
+   "equal": true
+  },
+  "replay_u6_credit_notes": {
+   "clone": "eb63a66152e5557b",
+   "golden": "eb63a66152e5557b",
+   "equal": true
+  },
+  "replay_u6_dunning_attempts": {
+   "clone": "244f070af0e6a850",
+   "golden": "244f070af0e6a850",
+   "equal": true
+  },
+  "replay_u6_notifications": {
+   "clone": "a2ad1caeb9583e5a",
+   "golden": "a2ad1caeb9583e5a",
+   "equal": true
+  },
+  "replay_u6_plans": {
+   "clone": "e3f1d827d006d817",
+   "golden": "e3f1d827d006d817",
+   "equal": true
+  },
+  "replay_u6_rating_periods": {
+   "clone": "69709a24349a6fbf",
+   "golden": "69709a24349a6fbf",
+   "equal": true
+  },
+  "replay_u6_subscriptions": {
+   "clone": "489777421c3d6034",
+   "golden": "489777421c3d6034",
+   "equal": true
+  },
+  "replay_u6_subscriptions_history": {
+   "clone": "e3b0c44298fc1c14",
+   "golden": "e3b0c44298fc1c14",
+   "equal": true
+  },
+  "replay_u6_tenants": {
+   "clone": "105bccc3209354f1",
+   "golden": "105bccc3209354f1",
+   "equal": true
+  },
+  "replay_u6_usage_events": {
+   "clone": "c2853900553296f7",
+   "golden": "c2853900553296f7",
+   "equal": true
+  },
+  "replay_u7_billing_audit_log": {
+   "clone": "13095f47be60fcf9",
+   "golden": "13095f47be60fcf9",
+   "equal": true
+  },
+  "replay_u7_billing_invoices": {
+   "clone": "fb5f94967d5326c3",
+   "golden": "fb5f94967d5326c3",
+   "equal": true
+  },
+  "replay_u7_credit_notes": {
+   "clone": "eb63a66152e5557b",
+   "golden": "eb63a66152e5557b",
+   "equal": true
+  },
+  "replay_u7_dunning_attempts": {
+   "clone": "244f070af0e6a850",
+   "golden": "244f070af0e6a850",
+   "equal": true
+  },
+  "replay_u7_notifications": {
+   "clone": "a2ad1caeb9583e5a",
+   "golden": "a2ad1caeb9583e5a",
+   "equal": true
+  },
+  "replay_u7_plans": {
+   "clone": "e3f1d827d006d817",
+   "golden": "e3f1d827d006d817",
+   "equal": true
+  },
+  "replay_u7_rating_periods": {
+   "clone": "69709a24349a6fbf",
+   "golden": "69709a24349a6fbf",
+   "equal": true
+  },
+  "replay_u7_subscriptions": {
+   "clone": "489777421c3d6034",
+   "golden": "489777421c3d6034",
+   "equal": true
+  },
+  "replay_u7_subscriptions_history": {
+   "clone": "e3b0c44298fc1c14",
+   "golden": "e3b0c44298fc1c14",
+   "equal": true
+  },
+  "replay_u7_tenants": {
+   "clone": "105bccc3209354f1",
+   "golden": "105bccc3209354f1",
+   "equal": true
+  },
+  "replay_u7_usage_events": {
+   "clone": "c2853900553296f7",
+   "golden": "c2853900553296f7",
+   "equal": true
+  }
+ }
+}

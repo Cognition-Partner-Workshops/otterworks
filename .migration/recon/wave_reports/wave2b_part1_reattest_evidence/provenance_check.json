@@ -1,0 +1,8 @@
+{
+ "checked_in_oracle_source_sha_at_run_head_1c03cce7": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+ "transcripts_ORACLE_SOURCE_SHA": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+ "match": true,
+ "live_USER_SOURCE_body_equals_checked_in_file_whitespace_normalized": {"PKG_OW_UTIL": true, "PKG_PLANS": true, "PKG_RATING": true},
+ "live_pkg_body_sha256_raw_USER_SOURCE": {"PKG_OW_UTIL": "5c308637eefbfa3c0c8da92a8d07c49a77fdfcfddc3d99a7bc2b996f0f0edc2d", "PKG_PLANS": "a77592208cd7372cac7355c7e01b1a19af8b5a121aadf7415916ce47aeb2ebb4", "PKG_RATING": "3b297f0f577a41ef7c16407291aba533c2bc43b3a2b81a2bbc1aebfd129de5f5"},
+ "pkg_status": "VALID x3"
+}

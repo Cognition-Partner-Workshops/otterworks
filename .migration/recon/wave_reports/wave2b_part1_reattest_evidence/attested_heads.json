@@ -1,0 +1,35 @@
+{
+  "wave": "wave2b",
+  "session": "Reconciliation & Parallel Run, Part 1 (independent re-attestation), parent machine, clone ~/wave_recon/otterworks",
+  "fetched_at_utc": "2026-09-02T04:34Z",
+  "run_branch_head": "1c03cce78178e03d7740fab07d036b0bf0ee1d24",
+  "units": {
+    "U6": {
+      "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1440",
+      "branch": "tp-run/mongodb-20260901T205236Z--u6",
+      "current_head": "f463577b014d4f8fc43328ad23af9b0470f30762",
+      "merged_into_run_branch": true,
+      "merge_commit": "a793f45cd83fd8ce540b9d02a1444c2dbebcc110",
+      "merge_commit_subject": "Merge PR #1440 (U6 PKG_OW_UTIL+PKG_PLANS @ f463577b) into tp-run/mongodb-20260901T205236Z",
+      "prior_live_gate_head": "f463577b014d4f8fc43328ad23af9b0470f30762",
+      "head_equals_prior_gated_head": true,
+      "unit_owned_files_unchanged_head_to_run_head": true,
+      "carried_verdict": "PASS",
+      "carried_from": "tp-run/mongodb-20260901T205236Z--wave2b-recon:.migration/recon/wave_reports/wave2b.md @ c2a710a2fd749b14315297e0a05bc13326453dd9"
+    },
+    "U7": {
+      "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1439",
+      "branch": "tp-run/mongodb-20260901T205236Z--u7",
+      "current_head": "f05741f3d9cc9acb6c24dedac6d2217351c83318",
+      "merged_into_run_branch": true,
+      "merge_commit": "fbe9aec20092652022614b1b207363676457881e",
+      "merge_commit_subject": "Merge PR #1439 (U7 PKG_RATING @ f05741f3) into tp-run/mongodb-20260901T205236Z",
+      "prior_live_gate_head": "f05741f3d9cc9acb6c24dedac6d2217351c83318",
+      "head_equals_prior_gated_head": true,
+      "unit_owned_files_unchanged_head_to_run_head": true,
+      "carried_verdict": "PASS",
+      "carried_from": "tp-run/mongodb-20260901T205236Z--wave2b-recon:.migration/recon/wave_reports/wave2b.md @ c2a710a2fd749b14315297e0a05bc13326453dd9"
+    }
+  },
+  "unit_tests_at_run_head": "services/legacy-billing/tests/test_ow_billing.py + test_rating.py + scripts/tp_mongo/tests/test_load_replay_u6.py: 28 passed"
+}
