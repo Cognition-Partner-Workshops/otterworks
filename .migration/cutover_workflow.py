@@ -197,7 +197,11 @@ async def main():
         "name": "mongo-205236-cutover-prep",
         "description": "OtterWorks billing estate -> Atlas: parallel-run window, evidence pack + runbook, independent audit (phase 4, pre-STOP C).",
         "product": "STOP C decision package: parallel-run evidence log, final recon at watermark, evidence pack, cutover runbook PR, countersigned audit.",
-        "phases": ["parallel-run", "evidence-pack-runbook", "independent-audit"],
+        "phases": [
+            {"title": "parallel-run", "detail": "3 green full-estate recon cycles + final watermark recon", "count": 1},
+            {"title": "evidence-pack-runbook", "detail": "evidence pack verification + cutover runbook PR", "count": 1},
+            {"title": "independent-audit", "detail": "sampled gates re-run from the evidence pack", "count": 1},
+        ],
     })
     log("phase4: parallel-run window starting (source-load cap 1)")
     cycles = await parallel_run()
