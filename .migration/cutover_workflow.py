@@ -18,6 +18,8 @@ FIX = {
     "head": "ba3b9034",
     "session": "devin-679bc1c8bf64427fb4d653ee0a9633ac",
 }
+AUDIT_REMEDIATION = True  # decision row 21
+HARNESS_PIN = "8d4f787151ad460659d139c081ddc1284c08552c"
 UNITS = ["U0", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8", "U9"]
 WAVE_REPORTS = {
     "wave0": "tp-run/mongodb-20260901T205236Z--wave0-recon-part1:.migration/recon/wave_reports/wave0.md",
@@ -227,12 +229,51 @@ section; window; rollback condition. Also add a short 'Cutover readiness' sectio
     )
 
 
-async def independent_audit(cycles, pack):
+async def remediate_pack(cycles, pack, audit):
+    return await agent(
+        f"""You are the cutover-preparation session ([MONGO v1] Cutover & Sign-off, steps 2 and 4), remediation pass, for
+the OtterWorks billing estate -> Atlas migration. Repo {REPO}; work in a clone under ~/cutover_work/ on the EXISTING
+branch `{RUN_BRANCH}--cutover-prep` (PR against {RUN_BRANCH}; update it, do not open a new PR; no requester
+identification). Evidence pack {pack['pack_path']}, runbook {pack['runbook_path']}, parallel-run evidence
+{cycles['evidence_path']} (watermark {cycles['watermark']}). Independent audit {audit['audit_path']} returned
+FINDINGS: {audit['findings']}
+{GUARDRAILS}
+Apply exactly these dispositions (orchestrator decision row 21); change no data, tolerance, or mapping shape:
+F-A-1 (HIGH): pin the recon harness by plugin repo commit `{HARNESS_PIN}` (and the content sha256 of the installed
+harness package) in .migration/01_conventions.md, 08_evidence_pack.md §1 and the evidence-log header; add
+.migration/allowed_targets.json = {{"databases": ["{TARGET_DB}", "{QUAR_DB}"]}} on the run branch (orchestrator-owned
+allowlist, not a data change); add a STOP C decision line H.x "re-grade the frozen mapping under the hardened harness
+(requires target_where on customers/invoices/document_snapshots/files = mapping-shape amendment) before cutover:
+yes/no" with recommendation NO (defer; harness pinned). F-A-2 (MEDIUM): in the runbook make D.2/D.4 derive every
+expected counter/sequence value from a live read of Oracle USER_SEQUENCES at freeze (no fixture literals); add a
+disclosure section "Tooling write to legacy during the engagement" stating that one BILLING_AUDIT_LOG row (log_id 1,
+PLANS/fn_list_plans) and one SEQ_BILLING_AUDIT_LOG increment were produced on the source by a wave-0 PL/SQL probe
+(guardrail 1 breach, disclosed, no further writes), and put it on the STOP C sheet as an explicit acknowledgement
+line. F-A-3 (MEDIUM): reassign D.9, E.4 and G.3 so the CUSTOMER principal executes every write to the production
+target (Devin observes and grades only; replay-clone drop G.3 becomes a customer step in the decommission plan);
+make line 6 and §B.6 true. F-A-4 (LOW): expand all heads in the pack/ledger to 40-char SHAs. Update
+.migration/08_evidence_pack.md open-issues table with these four rows and dispositions, bump the pack to v3, commit,
+push. Status COMPLETE only if every audit finding has a closing edit or an explicit STOP C line.""",
+        phase="evidence-pack-runbook-v3",
+        schema=PACK_SCHEMA,
+        label="evidence pack v3 — audit remediation",
+        repos=[REPO],
+    )
+
+
+async def independent_audit(cycles, pack, pass_tag="", prior=None):
+    prior_note = ""
+    if prior:
+        prior_note = (f"\nTHIS IS THE RE-AUDIT. Your prior countersign attempt is at {prior['audit_path']} with findings "
+                      f"{prior['findings']}. The pack was revised (v3) in response. Re-run only what those findings touch "
+                      f"(harness pin + allowlist now present -> re-run one Oracle gate with the pinned harness from the pack's "
+                      f"citation alone; runbook principal model; disclosure; SHAs) plus the U8 gate, and confirm each finding is "
+                      f"closed or converted to a STOP C line. Write countersign_v2.md next to the prior note.\n")
     return await agent(
         f"""You are the INDEPENDENT AUDIT session ([MONGO v1] Cutover & Sign-off, step 3) for the OtterWorks
 billing estate -> Atlas migration. You performed no migration work. Repo {REPO}, branch {RUN_BRANCH}
 plus the cutover-prep branch `{RUN_BRANCH}--cutover-prep` (evidence pack {pack['pack_path']}, runbook
-{pack['runbook_path']}) and parallel-run evidence {cycles['evidence_path']}.
+{pack['runbook_path']}) and parallel-run evidence {cycles['evidence_path']}.{prior_note}
 {GUARDRAILS}
 Work ONLY from the evidence pack: do not read child-session diagnoses or PR discussions first. Boot the
 deterministic fixtures on YOUR VM exactly as .migration/00_context.md describes (`sudo -n systemctl stop
@@ -249,9 +290,9 @@ on every production-touching step and states scope in its first section. Write
 what you did NOT check) on branch `{RUN_BRANCH}--audit` pushed to origin; report branch:path. Verdict
 COUNTERSIGNED only if every re-run gate matches and there are no high-severity findings; FINDINGS
 otherwise; ESCALATE on environment problems. Never fix anything.""",
-        phase="independent-audit",
+        phase=f"independent-audit{pass_tag}",
         schema=AUDIT_SCHEMA,
-        label="independent audit (sampled gates from evidence pack)",
+        label=f"independent audit (sampled gates from evidence pack){pass_tag}",
         repos=[REPO],
     )
 
@@ -268,6 +309,8 @@ async def main():
             {"title": "parallel-run-v2", "detail": "3 green cycles at the post-fix watermark", "count": 1},
             {"title": "evidence-pack-runbook-v2", "detail": "evidence pack + runbook revised to the new watermark", "count": 1},
             {"title": "independent-audit", "detail": "sampled gates re-run from the evidence pack", "count": 1},
+            {"title": "evidence-pack-runbook-v3", "detail": "audit-finding remediation in pack + runbook", "count": 1},
+            {"title": "independent-audit-v2", "detail": "re-audit of the remediated pack", "count": 1},
         ],
     })
     log("phase4: parallel-run window starting (source-load cap 1)")
@@ -303,6 +346,15 @@ async def main():
             return
     audit = await independent_audit(cycles, pack)
     log(f"phase4: audit {audit['verdict']} at {audit['audit_path']} gates={audit['gates_rerun']} findings={audit['findings']}")
+    if audit["verdict"] == "FINDINGS" and AUDIT_REMEDIATION:
+        log("phase4: audit remediation pass (decision row 21) — pack/runbook corrections, then re-audit")
+        pack = await remediate_pack(cycles, pack, audit)
+        log(f"phase4: evidence pack v3 {pack['status']} pack={pack['pack_path']} gaps={pack['gaps']}")
+        if pack["status"] != "COMPLETE":
+            log("HALT phase4: evidence pack v3 incomplete — STOP C cannot be presented")
+            return
+        audit = await independent_audit(cycles, pack, "-v2", prior=audit)
+        log(f"phase4: audit v2 {audit['verdict']} at {audit['audit_path']} findings={audit['findings']}")
     log("phase4: READY FOR STOP C" if audit["verdict"] == "COUNTERSIGNED" else "phase4: audit has findings — orchestrator decides")
 
 
