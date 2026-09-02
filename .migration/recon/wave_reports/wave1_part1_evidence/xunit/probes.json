@@ -1,0 +1,193 @@
+{
+  "ok": 37,
+  "total": 37,
+  "oracle_statements": 25,
+  "seconds": 6.4,
+  "results": [
+    {
+      "probe": "u0.codes.present",
+      "ok": true,
+      "detail": "n=32 (no pre-state fingerprint recorded)"
+    },
+    {
+      "probe": "u0.tenants.present",
+      "ok": true,
+      "detail": "n=69 (no pre-state fingerprint recorded)"
+    },
+    {
+      "probe": "u0.plans.present",
+      "ok": true,
+      "detail": "n=3 (no pre-state fingerprint recorded)"
+    },
+    {
+      "probe": "u0.codes.count_eq_oracle",
+      "ok": true,
+      "detail": "src=32 tgt=32"
+    },
+    {
+      "probe": "u0.tenants.count_eq_oracle",
+      "ok": true,
+      "detail": "src=69 tgt=69"
+    },
+    {
+      "probe": "u0.plans.count_eq_oracle",
+      "ok": true,
+      "detail": "src=3 tgt=3"
+    },
+    {
+      "probe": "tenants.id_set_equal",
+      "ok": true,
+      "detail": "n=69"
+    },
+    {
+      "probe": "tenants.customer_tenant_ids_equal",
+      "ok": true,
+      "detail": "distinct=50 orphans_src=50 orphans_tgt=50"
+    },
+    {
+      "probe": "tenants.invoice_tenant_ids_equal",
+      "ok": true,
+      "detail": "distinct=50 orphans_src=50 orphans_tgt=50"
+    },
+    {
+      "probe": "tenants.per_tenant_customer_counts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "tenants.per_tenant_invoice_counts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "customers.invoice_cust_ids_equal",
+      "ok": true,
+      "detail": "distinct=7581"
+    },
+    {
+      "probe": "customers.invoice_orphan_cust_set_equal",
+      "ok": true,
+      "detail": "orphans src=0 tgt=0"
+    },
+    {
+      "probe": "customers.invoice_tenant_mismatch_set_equal",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "probe": "customers.per_customer_invoice_rollup",
+      "ok": true,
+      "detail": "customers_with_invoices=7581"
+    },
+    {
+      "probe": "codes.type_val_desc_equal",
+      "ok": true,
+      "detail": "n=32"
+    },
+    {
+      "probe": "codes._key_format",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "codes.types_present",
+      "ok": true,
+      "detail": "{'CUST_STATUS': 4, 'CUST_TYPE': 3, 'DUN_STATUS': 3, 'INV_STATUS': 4, 'NOTIF_KIND': 3, 'PHONE_TYPE': 4, 'PLAN_TIER': 3, 'SUB_STATUS': 3, 'TENANT_STATUS': 2, 'USAGE_KIND': 3}"
+    },
+    {
+      "probe": "codes.invoices.status_cd_distribution",
+      "ok": true,
+      "detail": "distinct=3"
+    },
+    {
+      "probe": "codes.customers.status_cd_distribution",
+      "ok": true,
+      "detail": "distinct=4"
+    },
+    {
+      "probe": "codes.customers.cust_type_cd_distribution",
+      "ok": true,
+      "detail": "distinct=3"
+    },
+    {
+      "probe": "codes.customers.segment_cd_distribution",
+      "ok": true,
+      "detail": "distinct=9"
+    },
+    {
+      "probe": "codes.customers.region_cd_distribution",
+      "ok": true,
+      "detail": "distinct=12"
+    },
+    {
+      "probe": "codes.invoices.unresolved_status_set_equal",
+      "ok": true,
+      "detail": "unresolved=[]"
+    },
+    {
+      "probe": "plans.tier_cd_set",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "tenants.status_cd_hist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "counters.eq_user_sequences",
+      "ok": true,
+      "detail": "{'SEQ_CUSTOMER_MASTER': 125000, 'SEQ_CUSTOMER_MASTER_HIST': 1, 'SEQ_ENTITY_ATTR_VALUE': 11001}"
+    },
+    {
+      "probe": "rpt114.month_end.by_status",
+      "ok": true,
+      "detail": "rows=3 sample=[('issued', 5504, '55450955.92'), ('overdue', 2748, '27585416.69')]"
+    },
+    {
+      "probe": "rpt114.month_end.by_status_line_type",
+      "ok": true,
+      "detail": "rows=12 sample=[('issued', 'ADJUSTMENT', 7172, '89342458.72', '7370753.25', 3970)]"
+    },
+    {
+      "probe": "rpt114.reconciliation.balances",
+      "ok": true,
+      "detail": "(25000, '39799450.31', '7330214.66')"
+    },
+    {
+      "probe": "u3u4.document_owner_set_equal",
+      "ok": true,
+      "detail": "n=50"
+    },
+    {
+      "probe": "u3u4.owner_pools_disjoint_as_in_source",
+      "ok": true,
+      "detail": "doc owners=50 file owners=50 shared=0 (independently seeded pools; informational)"
+    },
+    {
+      "probe": "u3u4.no_id_collisions_docs_files_snapshots",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "quarantine.classes_and_counts",
+      "ok": true,
+      "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+    },
+    {
+      "probe": "quarantine.every_doc_has_reason_class",
+      "ok": true,
+      "detail": "{'dirty_signup_dt': ['_id', 'batch_no', 'class', 'cust_id', 'ns', 'source_column', 'value'], 'invoice_feed_orphan_lines': ['_id', 'batch_no', 'invoice_id', 'ns', 'quarantined_at', 'reason', 'reason_class', 'row', 'source_table', 'unit'], 'orphan_document_snapshots': ['_id', 'document_id', 'ns', 'quarantined_at', 'reason', 'reason_class', 'row', 'source_key', 'source_table', 'source_watermark', 'unit'], 'bad_csv_list': ['_id', 'batch_no', 'class', 'cust_id', 'ns', 'reason', 'source_column', 'value']}"
+    },
+    {
+      "probe": "quarantine.orphan_markers_u3_u4",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "target.collections_registry",
+      "ok": true,
+      "detail": "['codes', 'counters', 'customers', 'customers_history', 'document_snapshots', 'documents', 'files', 'invoices', 'plans', 'tenants']"
+    }
+  ]
+}

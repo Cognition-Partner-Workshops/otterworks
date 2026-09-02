@@ -1,0 +1,289 @@
+{
+ "unit": "U1",
+ "ok": 56,
+ "total": 56,
+ "oracle_statements": 76,
+ "wall_s": 44.9,
+ "results": [
+  {
+   "probe": "1.1 null+missing per field == source NULL count (155 fields)",
+   "ok": true,
+   "detail": "nullable fields with NULLs: 120"
+  },
+  {
+   "probe": "1.2 explicit_null policy: no MISSING fields (tolerance v1 target_policy=explicit_null)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "1.3 no empty strings in target",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "1.4 top null-rate fields (info)",
+   "ok": true,
+   "detail": "[(25000, 'ZIP4'), (25000, 'YTD_PAID_AMT'), (25000, 'UDF_DT_10'), (25000, 'UDF_DT_09'), (25000, 'UDF_DT_08'), (25000, 'UDF_DT_07'), (25000, 'UDF_DT_06'), (25000, 'UDF_DT_05')]"
+  },
+  {
+   "probe": "2.1 BSON type per field == spec (or null)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "2.2 embed element BSON types == spec",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "2.3 _id is string (CUST_ID VARCHAR2) on all docs",
+   "ok": true,
+   "detail": "{'string': 25000}"
+  },
+  {
+   "probe": "3.1 _id == cust_id on all docs",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "3.2 (tenant_id,cust_no) duplicates: target 0, source 0 (loader's UNIQUE index has no source UQ constraint \u2014 design note)",
+   "ok": true,
+   "detail": "src_dup_groups=0"
+  },
+  {
+   "probe": "3.3 cust_no duplicate groups (info)",
+   "ok": true,
+   "detail": "source=0 target_has_dups=False"
+  },
+  {
+   "probe": "3.4 eav_id unique across all embedded attributes",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "3.5 cust_seq_no duplicates equal (source vs target)",
+   "ok": true,
+   "detail": "src_groups=0"
+  },
+  {
+   "probe": "4.1 boundary docs (MIN/MAX of every numeric/date field + LENGTH extremes): 24 keys, full 155-field compare",
+   "ok": true,
+   "detail": "24 rows \u00d7 155 fields equal"
+  },
+  {
+   "probe": "4.2 money fields: Oracle TO_CHAR text == Decimal128 (300 random docs \u00d7 16 decimal fields, no float path)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "5.1 per-tenant SUM(cur_bal_amt), SUM(past_due_amt), COUNT over 50 tenants equal",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "5.2 status_cd distribution equal",
+   "ok": true,
+   "detail": "{99: 473, 1: 21318, 3: 1244, 2: 1965}"
+  },
+  {
+   "probe": "5.3 vip_yn distribution equal (CHAR(1) incl. NULL)",
+   "ok": true,
+   "detail": "{'N': 24950, 'Y': 50}"
+  },
+  {
+   "probe": "6.1 attributes[] length distribution == per-customer child-row histogram",
+   "ok": true,
+   "detail": "{0: 17925, 1: 5952, 2: 1000, 3: 113, 4: 8, 5: 2}"
+  },
+  {
+   "probe": "6.2 attributes[] present as an array on every doc (incl. 0-length)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.3 every element's entity_id == parent _id and entity_type == 'CUSTOMER'",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.4 source orphan EAV rows (CUSTOMER, no parent) == 0; other entity types out of scope",
+   "ok": true,
+   "detail": "orphans=0 entity_types=[('CUSTOMER', Decimal('8333'))]"
+  },
+  {
+   "probe": "6.5 elements sorted by eav_id inside each doc",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.6 attr_name distribution equal",
+   "ok": true,
+   "detail": "{'COLLECTIONS_NOTE': 1230, 'TAX_REGION_OVERRIDE': 1227, 'FAX_OPTOUT': 1153, 'LEGACY_TIER': 1197, 'SAP_EXPORT_FLAG': 1202, 'PORTAL_THEME': 1171, 'Y2K_VERIFIED': 1153}"
+  },
+  {
+   "probe": "7.1 dirty_signup_dt SET == Oracle TO_DATE(... DEFAULT NULL ON CONVERSION ERROR) set; expected 50",
+   "ok": true,
+   "detail": "src=50 tgt=50 symdiff=[]"
+  },
+  {
+   "probe": "7.2 dirty rows still migrated verbatim with signup_date null",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "7.3 non-quarantined rows with signup_dt have a parsed signup_date",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "7.4 bad_csv_list SET (cust_id, column, reason) == independent re-derivation; expected 31 on RELATED_ACCT_IDS",
+   "ok": true,
+   "detail": "src=31 tgt=31 cols=Counter({'RELATED_ACCT_IDS': 31}) reasons=Counter({'empty_token': 26, 'invalid_token': 5})"
+  },
+  {
+   "probe": "7.5 every quarantine record carries ns + batch_no + verbatim value",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "7.6 quarantine ceiling 0.5 %: (50+31)/25000",
+   "ok": true,
+   "detail": "0.324 %"
+  },
+  {
+   "probe": "7.7 quarantine db holds only the declared U1 classes for U1 (no undeclared U1 class)",
+   "ok": true,
+   "detail": "['dirty_signup_dt', 'invoice_feed_orphan_lines', 'orphan_document_snapshots', 'bad_csv_list']"
+  },
+  {
+   "probe": "8.1 related_accounts == split(related_acct_ids) wherever not quarantined",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.2 quarantined bad_csv rows have related_accounts null and verbatim kept",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.3 null CSV column -> [] (loader contract)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.4 addresses.billing.lines == [addr_line_1..6]",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.5 phones[] == non-null phone1..4 with type_cd",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.6 signup_date == Oracle TO_DATE(signup_dt,'DD-MON-YY') on 400 random parseable rows (century pivot check)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "8.7 mailing.zip4/country_cd: no MAIL_ZIP4/MAIL_COUNTRY_CD column in source -> loader emits null (documented gap, not a diff)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "9.1 no undeclared top-level fields",
+   "ok": true,
+   "detail": "{}"
+  },
+  {
+   "probe": "9.2 no undeclared embedded element fields",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "9.3 ns == mongo_205236 on 100 % of customers / customers_history / counters",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "10.1 customers indexes \u2287 spec (3 declared)",
+   "ok": true,
+   "detail": "target={(('_id', 1),): False, (('tenant_id', 1), ('cust_no', 1)): True, (('cust_name_upper', 1),): False, (('conversion_batch_no', 1),): False}"
+  },
+  {
+   "probe": "10.2 customers index UNIQUE flags: spec declares none; loader marks (tenant_id,cust_no) UNIQUE \u2014 beyond spec, source has no UQ (design note, not a grading issue while data is unique)",
+   "ok": true,
+   "detail": "{(('_id', 1),): False, (('tenant_id', 1), ('cust_no', 1)): True, (('cust_name_upper', 1),): False, (('conversion_batch_no', 1),): False}"
+  },
+  {
+   "probe": "10.3 customers_history indexes: spec declares []; loader adds (cust_id,hist_dt) for the write path (beyond spec, harmless)",
+   "ok": true,
+   "detail": "{(('cust_id', 1), ('hist_dt', 1)), (('_id', 1),)}"
+  },
+  {
+   "probe": "11.1 customers_history: 0 source rows -> collection exists, 0 docs, indexes present",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "11.2 CUSTOMER_MASTER_HIST source rows == 0 (twice)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "11.3 loader refuses an empty root batch (no drop of the good copy)",
+   "ok": true,
+   "detail": "CUSTOMER_MASTER has no rows for conversion_batch_no=1; refusing to replace the target collections with an empty batch"
+  },
+  {
+   "probe": "12.1 counters == USER_SEQUENCES.LAST_NUMBER (3 sequences)",
+   "ok": true,
+   "detail": "{'SEQ_CUSTOMER_MASTER': 125000, 'SEQ_CUSTOMER_MASTER_HIST': 1, 'SEQ_ENTITY_ATTR_VALUE': 11001}"
+  },
+  {
+   "probe": "12.2 counters >= MAX(cust_seq_no) / MAX(eav_id) so the write path cannot collide",
+   "ok": true,
+   "detail": "max_seq=124999 max_eav=8333"
+  },
+  {
+   "probe": "13.1 customers.tenant_id -> tenants._id resolution identical to source (0 of 50 resolve in BOTH; source property, wave-0 note)",
+   "ok": true,
+   "detail": "distinct=50 resolve_target=0 resolve_source=0"
+  },
+  {
+   "probe": "13.2 customers.status_cd \u2282 codes[CUST_STATUS]",
+   "ok": true,
+   "detail": "[1, 2, 3, 99]"
+  },
+  {
+   "probe": "13.3 invoices.cust_id -> customers._id resolution equals source (INVOICE_HEADER.CUST_ID -> CUSTOMER_MASTER)",
+   "ok": true,
+   "detail": "distinct_inv_cust=7581 unresolved_src=0"
+  },
+  {
+   "probe": "14.1 RPT-114 BALANCES (customer_count, current_balance_total, past_due_total) identical",
+   "ok": true,
+   "detail": "oracle=(Decimal('25000'), '39799450.31', '7330214.66') mongo=(25000, '39799450.31', '7330214.66')"
+  },
+  {
+   "probe": "14.2 lookup by (tenant_id, cust_no) -> same cust_id, 25 random",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "14.3 cust_name_upper prefix search 'KAI %' identical result set",
+   "ok": true,
+   "detail": "n=1553"
+  },
+  {
+   "probe": "14.4 cust_name_upper == UPPER(cust_name) on all docs (TRG_CUSTOMER_MASTER_SEQ invariant carried)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "15.1 source stable across two counts; FIXTURE_META unchanged",
+   "ok": true,
+   "detail": "25000/25000/8333 initialized_at=2026-09-01 20:53:10.961888"
+  }
+ ]
+}

@@ -1,0 +1,350 @@
+{
+  "unit": "U4",
+  "ok": 66,
+  "total": 68,
+  "dynamo_calls": 30,
+  "seconds": 12.8,
+  "source_fp": "c11ec8db56b26d638f9d072efbd4ffb804e7c647f28a5edf92821cec822e190a",
+  "results": [
+    {
+      "probe": "source.stable_two_passes",
+      "ok": true,
+      "detail": "n=10000 fp=c11ec8db56b26d63"
+    },
+    {
+      "probe": "source.unique_ids",
+      "ok": true,
+      "detail": "10000 / 10000"
+    },
+    {
+      "probe": "source.count_10000",
+      "ok": true,
+      "detail": "10000"
+    },
+    {
+      "probe": "source.table_key_schema",
+      "ok": true,
+      "detail": "keys=[{'AttributeName': 'id', 'KeyType': 'HASH'}] gsis=[] item_count=10000"
+    },
+    {
+      "probe": "source.other_ns_partitions_excluded",
+      "ok": true,
+      "detail": "table ns histogram={'demo': 10000}"
+    },
+    {
+      "probe": "target.count_eq_source",
+      "ok": true,
+      "detail": "tgt=10000 src=10000"
+    },
+    {
+      "probe": "target.ns_all",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "target.source_ns_all_demo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "target.no_staging_left",
+      "ok": true,
+      "detail": "['counters', 'document_snapshots', 'files', 'customers_history', 'plans', 'invoices', 'customers', 'documents', 'codes', 'tenants']"
+    },
+    {
+      "probe": "target.no_u4_quarantine_collection",
+      "ok": true,
+      "detail": "quarantine colls=['bad_csv_list', 'dirty_signup_dt', 'invoice_feed_orphan_lines', 'orphan_document_snapshots']"
+    },
+    {
+      "probe": "keys.set_equal",
+      "ok": true,
+      "detail": "only_src=0 only_tgt=0"
+    },
+    {
+      "probe": "fields.exact_set",
+      "ok": true,
+      "detail": "extra=set() missing=set()"
+    },
+    {
+      "probe": "fields.all_present_every_doc",
+      "ok": true,
+      "detail": "{}"
+    },
+    {
+      "probe": "source.attribute_set",
+      "ok": true,
+      "detail": "src attrs={'size_bytes': 10000, 'updated_at': 10000, 'ns': 10000, 'mime_type': 10000, 'owner_id': 10000, 'is_trashed': 10000, 'name': 10000, 's3_key': 10000, 'created_at': 10000, 'id': 10000, 'folder_id': 10000, 'version': 10000}"
+    },
+    {
+      "probe": "nulls._id",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.name",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.mime_type",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.size_bytes",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.s3_key",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.owner_id",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.folder_id",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.is_trashed",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.version",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.created_at",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.updated_at",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "nulls.source_ns",
+      "ok": true,
+      "detail": "src_null=0 tgt_null_or_missing=0"
+    },
+    {
+      "probe": "empty_strings.match",
+      "ok": true,
+      "detail": "tgt={'_id': 0, 'name': 0, 'mime_type': 0, 's3_key': 0, 'owner_id': 0, 'folder_id': 0, 'source_ns': 0}"
+    },
+    {
+      "probe": "types.exact_per_field",
+      "ok": false,
+      "detail": "types={'_id': {'string': 10000}, 'name': {'string': 10000}, 'mime_type': {'string': 10000}, 'size_bytes': {'int': 10000}, 's3_key': {'string': 10000}, 'owner_id': {'string': 10000}, 'folder_id': {'string': 10000}, 'is_trashed': {'bool': 10000}, 'version': {'int': 10000}, 'created_at': {'date': 10000}, 'updated_at': {'date': 10000}, 'source_ns': {'string': 10000}, 'ns': {'string': 10000}, 'orphaned_metadata': {'bool': 10000}}"
+    },
+    {
+      "probe": "types.size_bytes_long_version_int",
+      "ok": false,
+      "detail": "{'int': 10000} {'int': 10000}"
+    },
+    {
+      "probe": "dups.name_groups_match",
+      "ok": true,
+      "detail": "src=0 tgt=[]"
+    },
+    {
+      "probe": "dups.s3_key_groups_match",
+      "ok": true,
+      "detail": "src=0 tgt=[]"
+    },
+    {
+      "probe": "fulldiff.all_10000_docs_equal",
+      "ok": true,
+      "detail": "mismatches(first)=[]"
+    },
+    {
+      "probe": "boundary.size_bytes",
+      "ok": true,
+      "detail": "min=2117/2117 max=249976485/249976485"
+    },
+    {
+      "probe": "boundary.version",
+      "ok": true,
+      "detail": "min=1/1 max=9/9"
+    },
+    {
+      "probe": "boundary.created_at",
+      "ok": true,
+      "detail": "min=datetime.datetime(2024, 8, 11, 0, 10, 41)/datetime.datetime(2024, 8, 11, 0, 10, 41) max=datetime.datetime(2026, 7, 31, 23, 1, 5)/datetime.datetime(2026, 7, 31, 23, 1, 5)"
+    },
+    {
+      "probe": "boundary.updated_at",
+      "ok": true,
+      "detail": "min=datetime.datetime(2024, 8, 13, 19, 31, 25)/datetime.datetime(2024, 8, 13, 19, 31, 25) max=datetime.datetime(2026, 8, 1, 0, 0)/datetime.datetime(2026, 8, 1, 0, 0)"
+    },
+    {
+      "probe": "boundary.name",
+      "ok": true,
+      "detail": "min='file-demo-0000000.mp4'/'file-demo-0000000.mp4' max='file-demo-0009999.mp4'/'file-demo-0009999.mp4'"
+    },
+    {
+      "probe": "boundary._id",
+      "ok": true,
+      "detail": "min='000dae86-75f8-4493-953f-7a9ed4f2b58b'/'000dae86-75f8-4493-953f-7a9ed4f2b58b' max='ffff21ca-c446-447a-bfaa-9ab3f34868cc'/'ffff21ca-c446-447a-bfaa-9ab3f34868cc'"
+    },
+    {
+      "probe": "agg.sum_size_bytes",
+      "ok": true,
+      "detail": "1268715381927 vs 1268715381927"
+    },
+    {
+      "probe": "agg.histogram.owner_id",
+      "ok": true,
+      "detail": "distinct=50 top=[('818d442c-d231-48a9-b1ed-65a14fb0b0f9', 1575), ('4815e977-4a11-4bc8-bff2-7a353d7f3890', 609)]"
+    },
+    {
+      "probe": "agg.histogram.folder_id",
+      "ok": true,
+      "detail": "distinct=10 top=[('9387fb61-7651-4cd4-999c-ba5552526604', 1042), ('6503e4b3-387e-469c-b644-f4d0341bae63', 1035)]"
+    },
+    {
+      "probe": "agg.histogram.mime_type",
+      "ok": true,
+      "detail": "distinct=10 top=[('application/zip', 1036), ('text/markdown', 1035)]"
+    },
+    {
+      "probe": "agg.histogram.version",
+      "ok": true,
+      "detail": "distinct=9 top=[(5, 1176), (2, 1155)]"
+    },
+    {
+      "probe": "agg.histogram.is_trashed",
+      "ok": true,
+      "detail": "distinct=2 top=[(False, 9461), (True, 539)]"
+    },
+    {
+      "probe": "agg.distinct_owner_count",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "dates.sub_ms_truncation_needed",
+      "ok": true,
+      "detail": "source values with sub-ms precision=0/20000"
+    },
+    {
+      "probe": "dates.source_all_utc_marked",
+      "ok": true,
+      "detail": "non-Z/non-+00:00 source strings=0"
+    },
+    {
+      "probe": "orphans.manifest_count",
+      "ok": true,
+      "detail": "src=40 manifest=40"
+    },
+    {
+      "probe": "orphans.set_equal_src_tgt",
+      "ok": true,
+      "detail": "tgt=40 symdiff=0"
+    },
+    {
+      "probe": "orphans.items_still_migrated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "orphans.rate_under_ceiling",
+      "ok": true,
+      "detail": "0.400% (info only: marker, not quarantine)"
+    },
+    {
+      "probe": "orphans.s3_key_prefix_convention",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "orphans.s3_head_probe_uninformative",
+      "ok": true,
+      "detail": "bucket exists, KeyCount=0"
+    },
+    {
+      "probe": "indexes.match_mapping",
+      "ok": true,
+      "detail": "have=[(('owner_id', 1), ('is_trashed', 1)), (('folder_id', 1),)]"
+    },
+    {
+      "probe": "empty.source_partition_scan_zero",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "empty.loader_refuses_empty_source",
+      "ok": true,
+      "detail": "load_u4.py:192-196 returns 2 and leaves target untouched when partition empty (code-read, not executed)"
+    },
+    {
+      "probe": "empty.no_cross_ns_docs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "xref.owner_ids_vs_U3_documents",
+      "ok": true,
+      "detail": "file owners=50 doc owners=50 shared=0 (same seeded user pool; informational)"
+    },
+    {
+      "probe": "xref.no_files_collection_in_other_dbs",
+      "ok": true,
+      "detail": "dbs=['ow_tp_mongodb_205236', 'ow_tp_mongodb_205236_quarantine']"
+    },
+    {
+      "probe": "replay.list_files.owner",
+      "ok": true,
+      "detail": "n=154/154"
+    },
+    {
+      "probe": "replay.list_files.folder",
+      "ok": true,
+      "detail": "n=903/903"
+    },
+    {
+      "probe": "replay.list_files.owner_folder",
+      "ok": true,
+      "detail": "n=20/20"
+    },
+    {
+      "probe": "replay.list_files.owner_incl_trashed",
+      "ok": true,
+      "detail": "n=166/166"
+    },
+    {
+      "probe": "replay.list_trashed.all",
+      "ok": true,
+      "detail": "n=539"
+    },
+    {
+      "probe": "replay.list_trashed.owner",
+      "ok": true,
+      "detail": "n=12"
+    },
+    {
+      "probe": "replay.get_file.25_random",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "replay.storage_usage_per_owner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "probe": "source.stable_after_probes",
+      "ok": true,
+      "detail": "n=10000"
+    }
+  ]
+}
