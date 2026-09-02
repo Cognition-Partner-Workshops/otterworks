@@ -1,0 +1,7 @@
+{
+  "U1": {"pr": 1430, "head": "c5baa80ab8afd54191b74854ca996fdf133e2c86", "merge_commit": "e87de3286c9080fb720d0029db127faded8e1436", "merged_into_run_branch": true},
+  "U3": {"pr": 1420, "head": "dfa5e9781e08718a7707a0a14ef9e8513149ed92", "merge_commit": "811aed6f0ef89f414393e538e706abda86be2240", "merged_into_run_branch": true},
+  "U4": {"pr": 1419, "head": "3420f475c29b8889bc8676cebb58a9b4faabff2a", "merge_commit": "cdb0abd4b27a0e4f9ee28468748940835fcec7d4", "merged_into_run_branch": true},
+  "run_branch_head_at_reattest": "1c03cce7",
+  "prior_live_report": "tp-run/mongodb-20260901T205236Z--wave1-recon-part1:.migration/recon/wave_reports/wave1.md (commit 475560d4)"
+}
