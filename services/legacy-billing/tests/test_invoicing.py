@@ -250,6 +250,32 @@ def test_credit_burn_down_rejects_a_concurrent_change(monkeypatch):
         invoicing.sp_issue_invoice(store, TENANT, FEB1, FEB28)
 
 
+def test_credit_application_retries_from_the_current_balance(monkeypatch):
+    store = _store()
+    _tenant(store)
+    _plan(store)
+    _subscription(store)
+    _usage(store)
+    _credit(store, "shared", "60.00")
+
+    def retry_with_reduced_credit(store, fn):
+        fn(None)
+        store.credit_notes.update_one(
+            {"_id": "shared"},
+            {"$set": {"remaining_amount": Decimal128("0.50")}},
+        )
+        return fn(None)
+
+    monkeypatch.setattr(invoicing, "_with_transaction", retry_with_reduced_credit)
+    invoice = invoicing.sp_issue_invoice(store, TENANT, FEB1, FEB28)
+
+    assert invoice["lines"][4]["amount"] == Decimal128("-0.50")
+    assert invoice["total"] == Decimal128("58.56")
+    remaining = store.credit_notes.find_one({"_id": "shared"})["remaining_amount"]
+    assert remaining == Decimal128("0.00")
+    assert -invoice["lines"][4]["amount"].to_decimal() <= Decimal("60.00")
+
+
 def test_invoice_lines_are_ordered_and_missing_invoice_is_empty():
     store = _store()
     store.billing_invoices.insert_one(

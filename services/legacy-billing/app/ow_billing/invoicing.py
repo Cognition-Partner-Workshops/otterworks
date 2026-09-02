@@ -153,17 +153,17 @@ def compute_preview(
     return Preview(plan_code, plan_fee, overage, tax, credit)
 
 
-def fn_invoice_preview(
-    store: InvoicingStore,
-    tenant_id: str,
-    period_start: date,
-    period_end: date,
-) -> list[dict[str, Any]]:
-    preview = compute_preview(store, tenant_id, period_start, period_end)
-    charge_cap = oracle_round(
+def _charge_cap(preview: Preview) -> rating.Number:
+    return oracle_round(
         _add(_add(preview.plan_fee, preview.overage), preview.tax), 2
     )
-    credit_app = _least(preview.credit, _nvl(charge_cap, preview.credit))
+
+
+def _preview_rows(
+    preview: Preview, credit_available: rating.Number
+) -> list[dict[str, Any]]:
+    charge_cap = _charge_cap(preview)
+    credit_app = _least(credit_available, _nvl(charge_cap, credit_available))
     half_tax = None if preview.tax is None else preview.tax / 2
     return [
         {
@@ -214,6 +214,16 @@ def fn_invoice_preview(
     ]
 
 
+def fn_invoice_preview(
+    store: InvoicingStore,
+    tenant_id: str,
+    period_start: date,
+    period_end: date,
+) -> list[dict[str, Any]]:
+    preview = compute_preview(store, tenant_id, period_start, period_end)
+    return _preview_rows(preview, preview.credit)
+
+
 def sp_issue_invoice(
     store: InvoicingStore,
     tenant_id: str,
@@ -224,47 +234,68 @@ def sp_issue_invoice(
     invoice_id = util.f_md5_uuid(period_id + "invoice")
 
     rating.sp_finalize_rating(store, tenant_id, period_start, period_end)
-    preview_rows = fn_invoice_preview(store, tenant_id, period_start, period_end)
 
-    lines = []
-    for row in preview_rows:
+    preview = compute_preview(store, tenant_id, period_start, period_end)
+    charge_cap = _charge_cap(preview)
+    base_rows = _preview_rows(preview, Decimal(0))
+    subtotal: rating.Number = Decimal(0)
+    tax: rating.Number = Decimal(0)
+    for row in base_rows:
+        if row["line_type"] in {"plan", "usage"}:
+            subtotal = _add(subtotal, oracle_round(row["amount"], 2))
+        elif row["line_type"] == "tax":
+            tax = _add(tax, oracle_round(row["amount"], 2))
         amount = row["total"] if row["line_type"] == "credit" else row["amount"]
-        amount = oracle_round(amount, 2)
         if row["description"] is None or amount is None:
             column = "description" if row["description"] is None else "amount"
             raise InvoicingIntegrityError(
                 f"invoice_lines.{column} cannot be NULL "
                 f"(tenant={tenant_id} invoice={invoice_id})"
             )
-        lines.append(
-            {
-                "id": util.f_md5_uuid(invoice_id + str(row["line_no"])),
-                "line_no": row["line_no"],
-                "line_type": row["line_type"],
-                "description": row["description"],
-                "amount": Decimal128(amount),
-            }
-        )
-
-    subtotal: rating.Number = Decimal(0)
-    tax: rating.Number = Decimal(0)
-    credit: rating.Number = Decimal(0)
-    for row in preview_rows:
-        if row["line_type"] in {"plan", "usage"}:
-            subtotal = _add(subtotal, oracle_round(row["amount"], 2))
-        elif row["line_type"] == "tax":
-            tax = _add(tax, oracle_round(row["amount"], 2))
-        elif row["line_type"] == "credit":
-            credit = row["credit_applied"]
-    total = oracle_round(
-        _add(_add(subtotal, tax), None if credit is None else -credit), 2
-    )
-    if subtotal is None or tax is None or credit is None or total is None:
+    if subtotal is None or tax is None:
         raise InvoicingIntegrityError(
             f"invoices.amount cannot be NULL (tenant={tenant_id} invoice={invoice_id})"
         )
 
     def txn(session):
+        notes = _positive_credit_notes(
+            store, tenant_id, oldest_first=True, session=session
+        )
+        available = Decimal(0)
+        for note in notes:
+            available += _nvl(
+                to_decimal(note.get("remaining_amount")), Decimal(0)
+            ) or Decimal(0)
+        credit_app = _least(available, _nvl(charge_cap, available))
+        preview_rows = _preview_rows(preview, available)
+        total = oracle_round(
+            _add(_add(subtotal, tax), None if credit_app is None else -credit_app),
+            2,
+        )
+        if total is None:
+            raise InvoicingIntegrityError(
+                f"invoices.amount cannot be NULL "
+                f"(tenant={tenant_id} invoice={invoice_id})"
+            )
+        lines = []
+        for row in preview_rows:
+            amount = row["total"] if row["line_type"] == "credit" else row["amount"]
+            amount = oracle_round(amount, 2)
+            if row["description"] is None or amount is None:
+                column = "description" if row["description"] is None else "amount"
+                raise InvoicingIntegrityError(
+                    f"invoice_lines.{column} cannot be NULL "
+                    f"(tenant={tenant_id} invoice={invoice_id})"
+                )
+            lines.append(
+                {
+                    "id": util.f_md5_uuid(invoice_id + str(row["line_no"])),
+                    "line_no": row["line_no"],
+                    "line_type": row["line_type"],
+                    "description": row["description"],
+                    "amount": Decimal128(amount),
+                }
+            )
         existing = store.billing_invoices.find_one({"_id": invoice_id}, session=session)
         if existing is None:
             tenant_value = tenant_id
@@ -291,10 +322,7 @@ def sp_issue_invoice(
             {"_id": invoice_id}, doc, upsert=True, session=session
         )
 
-        v_credit = credit
-        notes = _positive_credit_notes(
-            store, tenant_id, oldest_first=True, session=session
-        )
+        v_credit = credit_app
         for note in notes:
             if v_credit <= 0:
                 break
@@ -310,8 +338,9 @@ def sp_issue_invoice(
             if result.matched_count == 0:
                 raise RuntimeError("credit note changed concurrently")
             v_credit = _greatest(v_credit - remaining, Decimal(0))
+        return total
 
-    _with_transaction(store, txn)
+    total = _with_transaction(store, txn)
 
     log_msg(
         store,
