@@ -15,7 +15,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | `files` | U4 | 2026-09-01 21:33 | REGISTERED |
 | `subscriptions`, `subscriptions_history`, `usage_events`, `rating_periods`, `billing_invoices`, `credit_notes`, `dunning_attempts`, `notifications`, `billing_audit_log` | U5 | 2026-09-02 00:20 UTC | REGISTERED |
 | `replay_u6_*` (clone of U5 set for Tier-4 replay) | U6 | planned | PLANNED |
-| `replay_u7_*` | U7 | planned | PLANNED |
+| `replay_u7_*` (clone of U5 set + `plans`, `tenants` for Tier-4 rating replay) | U7 | 2026-09-02 01:04 UTC | REGISTERED |
 | `replay_u8_*` | U8 | planned | PLANNED |
 | `replay_u9_*` | U9 | planned | PLANNED |
 
@@ -30,7 +30,7 @@ Status `PLANNED` = declared at phase 2, no load may start until STOP B and the u
 | 1 | U4 files (DynamoDB) | MERGED | GREEN — LIVE PASS (wave1 recon pass 2 @ `3420f475`: T1 1/1, T2 12/12, T3 10,000/10,000 full diff; `tp-run/mongodb-20260901T205236Z--wave1-recon:.migration/recon/wave_reports/wave1.md`) | 0% (no quarantine; 40 `orphaned_metadata` markers retained, not quarantined) | `orphaned_metadata` via S3 `HeadObject` (HEAD path untested; storage-key convention used); file-service (Rust) read/write path against `files` not exercised (data-layer parity only); `folder_id` missing-attribute branch (`null_missing_equiv`); only partition `ns='demo'` in fixture table | 7 loads + 4 recons, ~6 min (child) + 1 LIVE re-load/recon (parent pass 2) | #1419 |
 | 2 | U5 billing core | MERGED | GREEN — LIVE PASS (wave2a recon @ `1aefd226`, re-loaded from head: T1 11/11, T2 53/53, T3 902/902 full diff incl. 3 embedded `results` + 2 embedded `lines`, 142/142 probes; run 1 on the pre-existing load FAIL triaged as observer-caused source drift in `BILLING_AUDIT_LOG` (0→1 row), resolved by the reload; `tp-run/mongodb-20260901T205236Z--wave2a-recon:.migration/recon/wave_reports/wave2a.md`) | 0% (no quarantine targets declared; expected 0, observed 0) | LIVE recon gate (now covered by wave2a recon); Tier 4 parity: PL/SQL not rewritten (D10, U6–U9; `ow_billing/__init__.py` is client factory + names only); `TRG_USAGE_EVENTS_CHECK` kind_cd-in-CODES branch: cross-collection, not `$jsonSchema`-expressible → U7 write path; `counters` seeds for `SEQ_SUBSCRIPTIONS_HIST`/`SEQ_BILLING_AUDIT_LOG` not written (`counters` is U1's target; note `SEQ_BILLING_AUDIT_LOG` now at 2 on source — seed from live sequence); TTL expiry unobserved (index option verified); stratified sampling path unexercised (full diff); load swap atomic per collection, not across the nine | 4 loads + 2 recon runs (child) + 1 LIVE re-load/recon (parent) | #1438 |
 | 2 | U6 PKG_OW_UTIL+PKG_PLANS (calibration) | NOT_STARTED | — | — | — | — | — |
-| 2 | U7 PKG_RATING | NOT_STARTED | — | — | — | — | — |
+| 2 | U7 PKG_RATING | IN_PROGRESS | — | — | — | — | — |
 | 3 | U9 PKG_DUNNING | NOT_STARTED | — | — | — | — | — |
 | 3 | U8 PKG_INVOICING | NOT_STARTED | — | — | — | — | — |
 
