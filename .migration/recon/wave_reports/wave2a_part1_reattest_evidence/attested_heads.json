@@ -1,0 +1,17 @@
+{
+  "wave": "wave2a",
+  "fetched_at_utc": "2026-09-02T04:30Z",
+  "run_branch_head": "1c03cce78178e03d7740fab07d036b0bf0ee1d24",
+  "units": {
+    "U5": {
+      "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1438",
+      "branch": "tp-run/mongodb-20260901T205236Z--u5",
+      "head": "1aefd226d917ec0ddd604159ce7196b924050f7e",
+      "merge_commit": "944c9dcb21944c737a95cd1f3e8517d44f169ad4",
+      "merged_into_run_branch": true,
+      "prior_live_report": "tp-run/mongodb-20260901T205236Z--wave2a-recon:.migration/recon/wave_reports/wave2a.md @ bd880b14",
+      "prior_live_verdict": "PASS (billing_audit_log 1-row drift explained)",
+      "carried_verdict": "PASS"
+    }
+  }
+}

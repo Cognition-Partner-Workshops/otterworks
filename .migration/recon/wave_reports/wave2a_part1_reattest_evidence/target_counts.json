@@ -1,0 +1,29 @@
+{
+ "subscriptions": 69,
+ "subscriptions_history": 0,
+ "usage_events": 814,
+ "rating_periods": 3,
+ "billing_invoices": 3,
+ "credit_notes": 5,
+ "dunning_attempts": 1,
+ "notifications": 1,
+ "billing_audit_log": 1,
+ "sum_results_len": 3,
+ "sum_lines_len": 2,
+ "staging_residue": [],
+ "quarantine_u5_collections": [],
+ "quarantine_all": {
+  "dirty_signup_dt": 50,
+  "invoice_feed_orphan_lines": 37,
+  "orphan_document_snapshots": 6,
+  "bad_csv_list": 31
+ },
+ "audit_log_ids": [
+  1
+ ],
+ "shared_refs": {
+  "codes": 32,
+  "tenants": 69,
+  "plans": 3
+ }
+}
