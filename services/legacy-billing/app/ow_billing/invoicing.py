@@ -92,16 +92,31 @@ def log_msg(store: rating.RatingStore, module: str, message: str) -> None:
 
 
 def _positive_credit_notes(
-    store: InvoicingStore, tenant_id: str, *, oldest_first: bool = False
+    store: InvoicingStore,
+    tenant_id: str,
+    *,
+    oldest_first: bool = False,
+    session: Any | None = None,
 ) -> list[dict[str, Any]]:
+    if session is None:
+        notes_cursor = store.credit_notes.find({"tenant_id": tenant_id})
+    else:
+        notes_cursor = store.credit_notes.find(
+            {"tenant_id": tenant_id}, session=session
+        )
     notes = [
         note
-        for note in store.credit_notes.find({"tenant_id": tenant_id})
+        for note in notes_cursor
         if (to_decimal(note.get("remaining_amount")) or Decimal(0)) > 0
     ]
     if oldest_first:
         notes.sort(key=lambda note: (note["issued_on"], str(note.get("_id"))))
     return notes
+
+
+def _with_transaction(store: InvoicingStore, fn):
+    with store.db.client.start_session() as session:
+        return session.with_transaction(fn)
 
 
 def compute_preview(
@@ -249,44 +264,54 @@ def sp_issue_invoice(
             f"invoices.amount cannot be NULL (tenant={tenant_id} invoice={invoice_id})"
         )
 
-    existing = store.billing_invoices.find_one({"_id": invoice_id})
-    if existing is None:
-        tenant_value = tenant_id
-        period_value = period_id
-        issued_at = rating.as_datetime(period_end)
-    else:
-        tenant_value = existing["tenant_id"]
-        period_value = existing["period_id"]
-        issued_at = existing["issued_at"]
-    doc = {
-        "_id": invoice_id,
-        "id": invoice_id,
-        "tenant_id": tenant_value,
-        "period_id": period_value,
-        "issued_at": issued_at,
-        "subtotal": Decimal128(oracle_round(subtotal, 2)),
-        "tax": Decimal128(oracle_round(tax, 2)),
-        "total": Decimal128(total),
-        "status_cd": INV_STATUS_ISSUED,
-        "lines": lines,
-        "ns": NS_VALUE,
-    }
-    store.billing_invoices.replace_one({"_id": invoice_id}, doc, upsert=True)
-
-    v_credit = credit
-    notes = _positive_credit_notes(store, tenant_id, oldest_first=True)
-    for note in notes:
-        if v_credit <= 0:
-            break
-        remaining = to_decimal(note.get("remaining_amount"))
-        if remaining is None:
-            continue
-        updated = _greatest(_add(remaining, -v_credit), Decimal(0))
-        store.credit_notes.update_one(
-            {"_id": note["_id"]},
-            {"$set": {"remaining_amount": Decimal128(oracle_round(updated, 2))}},
+    def txn(session):
+        existing = store.billing_invoices.find_one({"_id": invoice_id}, session=session)
+        if existing is None:
+            tenant_value = tenant_id
+            period_value = period_id
+            issued_at = rating.as_datetime(period_end)
+        else:
+            tenant_value = existing["tenant_id"]
+            period_value = existing["period_id"]
+            issued_at = existing["issued_at"]
+        doc = {
+            "_id": invoice_id,
+            "id": invoice_id,
+            "tenant_id": tenant_value,
+            "period_id": period_value,
+            "issued_at": issued_at,
+            "subtotal": Decimal128(oracle_round(subtotal, 2)),
+            "tax": Decimal128(oracle_round(tax, 2)),
+            "total": Decimal128(total),
+            "status_cd": INV_STATUS_ISSUED,
+            "lines": lines,
+            "ns": NS_VALUE,
+        }
+        store.billing_invoices.replace_one(
+            {"_id": invoice_id}, doc, upsert=True, session=session
         )
-        v_credit = _greatest(v_credit - remaining, Decimal(0))
+
+        v_credit = credit
+        notes = _positive_credit_notes(
+            store, tenant_id, oldest_first=True, session=session
+        )
+        for note in notes:
+            if v_credit <= 0:
+                break
+            remaining = to_decimal(note.get("remaining_amount"))
+            if remaining is None:
+                continue
+            updated = _greatest(_add(remaining, -v_credit), Decimal(0))
+            result = store.credit_notes.update_one(
+                {"_id": note["_id"], "remaining_amount": note["remaining_amount"]},
+                {"$set": {"remaining_amount": Decimal128(oracle_round(updated, 2))}},
+                session=session,
+            )
+            if result.matched_count == 0:
+                raise RuntimeError("credit note changed concurrently")
+            v_credit = _greatest(v_credit - remaining, Decimal(0))
+
+    _with_transaction(store, txn)
 
     log_msg(
         store,

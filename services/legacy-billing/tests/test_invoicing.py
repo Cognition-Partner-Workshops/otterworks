@@ -5,6 +5,7 @@ import sys
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import mongomock
 import pytest
@@ -16,6 +17,12 @@ from ow_billing import NS_VALUE, invoicing, util
 
 TENANT = "00000000-0000-0000-0000-000000000001"
 FEB1, FEB28 = date(2026, 2, 1), date(2026, 2, 28)
+MAR1, MAR31 = date(2026, 3, 1), date(2026, 3, 31)
+
+
+@pytest.fixture(autouse=True)
+def _disable_mongomock_transactions(monkeypatch):
+    monkeypatch.setattr(invoicing, "_with_transaction", lambda store, fn: fn(None))
 
 
 def _store() -> invoicing.InvoicingStore:
@@ -203,6 +210,44 @@ def test_credit_burn_down_preserves_the_legacy_running_counter_quirk():
     assert store.credit_notes.find_one({"_id": "newer"})["remaining_amount"] == Decimal128(
         "0.00"
     )
+
+
+def test_credit_burn_down_is_serialized_between_periods():
+    store = _store()
+    _tenant(store)
+    _plan(store)
+    _subscription(store)
+    _usage(store)
+    _credit(store, "shared", "60.00")
+
+    first = invoicing.sp_issue_invoice(store, TENANT, FEB1, FEB28)
+    second = invoicing.sp_issue_invoice(store, TENANT, MAR1, MAR31)
+
+    first_credit = -first["lines"][4]["amount"].to_decimal()
+    second_credit = -second["lines"][4]["amount"].to_decimal()
+    assert first_credit == Decimal("59.06")
+    assert second_credit == Decimal("0.94")
+    assert first_credit + second_credit == Decimal("60.00")
+    assert store.credit_notes.find_one({"_id": "shared"})["remaining_amount"] == Decimal128(
+        "0.00"
+    )
+
+
+def test_credit_burn_down_rejects_a_concurrent_change(monkeypatch):
+    store = _store()
+    _tenant(store)
+    _plan(store)
+    _subscription(store)
+    _usage(store)
+    _credit(store, "credit-1", "60.00")
+    monkeypatch.setattr(
+        store.credit_notes,
+        "update_one",
+        lambda *args, **kwargs: SimpleNamespace(matched_count=0),
+    )
+
+    with pytest.raises(RuntimeError, match="credit note changed concurrently"):
+        invoicing.sp_issue_invoice(store, TENANT, FEB1, FEB28)
 
 
 def test_invoice_lines_are_ordered_and_missing_invoice_is_empty():
