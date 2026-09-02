@@ -174,6 +174,7 @@ def test_issue_invoice_rebuilds_lines_and_preserves_existing_issue_metadata():
     assert [line["id"] for line in first["lines"]] == [
         util.f_md5_uuid(invoice_id + str(number)) for number in range(1, 6)
     ]
+    assert all(line["invoice_id"] == invoice_id for line in first["lines"])
     assert store.rating_periods.count_documents({}) == 1
 
     issued_at = first["issued_at"]

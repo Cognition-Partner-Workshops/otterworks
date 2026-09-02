@@ -290,6 +290,7 @@ def sp_issue_invoice(
             lines.append(
                 {
                     "id": util.f_md5_uuid(invoice_id + str(row["line_no"])),
+                    "invoice_id": invoice_id,
                     "line_no": row["line_no"],
                     "line_type": row["line_type"],
                     "description": row["description"],
