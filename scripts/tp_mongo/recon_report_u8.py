@@ -236,9 +236,11 @@ def build(
             "Sibling U9 collection `replay_u9_subscriptions_history` (empty) appeared in the target DB during this run — different prefix, not a U8 write target, untouched",
             "Tier 4 source side is the recorded Oracle transcript, not a live PL/SQL call",
             (
-                "No multi-document transaction spans finalize_rating, replaceOne, and credit updates; "
-                "all NOT-NULL validation occurs before the first invoice write, while partial failure "
-                "between writes is unexercised"
+                "`sp_finalize_rating` (U7 module, no session API) runs before the "
+                "invoice/credit transaction; invoice replaceOne + credit-note burn-down are "
+                "one multi-document transaction with conditional (`_id`+`remaining_amount`) "
+                "updates; a failure after finalize but before/inside the txn leaves the rating "
+                "period finalized (Oracle would roll it back)"
             ),
             "NULL plan, exempt tenant, and no-credit-note branches are unit-tested only unless covered by a scenario",
             "HTTP route exposure of fn_invoice_preview, sp_issue_invoice, and fn_invoice_lines is not wired",

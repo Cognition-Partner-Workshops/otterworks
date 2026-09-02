@@ -2,7 +2,7 @@
 
 - Mode: `live`
 - Mapping `v1.0.1` / tolerances `v1` / seed `714559852` / params `{'batch_no': '85559852', 'source_ns': 'demo'}`
-- Generated: 2026-09-02T03:13:22.074364+00:00
+- Generated: 2026-09-02T02:55:52.788438+00:00
 
 | Tier | Checks | Result |
 |---|---|---|
