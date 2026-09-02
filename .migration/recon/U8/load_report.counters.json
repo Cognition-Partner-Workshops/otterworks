@@ -1,7 +1,7 @@
 {
   "unit": "U1",
-  "started_at": "2026-09-02T06:16:34.263541Z",
-  "finished_at": "2026-09-02T06:16:35.555361Z",
+  "started_at": "2026-09-02T06:33:57.324587Z",
+  "finished_at": "2026-09-02T06:33:59.010093Z",
   "target_db": "ow_tp_mongodb_205236",
   "quarantine_db": "ow_tp_mongodb_205236_quarantine",
   "ns": "mongo_205236",
@@ -16,20 +16,29 @@
   },
   "collections": {
     "counters": {
-      "dropped": true,
-      "recreated": true,
-      "inserted": 5,
-      "docs_after": 5,
-      "ns_docs_after": 5,
-      "indexes": [],
       "root_table": "USER_SEQUENCES",
+      "mode": "counters_only",
+      "oracle_last_number": {
+        "seq_customer_master": 150000,
+        "seq_customer_master_hist": 25001,
+        "seq_entity_attr_value": 22001,
+        "seq_billing_audit_log": 1,
+        "seq_subscriptions_hist": 61
+      },
       "seeded": {
         "seq_customer_master": 150000,
         "seq_customer_master_hist": 25001,
         "seq_entity_attr_value": 22001,
         "seq_billing_audit_log": 1,
         "seq_subscriptions_hist": 61
-      }
+      },
+      "advanced_preserved": [],
+      "dropped": false,
+      "recreated": false,
+      "inserted": 0,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": []
     }
   }
 }
