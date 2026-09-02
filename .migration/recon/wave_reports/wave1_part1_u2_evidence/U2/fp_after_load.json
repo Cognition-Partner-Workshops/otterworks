@@ -1,0 +1,12 @@
+{
+ "ow_tp_mongodb_205236.invoices": {
+  "n": 18750,
+  "sha256": "ad20cc1e5d066abb08ac47cd88d62626704bd394c2c616b1dfe621c7b06d841f",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"batch_no_1_status_cd_1\", [[\"batch_no\", 1], [\"status_cd\", 1]], false], [\"cust_id_1\", [[\"cust_id\", 1]], false], [\"lines.line_id_1\", [[\"lines.line_id\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236_quarantine.invoice_feed_orphan_lines": {
+  "n": 37,
+  "sha256": "92e4ed43c95a75b9c28fcf285be898b5aa10241d9e1a675e523c36302be0f21d",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false]]"
+ }
+}

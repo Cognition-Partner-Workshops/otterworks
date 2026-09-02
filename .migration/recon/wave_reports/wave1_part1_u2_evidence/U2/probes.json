@@ -1,0 +1,319 @@
+{
+ "unit": "U2",
+ "ok": 62,
+ "total": 62,
+ "oracle_statements": 73,
+ "wall_s": 203.7,
+ "results": [
+  {
+   "probe": "1.1 root null+missing per field == source NULL count (9 fields)",
+   "ok": true,
+   "detail": "{}"
+  },
+  {
+   "probe": "1.2 root: no MISSING fields, no empty strings (explicit_null)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "1.3 embedded null+missing per field == source NULL count (20 fields, 149963 elems)",
+   "ok": true,
+   "detail": "{'POSTED_YN': 29937}"
+  },
+  {
+   "probe": "1.4 embedded: no MISSING fields, no empty strings",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "2.1 root BSON type per field == spec (or null)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "2.2 embedded BSON type per field == spec (or null)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "2.3 _id string on all docs; _id == invoice_id",
+   "ok": true,
+   "detail": "{'string': 18750}"
+  },
+  {
+   "probe": "2.4 derived invoice_date/due_date are BSON date or null",
+   "ok": true,
+   "detail": "{('date', 'date'): 18750}"
+  },
+  {
+   "probe": "3.1 invoice_no duplicate groups equal (source vs target)",
+   "ok": true,
+   "detail": "src_groups=0 tgt=[]"
+  },
+  {
+   "probe": "3.2 line_id unique across all embedded lines",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "3.3 (invoice_id,line_no) duplicate groups equal",
+   "ok": true,
+   "detail": "src_groups=19512 tgt=[{'n': 19512}]"
+  },
+  {
+   "probe": "3.4 no line_id appears BOTH embedded and quarantined",
+   "ok": true,
+   "detail": "0"
+  },
+  {
+   "probe": "4.1 boundary invoices (32 keys: MIN/MAX per field, longest invoices, zero-line invoices) full compare incl. all lines",
+   "ok": true,
+   "detail": "32 invoices \u00d7 9 fields + 274 lines \u00d7 20 fields equal"
+  },
+  {
+   "probe": "4.2 200 random invoices full compare incl. all lines",
+   "ok": true,
+   "detail": "200 invoices \u00d7 9 fields + 1581 lines \u00d7 20 fields equal"
+  },
+  {
+   "probe": "4.3 line money: Oracle TO_CHAR == Decimal128 on 300 random lines \u00d7 4 fields (no float)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "5.1 per-tenant SUM(total_amt), COUNT over 50 tenants equal",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "5.2 per (tenant, line_type) SUM(amount), SUM(tax_amt), COUNT over 200 groups equal",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "5.3 invoices where total_amt != SUM(lines.amount) (info; source property)",
+   "ok": true,
+   "detail": "source=18750 target=18750"
+  },
+  {
+   "probe": "5.4 header/lines mismatch count carried identically",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "5.5 status_cd distribution equal",
+   "ok": true,
+   "detail": "{30: 10498, 20: 5504, 40: 2748}"
+  },
+  {
+   "probe": "5.6 lines.posted_yn distribution equal (CHAR rstrip)",
+   "ok": true,
+   "detail": "{'Y': 90211, 'N': 29815, None: 29937}"
+  },
+  {
+   "probe": "5.7 lines.src_system distribution equal",
+   "ok": true,
+   "detail": "{'MAINFRAME': 149963}"
+  },
+  {
+   "probe": "6.1 lines[] length histogram == per-invoice child-row histogram",
+   "ok": true,
+   "detail": "max=23 zero=5 hist={0: 5, 1: 61, 2: 202, 3: 565, 4: 1037, 5: 1687, 6: 2403, 7: 2618, 8: 2565, 9: 2330, 10: 1792, 11: 1355, 12: 877, 13: 564, 14: 335, 15: 181, 16: 93, 17: 55, 18: 14, 19: 2, 20: 4, 21: 4, 23: 1}"
+  },
+  {
+   "probe": "6.2 lines is an array on every doc (incl. zero-line invoices)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.3 every line's invoice_id == parent _id; line.batch_no == parent batch_no; line.tenant_id == parent tenant_id; line.cust_id == parent cust_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.4 source denormalised line columns disagreeing with header (tenant/cust/invoice_no) (info)",
+   "ok": true,
+   "detail": "(Decimal('0'), Decimal('0'), Decimal('0'))"
+  },
+  {
+   "probe": "6.5 elements sorted by (line_no, line_id) inside each doc",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "6.6 INVOICE_LINE / INVOICE_HEADER entirely inside the batch (no other-batch rows silently dropped)",
+   "ok": true,
+   "detail": "lines_all=150000 lines_batch=150000 headers_all=18750"
+  },
+  {
+   "probe": "7.1 invoice_feed_orphan_lines SET == Oracle anti-join set; expected 37",
+   "ok": true,
+   "detail": "src=37 tgt=37 symdiff=[]"
+  },
+  {
+   "probe": "7.2 quarantine docs carry ns, unit=U2, batch_no, reason_class=orphan_parent, verbatim row with all 20 line fields",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "7.3 quarantined rows verbatim == source (37 \u00d7 20 fields)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "7.4 orphan invoice_ids resolve to NO header in ANY batch (true orphans, not cross-batch)",
+   "ok": true,
+   "detail": "distinct_orphan_invoice_ids=37"
+  },
+  {
+   "probe": "7.5 quarantine ceiling 0.5 %: 37/150000 lines",
+   "ok": true,
+   "detail": "0.025 %"
+  },
+  {
+   "probe": "7.6 embedded + quarantined == all batch lines (149963 + 37 = 150000)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.1 lines.gl_accounts == trim(split(gl_acct_csv, ',')) ; null csv -> []",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "8.2 invoice_date/due_date == Oracle TO_DATE(...,'DD-MON-YY') on 400 random headers",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "8.3 unparseable header dates: target null-derived count == Oracle conversion-error count (U2 has no dirty-date quarantine class by spec)",
+   "ok": true,
+   "detail": "target=0 source=0"
+  },
+  {
+   "probe": "9.1 no undeclared top-level fields (status_desc NOT stored, per spec)",
+   "ok": true,
+   "detail": "{}"
+  },
+  {
+   "probe": "9.2 no undeclared embedded fields",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "9.3 ns == mongo_205236 on 100 % of invoices and quarantine docs",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "9.4 batch_no == 85559852 on 100 % of invoices",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "10.1 invoices indexes \u2287 spec (3 declared: batch_no+status_cd, cust_id, lines.line_id)",
+   "ok": true,
+   "detail": "{(('_id', 1),): False, (('batch_no', 1), ('status_cd', 1)): False, (('cust_id', 1),): False, (('lines.line_id', 1),): False}"
+  },
+  {
+   "probe": "10.2 no unique flags beyond spec",
+   "ok": true,
+   "detail": "{(('_id', 1),): False, (('batch_no', 1), ('status_cd', 1)): False, (('cust_id', 1),): False, (('lines.line_id', 1),): False}"
+  },
+  {
+   "probe": "10.3 quarantine indexes (info)",
+   "ok": true,
+   "detail": "{(('_id', 1),)}"
+  },
+  {
+   "probe": "11.1 partition_lines([]) -> no embeds, no quarantine, 0 total",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "11.2 build_invoice_doc: empty string -> null, bad date -> null, lines == [], decimal ROUND_HALF_EVEN(1.005)->1.00",
+   "ok": true,
+   "detail": "{'_id': 'X', 'invoice_id': 'X', 'invoice_no': None, 'cust_id': None, 'tenant_id': 't', 'invoice_dt': '31-FEB-24', 'due_dt': None, 'status_cd': 1, 'total_amt': Decimal128('1.00'), 'batch_no': 85559852, 'ns': 'mongo_205236', 'invoice_date': None, 'due_date': None, 'lines': []}"
+  },
+  {
+   "probe": "11.3 loader drops live `invoices` BEFORE reinsert (no staging swap; concurrent readers see a gap during the ~60 s load) (design note)",
+   "ok": true,
+   "detail": "drop_before_insert=True"
+  },
+  {
+   "probe": "11.4 empty batch (batch_no=1: 0 headers in source) -> head 9e73ffea loader now REFUSES before dropping the target (new since 9643ce76; verified by source position, not exercised live)",
+   "ok": true,
+   "detail": "src_headers_batch1=0 guard=True guard_before_drop=True"
+  },
+  {
+   "probe": "12.1 codes collection == Oracle CODES (type,val,desc)",
+   "ok": true,
+   "detail": "n=32 types=Counter({'CUST_STATUS': 4, 'INV_STATUS': 4, 'PHONE_TYPE': 4, 'CUST_TYPE': 3, 'DUN_STATUS': 3, 'NOTIF_KIND': 3, 'PLAN_TIER': 3, 'SUB_STATUS': 3, 'USAGE_KIND': 3, 'TENANT_STATUS': 2})"
+  },
+  {
+   "probe": "12.2 invoices.status_cd -> codes[INV_STATUS] unresolved set identical to source (RPT-114 'UNKNOWN(n)' bucket)",
+   "ok": true,
+   "detail": "status_cds=[20, 30, 40] unresolved=[]"
+  },
+  {
+   "probe": "12.3 lines.line_type_cd values == source distinct set",
+   "ok": true,
+   "detail": "[1, 2, 3, 9]"
+  },
+  {
+   "probe": "12.4 invoices.tenant_id \u2282 customers.tenant_id exactly as in source",
+   "ok": true,
+   "detail": "inv_tenants=50 not_in_customers=0 src=0"
+  },
+  {
+   "probe": "12.5 invoices.tenant_id -> tenants._id resolution identical to source",
+   "ok": true,
+   "detail": "resolve=0 of 50"
+  },
+  {
+   "probe": "12.6 invoices.cust_id -> customers._id unresolved count identical to source",
+   "ok": true,
+   "detail": "distinct=7581 unresolved=0 src=0"
+  },
+  {
+   "probe": "12.7 lines.cust_no/cust_name vs customers denorm disagreement count identical to source",
+   "ok": true,
+   "detail": "src=0 tgt=0"
+  },
+  {
+   "probe": "13.1 RPT-114 STATUS rollup (status_desc, invoice_count, header_total_amt) identical",
+   "ok": true,
+   "detail": "oracle=[('issued', 5504, '55450955.92'), ('overdue', 2748, '27585416.69'), ('paid', 10498, '104582085.97')] mongo=[('issued', 5504, '55450955.92'), ('overdue', 2748, '27585416.69'), ('paid', 10498, '104582085.97')]"
+  },
+  {
+   "probe": "13.2 RPT-114 LINE rollup (status, line_type, line_count, line_amount, line_tax, invoices_touched) identical \u2014 orphans excluded on both sides",
+   "ok": true,
+   "detail": "rows=12 sample=[('issued', 'ADJUSTMENT', 7172, '89342458.72', '7370753.25', 3970), ('issued', 'CHARGE', 21986, '272970444.56', '22520061.50', 5390)]"
+  },
+  {
+   "probe": "13.3 lookup by invoice_no -> same invoice_id (25 random)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "13.4 invoices for a customer (cust_id index) identical sets (10 customers)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "13.5 line_id -> parent invoice via lines.line_id index (25 random)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "probe": "13.6 orphan line_ids are NOT findable in invoices (must go to quarantine, as the RPT-114 note says)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "probe": "14.1 source stable across two counts; FIXTURE_META unchanged",
+   "ok": true,
+   "detail": "headers=18750/18750 lines=150000/150000 initialized_at=2026-09-01 20:53:10.961888"
+  }
+ ]
+}
