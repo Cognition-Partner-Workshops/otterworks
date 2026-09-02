@@ -394,70 +394,78 @@ def _money(value: Number) -> Decimal128 | None:
     return None if value is None else Decimal128(value.quantize(Decimal("0.01")))
 
 
+class RatingIntegrityError(ValueError):
+    """ORA-01400: a NOT NULL column of rating_results would receive NULL."""
+
+
 def sp_finalize_rating(
     store: RatingStore, tenant_id: str, period_start: date | datetime, period_end: date | datetime
 ) -> dict[str, Any]:
     """Upsert the tenant's period and its single embedded results[] element; returns the
-    rating_periods document as stored."""
+    rating_periods document as stored.
+
+    The legacy procedure runs inside the caller's transaction, so a failed finalization
+    leaves nothing behind. Here every read happens first and the period + result land in
+    ONE document write (an upsert that also pushes the result, or a positional refresh of
+    the existing result), so there is no partial state to roll back.
+    """
     p_start, p_end = as_datetime(period_start), as_datetime(period_end)
     period_id = md5_uuid(f"{tenant_id}{p_start.strftime('%Y-%m-%d')}")
+    period_key = {"tenant_id": tenant_id, "period_start": p_start}
 
     sub = covering_subscription(store, tenant_id, p_start, p_end)
     sub_id = sub.get("id") if sub else None
-
-    # INSERT ... EXCEPTION WHEN DUP_VAL_ON_INDEX THEN UPDATE period_end
-    store.rating_periods.update_one(
-        {"tenant_id": tenant_id, "period_start": p_start},
-        {
-            "$set": {"period_end": p_end},
-            "$setOnInsert": {
-                "_id": period_id,
-                "id": period_id,
-                "tenant_id": tenant_id,
-                "period_start": p_start,
-                "results": [],
-                "ns": NS_VALUE,
-            },
-        },
-        upsert=True,
-    )
 
     rating = compute_rating(store, tenant_id, p_start, p_end)
     result_id = md5_uuid(period_id)
     banked = greatest(_sub(rating.quota_units, rating.used_units), Decimal(0))
 
-    # INSERT rating_results ... EXCEPTION WHEN DUP_VAL_ON_INDEX THEN UPDATE the four
-    # amounts. The append is guarded by `results.id != result_id` in the same atomic
-    # document update, so racing finalizations cannot push the id twice; the refresh
-    # then targets the single element that exists.
-    refreshed = {
+    result = {
+        "id": result_id,
+        "period_id": period_id,
+        "subscription_id": sub_id,
         "used_units": _long(rating.used_units),
+        "quota_units": _long(rating.quota_units),
         "rollover_units": _long(banked),
         "billable_units": _long(rating.billable_units),
         "overage_amount": _money(rating.overage_amount),
+        "created_at": p_end,
     }
-    period_key = {"tenant_id": tenant_id, "period_start": p_start}
-    store.rating_periods.update_one(
-        {**period_key, "results.id": {"$ne": result_id}},
-        {
-            "$push": {
-                "results": {
-                    "id": result_id,
-                    "period_id": period_id,
-                    "subscription_id": sub_id,
-                    "quota_units": _long(rating.quota_units),
-                    "created_at": p_end,
-                    **refreshed,
-                }
-            }
-        },
-    )
-    store.rating_periods.update_one(
-        {**period_key, "results.id": result_id},
-        {"$set": {f"results.$.{k}": v for k, v in refreshed.items()}},
-    )
+    missing = [k for k, v in result.items() if v is None]
+    if missing:
+        raise RatingIntegrityError(
+            f"rating_results.{missing[0]} cannot be NULL (tenant={tenant_id} period={period_id})"
+        )
+    # UPDATE rating_results SET the four amounts WHERE id = v_result_id
+    refresh = {
+        "$set": {
+            "period_end": p_end,
+            **{f"results.$.{k}": result[k] for k in
+               ("used_units", "rollover_units", "billable_units", "overage_amount")},
+        }
+    }
+
+    def _refresh() -> bool:
+        return store.rating_periods.update_one({**period_key, "results.id": result_id}, refresh).matched_count == 1
+
+    if not _refresh():
+        # INSERT rating_periods (or UPDATE period_end) + INSERT rating_results, atomically:
+        # the `results.id != result_id` guard makes a racing writer's append surface as a
+        # DuplicateKeyError on uq_rating_periods, after which the refresh path applies.
+        try:
+            store.rating_periods.update_one(
+                {**period_key, "results.id": {"$ne": result_id}},
+                {
+                    "$set": {"period_end": p_end},
+                    "$setOnInsert": {"_id": period_id, "id": period_id, **period_key, "ns": NS_VALUE},
+                    "$push": {"results": result},
+                },
+                upsert=True,
+            )
+        except DuplicateKeyError:
+            _refresh()
     log_msg(store, "RATING", f"finalized period={period_id}")
-    return store.rating_periods.find_one({"tenant_id": tenant_id, "period_start": p_start})
+    return store.rating_periods.find_one(period_key)
 
 
 def rating_result_rows(store: RatingStore, tenant_id: str, period_start: date | datetime) -> list[dict[str, Any]]:

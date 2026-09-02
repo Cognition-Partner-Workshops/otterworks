@@ -23,7 +23,9 @@ FEB1, FEB28 = date(2026, 2, 1), date(2026, 2, 28)
 
 
 def _store(prefix: str = "replay_u7_") -> rating.RatingStore:
-    return rating.RatingStore(mongomock.MongoClient()["ow_tp_mongodb_205236"], prefix)
+    store = rating.RatingStore(mongomock.MongoClient()["ow_tp_mongodb_205236"], prefix)
+    store.rating_periods.create_index([("tenant_id", 1), ("period_start", 1)], unique=True)
+    return store
 
 
 def _seed(store, *, included=100, rate="0.05", status=10, suspended_on=None, plan=True):
@@ -259,3 +261,37 @@ def test_finalize_append_is_guarded_against_a_racing_writer():
     assert [r["id"] for r in doc["results"]] == [result_id]
     assert doc["results"][0]["used_units"] == 160
     assert doc["results"][0]["billable_units"] == 60
+
+
+def test_finalize_without_subscription_raises_and_writes_nothing():
+    store = _store()
+    with pytest.raises(rating.RatingIntegrityError, match="subscription_id"):
+        rating.sp_finalize_rating(store, TENANT, FEB1, FEB28)
+    assert store.rating_periods.count_documents({}) == 0
+
+
+def test_finalize_with_null_plan_amounts_raises_and_writes_nothing():
+    store = _store()
+    _seed(store, plan=False)
+    with pytest.raises(rating.RatingIntegrityError, match="quota_units"):
+        rating.sp_finalize_rating(store, TENANT, FEB1, FEB28)
+    assert store.rating_periods.count_documents({}) == 0
+
+
+def test_finalize_period_and_result_land_in_one_write(monkeypatch):
+    store = _store()
+    _seed(store)
+    _event(store, "e1", datetime(2026, 2, 10), 160)
+    writes = []
+    original = store.rating_periods.update_one
+
+    def spy(*a, **kw):
+        writes.append(a[0])
+        return original(*a, **kw)
+
+    monkeypatch.setattr(store.rating_periods, "update_one", spy)
+    doc = rating.sp_finalize_rating(store, TENANT, FEB1, FEB28)
+    # one no-op refresh probe, then the single upsert that creates period + result
+    assert len(writes) == 2
+    assert doc["period_end"] == datetime(2026, 2, 28)
+    assert [r["subscription_id"] for r in doc["results"]] == ["sub-1"]
