@@ -98,6 +98,10 @@ def test_seed_counters_uses_int64_last_number_minus_one():
     )
     assert seeds["seq_billing_audit_log"]["seq"] == Int64(3)
     assert seeds["seq_subscriptions_hist"]["seq"] == Int64(7)
+    assert seeds["seq_billing_audit_log"]["source_sequence"] == "SEQ_BILLING_AUDIT_LOG"
+    assert seeds["seq_subscriptions_hist"]["source_sequence"] == "SEQ_SUBSCRIPTIONS_HIST"
+    assert seeds["seq_billing_audit_log"]["ns"] == load_replay_u6.NS_VALUE
+    assert seeds["seq_subscriptions_hist"]["ns"] == load_replay_u6.NS_VALUE
     assert all(
         isinstance(document["seq"], Int64)
         for document in database["replay_u6_counters"].documents

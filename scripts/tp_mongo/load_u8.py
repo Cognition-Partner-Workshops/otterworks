@@ -16,11 +16,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import oracledb
 from bson import Int64
 from pymongo import MongoClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from load_u5 import NS_VALUE, TARGET_DB, secret_value, validate_target_db
+from load_u5 import (
+    NS_VALUE,
+    TARGET_DB,
+    fetch,
+    parse_dsn,
+    secret_value,
+    validate_target_db,
+)
 
 PREFIX = "replay_u8_"
 SOURCE_COLLECTIONS = (
@@ -37,7 +45,10 @@ SOURCE_COLLECTIONS = (
     "tenants",
 )
 COUNTERS = f"{PREFIX}counters"
-AUDIT_SEQUENCE = "SEQ_BILLING_AUDIT_LOG"
+AUDIT_SEQUENCE = "seq_billing_audit_log"
+SOURCE_AUDIT_SEQUENCE = "SEQ_BILLING_AUDIT_LOG"
+HISTORY_SEQUENCE = "seq_subscriptions_hist"
+SOURCE_HISTORY_SEQUENCE = "SEQ_SUBSCRIPTIONS_HIST"
 UNIT_COLLECTIONS = tuple(f"{PREFIX}{name}" for name in SOURCE_COLLECTIONS) + (COUNTERS,)
 
 
@@ -125,22 +136,61 @@ def clone_collection(database: Any, source: str) -> dict[str, Any]:
     return report
 
 
-def seed_counters(database: Any) -> dict[str, Any]:
-    """Seed the clone's audit sequence after the cloned audit-log maximum."""
+def seed_counters(database: Any, oracle_last_numbers: dict[str, int]) -> dict[str, Any]:
+    """Seed audit and history counters after the Oracle and clone maxima."""
     assert_owned(COUNTERS)
     database.drop_collection(COUNTERS)
-    top = database[clone_name("billing_audit_log")].find_one(sort=[("log_id", -1)])
-    start = Int64(top["log_id"]) if top else Int64(0)
-    database[COUNTERS].insert_one({"_id": AUDIT_SEQUENCE, "value": start, "ns": NS_VALUE})
+    starts = {
+        AUDIT_SEQUENCE: max(
+            oracle_last_numbers[SOURCE_AUDIT_SEQUENCE],
+            int(
+                (
+                    database[clone_name("billing_audit_log")].find_one(
+                        sort=[("log_id", -1)]
+                    )
+                    or {}
+                ).get("log_id", 0)
+            ),
+        ),
+        HISTORY_SEQUENCE: max(
+            oracle_last_numbers[SOURCE_HISTORY_SEQUENCE],
+            int(
+                (
+                    database[clone_name("subscriptions_history")].find_one(
+                        sort=[("hist_id", -1)]
+                    )
+                    or {}
+                ).get("hist_id", 0)
+            ),
+        ),
+    }
+    seeds = {
+        AUDIT_SEQUENCE: {
+            "_id": AUDIT_SEQUENCE,
+            "seq": Int64(starts[AUDIT_SEQUENCE]),
+            "source_sequence": SOURCE_AUDIT_SEQUENCE,
+            "ns": NS_VALUE,
+        },
+        HISTORY_SEQUENCE: {
+            "_id": HISTORY_SEQUENCE,
+            "seq": Int64(starts[HISTORY_SEQUENCE]),
+            "source_sequence": SOURCE_HISTORY_SEQUENCE,
+            "ns": NS_VALUE,
+        },
+    }
+    database[COUNTERS].insert_many(list(seeds.values()), ordered=True)
     return {
         "dropped": True,
         "recreated": True,
-        "source_rows": 1,
-        "inserted": 1,
-        "docs_after": 1,
-        "ns_docs_after": 1,
+        "source_rows": len(seeds),
+        "inserted": len(seeds),
+        "docs_after": len(seeds),
+        "ns_docs_after": len(seeds),
         "indexes": [],
-        "sequence_start": int(start),
+        "sequence_start": starts[AUDIT_SEQUENCE],
+        "oracle_last_number": oracle_last_numbers[SOURCE_AUDIT_SEQUENCE],
+        "history_sequence_start": starts[HISTORY_SEQUENCE],
+        "history_oracle_last_number": oracle_last_numbers[SOURCE_HISTORY_SEQUENCE],
     }
 
 
@@ -150,6 +200,7 @@ def utc_now() -> str:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dsn-secret", default="OW_BILLING_FIXTURE_DSN")
     parser.add_argument("--uri-secret", default="MONGODB_ATLAS_URI")
     parser.add_argument("--target-db", default=TARGET_DB)
     parser.add_argument("--report", default=".migration/recon/U8/load_report.json")
@@ -164,11 +215,29 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def run(args: argparse.Namespace) -> dict[str, Any]:
     started_at = utc_now()
     validate_target_db(args.target_db)
+    user, password, dsn = parse_dsn(secret_value(args.dsn_secret))
+    with oracledb.connect(user=user, password=password, dsn=dsn) as oracle:
+        rows = fetch(
+            oracle,
+            "SELECT SEQUENCE_NAME, LAST_NUMBER FROM USER_SEQUENCES "
+            "WHERE SEQUENCE_NAME IN (:audit_sequence, :history_sequence)",
+            {
+                "audit_sequence": SOURCE_AUDIT_SEQUENCE,
+                "history_sequence": SOURCE_HISTORY_SEQUENCE,
+            },
+        )
+    oracle_last_numbers = {row["SEQUENCE_NAME"]: int(row["LAST_NUMBER"]) for row in rows}
+    missing = {
+        SOURCE_AUDIT_SEQUENCE,
+        SOURCE_HISTORY_SEQUENCE,
+    } - set(oracle_last_numbers)
+    if missing:
+        raise LookupError(f"Oracle sequences {sorted(missing)!r} were not found")
     client = MongoClient(secret_value(args.uri_secret))
     try:
         database = client[args.target_db]
         collections = {clone_name(s): clone_collection(database, s) for s in SOURCE_COLLECTIONS}
-        collections[COUNTERS] = seed_counters(database)
+        collections[COUNTERS] = seed_counters(database, oracle_last_numbers)
     finally:
         client.close()
     report = {
@@ -179,7 +248,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "target_db": args.target_db,
         "ns": NS_VALUE,
         "collections": collections,
-        "secret_names": {"uri": args.uri_secret},
+        "secret_names": {"dsn": args.dsn_secret, "uri": args.uri_secret},
     }
     path = Path(args.report)
     path.parent.mkdir(parents=True, exist_ok=True)

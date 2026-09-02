@@ -32,6 +32,14 @@ def _store() -> invoicing.InvoicingStore:
     store.rating_periods.create_index(
         [("tenant_id", 1), ("period_start", 1)], unique=True
     )
+    store.counters.insert_one(
+        {
+            "_id": util.SEQ_BILLING_AUDIT_LOG,
+            "seq": Int64(0),
+            "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+            "ns": NS_VALUE,
+        }
+    )
     return store
 
 

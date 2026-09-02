@@ -7,12 +7,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+import load_u0
+import load_u5
 import oracledb
 from bson import Int64
 from pymongo import ASCENDING, MongoClient
-
-import load_u0
-import load_u5
 
 NS_VALUE = load_u0.NS_VALUE
 TARGET_DB = load_u0.TARGET_DB
@@ -164,6 +163,8 @@ def seed_counters(database: Any, sequences: dict[str, Int64]) -> dict[str, Any]:
         seeds[sequence] = {
             "_id": sequence,
             "seq": Int64(sequences[sequence] - 1),
+            "source_sequence": sequence.upper(),
+            "ns": NS_VALUE,
         }
     target = collection_name("counters")
     staging = collection_name("counters", staging=True)

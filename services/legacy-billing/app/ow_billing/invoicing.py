@@ -87,8 +87,8 @@ def _to_char(value: Decimal) -> str:
     return text
 
 
-def log_msg(store: rating.RatingStore, module: str, message: str) -> None:
-    rating.log_msg(store, module, message)
+def log_msg(store: rating.RatingStore, module: str, message: str):
+    return util.log_msg(store, module, message)
 
 
 def _positive_credit_notes(
