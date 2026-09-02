@@ -24,6 +24,9 @@ def _store():
     store.coll("counters").insert_one(
         {"_id": "seq_billing_audit_log", "seq": Int64(0), "ns": NS_VALUE}
     )
+    store.coll("counters").insert_one(
+        {"_id": dunning.util.SEQ_SUBSCRIPTIONS_HIST, "seq": Int64(0), "ns": NS_VALUE}
+    )
     store.coll("dunning_attempts").create_index(
         [("invoice_id", 1), ("attempt_no", 1)], unique=True
     )
@@ -31,6 +34,21 @@ def _store():
         [("tenant_id", 1), ("kind_cd", 1), ("sent_at", 1)], unique=True
     )
     return store
+
+
+class _TransactionSession:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def with_transaction(self, callback):
+        return callback(None)
+
+
+def _enable_transactions(monkeypatch, store):
+    monkeypatch.setattr(store.client, "start_session", lambda: _TransactionSession())
 
 
 def _invoice(store, invoice_id, tenant_id, issued_at, status=40, total="10.00"):
@@ -122,8 +140,9 @@ def test_schedule_propagates_non_duplicate_errors(monkeypatch, error):
         dunning.sp_schedule_dunning(store, date(2026, 2, 14))
 
 
-def test_suspend_updates_active_records_once():
+def test_suspend_updates_active_records_once(monkeypatch):
     store = _store()
+    _enable_transactions(monkeypatch, store)
     _invoice(store, "old", TENANT_5, datetime(2026, 2, 1))
     _invoice(store, "new", TENANT_1, datetime(2026, 2, 20))
     store.coll("tenants").insert_many(
@@ -143,6 +162,12 @@ def test_suspend_updates_active_records_once():
     sub = store.coll("subscriptions").find_one({"_id": "a"})
     assert sub["status_cd"] == 20 and sub["suspended_on"] == datetime(2026, 2, 28)
     assert store.coll("subscriptions").find_one({"_id": "b"})["status_cd"] == 20
+    history = store.coll("subscriptions_history").find_one({"id": "a"})
+    assert history["hist_id"] == Int64(1)
+    assert history["status_cd"] == 10
+    assert history["suspended_on"] is None
+    assert history["hist_op"] == "UPD"
+    assert store.coll("subscriptions_history").count_documents({"id": "b"}) == 0
     notification = store.coll("notifications").find_one()
     assert notification["id"] == "8cd558f5-d843-8d3d-be19-fb94c21ab81f"
     assert dunning.sp_suspend_overdue(store, date(2026, 2, 28)) == []
@@ -192,3 +217,6 @@ def test_dunning_blueprint_accepts_query_form_and_json(monkeypatch):
         "status": "suspended",
         "tenant_ids": ["t"],
     }
+    assert client.get("/api/dunning/overdue?as_of=bad").status_code == 400
+    assert client.post("/api/dunning/schedule", data={"as_of": "bad"}).status_code == 400
+    assert client.post("/api/dunning/suspend", json={"as_of": "bad"}).status_code == 400

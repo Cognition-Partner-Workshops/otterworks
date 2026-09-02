@@ -3,7 +3,7 @@
   "unit": "U9",
   "namespace": "mongo_205236",
   "prefix": "replay_u9_",
-  "generated_at": "2026-09-02T02:42:46.619965+00:00",
+  "generated_at": "2026-09-02T02:51:24.804503+00:00",
   "run_mode": "fixture",
   "harness": {
     "result": ".migration/recon/U9/result.json",
@@ -172,6 +172,27 @@
       "result": "pass"
     },
     {
+      "id": "clone.replay_u9_subscriptions_history.count",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions_history.ns_tagged",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents({ns})",
+      "result": "pass"
+    },
+    {
+      "id": "clone.replay_u9_subscriptions_history.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load report",
+      "result": "pass"
+    },
+    {
       "id": "clone.replay_u9_dunning_attempts.count",
       "expected": 1,
       "actual": 1,
@@ -248,15 +269,15 @@
     },
     {
       "id": "clone.replay_u9_counters.count",
-      "expected": 1,
-      "actual": 1,
+      "expected": 2,
+      "actual": 2,
       "source_of_truth": "Atlas count_documents",
       "result": "pass"
     },
     {
       "id": "clone.replay_u9_counters.ns_tagged",
-      "expected": 1,
-      "actual": 1,
+      "expected": 2,
+      "actual": 2,
       "source_of_truth": "Atlas count_documents({ns})",
       "result": "pass"
     },
@@ -285,6 +306,13 @@
       "id": "golden.subscriptions.untouched",
       "expected": 69,
       "actual": 69,
+      "source_of_truth": "Atlas unprefixed count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "golden.subscriptions_history.untouched",
+      "expected": 0,
+      "actual": 0,
       "source_of_truth": "Atlas unprefixed count_documents",
       "result": "pass"
     },

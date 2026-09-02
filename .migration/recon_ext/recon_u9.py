@@ -29,12 +29,21 @@ GRADED_SOURCES = (
     "billing_invoices",
     "tenants",
     "subscriptions",
+    "subscriptions_history",
     "dunning_attempts",
     "notifications",
 )
 SCENARIOS = ROOT / "procs" / "scenarios" / "dunning"
 TRANSCRIPTS = ROOT / "procs" / "oracle" / "transcripts" / "dunning"
-MUTABLE = ("tenants", "subscriptions", "dunning_attempts", "notifications", "billing_audit_log", "counters")
+MUTABLE = (
+    "tenants",
+    "subscriptions",
+    "subscriptions_history",
+    "dunning_attempts",
+    "notifications",
+    "billing_audit_log",
+    "counters",
+)
 TIER4_ROWS: list[dict[str, Any]] = []
 
 

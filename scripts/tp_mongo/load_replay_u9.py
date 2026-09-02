@@ -20,6 +20,7 @@ SOURCE_COLLECTIONS = (
     "billing_invoices",
     "tenants",
     "subscriptions",
+    "subscriptions_history",
     "dunning_attempts",
     "notifications",
     "billing_audit_log",
@@ -115,20 +116,34 @@ def clone_collection(database: Any, source: str) -> dict[str, Any]:
 def seed_counters(database: Any) -> dict[str, Any]:
     assert_owned(COUNTERS)
     database.drop_collection(COUNTERS)
-    top = database[clone_name("billing_audit_log")].find_one(sort=[("log_id", -1)])
-    start = Int64(top["log_id"]) if top else Int64(0)
+    audit = database[clone_name("billing_audit_log")].find_one(sort=[("log_id", -1)])
+    history = database[clone_name("subscriptions_history")].find_one(
+        sort=[("hist_id", -1)]
+    )
+    audit_start = Int64(audit["log_id"]) if audit else Int64(0)
+    history_start = Int64(history["hist_id"]) if history else Int64(0)
     database[COUNTERS].insert_one(
-        {"_id": "seq_billing_audit_log", "seq": start, "ns": NS_VALUE}
+        {"_id": "seq_billing_audit_log", "seq": audit_start, "ns": NS_VALUE}
+    )
+    database[COUNTERS].insert_one(
+        {
+            "_id": "seq_subscriptions_hist",
+            "seq": history_start,
+            "ns": NS_VALUE,
+        }
     )
     return {
         "dropped": True,
         "recreated": True,
-        "source_rows": 1,
-        "inserted": 1,
-        "docs_after": 1,
-        "ns_docs_after": 1,
+        "source_rows": 2,
+        "inserted": 2,
+        "docs_after": 2,
+        "ns_docs_after": 2,
         "indexes": [],
-        "sequence_start": int(start),
+        "sequence_starts": {
+            "seq_billing_audit_log": int(audit_start),
+            "seq_subscriptions_hist": int(history_start),
+        },
     }
 
 

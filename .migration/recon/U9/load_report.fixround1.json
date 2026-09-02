@@ -1,8 +1,8 @@
 {
   "unit": "U9",
-  "started_at": "2026-09-02T02:50:27.568345Z",
-  "finished_at": "2026-09-02T02:50:32.766241Z",
-  "generated_at": "2026-09-02T02:50:32.766261Z",
+  "started_at": "2026-09-02T02:38:36.003566Z",
+  "finished_at": "2026-09-02T02:38:40.916126Z",
+  "generated_at": "2026-09-02T02:38:40.916146Z",
   "target_db": "ow_tp_mongodb_205236",
   "ns": "mongo_205236",
   "prefix": "replay_u9_",
@@ -45,16 +45,6 @@
         "tenant_id_1_starts_on_-1"
       ]
     },
-    "replay_u9_subscriptions_history": {
-      "cloned_from": "subscriptions_history",
-      "dropped": true,
-      "recreated": true,
-      "source_rows": 0,
-      "inserted": 0,
-      "docs_after": 0,
-      "ns_docs_after": 0,
-      "indexes": []
-    },
     "replay_u9_dunning_attempts": {
       "cloned_from": "dunning_attempts",
       "dropped": true,
@@ -94,15 +84,12 @@
     "replay_u9_counters": {
       "dropped": true,
       "recreated": true,
-      "source_rows": 2,
-      "inserted": 2,
-      "docs_after": 2,
-      "ns_docs_after": 2,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
       "indexes": [],
-      "sequence_starts": {
-        "seq_billing_audit_log": 1,
-        "seq_subscriptions_hist": 0
-      }
+      "sequence_start": 1
     }
   },
   "secret_names": {

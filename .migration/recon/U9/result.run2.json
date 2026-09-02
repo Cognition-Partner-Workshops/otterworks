@@ -8,13 +8,13 @@
     "batch_no": "85559852",
     "source_ns": "demo"
   },
-  "generated_at": "2026-09-02T02:51:10.536162+00:00",
+  "generated_at": "2026-09-02T02:42:37.591487+00:00",
   "tiers": [
     {
       "tier": 1,
       "name": "counts_through_mapping",
       "passed": true,
-      "checks_run": 7,
+      "checks_run": 6,
       "stats": {},
       "findings": []
     },
@@ -22,7 +22,7 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 39,
+      "checks_run": 29,
       "stats": {
         "deferred_to_tier3": [
           "replay_u9_tenants.id",
@@ -31,11 +31,6 @@
           "replay_u9_subscriptions.id",
           "replay_u9_subscriptions.tenant_id",
           "replay_u9_subscriptions.plan_id",
-          "replay_u9_subscriptions_history.hist_dt",
-          "replay_u9_subscriptions_history.hist_op",
-          "replay_u9_subscriptions_history.id",
-          "replay_u9_subscriptions_history.tenant_id",
-          "replay_u9_subscriptions_history.plan_id",
           "replay_u9_billing_invoices.id",
           "replay_u9_billing_invoices.tenant_id",
           "replay_u9_billing_invoices.period_id",
@@ -61,10 +56,6 @@
         "replay_u9_subscriptions": {
           "mode": "full_diff",
           "population": 69
-        },
-        "replay_u9_subscriptions_history": {
-          "mode": "full_diff",
-          "population": 0
         },
         "replay_u9_billing_invoices": {
           "mode": "full_diff",

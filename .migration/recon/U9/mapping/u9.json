@@ -166,6 +166,116 @@
       "notes": "TRG_SUB_NO_UNCANCEL (status 30 may not revert) and TRG_SUBSCRIPTIONS_HIST move to the application write path (U6)."
     },
     {
+      "collection": "replay_u9_subscriptions_history",
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 2,
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "HIST_ID",
+          "target": "hist_id",
+          "source_type": "NUMBER(12,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "HIST_DT",
+          "target": "hist_dt",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "HIST_OP",
+          "target": "hist_op",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "0 rows at census; created + registered as the history target for the rewritten write path."
+    },
+    {
       "collection": "replay_u9_billing_invoices",
       "root_table": "INVOICES",
       "family": "oracle",

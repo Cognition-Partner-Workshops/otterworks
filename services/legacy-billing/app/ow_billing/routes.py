@@ -156,34 +156,33 @@ def _as_of_payload() -> str:
     return payload.get("as_of", "2026-02-28")
 
 
+def _dunning_call(name: str, as_of: str):
+    try:
+        parsed = date.fromisoformat(as_of)
+    except (TypeError, ValueError):
+        return jsonify(detail="invalid as_of"), 400
+    return jsonify(call_entrypoint(_store(), name, {"as_of": parsed.isoformat()}))
+
+
 @plans_api.get("/api/dunning/overdue")
 def overdue_accounts():
-    return jsonify(
-        call_entrypoint(
-            _store(),
-            "billing.fn_overdue_accounts",
-            {"as_of": request.args.get("as_of", "2026-02-28")},
-        )
+    return _dunning_call(
+        "billing.fn_overdue_accounts",
+        request.args.get("as_of", "2026-02-28"),
     )
 
 
 @plans_api.post("/api/dunning/schedule")
 def schedule_dunning():
-    return jsonify(
-        call_entrypoint(
-            _store(),
-            "billing.sp_schedule_dunning",
-            {"as_of": _as_of_payload()},
-        )
+    return _dunning_call(
+        "billing.sp_schedule_dunning",
+        _as_of_payload(),
     )
 
 
 @plans_api.post("/api/dunning/suspend")
 def suspend_overdue():
-    return jsonify(
-        call_entrypoint(
-            _store(),
-            "billing.sp_suspend_overdue",
-            {"as_of": _as_of_payload()},
-        )
+    return _dunning_call(
+        "billing.sp_suspend_overdue",
+        _as_of_payload(),
     )
