@@ -7,9 +7,11 @@ import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 from reports import reports
+from ow_billing.routes import plans_api
 
 app = Flask(__name__)
 app.register_blueprint(reports)
+app.register_blueprint(plans_api)
 
 
 def db_connect():

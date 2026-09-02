@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 from pymongo import MongoClient
+from pymongo.collection import Collection
 
 NS_VALUE = "mongo_205236"
 TARGET_DB = "ow_tp_mongodb_205236"
@@ -35,3 +36,15 @@ def billing_db(client=None):
     if client is None:
         client = mongo_client()
     return client[TARGET_DB]
+
+
+class Store:
+    """Resolves collection names for one target set."""
+
+    def __init__(self, client: MongoClient, db_name: str = TARGET_DB, prefix: str = ""):
+        self.client = client
+        self.db = client[db_name]
+        self.prefix = prefix
+
+    def coll(self, name: str) -> Collection:
+        return self.db[f"{self.prefix}{name}"]
