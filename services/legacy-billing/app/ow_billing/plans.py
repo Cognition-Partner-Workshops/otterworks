@@ -63,6 +63,8 @@ def fn_list_plans(store) -> list[dict]:
 
 def fn_entitlement(store, tenant_id: str, on: date) -> dict | None:
     on_dt = datetime(on.year, on.month, on.day)
+    tenant_collection = store.coll("tenants").name
+    plan_collection = store.coll("plans").name
     rows = store.coll("subscriptions").aggregate(
         [
             {
@@ -74,7 +76,7 @@ def fn_entitlement(store, tenant_id: str, on: date) -> dict | None:
             },
             {
                 "$lookup": {
-                    "from": "tenants",
+                    "from": tenant_collection,
                     "localField": "tenant_id",
                     "foreignField": "_id",
                     "as": "tenant",
@@ -83,7 +85,7 @@ def fn_entitlement(store, tenant_id: str, on: date) -> dict | None:
             {"$match": {"tenant.0": {"$exists": True}}},
             {
                 "$lookup": {
-                    "from": "plans",
+                    "from": plan_collection,
                     "localField": "plan_id",
                     "foreignField": "_id",
                     "as": "plan",
@@ -190,7 +192,7 @@ def sp_change_plan(
             history = {
                 "_id": hist_id,
                 "hist_id": hist_id,
-                "hist_dt": now.strftime("%d-%b-%y %H:%M:%S").upper(),
+                "hist_dt": f"{util.f_dt2str(now)} {now:%H:%M:%S}",
                 "hist_op": "UPD",
                 "id": prior.get("id", prior.get("_id")),
                 "tenant_id": prior.get("tenant_id"),

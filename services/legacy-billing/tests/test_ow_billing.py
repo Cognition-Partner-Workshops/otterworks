@@ -34,6 +34,36 @@ def test_decode_tables():
     assert decode(SUB_STATUS, 30) == "cancelled"
 
 
+def test_entitlement_lookups_use_store_prefixed_names():
+    class Collection:
+        def __init__(self, name):
+            self.name = name
+            self.pipeline = None
+
+        def aggregate(self, pipeline):
+            self.pipeline = pipeline
+            return []
+
+    class Store:
+        def __init__(self):
+            self.collections = {}
+
+        def coll(self, name):
+            return self.collections.setdefault(name, Collection(f"replay_u6_{name}"))
+
+    store = Store()
+    assert routes.plans.fn_entitlement(store, "tenant-1", date(2026, 2, 28)) is None
+    lookups = [
+        stage["$lookup"]
+        for stage in store.collections["subscriptions"].pipeline
+        if "$lookup" in stage
+    ]
+    assert [lookup["from"] for lookup in lookups] == [
+        "replay_u6_tenants",
+        "replay_u6_plans",
+    ]
+
+
 def test_entrypoint_response_shapes(monkeypatch):
     store = object()
     monkeypatch.setattr(
