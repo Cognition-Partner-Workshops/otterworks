@@ -10,6 +10,7 @@ from typing import Any
 from flask import Blueprint, jsonify, request
 
 from . import TARGET_DB, Store, mongo_client
+from . import dunning
 from . import plans
 
 plans_api = Blueprint("plans_api", __name__)
@@ -67,6 +68,33 @@ def call_entrypoint(store, name: str, inputs: dict) -> Any:
                 for row in rows
             ],
         }
+    if name == "billing.fn_overdue_accounts":
+        return [
+            {
+                "tenant_id": row["tenant_id"],
+                "invoice_id": row["invoice_id"],
+                "total": _money(row["total"], 2),
+                "days_overdue": int(row["days_overdue"]),
+                "tenant_status": row["tenant_status"],
+            }
+            for row in dunning.fn_overdue_accounts(
+                store, date.fromisoformat(inputs["as_of"])
+            )
+        ]
+    if name == "billing.sp_schedule_dunning":
+        return {
+            "status": "scheduled",
+            "scheduled": dunning.sp_schedule_dunning(
+                store, date.fromisoformat(inputs["as_of"])
+            ),
+        }
+    if name == "billing.sp_suspend_overdue":
+        return {
+            "status": "suspended",
+            "tenant_ids": dunning.sp_suspend_overdue(
+                store, date.fromisoformat(inputs["as_of"])
+            ),
+        }
     raise KeyError(f"unknown billing entrypoint: {name}")
 
 
@@ -74,6 +102,9 @@ ENTRYPOINTS = {
     "billing.fn_list_plans": plans.fn_list_plans,
     "billing.fn_entitlement": plans.fn_entitlement,
     "billing.sp_change_plan": plans.sp_change_plan,
+    "billing.fn_overdue_accounts": dunning.fn_overdue_accounts,
+    "billing.sp_schedule_dunning": dunning.sp_schedule_dunning,
+    "billing.sp_suspend_overdue": dunning.sp_suspend_overdue,
 }
 
 
@@ -118,3 +149,40 @@ def change_plan(tenant_id):
     except (KeyError, LookupError, ValueError, TypeError):
         return jsonify(detail="invalid plan change"), 400
     return jsonify(row)
+
+
+def _as_of_payload() -> str:
+    payload = request.get_json(silent=True) or request.form
+    return payload.get("as_of", "2026-02-28")
+
+
+def _dunning_call(name: str, as_of: str):
+    try:
+        parsed = date.fromisoformat(as_of)
+    except (TypeError, ValueError):
+        return jsonify(detail="invalid as_of"), 400
+    return jsonify(call_entrypoint(_store(), name, {"as_of": parsed.isoformat()}))
+
+
+@plans_api.get("/api/dunning/overdue")
+def overdue_accounts():
+    return _dunning_call(
+        "billing.fn_overdue_accounts",
+        request.args.get("as_of", "2026-02-28"),
+    )
+
+
+@plans_api.post("/api/dunning/schedule")
+def schedule_dunning():
+    return _dunning_call(
+        "billing.sp_schedule_dunning",
+        _as_of_payload(),
+    )
+
+
+@plans_api.post("/api/dunning/suspend")
+def suspend_overdue():
+    return _dunning_call(
+        "billing.sp_suspend_overdue",
+        _as_of_payload(),
+    )

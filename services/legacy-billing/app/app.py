@@ -130,23 +130,3 @@ def invoice_issue(tenant_id):
 @app.get("/api/invoices/<invoice_id>/lines")
 def invoice_lines(invoice_id):
     return jsonify(select("SELECT * FROM billing.fn_invoice_lines(%s)", (invoice_id,)))
-
-
-@app.get("/api/dunning/overdue")
-def overdue():
-    return jsonify(select(
-        "SELECT * FROM billing.fn_overdue_accounts(%s)",
-        (request.args.get("as_of", "2026-02-28"),),
-    ))
-
-
-@app.post("/api/dunning/schedule")
-def schedule_dunning():
-    execute("CALL billing.sp_schedule_dunning(%s)", (request.form["as_of"],))
-    return jsonify(status="scheduled")
-
-
-@app.post("/api/dunning/suspend")
-def suspend_overdue():
-    execute("CALL billing.sp_suspend_overdue(%s)", (request.form["as_of"],))
-    return jsonify(status="suspended")
