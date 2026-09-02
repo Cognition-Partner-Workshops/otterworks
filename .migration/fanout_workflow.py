@@ -267,7 +267,8 @@ to .migration/05_decisions.md (`| <next #> | <UTC> | orchestrator | Wave <w> CLO
 on independent LIVE recon PASS (report <branch:path>); grading amendments: <list or none> |`).
 Commit 'migration(205236): wave <w> close — merge + ledger' and push. If a merge conflicts or a PR
 is missing/closed: status BLOCKED, report; never force-push or resolve substantive conflicts.
-IDEMPOTENCY: if a PR head is already reachable from {RUN_BRANCH}, treat it as merged and skip;
+Always list EVERY PR whose head is reachable from {RUN_BRANCH} after your run in `merged` (including ones
+merged on an earlier pass). IDEMPOTENCY: if a PR head is already reachable from {RUN_BRANCH}, treat it as merged and skip;
 never duplicate ledger/decision rows; if all done, verify and return OK.
 """
 
@@ -298,12 +299,14 @@ async def run_unit(uid):
 
 
 async def wave_recon(wave_name, unit_results):
-    prs = json.dumps({r["unit"]: {"pr": r["pr_url"], "branch": r["branch"]} for r in unit_results}, sort_keys=True)
+    prs = json.dumps({r["unit"]: {"pr": r["pr_url"], "branch": r["branch"],
+                                  "resumed_from": RESUMED.get(r["unit"], {}).get("session", "")}
+                      for r in unit_results}, sort_keys=True)
     return await agent(
         WAVE_RECON_COMMON + f"\n## Wave under review: {wave_name}\nUnit PRs/branches:\n{prs}\n"
         "Fetch each PR branch at its CURRENT head, record the exact head SHA per unit in attested_heads, and run the "
         "gates against THAT code+load state (re-run the unit loader from the PR head into the target first if the "
-        "loaded data predates the head). Units whose PR is already merged into the run branch: attest the merged head and grade them too.",
+        "loaded data predates the head). Units whose PR is already merged into the run branch: attest the merged head and carry the PASS from the prior wave report for that head (cite it) instead of re-grading; spend the LIVE window on the unmerged units.",
         phase=f"recon-{wave_name}",
         schema=WAVE_SCHEMA,
         label=f"independent LIVE recon {wave_name}",
@@ -374,11 +377,15 @@ async def run_wave(wave_name, unit_ids):
         log(f"{wave_name}: recon FAIL for all units — wave not closed")
         return
     merged = await merge_wave(wave_name, passed, recon)
-    if merged["status"] != "OK":
-        for r in passed:
+    merged_urls = merged["merged"] if isinstance(merged["merged"], list) else json.loads(merged["merged"] or "[]")
+    for r in passed:
+        if r["pr_url"] in merged_urls:
+            MERGED_UNITS.add(r["unit"])
+        else:
             _halt(r["unit"], f"merge BLOCKED: {merged.get('detail','')}")
+    if merged["status"] != "OK":
+        log(f"{wave_name}: merge status {merged['status']} — merged {merged_urls}; wave not closed")
         return
-    MERGED_UNITS.update(r["unit"] for r in passed)
     log(f"WAVE CLOSED {wave_name}: merged {merged['merged']} | recon {recon['report_path']} | "
         f"amendments: {recon.get('grading_amendments') or 'none'}")
 
