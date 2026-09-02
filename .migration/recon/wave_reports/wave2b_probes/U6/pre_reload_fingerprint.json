@@ -1,0 +1,67 @@
+{
+ "ow_tp_mongodb_205236.replay_u6_codes": {
+  "n": 32,
+  "sha256": "b486a10bd3f794ec4463cec3c5edc9d19243821135956a542aa60d0fadb0cc9e",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"code_type_1_code_val_1\", [[\"code_type\", 1], [\"code_val\", 1]], true]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_tenants": {
+  "n": 69,
+  "sha256": "ebe7fc64a51bdedc6c5a201a4f09ee162bae4fede25a8126fd31dac523261437",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_plans": {
+  "n": 3,
+  "sha256": "990bb1034c4cc8ddc63ac00f5a783ee940799744added68eb04efdee40be4320",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_subscriptions": {
+  "n": 71,
+  "sha256": "dcf35f56880cdf3be61cb84ddf226c041549cd5bc04b9e6c5a1d1fd3e635b352",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"tenant_id_1_starts_on_-1\", [[\"tenant_id\", 1], [\"starts_on\", -1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_subscriptions_history": {
+  "n": 2,
+  "sha256": "dff50cda1b1b3d281339eaa8e6f59977521676a37b6cc12f110c9418870e8d7a",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_usage_events": {
+  "n": 814,
+  "sha256": "40fc31b855ffe652461604add539575691c22c006e82a883d2e73e4a19b6333c",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"tenant_id_1_occurred_at_1\", [[\"tenant_id\", 1], [\"occurred_at\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_rating_periods": {
+  "n": 3,
+  "sha256": "7636852252cbc9a217df45d1d6cb8647de361cf33b617e988acad9387d49bd3a",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"tenant_id_1_period_start_1\", [[\"tenant_id\", 1], [\"period_start\", 1]], true]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_billing_invoices": {
+  "n": 3,
+  "sha256": "9944f4e49a29fcf25bb97abd709374a534b343f17cbd157fe944a0c8aca270c2",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"status_cd_1_issued_at_1\", [[\"status_cd\", 1], [\"issued_at\", 1]], false], [\"tenant_id_1_issued_at_1\", [[\"tenant_id\", 1], [\"issued_at\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_credit_notes": {
+  "n": 5,
+  "sha256": "76fe35ec3c33c005162ef8412e14ba12f6bc0383abd24c031563ee7a8344a8a5",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"tenant_id_1_issued_on_1__id_1\", [[\"tenant_id\", 1], [\"issued_on\", 1], [\"_id\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_dunning_attempts": {
+  "n": 1,
+  "sha256": "11aeead2e30e2cd4d147e2ae5aa4c9de7f5c879696c043d8ccfb7c2239314556",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"invoice_id_1_attempt_no_1\", [[\"invoice_id\", 1], [\"attempt_no\", 1]], true]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_notifications": {
+  "n": 1,
+  "sha256": "66908eb19a5b9f07bea6fbd6145c51a3cc180f383a6842dd4dc1152ed7739ffd",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"tenant_id_1_kind_cd_1_sent_at_1\", [[\"tenant_id\", 1], [\"kind_cd\", 1], [\"sent_at\", 1]], true]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_billing_audit_log": {
+  "n": 3,
+  "sha256": "ea69f579301a37986c5288e739efb83792f8652359f6e1c8a6c4575b23e5a50d",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false], [\"logged_at_1\", [[\"logged_at\", 1]], false]]"
+ },
+ "ow_tp_mongodb_205236.replay_u6_counters": {
+  "n": 2,
+  "sha256": "9e0b177e9b756d068550f5ccc97606c5a26a62178dc5f371712bd265abbca905",
+  "indexes": "[[\"_id_\", [[\"_id\", 1]], false]]"
+ }
+}

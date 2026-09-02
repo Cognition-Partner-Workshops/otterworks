@@ -1,0 +1,393 @@
+{
+ "unit": "U7",
+ "head": "f05741f3d9cc9acb6c24dedac6d2217351c83318",
+ "n": 64,
+ "ok": 64,
+ "elapsed_s": 264.6,
+ "results": [
+  {
+   "area": "fixture",
+   "probe": "FIXTURE_META.INITIALIZED_AT unchanged",
+   "ok": true,
+   "detail": "2026-09-01 20:53:10.961888"
+  },
+  {
+   "area": "fixture",
+   "probe": "source BILLING_AUDIT_LOG rows before probes",
+   "ok": true,
+   "detail": "1"
+  },
+  {
+   "area": "provenance",
+   "probe": "live USER_SOURCE PKG_RATING body == checked-in file (the transcripts' file-based ORACLE_SOURCE_SHA is therefore live-valid)",
+   "ok": true,
+   "detail": "live 8322 chars"
+  },
+  {
+   "area": "provenance",
+   "probe": "8 rating transcripts carry the current ORACLE_SOURCE_SHA",
+   "ok": true,
+   "detail": "0d326cad54d94cd6"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_subscriptions == golden subscriptions (canonical dump)",
+   "ok": true,
+   "detail": "(69, '96acf5c368b45d29c286d1410d626f530e407d84e97ba051deea8539f6731805')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_subscriptions_history == golden subscriptions_history (canonical dump)",
+   "ok": true,
+   "detail": "(0, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_usage_events == golden usage_events (canonical dump)",
+   "ok": true,
+   "detail": "(814, '40fc31b855ffe652461604add539575691c22c006e82a883d2e73e4a19b6333c')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_rating_periods == golden rating_periods (canonical dump)",
+   "ok": true,
+   "detail": "(3, '7636852252cbc9a217df45d1d6cb8647de361cf33b617e988acad9387d49bd3a')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_billing_invoices == golden billing_invoices (canonical dump)",
+   "ok": true,
+   "detail": "(3, '9944f4e49a29fcf25bb97abd709374a534b343f17cbd157fe944a0c8aca270c2')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_credit_notes == golden credit_notes (canonical dump)",
+   "ok": true,
+   "detail": "(5, '76fe35ec3c33c005162ef8412e14ba12f6bc0383abd24c031563ee7a8344a8a5')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_dunning_attempts == golden dunning_attempts (canonical dump)",
+   "ok": true,
+   "detail": "(1, '11aeead2e30e2cd4d147e2ae5aa4c9de7f5c879696c043d8ccfb7c2239314556')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_notifications == golden notifications (canonical dump)",
+   "ok": true,
+   "detail": "(1, '66908eb19a5b9f07bea6fbd6145c51a3cc180f383a6842dd4dc1152ed7739ffd')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_billing_audit_log == golden billing_audit_log (canonical dump)",
+   "ok": true,
+   "detail": "(1, 'fe6e3abd2ac6c98d875518db24342fea676a752062662738721e2d0f04e3c941')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_plans == golden plans (canonical dump)",
+   "ok": true,
+   "detail": "(3, '990bb1034c4cc8ddc63ac00f5a783ee940799744added68eb04efdee40be4320')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u7_tenants == golden tenants (canonical dump)",
+   "ok": true,
+   "detail": "(69, 'ebe7fc64a51bdedc6c5a201a4f09ee162bae4fede25a8126fd31dac523261437')"
+  },
+  {
+   "area": "clone",
+   "probe": "clone index specs == golden index specs",
+   "ok": true,
+   "detail": "{}"
+  },
+  {
+   "area": "clone",
+   "probe": "golden/clone have NO unique index on rating_periods (tenant_id, period_start) -- uq_rating_periods relies on _id=md5 only -- recorded",
+   "ok": true,
+   "detail": "{'rating_periods': ['tenant_id_1_period_start_1'], 'dunning_attempts': ['invoice_id_1_attempt_no_1'], 'notifications': ['tenant_id_1_kind_cd_1_sent_at_1']}"
+  },
+  {
+   "area": "clone",
+   "probe": "validators cloned identically for all 11 collections",
+   "ok": true,
+   "detail": "['usage_events']"
+  },
+  {
+   "area": "clone",
+   "probe": "no *__staging residue",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "counters",
+   "probe": "replay_u7_counters seeded {SEQ_BILLING_AUDIT_LOG: max(log_id)} == USER_SEQUENCES.last_number-1 (NOCACHE)",
+   "ok": true,
+   "detail": "[{'_id': 'SEQ_BILLING_AUDIT_LOG', 'value': 1, 'ns': 'mongo_205236'}]"
+  },
+  {
+   "area": "counters",
+   "probe": "counter value stored as BSON long",
+   "ok": true,
+   "detail": "Int64"
+  },
+  {
+   "area": "ungraded",
+   "probe": "replay_u7_billing_audit_log == BILLING_AUDIT_LOG (keyed, all columns) -- child left it ungraded T1-T3",
+   "ok": true,
+   "detail": "([{'log_id': Decimal('1'), 'la': '2026-09-01 22:53:00', 'module': 'PLANS', 'message': 'fn_list_plans'}], [{'log_id': 1, 'la': '2026-09-01 22:53:00', 'module': 'PLANS', 'message': 'fn_list_plans'}])"
+  },
+  {
+   "area": "embed",
+   "probe": "rating_periods.results[] == RATING_RESULTS row-for-row (3 rows, 9 columns, keyed by id)",
+   "ok": true,
+   "detail": "([{'id': '50000000-0000-0000-0000-000000000001', 'period_id': '40000000-0000-0000-0000-000000000001', 'subscription_id': '20000000-0000-0000-0000-000000000001', 'used_units': '0', 'quota_units': '100', 'rollover_units': '100', 'billable_units': '0', 'overage_amount': '0.00', 'created_at': '2025-12-31 00:00:00'}], [{'id': '50000000-0000-0000-0000-000000000001', 'period_id': '40000000-0000-0000-0000-000000000001', 'subscription_id': '20000000-0000-0000-0000-000000000001', 'used_units': '0', 'quota_units': '100', 'rollover_units': '100', 'billable_units': '0', 'overage_amount': '0.00', 'created_a"
+  },
+  {
+   "area": "embed",
+   "probe": "results[] length distribution == child rows per period (all 1)",
+   "ok": true,
+   "detail": "[{'_id': 1, 'n': 3}]"
+  },
+  {
+   "area": "embed",
+   "probe": "results[].overage_amount is Decimal128 (2dp), unit counts are int/long, created_at is date",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "nulls",
+   "probe": "usage_events: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'units': Decimal('0'), 'kind_cd': Decimal('0'), 'occurred_at': Decimal('0')}, {'units': 0, 'kind_cd': 0, 'occurred_at': 0})"
+  },
+  {
+   "area": "dupes",
+   "probe": "usage_events: no duplicate business id; _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "nulls",
+   "probe": "subscriptions: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'ends_on': Decimal('69'), 'suspended_on': Decimal('68'), 'status_cd': Decimal('0'), 'plan_id': Decimal('0')}, {'ends_on': 69, 'suspended_on': 68, 'status_cd': 0, 'plan_id': 0})"
+  },
+  {
+   "area": "dupes",
+   "probe": "subscriptions: no duplicate business id; _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "nulls",
+   "probe": "rating_periods: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'period_end': Decimal('0')}, {'period_end': 0})"
+  },
+  {
+   "area": "dupes",
+   "probe": "rating_periods: no duplicate business id; _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "nulls",
+   "probe": "plans: NULL counts per field source==target",
+   "ok": true,
+   "detail": "({'active_yn': Decimal('0'), 'overage_rate': Decimal('0')}, {'active_yn': 0, 'overage_rate': 0})"
+  },
+  {
+   "area": "dupes",
+   "probe": "plans: no duplicate business id; _id==id everywhere",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "boundary",
+   "probe": "usage_events min/max occurred_at, min/max/sum units, distinct tenants source==target",
+   "ok": true,
+   "detail": "{'mn': '2026-02-01 10:00:00', 'mx': '2026-02-28 10:00:00', 'mnu': Decimal('1'), 'mxu': Decimal('2201'), 'su': Decimal('336293'), 'nt': Decimal('69')}"
+  },
+  {
+   "area": "dupes",
+   "probe": "rating_periods: (tenant_id, period_start) unique in clone (uq_rating_periods)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "dist",
+   "probe": "usage_events.kind_cd distribution source==target (DECODE domain 1/2/3, no UNKNOWN in data -- recorded)",
+   "ok": true,
+   "detail": "{Decimal('1'): Decimal('504'), Decimal('3'): Decimal('161'), Decimal('2'): Decimal('149')}"
+  },
+  {
+   "area": "rating",
+   "probe": "fn_usage_rating parity: 69 tenants x 8 windows = 552 ops (all 7 numeric outputs; 69 no-covering-sub, 2 suspension-factor, 204 non-zero overage)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "rating",
+   "probe": "period_start/period_end/tenant_id echoed back as naive midnight datetimes",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "rating",
+   "probe": "each compute wrote exactly one audit row (module RATING, 'compute tenant=.. used=.. billable=..')",
+   "ok": true,
+   "detail": "(1, 552, 553, 552, None)"
+  },
+  {
+   "area": "rating",
+   "probe": "unknown tenant: used 0, quota NULL, rollover 0, billable 0, overage NULL (Oracle NULL propagation) == Python",
+   "ok": true,
+   "detail": "({'used_units': '0', 'quota_units': None, 'rollover_units': '0', 'billable_units': '0', 'first_tier_units': '0', 'second_tier_units': '0', 'overage_amount': None}, {'used_units': '0', 'quota_units': None, 'rollover_units': '0', 'billable_units': '0', 'first_tier_units': '0', 'second_tier_units': '0', 'overage_amount': None})"
+  },
+  {
+   "area": "rating",
+   "probe": "0 tenants without usage events (empty-aggregate path covered by the Jan/Dec windows and the unknown tenant instead) -- recorded",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "rating",
+   "probe": "day-string window boundary: window ending on the event day counts the 10:00 events, previous day does not (both stacks)",
+   "ok": true,
+   "detail": "('1143', '0')"
+  },
+  {
+   "area": "rating",
+   "probe": "tz-aware UTC datetimes rate identically to dates",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "rating",
+   "probe": "rollover double-cap exercised on tenant 1 Feb-2026 (prior 300 -> 200 = 2*included)",
+   "ok": true,
+   "detail": "{'used_units': '260', 'quota_units': '100', 'rollover_units': '200', 'billable_units': '0', 'first_tier_units': '0', 'second_tier_units': '0', 'overage_amount': '0'}"
+  },
+  {
+   "area": "rating",
+   "probe": "ADD_MONTHS(-3) window: tenant 1 Mar-2026 sees Dec+Jan (+Feb none) = 200, Nov excluded",
+   "ok": true,
+   "detail": "{'used_units': '0', 'quota_units': '100', 'rollover_units': '200', 'billable_units': '0', 'first_tier_units': '0', 'second_tier_units': '0', 'overage_amount': '0'}"
+  },
+  {
+   "area": "rating",
+   "probe": "add_months(-3) == Oracle ADD_MONTHS incl. last-day-of-month rule (5 dates)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "summary",
+   "probe": "fn_usage_summary parity: 70 tenants x 4 windows, 306 grouped rows (kind order, count, units)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "summary",
+   "probe": "fn_usage_summary writes no audit row (PL/SQL has no log_msg)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "finalize",
+   "probe": "new period: _id/id == f_md5_uuid(tenant||YYYY-MM-DD) (STANDARD_HASH parity), results[0].id == f_md5_uuid(period_id)",
+   "ok": true,
+   "detail": "('27cdd7d2-32b3-afc0-922c-e9858e767b6d', '175fe5b7-8f91-1c3a-8586-1ef5c455fc9a')"
+  },
+  {
+   "area": "finalize",
+   "probe": "period doc shape == RATING_PERIODS columns + ns; period_start/end midnight",
+   "ok": true,
+   "detail": "['_id', 'id', 'ns', 'period_end', 'period_start', 'results', 'tenant_id']"
+  },
+  {
+   "area": "finalize",
+   "probe": "results[0] == RATING_RESULTS columns: subscription_id from covering sub, used/quota/billable/overage from compute, rollover_units = GREATEST(quota-used,0), created_at = CAST(period_end)",
+   "ok": true,
+   "detail": "{'id': '175fe5b7-8f91-1c3a-8586-1ef5c455fc9a', 'period_id': '27cdd7d2-32b3-afc0-922c-e9858e767b6d', 'subscription_id': '20000000-0000-0000-0000-000000000001', 'used_units': 260, 'quota_units': 100, 'rollover_units': 0, 'billable_units': 0, 'overage_amount': Decimal128('0.00'), 'created_at': datetime.datetime(2026, 2, 28, 0, 0)}"
+  },
+  {
+   "area": "finalize",
+   "probe": "results[] element types: Int64 counts, Decimal128 money (matches the U5 embedded shape)",
+   "ok": true,
+   "detail": "{'id': 'str', 'period_id': 'str', 'subscription_id': 'str', 'used_units': 'Int64', 'quota_units': 'Int64', 'rollover_units': 'Int64', 'billable_units': 'Int64', 'overage_amount': 'Decimal128', 'created_at': 'datetime'}"
+  },
+  {
+   "area": "finalize",
+   "probe": "two audit rows per finalize (compute + 'finalized period=<id>')",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "finalize",
+   "probe": "re-finalize same (tenant, period_start) with new period_end: UPDATE path -> period_end updated, results[] still 1 element, same ids, amounts refreshed to the new window",
+   "ok": true,
+   "detail": "('260', '260')"
+  },
+  {
+   "area": "finalize",
+   "probe": "UPDATE rating_results touches only the 4 amounts: quota_units, subscription_id, created_at keep INSERT-time values (PL/SQL parity: created_at stays 02-28)",
+   "ok": true,
+   "detail": "2026-02-28 00:00:00"
+  },
+  {
+   "area": "finalize",
+   "probe": "fixture period with non-md5 id (4000..02): DUP_VAL_ON_INDEX(uq) -> UPDATE period_end; result appended under md5 id => 2 results[] (Oracle would also hold 2 RATING_RESULTS rows: the fixture's and the md5 one)",
+   "ok": true,
+   "detail": "['50000000-0000-0000-0000-000000000002', '88a3464f-ecad-2c2a-f6e4-d5dff7c26266']"
+  },
+  {
+   "area": "finalize",
+   "probe": "no covering subscription -> RatingIntegrityError (ORA-01400 parity), nothing written",
+   "ok": true,
+   "detail": "RatingIntegrityError: rating_results.subscription_id cannot be NULL (tenant=no-such-tenant period=abf1b21f-9eb6-f153-66be-276fef8a1275)"
+  },
+  {
+   "area": "finalize",
+   "probe": "failed finalize still wrote the compute audit row but no 'finalized' row (log_msg before the INSERT in PL/SQL)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "audit",
+   "probe": "audit log_ids strictly sequential from the seeded counter, _id==log_id, counter == max",
+   "ok": true,
+   "detail": "(1, 565)"
+  },
+  {
+   "area": "audit",
+   "probe": "missing counter doc -> _reconcile_log_sequence resumes at max(log_id)+1 (no duplicate/reset)",
+   "ok": true,
+   "detail": "566"
+  },
+  {
+   "area": "transcripts",
+   "probe": "read-only rating transcripts replayed on the (dirty) clone == recorded Oracle business_fields",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "golden",
+   "probe": "golden collections unchanged since wave pre-fingerprint",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "quarantine",
+   "probe": "no U7 quarantine classes declared; quarantine db unchanged (sets)",
+   "ok": true,
+   "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+  },
+  {
+   "area": "fixture",
+   "probe": "source untouched by probes: BILLING_AUDIT_LOG still 1, sequences unchanged, RATING_* counts unchanged",
+   "ok": true,
+   "detail": "2"
+  }
+ ]
+}

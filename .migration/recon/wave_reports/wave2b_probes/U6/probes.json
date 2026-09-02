@@ -1,0 +1,441 @@
+{
+ "unit": "U6",
+ "head": "f463577b014d4f8fc43328ad23af9b0470f30762",
+ "elapsed_s": 48.3,
+ "ok": 71,
+ "total": 72,
+ "probes": [
+  {
+   "area": "fixture",
+   "probe": "FIXTURE_META.INITIALIZED_AT unchanged",
+   "ok": true,
+   "detail": "2026-09-01 20:53:10.961888"
+  },
+  {
+   "area": "fixture",
+   "probe": "source BILLING_AUDIT_LOG rows before probes",
+   "ok": true,
+   "detail": "1"
+  },
+  {
+   "area": "provenance",
+   "probe": "live USER_SOURCE PKG_OW_UTIL body == checked-in file",
+   "ok": true,
+   "detail": "live 2341 chars"
+  },
+  {
+   "area": "provenance",
+   "probe": "live USER_SOURCE PKG_PLANS body == checked-in file",
+   "ok": true,
+   "detail": "live 3666 chars"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_tenants == golden tenants (canonical dump)",
+   "ok": true,
+   "detail": "(69, '105bccc3209354f1917f812335b9d25a1d4abf43d1f7551051af814515885a8a')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_plans == golden plans (canonical dump)",
+   "ok": true,
+   "detail": "(3, 'e3f1d827d006d81764d9ebef5268208000c67c78289370313484b67444b42f6a')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_subscriptions == golden subscriptions (canonical dump)",
+   "ok": true,
+   "detail": "(69, '489777421c3d60342bd39534b4a2064cbd446f07fdea9b13c8b8d1e56b9fa114')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_subscriptions_history == golden subscriptions_history (canonical dump)",
+   "ok": true,
+   "detail": "(0, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_usage_events == golden usage_events (canonical dump)",
+   "ok": true,
+   "detail": "(814, 'c2853900553296f71c5cb78870e133ce58bafd222578c3a08bfa76a27fb159cc')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_rating_periods == golden rating_periods (canonical dump)",
+   "ok": true,
+   "detail": "(3, '69709a24349a6fbfd7f763fd179996ebdfca00e949951f8d4c9e9386df1bab18')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_billing_invoices == golden billing_invoices (canonical dump)",
+   "ok": true,
+   "detail": "(3, 'fb5f94967d5326c3a91204a7c6a64f61232eaf005507bb3821f31ff5ad9d4a69')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_credit_notes == golden credit_notes (canonical dump)",
+   "ok": true,
+   "detail": "(5, 'eb63a66152e5557b1a736f7e5eae30e80a919395149dcb0f4a9bc38721aab09b')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_dunning_attempts == golden dunning_attempts (canonical dump)",
+   "ok": true,
+   "detail": "(1, '244f070af0e6a850550e88a1ea31d2652b8f18f91e7eb1edccd1a32f7aaa79df')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_notifications == golden notifications (canonical dump)",
+   "ok": true,
+   "detail": "(1, 'a2ad1caeb9583e5a43eb5a7106b0fa598a2fe04d9ef8e8dea00760fec241091b')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_billing_audit_log == golden billing_audit_log (canonical dump)",
+   "ok": true,
+   "detail": "(1, '13095f47be60fcf9cd7a75a2e3c500cefd23cc0c57df79dd0c64533bae64a8d9')"
+  },
+  {
+   "area": "clone",
+   "probe": "replay_u6_codes == golden codes ignoring ObjectId _id",
+   "ok": true,
+   "detail": "(32, '53bd8a1e8ffc4a7dc061953a72eb0e81d1e38cdd6401cea96028bbb4cf77aad4')"
+  },
+  {
+   "area": "clone",
+   "probe": "clone index specs == golden index specs",
+   "ok": true,
+   "detail": "{}"
+  },
+  {
+   "area": "clone",
+   "probe": "usage_events validator cloned (strict/error)",
+   "ok": true,
+   "detail": "['validator', 'validationLevel', 'validationAction']"
+  },
+  {
+   "area": "clone",
+   "probe": "no *__staging residue",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "counters",
+   "probe": "replay counters seeded from USER_SEQUENCES.last_number-1 (NOCACHE => last issued)",
+   "ok": true,
+   "detail": "{'seq_billing_audit_log': {'_id': 'seq_billing_audit_log', 'seq': 1}, 'seq_subscriptions_hist': {'_id': 'seq_subscriptions_hist', 'seq': 0}}"
+  },
+  {
+   "area": "counters",
+   "probe": "seq value == max(log_id) in the cloned audit log",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "counters",
+   "probe": "counter seq stored as BSON long",
+   "ok": true,
+   "detail": "{'seq_billing_audit_log': 'Int64', 'seq_subscriptions_hist': 'Int64'}"
+  },
+  {
+   "area": "counters",
+   "probe": "both sequences NOCACHE (so last_number-1 is exact)",
+   "ok": true,
+   "detail": "[{'sequence_name': 'SEQ_BILLING_AUDIT_LOG', 'cache_size': 0}, {'sequence_name': 'SEQ_SUBSCRIPTIONS_HIST', 'cache_size': 0}]"
+  },
+  {
+   "area": "util",
+   "probe": "f_md5_uuid == STANDARD_HASH MD5 on 7 inputs incl. UTF-8",
+   "ok": true,
+   "detail": "[('', True), ('a', True), ('00000000-000', True), ('xxxxxxxxxxxx', True), ('\u00fcber-\u00df-\u65e5\u672c', True), ('tenant plan ', True), ('\\t new\\nline ', True)]"
+  },
+  {
+   "area": "util",
+   "probe": "f_md5_uuid('') edge: Oracle hash of empty string",
+   "ok": true,
+   "detail": "oracle=d41d8cd98f00b204e9800998ecf8427e"
+  },
+  {
+   "area": "util",
+   "probe": "f_code_desc == CODES lookup for all 32 codes",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "util",
+   "probe": "f_code_desc NO_DATA_FOUND branch UNKNOWN(val) / UNKNOWN(-1) for NULL",
+   "ok": true,
+   "detail": "['UNKNOWN(99)', 'UNKNOWN(1)', 'UNKNOWN(-1)']"
+  },
+  {
+   "area": "util",
+   "probe": "f_dt2str == TO_CHAR(DD-MON-YY) on 5 dates",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "util",
+   "probe": "f_str2dt == TO_DATE(DD-MON-YY) semantics (WHEN OTHERS -> NULL) on 15 strings",
+   "ok": false,
+   "detail": "GAP (declared by the child, no caller in PKG_PLANS/PKG_OW_UTIL entrypoints): Oracle TO_DATE is lenient, Python regex strict -> [('01-JAN-2026', '2026-01-01', None), ('01-JANUARY-26', '2026-01-01', None), ('01 JAN 26', '2026-01-01', None), ('01/JAN/26', '2026-01-01', None), ('01-JAN-6', '2006-01-01', None)]"
+  },
+  {
+   "area": "util",
+   "probe": "f_str2dt has no PL/SQL caller outside PKG_OW_UTIL (USER_SOURCE)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "plans",
+   "probe": "fn_list_plans full row parity (order, all 6 columns)",
+   "ok": true,
+   "detail": "([['10000000-0000-0000-0000-000000000001', 'STARTER', 'starter', '49.00', '100', '0.055000'], ['10000000-0000-0000-0000-000000000002', 'GROWTH', 'growth', '149.00', '500', '0.035000'], ['10000000-0000-0000-0000-000000000003', 'SCALE', 'scale', '499.00', '2000', '0.020000']], [['10000000-0000-0000-0000-000000000001', 'STARTER', 'starter', '49.00', '100', '0.055000'], ['10000000-0000-0000-0000-000000000002', 'GROWTH', 'growth', '149.00', '500', '0.035000'], ['10000000-0000-0000-0000-000000000003', 'SCALE', 'scale', '499.00', '2000', '0.020000']])"
+  },
+  {
+   "area": "plans",
+   "probe": "fn_list_plans wrote exactly one audit row (module PLANS, message fn_list_plans, long log_id, ns)",
+   "ok": true,
+   "detail": "{'_id': 2, 'log_id': 2, 'logged_at': datetime.datetime(2026, 9, 2, 1, 55, 4, 622000), 'module': 'PLANS', 'message': 'fn_list_plans', 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "plans",
+   "probe": "plans.active_yn has no NULL/N (so NVL(active_yn,'N') branch untested by data) -- recorded",
+   "ok": true,
+   "detail": "{'STARTER': 'Y', 'GROWTH': 'Y', 'SCALE': 'Y'}"
+  },
+  {
+   "area": "plans",
+   "probe": "fn_entitlement full-row parity: 69 tenants x 6 dates = 414 ops (345 hits, 69 no-entitlement)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "plans",
+   "probe": "fn_entitlement unknown tenant -> None (Oracle: no rows)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "plans",
+   "probe": "fn_entitlement is read-only (no audit row, unlike fn_list_plans; matches PL/SQL)",
+   "ok": true,
+   "detail": "2"
+  },
+  {
+   "area": "plans",
+   "probe": "no starts_on ties per tenant in source (ORDER BY starts_on DESC / ROWNUM<=1 is deterministic)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "area": "plans",
+   "probe": "DECODE domains observed in data",
+   "ok": true,
+   "detail": "{'status': [10, 20], 'tier': [1, 2, 3]}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "new subscription id == Oracle f_md5_uuid(tenant||plan||YYYY-MM-DD)",
+   "ok": true,
+   "detail": "70ba8e87-c0a5-42ba-cdc2-7cab80f04445"
+  },
+  {
+   "area": "change_plan",
+   "probe": "new row shape == source columns (status 10, ends_on/suspended_on explicit null, ns, starts_on midnight)",
+   "ok": true,
+   "detail": "{'_id': '70ba8e87-c0a5-42ba-cdc2-7cab80f04445', 'id': '70ba8e87-c0a5-42ba-cdc2-7cab80f04445', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': datetime.datetime(2026, 3, 1, 0, 0), 'ends_on': None, 'status_cd': 10, 'suspended_on': None, 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "prior open row closed: ends_on = eff-1 day, status DECODE(10->10)",
+   "ok": true,
+   "detail": "{'_id': '20000000-0000-0000-0000-000000000001', 'id': '20000000-0000-0000-0000-000000000001', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_id': '10000000-0000-0000-0000-000000000001', 'starts_on': datetime.datetime(2026, 1, 1, 0, 0), 'ends_on': datetime.datetime(2026, 2, 28, 0, 0), 'status_cd': 10, 'suspended_on': None, 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "TRG_SUBSCRIPTIONS_HIST image == :OLD row, hist_op UPD, hist_id from counter, hist_dt 'DD-MON-YY HH24:MI:SS'",
+   "ok": true,
+   "detail": "{'_id': 1, 'hist_id': 1, 'hist_dt': '02-SEP-26 01:55:32', 'hist_op': 'UPD', 'id': '20000000-0000-0000-0000-000000000001', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_id': '10000000-0000-0000-0000-000000000001', 'starts_on': datetime.datetime(2026, 1, 1, 0, 0), 'ends_on': None, 'status_cd': 10, 'suspended_on': None, 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "history rows == closed rows (1), audit +1, counters advanced by 1 each",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "change_plan",
+   "probe": "returned rows == subscriptions_for_tenant snapshot sorted by starts_on",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "change_plan",
+   "probe": "entitlement boundary: 02-28 -> STARTER (closed row, ends_on inclusive), 03-01 -> GROWTH effective_on=03-01",
+   "ok": true,
+   "detail": "({'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_code': 'STARTER', 'tier': 'starter', 'monthly_fee': '49.00', 'included_units': 100, 'subscription_status': 'active', 'effective_on': '2026-02-28'}, {'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_code': 'GROWTH', 'tier': 'growth', 'monthly_fee': '149.00', 'included_units': 500, 'subscription_status': 'active', 'effective_on': '2026-03-01'})"
+  },
+  {
+   "area": "change_plan",
+   "probe": "same change twice -> DuplicateKeyError (ORA-00001 parity); txn rolled back (rows/history unchanged); audit row still written (autonomous txn parity)",
+   "ok": true,
+   "detail": "('DuplicateKeyError', 0, 1)"
+  },
+  {
+   "area": "change_plan",
+   "probe": "closed (ends_on set) row with status 30 is NOT touched (cursor filters ends_on IS NULL)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "change_plan",
+   "probe": "open suspended (20) row closed with status DECODE(20 -> 10) and suspended_on preserved (Oracle UPDATE touches only ends_on/status_cd)",
+   "ok": true,
+   "detail": "{'_id': '70ba8e87-c0a5-42ba-cdc2-7cab80f04445', 'id': '70ba8e87-c0a5-42ba-cdc2-7cab80f04445', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': datetime.datetime(2026, 3, 1, 0, 0), 'ends_on': datetime.datetime(2026, 4, 30, 0, 0), 'status_cd': 10, 'suspended_on': datetime.datetime(2026, 4, 1, 0, 0), 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "open cancelled (30) row closed and stays 30 (TRG_SUB_NO_UNCANCEL)",
+   "ok": true,
+   "detail": "{'_id': '319acead-cc31-e877-a897-61864df5bfa9', 'id': '319acead-cc31-e877-a897-61864df5bfa9', 'tenant_id': '00000000-0000-0000-0000-000000000001', 'plan_id': '10000000-0000-0000-0000-000000000003', 'starts_on': datetime.datetime(2026, 5, 1, 0, 0), 'ends_on': datetime.datetime(2026, 5, 31, 0, 0), 'status_cd': 30, 'suspended_on': None, 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "change_plan",
+   "probe": "history image keeps the PRIOR status (30/20), i.e. :OLD not :NEW",
+   "ok": true,
+   "detail": "[10, 20, 30]"
+  },
+  {
+   "area": "change_plan",
+   "probe": "hist_id strictly sequential 1..n, unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "change_plan",
+   "probe": "eff == starts_on of open row: open row left open (starts_on < eff is false) -> 2 open rows, faithful to PL/SQL quirk",
+   "ok": true,
+   "detail": "2"
+  },
+  {
+   "area": "change_plan",
+   "probe": "FK miss tenant_id -> LookupError; no subscription written; audit row written",
+   "ok": true,
+   "detail": "LookupError"
+  },
+  {
+   "area": "change_plan",
+   "probe": "FK miss plan_id -> LookupError; no subscription written; audit row written",
+   "ok": true,
+   "detail": "LookupError"
+  },
+  {
+   "area": "change_plan",
+   "probe": "audit rows for the 2 failed calls present (autonomous-transaction parity)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "change_plan",
+   "probe": "tenant with no open subscription: just inserts (Oracle: cursor loop no-op)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "audit",
+   "probe": "log rows: _id==log_id long, module<=30, message<=4000, logged_at ms-truncated naive, ns present; message text == PL/SQL concatenation",
+   "ok": true,
+   "detail": "{'_id': 11, 'log_id': 11, 'logged_at': datetime.datetime(2026, 9, 2, 1, 55, 38, 547000), 'module': 'PLANS', 'message': 'sp_change_plan tenant=tttttttttttttttttttttttttttttttttttttttttttttttttt plan=10000000-0000-0000-0000-000000000001 eff=2026-07-01', 'ns': 'mongo_205236'}"
+  },
+  {
+   "area": "audit",
+   "probe": "audit log ids strictly sequential from the seeded counter (no gaps/dupes)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "empty",
+   "probe": "fn_list_plans with no active plans -> [] (audit row still written)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "empty",
+   "probe": "NVL(active_yn,'N')='Y': NULL active_yn excluded",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "empty",
+   "probe": "restore: 3 active plans",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "http",
+   "probe": "GET /api/plans 200, codes/fees == transcript PLANS-001",
+   "ok": true,
+   "detail": "[{'code': 'STARTER', 'included_units': 100, 'monthly_fee': '49.00', 'overage_rate': '0.055000', 'plan_id': '10000000-0000-0000-0000-000000000001', 'tier': 'starter'}, {'code': 'GROWTH', 'included_units': 500, 'monthly_fee': '149.00', 'overage_rate': '0.035000', 'plan_id': '10000000-0000-0000-0000-000000000002', 'tier': 'growth'}, {'code': 'SCALE', 'included_units': 2000, 'monthly_fee': '499.00', 'overage_rate': '0.020000', 'plan_id': '10000000-0000-0000-0000-000000000003', 'tier': 'scale'}]"
+  },
+  {
+   "area": "http",
+   "probe": "GET entitlement tenant 2 == transcript PLANS-003 (GROWTH/growth/500/suspended)",
+   "ok": true,
+   "detail": "{'effective_on': '2026-02-28', 'included_units': 500, 'monthly_fee': '149.00', 'plan_code': 'GROWTH', 'subscription_status': 'suspended', 'tenant_id': '00000000-0000-0000-0000-000000000002', 'tier': 'growth'}"
+  },
+  {
+   "area": "http",
+   "probe": "GET entitlement unknown tenant -> 404",
+   "ok": true,
+   "detail": "{'detail': 'entitlement not found'}"
+  },
+  {
+   "area": "http",
+   "probe": "POST plan-change unknown plan -> 400",
+   "ok": true,
+   "detail": "{'detail': 'invalid plan change'}"
+  },
+  {
+   "area": "http",
+   "probe": "POST plan-change bad date -> 400",
+   "ok": true,
+   "detail": "{'detail': 'invalid plan change'}"
+  },
+  {
+   "area": "http",
+   "probe": "POST plan-change tenant 3 -> 200 with latest_plan/latest_start and 2 rows",
+   "ok": true,
+   "detail": "{'latest_plan': '10000000-0000-0000-0000-000000000002', 'latest_start': '2026-04-01', 'subscriptions': [{'ends_on': '2026-03-31', 'plan_id': '10000000-0000-0000-0000-000000000003', 'starts_on': '2026-01-01', 'status': 'active'}, {'ends_on': None, 'plan_id': '10000000-0000-0000-0000-000000000002', 'starts_on': '2026-04-01', 'status': 'active'}]}"
+  },
+  {
+   "area": "http",
+   "probe": "POST same change again -> DuplicateKeyError NOT mapped to 4xx (propagates as 500; ORA-00001 would be a 500 in the legacy app too) -- recorded",
+   "ok": true,
+   "detail": "500"
+  },
+  {
+   "area": "http",
+   "probe": "legacy app.py imports with the blueprint; no URL rule collisions; 3 new /api routes present",
+   "ok": true,
+   "detail": "19"
+  },
+  {
+   "area": "golden",
+   "probe": "golden subscriptions/subscriptions_history/billing_audit_log/counters counts unchanged by U6 replays",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "area": "quarantine",
+   "probe": "no U6 quarantine classes declared; quarantine db unchanged (sets)",
+   "ok": true,
+   "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+  },
+  {
+   "area": "fixture",
+   "probe": "source untouched by probes: BILLING_AUDIT_LOG still 1, sequences unchanged",
+   "ok": true,
+   "detail": "(1, {'SEQ_BILLING_AUDIT_LOG': 2, 'SEQ_CUSTOMER_MASTER': 125000, 'SEQ_CUSTOMER_MASTER_HIST': 1, 'SEQ_ENTITY_ATTR_VALUE': 11001, 'SEQ_SUBSCRIPTIONS_HIST': 1})"
+  }
+ ]
+}

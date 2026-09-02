@@ -1,0 +1,41 @@
+{
+  "unit": "U7",
+  "mode": "live",
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-02T01:56:55.241768+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": false,
+      "checks_run": 5,
+      "stats": {},
+      "findings": [
+        {
+          "collection": "replay_u7_rating_periods",
+          "check": "root_count",
+          "detail": "rows(RATING_PERIODS)=3 vs docs=4",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "collection": "replay_u7_rating_periods",
+          "check": "embed_cardinality",
+          "detail": "rows(RATING_RESULTS)=3 vs sum(len(results))=4",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL"
+}

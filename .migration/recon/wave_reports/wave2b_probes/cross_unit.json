@@ -1,0 +1,67 @@
+[
+ {
+  "probe": "golden: subscriptions.plan_id \u2282 plans, subscriptions/usage_events/rating_periods.tenant_id \u2282 tenants, results.subscription_id \u2282 subscriptions",
+  "ok": true,
+  "detail": "{'plans': 3, 'tenants': 69, 'subscriptions': 69, 'usage_events': 814, 'rating_periods': 3}"
+ },
+ {
+  "probe": "replay_u6_: subscriptions.plan_id \u2282 plans, subscriptions/usage_events/rating_periods.tenant_id \u2282 tenants, results.subscription_id \u2282 subscriptions",
+  "ok": true,
+  "detail": "{'plans': 3, 'tenants': 69, 'subscriptions': 69, 'usage_events': 814, 'rating_periods': 3}"
+ },
+ {
+  "probe": "replay_u7_: subscriptions.plan_id \u2282 plans, subscriptions/usage_events/rating_periods.tenant_id \u2282 tenants, results.subscription_id \u2282 subscriptions",
+  "ok": true,
+  "detail": "{'plans': 3, 'tenants': 69, 'subscriptions': 69, 'usage_events': 814, 'rating_periods': 3}"
+ },
+ {
+  "probe": "replay_u6_* and replay_u7_* shared collections are value-identical at baseline (plans/tenants/subscriptions/usage_events/rating_periods)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "probe": "golden codes == CODES for PLAN_TIER/SUB_STATUS/USAGE_KIND",
+  "ok": true,
+  "detail": "{('PLAN_TIER', 1): 'starter', ('PLAN_TIER', 2): 'growth', ('PLAN_TIER', 3): 'scale', ('SUB_STATUS', 10): 'active', ('SUB_STATUS', 20): 'suspended', ('SUB_STATUS', 30): 'cancelled', ('USAGE_KIND', 1): 'api', ('USAGE_KIND', 2): 'storage', ('USAGE_KIND', 3): 'compute'}"
+ },
+ {
+  "probe": "U7 KIND_DECODE {1:api,2:storage,3:compute} == CODES USAGE_KIND descriptions",
+  "ok": true,
+  "detail": "{1: 'api', 2: 'storage', 3: 'compute'}"
+ },
+ {
+  "probe": "U6 plans tier DECODE (1 starter,2 growth,3 scale) == CODES PLAN_TIER descriptions",
+  "ok": true,
+  "detail": "{1: 'starter', 2: 'growth', 3: 'scale'}"
+ },
+ {
+  "probe": "all status/kind/tier values in data have CODES rows (no UNKNOWN(...) branch live)",
+  "ok": true,
+  "detail": "[1, 2, 3, 10, 20, 30]"
+ },
+ {
+  "probe": "FINDING: U6 and U7 port pkg_ow_util.log_msg with incompatible counter contracts on the shared `counters` shape (golden: {_id:lower seq, seq, source_sequence, ns}; U6: {_id:'seq_billing_audit_log', seq}; U7: {_id:'SEQ_BILLING_AUDIT_LOG', value, ns})",
+  "ok": false,
+  "detail": "{'golden': [{'_id': 'seq_customer_master', 'seq': 125000, 'source_sequence': 'SEQ_CUSTOMER_MASTER', 'ns': 'mongo_205236'}, {'_id': 'seq_customer_master_hist', 'seq': 1, 'source_sequence': 'SEQ_CUSTOMER_MASTER_HIST', 'ns': 'mongo_205236'}, {'_id': 'seq_entity_attr_value', 'seq': 11001, 'source_sequence': 'SEQ_ENTITY_ATTR_VALUE', 'ns': 'mongo_205236'}], 'u6': [{'_id': 'seq_billing_audit_log', 'seq': 1}, {'_id': 'seq_subscriptions_hist', 'seq': 0}], 'u7': [{'_id': 'SEQ_BILLING_AUDIT_LOG', 'value': 1, 'ns': 'mongo_205236'}]}"
+ },
+ {
+  "probe": "shared golden `counters` has no SEQ_BILLING_AUDIT_LOG entry at all (neither port's key) -- U6 would raise LookupError, U7 self-seeds from max(log_id)",
+  "ok": true,
+  "detail": "['seq_customer_master', 'seq_customer_master_hist', 'seq_entity_attr_value']"
+ },
+ {
+  "probe": "golden + quarantine collections byte-identical to the wave pre-fingerprint (13 collections)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "probe": "quarantine SETS: {bad_csv_list:31, dirty_signup_dt:50, invoice_feed_orphan_lines:37, orphan_document_snapshots:6}; U6/U7 declare none",
+  "ok": true,
+  "detail": "{'dirty_signup_dt': 50, 'invoice_feed_orphan_lines': 37, 'orphan_document_snapshots': 6, 'bad_csv_list': 31}"
+ },
+ {
+  "probe": "Oracle source identity unchanged across the wave: FIXTURE_META, BILLING_AUDIT_LOG=1, SEQ_BILLING_AUDIT_LOG.last_number=2",
+  "ok": true,
+  "detail": "('2026-09-01 20:53:10.961888', 1, 2)"
+ }
+]

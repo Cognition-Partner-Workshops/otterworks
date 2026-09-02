@@ -1,0 +1,170 @@
+{
+  "unit": "U6",
+  "started_at": "2026-09-02T01:49:05.948185Z",
+  "finished_at": "2026-09-02T01:49:18.572127Z",
+  "generated_at": "2026-09-02T01:49:18.572140Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "ns": "mongo_205236",
+  "prefix": "replay_u6_",
+  "collections": {
+    "replay_u6_codes": {
+      "root_table": "CODES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 32,
+      "inserted": 32,
+      "docs_after": 32,
+      "ns_docs_after": 32,
+      "indexes": [
+        "code_type_1_code_val_1"
+      ]
+    },
+    "replay_u6_tenants": {
+      "root_table": "TENANTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": []
+    },
+    "replay_u6_plans": {
+      "root_table": "PLANS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": []
+    },
+    "replay_u6_subscriptions": {
+      "root_table": "SUBSCRIPTIONS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": [
+        "tenant_id_1_starts_on_-1"
+      ]
+    },
+    "replay_u6_subscriptions_history": {
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 0,
+      "inserted": 0,
+      "docs_after": 0,
+      "ns_docs_after": 0,
+      "indexes": []
+    },
+    "replay_u6_usage_events": {
+      "root_table": "USAGE_EVENTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 814,
+      "inserted": 814,
+      "docs_after": 814,
+      "ns_docs_after": 814,
+      "indexes": [
+        "tenant_id_1_occurred_at_1"
+      ]
+    },
+    "replay_u6_rating_periods": {
+      "root_table": "RATING_PERIODS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "tenant_id_1_period_start_1"
+      ],
+      "embedded": {
+        "results": 3
+      }
+    },
+    "replay_u6_billing_invoices": {
+      "root_table": "INVOICES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "tenant_id_1_issued_at_1",
+        "status_cd_1_issued_at_1"
+      ],
+      "embedded": {
+        "lines": 2
+      }
+    },
+    "replay_u6_credit_notes": {
+      "root_table": "CREDIT_NOTES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 5,
+      "inserted": 5,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": [
+        "tenant_id_1_issued_on_1__id_1"
+      ]
+    },
+    "replay_u6_dunning_attempts": {
+      "root_table": "DUNNING_ATTEMPTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "invoice_id_1_attempt_no_1"
+      ]
+    },
+    "replay_u6_notifications": {
+      "root_table": "NOTIFICATIONS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ]
+    },
+    "replay_u6_billing_audit_log": {
+      "root_table": "BILLING_AUDIT_LOG",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "logged_at_1"
+      ]
+    }
+  },
+  "counter_seeds": {
+    "seq_billing_audit_log": {
+      "_id": "seq_billing_audit_log",
+      "seq": 1
+    },
+    "seq_subscriptions_hist": {
+      "_id": "seq_subscriptions_hist",
+      "seq": 0
+    }
+  },
+  "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  }
+}
