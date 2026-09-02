@@ -21,14 +21,8 @@ from bson import Int64
 from pymongo import MongoClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from load_u5 import (
-    NS_VALUE,
-    TARGET_DB,
-    fetch,
-    parse_dsn,
-    secret_value,
-    validate_target_db,
-)
+from load_u1 import fetch
+from load_u5 import NS_VALUE, TARGET_DB, parse_dsn, secret_value, validate_target_db
 
 PREFIX = "replay_u7_"
 SOURCE_COLLECTIONS = (
