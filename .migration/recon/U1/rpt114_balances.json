@@ -1,0 +1,29 @@
+{
+  "check": "RPT-114 balances: Oracle BALANCES_SQL vs customers aggregation",
+  "batch_no": 85559852,
+  "oracle": {
+    "customer_count": 25000,
+    "current_balance_total": "39799450.31",
+    "past_due_total": "7330214.66"
+  },
+  "mongodb": {
+    "customer_count": 25000,
+    "current_balance_total": "39799450.31",
+    "past_due_total": "7330214.66"
+  },
+  "result": "pass",
+  "null_semantics_probe": {
+    "batch_no": 1,
+    "oracle": {
+      "customer_count": 0,
+      "current_balance_total": null,
+      "past_due_total": null
+    },
+    "mongodb": {
+      "customer_count": 0,
+      "current_balance_total": null,
+      "past_due_total": null
+    },
+    "result": "pass"
+  }
+}

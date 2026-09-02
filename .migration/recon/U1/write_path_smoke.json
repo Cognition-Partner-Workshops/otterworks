@@ -1,0 +1,19 @@
+{
+  "insert_seq": 125001,
+  "hist_before": 0,
+  "b_version": 2,
+  "stale_update_matched": false,
+  "hist_after_update": 1,
+  "delete": true,
+  "delete_missing": false,
+  "history": [
+    {
+      "hist_op": "UPD",
+      "cust_name": "rev smoke"
+    },
+    {
+      "hist_op": "DEL",
+      "cust_name": "writer b"
+    }
+  ]
+}
