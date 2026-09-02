@@ -1,0 +1,261 @@
+{
+ "ow_tp_mongodb_205236.billing_audit_log": {
+  "n": 1,
+  "sha": "85233381f488ef07d6b394d138043ae9b0cecb470d39479c9aff693a2beb4527"
+ },
+ "ow_tp_mongodb_205236.billing_invoices": {
+  "n": 3,
+  "sha": "64233909be48dd895af7404ff36969a129f33bb487ce284bcf9d183bdd49aa39"
+ },
+ "ow_tp_mongodb_205236.codes": {
+  "n": 32,
+  "sha": "59a0303e11de075c6dd94597982319bdca425129d53a5d51210bf33c5de4628b"
+ },
+ "ow_tp_mongodb_205236.counters": {
+  "n": 5,
+  "sha": "3c0f48550e0c6b87da18d11a03e48d63f546d1829843a1397c2b9923cab93757"
+ },
+ "ow_tp_mongodb_205236.credit_notes": {
+  "n": 5,
+  "sha": "b56249181a52c5d8f839204468cfcf02ca59afe0037360626ea079623198f26b"
+ },
+ "ow_tp_mongodb_205236.customers": {
+  "n": 25000,
+  "sha": "624ec3048fe5d889738a7e4ea1fdab9799fd166c101e86643f85809dd6e5677c"
+ },
+ "ow_tp_mongodb_205236.customers_history": {
+  "n": 0,
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ "ow_tp_mongodb_205236.document_snapshots": {
+  "n": 384,
+  "sha": "37c7e0a9f8a6ad179cfc284eceb4cf6ff8a0cab5690db9b1fc814db0cf7f9c9d"
+ },
+ "ow_tp_mongodb_205236.documents": {
+  "n": 2000,
+  "sha": "b00ecd1b6eaa412822b0de16cebbc39af40aff39eef44469290af6e1f9d13b23"
+ },
+ "ow_tp_mongodb_205236.dunning_attempts": {
+  "n": 1,
+  "sha": "80babea5621f868341c867292e3578080507165a178fe83fa4b42188f99cce55"
+ },
+ "ow_tp_mongodb_205236.files": {
+  "n": 10000,
+  "sha": "1d7f50906c77c857d443c09b8632f5c9f8302f40e602bdaad3ae89eb9898b578"
+ },
+ "ow_tp_mongodb_205236.invoices": {
+  "n": 18750,
+  "sha": "13585081c77ddc15c2bd27c68732e44a178679353008e1f8d26d89f028270949"
+ },
+ "ow_tp_mongodb_205236.notifications": {
+  "n": 1,
+  "sha": "faa8bf0623ffa0a9edd8845c93ad6cc58d1d65d586835c1a74f47599a7447e49"
+ },
+ "ow_tp_mongodb_205236.plans": {
+  "n": 3,
+  "sha": "652e9311ecff5c8e777877e9f0b08db82822d2e9b457e714874dc91e076ae0e4"
+ },
+ "ow_tp_mongodb_205236.rating_periods": {
+  "n": 3,
+  "sha": "fd70b59b1c2a0fd310c1f55adb425e71e53397198f542a60ec4f67fda483d631"
+ },
+ "ow_tp_mongodb_205236.replay_u6_billing_audit_log": {
+  "n": 4
+ },
+ "ow_tp_mongodb_205236.replay_u6_billing_invoices": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u6_codes": {
+  "n": 32
+ },
+ "ow_tp_mongodb_205236.replay_u6_counters": {
+  "n": 2
+ },
+ "ow_tp_mongodb_205236.replay_u6_credit_notes": {
+  "n": 5
+ },
+ "ow_tp_mongodb_205236.replay_u6_dunning_attempts": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u6_notifications": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u6_plans": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u6_rating_periods": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u6_subscriptions": {
+  "n": 71
+ },
+ "ow_tp_mongodb_205236.replay_u6_subscriptions_history": {
+  "n": 2
+ },
+ "ow_tp_mongodb_205236.replay_u6_tenants": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u6_usage_events": {
+  "n": 814
+ },
+ "ow_tp_mongodb_205236.replay_u7_billing_audit_log": {
+  "n": 9
+ },
+ "ow_tp_mongodb_205236.replay_u7_billing_invoices": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u7_counters": {
+  "n": 2
+ },
+ "ow_tp_mongodb_205236.replay_u7_credit_notes": {
+  "n": 5
+ },
+ "ow_tp_mongodb_205236.replay_u7_dunning_attempts": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u7_notifications": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u7_plans": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u7_rating_periods": {
+  "n": 4
+ },
+ "ow_tp_mongodb_205236.replay_u7_subscriptions": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u7_subscriptions_history": {
+  "n": 0
+ },
+ "ow_tp_mongodb_205236.replay_u7_tenants": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u7_usage_events": {
+  "n": 814
+ },
+ "ow_tp_mongodb_205236.replay_u8_billing_audit_log": {
+  "n": 15
+ },
+ "ow_tp_mongodb_205236.replay_u8_billing_invoices": {
+  "n": 6
+ },
+ "ow_tp_mongodb_205236.replay_u8_counters": {
+  "n": 2
+ },
+ "ow_tp_mongodb_205236.replay_u8_credit_notes": {
+  "n": 5
+ },
+ "ow_tp_mongodb_205236.replay_u8_dunning_attempts": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u8_notifications": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u8_plans": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u8_rating_periods": {
+  "n": 6
+ },
+ "ow_tp_mongodb_205236.replay_u8_subscriptions": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u8_subscriptions_history": {
+  "n": 0
+ },
+ "ow_tp_mongodb_205236.replay_u8_tenants": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u8_usage_events": {
+  "n": 814
+ },
+ "ow_tp_mongodb_205236.replay_u9_billing_audit_log": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u9_billing_invoices": {
+  "n": 3
+ },
+ "ow_tp_mongodb_205236.replay_u9_counters": {
+  "n": 2
+ },
+ "ow_tp_mongodb_205236.replay_u9_dunning_attempts": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u9_notifications": {
+  "n": 1
+ },
+ "ow_tp_mongodb_205236.replay_u9_subscriptions": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.replay_u9_subscriptions_history": {
+  "n": 0
+ },
+ "ow_tp_mongodb_205236.replay_u9_tenants": {
+  "n": 69
+ },
+ "ow_tp_mongodb_205236.subscriptions": {
+  "n": 69,
+  "sha": "a79c29d6ff230833b4649536a512a8723b8630ea9eb01d06d82d900b806649d9"
+ },
+ "ow_tp_mongodb_205236.subscriptions_history": {
+  "n": 0,
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ "ow_tp_mongodb_205236.tenants": {
+  "n": 69,
+  "sha": "0212cd12bd1cb178feec5beade8f853be3658c6fab3778f576fb5b22732e42dd"
+ },
+ "ow_tp_mongodb_205236.usage_events": {
+  "n": 814,
+  "sha": "0ef0a1294987dcb1c56959c5509cc143a6cde1112d17465189c4772655bc762f"
+ },
+ "ow_tp_mongodb_205236_quarantine.bad_csv_list": {
+  "n": 31,
+  "sha": "15f0186eb3441a7b1629b2e700e087cefa10fbaa1d2468cd2422921abffce30c"
+ },
+ "ow_tp_mongodb_205236_quarantine.dirty_signup_dt": {
+  "n": 50,
+  "sha": "f64ae2209d30eb8635c626bc72958af13e316da78be146b4fec0fdb7bf5211ec"
+ },
+ "ow_tp_mongodb_205236_quarantine.invoice_feed_orphan_lines": {
+  "n": 37,
+  "sha": "a82f3dcb399b6f1ccfd8a7b8b2aa07c7a9e94aa3fe4648940f58ac30d2bc015b"
+ },
+ "ow_tp_mongodb_205236_quarantine.orphan_document_snapshots": {
+  "n": 6,
+  "sha": "14d78a2b99a79bb3b89a17df81d7e34a8cb5745266adcf5ce98fd7dd9fe24552"
+ },
+ "counters_docs": [
+  {
+   "_id": "seq_billing_audit_log",
+   "seq": "2",
+   "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_customer_master",
+   "seq": "125000",
+   "source_sequence": "SEQ_CUSTOMER_MASTER",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_customer_master_hist",
+   "seq": "1",
+   "source_sequence": "SEQ_CUSTOMER_MASTER_HIST",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_entity_attr_value",
+   "seq": "11001",
+   "source_sequence": "SEQ_ENTITY_ATTR_VALUE",
+   "ns": "mongo_205236"
+  },
+  {
+   "_id": "seq_subscriptions_hist",
+   "seq": "1",
+   "source_sequence": "SEQ_SUBSCRIPTIONS_HIST",
+   "ns": "mongo_205236"
+  }
+ ]
+}

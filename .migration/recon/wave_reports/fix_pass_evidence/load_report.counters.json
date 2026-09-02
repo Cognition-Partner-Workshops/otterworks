@@ -1,0 +1,44 @@
+{
+  "unit": "U1",
+  "started_at": "2026-09-02T06:47:34.679490Z",
+  "finished_at": "2026-09-02T06:47:36.510671Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "quarantine_db": "ow_tp_mongodb_205236_quarantine",
+  "ns": "mongo_205236",
+  "batch_no": 85559852,
+  "mode": "counters_only",
+  "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  },
+  "source_rows": {
+    "USER_SEQUENCES": 5
+  },
+  "collections": {
+    "counters": {
+      "root_table": "USER_SEQUENCES",
+      "mode": "counters_only",
+      "oracle_last_number": {
+        "seq_customer_master": 125000,
+        "seq_customer_master_hist": 1,
+        "seq_entity_attr_value": 11001,
+        "seq_billing_audit_log": 2,
+        "seq_subscriptions_hist": 1
+      },
+      "seeded": {
+        "seq_customer_master": 125000,
+        "seq_customer_master_hist": 1,
+        "seq_entity_attr_value": 11001,
+        "seq_billing_audit_log": 2,
+        "seq_subscriptions_hist": 1
+      },
+      "advanced_preserved": [],
+      "dropped": false,
+      "recreated": false,
+      "inserted": 0,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": []
+    }
+  }
+}

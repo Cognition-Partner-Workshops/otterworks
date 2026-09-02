@@ -1,0 +1,327 @@
+{
+ "kind": "recon-report",
+ "unit": "U8-fix-pass",
+ "namespace": "mongo_205236",
+ "generated_at": "2026-09-02T06:52:48.081278+00:00",
+ "run_mode": "live",
+ "harness": {
+  "result": ".migration/recon/wave_reports/fix_pass_evidence/U8/gate/result.json",
+  "verdict": "PASS",
+  "seed": 714559852,
+  "params": {
+   "batch_no": "85559852",
+   "source_ns": "demo"
+  },
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1"
+ },
+ "checks": [
+  {
+   "id": "U8-T1-counts_through_mapping",
+   "expected": "all checks pass",
+   "actual": "8 checks, passed=True, findings=0",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1; Tier-4 recorded transcripts procs/oracle/transcripts/invoicing",
+   "result": "pass"
+  },
+  {
+   "id": "U8-T2-per_field_aggregates",
+   "expected": "all checks pass",
+   "actual": "36 checks, passed=True, findings=0",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1; Tier-4 recorded transcripts procs/oracle/transcripts/invoicing",
+   "result": "pass"
+  },
+  {
+   "id": "U8-T3-keyed_diffs",
+   "expected": "all checks pass",
+   "actual": "902 checks, passed=True, findings=0",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1; Tier-4 recorded transcripts procs/oracle/transcripts/invoicing",
+   "result": "pass"
+  },
+  {
+   "id": "U8-T4-app_level_parity",
+   "expected": "all checks pass",
+   "actual": "6 checks, passed=True, findings=0",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1; Tier-4 recorded transcripts procs/oracle/transcripts/invoicing",
+   "result": "pass"
+  },
+  {
+   "id": "U5-regression-T1-counts_through_mapping",
+   "expected": "all checks pass",
+   "actual": "11 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U5-regression-T2-per_field_aggregates",
+   "expected": "all checks pass",
+   "actual": "53 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U5-regression-T3-keyed_diffs",
+   "expected": "all checks pass",
+   "actual": "902 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U6-regression-T1-counts_through_mapping",
+   "expected": "all checks pass",
+   "actual": "14 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U6-regression-T2-per_field_aggregates",
+   "expected": "all checks pass",
+   "actual": "67 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U6-regression-T3-keyed_diffs",
+   "expected": "all checks pass",
+   "actual": "1006 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U6-regression-T4-app_level_parity",
+   "expected": "all checks pass",
+   "actual": "5 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U7-regression-T1-counts_through_mapping",
+   "expected": "all checks pass",
+   "actual": "5 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U7-regression-T2-per_field_aggregates",
+   "expected": "all checks pass",
+   "actual": "23 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U7-regression-T3-keyed_diffs",
+   "expected": "all checks pass",
+   "actual": "892 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "U7-regression-T4-app_level_parity",
+   "expected": "all checks pass",
+   "actual": "8 checks, passed=True",
+   "source_of_truth": "Oracle OW_BILLING (live, plain SQL) via mapping v1.0.1",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:replay_u6_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:replay_u7_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:replay_u8_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:replay_u9_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-U8-1:golden billing_invoices lines (invoice_id,line_no) SET == Oracle INVOICE_LINES",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:counters: exactly one document per Oracle USER_SEQUENCES sequence (5)",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:counters: no duplicate _id / one doc per source_sequence",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:counters.seq == Oracle USER_SEQUENCES.LAST_NUMBER for every sequence",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:counters docs shape {_id, seq:Int64, source_sequence=_id.upper(), ns}",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:counters: no legacy-contract docs (`SEQ_BILLING_AUDIT_LOG`/`value`) anywhere in golden or clones",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:static: rating.log_msg and invoicing.log_msg delegate to util.log_msg; plans/dunning call util.log_msg",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u6_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u6_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u7_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u7_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u8_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u8_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u9_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:audit:replay_u9_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:three log_msg paths (util/rating/invoicing) x2 on one scratch store: returned ids == seed+1..seed+6, strictly monotonic, no collision",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:scratch audit rows: 6 inserted, _id==log_id, modules in call order, ns set, Int64",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:scratch counter advanced exactly +6 with the single contract (`seq`), no `value` field, other 4 counters untouched",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:F-X-1:unseeded seq_billing_audit_log -> LookupError (loud, not silently swallowed)",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:cleanup:scratch replay_fixprobe_* collections dropped",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  },
+  {
+   "id": "probe:golden:golden billing_audit_log still == Oracle BILLING_AUDIT_LOG (1 row) \u2014 probes wrote only to scratch",
+   "expected": "ok",
+   "actual": "ok",
+   "source_of_truth": "Oracle OW_BILLING plain SQL (USER_SEQUENCES.LAST_NUMBER, INVOICE_LINES, BILLING_AUDIT_LOG) + static read of PR head source",
+   "result": "pass"
+  }
+ ],
+ "values_recomputed_from_target": true,
+ "idempotency_rerun": {
+  "performed": true,
+  "result": "pass",
+  "evidence": "load_u8.py re-run + gate re-run (.migration/recon/wave_reports/fix_pass_evidence/U8/gate_run2): result.json identical to gate/result.json modulo timestamps; load reports identical modulo timestamps (U8/idempotency.log)"
+ },
+ "planted_anomaly_detections": {
+  "expected_set": [],
+  "actual_set": [],
+  "missing": [],
+  "unexpected": []
+ },
+ "unverified_paths": [
+  "Tier-4 source side = recorded Oracle transcripts (ORACLE_SOURCE_SHA verified against live USER_SOURCE), not live PL/SQL",
+  "F-U8-2/F-U7-1 (ORA-02291 behaviour) unchanged and not re-probed; carried forward as STOP C decision line",
+  "billing_audit_log on the U6/U7/U8 clones graded manually (fixture row keyed-equal + id monotonicity) because the unit drivers exclude it from GRADED_SOURCES",
+  "counters value semantics: U6 replay seeder writes LAST_NUMBER-1, U1 golden / U7 / U8 seeders write LAST_NUMBER (first Mongo-issued id skips one value; no collision) \u2014 recorded as informational F-FIX-2, not graded as a defect",
+  "no HTTP route exercises sp_issue_invoice; Tier-4 and probes call Python entrypoints directly",
+  "concurrent log_msg writers not exercised (unit-tested only)"
+ ]
+}

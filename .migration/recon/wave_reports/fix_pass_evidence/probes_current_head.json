@@ -1,0 +1,360 @@
+{
+ "summary": {
+  "ok": 26,
+  "total": 26,
+  "flags": []
+ },
+ "results": [
+  {
+   "group": "F-U8-1",
+   "probe": "billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "ok": true,
+   "detail": {
+    "invoices": 3,
+    "lines": 2,
+    "bad": []
+   }
+  },
+  {
+   "group": "F-U8-1",
+   "probe": "replay_u6_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "ok": true,
+   "detail": {
+    "invoices": 3,
+    "lines": 2,
+    "bad": []
+   }
+  },
+  {
+   "group": "F-U8-1",
+   "probe": "replay_u7_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "ok": true,
+   "detail": {
+    "invoices": 3,
+    "lines": 2,
+    "bad": []
+   }
+  },
+  {
+   "group": "F-U8-1",
+   "probe": "replay_u8_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "ok": true,
+   "detail": {
+    "invoices": 6,
+    "lines": 17,
+    "bad": []
+   }
+  },
+  {
+   "group": "F-U8-1",
+   "probe": "replay_u9_billing_invoices: every lines[] element carries invoice_id == parent _id == parent id",
+   "ok": true,
+   "detail": {
+    "invoices": 3,
+    "lines": 2,
+    "bad": []
+   }
+  },
+  {
+   "group": "F-U8-1",
+   "probe": "golden billing_invoices lines (invoice_id,line_no) SET == Oracle INVOICE_LINES",
+   "ok": true,
+   "detail": {
+    "golden": 2,
+    "oracle": 2
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "counters: exactly one document per Oracle USER_SEQUENCES sequence (5)",
+   "ok": true,
+   "detail": {
+    "ids": [
+     "seq_billing_audit_log",
+     "seq_customer_master",
+     "seq_customer_master_hist",
+     "seq_entity_attr_value",
+     "seq_subscriptions_hist"
+    ]
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "counters: no duplicate _id / one doc per source_sequence",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "group": "F-X-1",
+   "probe": "counters.seq == Oracle USER_SEQUENCES.LAST_NUMBER for every sequence",
+   "ok": true,
+   "detail": {
+    "seq_billing_audit_log": 2,
+    "seq_customer_master": 125000,
+    "seq_customer_master_hist": 1,
+    "seq_entity_attr_value": 11001,
+    "seq_subscriptions_hist": 1,
+    "oracle": {
+     "SEQ_BILLING_AUDIT_LOG": 2,
+     "SEQ_CUSTOMER_MASTER": 125000,
+     "SEQ_CUSTOMER_MASTER_HIST": 1,
+     "SEQ_ENTITY_ATTR_VALUE": 11001,
+     "SEQ_SUBSCRIPTIONS_HIST": 1
+    },
+    "mismatch": {}
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "counters docs shape {_id, seq:Int64, source_sequence=_id.upper(), ns}",
+   "ok": true,
+   "detail": [
+    {
+     "_id": "seq_billing_audit_log",
+     "seq": "Int64",
+     "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+     "ns": "mongo_205236"
+    },
+    {
+     "_id": "seq_customer_master",
+     "seq": "Int64",
+     "source_sequence": "SEQ_CUSTOMER_MASTER",
+     "ns": "mongo_205236"
+    },
+    {
+     "_id": "seq_customer_master_hist",
+     "seq": "Int64",
+     "source_sequence": "SEQ_CUSTOMER_MASTER_HIST",
+     "ns": "mongo_205236"
+    },
+    {
+     "_id": "seq_entity_attr_value",
+     "seq": "Int64",
+     "source_sequence": "SEQ_ENTITY_ATTR_VALUE",
+     "ns": "mongo_205236"
+    },
+    {
+     "_id": "seq_subscriptions_hist",
+     "seq": "Int64",
+     "source_sequence": "SEQ_SUBSCRIPTIONS_HIST",
+     "ns": "mongo_205236"
+    }
+   ]
+  },
+  {
+   "group": "F-X-1",
+   "probe": "counters: no legacy-contract docs (`SEQ_BILLING_AUDIT_LOG`/`value`) anywhere in golden or clones",
+   "ok": true,
+   "detail": [
+    "replay_u7_counters",
+    "counters",
+    "replay_u9_counters",
+    "replay_u6_counters",
+    "replay_u8_counters"
+   ]
+  },
+  {
+   "group": "F-X-1",
+   "probe": "static: rating.log_msg and invoicing.log_msg delegate to util.log_msg; plans/dunning call util.log_msg",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u6_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "ok": true,
+   "detail": {
+    "docs": 4,
+    "oracle_rows": 1,
+    "ids": [
+     1,
+     2,
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u6_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "ok": true,
+   "detail": {
+    "seq_billing_audit_log": 4,
+    "seq_subscriptions_hist": 2,
+    "max_log_id": 4,
+    "oracle_last_number": 2
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u7_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "ok": true,
+   "detail": {
+    "docs": 9,
+    "oracle_rows": 1,
+    "ids": [
+     1,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10
+    ]
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u7_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "ok": true,
+   "detail": {
+    "seq_billing_audit_log": 10,
+    "seq_subscriptions_hist": 1,
+    "max_log_id": 10,
+    "oracle_last_number": 2
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u8_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "ok": true,
+   "detail": {
+    "docs": 15,
+    "oracle_rows": 1,
+    "ids": [
+     1,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16
+    ]
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u8_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "ok": true,
+   "detail": {
+    "seq_billing_audit_log": 16,
+    "seq_subscriptions_hist": 1,
+    "max_log_id": 16,
+    "oracle_last_number": 2
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u9_billing_audit_log: fixture rows keyed-equal to Oracle BILLING_AUDIT_LOG; all ids unique, strictly increasing, _id==log_id, Int64",
+   "ok": true,
+   "detail": {
+    "docs": 1,
+    "oracle_rows": 1,
+    "ids": [
+     1
+    ]
+   }
+  },
+  {
+   "group": "audit",
+   "probe": "replay_u9_counters: seq_billing_audit_log.seq == max(log_id) after Tier-4 replays (no gap/collision) and >= Oracle LAST_NUMBER-1; single contract",
+   "ok": true,
+   "detail": {
+    "seq_billing_audit_log": 1,
+    "seq_subscriptions_hist": 0,
+    "max_log_id": 1,
+    "oracle_last_number": 2
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "three log_msg paths (util/rating/invoicing) x2 on one scratch store: returned ids == seed+1..seed+6, strictly monotonic, no collision",
+   "ok": true,
+   "detail": {
+    "seed": 2,
+    "ids": [
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ]
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "scratch audit rows: 6 inserted, _id==log_id, modules in call order, ns set, Int64",
+   "ok": true,
+   "detail": [
+    [
+     3,
+     "PLANS"
+    ],
+    [
+     4,
+     "RATING"
+    ],
+    [
+     5,
+     "INVOICING"
+    ],
+    [
+     6,
+     "PLANS"
+    ],
+    [
+     7,
+     "RATING"
+    ],
+    [
+     8,
+     "INVOICING"
+    ]
+   ]
+  },
+  {
+   "group": "F-X-1",
+   "probe": "scratch counter advanced exactly +6 with the single contract (`seq`), no `value` field, other 4 counters untouched",
+   "ok": true,
+   "detail": {
+    "seq_after": 8
+   }
+  },
+  {
+   "group": "F-X-1",
+   "probe": "unseeded seq_billing_audit_log -> LookupError (loud, not silently swallowed)",
+   "ok": true,
+   "detail": "LookupError: counter 'seq_billing_audit_log' is not seeded"
+  },
+  {
+   "group": "cleanup",
+   "probe": "scratch replay_fixprobe_* collections dropped",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "group": "golden",
+   "probe": "golden billing_audit_log still == Oracle BILLING_AUDIT_LOG (1 row) \u2014 probes wrote only to scratch",
+   "ok": true,
+   "detail": null
+  }
+ ],
+ "oracle_last_number": {
+  "SEQ_BILLING_AUDIT_LOG": 2,
+  "SEQ_CUSTOMER_MASTER": 125000,
+  "SEQ_CUSTOMER_MASTER_HIST": 1,
+  "SEQ_ENTITY_ATTR_VALUE": 11001,
+  "SEQ_SUBSCRIPTIONS_HIST": 1
+ }
+}

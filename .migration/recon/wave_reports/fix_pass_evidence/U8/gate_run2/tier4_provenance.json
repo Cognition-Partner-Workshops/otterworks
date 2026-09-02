@@ -1,0 +1,12 @@
+{
+  "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+  "transcripts_match": true,
+  "scenarios": [
+    "INVOICE-001",
+    "INVOICE-002",
+    "INVOICE-003",
+    "INVOICE-004",
+    "INVOICE-005",
+    "INVOICE-006"
+  ]
+}
