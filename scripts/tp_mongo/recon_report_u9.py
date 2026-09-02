@@ -203,7 +203,12 @@ def main(argv: list[str] | None = None) -> int:
         f"- Verdict: **{result['verdict']}**\n"
         f"- Tiers: {tier_summary}\n"
         f"- Idempotency: **{report['idempotency_rerun']['result']}**\n"
-        f"- Report: `{output}`\n"
+        "- Harness result: [.migration/recon/U9/result.json]"
+        "(.migration/recon/U9/result.json)\n"
+        "- Human report: [.migration/recon/U9/report.md]"
+        "(.migration/recon/U9/report.md)\n"
+        "- Report: [.migration/recon/U9/u9.recon.json]"
+        "(.migration/recon/U9/u9.recon.json)\n"
     )
     failed = [check["id"] for check in report["checks"] if check["result"] != "pass"]
     failed += ["idempotency"] if report["idempotency_rerun"]["result"] != "pass" else []

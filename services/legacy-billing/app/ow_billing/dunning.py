@@ -92,14 +92,6 @@ def sp_schedule_dunning(store, as_of: date | datetime) -> int:
     scheduled = 0
     for invoice in invoices:
         invoice_id = invoice.get("id", invoice["_id"])
-        if attempts.count_documents(
-            {
-                "invoice_id": invoice_id,
-                "scheduled_for": next_day,
-                "status_cd": 10,
-            }
-        ):
-            continue
         prior = attempts.find_one({"invoice_id": invoice_id}, sort=[("attempt_no", -1)])
         attempt = int(prior["attempt_no"]) + 1 if prior else 1
         identifier = util.f_md5_uuid(f"{invoice_id}{attempt}")

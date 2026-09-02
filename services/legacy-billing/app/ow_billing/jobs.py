@@ -5,10 +5,9 @@ from __future__ import annotations
 import argparse
 import os
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 
-from . import dunning
-from . import routes
+from . import Store, dunning, routes
 
 
 @dataclass(frozen=True)
@@ -26,7 +25,7 @@ NIGHTLY_DUNNING = JobSpec(
 
 
 def run_nightly_dunning(store: Store, as_of: date | None = None) -> dict:
-    day = as_of or date.today()
+    day = as_of or datetime.now(timezone.utc).date()
     return {
         "scheduled": dunning.sp_schedule_dunning(store, day),
         "suspended": dunning.sp_suspend_overdue(store, day),

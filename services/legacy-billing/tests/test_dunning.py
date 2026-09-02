@@ -6,7 +6,7 @@ import mongomock
 import pytest
 from bson import Decimal128, Int64
 from flask import Flask
-from pymongo.errors import OperationFailure, WriteError
+from pymongo.errors import DuplicateKeyError, OperationFailure, WriteError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
@@ -85,8 +85,32 @@ def test_schedule_weekend_attempts_and_deterministic_ids():
     assert rows[1]["attempt_no"] == 2
     assert rows[1]["_id"] == dunning.util.f_md5_uuid(f"{INVOICE_2}2")
     count = store.coll("dunning_attempts").count_documents({})
+    assert dunning.sp_schedule_dunning(store, date(2026, 2, 14)) == 2
+    assert store.coll("dunning_attempts").count_documents({}) == count + 2
+    invoice_1_attempt_2 = store.coll("dunning_attempts").find_one(
+        {"invoice_id": INVOICE_1, "attempt_no": 2}
+    )
+    invoice_2_attempt_3 = store.coll("dunning_attempts").find_one(
+        {"invoice_id": INVOICE_2, "attempt_no": 3}
+    )
+    assert invoice_1_attempt_2["scheduled_for"] == datetime(2026, 2, 16)
+    assert invoice_2_attempt_3["scheduled_for"] == datetime(2026, 2, 16)
+    assert invoice_1_attempt_2["_id"] == dunning.util.f_md5_uuid(f"{INVOICE_1}2")
+    assert invoice_2_attempt_3["_id"] == dunning.util.f_md5_uuid(f"{INVOICE_2}3")
+
+
+def test_schedule_duplicate_key_is_noop_but_logs(monkeypatch):
+    store = _store()
+    _invoice(store, INVOICE_1, TENANT_1, datetime(2026, 2, 1))
+    attempts = store.coll("dunning_attempts")
+
+    def raise_duplicate(doc):
+        raise DuplicateKeyError("dup")
+
+    monkeypatch.setattr(attempts, "insert_one", raise_duplicate)
     assert dunning.sp_schedule_dunning(store, date(2026, 2, 14)) == 0
-    assert store.coll("dunning_attempts").count_documents({}) == count
+    assert attempts.count_documents({}) == 0
+    assert store.coll("billing_audit_log").count_documents({}) == 1
 
 
 @pytest.mark.parametrize("error", [WriteError("bad"), OperationFailure("bad")])
