@@ -94,10 +94,10 @@ If the source is found **not** idle at freeze (any count, sequence or `FIXTURE_M
 | D.3 | Target idle check: ns-scoped counts for the 18 mapped collections and 4 quarantine classes (`tools/guards.py`) equal section E.1 | DEVIN (read-only on target) | Any diff → abort |
 | D.4 | **If F-X-1 is closed:** seed `counters` docs for `SEQ_BILLING_AUDIT_LOG` and `SEQ_SUBSCRIPTIONS_HIST` from `USER_SEQUENCES.LAST_NUMBER − 1` read in D.2 (today 1 and 0) under the single agreed contract; record the seed in the evidence | DEVIN (writes only to `ow_tp_mongodb_205236.counters`) | If F-X-1 is open, skip and mark the audit log as unreliable in the window log (STOP C line H.3) |
 | D.5 | Atlas connection-string swap: set the application secret **`MONGODB_ATLAS_URI`** in the target environment's config/secret store for `legacy-billing` to the production Atlas URI; set `MONGODB_DB=ow_tp_mongodb_205236`, `MONGODB_NS=mongo_205236`, ensure `OW_BILLING_COLLECTION_PREFIX` is unset/empty | CUSTOMER | Secret value never shared with Devin; Devin's own migration credential is **not** the production credential |
-| D.6 | **Read-only phase:** feature flags for the five package rewrites stay **OFF** for every mutating route (`POST /api/tenants/<t>/plan-change`, `POST /api/dunning/schedule`, `POST /api/dunning/suspend`); `OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED` unset; only read routes (`GET /api/plans`, `GET /api/tenants/<t>/entitlement`, `GET /api/dunning/overdue`, `GET /api/reports/*`) are routed to the new deployment | CUSTOMER | Flags are deployment config of the customer environment; none exist in the repo. No write can reach Atlas in this phase |
-| D.7 | Rolling restart of `legacy-billing`; confirm `GET /api/plans` returns 200 from Atlas | CUSTOMER | Note `/health` still checks Postgres (A.2) |
+| D.6 | **Read-only phase:** feature flags for the five package rewrites stay **OFF** for every mutating route (`POST /api/tenants/<t>/plan-change`, `POST /api/dunning/schedule`, `POST /api/dunning/suspend`); `OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED` unset; only read routes (`GET /api/plans`, `GET /api/tenants/<t>/entitlement`, `GET /api/dunning/overdue`, `GET /api/reports/*`) are routed to the new deployment | CUSTOMER | Flags are deployment config of the customer environment; none exist in the repo. No business write can reach Atlas in this phase. **Audit-observer exception:** `GET /api/plans` (`fn_list_plans` → `util.log_msg`) and any `compute_rating` call append one `billing_audit_log` row and `$inc` the audit counter, exactly as the Oracle originals do — every such call made during D.7–D.9 is counted in the window log (see E.1) |
+| D.7 | Rolling restart of `legacy-billing`; smoke with the non-logging read `GET /api/reports/month-end?ns=demo` → 200 with the E.3 rollup (pure aggregation, writes nothing). Do **not** use `GET /api/plans` as the smoke: it logs an audit row and, if D.4 was skipped, fails with `LookupError: counter 'seq_billing_audit_log' is not seeded` | CUSTOMER | Note `/health` still checks Postgres (A.2) |
 | D.8 | DNS / config: repoint the `legacy-billing` ingress/hostnames and any report consumer of RPT-114 to the deployment configured in D.5–D.7 (read routes only) | CUSTOMER | |
-| D.9 | Run section E verification against the production deployment and record results on the evidence branch. The target is still exactly the watermark because no writer is enabled | DEVIN (read-only) + CUSTOMER (RPT-114 via the production endpoint) | Any mismatch → section F (pure repoint-back, nothing to replay) |
+| D.9 | Run section E verification **in order E.1 → E.2 → E.3 → E.4 → E.5** against the production deployment and record results on the evidence branch. Through E.3 the target is exactly the watermark (no logging path has been called); E.4 appends the audit rows stated there. After E.5, dump `billing_audit_log` and `counters` as the **post-verification baseline** for F.3.5 | DEVIN (read-only except the audit rows produced by E.4's replay) + CUSTOMER (RPT-114 via the production endpoint) | Any mismatch → section F (pure repoint-back; the only Atlas writes are the counted audit rows) |
 | D.10 | **Enable writers — the point of no return (F.2) begins here.** Flip the feature flags ON for the mutating routes of PKG_OW_UTIL/PKG_PLANS and PKG_DUNNING; for PKG_RATING and PKG_INVOICING there is **no Mongo HTTP route** — either accept in-process-only use (H.2) or keep the legacy routes and record the partial scope | CUSTOMER | Only after D.9 is fully green |
 | D.11 | Disable the Oracle dunning scheduler job permanently (`DBMS_SCHEDULER.DISABLE('JOB_NIGHTLY_DUNNING')`, already disabled at source — confirm) and, if PKG_DUNNING is in scope, schedule `python -m ow_billing.jobs nightly-dunning` with `OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED=true` in the application scheduler (`jobs.py` requires the `nightly-dunning` subcommand; without it the process exits with a usage error) | CUSTOMER | Activates the only unattended writer |
 | D.12 | Declare cutover complete or rolled back; record window end UTC | CUSTOMER | |
@@ -130,9 +130,10 @@ All queries are ns-scoped (`{ns: "mongo_205236"}`) and read-only. Expected = cyc
 | `credit_notes` | 5 | |
 | `dunning_attempts` | 1 | |
 | `notifications` | 1 | |
-| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) | grows only after the first production write |
+| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) **before E.4**; after E.4 exactly 1 + A, where A = audit rows logged by E.4 (see there) plus any `GET /api/plans` calls recorded in the window log | `counters.seq_billing_audit_log.seq` (if seeded in D.4) advances by the same A |
 
-Also: `countDocuments({})` == `countDocuments({ns})` for every collection (count guard), and no `*__staging` or
+E.1 and E.2 must be taken **before** any `GET /api/plans` or transcript replay; the 17 non-audit collections must stay
+exact through the whole of section E. Also: `countDocuments({})` == `countDocuments({ns})` for every collection (count guard), and no `*__staging` or
 `replay_u*_*` collection is read by production (replay clones may still exist; they are dropped in section G).
 
 ### E.2 Quarantine counts unchanged (`ow_tp_mongodb_205236_quarantine`)
@@ -158,17 +159,20 @@ Then, for three tenants chosen by the customer at the window (record ids in the 
 
 | Transcript | Expected |
 |---|---|
-| `RATING-001` (read-only `fn_usage_rating`/`compute_rating` transcript) | `business_fields` equal to the recorded Oracle transcript |
+| `RATING-001` (`fn_usage_rating`/`compute_rating` transcript — no business write, but `compute_rating` calls `log_msg`) | `business_fields` equal to the recorded Oracle transcript; side effect: exactly **1** `billing_audit_log` row (`RATING`) if the counter was seeded in D.4, **0** if not (`rating.log_msg` swallows the failure) — record A accordingly |
 | `INVOICE-001` (read-only `fn_invoice_preview` transcript) | equal (unrounded, `tax/2` half-cents preserved) |
 | `DUNNING-001` (read-only `fn_overdue_accounts` transcript) | equal (money as `'161.29'`-style strings, order `issued_at, id`) |
 
-Mutating transcripts (`RATING-008`, `INVOICE-003…006`, `DUNNING-002…005`) are **not** replayed against production;
-they were graded on the replay clones in the final cycle.
+`INVOICE-001` and `DUNNING-001` write nothing (`fn_invoice_preview` and `fn_overdue_accounts` do not log). Mutating
+transcripts (`RATING-008`, `INVOICE-003…006`, `DUNNING-002…005`) are **not** replayed against production; they were
+graded on the replay clones in the final cycle.
 
 ### E.5 Audit log
 
-If D.4 executed: `counters` docs present under the agreed contract and `billing_audit_log` max `_id` == counter value.
-If D.4 skipped: record "audit log unreliable until F-X-1 closed" in the window log.
+If D.4 executed: `counters` docs present under the agreed contract, `billing_audit_log` max `_id` == counter value, and
+`countDocuments` == 1 + A with A as tallied in the window log. If D.4 skipped: `billing_audit_log` still 1, and record
+"audit log unreliable until F-X-1 closed" in the window log. Either way, dump both collections as the post-verification
+baseline.
 
 ---
 
@@ -205,7 +209,7 @@ D.10 is a pure repoint-back with nothing to replay.
 | F.3.2 | Restore the previous `legacy-billing` config/secret set (Postgres `DB_*`, no `MONGODB_ATLAS_URI` needed for legacy routes); rolling restart | CUSTOMER |
 | F.3.3 | Revert DNS/ingress to the legacy deployment | CUSTOMER |
 | F.3.4 | Lift the freeze: restore application write access to Oracle `OW_BILLING` / Postgres `otterworks_demo`; leave `JOB_NIGHTLY_DUNNING` in its pre-window state (DISABLED) | CUSTOMER (Oracle DBA) |
-| F.3.5 | If D.10 was reached: produce the **full change inventory** since the watermark — inserts, updates and deletes — by dumping every document of the 18 mapped collections (ns-scoped) plus `counters` and `billing_audit_log` and diffing against the watermark dump `evidence/load/` + cycle-3 `gate/` snapshots (`tools/subset.py` + the Tier-3 canonical diff, which compares full documents, not just `_id`s). Mutating entrypoints update pre-existing `subscriptions`, `subscriptions_history`, `rating_periods`, `billing_invoices`, `credit_notes`, `tenants` and `counters` documents in place, so an `_id`-only export is insufficient. Write the inventory to the evidence branch for the customer to replay into Oracle or discard | DEVIN (read-only on target, evidence-writing) |
+| F.3.5 | If D.10 was reached: produce the **full change inventory** since the watermark — inserts, updates and deletes — by dumping every document of the 18 mapped collections (ns-scoped) plus `counters` and `billing_audit_log` and diffing against the watermark dump `evidence/load/` + cycle-3 `gate/` snapshots for the 17 non-audit collections and against the D.9 **post-verification baseline** for `billing_audit_log` and `counters` (`tools/subset.py` + the Tier-3 canonical diff, which compares full documents, not just `_id`s). Mutating entrypoints update pre-existing `subscriptions`, `subscriptions_history`, `rating_periods`, `billing_invoices`, `credit_notes`, `tenants` and `counters` documents in place, so an `_id`-only export is insufficient. Write the inventory to the evidence branch for the customer to replay into Oracle or discard | DEVIN (read-only on target, evidence-writing) |
 | F.3.6 | Record the rollback, its trigger and timings in the window log; the Atlas target stays intact for triage | CUSTOMER |
 
 Legacy data is untouched by cutover, so after F.3.4 the legacy estate is exactly the frozen state.
