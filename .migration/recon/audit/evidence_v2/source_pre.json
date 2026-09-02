@@ -1,0 +1,49 @@
+{
+  "utc": "2026-09-02T08:02:18Z",
+  "oracle": {
+    "CODES": 32,
+    "TENANTS": 69,
+    "PLANS": 3,
+    "CUSTOMER_MASTER": 25000,
+    "CUSTOMER_MASTER_HIST": 0,
+    "ENTITY_ATTR_VALUE": 8333,
+    "INVOICE_HEADER": 18750,
+    "INVOICE_LINE": 150000,
+    "SUBSCRIPTIONS": 69,
+    "SUBSCRIPTIONS_HIST": 0,
+    "USAGE_EVENTS": 814,
+    "RATING_PERIODS": 3,
+    "RATING_RESULTS": 3,
+    "INVOICES": 3,
+    "INVOICE_LINES": 2,
+    "CREDIT_NOTES": 5,
+    "DUNNING_ATTEMPTS": 1,
+    "NOTIFICATIONS": 1,
+    "BILLING_AUDIT_LOG": 0,
+    "CUSTOMER_MASTER@batch": 25000,
+    "INVOICE_HEADER@batch": 18750,
+    "FIXTURE_META.INITIALIZED_AT": [
+      "2026-09-02 07:59:26.340161"
+    ],
+    "USER_SEQUENCES": {
+      "SEQ_BILLING_AUDIT_LOG": 1,
+      "SEQ_CUSTOMER_MASTER": 125000,
+      "SEQ_CUSTOMER_MASTER_HIST": 1,
+      "SEQ_ENTITY_ATTR_VALUE": 11001,
+      "SEQ_SUBSCRIPTIONS_HIST": 1
+    }
+  },
+  "postgres": {
+    "documents": 2000,
+    "document_versions": 13876,
+    "document_snapshots": 390
+  },
+  "dynamodb": {
+    "otterworks-file-metadata.ns_histogram": {
+      "demo": 10000
+    }
+  },
+  "oracle_seconds": 0.05,
+  "postgres_seconds": 0.01,
+  "dynamodb_seconds": 0.42
+}

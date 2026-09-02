@@ -1,0 +1,12 @@
+Only in /home/ubuntu/mmp/skills/mongo-recon-harness/harness: mongo_recon_harness.egg-info
+Only in /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon: __pycache__
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/adapters.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/adapters.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/canon.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/canon.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/cli.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/cli.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/config.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/config.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/engine.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/engine.py differ
+Only in /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon: paths.py
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/report.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/report.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/recon/tiers.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/recon/tiers.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/tests/fakes.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/tests/fakes.py differ
+Files /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-6d021e15/0.2.1/skills/mongo-recon-harness/harness/tests/test_tiers.py and /home/ubuntu/mmp/skills/mongo-recon-harness/harness/tests/test_tiers.py differ
