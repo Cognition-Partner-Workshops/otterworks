@@ -1,0 +1,57 @@
+{
+  "unit": "U3",
+  "mode": "live",
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-02T07:09:42.228495+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 18,
+      "stats": {
+        "deferred_to_tier3": [
+          "documents.folder_id",
+          "document_snapshots.label"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 16260,
+      "stats": {
+        "documents": {
+          "mode": "full_diff",
+          "population": 2000
+        },
+        "embeds_graded": {
+          "documents.versions": 13876
+        },
+        "document_snapshots": {
+          "mode": "full_diff",
+          "population": 384
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

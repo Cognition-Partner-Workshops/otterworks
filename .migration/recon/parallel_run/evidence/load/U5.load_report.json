@@ -1,0 +1,169 @@
+{
+  "unit": "U5",
+  "started_at": "2026-09-02T07:01:44.111423Z",
+  "finished_at": "2026-09-02T07:01:52.746053Z",
+  "generated_at": "2026-09-02T07:01:52.746065Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "ns": "mongo_205236",
+  "collections": {
+    "subscriptions": {
+      "root_table": "SUBSCRIPTIONS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": [
+        "tenant_id_1_starts_on_-1"
+      ]
+    },
+    "subscriptions_history": {
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 0,
+      "inserted": 0,
+      "docs_after": 0,
+      "ns_docs_after": 0,
+      "indexes": []
+    },
+    "usage_events": {
+      "root_table": "USAGE_EVENTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 814,
+      "inserted": 814,
+      "docs_after": 814,
+      "ns_docs_after": 814,
+      "indexes": [
+        "tenant_id_1_occurred_at_1"
+      ]
+    },
+    "rating_periods": {
+      "root_table": "RATING_PERIODS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "tenant_id_1_period_start_1"
+      ],
+      "embedded": {
+        "results": 3
+      }
+    },
+    "billing_invoices": {
+      "root_table": "INVOICES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "tenant_id_1_issued_at_1",
+        "status_cd_1_issued_at_1"
+      ],
+      "embedded": {
+        "lines": 2
+      }
+    },
+    "credit_notes": {
+      "root_table": "CREDIT_NOTES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 5,
+      "inserted": 5,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": [
+        "tenant_id_1_issued_on_1__id_1"
+      ]
+    },
+    "dunning_attempts": {
+      "root_table": "DUNNING_ATTEMPTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "invoice_id_1_attempt_no_1"
+      ]
+    },
+    "notifications": {
+      "root_table": "NOTIFICATIONS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ]
+    },
+    "billing_audit_log": {
+      "root_table": "BILLING_AUDIT_LOG",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "logged_at_1"
+      ]
+    }
+  },
+  "validators": {
+    "usage_events": {
+      "$jsonSchema": {
+        "bsonType": "object",
+        "required": [
+          "_id",
+          "id",
+          "tenant_id",
+          "occurred_at",
+          "units",
+          "kind_cd",
+          "ns"
+        ],
+        "properties": {
+          "units": {
+            "bsonType": "long",
+            "minimum": 1,
+            "description": "units must be > 0 (TRG_USAGE_EVENTS_CHECK)"
+          },
+          "kind_cd": {
+            "bsonType": "int"
+          },
+          "occurred_at": {
+            "bsonType": "date"
+          },
+          "tenant_id": {
+            "bsonType": "string"
+          },
+          "ns": {
+            "enum": [
+              "mongo_205236"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "ttl_indexes": {
+    "billing_audit_log": {
+      "logged_at": 7776000
+    }
+  },
+  "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  }
+}

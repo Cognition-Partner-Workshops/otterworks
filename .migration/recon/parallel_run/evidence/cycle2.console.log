@@ -1,0 +1,36 @@
+cycle 2 start 2026-09-02T07:06:48Z head=74ecd69e98876b8da26336a6d7cc24eba3e74697
+[2026-09-02T07:06:48Z] START source_pre
+[2026-09-02T07:06:48Z] END   source_pre rc=0 wall=0.5s :: 
+[2026-09-02T07:06:48Z] START reset_U6
+[2026-09-02T07:07:00Z] END   reset_U6 rc=0 wall=11.7s :: U6 replay load complete: target_db=ow_tp_mongodb_205236 prefix=replay_u6_replay_u6_codes=32, replay_u6_tenants=69, replay_u6_plans=3, replay_u6_subscriptions=69
+[2026-09-02T07:07:00Z] START reset_U7
+[2026-09-02T07:07:10Z] END   reset_U7 rc=0 wall=9.7s :: replay_u7_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1']
+[2026-09-02T07:07:10Z] START reset_U8
+[2026-09-02T07:07:19Z] END   reset_U8 rc=0 wall=9.7s :: replay_u8_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1']
+[2026-09-02T07:07:19Z] START reset_U9
+[2026-09-02T07:07:26Z] END   reset_U9 rc=0 wall=6.2s :: replay_u9_billing_invoices: 3 docs, indexes=['status_cd_1_issued_at_1', 'tenant_id_1_issued_at_1']
+[2026-09-02T07:07:26Z] START U0
+[2026-09-02T07:07:30Z] END   U0 rc=0 wall=4.2s :: recon PASS: unit=U0 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U0/gate/result.json
+[2026-09-02T07:07:30Z] START U1
+[2026-09-02T07:09:02Z] END   U1 rc=0 wall=92.2s :: recon PASS: unit=U1 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U1/gate/result.json
+[2026-09-02T07:09:02Z] START U2
+[2026-09-02T07:09:24Z] END   U2 rc=0 wall=22.1s :: recon PASS: unit=U2 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U2/gate/result.json
+[2026-09-02T07:09:24Z] START U5
+[2026-09-02T07:09:36Z] END   U5 rc=0 wall=11.7s :: recon PASS: unit=U5 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U5/gate/result.json
+[2026-09-02T07:09:36Z] START U3
+[2026-09-02T07:09:42Z] END   U3 rc=0 wall=6.2s :: recon PASS: unit=U3 mode=live family=postgres mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U3/gate/result.json
+[2026-09-02T07:09:42Z] START U4
+[2026-09-02T07:09:48Z] END   U4 rc=0 wall=5.8s :: recon PASS: unit=U4 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U4/gate/result.json
+[2026-09-02T07:09:48Z] START U6
+[2026-09-02T07:10:10Z] END   U6 rc=0 wall=21.8s :: recon PASS: unit=U6 mode=live mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U6/gate/result.json
+[2026-09-02T07:10:10Z] START U7
+[2026-09-02T07:10:20Z] END   U7 rc=0 wall=9.7s :: recon PASS: unit=U7 mode=live family=oracle mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U7/gate/result.json
+[2026-09-02T07:10:20Z] START U8
+[2026-09-02T07:10:36Z] END   U8 rc=0 wall=16.6s :: recon PASS: unit=U8 mode=live family=oracle mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U8/gate/result.json
+[2026-09-02T07:10:36Z] START U9
+[2026-09-02T07:11:12Z] END   U9 rc=0 wall=35.5s :: recon PASS: unit=U9 mode=live family=oracle mapping=v1.0.1 tolerances=v1 -> /home/ubuntu/cutover_work/pr2/cycle2/U9/gate/result.json
+[2026-09-02T07:11:12Z] START guards
+[2026-09-02T07:11:16Z] END   guards rc=0 wall=4.2s :: guards PASS
+[2026-09-02T07:11:16Z] START source_post
+[2026-09-02T07:11:16Z] END   source_post rc=0 wall=0.5s :: 
+cycle 2 end 2026-09-02T07:11:16Z

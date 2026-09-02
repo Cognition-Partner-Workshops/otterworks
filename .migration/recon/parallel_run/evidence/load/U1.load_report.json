@@ -1,0 +1,82 @@
+{
+  "unit": "U1",
+  "started_at": "2026-09-02T06:59:27.938892Z",
+  "finished_at": "2026-09-02T06:59:55.697313Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "quarantine_db": "ow_tp_mongodb_205236_quarantine",
+  "ns": "mongo_205236",
+  "batch_no": 85559852,
+  "mode": "full",
+  "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  },
+  "source_rows": {
+    "CUSTOMER_MASTER": 25000,
+    "ENTITY_ATTR_VALUE": 8333,
+    "CUSTOMER_MASTER_HIST": 0,
+    "USER_SEQUENCES": 5
+  },
+  "collections": {
+    "customers": {
+      "dropped": true,
+      "recreated": true,
+      "inserted": 25000,
+      "docs_after": 25000,
+      "ns_docs_after": 25000,
+      "indexes": [
+        "tenant_id_1_cust_no_1",
+        "cust_name_upper_1",
+        "conversion_batch_no_1"
+      ],
+      "root_table": "CUSTOMER_MASTER",
+      "embedded_attributes": 8333,
+      "embedded_attributes_after": 8333
+    },
+    "customers_history": {
+      "dropped": true,
+      "recreated": true,
+      "inserted": 0,
+      "docs_after": 0,
+      "ns_docs_after": 0,
+      "indexes": [
+        "cust_id_1_hist_dt_1"
+      ],
+      "root_table": "CUSTOMER_MASTER_HIST"
+    },
+    "counters": {
+      "dropped": true,
+      "recreated": true,
+      "inserted": 5,
+      "docs_after": 5,
+      "ns_docs_after": 5,
+      "indexes": [],
+      "root_table": "USER_SEQUENCES",
+      "seeded": {
+        "seq_customer_master": 125000,
+        "seq_customer_master_hist": 1,
+        "seq_entity_attr_value": 11001,
+        "seq_billing_audit_log": 2,
+        "seq_subscriptions_hist": 1
+      }
+    },
+    "quarantine": {
+      "dirty_signup_dt": {
+        "dropped": true,
+        "recreated": true,
+        "inserted": 50,
+        "docs_after": 50,
+        "ns_docs_after": 50,
+        "indexes": []
+      },
+      "bad_csv_list": {
+        "dropped": true,
+        "recreated": true,
+        "inserted": 31,
+        "docs_after": 31,
+        "ns_docs_after": 31,
+        "indexes": []
+      }
+    }
+  }
+}

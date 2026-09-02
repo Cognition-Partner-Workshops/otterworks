@@ -1,0 +1,3078 @@
+{
+  "engagement": "OtterWorks billing estate -> Atlas, run tp-run/mongodb-20260901T205236Z",
+  "phase": "[MONGO v1] Reconciliation & Parallel Run Part 2 / Cutover step 1 (parallel run + final recon at watermark)",
+  "target_db": "ow_tp_mongodb_205236",
+  "quarantine_db": "ow_tp_mongodb_205236_quarantine",
+  "ns": "mongo_205236",
+  "secrets_by_name_only": [
+    "MONGODB_ATLAS_URI",
+    "OW_BILLING_FIXTURE_DSN",
+    "OW_PG_DSN",
+    "AWS_ENDPOINT_URL"
+  ],
+  "harness": "mongo-migration-plugin-6d021e15/0.2.1 mongo-recon-harness (recon selftest PASS: 9 canonicalization rules exercised)",
+  "parallel_run_definition": "STOP A / 02_tolerances: 3 consecutive GREEN full-estate recon cycles against the idle static fixture (no CDC)",
+  "watermark": {
+    "run_branch_head_sha": "74ecd69e98876b8da26336a6d7cc24eba3e74697",
+    "run_branch": "tp-run/mongodb-20260901T205236Z",
+    "load_start_utc": "2026-09-02T06:59:25Z",
+    "load_end_utc": "2026-09-02T07:02:29Z",
+    "seed": 714559852,
+    "batch_no": 85559852,
+    "source_ns": "demo",
+    "manifest_sha256": "0f4722866117edd2ea1f5cf933b294bf39a52c755cff222a3a3c6ca5e8e2ee89",
+    "fixture_meta_initialized_at": "2026-09-01 20:53:10.961888",
+    "mapping_spec_sha256": "57de55f24c241c517868dcf6e6d84c1f2d1ac3b0f4901f88864dddf568f7bb45",
+    "tolerances_sha256": "d67ccdda431baa5dcc4391431334435435150be541e8eb054a8245eda624ada7",
+    "canonicalization_sha256": "527cf87c699275bda4838d37e8595d51fba62eec175ec59f1ec74204a76b3eb9",
+    "mapping_version": "v1.0.1",
+    "tolerance_version": "v1",
+    "canonicalization_version": "v1",
+    "source_population": {
+      "oracle": {
+        "CODES": 32,
+        "TENANTS": 69,
+        "PLANS": 3,
+        "CUSTOMER_MASTER": 25000,
+        "CUSTOMER_MASTER_HIST": 0,
+        "ENTITY_ATTR_VALUE": 8333,
+        "INVOICE_HEADER": 18750,
+        "INVOICE_LINE": 150000,
+        "SUBSCRIPTIONS": 69,
+        "SUBSCRIPTIONS_HIST": 0,
+        "USAGE_EVENTS": 814,
+        "RATING_PERIODS": 3,
+        "RATING_RESULTS": 3,
+        "INVOICES": 3,
+        "INVOICE_LINES": 2,
+        "CREDIT_NOTES": 5,
+        "DUNNING_ATTEMPTS": 1,
+        "NOTIFICATIONS": 1,
+        "BILLING_AUDIT_LOG": 1,
+        "CUSTOMER_MASTER@batch": 25000,
+        "INVOICE_HEADER@batch": 18750,
+        "FIXTURE_META.INITIALIZED_AT": [
+          "2026-09-01 20:53:10.961888"
+        ],
+        "USER_SEQUENCES": {
+          "SEQ_BILLING_AUDIT_LOG": 2,
+          "SEQ_CUSTOMER_MASTER": 125000,
+          "SEQ_CUSTOMER_MASTER_HIST": 1,
+          "SEQ_ENTITY_ATTR_VALUE": 11001,
+          "SEQ_SUBSCRIPTIONS_HIST": 1
+        }
+      },
+      "postgres": {
+        "documents": 2000,
+        "document_versions": 13876,
+        "document_snapshots": 390
+      },
+      "dynamodb": {
+        "otterworks-file-metadata.ns_histogram": {
+          "demo": 10000
+        }
+      }
+    },
+    "source_reads_identical": {
+      "reads": 8,
+      "identical": true
+    }
+  },
+  "full_estate_load": {
+    "steps": [
+      {
+        "unit": "U0",
+        "rc": 0,
+        "wall_s": 2,
+        "start": "2026-09-02T06:59:25Z",
+        "end": "2026-09-02T06:59:27Z"
+      },
+      {
+        "unit": "U1",
+        "rc": 0,
+        "wall_s": 29,
+        "start": "2026-09-02T06:59:27Z",
+        "end": "2026-09-02T06:59:56Z"
+      },
+      {
+        "unit": "U2",
+        "rc": 0,
+        "wall_s": 64,
+        "start": "2026-09-02T06:59:56Z",
+        "end": "2026-09-02T07:01:00Z"
+      },
+      {
+        "unit": "U3",
+        "rc": 0,
+        "wall_s": 13,
+        "start": "2026-09-02T07:01:00Z",
+        "end": "2026-09-02T07:01:13Z"
+      },
+      {
+        "unit": "U4",
+        "rc": 0,
+        "wall_s": 31,
+        "start": "2026-09-02T07:01:13Z",
+        "end": "2026-09-02T07:01:44Z"
+      },
+      {
+        "unit": "U5",
+        "rc": 0,
+        "wall_s": 9,
+        "start": "2026-09-02T07:01:44Z",
+        "end": "2026-09-02T07:01:53Z"
+      },
+      {
+        "unit": "U6",
+        "rc": 0,
+        "wall_s": 12,
+        "start": "2026-09-02T07:01:53Z",
+        "end": "2026-09-02T07:02:05Z"
+      },
+      {
+        "unit": "U7",
+        "rc": 0,
+        "wall_s": 9,
+        "start": "2026-09-02T07:02:05Z",
+        "end": "2026-09-02T07:02:14Z"
+      },
+      {
+        "unit": "U8",
+        "rc": 0,
+        "wall_s": 9,
+        "start": "2026-09-02T07:02:14Z",
+        "end": "2026-09-02T07:02:23Z"
+      },
+      {
+        "unit": "U9",
+        "rc": 0,
+        "wall_s": 6,
+        "start": "2026-09-02T07:02:23Z",
+        "end": "2026-09-02T07:02:29Z"
+      }
+    ],
+    "wall_s_total": 184,
+    "all_rc0": true,
+    "loader_summaries": {
+      "U0": "U0 load complete: target_db=ow_tp_mongodb_205236 ns=mongo_205236 codes=32, tenants=69, plans=3",
+      "U1": "U1 load complete: target_db=ow_tp_mongodb_205236 ns=mongo_205236 customers=25000 attributes=8333 customers_history=0 counters=5 Q.dirty_signup_dt=50 Q.bad_csv_list=31",
+      "U2": "U2 load complete: target_db=ow_tp_mongodb_205236 ns=mongo_205236 invoices=18750 embedded_lines=149963 quarantined_lines=37",
+      "U3": "U3 load complete: target_db=ow_tp_mongodb_205236 ns=mongo_205236 documents=2000 document_snapshots=384 orphan_document_snapshots=6 embedded_versions=13876",
+      "U4": "{\"docs_inserted\": 10000, \"docs_in_collection\": 10000, \"orphaned_metadata\": {\"count\": 40, \"detection\": \"s3_key_convention:/missing/\", \"disposition\": \"reported; items migrated\"}, \"indexes\": [\"owner_id_1_is_trashed_1\", \"folder_id_1\"]}",
+      "U5": "U5 load complete: target_db=ow_tp_mongodb_205236 ns=mongo_205236 subscriptions=69, subscriptions_history=0, usage_events=814, rating_periods=3, billing_invoices=3, credit_notes=5, dunning_attempts=1, notifications=1, billing_audit_log=1",
+      "U6": "U6 replay load complete: target_db=ow_tp_mongodb_205236 prefix=replay_u6_replay_u6_codes=32, replay_u6_tenants=69, replay_u6_plans=3, replay_u6_subscriptions=69, replay_u6_subscriptions_history=0, replay_u6_usage_events=814, replay_u6_rating_periods=3, replay_u6_billing_invoices=3, replay_u6_credit_notes=5, replay_u6_dunning_attempts=1, replay_u6_notifications=1, replay_u6_billing_audit_log=1",
+      "U7": "replay_u7_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1'] ; replay_u7_subscriptions_history: 0 docs, indexes=[] ; replay_u7_usage_events: 814 docs, indexes=['tenant_id_1_occurred_at_1'] ; replay_u7_rating_periods: 3 docs, indexes=['tenant_id_1_period_start_1'] ; replay_u7_billing_invoices: 3 docs, indexes=['status_cd_1_issued_at_1', 'tenant_id_1_issued_at_1'] ; replay_u7_credit_notes: 5 docs, indexes=['tenant_id_1_issued_on_1__id_1'] ; replay_u7_dunning_attempts: 1 docs, indexes=['invoice_id_1_attempt_no_1'] ; replay_u7_notifications: 1 docs, indexes=['tenant_id_1_kind_cd_1_sent_at_1'] ; replay_u7_billing_audit_log: 1 docs, indexes=['logged_at_1'] ; replay_u7_plans: 3 docs, indexes=[] ; replay_u7_tenants: 69 docs, indexes=[] ; replay_u7_counters: 2 docs, indexes=[]",
+      "U8": "replay_u8_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1'] ; replay_u8_subscriptions_history: 0 docs, indexes=[] ; replay_u8_usage_events: 814 docs, indexes=['tenant_id_1_occurred_at_1'] ; replay_u8_rating_periods: 3 docs, indexes=['tenant_id_1_period_start_1'] ; replay_u8_billing_invoices: 3 docs, indexes=['status_cd_1_issued_at_1', 'tenant_id_1_issued_at_1'] ; replay_u8_credit_notes: 5 docs, indexes=['tenant_id_1_issued_on_1__id_1'] ; replay_u8_dunning_attempts: 1 docs, indexes=['invoice_id_1_attempt_no_1'] ; replay_u8_notifications: 1 docs, indexes=['tenant_id_1_kind_cd_1_sent_at_1'] ; replay_u8_billing_audit_log: 1 docs, indexes=['logged_at_1'] ; replay_u8_plans: 3 docs, indexes=[] ; replay_u8_tenants: 69 docs, indexes=[] ; replay_u8_counters: 2 docs, indexes=[]",
+      "U9": "replay_u9_billing_invoices: 3 docs, indexes=['status_cd_1_issued_at_1', 'tenant_id_1_issued_at_1'] ; replay_u9_tenants: 69 docs, indexes=[] ; replay_u9_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1'] ; replay_u9_subscriptions_history: 0 docs, indexes=[] ; replay_u9_dunning_attempts: 1 docs, indexes=['invoice_id_1_attempt_no_1'] ; replay_u9_notifications: 1 docs, indexes=['tenant_id_1_kind_cd_1_sent_at_1'] ; replay_u9_billing_audit_log: 1 docs, indexes=['logged_at_1'] ; replay_u9_counters: 2 docs, indexes=[]"
+    }
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "start_utc": "2026-09-02T07:02:43Z",
+      "end_utc": "2026-09-02T07:06:42Z",
+      "watermark_head_sha": "74ecd69e98876b8da26336a6d7cc24eba3e74697",
+      "replay_clones_reset_before_gates": false,
+      "reset_steps": [],
+      "units": {
+        "U0": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:02:47.958362+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 104,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "plans": {
+              "mode": "full_diff",
+              "population": 3
+            }
+          },
+          "wall_s": 4.4,
+          "result_sha256_mod_generated_at": "4b031336acd681d9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U1": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:04:24.068383+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 313,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 33333,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "customers": {
+              "mode": "full_diff",
+              "population": 25000
+            },
+            "embeds_graded": {
+              "customers.attributes": 8333
+            },
+            "customers_history": {
+              "mode": "full_diff",
+              "population": 0
+            }
+          },
+          "wall_s": 96.1,
+          "result_sha256_mod_generated_at": "501dc5e059c7e405",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U2": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:04:46.212163+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 2,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 9,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 168713,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "invoices": {
+              "mode": "full_diff",
+              "population": 18750
+            },
+            "embeds_graded": {
+              "invoices.lines": 149963
+            }
+          },
+          "wall_s": 22.1,
+          "result_sha256_mod_generated_at": "e87e8eb2a80297b9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U3": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:05:06.027295+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 18,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 16260,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "documents": {
+              "mode": "full_diff",
+              "population": 2000
+            },
+            "embeds_graded": {
+              "documents.versions": 13876
+            },
+            "document_snapshots": {
+              "mode": "full_diff",
+              "population": 384
+            }
+          },
+          "wall_s": 5.9,
+          "result_sha256_mod_generated_at": "eba86c5ed004a283",
+          "gate": ".migration/recon_ext/recon_pg.py (postgres adapter, D13)"
+        },
+        "U4": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:05:11.898829+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 1,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 12,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 10000,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "files": {
+              "mode": "full_diff",
+              "population": 10000
+            }
+          },
+          "wall_s": 6.1,
+          "result_sha256_mod_generated_at": "0eebdd28697297c4",
+          "gate": ".migration/recon_ext/run_dynamo_recon.py (dynamodb adapter, D13)"
+        },
+        "U5": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:05:00.181227+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 11,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 53,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "rating_periods.results": 3,
+              "billing_invoices.lines": 2
+            },
+            "billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 13.7,
+          "result_sha256_mod_generated_at": "2b7ec8aee642d082",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U6": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:05:33.695562+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 67,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 1006,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u6_codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "replay_u6_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u6_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u6_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u6_rating_periods.results": 3,
+              "replay_u6_billing_invoices.lines": 2
+            },
+            "replay_u6_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "replay_u6_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 21.5,
+          "result_sha256_mod_generated_at": "d98a0965cac1e683",
+          "gate": "scripts/tp_mongo/recon_u6.py (Tier-4 transcript replay PLANS-001..005)"
+        },
+        "U7": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:05:43.807039+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 23,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 892,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u7_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u7_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u7_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u7_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u7_rating_periods.results": 3
+            }
+          },
+          "wall_s": 10.0,
+          "result_sha256_mod_generated_at": "ad07b0a4700993c4",
+          "gate": ".migration/recon_ext/recon_u7.py (Tier-4 RATING-001..008)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "RATING-001",
+              "RATING-002",
+              "RATING-003",
+              "RATING-004",
+              "RATING-005",
+              "RATING-006",
+              "RATING-007",
+              "RATING-008"
+            ]
+          }
+        },
+        "U8": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:06:00.219792+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 36,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 6,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u8_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u8_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u8_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u8_rating_periods.results": 3,
+              "replay_u8_billing_invoices.lines": 2
+            },
+            "replay_u8_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            }
+          },
+          "wall_s": 16.5,
+          "result_sha256_mod_generated_at": "95faf94fcc32b098",
+          "gate": ".migration/recon_ext/recon_u8.py (Tier-4 INVOICE-001..006)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "INVOICE-001",
+              "INVOICE-002",
+              "INVOICE-003",
+              "INVOICE-004",
+              "INVOICE-005",
+              "INVOICE-006"
+            ]
+          }
+        },
+        "U9": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:06:33.447283+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 7,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 39,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 145,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u9_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u9_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u9_billing_invoices.lines": 2
+            },
+            "replay_u9_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u9_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 37.4,
+          "result_sha256_mod_generated_at": "9d145bd2e3ddf94a",
+          "gate": ".migration/recon_ext/recon_u9.py (Tier-4 DUNNING-001..005)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "DUNNING-001",
+              "DUNNING-002",
+              "DUNNING-003",
+              "DUNNING-004",
+              "DUNNING-005"
+            ]
+          }
+        }
+      },
+      "count_guard": {
+        "verdict": "PASS",
+        "collections_checked": 18,
+        "rows": [
+          {
+            "unit": "U0",
+            "collection": "codes",
+            "source_root_rows": 32,
+            "target_docs_total": 32,
+            "target_docs_ns": 32,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "tenants",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "plans",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers",
+            "source_root_rows": 25000,
+            "target_docs_total": 25000,
+            "target_docs_ns": 25000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U2",
+            "collection": "invoices",
+            "source_root_rows": 18750,
+            "target_docs_total": 18750,
+            "target_docs_ns": 18750,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "documents",
+            "source_root_rows": 2000,
+            "target_docs_total": 2000,
+            "target_docs_ns": 2000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "document_snapshots",
+            "source_root_rows": 384,
+            "target_docs_total": 384,
+            "target_docs_ns": 384,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U4",
+            "collection": "files",
+            "source_root_rows": 10000,
+            "target_docs_total": 10000,
+            "target_docs_ns": 10000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "usage_events",
+            "source_root_rows": 814,
+            "target_docs_total": 814,
+            "target_docs_ns": 814,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "rating_periods",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_invoices",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "credit_notes",
+            "source_root_rows": 5,
+            "target_docs_total": 5,
+            "target_docs_ns": 5,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "dunning_attempts",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "notifications",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_audit_log",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          }
+        ]
+      },
+      "quarantine_ceiling": {
+        "verdict": "PASS",
+        "ceiling": 0.005,
+        "rows": [
+          {
+            "unit": "U1",
+            "classes": {
+              "dirty_signup_dt": {
+                "ns_docs": 50,
+                "total_docs": 50
+              },
+              "bad_csv_list": {
+                "ns_docs": 31,
+                "total_docs": 31
+              }
+            },
+            "quarantined": 81,
+            "unit_root_rows": 25000,
+            "rate": 0.00324,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U2",
+            "classes": {
+              "invoice_feed_orphan_lines": {
+                "ns_docs": 37,
+                "total_docs": 37
+              }
+            },
+            "quarantined": 37,
+            "unit_root_rows": 18750,
+            "rate": 0.0019733333333333334,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U3",
+            "classes": {
+              "orphan_document_snapshots": {
+                "ns_docs": 6,
+                "total_docs": 6
+              }
+            },
+            "quarantined": 6,
+            "unit_root_rows": 2384,
+            "rate": 0.0025167785234899327,
+            "ceiling": 0.005,
+            "ok": true
+          }
+        ],
+        "quarantine_db_collections": [
+          "bad_csv_list",
+          "dirty_signup_dt",
+          "invoice_feed_orphan_lines",
+          "orphan_document_snapshots"
+        ],
+        "only_declared_classes": true
+      },
+      "source_stability": {
+        "pre_utc": "2026-09-02T07:02:43Z",
+        "post_utc": "2026-09-02T07:06:42Z",
+        "pre_equals_post": true,
+        "fixture_meta_initialized_at": "2026-09-01 20:53:10.961888",
+        "billing_audit_log_rows": 1,
+        "seq_billing_audit_log": 2
+      },
+      "cost": {
+        "gate_wall_s_total": 233.7,
+        "reset_wall_s_total": 0,
+        "guards_wall_s": 3.9,
+        "source_probe_wall_s": 1.1,
+        "cycle_wall_s": 238.7,
+        "source_systems_touched": "Oracle (read-only plain SQL), Postgres (read-only), LocalStack DynamoDB (scan); serial, cap 1",
+        "loads": 0,
+        "gates": 10
+      },
+      "verdict": "GREEN",
+      "red_class": null,
+      "diagnosis": null,
+      "identical_to_previous_cycle_mod_timestamps": null,
+      "git_status_after_cycle_clean": true
+    },
+    {
+      "cycle": 2,
+      "start_utc": "2026-09-02T07:06:48Z",
+      "end_utc": "2026-09-02T07:11:16Z",
+      "watermark_head_sha": "74ecd69e98876b8da26336a6d7cc24eba3e74697",
+      "replay_clones_reset_before_gates": true,
+      "reset_steps": [
+        {
+          "step": "reset_U6",
+          "rc": 0,
+          "wall_s": 11.7,
+          "start_utc": "2026-09-02T07:06:48Z",
+          "end_utc": "2026-09-02T07:07:00Z"
+        },
+        {
+          "step": "reset_U7",
+          "rc": 0,
+          "wall_s": 9.7,
+          "start_utc": "2026-09-02T07:07:00Z",
+          "end_utc": "2026-09-02T07:07:10Z"
+        },
+        {
+          "step": "reset_U8",
+          "rc": 0,
+          "wall_s": 9.7,
+          "start_utc": "2026-09-02T07:07:10Z",
+          "end_utc": "2026-09-02T07:07:19Z"
+        },
+        {
+          "step": "reset_U9",
+          "rc": 0,
+          "wall_s": 6.2,
+          "start_utc": "2026-09-02T07:07:19Z",
+          "end_utc": "2026-09-02T07:07:26Z"
+        }
+      ],
+      "units": {
+        "U0": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:07:30.016539+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 104,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "plans": {
+              "mode": "full_diff",
+              "population": 3
+            }
+          },
+          "wall_s": 4.2,
+          "result_sha256_mod_generated_at": "4b031336acd681d9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U1": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:09:02.057994+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 313,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 33333,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "customers": {
+              "mode": "full_diff",
+              "population": 25000
+            },
+            "embeds_graded": {
+              "customers.attributes": 8333
+            },
+            "customers_history": {
+              "mode": "full_diff",
+              "population": 0
+            }
+          },
+          "wall_s": 92.2,
+          "result_sha256_mod_generated_at": "501dc5e059c7e405",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U2": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:09:24.152451+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 2,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 9,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 168713,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "invoices": {
+              "mode": "full_diff",
+              "population": 18750
+            },
+            "embeds_graded": {
+              "invoices.lines": 149963
+            }
+          },
+          "wall_s": 22.1,
+          "result_sha256_mod_generated_at": "e87e8eb2a80297b9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U3": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:09:42.228495+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 18,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 16260,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "documents": {
+              "mode": "full_diff",
+              "population": 2000
+            },
+            "embeds_graded": {
+              "documents.versions": 13876
+            },
+            "document_snapshots": {
+              "mode": "full_diff",
+              "population": 384
+            }
+          },
+          "wall_s": 6.2,
+          "result_sha256_mod_generated_at": "eba86c5ed004a283",
+          "gate": ".migration/recon_ext/recon_pg.py (postgres adapter, D13)"
+        },
+        "U4": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:09:48.091617+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 1,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 12,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 10000,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "files": {
+              "mode": "full_diff",
+              "population": 10000
+            }
+          },
+          "wall_s": 5.8,
+          "result_sha256_mod_generated_at": "0eebdd28697297c4",
+          "gate": ".migration/recon_ext/run_dynamo_recon.py (dynamodb adapter, D13)"
+        },
+        "U5": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:09:36.089904+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 11,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 53,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "rating_periods.results": 3,
+              "billing_invoices.lines": 2
+            },
+            "billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 11.7,
+          "result_sha256_mod_generated_at": "2b7ec8aee642d082",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U6": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:10:09.840669+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 67,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 1006,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u6_codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "replay_u6_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u6_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u6_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u6_rating_periods.results": 3,
+              "replay_u6_billing_invoices.lines": 2
+            },
+            "replay_u6_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "replay_u6_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 21.8,
+          "result_sha256_mod_generated_at": "d98a0965cac1e683",
+          "gate": "scripts/tp_mongo/recon_u6.py (Tier-4 transcript replay PLANS-001..005)"
+        },
+        "U7": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:10:19.563712+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 23,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 892,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u7_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u7_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u7_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u7_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u7_rating_periods.results": 3
+            }
+          },
+          "wall_s": 9.7,
+          "result_sha256_mod_generated_at": "ad07b0a4700993c4",
+          "gate": ".migration/recon_ext/recon_u7.py (Tier-4 RATING-001..008)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "RATING-001",
+              "RATING-002",
+              "RATING-003",
+              "RATING-004",
+              "RATING-005",
+              "RATING-006",
+              "RATING-007",
+              "RATING-008"
+            ]
+          }
+        },
+        "U8": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:10:36.253366+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 36,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 6,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u8_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u8_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u8_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u8_rating_periods.results": 3,
+              "replay_u8_billing_invoices.lines": 2
+            },
+            "replay_u8_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            }
+          },
+          "wall_s": 16.6,
+          "result_sha256_mod_generated_at": "95faf94fcc32b098",
+          "gate": ".migration/recon_ext/recon_u8.py (Tier-4 INVOICE-001..006)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "INVOICE-001",
+              "INVOICE-002",
+              "INVOICE-003",
+              "INVOICE-004",
+              "INVOICE-005",
+              "INVOICE-006"
+            ]
+          }
+        },
+        "U9": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:11:07.815446+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 7,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 39,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 145,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u9_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u9_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u9_billing_invoices.lines": 2
+            },
+            "replay_u9_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u9_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 35.5,
+          "result_sha256_mod_generated_at": "9d145bd2e3ddf94a",
+          "gate": ".migration/recon_ext/recon_u9.py (Tier-4 DUNNING-001..005)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "DUNNING-001",
+              "DUNNING-002",
+              "DUNNING-003",
+              "DUNNING-004",
+              "DUNNING-005"
+            ]
+          }
+        }
+      },
+      "count_guard": {
+        "verdict": "PASS",
+        "collections_checked": 18,
+        "rows": [
+          {
+            "unit": "U0",
+            "collection": "codes",
+            "source_root_rows": 32,
+            "target_docs_total": 32,
+            "target_docs_ns": 32,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "tenants",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "plans",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers",
+            "source_root_rows": 25000,
+            "target_docs_total": 25000,
+            "target_docs_ns": 25000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U2",
+            "collection": "invoices",
+            "source_root_rows": 18750,
+            "target_docs_total": 18750,
+            "target_docs_ns": 18750,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "documents",
+            "source_root_rows": 2000,
+            "target_docs_total": 2000,
+            "target_docs_ns": 2000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "document_snapshots",
+            "source_root_rows": 384,
+            "target_docs_total": 384,
+            "target_docs_ns": 384,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U4",
+            "collection": "files",
+            "source_root_rows": 10000,
+            "target_docs_total": 10000,
+            "target_docs_ns": 10000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "usage_events",
+            "source_root_rows": 814,
+            "target_docs_total": 814,
+            "target_docs_ns": 814,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "rating_periods",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_invoices",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "credit_notes",
+            "source_root_rows": 5,
+            "target_docs_total": 5,
+            "target_docs_ns": 5,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "dunning_attempts",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "notifications",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_audit_log",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          }
+        ]
+      },
+      "quarantine_ceiling": {
+        "verdict": "PASS",
+        "ceiling": 0.005,
+        "rows": [
+          {
+            "unit": "U1",
+            "classes": {
+              "dirty_signup_dt": {
+                "ns_docs": 50,
+                "total_docs": 50
+              },
+              "bad_csv_list": {
+                "ns_docs": 31,
+                "total_docs": 31
+              }
+            },
+            "quarantined": 81,
+            "unit_root_rows": 25000,
+            "rate": 0.00324,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U2",
+            "classes": {
+              "invoice_feed_orphan_lines": {
+                "ns_docs": 37,
+                "total_docs": 37
+              }
+            },
+            "quarantined": 37,
+            "unit_root_rows": 18750,
+            "rate": 0.0019733333333333334,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U3",
+            "classes": {
+              "orphan_document_snapshots": {
+                "ns_docs": 6,
+                "total_docs": 6
+              }
+            },
+            "quarantined": 6,
+            "unit_root_rows": 2384,
+            "rate": 0.0025167785234899327,
+            "ceiling": 0.005,
+            "ok": true
+          }
+        ],
+        "quarantine_db_collections": [
+          "bad_csv_list",
+          "dirty_signup_dt",
+          "invoice_feed_orphan_lines",
+          "orphan_document_snapshots"
+        ],
+        "only_declared_classes": true
+      },
+      "source_stability": {
+        "pre_utc": "2026-09-02T07:06:48Z",
+        "post_utc": "2026-09-02T07:11:16Z",
+        "pre_equals_post": true,
+        "fixture_meta_initialized_at": "2026-09-01 20:53:10.961888",
+        "billing_audit_log_rows": 1,
+        "seq_billing_audit_log": 2
+      },
+      "cost": {
+        "gate_wall_s_total": 225.8,
+        "reset_wall_s_total": 37.3,
+        "guards_wall_s": 4.2,
+        "source_probe_wall_s": 1.0,
+        "cycle_wall_s": 268.3,
+        "source_systems_touched": "Oracle (read-only plain SQL), Postgres (read-only), LocalStack DynamoDB (scan); serial, cap 1",
+        "loads": 4,
+        "gates": 10
+      },
+      "verdict": "GREEN",
+      "red_class": null,
+      "diagnosis": null,
+      "identical_to_previous_cycle_mod_timestamps": true,
+      "git_status_after_cycle_clean": true
+    },
+    {
+      "cycle": 3,
+      "start_utc": "2026-09-02T07:11:21Z",
+      "end_utc": "2026-09-02T07:16:00Z",
+      "watermark_head_sha": "74ecd69e98876b8da26336a6d7cc24eba3e74697",
+      "replay_clones_reset_before_gates": true,
+      "reset_steps": [
+        {
+          "step": "reset_U6",
+          "rc": 0,
+          "wall_s": 12.0,
+          "start_utc": "2026-09-02T07:11:21Z",
+          "end_utc": "2026-09-02T07:11:33Z"
+        },
+        {
+          "step": "reset_U7",
+          "rc": 0,
+          "wall_s": 9.2,
+          "start_utc": "2026-09-02T07:11:33Z",
+          "end_utc": "2026-09-02T07:11:43Z"
+        },
+        {
+          "step": "reset_U8",
+          "rc": 0,
+          "wall_s": 9.2,
+          "start_utc": "2026-09-02T07:11:43Z",
+          "end_utc": "2026-09-02T07:11:52Z"
+        },
+        {
+          "step": "reset_U9",
+          "rc": 0,
+          "wall_s": 5.7,
+          "start_utc": "2026-09-02T07:11:52Z",
+          "end_utc": "2026-09-02T07:11:58Z"
+        }
+      ],
+      "units": {
+        "U0": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:12:01.906548+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 104,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "plans": {
+              "mode": "full_diff",
+              "population": 3
+            }
+          },
+          "wall_s": 4.2,
+          "result_sha256_mod_generated_at": "4b031336acd681d9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U1": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:13:46.090571+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 313,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 33333,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "customers": {
+              "mode": "full_diff",
+              "population": 25000
+            },
+            "embeds_graded": {
+              "customers.attributes": 8333
+            },
+            "customers_history": {
+              "mode": "full_diff",
+              "population": 0
+            }
+          },
+          "wall_s": 104.3,
+          "result_sha256_mod_generated_at": "501dc5e059c7e405",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U2": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:14:07.729136+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 2,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 9,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 168713,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "invoices": {
+              "mode": "full_diff",
+              "population": 18750
+            },
+            "embeds_graded": {
+              "invoices.lines": 149963
+            }
+          },
+          "wall_s": 21.6,
+          "result_sha256_mod_generated_at": "e87e8eb2a80297b9",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U3": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:14:27.475912+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 3,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 18,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 16260,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "documents": {
+              "mode": "full_diff",
+              "population": 2000
+            },
+            "embeds_graded": {
+              "documents.versions": 13876
+            },
+            "document_snapshots": {
+              "mode": "full_diff",
+              "population": 384
+            }
+          },
+          "wall_s": 6.2,
+          "result_sha256_mod_generated_at": "eba86c5ed004a283",
+          "gate": ".migration/recon_ext/recon_pg.py (postgres adapter, D13)"
+        },
+        "U4": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:14:32.910167+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 1,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 12,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 10000,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "files": {
+              "mode": "full_diff",
+              "population": 10000
+            }
+          },
+          "wall_s": 5.6,
+          "result_sha256_mod_generated_at": "0eebdd28697297c4",
+          "gate": ".migration/recon_ext/run_dynamo_recon.py (dynamodb adapter, D13)"
+        },
+        "U5": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:14:21.074955+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 11,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 53,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "rating_periods.results": 3,
+              "billing_invoices.lines": 2
+            },
+            "billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 13.2,
+          "result_sha256_mod_generated_at": "2b7ec8aee642d082",
+          "gate": "recon run (harness CLI, oracle)"
+        },
+        "U6": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:14:53.363817+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 14,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 67,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 1006,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u6_codes": {
+              "mode": "full_diff",
+              "population": 32
+            },
+            "replay_u6_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u6_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u6_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u6_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u6_rating_periods.results": 3,
+              "replay_u6_billing_invoices.lines": 2
+            },
+            "replay_u6_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u6_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            },
+            "replay_u6_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u6_billing_audit_log": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 20.4,
+          "result_sha256_mod_generated_at": "d98a0965cac1e683",
+          "gate": "scripts/tp_mongo/recon_u6.py (Tier-4 transcript replay PLANS-001..005)"
+        },
+        "U7": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:15:02.964084+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 23,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 892,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u7_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u7_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u7_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u7_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u7_rating_periods.results": 3
+            }
+          },
+          "wall_s": 9.7,
+          "result_sha256_mod_generated_at": "ad07b0a4700993c4",
+          "gate": ".migration/recon_ext/recon_u7.py (Tier-4 RATING-001..008)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "RATING-001",
+              "RATING-002",
+              "RATING-003",
+              "RATING-004",
+              "RATING-005",
+              "RATING-006",
+              "RATING-007",
+              "RATING-008"
+            ]
+          }
+        },
+        "U8": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:15:19.747577+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 8,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 36,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 902,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 6,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u8_plans": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u8_usage_events": {
+              "mode": "full_diff",
+              "population": 814
+            },
+            "replay_u8_rating_periods": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u8_rating_periods.results": 3,
+              "replay_u8_billing_invoices.lines": 2
+            },
+            "replay_u8_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "replay_u8_credit_notes": {
+              "mode": "full_diff",
+              "population": 5
+            }
+          },
+          "wall_s": 16.8,
+          "result_sha256_mod_generated_at": "95faf94fcc32b098",
+          "gate": ".migration/recon_ext/recon_u8.py (Tier-4 INVOICE-001..006)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "INVOICE-001",
+              "INVOICE-002",
+              "INVOICE-003",
+              "INVOICE-004",
+              "INVOICE-005",
+              "INVOICE-006"
+            ]
+          }
+        },
+        "U9": {
+          "verdict": "PASS",
+          "mode": "live",
+          "mapping_version": "v1.0.1",
+          "tolerance_version": "v1",
+          "seed": 714559852,
+          "params": {
+            "batch_no": "85559852",
+            "source_ns": "demo"
+          },
+          "generated_at": "2026-09-02T07:15:50.929945+00:00",
+          "warnings": [],
+          "tiers": [
+            {
+              "tier": 1,
+              "name": "counts_through_mapping",
+              "checks_run": 7,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 2,
+              "name": "per_field_aggregates",
+              "checks_run": 39,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 3,
+              "name": "keyed_diffs",
+              "checks_run": 145,
+              "passed": true,
+              "findings": 0
+            },
+            {
+              "tier": 4,
+              "name": "app_level_parity",
+              "checks_run": 5,
+              "passed": true,
+              "findings": 0
+            }
+          ],
+          "tier3_populations": {
+            "replay_u9_tenants": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions": {
+              "mode": "full_diff",
+              "population": 69
+            },
+            "replay_u9_subscriptions_history": {
+              "mode": "full_diff",
+              "population": 0
+            },
+            "replay_u9_billing_invoices": {
+              "mode": "full_diff",
+              "population": 3
+            },
+            "embeds_graded": {
+              "replay_u9_billing_invoices.lines": 2
+            },
+            "replay_u9_dunning_attempts": {
+              "mode": "full_diff",
+              "population": 1
+            },
+            "replay_u9_notifications": {
+              "mode": "full_diff",
+              "population": 1
+            }
+          },
+          "wall_s": 35.0,
+          "result_sha256_mod_generated_at": "9d145bd2e3ddf94a",
+          "gate": ".migration/recon_ext/recon_u9.py (Tier-4 DUNNING-001..005)",
+          "tier4_provenance": {
+            "oracle_source_sha": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+            "transcripts_match": true,
+            "scenarios": [
+              "DUNNING-001",
+              "DUNNING-002",
+              "DUNNING-003",
+              "DUNNING-004",
+              "DUNNING-005"
+            ]
+          }
+        }
+      },
+      "count_guard": {
+        "verdict": "PASS",
+        "collections_checked": 18,
+        "rows": [
+          {
+            "unit": "U0",
+            "collection": "codes",
+            "source_root_rows": 32,
+            "target_docs_total": 32,
+            "target_docs_ns": 32,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "tenants",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U0",
+            "collection": "plans",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers",
+            "source_root_rows": 25000,
+            "target_docs_total": 25000,
+            "target_docs_ns": 25000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U1",
+            "collection": "customers_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U2",
+            "collection": "invoices",
+            "source_root_rows": 18750,
+            "target_docs_total": 18750,
+            "target_docs_ns": 18750,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "documents",
+            "source_root_rows": 2000,
+            "target_docs_total": 2000,
+            "target_docs_ns": 2000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U3",
+            "collection": "document_snapshots",
+            "source_root_rows": 384,
+            "target_docs_total": 384,
+            "target_docs_ns": 384,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U4",
+            "collection": "files",
+            "source_root_rows": 10000,
+            "target_docs_total": 10000,
+            "target_docs_ns": 10000,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions",
+            "source_root_rows": 69,
+            "target_docs_total": 69,
+            "target_docs_ns": 69,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "subscriptions_history",
+            "source_root_rows": 0,
+            "target_docs_total": 0,
+            "target_docs_ns": 0,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "usage_events",
+            "source_root_rows": 814,
+            "target_docs_total": 814,
+            "target_docs_ns": 814,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "rating_periods",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_invoices",
+            "source_root_rows": 3,
+            "target_docs_total": 3,
+            "target_docs_ns": 3,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "credit_notes",
+            "source_root_rows": 5,
+            "target_docs_total": 5,
+            "target_docs_ns": 5,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "dunning_attempts",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "notifications",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          },
+          {
+            "unit": "U5",
+            "collection": "billing_audit_log",
+            "source_root_rows": 1,
+            "target_docs_total": 1,
+            "target_docs_ns": 1,
+            "ok": true,
+            "note": ""
+          }
+        ]
+      },
+      "quarantine_ceiling": {
+        "verdict": "PASS",
+        "ceiling": 0.005,
+        "rows": [
+          {
+            "unit": "U1",
+            "classes": {
+              "dirty_signup_dt": {
+                "ns_docs": 50,
+                "total_docs": 50
+              },
+              "bad_csv_list": {
+                "ns_docs": 31,
+                "total_docs": 31
+              }
+            },
+            "quarantined": 81,
+            "unit_root_rows": 25000,
+            "rate": 0.00324,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U2",
+            "classes": {
+              "invoice_feed_orphan_lines": {
+                "ns_docs": 37,
+                "total_docs": 37
+              }
+            },
+            "quarantined": 37,
+            "unit_root_rows": 18750,
+            "rate": 0.0019733333333333334,
+            "ceiling": 0.005,
+            "ok": true
+          },
+          {
+            "unit": "U3",
+            "classes": {
+              "orphan_document_snapshots": {
+                "ns_docs": 6,
+                "total_docs": 6
+              }
+            },
+            "quarantined": 6,
+            "unit_root_rows": 2384,
+            "rate": 0.0025167785234899327,
+            "ceiling": 0.005,
+            "ok": true
+          }
+        ],
+        "quarantine_db_collections": [
+          "bad_csv_list",
+          "dirty_signup_dt",
+          "invoice_feed_orphan_lines",
+          "orphan_document_snapshots"
+        ],
+        "only_declared_classes": true
+      },
+      "source_stability": {
+        "pre_utc": "2026-09-02T07:11:21Z",
+        "post_utc": "2026-09-02T07:15:59Z",
+        "pre_equals_post": true,
+        "fixture_meta_initialized_at": "2026-09-01 20:53:10.961888",
+        "billing_audit_log_rows": 1,
+        "seq_billing_audit_log": 2
+      },
+      "cost": {
+        "gate_wall_s_total": 237.0,
+        "reset_wall_s_total": 36.1,
+        "guards_wall_s": 4.2,
+        "source_probe_wall_s": 1.1,
+        "cycle_wall_s": 278.4,
+        "source_systems_touched": "Oracle (read-only plain SQL), Postgres (read-only), LocalStack DynamoDB (scan); serial, cap 1",
+        "loads": 4,
+        "gates": 10
+      },
+      "verdict": "GREEN",
+      "red_class": null,
+      "diagnosis": null,
+      "identical_to_previous_cycle_mod_timestamps": true,
+      "git_status_after_cycle_clean": true
+    }
+  ],
+  "cycles_run": 3,
+  "green_streak": 3,
+  "verdict": "GREEN",
+  "red_runs": [],
+  "rules_honoured": [
+    "legacy sources read-only (plain SQL / scans; no PL/SQL invoked; BILLING_AUDIT_LOG stayed at 1 row, SEQ_BILLING_AUDIT_LOG at 2 for all 8 source reads)",
+    "writes only to ow_tp_mongodb_205236 / _quarantine (loaders + Tier-4 replay clones)",
+    "no tolerance, mapping-shape or canonicalization change; no migrated code changed",
+    "source-load cap 1: every load/gate/probe strictly serial",
+    "no fixture restart or reseed"
+  ]
+}

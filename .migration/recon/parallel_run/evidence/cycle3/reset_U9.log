@@ -1,0 +1,8 @@
+replay_u9_billing_invoices: 3 docs, indexes=['status_cd_1_issued_at_1', 'tenant_id_1_issued_at_1']
+replay_u9_tenants: 69 docs, indexes=[]
+replay_u9_subscriptions: 69 docs, indexes=['tenant_id_1_starts_on_-1']
+replay_u9_subscriptions_history: 0 docs, indexes=[]
+replay_u9_dunning_attempts: 1 docs, indexes=['invoice_id_1_attempt_no_1']
+replay_u9_notifications: 1 docs, indexes=['tenant_id_1_kind_cd_1_sent_at_1']
+replay_u9_billing_audit_log: 1 docs, indexes=['logged_at_1']
+replay_u9_counters: 2 docs, indexes=[]

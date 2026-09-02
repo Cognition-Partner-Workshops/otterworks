@@ -1,0 +1,64 @@
+{
+  "unit": "U0",
+  "mode": "live",
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-02T07:07:30.016539+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 14,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.code_type",
+          "codes.code_desc",
+          "tenants.id",
+          "tenants.name",
+          "tenants.tax_exempt_yn",
+          "plans.id",
+          "plans.code",
+          "plans.active_yn"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 104,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 69
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

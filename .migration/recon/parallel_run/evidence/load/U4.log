@@ -1,0 +1,1 @@
+{"docs_inserted": 10000, "docs_in_collection": 10000, "orphaned_metadata": {"count": 40, "detection": "s3_key_convention:/missing/", "disposition": "reported; items migrated"}, "indexes": ["owner_id_1_is_trashed_1", "folder_id_1"]}

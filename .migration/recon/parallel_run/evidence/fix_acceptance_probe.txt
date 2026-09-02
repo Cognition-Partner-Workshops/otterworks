@@ -1,0 +1,62 @@
+{
+ "golden_counters": {
+  "seq_customer_master": [
+   125000,
+   "SEQ_CUSTOMER_MASTER",
+   "Int64"
+  ],
+  "seq_customer_master_hist": [
+   1,
+   "SEQ_CUSTOMER_MASTER_HIST",
+   "Int64"
+  ],
+  "seq_entity_attr_value": [
+   11001,
+   "SEQ_ENTITY_ATTR_VALUE",
+   "Int64"
+  ],
+  "seq_billing_audit_log": [
+   2,
+   "SEQ_BILLING_AUDIT_LOG",
+   "Int64"
+  ],
+  "seq_subscriptions_hist": [
+   1,
+   "SEQ_SUBSCRIPTIONS_HIST",
+   "Int64"
+  ]
+ },
+ "counters_eq_user_sequences": true,
+ "legacy_counter_docs_any_coll": {
+  "replay_u9_counters": 0,
+  "replay_u6_counters": 0,
+  "counters": 0,
+  "replay_u7_counters": 0,
+  "replay_u8_counters": 0
+ },
+ "billing_invoices": {
+  "invoices": 3,
+  "lines": 2,
+  "lines_missing_or_wrong_invoice_id": 0
+ },
+ "replay_u6_billing_invoices": {
+  "invoices": 3,
+  "lines": 2,
+  "lines_missing_or_wrong_invoice_id": 0
+ },
+ "replay_u7_billing_invoices": {
+  "invoices": 3,
+  "lines": 2,
+  "lines_missing_or_wrong_invoice_id": 0
+ },
+ "replay_u8_billing_invoices": {
+  "invoices": 6,
+  "lines": 17,
+  "lines_missing_or_wrong_invoice_id": 0
+ },
+ "replay_u9_billing_invoices": {
+  "invoices": 3,
+  "lines": 2,
+  "lines_missing_or_wrong_invoice_id": 0
+ }
+}

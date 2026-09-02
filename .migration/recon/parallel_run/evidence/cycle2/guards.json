@@ -1,0 +1,293 @@
+{
+  "ns": "mongo_205236",
+  "count_guard": [
+    {
+      "unit": "U0",
+      "collection": "codes",
+      "source_root_rows": 32,
+      "target_docs_total": 32,
+      "target_docs_ns": 32,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U0",
+      "collection": "tenants",
+      "source_root_rows": 69,
+      "target_docs_total": 69,
+      "target_docs_ns": 69,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U0",
+      "collection": "plans",
+      "source_root_rows": 3,
+      "target_docs_total": 3,
+      "target_docs_ns": 3,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U1",
+      "collection": "customers",
+      "source_root_rows": 25000,
+      "target_docs_total": 25000,
+      "target_docs_ns": 25000,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U1",
+      "collection": "customers_history",
+      "source_root_rows": 0,
+      "target_docs_total": 0,
+      "target_docs_ns": 0,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U2",
+      "collection": "invoices",
+      "source_root_rows": 18750,
+      "target_docs_total": 18750,
+      "target_docs_ns": 18750,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U3",
+      "collection": "documents",
+      "source_root_rows": 2000,
+      "target_docs_total": 2000,
+      "target_docs_ns": 2000,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U3",
+      "collection": "document_snapshots",
+      "source_root_rows": 384,
+      "target_docs_total": 384,
+      "target_docs_ns": 384,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U4",
+      "collection": "files",
+      "source_root_rows": 10000,
+      "target_docs_total": 10000,
+      "target_docs_ns": 10000,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "subscriptions",
+      "source_root_rows": 69,
+      "target_docs_total": 69,
+      "target_docs_ns": 69,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "subscriptions_history",
+      "source_root_rows": 0,
+      "target_docs_total": 0,
+      "target_docs_ns": 0,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "usage_events",
+      "source_root_rows": 814,
+      "target_docs_total": 814,
+      "target_docs_ns": 814,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "rating_periods",
+      "source_root_rows": 3,
+      "target_docs_total": 3,
+      "target_docs_ns": 3,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "billing_invoices",
+      "source_root_rows": 3,
+      "target_docs_total": 3,
+      "target_docs_ns": 3,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "credit_notes",
+      "source_root_rows": 5,
+      "target_docs_total": 5,
+      "target_docs_ns": 5,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "dunning_attempts",
+      "source_root_rows": 1,
+      "target_docs_total": 1,
+      "target_docs_ns": 1,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "notifications",
+      "source_root_rows": 1,
+      "target_docs_total": 1,
+      "target_docs_ns": 1,
+      "ok": true,
+      "note": ""
+    },
+    {
+      "unit": "U5",
+      "collection": "billing_audit_log",
+      "source_root_rows": 1,
+      "target_docs_total": 1,
+      "target_docs_ns": 1,
+      "ok": true,
+      "note": ""
+    }
+  ],
+  "quarantine_ceiling": [
+    {
+      "unit": "U1",
+      "classes": {
+        "dirty_signup_dt": {
+          "ns_docs": 50,
+          "total_docs": 50
+        },
+        "bad_csv_list": {
+          "ns_docs": 31,
+          "total_docs": 31
+        }
+      },
+      "quarantined": 81,
+      "unit_root_rows": 25000,
+      "rate": 0.00324,
+      "ceiling": 0.005,
+      "ok": true
+    },
+    {
+      "unit": "U2",
+      "classes": {
+        "invoice_feed_orphan_lines": {
+          "ns_docs": 37,
+          "total_docs": 37
+        }
+      },
+      "quarantined": 37,
+      "unit_root_rows": 18750,
+      "rate": 0.0019733333333333334,
+      "ceiling": 0.005,
+      "ok": true
+    },
+    {
+      "unit": "U3",
+      "classes": {
+        "orphan_document_snapshots": {
+          "ns_docs": 6,
+          "total_docs": 6
+        }
+      },
+      "quarantined": 6,
+      "unit_root_rows": 2384,
+      "rate": 0.0025167785234899327,
+      "ceiling": 0.005,
+      "ok": true
+    },
+    {
+      "unit": "U0",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 104,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U4",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 10000,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U5",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 897,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U6",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 0,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U7",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 0,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U8",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 0,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    },
+    {
+      "unit": "U9",
+      "classes": {},
+      "quarantined": 0,
+      "unit_root_rows": 0,
+      "rate": 0.0,
+      "ceiling": 0.005,
+      "ok": true,
+      "note": "no quarantine targets declared; expected 0"
+    }
+  ],
+  "verdict": "PASS",
+  "quarantine_db_collections": [
+    "bad_csv_list",
+    "dirty_signup_dt",
+    "invoice_feed_orphan_lines",
+    "orphan_document_snapshots"
+  ],
+  "quarantine_db_only_declared_classes": true
+}

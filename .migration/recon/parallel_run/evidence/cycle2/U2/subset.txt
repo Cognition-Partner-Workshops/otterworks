@@ -1,0 +1,1 @@
+/home/ubuntu/cutover_work/pr2/cycle2/U2/mapping_u2_subset.json ['invoices']

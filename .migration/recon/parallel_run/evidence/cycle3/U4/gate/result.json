@@ -1,0 +1,49 @@
+{
+  "unit": "U4",
+  "mode": "live",
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-02T07:14:32.910167+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 12,
+      "stats": {
+        "deferred_to_tier3": [
+          "files.folder_id"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 10000,
+      "stats": {
+        "files": {
+          "mode": "full_diff",
+          "population": 10000
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}

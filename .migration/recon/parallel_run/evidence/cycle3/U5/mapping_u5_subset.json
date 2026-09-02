@@ -1,0 +1,917 @@
+{
+  "version": "v1.0.1",
+  "namespace": "mongo_205236",
+  "target_database": "ow_tp_mongodb_205236",
+  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
+  "params": {
+    "batch_no": "Oracle conversion/batch number for the namespace (85559852 for NS=demo)",
+    "source_ns": "DynamoDB ns partition value (demo)"
+  },
+  "excluded_objects": [
+    {
+      "object": "FIXTURE_META",
+      "reason": "fixture bookkeeping (INITIALIZED_AT, non-deterministic); no application reader"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "subscriptions",
+      "root_table": "SUBSCRIPTIONS",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "starts_on": -1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "TRG_SUB_NO_UNCANCEL (status 30 may not revert) and TRG_SUBSCRIPTIONS_HIST move to the application write path (U6)."
+    },
+    {
+      "collection": "subscriptions_history",
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "HIST_ID",
+          "target": "hist_id",
+          "source_type": "NUMBER(12,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "HIST_DT",
+          "target": "hist_dt",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "HIST_OP",
+          "target": "hist_op",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "0 rows at census; created + registered as the history target for the rewritten write path."
+    },
+    {
+      "collection": "usage_events",
+      "root_table": "USAGE_EVENTS",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurred_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "occurred_at": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "TRG_USAGE_EVENTS_CHECK (units >= 0) becomes a $jsonSchema validator on the collection."
+    },
+    {
+      "collection": "rating_periods",
+      "root_table": "RATING_PERIODS",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_START",
+          "target": "period_start",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "PERIOD_END",
+          "target": "period_end",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "results",
+          "child_table": "RATING_RESULTS",
+          "child_where": null,
+          "parent_key": [
+            "PERIOD_ID"
+          ],
+          "key": {
+            "source": [
+              "ID"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "ID",
+              "target": "id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "PERIOD_ID",
+              "target": "period_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "SUBSCRIPTION_ID",
+              "target": "subscription_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "USED_UNITS",
+              "target": "used_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "QUOTA_UNITS",
+              "target": "quota_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "ROLLOVER_UNITS",
+              "target": "rollover_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "BILLABLE_UNITS",
+              "target": "billable_units",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "OVERAGE_AMOUNT",
+              "target": "overage_amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "CREATED_AT",
+              "target": "created_at",
+              "source_type": "TIMESTAMP(6)",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            }
+          ]
+        }
+      ],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "period_start": 1
+          },
+          "unique": true
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "RATING_RESULTS 1:1 with its period in practice (3/3); embedded as results[] to keep the DUP_VAL_ON_INDEX upsert a single-document operation."
+    },
+    {
+      "collection": "billing_invoices",
+      "root_table": "INVOICES",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_AT",
+          "target": "issued_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "SUBTOTAL",
+          "target": "subtotal",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TAX",
+          "target": "tax",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TOTAL",
+          "target": "total",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINES",
+          "child_where": null,
+          "parent_key": [
+            "INVOICE_ID"
+          ],
+          "key": {
+            "source": [
+              "ID"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "ID",
+              "target": "id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "INVOICE_ID",
+              "target": "invoice_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "LINE_NO",
+              "target": "line_no",
+              "source_type": "NUMBER(6,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "LINE_TYPE",
+              "target": "line_type",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "DESCRIPTION",
+              "target": "description",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            }
+          ]
+        }
+      ],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_at": 1
+          }
+        },
+        {
+          "keys": {
+            "status_cd": 1,
+            "issued_at": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "Package-owned transactional invoices (distinct from the bulk INVOICE_HEADER feed \u2192 invoices). Lines rebuilt from scratch on every issue \u2192 single replaceOne."
+    },
+    {
+      "collection": "credit_notes",
+      "root_table": "CREDIT_NOTES",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_ON",
+          "target": "issued_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "REMAINING_AMOUNT",
+          "target": "remaining_amount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_on": 1,
+            "_id": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": ""
+    },
+    {
+      "collection": "dunning_attempts",
+      "root_table": "DUNNING_ATTEMPTS",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attempt_no",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduled_for",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "invoice_id": 1,
+            "attempt_no": 1
+          },
+          "unique": true
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "UQ_DUNNING_ATTEMPTS preserved as a unique index; the swallowed WHEN OTHERS insert becomes an explicit duplicate-key no-op."
+    },
+    {
+      "collection": "notifications",
+      "root_table": "NOTIFICATIONS",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sent_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "kind_cd": 1,
+            "sent_at": 1
+          },
+          "unique": true
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": ""
+    },
+    {
+      "collection": "billing_audit_log",
+      "root_table": "BILLING_AUDIT_LOG",
+      "family": "oracle",
+      "unit": "U5",
+      "wave": 2,
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "LOG_ID",
+          "target": "log_id",
+          "source_type": "NUMBER(12,0)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "LOGGED_AT",
+          "target": "logged_at",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "logged_at": 1
+          },
+          "expireAfterSeconds": 7776000
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "0 rows at census. JOB_PURGE_AUDIT_LOG (90-day delete, disabled) becomes a TTL index; log_id from counters collection."
+    }
+  ]
+}

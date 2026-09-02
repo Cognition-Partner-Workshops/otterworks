@@ -1,0 +1,1 @@
+/home/ubuntu/cutover_work/pr2/cycle3/U5/mapping_u5_subset.json ['subscriptions', 'subscriptions_history', 'usage_events', 'rating_periods', 'billing_invoices', 'credit_notes', 'dunning_attempts', 'notifications', 'billing_audit_log']

@@ -1,0 +1,23 @@
+guards PASS
+  count U0 codes: src=32 ns=32 total=32 ok=True 
+  count U0 tenants: src=69 ns=69 total=69 ok=True 
+  count U0 plans: src=3 ns=3 total=3 ok=True 
+  count U1 customers: src=25000 ns=25000 total=25000 ok=True 
+  count U1 customers_history: src=0 ns=0 total=0 ok=True 
+  count U2 invoices: src=18750 ns=18750 total=18750 ok=True 
+  count U3 documents: src=2000 ns=2000 total=2000 ok=True 
+  count U3 document_snapshots: src=384 ns=384 total=384 ok=True 
+  count U4 files: src=10000 ns=10000 total=10000 ok=True 
+  count U5 subscriptions: src=69 ns=69 total=69 ok=True 
+  count U5 subscriptions_history: src=0 ns=0 total=0 ok=True 
+  count U5 usage_events: src=814 ns=814 total=814 ok=True 
+  count U5 rating_periods: src=3 ns=3 total=3 ok=True 
+  count U5 billing_invoices: src=3 ns=3 total=3 ok=True 
+  count U5 credit_notes: src=5 ns=5 total=5 ok=True 
+  count U5 dunning_attempts: src=1 ns=1 total=1 ok=True 
+  count U5 notifications: src=1 ns=1 total=1 ok=True 
+  count U5 billing_audit_log: src=1 ns=1 total=1 ok=True 
+  quarantine U1: 81/25000 = 0.00324 ok=True
+  quarantine U2: 37/18750 = 0.00197 ok=True
+  quarantine U3: 6/2384 = 0.00252 ok=True
+  quarantine db classes: ['bad_csv_list', 'dirty_signup_dt', 'invoice_feed_orphan_lines', 'orphan_document_snapshots'] only-declared: True
