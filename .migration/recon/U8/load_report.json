@@ -1,8 +1,8 @@
 {
   "unit": "U8",
-  "started_at": "2026-09-02T02:54:45.519786Z",
-  "finished_at": "2026-09-02T02:54:54.324872Z",
-  "generated_at": "2026-09-02T02:54:54.324890Z",
+  "started_at": "2026-09-02T03:12:37.462731Z",
+  "finished_at": "2026-09-02T03:12:46.733571Z",
+  "generated_at": "2026-09-02T03:12:46.733591Z",
   "target_db": "ow_tp_mongodb_205236",
   "ns": "mongo_205236",
   "collections": {
