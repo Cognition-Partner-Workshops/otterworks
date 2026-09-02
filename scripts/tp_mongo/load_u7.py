@@ -72,6 +72,18 @@ def clone_collection(database: Any, source: str) -> dict[str, Any]:
     source_docs = database[source].count_documents({})
     database.drop_collection(target)
     database[source].aggregate([{"$match": {}}, {"$out": target}])
+    source_options = next(
+        (c.get("options", {}) for c in database.list_collections(filter={"name": source})), {}
+    )
+    validator = source_options.get("validator")
+    if validator:
+        database.command(
+            "collMod",
+            target,
+            validator=validator,
+            validationLevel=source_options.get("validationLevel", "strict"),
+            validationAction=source_options.get("validationAction", "error"),
+        )
     index_names = [
         database[target].create_index(spec["keys"], **spec["options"])
         for spec in _index_specs(database[source])
