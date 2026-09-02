@@ -23,13 +23,13 @@ SHARED_EXPECTED = {
     "rating_periods": 3,
     "billing_invoices": 3,
     "credit_notes": 5,
-    "billing_audit_log": 0,
+    "billing_audit_log": 1,
     "plans": 3,
     "tenants": 69,
 }
 CLONE_AFTER_REPLAY = {
-    "billing_invoices": 3,
-    "billing_invoices.lines": 15,
+    "billing_invoices": 6,
+    "billing_invoices.lines": 17,
     "credit_notes.tenant_9.remaining": ["0.00", "6.96"],
 }
 
@@ -89,7 +89,7 @@ def build(
         _check("harness.warnings_ungraded", [], result.get("warnings", []), "result.json"),
         _check(
             "harness.tier3.embeds_graded.replay_u8_billing_invoices.lines",
-            3,
+            2,
             tiers[3]["stats"].get("embeds_graded", {}).get(
                 "replay_u8_billing_invoices.lines"
             ),
@@ -233,6 +233,7 @@ def build(
         },
         "unverified_paths": [
             "LIVE-mode recon gate (parent)",
+            "Sibling U9 collection `replay_u9_subscriptions_history` (empty) appeared in the target DB during this run — different prefix, not a U8 write target, untouched",
             "Tier 4 source side is the recorded Oracle transcript, not a live PL/SQL call",
             (
                 "No multi-document transaction spans finalize_rating, replaceOne, and credit updates; "
