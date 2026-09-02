@@ -105,3 +105,54 @@ def test_database_guards():
         load_u2.validate_target_db("other")
     with pytest.raises(ValueError):
         load_u2.validate_quarantine_db("other")
+
+
+def test_empty_header_extract_refuses_to_replace_collections(monkeypatch, tmp_path):
+    mongo_calls = {"clients": 0, "drops": 0, "inserts": 0}
+
+    class FakeConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+    class FakeCollection:
+        def insert_many(self, *args, **kwargs):
+            mongo_calls["inserts"] += 1
+
+    class FakeDatabase:
+        def __init__(self):
+            self.collection = FakeCollection()
+
+        def drop_collection(self, name):
+            mongo_calls["drops"] += 1
+
+        def create_collection(self, name):
+            return self.collection
+
+        def __getitem__(self, name):
+            return self.collection
+
+    class FakeMongoClient:
+        def __init__(self, uri):
+            mongo_calls["clients"] += 1
+
+        def __getitem__(self, name):
+            return FakeDatabase()
+
+        def close(self):
+            return None
+
+    monkeypatch.setenv("OW_BILLING_FIXTURE_DSN", "user/secret/fixture")
+    monkeypatch.setenv("MONGODB_ATLAS_URI", "mongodb://target")
+    monkeypatch.setattr(load_u2.oracledb, "connect", lambda **kwargs: FakeConnection())
+    monkeypatch.setattr(load_u2, "MongoClient", FakeMongoClient)
+    monkeypatch.setattr(load_u2, "extract_headers", lambda connection, batch_no: [])
+    monkeypatch.setattr(load_u2, "extract_lines", lambda connection, batch_no: iter(()))
+
+    args = load_u2.parse_args(["--report-out", str(tmp_path / "report.json")])
+    with pytest.raises(RuntimeError, match="INVOICE_HEADER has no rows"):
+        load_u2.run(args)
+
+    assert mongo_calls == {"clients": 0, "drops": 0, "inserts": 0}

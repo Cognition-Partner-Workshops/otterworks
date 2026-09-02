@@ -313,6 +313,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for row in headers
     ]
     embedded_count = sum(len(document["lines"]) for document in documents)
+    if not headers:
+        raise RuntimeError(
+            f"INVOICE_HEADER has no rows for batch_no={args.batch_no}; "
+            "refusing to replace the target collections"
+        )
     if len(documents) != len(headers) or embedded_count + len(quarantined) != line_count:
         raise RuntimeError("source/load mismatch for invoice headers or lines")
 

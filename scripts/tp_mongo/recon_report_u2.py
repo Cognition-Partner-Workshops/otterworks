@@ -41,6 +41,7 @@ def build(
 ) -> dict[str, Any]:
     tiers = {item["tier"]: item for item in result["tiers"]}
     tier3_stats = tiers.get(3, {}).get("stats", {})
+    rate = target["quarantine"] / target["invoices"] if target["invoices"] else None
     checks = [
         _check("harness.verdict", "PASS", result.get("verdict"), "result.json"),
         _check(
@@ -103,7 +104,7 @@ def build(
             _check(
                 "target.quarantine_rate",
                 37 / 18750,
-                target["quarantine"] / target["invoices"],
+                rate,
                 "Atlas counts",
             ),
             _check(
@@ -153,6 +154,7 @@ def build(
             "params": result.get("params"),
         },
         "checks": checks,
+        "quarantine_rate": rate,
         "values_recomputed_from_target": True,
         "idempotency_rerun": {
             "performed": True,
@@ -231,6 +233,8 @@ def main(argv: list[str] | None = None) -> int:
         failed.append("idempotency_rerun")
     verdict = "PASS" if not failed else "FAIL"
     lines[0] = f"# Recon summary: `U2` - **{verdict}**"
+    rate = report["quarantine_rate"]
+    rate_display = f"{rate:.3%}" if rate is not None else "n/a"
     lines.extend(
         [
             "",
@@ -238,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
             f"- Mapping `{mapping['version']}` / tolerances `v1` / seed `{report['harness']['seed']}` / params `{report['harness']['params']}`",
             f"- Generated: {report['generated_at']}",
             f"- Counts: {target['invoices']} invoices / {target['embedded_lines']} embedded lines / {target['quarantine']} quarantined lines = {target['embedded_lines'] + target['quarantine']} source lines",
-            f"- Quarantine rate: {target['quarantine'] / target['invoices']:.3%}",
+            f"- Quarantine rate: {rate_display}",
             f"- Indexes: `{', '.join(sorted(target['indexes']))}`",
             f"- Load idempotency: {report['idempotency_rerun']['result'].upper()} (run 1 and run 2 reports match)",
             "",
