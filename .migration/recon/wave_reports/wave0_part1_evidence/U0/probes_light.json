@@ -1,0 +1,254 @@
+{
+ "codes": {
+  "count": 32,
+  "matches_prior_pre_target_hash_variant": [],
+  "fields": [
+   "_id",
+   "_key",
+   "code_desc",
+   "code_type",
+   "code_val",
+   "ns"
+  ],
+  "types": {
+   "_id": [
+    "ObjectId"
+   ],
+   "_key": [
+    "str"
+   ],
+   "code_type": [
+    "str"
+   ],
+   "code_val": [
+    "int"
+   ],
+   "code_desc": [
+    "str"
+   ],
+   "ns": [
+    "str"
+   ]
+  },
+  "ns_all_mongo_205236": true,
+  "indexes": [
+   "_id_",
+   "code_type_1_code_val_1"
+  ],
+  "dup_keys": 0
+ },
+ "tenants": {
+  "count": 69,
+  "matches_prior_pre_target_hash_variant": [
+   "with_id/relaxed"
+  ],
+  "fields": [
+   "_id",
+   "id",
+   "name",
+   "ns",
+   "status_cd",
+   "tax_exempt_yn"
+  ],
+  "types": {
+   "_id": [
+    "str"
+   ],
+   "id": [
+    "str"
+   ],
+   "name": [
+    "str"
+   ],
+   "tax_exempt_yn": [
+    "str"
+   ],
+   "status_cd": [
+    "int"
+   ],
+   "ns": [
+    "str"
+   ]
+  },
+  "ns_all_mongo_205236": true,
+  "indexes": [
+   "_id_"
+  ],
+  "dup_keys": 0
+ },
+ "plans": {
+  "count": 3,
+  "matches_prior_pre_target_hash_variant": [
+   "with_id/relaxed"
+  ],
+  "fields": [
+   "_id",
+   "active_yn",
+   "code",
+   "id",
+   "included_units",
+   "monthly_fee",
+   "ns",
+   "overage_rate",
+   "tier_cd"
+  ],
+  "types": {
+   "_id": [
+    "str"
+   ],
+   "id": [
+    "str"
+   ],
+   "code": [
+    "str"
+   ],
+   "tier_cd": [
+    "int"
+   ],
+   "monthly_fee": [
+    "Decimal128"
+   ],
+   "included_units": [
+    "Int64"
+   ],
+   "overage_rate": [
+    "Decimal128"
+   ],
+   "active_yn": [
+    "str"
+   ],
+   "ns": [
+    "str"
+   ]
+  },
+  "ns_all_mongo_205236": true,
+  "indexes": [
+   "_id_"
+  ],
+  "dup_keys": 0
+ },
+ "quarantine_collections": [
+  "bad_csv_list",
+  "dirty_signup_dt",
+  "invoice_feed_orphan_lines",
+  "orphan_document_snapshots"
+ ],
+ "quarantine_U0_classes_expected": [],
+ "codes_value_diff": {
+  "missing": [],
+  "extra": [],
+  "diff": []
+ },
+ "tenants_value_diff": {
+  "missing": 0,
+  "extra": 0,
+  "diff": []
+ },
+ "plans_value_diff": {
+  "missing": 0,
+  "extra": 0,
+  "diff": [
+   [
+    "10000000-0000-0000-0000-000000000001",
+    [
+     "STARTER",
+     "49",
+     100,
+     ".055",
+     1,
+     "Y"
+    ],
+    [
+     "STARTER",
+     "49.00",
+     100,
+     "0.055000",
+     1,
+     "Y"
+    ]
+   ],
+   [
+    "10000000-0000-0000-0000-000000000002",
+    [
+     "GROWTH",
+     "149",
+     500,
+     ".035",
+     2,
+     "Y"
+    ],
+    [
+     "GROWTH",
+     "149.00",
+     500,
+     "0.035000",
+     2,
+     "Y"
+    ]
+   ],
+   [
+    "10000000-0000-0000-0000-000000000003",
+    [
+     "SCALE",
+     "499",
+     2000,
+     ".02",
+     3,
+     "Y"
+    ],
+    [
+     "SCALE",
+     "499.00",
+     2000,
+     "0.020000",
+     3,
+     "Y"
+    ]
+   ]
+  ]
+ },
+ "app_replay_F_CODE_DESC": [
+  [
+   "TENANT_STATUS",
+   10,
+   "active",
+   "active",
+   true
+  ],
+  [
+   "TENANT_STATUS",
+   20,
+   "suspended",
+   "suspended",
+   true
+  ],
+  [
+   "SUB_STATUS",
+   10,
+   "active",
+   "active",
+   true
+  ],
+  [
+   "SUB_STATUS",
+   20,
+   "suspended",
+   "suspended",
+   true
+  ],
+  [
+   "SUB_STATUS",
+   30,
+   "cancelled",
+   "cancelled",
+   true
+  ],
+  [
+   "INV_STATUS",
+   9999,
+   "UNKNOWN(9999)",
+   "UNKNOWN(9999)",
+   true
+  ]
+ ]
+}
