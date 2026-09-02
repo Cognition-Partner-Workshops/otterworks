@@ -1,0 +1,181 @@
+{
+  "kind": "recon-report",
+  "unit": "U2",
+  "namespace": "mongo_205236",
+  "generated_at": "2026-09-02T04:08:26.160162+00:00",
+  "run_mode": "fixture",
+  "harness": {
+    "result": ".migration/recon/U2/result.json",
+    "verdict": "PASS",
+    "seed": 714559852,
+    "params": {
+      "batch_no": "85559852",
+      "source_ns": "demo"
+    }
+  },
+  "checks": [
+    {
+      "id": "harness.verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.mapping_version",
+      "expected": "v1.0.1",
+      "actual": "v1.0.1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tolerance_version",
+      "expected": "v1",
+      "actual": "v1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier1.counts_through_mapping",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier2.per_field_aggregates",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier3.keyed_diffs",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier3.no_embeds_ungraded",
+      "expected": false,
+      "actual": false,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "target.invoices.count",
+      "expected": 18750,
+      "actual": 18750,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "target.invoices.embedded_lines",
+      "expected": 149963,
+      "actual": 149963,
+      "source_of_truth": "Atlas $unwind count",
+      "result": "pass"
+    },
+    {
+      "id": "target.quarantine.invoice_feed_orphan_lines.count",
+      "expected": 37,
+      "actual": 37,
+      "source_of_truth": "Atlas count_documents",
+      "result": "pass"
+    },
+    {
+      "id": "target.invoices.ns_mismatch",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents({ns: {$ne: ...}})",
+      "result": "pass"
+    },
+    {
+      "id": "target.quarantine.ns_mismatch",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "Atlas count_documents({ns: {$ne: ...}})",
+      "result": "pass"
+    },
+    {
+      "id": "target.indexes",
+      "expected": [
+        "_id_",
+        "batch_no_1_status_cd_1",
+        "cust_id_1",
+        "lines.line_id_1"
+      ],
+      "actual": [
+        "_id_",
+        "batch_no_1_status_cd_1",
+        "cust_id_1",
+        "lines.line_id_1"
+      ],
+      "source_of_truth": "Atlas list_indexes",
+      "result": "pass"
+    },
+    {
+      "id": "target.embedded_plus_quarantined",
+      "expected": 150000,
+      "actual": 150000,
+      "source_of_truth": "Atlas counts",
+      "result": "pass"
+    },
+    {
+      "id": "target.quarantine_rate",
+      "expected": 0.0019733333333333334,
+      "actual": 0.0019733333333333334,
+      "source_of_truth": "Atlas counts",
+      "result": "pass"
+    },
+    {
+      "id": "load.source_counts.invoice_header",
+      "expected": 18750,
+      "actual": 18750,
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    },
+    {
+      "id": "load.source_counts.invoice_line",
+      "expected": 150000,
+      "actual": 150000,
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    },
+    {
+      "id": "load.embedded_lines",
+      "expected": 149963,
+      "actual": 149963,
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    },
+    {
+      "id": "load.quarantined_lines",
+      "expected": 37,
+      "actual": 37,
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    }
+  ],
+  "quarantine_rate": 0.0019733333333333334,
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": ".migration/recon/U2/load_report_run1.json vs load_report.json"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [],
+    "actual_set": [],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "Tier 4 app-level parity not in contract; RPT-114 was checked separately by scripts/tp_mongo/rpt114_parity_u2.py (see rpt114_parity.json)",
+    "Harness stratified-sampling path not exercised because 18,750 < full_diff threshold, so full diff was used",
+    "Derived invoice_date, due_date, and lines[].gl_accounts are derived_ungraded per mapping and only loader-unit-tested",
+    "Admin-dashboard UI not exercised",
+    "Live gate is the parent's responsibility"
+  ]
+}

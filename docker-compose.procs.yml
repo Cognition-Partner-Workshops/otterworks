@@ -40,6 +40,9 @@ services:
       # which listens on the host, not in this compose network.
       ORACLE_HOST: ${ORACLE_HOST:-host.docker.internal}
       ORACLE_PORT: ${ORACLE_BILLING_DB_PORT:-52521}
+      # Month-end status/line rollups (RPT-114) read the migrated invoices from Atlas.
+      MONGODB_ATLAS_URI: ${MONGODB_ATLAS_URI:-}
+      MONGODB_DB: ${MONGODB_DB:-ow_tp_mongodb_205236}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

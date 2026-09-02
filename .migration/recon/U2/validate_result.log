@@ -1,0 +1,15 @@
+uv run --no-project --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4 python3 scripts/tp_validate.py recon .migration/recon/U2/u2.recon.json
+WARN `--no-project` was provided, but no project was found
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 4.25.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 0.1.4 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(3) @ 26.1.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(4) @ 2025.9.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(5) @ 0.37.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(6) @ 2026.6.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(7) @ 1.17.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(8) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(9) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(10) @ 4.16.0 without checking dependencies    
+validated 1 recon file(s)
+PASS
