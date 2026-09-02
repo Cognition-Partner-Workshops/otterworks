@@ -56,6 +56,7 @@ USAGE_EVENTS_VALIDATOR = {
     }
 }
 TTL_SECONDS = 7776000
+STAGING_SUFFIX = "__staging"
 
 QUERIES = {
     "subscriptions": (
@@ -472,34 +473,43 @@ def load_collection(
 ) -> dict[str, Any]:
     if collection not in UNIT_COLLECTIONS:
         raise ValueError(f"collection is not owned by U5: {collection!r}")
-    database.drop_collection(collection)
+    documents, embedded = _documents(collection, rows, children)
+    staging = f"{collection}{STAGING_SUFFIX}"
+    assert staging.endswith("__staging")
     options = {"validator": USAGE_EVENTS_VALIDATOR, "validationLevel": "strict",
                "validationAction": "error"} if collection == "usage_events" else {}
-    database.create_collection(collection, **options)
-    documents, embedded = _documents(collection, rows, children)
-    if documents:
-        database[collection].insert_many(documents, ordered=True)
+    database.drop_collection(staging)
+    try:
+        database.create_collection(staging, **options)
+        if documents:
+            database[staging].insert_many(documents, ordered=True)
 
-    index_names: list[str] = []
-    keys, index_options = INDEXES[collection]
-    if keys:
-        index_names.append(
-            database[collection].create_index(keys, **index_options)
-        )
-    if collection == "billing_invoices":
-        index_names.append(
-            database[collection].create_index(
-                [("status_cd", ASCENDING), ("issued_at", ASCENDING)]
+        index_names: list[str] = []
+        keys, index_options = INDEXES[collection]
+        if keys:
+            index_names.append(
+                database[staging].create_index(keys, **index_options)
             )
-        )
+        if collection == "billing_invoices":
+            index_names.append(
+                database[staging].create_index(
+                    [("status_cd", ASCENDING), ("issued_at", ASCENDING)]
+                )
+            )
 
-    docs_after = database[collection].count_documents({})
-    ns_docs_after = database[collection].count_documents({"ns": NS_VALUE})
-    if docs_after != len(rows) or ns_docs_after != len(rows):
-        raise RuntimeError(
-            f"{collection}: expected {len(rows)} rows, got "
-            f"{docs_after} documents and {ns_docs_after} namespaced documents"
-        )
+        docs_after = database[staging].count_documents({})
+        ns_docs_after = database[staging].count_documents({"ns": NS_VALUE})
+        if docs_after != len(rows) or ns_docs_after != len(rows):
+            raise RuntimeError(
+                f"{collection}: expected {len(rows)} rows, got "
+                f"{docs_after} documents and {ns_docs_after} namespaced documents"
+            )
+        database[staging].rename(collection, dropTarget=True)
+        if staging in database.list_collection_names():
+            raise RuntimeError(f"{collection}: staging collection remains after rename")
+    except Exception:
+        database.drop_collection(staging)
+        raise
     report = {
         "root_table": ROOT_TABLES[collection],
         "dropped": True,

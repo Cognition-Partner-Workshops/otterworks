@@ -169,3 +169,84 @@ def test_validator_and_unit_scope_contracts():
 def test_target_db_guard_rejects_other_databases():
     with pytest.raises(ValueError):
         load_u5.validate_target_db("wrong-db")
+
+
+class _FakeCollection:
+    def __init__(self, database, name, documents=None, options=None):
+        self.database = database
+        self.name = name
+        self.documents = list(documents or [])
+        self.options = options or {}
+        self.indexes = []
+
+    def insert_many(self, documents, ordered=True):
+        if self.database.fail_inserts:
+            raise RuntimeError("insert failed")
+        self.documents.extend(documents)
+
+    def create_index(self, keys, **options):
+        self.indexes.append((keys, options))
+        return "_".join(f"{key}_{direction}" for key, direction in keys)
+
+    def count_documents(self, query):
+        return sum(
+            all(document.get(key) == value for key, value in query.items())
+            for document in self.documents
+        )
+
+    def rename(self, new_name, dropTarget=False):
+        if dropTarget:
+            self.database.collections.pop(new_name, None)
+        self.database.collections[new_name] = self.database.collections.pop(self.name)
+        self.name = new_name
+
+
+class _FakeDatabase:
+    def __init__(self):
+        self.collections = {}
+        self.fail_inserts = False
+
+    def drop_collection(self, name):
+        self.collections.pop(name, None)
+
+    def create_collection(self, name, **options):
+        self.collections[name] = _FakeCollection(self, name, options=options)
+        return self.collections[name]
+
+    def list_collection_names(self):
+        return list(self.collections)
+
+    def __getitem__(self, name):
+        return self.collections[name]
+
+
+def test_load_collection_stages_before_swap_and_carries_validator_options():
+    database = _FakeDatabase()
+    previous = [{"_id": "old", "ns": load_u5.NS_VALUE}]
+    database.collections["usage_events"] = _FakeCollection(
+        database, "usage_events", previous
+    )
+    database.fail_inserts = True
+    row = {
+        "ID": "event-1",
+        "TENANT_ID": "tenant-1",
+        "OCCURRED_AT": datetime(2026, 1, 2),
+        "UNITS": 1,
+        "KIND_CD": 2,
+    }
+
+    with pytest.raises(RuntimeError, match="insert failed"):
+        load_u5.load_collection(database, "usage_events", [row])
+    assert database["usage_events"].documents == previous
+    assert "usage_events__staging" not in database.list_collection_names()
+
+    database.fail_inserts = False
+    report = load_u5.load_collection(database, "usage_events", [row])
+    assert report["inserted"] == 1
+    assert database["usage_events"].documents[0]["id"] == "event-1"
+    assert database["usage_events"].options == {
+        "validator": load_u5.USAGE_EVENTS_VALIDATOR,
+        "validationLevel": "strict",
+        "validationAction": "error",
+    }
+    assert "usage_events__staging" not in database.list_collection_names()
