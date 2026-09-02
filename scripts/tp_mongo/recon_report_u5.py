@@ -202,6 +202,7 @@ def build(
             "verdict": result["verdict"],
             "seed": result["seed"],
             "params": result["params"],
+            "harness_cli_mode": "live",
         },
         "checks": checks,
         "values_recomputed_from_target": True,
