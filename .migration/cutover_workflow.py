@@ -11,6 +11,13 @@ RECON_PARAMS = "--seed 714559852 --param batch_no=85559852 --param source_ns=dem
 HARNESS_GLOB = ("/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_mongo-migration-plugin-*/"
                 "*/skills/mongo-recon-harness/harness")
 GREEN_CYCLES = 3
+# Fix-and-re-gate pass (decision row 19). Filled from the resumed U8 child's report; empty dict = no fix pass.
+FIX = {
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1457",
+    "branch": "tp-run/mongodb-20260901T205236Z--u8-fix",
+    "head": "ba3b9034",
+    "session": "devin-679bc1c8bf64427fb4d653ee0a9633ac",
+}
 UNITS = ["U0", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8", "U9"]
 WAVE_REPORTS = {
     "wave0": "tp-run/mongodb-20260901T205236Z--wave0-recon-part1:.migration/recon/wave_reports/wave0.md",
@@ -78,7 +85,54 @@ AUDIT_SCHEMA = {
 }
 
 
-async def parallel_run():
+FIX_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "verdict": {"type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "ESCALATE"]},
+        "attested_head": {"type": "string"},
+        "merge_commit": {"type": "string"},
+        "report_path": {"type": "string", "description": "branch:path of the fix recon report"},
+        "notes": {"type": "string"},
+    },
+    "required": ["verdict", "attested_head", "merge_commit", "report_path"],
+}
+
+
+async def fix_recon_and_merge():
+    return await agent(
+        f"""You are the INDEPENDENT reconciliation + merge session for the phase-4 fix pass of the OtterWorks billing
+estate -> Atlas migration ([MONGO v1] Reconciliation Part 1). You wrote none of the fix. Repo {REPO}.
+{PARENT_MACHINE}{GUARDRAILS}
+Fix PR: {FIX['pr_url']} (branch {FIX['branch']}, base {RUN_BRANCH}), expected head {FIX['head']}. It closes
+F-U8-1 (`sp_issue_invoice` must write `invoice_id` on every embedded `billing_invoices.lines[]` element) and
+F-X-1 (one `counters` contract for all `log_msg` call sites + loader seeds `SEQ_BILLING_AUDIT_LOG` and
+`SEQ_SUBSCRIPTIONS_HIST` from Oracle `USER_SEQUENCES.LAST_NUMBER`; a one-off write to U1's `counters`
+target for those rows is authorised by decision row 19).
+
+Do: (1) fetch the PR at its CURRENT head and record the exact SHA as attested_head (if it differs from the
+expected head, grade the current head anyway and say so); (2) re-load U8 (and U1 `counters` seed) from that
+head into {TARGET_DB}, then run the U8 recon gate VERBATIM plus the Tier-4 invoicing replays (reset replay
+clones first), and the U5/U6/U7 gates' T1–T3 for `billing_audit_log`/`counters`; (3) probe: every
+`billing_invoices.lines[]` element has a non-null `invoice_id` equal to its parent `_id`; `counters` holds
+exactly one document per sequence with value == Oracle LAST_NUMBER; the three log_msg paths produce
+monotonic non-colliding audit ids (exercise each once against a scratch clone, then clean up); run
+`make tp-validate-recon` on the new result.json and `make tp-smoke`; (4) write
+.migration/recon/wave_reports/fix_pass.md on a branch `{RUN_BRANCH}--fix-recon` pushed to origin.
+If PASS and the PR head still equals attested_head: merge the PR into {RUN_BRANCH} (plain git or PR API;
+never main/tech-partnerships), then on {RUN_BRANCH} update .migration/04_progress.md (U8 row + counters
+note) and append ONE row to .migration/05_decisions.md: `| 20 | <UTC> | orchestrator | Fix pass MERGED:
+{FIX['pr_url']} @ <head> merged <commit> on independent LIVE recon PASS (report <branch:path>); closes
+F-U8-1, F-X-1 |`. Commit 'migration(205236): fix pass — merge + ledger', push. IDEMPOTENCY: if the PR head
+is already reachable from {RUN_BRANCH}, do not merge again or duplicate rows. FAIL/BLOCKED otherwise with
+evidence; never fix code, touch legacy, or change tolerances.""",
+        phase="fix-recon-merge",
+        schema=FIX_SCHEMA,
+        label="independent LIVE recon + merge (fix pass)",
+        vm_mode="shared",
+    )
+
+
+async def parallel_run(pass_tag=""):
     return await agent(
         f"""You are the parallel-run / final-watermark recon session ([MONGO v1] Reconciliation & Parallel Run,
 Part 2, and Cutover step 1) for the OtterWorks billing estate -> Atlas migration. Repo {REPO}.
@@ -97,20 +151,30 @@ recon gate verbatim (U0–U5 harness through .migration/03_mapping_spec.json uni
 replay clones between cycles as the wave3 report describes) plus the ns-scoped count guard and the
 quarantine-ceiling check (0.5% of unit root rows); (3) record every cycle (UTC, watermark, per-unit
 verdict, tiers, cost) in .migration/recon/parallel_run/evidence_log.md + evidence_log.json on a branch
-`{RUN_BRANCH}--parallel-run` pushed to origin (report branch:path). A RED cycle: diagnose (drift vs
+`{RUN_BRANCH}--parallel-run{pass_tag}` pushed to origin (report branch:path).{' This is the RE-RUN after the fix pass (decision rows 19–20): load from the NEW merged head; the earlier evidence under --parallel-run is superseded and must be referenced as such in the log.' if pass_tag else ''} A RED cycle: diagnose (drift vs
 defect, re-run source side twice), do NOT fix migrated code — record class + diagnosis and continue;
 the streak resets. Verdict GREEN only with {GREEN_CYCLES} consecutive green cycles ending at the last
 cycle; RED if the streak cannot be reached in {GREEN_CYCLES + 2} cycles; ESCALATE on environment or
 spec problems. Also emit .migration/recon/parallel_run/final_recon_at_watermark.md summarising the last
 cycle as the cutover 'final recon at the watermark'.""",
-        phase="parallel-run",
+        phase=f"parallel-run{pass_tag}",
         schema=CYCLE_SCHEMA,
-        label="parallel-run window (3 green cycles) + final watermark recon",
+        label=f"parallel-run window (3 green cycles) + final watermark recon{pass_tag}",
         vm_mode="shared",
     )
 
 
-async def evidence_pack_and_runbook(cycles):
+async def evidence_pack_and_runbook(cycles, pass_tag="", prior=None):
+    prior_note = ""
+    if prior:
+        prior_note = (f"\nTHIS IS THE v2 PASS. A prior pack exists at {prior['pack_path']} (PR against {RUN_BRANCH} from branch "
+                      f"`{RUN_BRANCH}--cutover-prep`) with gaps {prior['gaps']}. Decision rows 19–20 record the fix pass "
+                      f"(F-U8-1, F-X-1 fixed and merged on independent LIVE recon; wave-2b probe bundle committed to "
+                      f"`{RUN_BRANCH}--wave2b-recon-part1:.migration/recon/wave_reports/wave2b_probes/`; F-U8-2/F-U7-1 and "
+                      f"partial scope carried as STOP C lines by human decision). UPDATE that same branch and PR (do not open "
+                      f"a new one): rebase/merge it onto the current {RUN_BRANCH}, revise the pack and runbook against the NEW "
+                      f"watermark, close gaps 1, 2 and 4 with evidence paths, and make gaps 3 and 5 explicit STOP C lines. "
+                      f"Status COMPLETE is expected only if every gap is closed or converted to a STOP C line.\n")
     return await agent(
         f"""You are the cutover-preparation session ([MONGO v1] Cutover & Sign-off, steps 2 and 4) for the
 OtterWorks billing estate -> Atlas migration. Repo {REPO}; work in a separate clone under ~/cutover_work/
@@ -120,7 +184,7 @@ on a branch `{RUN_BRANCH}--cutover-prep` based on `{RUN_BRANCH}`, then open ONE 
 Inputs (all on {RUN_BRANCH} or the named branches): .migration/00–07, canonicalization.json,
 census/, contracts/, recon/U0..U9, wave reports {json.dumps(WAVE_REPORTS)}, parallel-run evidence
 {cycles['evidence_path']} (watermark: {cycles['watermark']}; green streak {cycles['green_streak']};
-red runs {cycles['red_runs']}).
+red runs {cycles['red_runs']}).{prior_note}
 
 Step 2 — VERIFY the evidence pack (do not re-run gates): write .migration/08_evidence_pack.md as an
 index with: coverage table (44/44 census objects -> unit -> collection -> wave report line), approved
@@ -156,9 +220,9 @@ accounts as explicit steps; (h) the STOP C decision lines the orchestrator must 
 without live-write parity evidence (no CDC; static source) yes/no; partial-scope yes/no per the scope
 section; window; rollback condition. Also add a short 'Cutover readiness' section to
 .migration/04_progress.md. Commit, push, open the PR, report pack_path/runbook_path/commit. Do not merge it.""",
-        phase="evidence-pack-runbook",
+        phase=f"evidence-pack-runbook{pass_tag}",
         schema=PACK_SCHEMA,
-        label="evidence pack verification + cutover runbook",
+        label=f"evidence pack verification + cutover runbook{pass_tag}",
         repos=[REPO],
     )
 
@@ -200,6 +264,9 @@ async def main():
         "phases": [
             {"title": "parallel-run", "detail": "3 green full-estate recon cycles + final watermark recon", "count": 1},
             {"title": "evidence-pack-runbook", "detail": "evidence pack verification + cutover runbook PR", "count": 1},
+            {"title": "fix-recon-merge", "detail": "independent LIVE recon + merge of the fix PR", "count": 1},
+            {"title": "parallel-run-v2", "detail": "3 green cycles at the post-fix watermark", "count": 1},
+            {"title": "evidence-pack-runbook-v2", "detail": "evidence pack + runbook revised to the new watermark", "count": 1},
             {"title": "independent-audit", "detail": "sampled gates re-run from the evidence pack", "count": 1},
         ],
     })
@@ -214,8 +281,26 @@ async def main():
     log(f"phase4: evidence pack {pack['status']} pack={pack['pack_path']} runbook={pack['runbook_path']} "
         f"gaps={pack['gaps']} scope={pack['scope_statement']}")
     if pack["status"] != "COMPLETE":
-        log("HALT phase4: evidence pack incomplete — STOP C cannot be presented")
-        return
+        if not FIX:
+            log("HALT phase4: evidence pack incomplete — STOP C cannot be presented")
+            return
+        log(f"phase4: fix pass (decision row 19) — independent LIVE recon of {FIX['pr_url']} @ {FIX['head']}")
+        fix = await fix_recon_and_merge()
+        log(f"phase4: fix pass {fix['verdict']} head={fix['attested_head']} merge={fix['merge_commit']} report={fix['report_path']}")
+        if fix["verdict"] != "PASS":
+            log("HALT phase4: fix pass not PASS — human decision required")
+            return
+        cycles = await parallel_run("-v2")
+        log(f"phase4: parallel-run v2 verdict={cycles['verdict']} streak={cycles['green_streak']}/{cycles['cycles_run']} "
+            f"watermark={cycles['watermark']} evidence={cycles['evidence_path']} red_runs={cycles['red_runs']}")
+        if cycles["verdict"] != "GREEN":
+            log("HALT phase4: parallel-run v2 not GREEN — STOP C cannot be presented")
+            return
+        pack = await evidence_pack_and_runbook(cycles, "-v2", prior=pack)
+        log(f"phase4: evidence pack v2 {pack['status']} pack={pack['pack_path']} gaps={pack['gaps']} scope={pack['scope_statement']}")
+        if pack["status"] != "COMPLETE":
+            log("HALT phase4: evidence pack v2 still incomplete — STOP C cannot be presented")
+            return
     audit = await independent_audit(cycles, pack)
     log(f"phase4: audit {audit['verdict']} at {audit['audit_path']} gates={audit['gates_rerun']} findings={audit['findings']}")
     log("phase4: READY FOR STOP C" if audit["verdict"] == "COUNTERSIGNED" else "phase4: audit has findings — orchestrator decides")
