@@ -1,7 +1,8 @@
 # Cutover runbook — OtterWorks billing estate → MongoDB Atlas (`ow_tp_mongodb_205236`)
 
-Run `tp-run/mongodb-20260901T205236Z` · evidence pack `.migration/08_evidence_pack.md` · mapping v1.0.1 · tolerances v1 ·
-canonicalization v1. Secrets are referenced by **name only**. Devin never executes a production repoint; every
+Run `tp-run/mongodb-20260901T205236Z` · evidence pack `.migration/08_evidence_pack.md` (v2, **COMPLETE**, watermark
+`74ecd69e`) · mapping v1.0.1 · tolerances v1 · canonicalization v1. This revision supersedes the v1 runbook written against
+watermark `0150de08` (pre fix-pass). Secrets are referenced by **name only**. Devin never executes a production repoint; every
 production-touching step below is executed by the **customer-held cutover principal**.
 
 Executors used in this document:
@@ -21,9 +22,9 @@ Executors used in this document:
 |---|---|---|---|
 | RPT-114 month-end **status** and **line** rollups | `services/legacy-billing/app/reports.py` `GET /api/reports/month-end` (`status_rows_mongo`, `line_rows_mongo`) | `invoices` (+`lines[]`), `codes` | wave1 (part1-u2) §2: 3 + 12 rows identical to `STATUS_SQL`/`LINE_SQL`, FM formatting |
 | RPT-114 **balances** / reconciliation | `reports.py` `GET /api/reports/reconciliation` (`mongo_reconciliation`, `balances_pipeline`) | `customers`, `invoices` | wave1 §3: balances `(25000, 39799450.31, 7330214.66)` equal |
-| `PKG_OW_UTIL` + `PKG_PLANS` rewrite | `ow_billing/util.py`, `ow_billing/plans.py`; routes `GET /api/plans`, `GET /api/tenants/<t>/entitlement`, `POST /api/tenants/<t>/plan-change` | `plans`, `tenants`, `subscriptions`, `subscriptions_history`, `codes`, `counters`, `billing_audit_log` | Tier-4 PLANS-001…005 5/5 |
+| `PKG_OW_UTIL` + `PKG_PLANS` rewrite | `ow_billing/util.py`, `ow_billing/plans.py`; routes `GET /api/plans`, `GET /api/tenants/<t>/entitlement`, `POST /api/tenants/<t>/plan-change` | `plans`, `tenants`, `subscriptions`, `subscriptions_history`, `codes`, `counters`, `billing_audit_log` | Tier-4 PLANS-001…005 5/5; single `counters` contract (`util.log_msg`, F-X-1 closed) |
 | `PKG_RATING` rewrite | `ow_billing/rating.py` (Python entrypoints `compute_rating`, `fn_usage_summary`, `sp_finalize_rating`) — **no HTTP route** | `usage_events`, `subscriptions`, `plans`, `rating_periods` (+`results[]`), `billing_audit_log`, `counters` | Tier-4 RATING-001…008 8/8 |
-| `PKG_INVOICING` rewrite | `ow_billing/invoicing.py` (`fn_invoice_preview`, `sp_issue_invoice`, `fn_invoice_lines`) — **no HTTP route** | `billing_invoices` (+`lines[]`), `credit_notes`, `rating_periods`, `tenants`, `billing_audit_log`, `counters` | Tier-4 INVOICE-001…006 6/6 (F-U8-1 open) |
+| `PKG_INVOICING` rewrite | `ow_billing/invoicing.py` (`fn_invoice_preview`, `sp_issue_invoice`, `fn_invoice_lines`) — **no HTTP route** | `billing_invoices` (+`lines[]`), `credit_notes`, `rating_periods`, `tenants`, `billing_audit_log`, `counters` | Tier-4 INVOICE-001…006 6/6; F-U8-1 closed by PR #1457 (`lines[].invoice_id` emitted, fix-pass probes 17/17) |
 | `PKG_DUNNING` rewrite | `ow_billing/dunning.py`; routes `GET /api/dunning/overdue`, `POST /api/dunning/schedule`, `POST /api/dunning/suspend`; `python -m ow_billing.jobs` (nightly, env-gated) | `billing_invoices`, `tenants`, `subscriptions`, `subscriptions_history`, `dunning_attempts`, `notifications`, `billing_audit_log`, `counters` | Tier-4 DUNNING-001…005 5/5 |
 | Data only (no application read path repointed) | — | `documents` (+`versions[]`), `document_snapshots`, `files` | U3/U4 LIVE PASS; data parity only |
 
@@ -48,9 +49,10 @@ Consequence: this is a **partial-scope** cutover. Section H asks the customer to
 
 ## B. Preconditions (all must hold at the start of the window)
 
-1. `.migration/08_evidence_pack.md` status is **COMPLETE** — today it is **INCOMPLETE** (gaps §8: F-U8-1 fix + re-gate,
-   F-X-1 counters contract + seed, F-U8-2 decision, wave-2b probe bundle committed). Either close each gap or carry it as
-   an explicit STOP C line (section H).
+1. `.migration/08_evidence_pack.md` status is **COMPLETE** — it is, at watermark `74ecd69e` (pack §8: F-U8-1, F-X-1 and
+   the wave-2b probe bundle closed with evidence; F-U8-2/F-U7-1 and partial scope carried as STOP C lines H.3 and H.2).
+   If the run branch moves past `74ecd69e` before the window, the pack and this runbook are stale: a new parallel run and
+   a new pack revision are required.
 2. The independent audit of the evidence pack is **countersigned** (audit output attached to the STOP C request).
 3. **STOP C approved for a NAMED window** (date, start/end UTC, approver). A prior STOP C approval, or an approval for a
    different window, **never carries over**; re-present section H for every new window.
@@ -73,11 +75,13 @@ not permitted).
 
 | Watermark item | Value |
 |---|---|
-| Code | `0150de08b072f15969a5a97da655a483b18ed939` (run-branch head, all 10 units merged) |
-| Load | 2026-09-02 05:25:36 → 05:28:40 UTC |
-| Source identity | seed `714559852` · `batch_no 85559852` · `source_ns demo` · manifest sha256 `0f4722866117edd2ea1f5cf933b294bf39a52c755cff222a3a3c6ca5e8e2ee89` |
-| Final recon | cycle 3, 2026-09-02 05:39:29 → 05:43:59 UTC, GREEN (streak 3/3, red runs `[]`) |
-| Evidence | `tp-run/mongodb-20260901T205236Z--parallel-run` @ `3279c93b` |
+| Code | `74ecd69e98876b8da26336a6d7cc24eba3e74697` (run-branch head, all 10 units merged, post fix-pass merge `5fe2af81` of PR #1457 @ `7791a93e`) |
+| Load | 2026-09-02 06:59:25 → 07:02:29 UTC |
+| Source identity | seed `714559852` · `batch_no 85559852` · `source_ns demo` · manifest sha256 `0f4722866117edd2ea1f5cf933b294bf39a52c755cff222a3a3c6ca5e8e2ee89` · `FIXTURE_META.INITIALIZED_AT 2026-09-01 20:53:10.961888` |
+| Versions | mapping v1.0.1 `57de55f2…` · tolerances v1 `d67ccdda…` · canonicalization v1 `527cf87c…` |
+| Final recon | cycle 3, 2026-09-02 07:11:21 → 07:16:00 UTC, GREEN (streak 3/3, red runs `[]`; cycles 1–2 07:02:43–07:06:42Z, 07:06:48–07:11:16Z) |
+| Evidence | `tp-run/mongodb-20260901T205236Z--parallel-run-v2` @ `2443d6f5` (`evidence_log.md`, `final_recon_at_watermark.md`, `evidence/`) |
+| Superseded | `0150de08` / `--parallel-run` @ `3279c93b` — not to be used |
 
 If the source is found **not** idle at freeze (any count, sequence or `FIXTURE_META` differs from
 `evidence/watermark/source_pass2.json`), stop: the watermark is invalid and a new parallel run is required.
@@ -92,10 +96,10 @@ If the source is found **not** idle at freeze (any count, sequence or `FIXTURE_M
 | D.1 | Freeze legacy: revoke/suspend application write access to Oracle `OW_BILLING` and Postgres `otterworks_demo`; confirm `JOB_NIGHTLY_DUNNING` is DISABLED in `DBA_SCHEDULER_JOBS` | CUSTOMER (Oracle DBA) | Legacy schema/data untouched; only writer access changes |
 | D.2 | Source idle check: re-read the 19 Oracle tables, 5 sequences, `FIXTURE_META`, Postgres 3 tables, DynamoDB ns histogram with `tools/source_check.py`; diff against `evidence/watermark/source_pass2.json`; write result to the evidence branch | DEVIN (migration principal, read-only) | Any diff → abort (section C) |
 | D.3 | Target idle check: ns-scoped counts for the 18 mapped collections and 4 quarantine classes (`tools/guards.py`) equal section E.1 | DEVIN (read-only on target) | Any diff → abort |
-| D.4 | **If F-X-1 is closed:** seed `counters` docs for `SEQ_BILLING_AUDIT_LOG` and `SEQ_SUBSCRIPTIONS_HIST` from `USER_SEQUENCES.LAST_NUMBER − 1` read in D.2 (today 1 and 0) under the single agreed contract; record the seed in the evidence | DEVIN (writes only to `ow_tp_mongodb_205236.counters`) | If F-X-1 is open, skip and mark the audit log as unreliable in the window log (STOP C line H.3) |
+| D.4 | Counters check (read-only): the 5 golden `counters` docs (`seq_billing_audit_log` 2, `seq_customer_master` 125000, `seq_customer_master_hist` 1, `seq_entity_attr_value` 11001, `seq_subscriptions_hist` 1) each have Int64 `seq` == `USER_SEQUENCES.LAST_NUMBER` read in D.2, and no document with `_id` `SEQ_*` or field `value` exists in any collection (`evidence/fix_acceptance_probe.txt` is the reference) | DEVIN (read-only) | Seeding is part of the watermark load (U1, F-X-1 closed); **no write in this step**. Any diff → abort |
 | D.5 | Atlas connection-string swap: set the application secret **`MONGODB_ATLAS_URI`** in the target environment's config/secret store for `legacy-billing` to the production Atlas URI; set `MONGODB_DB=ow_tp_mongodb_205236`, `MONGODB_NS=mongo_205236`, ensure `OW_BILLING_COLLECTION_PREFIX` is unset/empty | CUSTOMER | Secret value never shared with Devin; Devin's own migration credential is **not** the production credential |
-| D.6 | **Read-only phase:** feature flags for the five package rewrites stay **OFF** for every mutating route (`POST /api/tenants/<t>/plan-change`, `POST /api/dunning/schedule`, `POST /api/dunning/suspend`); `OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED` unset; only the **non-logging** read routes (`GET /api/tenants/<t>/entitlement`, `GET /api/dunning/overdue`, `GET /api/reports/*`) are routed to the new deployment; `GET /api/plans` is **withheld** (not routed / 503 at the ingress) until D.10 | CUSTOMER | Flags are deployment config of the customer environment; none exist in the repo. No business write can reach Atlas in this phase. **Audit-observer paths:** `fn_list_plans` (behind `GET /api/plans`) and `compute_rating` (called by `RATING-001` and, via `compute_preview`, by `INVOICE-001`) each append one `billing_audit_log` row and `$inc` the audit counter, exactly as the Oracle originals do. Withholding `/api/plans` keeps live traffic from moving the audit count before E.1 is captured; the only audit writes before D.10 are E.4's, tallied as A in E.1 |
-| D.7 | Rolling restart of `legacy-billing`; smoke with the non-logging read `GET /api/reports/month-end?ns=demo` → 200 with the E.3 rollup (pure aggregation, writes nothing). Do **not** use `GET /api/plans` as the smoke: it logs an audit row and, if D.4 was skipped, fails with `LookupError: counter 'seq_billing_audit_log' is not seeded` | CUSTOMER | Note `/health` still checks Postgres (A.2) |
+| D.6 | **Read-only phase:** feature flags for the five package rewrites stay **OFF** for every mutating route (`POST /api/tenants/<t>/plan-change`, `POST /api/dunning/schedule`, `POST /api/dunning/suspend`); `OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED` unset; only the **non-logging** read routes (`GET /api/tenants/<t>/entitlement`, `GET /api/dunning/overdue`, `GET /api/reports/*`) are routed to the new deployment; `GET /api/plans` is **withheld** (not routed / 503 at the ingress) until D.10 | CUSTOMER | Flags are deployment config of the customer environment; none exist in the repo. No business write can reach Atlas in this phase. **Audit-observer paths:** `fn_list_plans` (behind `GET /api/plans`) and `compute_rating` (called by `RATING-001` and, via `compute_preview`, by `INVOICE-001`) each append one `billing_audit_log` row and `$inc` `counters.seq_billing_audit_log` through the single `util.log_msg`, exactly as the Oracle originals do. Withholding `/api/plans` keeps live traffic from moving the audit count before E.1 is captured; the only audit writes before D.10 are E.4's, tallied as A in E.1 |
+| D.7 | Rolling restart of `legacy-billing`; smoke with the non-logging read `GET /api/reports/month-end?ns=demo` → 200 with the E.3 rollup (pure aggregation, writes nothing). Do **not** use `GET /api/plans` as the smoke: it logs an audit row (a `LookupError: counter 'seq_billing_audit_log' is not seeded` here would mean D.4 was wrong → abort) | CUSTOMER | Note `/health` still checks Postgres (A.2) |
 | D.8 | DNS / config: repoint the `legacy-billing` ingress/hostnames and any report consumer of RPT-114 to the deployment configured in D.5–D.7 (non-logging read routes only; `GET /api/plans` and every mutating route still withheld) | CUSTOMER | |
 | D.9 | Run section E verification **in order E.1 → E.2 → E.3 → E.4 → E.5** against the production deployment and record results on the evidence branch. Through E.3 the target is exactly the watermark (no logging path has been called); E.4 appends the audit rows stated there. After E.5, dump `billing_audit_log` and `counters` as the **post-verification baseline** for F.3.5 | DEVIN (read-only except the audit rows produced by E.4's replay) + CUSTOMER (RPT-114 via the production endpoint) | Any mismatch → section F (pure repoint-back; the only Atlas writes are the counted audit rows) |
 | D.10 | **Enable writers — the point of no return (F.2) begins here.** Flip the feature flags ON for the mutating routes of PKG_OW_UTIL/PKG_PLANS and PKG_DUNNING; for PKG_RATING and PKG_INVOICING there is **no Mongo HTTP route** — either accept in-process-only use (H.2) or keep the legacy routes and record the partial scope | CUSTOMER | Only after D.9 is fully green |
@@ -117,7 +121,7 @@ All queries are ns-scoped (`{ns: "mongo_205236"}`) and read-only. Expected = cyc
 | `plans` | 3 | |
 | `customers` | 25,000 | Σ`attributes[]` 8,333 |
 | `customers_history` | 0 | |
-| `counters` | 3 (U1 docs) before E.4. **F-X-1 closed (D.4 ran):** 5 before E.4 and **5** after — both loggers hit the one seeded audit-counter doc, which E.4 advances by 2; the subscriptions-history seed is unchanged. **F-X-1 open (D.4 skipped):** 3 before E.4, **4** after (`rating._next_log_id` upserts `_id: "SEQ_BILLING_AUDIT_LOG"`, field `value`) | |
+| `counters` | **5** before and **5** after E.4 (all loggers hit the one `seq_billing_audit_log` doc, which E.4 advances 2 → 4; the other four seeds unchanged: 125000, 1, 11001, 1) | |
 | `invoices` | 18,750 | Σ`lines[]` 149,963 |
 | `documents` | 2,000 | Σ`versions[]` 13,876 |
 | `document_snapshots` | 384 | |
@@ -130,7 +134,7 @@ All queries are ns-scoped (`{ns: "mongo_205236"}`) and read-only. Expected = cyc
 | `credit_notes` | 5 | |
 | `dunning_attempts` | 1 | |
 | `notifications` | 1 | |
-| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) **before E.4**; after E.4 exactly **3** (A = 2: `RATING-001` + `INVOICE-001`, both via `rating.compute_rating` → `rating.log_msg`, which self-seeds its counter and therefore logs whether or not D.4 ran) — record the observed A in the window log | Audit counter after E.4 = **3** on both paths: closed → the unified D.4-seeded doc (seed 1 + 2); open → `rating`'s self-seeded `SEQ_BILLING_AUDIT_LOG`/`value` doc, and `util`'s `seq_billing_audit_log`/`seq` does not exist |
+| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) **before E.4**; after E.4 exactly **3** (A = 2: `RATING-001` + `INVOICE-001`, both via `rating.compute_rating` → `util.log_msg`) with `log_id`s `{1, 3, 4}` — record the observed A in the window log | `counters.seq_billing_audit_log.seq` after E.4 = **4** (seed 2 + 2). `log_id` 2 is never issued (the seed equals Oracle's `LAST_NUMBER` and `log_msg` increments first — accepted, pack §6 F-FIX-2) |
 
 E.1 and E.2 must be taken **before** any `GET /api/plans` or transcript replay; the 17 non-audit collections must stay
 exact through the whole of section E. Also: `countDocuments({})` == `countDocuments({ns})` for every collection (count guard), and no `*__staging` or
@@ -159,26 +163,25 @@ Then, for three tenants chosen by the customer at the window (record ids in the 
 
 | Transcript | Expected |
 |---|---|
-| `RATING-001` (`fn_usage_rating`/`compute_rating` transcript — no business write, but `compute_rating` calls `log_msg`) | `business_fields` equal to the recorded Oracle transcript; side effect: exactly **1** `billing_audit_log` row (`RATING`, `log_id` 2) — `rating.log_msg` upserts its own counter doc (`_reconcile_log_sequence`), so it logs even when D.4 was skipped |
-| `INVOICE-001` (`fn_invoice_preview` transcript — no business write, but `compute_preview` → `rating.compute_rating` → `log_msg`) | equal (unrounded, `tax/2` half-cents preserved); side effect: exactly **1** further `billing_audit_log` row (`RATING`, not `INVOICING`; `log_id` 3) |
+| `RATING-001` (`fn_usage_rating`/`compute_rating` transcript — no business write, but `compute_rating` calls `log_msg`) | `business_fields` equal to the recorded Oracle transcript; side effect: exactly **1** `billing_audit_log` row (`RATING`, `log_id` **3**, from `counters.seq_billing_audit_log` 2 → 3) |
+| `INVOICE-001` (`fn_invoice_preview` transcript — no business write, but `compute_preview` → `rating.compute_rating` → `log_msg`) | equal (unrounded, `tax/2` half-cents preserved); side effect: exactly **1** further `billing_audit_log` row (`RATING`, not `INVOICING`; `log_id` **4**, counter 3 → 4) |
 | `DUNNING-001` (read-only `fn_overdue_accounts` transcript) | equal (money as `'161.29'`-style strings, order `issued_at, id`) |
 
 `DUNNING-001` writes nothing (`fn_overdue_accounts` does not log). Total A after E.4 is therefore exactly 2; any other
-value is a mismatch. Under the open F-X-1 contracts the two loggers use different counter docs (`rating`:
-`SEQ_BILLING_AUDIT_LOG`/`value`, self-seeding; `util`: `seq_billing_audit_log`/`seq`, raises `LookupError` when unseeded),
-so `GET /api/plans` would 500 if D.4 was skipped and would collide on `log_id` with the rating rows if it was — which is
-why `/api/plans` stays withheld until D.10 and H.3 must be answered before writers are enabled. Mutating
-transcripts (`RATING-008`, `INVOICE-003…006`, `DUNNING-002…005`) are **not** replayed against production; they were
-graded on the replay clones in the final cycle.
+value is a mismatch. All four packages log through the one `util.log_msg` contract (`counters._id: "seq_billing_audit_log"`,
+field `seq`), so ids are monotonic across modules (fix-pass probe: `[3,4,5,6,7,8]` from seed 2); `/api/plans` stays
+withheld until D.10 only so that live traffic does not move the audit tally during E. Mutating transcripts (`RATING-008`,
+`INVOICE-003…006`, `DUNNING-002…005`) are **not** replayed against production; they were graded on the replay clones in the
+final cycle (U8 T4 6/6 at `74ecd69e` includes the F-U8-1 fix: every rebuilt `billing_invoices.lines[]` carries
+`invoice_id`; `evidence/fix_acceptance_probe.txt` shows 6 invoices / 17 lines / 0 missing on `replay_u8`). H.3 (F-U8-2/F-U7-1)
+must be answered before writers are enabled at D.10.
 
 ### E.5 Audit log
 
-`billing_audit_log` `countDocuments` == 3 and max `log_id` == 3 == the audit counter's value. **F-X-1 closed:** the
-audit counter is the single D.4-seeded doc under the agreed contract, now at 3 (seed 1 + 2 E.4 rows); the
-`SEQ_SUBSCRIPTIONS_HIST` seed is unchanged at 0; no stray `SEQ_BILLING_AUDIT_LOG`/`seq_billing_audit_log` doc under the
-other contract exists. **F-X-1 open:** the counter is `rating`'s self-seeded `SEQ_BILLING_AUDIT_LOG`/`value` doc at 3;
-record "audit log unreliable until F-X-1 closed" in the window log. Either way, dump both collections as the post-verification
-baseline.
+`billing_audit_log` `countDocuments` == 3, `log_id`s `{1, 3, 4}`, max `log_id` == 4 == `counters.seq_billing_audit_log.seq`;
+`seq_subscriptions_hist` unchanged at 1; every `billing_invoices.lines[].invoice_id == parent _id` (3 invoices / 2 lines);
+no document with `_id` `SEQ_BILLING_AUDIT_LOG` or field `value` exists. Dump `billing_audit_log` and `counters` as the
+post-verification baseline for F.3.5.
 
 ---
 
@@ -238,7 +241,7 @@ STOP C request.
 | G.3 | Drop replay clones `replay_u6_*`, `replay_u7_*`, `replay_u8_*`, `replay_u9_*` from `ow_tp_mongodb_205236` (not read by production) | DEVIN (migration principal) | after first-cycle recon GREEN |
 | G.4 | Revoke the migration principals: Devin's Atlas database user(s) for `ow_tp_mongodb_205236` / `_quarantine`; **Devin's Atlas API keys** (project-level); the secret `MONGODB_ATLAS_URI` as issued to Devin (rotate the production value if it was ever the same string) | CUSTOMER (Atlas project owner) | after the rollback window closes |
 | G.5 | Revoke the read-only source accounts used by Devin: Oracle `ow_billing` fixture user / `OW_BILLING_FIXTURE_DSN`, Postgres read-only role on `otterworks_demo`, DynamoDB read policy on `otterworks-file-metadata` | CUSTOMER | same time as G.4 |
-| G.6 | Archive the evidence branches (`--wave*-recon*`, `--parallel-run`, this branch) as tags; keep the quarantine database for the retention window, then drop | CUSTOMER | retirement date |
+| G.6 | Archive the evidence branches (`--wave*-recon*` incl. `--wave2b-recon-part1:…/wave2b_probes/`, `--fix-recon`, `--parallel-run` (superseded), `--parallel-run-v2`, this branch) as tags; keep the quarantine database for the retention window, then drop | CUSTOMER | retirement date |
 | G.7 | Retire legacy: decommission Oracle `OW_BILLING`, Postgres `otterworks_demo`, DynamoDB table after a final export | CUSTOMER | retirement date |
 
 ---
@@ -249,9 +252,10 @@ STOP C request.
 |---|---|---|
 | H.1 | Cut over **without live-write parity evidence** (no CDC; static source; parity proven only at the watermark by 3 GREEN cycles + Tier-4 transcripts on replay clones) — yes/no | ☐ yes ☐ no |
 | H.2 | **Partial scope** — accept per row of §A.2: (a) `app.py` plan/entitlement/change routes stay on Postgres — yes/no; (b) rating has no Mongo HTTP route — yes/no; (c) invoicing has no Mongo HTTP route — yes/no; (d) document-service stays on Postgres — yes/no; (e) file-service stays on DynamoDB — yes/no | ☐ (a) ☐ (b) ☐ (c) ☐ (d) ☐ (e) |
-| H.3 | Carried findings — for each: fix + re-gate before the window, or accept: F-U8-1 (`lines[].invoice_id` omitted on issue); F-X-1 (`counters` contract/seed; audit log unreliable if open); F-U8-2/F-U7-1 (Mongo issues invoices for 3 legacy-seeded periods Oracle refuses) | ☐ fix ☐ accept, per finding |
+| H.3 | **F-U8-2 / F-U7-1 behaviour decision** (the only carried finding; F-U8-1 and F-X-1 are closed — pack §8): on Mongo, `sp_finalize_rating` / `sp_issue_invoice` succeed for the 3 legacy-seeded periods of tenant 1 (`rating_periods._id` `4000…01/02/03`, not md5-derived) where Oracle raises `ORA-02291`. Choose one: **(i) accept** the Mongo behaviour as-is for those 3 periods, or **(ii) require** an Oracle-faithful rejection (code change + U7/U8 re-gate + new parallel run → new watermark before any window). A third option, loader-side id normalisation, changes data at the watermark and also requires a new parallel run | ☐ (i) accept ☐ (ii) fix + re-gate |
 | H.4 | **Named window**: date, start–end UTC, approver; rollback grace period after window end | `<YYYY-MM-DD hh:mm–hh:mm UTC>`, approver `<name/role>`, grace `<h>` |
 | H.5 | **Rollback condition** confirmed as §F.1 (any E.1–E.5 mismatch or any Tier-1/Tier-2 RED in the first-cycle recon within the window), with the dry run (F.4) attached | ☐ yes ☐ no |
 
 A "no" on H.1 or H.5, or an unfilled H.4, blocks the window. A "no" on any H.2 row means that surface must be rewired and
-re-gated before a new STOP C is presented.
+re-gated before a new STOP C is presented. H.3 (ii) invalidates watermark `74ecd69e`: a new fix pass, parallel run and
+pack revision are required before a window can be named.

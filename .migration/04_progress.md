@@ -40,9 +40,9 @@ Status values: NOT_STARTED · CONTRACT · LOADING · RECON_RED · RECON_GREEN ·
 
 | Item | State | Where |
 |---|---|---|
-| Watermark | code `0150de08` · load 2026-09-02 05:25:36–05:28:40Z · seed 714559852 / batch 85559852 / ns demo · manifest `0f472286…` | `--parallel-run:.migration/recon/parallel_run/final_recon_at_watermark.md` @ `3279c93b` |
-| Parallel run | 3/3 consecutive GREEN full-estate cycles, red runs `[]`; count guard 18/18; quarantine ceiling PASS; source pre == post | `--parallel-run:.migration/recon/parallel_run/evidence_log.md` |
-| Evidence pack | **INCOMPLETE** — parity complete; gaps: F-U8-1 unfixed, F-X-1 `counters` contract/seed, F-U8-2/F-U7-1 undecided, wave-2b probe bundle machine-local, application scope partial | `.migration/08_evidence_pack.md` §8 |
-| Runbook | written; scope §A lists the 10 `app.py` legacy routes + document/file services that still read legacy; freeze recommended at the watermark; all production steps assigned to the customer-held principal | `docs/tech-partnerships/cutover-runbook-mongodb-205236.md` |
+| Watermark (v2) | code `74ecd69e` (post fix-pass merge `5fe2af81`) · load 2026-09-02 06:59:25–07:02:29Z · seed 714559852 / batch 85559852 / ns demo · manifest `0f472286…` · mapping v1.0.1 / tolerances v1 / canonicalization v1 | `--parallel-run-v2:.migration/recon/parallel_run/final_recon_at_watermark.md` @ `2443d6f5` (v1 `0150de08` / `--parallel-run` @ `3279c93b` superseded) |
+| Parallel run | 3/3 consecutive GREEN full-estate cycles (07:02–07:16Z), red runs `[]`; count guard 18/18; quarantine ceiling PASS (U1 0.324 %, U2 0.197 %, U3 0.252 %); source pre == post 8/8; Tier-4 24/24 across U6–U9 | `--parallel-run-v2:.migration/recon/parallel_run/evidence_log.md` (+ `.json`) |
+| Evidence pack | **COMPLETE** (v2) — v1 gaps 1/2/4 closed with evidence (F-U8-1 + F-X-1 via `--fix-recon:…/fix_pass.md` and v2 cycles; wave-2b probes at `--wave2b-recon-part1:…/wave2b_probes/`); gaps 3/5 are STOP C lines (F-U8-2/F-U7-1 → runbook H.3; partial application scope → H.2) per decision row 19 | `.migration/08_evidence_pack.md` §8 |
+| Runbook | revised to v2 watermark; scope §A lists the 10 `app.py` legacy routes + document/file services that still read legacy; freeze recommended; counters seeded by the load (D.4 is read-only); E.1–E.5 expected values from cycle 3; all production steps assigned to the customer-held principal | `docs/tech-partnerships/cutover-runbook-mongodb-205236.md` |
 | Audit countersign | pending | — |
-| STOP C | not presented; requires COMPLETE pack (or explicit lines for each gap), countersigned audit, named window, rollback dry run | runbook §H |
+| STOP C | not presented; requires countersigned audit, named window + approver, rollback dry run transcript; lines H.1–H.5 (H.2 partial scope a–e, H.3 F-U8-2/F-U7-1 accept vs fix+re-gate) | runbook §H |
