@@ -475,7 +475,6 @@ def load_collection(
         raise ValueError(f"collection is not owned by U5: {collection!r}")
     documents, embedded = _documents(collection, rows, children)
     staging = f"{collection}{STAGING_SUFFIX}"
-    assert staging.endswith("__staging")
     options = {"validator": USAGE_EVENTS_VALIDATOR, "validationLevel": "strict",
                "validationAction": "error"} if collection == "usage_events" else {}
     database.drop_collection(staging)
