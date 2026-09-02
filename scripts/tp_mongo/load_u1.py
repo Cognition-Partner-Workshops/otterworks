@@ -377,6 +377,49 @@ def replace_collection(database: Any, name: str, documents: list[dict[str, Any]]
             "docs_after": docs_after, "ns_docs_after": ns_docs_after, "indexes": index_names}
 
 
+def seed_counters_monotonic(database: Any, documents: list[dict[str, Any]]) -> dict[str, Any]:
+    """Seed counters without moving an existing sequence backwards."""
+    oracle_last_number = {doc["_id"]: int(doc["seq"]) for doc in documents}
+    advanced_preserved: list[str] = []
+    inserted = 0
+    for doc in documents:
+        existing = database["counters"].find_one({"_id": doc["_id"]})
+        if existing is not None and int(existing.get("seq", 0)) > int(doc["seq"]):
+            advanced_preserved.append(doc["_id"])
+        result = database["counters"].update_one(
+            {"_id": doc["_id"]},
+            {
+                "$max": {"seq": doc["seq"]},
+                "$setOnInsert": {
+                    "source_sequence": doc["source_sequence"],
+                    "ns": doc["ns"],
+                },
+            },
+            upsert=True,
+        )
+        if result.upserted_id is not None:
+            inserted += 1
+    seeded = {}
+    for doc in documents:
+        final = database["counters"].find_one({"_id": doc["_id"]})
+        if final is None:
+            raise RuntimeError(f"counter {doc['_id']!r} disappeared during seed")
+        seeded[doc["_id"]] = int(final["seq"])
+    return {
+        "root_table": "USER_SEQUENCES",
+        "mode": "counters_only",
+        "oracle_last_number": oracle_last_number,
+        "seeded": seeded,
+        "advanced_preserved": sorted(advanced_preserved),
+        "dropped": False,
+        "recreated": False,
+        "inserted": inserted,
+        "docs_after": database["counters"].count_documents({}),
+        "ns_docs_after": database["counters"].count_documents({"ns": NS_VALUE}),
+        "indexes": [],
+    }
+
+
 def load(client: MongoClient, target_db: str, mapping: Mapping[str, Mapping[str, Any]],
          built: Mapping[str, Any]) -> dict[str, Any]:
     database = client[target_db]
@@ -449,11 +492,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     client = MongoClient(uri)
     try:
         if args.counters_only:
-            counter_report = replace_collection(client[args.target_db], "counters", built["counters"])
-            counter_report["root_table"] = "USER_SEQUENCES"
-            counter_report["seeded"] = {
-                doc["_id"]: int(doc["seq"]) for doc in built["counters"]
-            }
+            counter_report = seed_counters_monotonic(
+                client[args.target_db], built["counters"]
+            )
             collections = {"counters": counter_report}
         else:
             collections = load(client, args.target_db, mapping, built)
