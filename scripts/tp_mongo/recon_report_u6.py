@@ -167,7 +167,20 @@ def build(
                 "counts equal; both runs dropped+recreated only replay_u6_* collections)"
             ),
         },
-        "unverified_paths": ["LIVE-mode recon gate (parent)"],
+        "planted_anomaly_detections": {
+            "expected_set": [],
+            "actual_set": [],
+            "missing": [],
+            "unexpected": [],
+        },
+        "unverified_paths": [
+            "LIVE-mode recon gate (parent)",
+            "Golden (unprefixed) collections never written by U6: app routes exercised only against replay_u6_* (OW_BILLING_COLLECTION_PREFIX); golden `counters` seeds for seq_billing_audit_log / seq_subscriptions_hist remain U1's responsibility",
+            "Flask blueprint HTTP layer exercised by unit tests with fakes only; Tier-4 parity ran through call_entrypoint, not HTTP",
+            "f_str2dt accepts only the strict DD-MON-YY shape; Oracle TO_DATE leniency (other separators, 4-digit years) declared-unexercised",
+            "Concurrent plan changes (findOneAndUpdate write conflict / transaction retry path) not exercised",
+            "f_code_desc: no PKG_PLANS caller; unit-tested only",
+        ],
     }
 
 

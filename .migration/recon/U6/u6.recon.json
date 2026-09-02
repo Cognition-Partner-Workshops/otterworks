@@ -1,0 +1,339 @@
+{
+  "kind": "recon-report",
+  "unit": "U6",
+  "namespace": "mongo_205236",
+  "prefix": "replay_u6_",
+  "generated_at": "2026-09-02T01:22:46.877862+00:00",
+  "run_mode": "fixture",
+  "harness": {
+    "result": ".migration/recon/U6/result.json",
+    "verdict": "PASS",
+    "seed": 714559852,
+    "params": {
+      "batch_no": "85559852",
+      "source_ns": "demo"
+    },
+    "harness_cli_mode": "live"
+  },
+  "checks": [
+    {
+      "id": "harness.verdict",
+      "expected": "PASS",
+      "actual": "PASS",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.mapping_version",
+      "expected": "v1.0.1",
+      "actual": "v1.0.1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tolerance_version",
+      "expected": "v1",
+      "actual": "v1",
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.warnings",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.run_mode",
+      "expected": "fixture",
+      "actual": "fixture",
+      "source_of_truth": "U6 report contract",
+      "result": "pass"
+    },
+    {
+      "id": "harness_cli_mode",
+      "expected": "live",
+      "actual": "live",
+      "source_of_truth": "U6 report contract",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier4.checks",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "result.json tier4",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier4.passed",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json tier4",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier1.counts_through_mapping",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier2.per_field_aggregates",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier3.keyed_diffs",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "harness.tier4.app_level_parity",
+      "expected": true,
+      "actual": true,
+      "source_of_truth": "result.json",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_billing_audit_log.count",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_billing_audit_log.ns_tagged",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_billing_invoices.count",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_billing_invoices.ns_tagged",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_codes.count",
+      "expected": 32,
+      "actual": 32,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_codes.ns_tagged",
+      "expected": 32,
+      "actual": 32,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_credit_notes.count",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_credit_notes.ns_tagged",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_dunning_attempts.count",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_dunning_attempts.ns_tagged",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_notifications.count",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_notifications.ns_tagged",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_plans.count",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_plans.ns_tagged",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_rating_periods.count",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_rating_periods.ns_tagged",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_subscriptions.count",
+      "expected": 71,
+      "actual": 71,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_subscriptions.ns_tagged",
+      "expected": 71,
+      "actual": 71,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_subscriptions_history.count",
+      "expected": 2,
+      "actual": 2,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_subscriptions_history.ns_tagged",
+      "expected": 2,
+      "actual": 2,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_tenants.count",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_tenants.ns_tagged",
+      "expected": 69,
+      "actual": 69,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_usage_events.count",
+      "expected": 814,
+      "actual": 814,
+      "source_of_truth": "Atlas count_documents after replay",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_usage_events.ns_tagged",
+      "expected": 814,
+      "actual": 814,
+      "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "load.target_db",
+      "expected": "ow_tp_mongodb_205236",
+      "actual": "ow_tp_mongodb_205236",
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    },
+    {
+      "id": "load.prefix",
+      "expected": "replay_u6_",
+      "actual": "replay_u6_",
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    },
+    {
+      "id": "load.collections_owned",
+      "expected": [
+        "replay_u6_billing_audit_log",
+        "replay_u6_billing_invoices",
+        "replay_u6_codes",
+        "replay_u6_credit_notes",
+        "replay_u6_dunning_attempts",
+        "replay_u6_notifications",
+        "replay_u6_plans",
+        "replay_u6_rating_periods",
+        "replay_u6_subscriptions",
+        "replay_u6_subscriptions_history",
+        "replay_u6_tenants",
+        "replay_u6_usage_events"
+      ],
+      "actual": [
+        "replay_u6_billing_audit_log",
+        "replay_u6_billing_invoices",
+        "replay_u6_codes",
+        "replay_u6_credit_notes",
+        "replay_u6_dunning_attempts",
+        "replay_u6_notifications",
+        "replay_u6_plans",
+        "replay_u6_rating_periods",
+        "replay_u6_subscriptions",
+        "replay_u6_subscriptions_history",
+        "replay_u6_tenants",
+        "replay_u6_usage_events"
+      ],
+      "source_of_truth": "load_report.json",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": ".migration/recon/U6/load_report.run1.json vs load_report.json (source_rows/inserted/docs_after/ns_docs_after/indexes and embedded counts equal; both runs dropped+recreated only replay_u6_* collections)"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [],
+    "actual_set": [],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "LIVE-mode recon gate (parent)",
+    "Golden (unprefixed) collections never written by U6: app routes exercised only against replay_u6_* (OW_BILLING_COLLECTION_PREFIX); golden `counters` seeds for seq_billing_audit_log / seq_subscriptions_hist remain U1's responsibility",
+    "Flask blueprint HTTP layer exercised by unit tests with fakes only; Tier-4 parity ran through call_entrypoint, not HTTP",
+    "f_str2dt accepts only the strict DD-MON-YY shape; Oracle TO_DATE leniency (other separators, 4-digit years) declared-unexercised",
+    "Concurrent plan changes (findOneAndUpdate write conflict / transaction retry path) not exercised",
+    "f_code_desc: no PKG_PLANS caller; unit-tested only"
+  ]
+}
