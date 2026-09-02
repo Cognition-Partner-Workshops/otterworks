@@ -1,8 +1,9 @@
 # Recon summary: `U8` - **PASS**
 
 - Mode: `live`
+- Merge eligible: yes (fixture/continuous evidence never merges)
 - Mapping `v1.0.1` / tolerances `v1` / seed `714559852` / params `{'batch_no': '85559852', 'source_ns': 'demo'}`
-- Generated: 2026-09-02T03:13:22.074364+00:00
+- Generated: 2026-09-02T06:20:10.681551+00:00
 
 | Tier | Checks | Result |
 |---|---|---|

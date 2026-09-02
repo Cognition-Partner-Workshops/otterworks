@@ -19,18 +19,16 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from bson import Decimal128, Int64
-from pymongo import ASCENDING, DESCENDING, ReturnDocument
+from pymongo import ASCENDING, DESCENDING
 from pymongo.database import Database
-from pymongo.errors import DuplicateKeyError, PyMongoError
+from pymongo.errors import DuplicateKeyError
 
-from . import NS_VALUE
+from . import NS_VALUE, util
 
 KIND_DECODE = {1: "api", 2: "storage", 3: "compute"}
 KIND_UNKNOWN = "UNKNOWN"
 FIRST_TIER_UNITS = 101
 SECOND_TIER_MULTIPLIER = Decimal("1.5")
-AUDIT_SEQUENCE = "SEQ_BILLING_AUDIT_LOG"
-
 Number = Decimal | None
 
 
@@ -148,54 +146,8 @@ class RatingStore:
         return self.coll("counters")
 
 
-def _next_log_id(store: RatingStore) -> Int64:
-    if store.counters.find_one({"_id": AUDIT_SEQUENCE}) is None:
-        _reconcile_log_sequence(store)
-    counter = store.counters.find_one_and_update(
-        {"_id": AUDIT_SEQUENCE},
-        {"$inc": {"value": Int64(1)}, "$setOnInsert": {"ns": NS_VALUE}},
-        upsert=True,
-        return_document=ReturnDocument.AFTER,
-    )
-    return Int64(counter["value"])
-
-
-def _reconcile_log_sequence(store: RatingStore) -> None:
-    """Move the sequence past every log_id already present (the shared `counters` is not
-    guaranteed to be seeded for SEQ_BILLING_AUDIT_LOG while the audit log is)."""
-    top = store.billing_audit_log.find_one(sort=[("log_id", DESCENDING)])
-    highest = Int64(top["log_id"]) if top else Int64(0)
-    store.counters.update_one(
-        {"_id": AUDIT_SEQUENCE},
-        {"$max": {"value": highest}, "$setOnInsert": {"ns": NS_VALUE}},
-        upsert=True,
-    )
-
-
-def log_msg(store: RatingStore, module: str, message: str) -> None:
-    """pkg_ow_util.log_msg: autonomous-transaction logger; a failure to log never
-    reaches the caller (WHEN OTHERS THEN ROLLBACK)."""
-    try:
-        for attempt in range(2):
-            log_id = _next_log_id(store)
-            try:
-                store.billing_audit_log.insert_one(
-                    {
-                        "_id": log_id,
-                        "log_id": log_id,
-                        "logged_at": datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0),
-                        "module": module[:30],
-                        "message": message[:4000],
-                        "ns": NS_VALUE,
-                    }
-                )
-                return
-            except DuplicateKeyError:
-                if attempt:
-                    raise
-                _reconcile_log_sequence(store)
-    except PyMongoError:
-        return
+def log_msg(store: RatingStore, module: str, message: str) -> Int64 | None:
+    return util.log_msg(store, module, message)
 
 
 # --- compute_rating -------------------------------------------------------------

@@ -32,6 +32,14 @@ def _store() -> invoicing.InvoicingStore:
     store.rating_periods.create_index(
         [("tenant_id", 1), ("period_start", 1)], unique=True
     )
+    store.counters.insert_one(
+        {
+            "_id": util.SEQ_BILLING_AUDIT_LOG,
+            "seq": Int64(0),
+            "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+            "ns": NS_VALUE,
+        }
+    )
     return store
 
 
@@ -174,6 +182,7 @@ def test_issue_invoice_rebuilds_lines_and_preserves_existing_issue_metadata():
     assert [line["id"] for line in first["lines"]] == [
         util.f_md5_uuid(invoice_id + str(number)) for number in range(1, 6)
     ]
+    assert all(line["invoice_id"] == invoice_id for line in first["lines"])
     assert store.rating_periods.count_documents({}) == 1
 
     issued_at = first["issued_at"]

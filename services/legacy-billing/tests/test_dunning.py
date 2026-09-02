@@ -22,10 +22,20 @@ INVOICE_2 = "60000000-0000-0000-0000-000000000002"
 def _store():
     store = Store(mongomock.MongoClient(), "ow_tp_mongodb_205236", "replay_u9_")
     store.coll("counters").insert_one(
-        {"_id": "seq_billing_audit_log", "seq": Int64(0), "ns": NS_VALUE}
+        {
+            "_id": "seq_billing_audit_log",
+            "seq": Int64(0),
+            "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+            "ns": NS_VALUE,
+        }
     )
     store.coll("counters").insert_one(
-        {"_id": dunning.util.SEQ_SUBSCRIPTIONS_HIST, "seq": Int64(0), "ns": NS_VALUE}
+        {
+            "_id": dunning.util.SEQ_SUBSCRIPTIONS_HIST,
+            "seq": Int64(0),
+            "source_sequence": "SEQ_SUBSCRIPTIONS_HIST",
+            "ns": NS_VALUE,
+        }
     )
     store.coll("dunning_attempts").create_index(
         [("invoice_id", 1), ("attempt_no", 1)], unique=True

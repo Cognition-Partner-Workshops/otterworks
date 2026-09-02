@@ -17,9 +17,17 @@ Run: fixture mode, 2026-09-02 UTC
 | Recon values recomputed from target platform | PASS | `u8.recon.json` sets `values_recomputed_from_target: true`; report checks use target `count_documents` and aggregation results. |
 | Every unverified/untested path is listed | PASS | `u8.recon.json` lists the parent LIVE gate, transcript provenance, transaction boundary/partial-failure, branch coverage, HTTP, audit-log, concurrency, and sibling-collection paths. |
 | Recon report schema and artifact | PASS | `u8.recon.json` declares `"kind": "recon-report"`; `make tp-validate-recon FILE=.migration/recon/U8/u8.recon.json` passed. |
-| Capability preflight | PASS | `MONGODB_ATLAS_URI` presence was verified without disclosure; the inline Oracle fixture DSN connected; required dependencies were available; both loads and the live harness recon completed. |
+| Capability preflight | PASS | `MONGODB_ATLAS_URI` presence was verified without disclosure; the inline Oracle fixture DSN connected; required dependencies were available; both loads and the live harness recon completed. The harness required the locally-created, uncommitted `.migration/allowed_targets.json`; a transient `DPY-6005` connection refusal occurred during a later read, then the read-only container-local check returned `SELECT COUNT(*) FROM invoices = 3`. |
 | `make tp-smoke` | PASS | `tp-smoke: all checks passed`. |
 
 U8 fixture evidence, recon run 2/3: T1 8/8, T2 36/36, T3 902/902 including 2
 embedded invoice lines, and T4 6/6 invoicing scenarios. The parent-owned
 LIVE gate remains unverified.
+
+## Regression gates
+
+- **U7: PASS** — full harness run (the harness has no tier-selection option): T1 5/5, T2 23/23, T3 892/892, T4 8/8. Output: `.migration/recon/U8/regression/U7/result.json`.
+- **U5: FAIL (pre-existing drift, not owned by U8-fix)** — the remaining 10 T1 checks passed; all T2/T3 checks passed. The single failure is verbatim: `T1 billing_audit_log root_count: rows(BILLING_AUDIT_LOG)=0 vs docs=1`. This matches the U5 ledger row's recorded source-drift row and the unchanged golden `billing_audit_log` snapshot (1 → 1); U8 did not write the golden audit log. Output: `.migration/recon/U8/regression/U5/result.json`.
+- **Counters:** the `seq_billing_audit_log` / `seq_subscriptions_hist` seed values graded equal in both regression contexts at load time (`1` / `61`); U7's replay-local audit counter advanced independently to 9 across its eight rating writes, while the golden counter remained 1.
+- **Harness preflight:** `.migration/allowed_targets.json` was absent on the branch and was created locally, uncommitted, with the two approved databases only.
+- **Oracle connectivity:** a transient `DPY-6005: cannot connect to database ... [Errno 111] Connection refused` occurred during a read-only probe; the subsequent container-local read-only query returned `SELECT COUNT(*) FROM invoices = 3`.

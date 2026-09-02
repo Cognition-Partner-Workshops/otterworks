@@ -1,8 +1,4 @@
-"""Application-side equivalents of PKG_OW_UTIL.
-
-Logging errors surface instead of being swallowed by the Oracle
-``WHEN OTHERS THEN ROLLBACK`` handler required by D10.
-"""
+"""Application-side equivalents of PKG_OW_UTIL."""
 
 from __future__ import annotations
 
@@ -12,6 +8,7 @@ from datetime import date, datetime, timezone
 
 from bson import Int64
 from pymongo import ReturnDocument, WriteConcern
+from pymongo.errors import PyMongoError
 
 from . import NS_VALUE
 
@@ -79,25 +76,29 @@ def utc_now_ms() -> datetime:
     return now.replace(microsecond=now.microsecond // 1000 * 1000)
 
 
-def log_msg(store, module: str, message: str) -> Int64:
-    counters = store.coll("counters").with_options(write_concern=AUDIT_WRITE_CONCERN)
-    seq = counters.find_one_and_update(
-        {"_id": SEQ_BILLING_AUDIT_LOG},
-        {"$inc": {"seq": Int64(1)}},
-        return_document=ReturnDocument.AFTER,
-    )
-    if seq is None:
-        raise LookupError(f"counter {SEQ_BILLING_AUDIT_LOG!r} is not seeded")
-    log_id = Int64(seq["seq"])
-    doc = {
-        "_id": log_id,
-        "log_id": log_id,
-        "logged_at": utc_now_ms(),
-        "module": module[:30] if module is not None else None,
-        "message": message[:4000] if message is not None else None,
-        "ns": NS_VALUE,
-    }
-    store.coll("billing_audit_log").with_options(
-        write_concern=AUDIT_WRITE_CONCERN
-    ).insert_one(doc)
-    return log_id
+def log_msg(store, module: str, message: str) -> Int64 | None:
+    """Write an autonomous-transaction-compatible audit message."""
+    try:
+        counters = store.coll("counters").with_options(write_concern=AUDIT_WRITE_CONCERN)
+        seq = counters.find_one_and_update(
+            {"_id": SEQ_BILLING_AUDIT_LOG},
+            {"$inc": {"seq": Int64(1)}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if seq is None:
+            raise LookupError(f"counter {SEQ_BILLING_AUDIT_LOG!r} is not seeded")
+        log_id = Int64(seq["seq"])
+        doc = {
+            "_id": log_id,
+            "log_id": log_id,
+            "logged_at": utc_now_ms(),
+            "module": module[:30] if module is not None else None,
+            "message": message[:4000] if message is not None else None,
+            "ns": NS_VALUE,
+        }
+        store.coll("billing_audit_log").with_options(
+            write_concern=AUDIT_WRITE_CONCERN
+        ).insert_one(doc)
+        return log_id
+    except PyMongoError:
+        return None

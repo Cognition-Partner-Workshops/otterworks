@@ -34,7 +34,13 @@ STAGING_SUFFIX = "__staging"
 ROOT = Path(__file__).resolve().parents[2]
 MAPPING_PATH = ROOT / ".migration/03_mapping_spec.json"
 
-SEQUENCES = ("SEQ_CUSTOMER_MASTER", "SEQ_CUSTOMER_MASTER_HIST", "SEQ_ENTITY_ATTR_VALUE")
+SEQUENCES = (
+    "SEQ_CUSTOMER_MASTER",
+    "SEQ_CUSTOMER_MASTER_HIST",
+    "SEQ_ENTITY_ATTR_VALUE",
+    "SEQ_BILLING_AUDIT_LOG",
+    "SEQ_SUBSCRIPTIONS_HIST",
+)
 
 DATE_TWINS = {"SIGNUP_DT": "signup_date", "LAST_ACTIVITY_DT": "last_activity_date"}
 CSV_TWINS = {
@@ -277,13 +283,27 @@ def extract(connection: Any, mapping: Mapping[str, Mapping[str, Any]], batch_no:
             f"{where_clause(history.get('root_where'))} ORDER BY HIST_ID",
             {"batch_no": batch_no} if history.get("root_where") else None,
         ),
-        "sequences": fetch(
-            connection,
-            "SELECT SEQUENCE_NAME, LAST_NUMBER FROM USER_SEQUENCES "
-            "WHERE SEQUENCE_NAME IN (:s1, :s2, :s3) ORDER BY SEQUENCE_NAME",
-            dict(zip(("s1", "s2", "s3"), SEQUENCES)),
-        ),
+        "sequences": extract_sequences(connection),
     }
+
+
+def extract_sequences(connection: Any) -> list[dict[str, Any]]:
+    binds = ", ".join(f":s{index}" for index in range(1, len(SEQUENCES) + 1))
+    params = {f"s{index}": name for index, name in enumerate(SEQUENCES, 1)}
+    return fetch(
+        connection,
+        "SELECT SEQUENCE_NAME, LAST_NUMBER FROM USER_SEQUENCES "
+        f"WHERE SEQUENCE_NAME IN ({binds}) ORDER BY SEQUENCE_NAME",
+        params,
+    )
+
+
+def build_counters(sequence_rows: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    found = {row["SEQUENCE_NAME"]: int(row["LAST_NUMBER"]) for row in sequence_rows}
+    missing = sorted(set(SEQUENCES) - set(found))
+    if missing:
+        raise RuntimeError(f"sequences missing from USER_SEQUENCES: {missing}")
+    return [build_counter(name, found[name]) for name in SEQUENCES]
 
 
 def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[str, Any],
@@ -314,15 +334,10 @@ def build_documents(mapping: Mapping[str, Mapping[str, Any]], source: Mapping[st
             "batch; the approved mapping declares no orphan class for U1"
         )
     history = [build_history(mapping["customers_history"], row) for row in source["history"]]
-    found = {row["SEQUENCE_NAME"]: int(row["LAST_NUMBER"]) for row in source["sequences"]}
-    missing = sorted(set(SEQUENCES) - set(found))
-    if missing:
-        raise RuntimeError(f"sequences missing from USER_SEQUENCES: {missing}")
-    counters = [build_counter(name, found[name]) for name in SEQUENCES]
     return {
         "customers": customers,
         "customers_history": history,
-        "counters": counters,
+        "counters": build_counters(source["sequences"]),
         "quarantine": quarantine,
         "embedded_attributes": embedded,
     }
@@ -360,6 +375,49 @@ def replace_collection(database: Any, name: str, documents: list[dict[str, Any]]
     database[staging].rename(name, dropTarget=True)
     return {"dropped": True, "recreated": True, "inserted": len(documents),
             "docs_after": docs_after, "ns_docs_after": ns_docs_after, "indexes": index_names}
+
+
+def seed_counters_monotonic(database: Any, documents: list[dict[str, Any]]) -> dict[str, Any]:
+    """Seed counters without moving an existing sequence backwards."""
+    oracle_last_number = {doc["_id"]: int(doc["seq"]) for doc in documents}
+    advanced_preserved: list[str] = []
+    inserted = 0
+    for doc in documents:
+        existing = database["counters"].find_one({"_id": doc["_id"]})
+        if existing is not None and int(existing.get("seq", 0)) > int(doc["seq"]):
+            advanced_preserved.append(doc["_id"])
+        result = database["counters"].update_one(
+            {"_id": doc["_id"]},
+            {
+                "$max": {"seq": doc["seq"]},
+                "$setOnInsert": {
+                    "source_sequence": doc["source_sequence"],
+                    "ns": doc["ns"],
+                },
+            },
+            upsert=True,
+        )
+        if result.upserted_id is not None:
+            inserted += 1
+    seeded = {}
+    for doc in documents:
+        final = database["counters"].find_one({"_id": doc["_id"]})
+        if final is None:
+            raise RuntimeError(f"counter {doc['_id']!r} disappeared during seed")
+        seeded[doc["_id"]] = int(final["seq"])
+    return {
+        "root_table": "USER_SEQUENCES",
+        "mode": "counters_only",
+        "oracle_last_number": oracle_last_number,
+        "seeded": seeded,
+        "advanced_preserved": sorted(advanced_preserved),
+        "dropped": False,
+        "recreated": False,
+        "inserted": inserted,
+        "docs_after": database["counters"].count_documents({}),
+        "ns_docs_after": database["counters"].count_documents({"ns": NS_VALUE}),
+        "indexes": [],
+    }
 
 
 def load(client: MongoClient, target_db: str, mapping: Mapping[str, Mapping[str, Any]],
@@ -408,6 +466,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--target-db", default=TARGET_DB)
     parser.add_argument("--batch-no", type=int, default=BATCH_NO)
     parser.add_argument("--report", default=".migration/recon/U1/load_report.json")
+    parser.add_argument("--counters-only", action="store_true")
     args = parser.parse_args(argv)
     try:
         validate_target_db(args.target_db)
@@ -421,15 +480,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     validate_target_db(args.target_db)
     user, password, dsn = parse_dsn(secret_value(args.dsn_secret))
     uri = secret_value(args.uri_secret)
-    mapping = load_mapping()
-
     with oracledb.connect(user=user, password=password, dsn=dsn) as oracle:
-        source = extract(oracle, mapping, args.batch_no)
-    built = build_documents(mapping, source, args.batch_no)
+        if args.counters_only:
+            sequence_rows = extract_sequences(oracle)
+            built = {"counters": build_counters(sequence_rows)}
+        else:
+            mapping = load_mapping()
+            source = extract(oracle, mapping, args.batch_no)
+            built = build_documents(mapping, source, args.batch_no)
 
     client = MongoClient(uri)
     try:
-        collections = load(client, args.target_db, mapping, built)
+        if args.counters_only:
+            counter_report = seed_counters_monotonic(
+                client[args.target_db], built["counters"]
+            )
+            collections = {"counters": counter_report}
+        else:
+            collections = load(client, args.target_db, mapping, built)
     finally:
         client.close()
 
@@ -441,13 +509,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "quarantine_db": QUARANTINE_DB,
         "ns": NS_VALUE,
         "batch_no": args.batch_no,
+        "mode": "counters_only" if args.counters_only else "full",
         "secret_names": {"dsn": args.dsn_secret, "uri": args.uri_secret},
-        "source_rows": {
-            "CUSTOMER_MASTER": len(source["customers"]),
-            "ENTITY_ATTR_VALUE": len(source["attributes"]),
-            "CUSTOMER_MASTER_HIST": len(source["history"]),
-            "USER_SEQUENCES": len(source["sequences"]),
-        },
+        "source_rows": (
+            {"USER_SEQUENCES": len(sequence_rows)}
+            if args.counters_only
+            else {
+                "CUSTOMER_MASTER": len(source["customers"]),
+                "ENTITY_ATTR_VALUE": len(source["attributes"]),
+                "CUSTOMER_MASTER_HIST": len(source["history"]),
+                "USER_SEQUENCES": len(source["sequences"]),
+            }
+        ),
         "collections": collections,
     }
     report_path = Path(args.report)
@@ -460,13 +533,19 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     report = run(args)
     c = report["collections"]
-    print(
-        f"U1 load complete: target_db={TARGET_DB} ns={NS_VALUE} "
-        f"customers={c['customers']['inserted']} attributes={c['customers']['embedded_attributes_after']} "
-        f"customers_history={c['customers_history']['inserted']} counters={c['counters']['inserted']} "
-        f"Q.dirty_signup_dt={c['quarantine']['dirty_signup_dt']['inserted']} "
-        f"Q.bad_csv_list={c['quarantine']['bad_csv_list']['inserted']}"
-    )
+    if args.counters_only:
+        print(
+            f"U1 counters-only load complete: target_db={TARGET_DB} ns={NS_VALUE} "
+            f"counters={c['counters']['inserted']}"
+        )
+    else:
+        print(
+            f"U1 load complete: target_db={TARGET_DB} ns={NS_VALUE} "
+            f"customers={c['customers']['inserted']} attributes={c['customers']['embedded_attributes_after']} "
+            f"customers_history={c['customers_history']['inserted']} counters={c['counters']['inserted']} "
+            f"Q.dirty_signup_dt={c['quarantine']['dirty_signup_dt']['inserted']} "
+            f"Q.bad_csv_list={c['quarantine']['bad_csv_list']['inserted']}"
+        )
     return 0
 
 
