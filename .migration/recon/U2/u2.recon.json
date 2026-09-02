@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "U2",
   "namespace": "mongo_205236",
-  "generated_at": "2026-09-01T23:15:58.288924+00:00",
+  "generated_at": "2026-09-02T04:08:26.160162+00:00",
   "run_mode": "fixture",
   "harness": {
     "result": ".migration/recon/U2/result.json",
@@ -158,6 +158,7 @@
       "result": "pass"
     }
   ],
+  "quarantine_rate": 0.0019733333333333334,
   "values_recomputed_from_target": true,
   "idempotency_rerun": {
     "performed": true,

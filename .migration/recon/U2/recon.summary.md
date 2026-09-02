@@ -3,7 +3,7 @@
 
 - Mode: fixture
 - Mapping `v1.0.1` / tolerances `v1` / seed `714559852` / params `{'batch_no': '85559852', 'source_ns': 'demo'}`
-- Generated: 2026-09-01T23:15:58.288924+00:00
+- Generated: 2026-09-02T04:08:26.160162+00:00
 - Counts: 18750 invoices / 149963 embedded lines / 37 quarantined lines = 150000 source lines
 - Quarantine rate: 0.197%
 - Indexes: `_id_, batch_no_1_status_cd_1, cust_id_1, lines.line_id_1`
