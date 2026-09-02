@@ -1,8 +1,8 @@
 {
   "unit": "U8",
-  "started_at": "2026-09-02T03:12:37.462731Z",
-  "finished_at": "2026-09-02T03:12:46.733571Z",
-  "generated_at": "2026-09-02T03:12:46.733591Z",
+  "started_at": "2026-09-02T06:19:21.436056Z",
+  "finished_at": "2026-09-02T06:19:30.078005Z",
+  "generated_at": "2026-09-02T06:19:30.078025Z",
   "target_db": "ow_tp_mongodb_205236",
   "ns": "mongo_205236",
   "collections": {
@@ -142,15 +142,19 @@
     "replay_u8_counters": {
       "dropped": true,
       "recreated": true,
-      "source_rows": 1,
-      "inserted": 1,
-      "docs_after": 1,
-      "ns_docs_after": 1,
+      "source_rows": 2,
+      "inserted": 2,
+      "docs_after": 2,
+      "ns_docs_after": 2,
       "indexes": [],
-      "sequence_start": 1
+      "sequence_start": 1,
+      "oracle_last_number": 1,
+      "history_sequence_start": 61,
+      "history_oracle_last_number": 61
     }
   },
   "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
     "uri": "MONGODB_ATLAS_URI"
   }
 }

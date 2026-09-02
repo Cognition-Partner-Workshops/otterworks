@@ -87,8 +87,8 @@ def _to_char(value: Decimal) -> str:
     return text
 
 
-def log_msg(store: rating.RatingStore, module: str, message: str) -> None:
-    rating.log_msg(store, module, message)
+def log_msg(store: rating.RatingStore, module: str, message: str):
+    return util.log_msg(store, module, message)
 
 
 def _positive_credit_notes(
@@ -290,6 +290,7 @@ def sp_issue_invoice(
             lines.append(
                 {
                     "id": util.f_md5_uuid(invoice_id + str(row["line_no"])),
+                    "invoice_id": invoice_id,
                     "line_no": row["line_no"],
                     "line_type": row["line_type"],
                     "description": row["description"],

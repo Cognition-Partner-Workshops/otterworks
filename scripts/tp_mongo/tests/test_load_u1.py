@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import mongomock
 from bson import Decimal128, Int64
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
@@ -86,6 +87,33 @@ def test_build_counter_seeds_last_number_as_int64():
     assert doc == {"_id": "seq_customer_master", "seq": Int64(125000),
                    "source_sequence": "SEQ_CUSTOMER_MASTER", "ns": "mongo_205236"}
     assert isinstance(doc["seq"], Int64)
+
+
+def test_counters_only_seed_preserves_advanced_sequences_and_inserts_missing():
+    db = mongomock.MongoClient()["test"]
+    db["counters"].insert_one(load_u1.build_counter("SEQ_CUSTOMER_MASTER", 30))
+    report = load_u1.seed_counters_monotonic(
+        db,
+        [
+            load_u1.build_counter("SEQ_CUSTOMER_MASTER", 25),
+            load_u1.build_counter("SEQ_BILLING_AUDIT_LOG", 1),
+        ],
+    )
+
+    assert db["counters"].find_one({"_id": "seq_customer_master"})["seq"] == Int64(30)
+    audit = db["counters"].find_one({"_id": "seq_billing_audit_log"})
+    assert audit["seq"] == Int64(1)
+    assert audit["source_sequence"] == "SEQ_BILLING_AUDIT_LOG"
+    assert audit["ns"] == load_u1.NS_VALUE
+    assert report["oracle_last_number"] == {
+        "seq_customer_master": 25,
+        "seq_billing_audit_log": 1,
+    }
+    assert report["seeded"] == {
+        "seq_customer_master": 30,
+        "seq_billing_audit_log": 1,
+    }
+    assert report["advanced_preserved"] == ["seq_customer_master"]
 
 
 def test_validate_target_db_rejects_other_databases():

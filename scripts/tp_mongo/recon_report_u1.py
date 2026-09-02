@@ -30,7 +30,7 @@ from load_u1 import (
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / ".migration/recon/U1"
 MANIFEST = ROOT / "testdata/legacy/manifests/demo.json"
-EXPECTED_ROWS = {"customers": 25000, "customers_history": 0, "counters": 3}
+EXPECTED_ROWS = {"customers": 25000, "customers_history": 0, "counters": 5}
 EXPECTED_EMBEDDED = 8333
 EXPECTED_QUARANTINE = {"dirty_signup_dt": 50, "bad_csv_list": 31}
 ANOMALY_CLASS = {"dirty_dates": "dirty_signup_dt", "malformed_csv_lists": "bad_csv_list"}

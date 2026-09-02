@@ -16,7 +16,7 @@ from bson import Decimal128, Int64
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
-from ow_billing import NS_VALUE, rating
+from ow_billing import NS_VALUE, rating, util
 
 TENANT = "00000000-0000-0000-0000-000000000001"
 FEB1, FEB28 = date(2026, 2, 1), date(2026, 2, 28)
@@ -25,6 +25,14 @@ FEB1, FEB28 = date(2026, 2, 1), date(2026, 2, 28)
 def _store(prefix: str = "replay_u7_") -> rating.RatingStore:
     store = rating.RatingStore(mongomock.MongoClient()["ow_tp_mongodb_205236"], prefix)
     store.rating_periods.create_index([("tenant_id", 1), ("period_start", 1)], unique=True)
+    store.counters.insert_one(
+        {
+            "_id": util.SEQ_BILLING_AUDIT_LOG,
+            "seq": Int64(0),
+            "source_sequence": "SEQ_BILLING_AUDIT_LOG",
+            "ns": NS_VALUE,
+        }
+    )
     return store
 
 
@@ -215,16 +223,20 @@ if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))
 
 
-def test_log_msg_reconciles_unseeded_sequence_past_existing_rows():
+def test_log_msg_continues_seeded_sequence():
     store = _store()
     _seed(store)
+    store.counters.update_one(
+        {"_id": util.SEQ_BILLING_AUDIT_LOG},
+        {"$set": {"seq": Int64(7)}},
+    )
     store.billing_audit_log.insert_one(
         {"_id": Int64(7), "log_id": Int64(7), "module": "PLANS", "message": "x", "ns": NS_VALUE}
     )
     rating.compute_rating(store, TENANT, FEB1, FEB28)
     ids = sorted(d["log_id"] for d in store.billing_audit_log.find())
     assert ids == [7, 8]
-    assert store.counters.find_one({"_id": rating.AUDIT_SEQUENCE})["value"] == 8
+    assert store.counters.find_one({"_id": util.SEQ_BILLING_AUDIT_LOG})["seq"] == 8
 
 
 def test_log_msg_failure_is_swallowed_like_the_autonomous_transaction():
@@ -232,11 +244,16 @@ def test_log_msg_failure_is_swallowed_like_the_autonomous_transaction():
     _seed(store)
     _event(store, "e1", datetime(2026, 2, 10), 5)
     store.billing_audit_log.insert_one({"_id": Int64(1), "log_id": Int64(1), "ns": NS_VALUE})
-    store.billing_audit_log.insert_one({"_id": Int64(2), "log_id": Int64(1), "ns": NS_VALUE})
-    store.counters.insert_one({"_id": rating.AUDIT_SEQUENCE, "value": Int64(0), "ns": NS_VALUE})
-    # sequence yields 1 (dup), reconciles to max log_id=1, yields 2 (dup again) -> swallowed
+    # The seeded sequence yields the existing audit row's ID; DuplicateKeyError is swallowed.
     assert rating.compute_rating(store, TENANT, FEB1, FEB28).used_units == Decimal(5)
-    assert store.billing_audit_log.count_documents({}) == 2
+    assert store.billing_audit_log.count_documents({}) == 1
+
+
+def test_log_msg_requires_a_seeded_counter():
+    store = _store()
+    store.counters.delete_many({})
+    with pytest.raises(LookupError, match="seq_billing_audit_log"):
+        util.log_msg(store, "RATING", "missing counter")
 
 
 def test_finalize_append_is_guarded_against_a_racing_writer():
