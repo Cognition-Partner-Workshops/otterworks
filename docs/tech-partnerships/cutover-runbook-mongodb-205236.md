@@ -117,7 +117,7 @@ All queries are ns-scoped (`{ns: "mongo_205236"}`) and read-only. Expected = cyc
 | `plans` | 3 | |
 | `customers` | 25,000 | Σ`attributes[]` 8,333 |
 | `customers_history` | 0 | |
-| `counters` | 3 (U1 docs) — **5 if D.4 executed** — **before E.4**; E.4 adds **1** doc (`_id: "SEQ_BILLING_AUDIT_LOG"`, field `value`, upserted by `rating._next_log_id`) unless D.4 already created that exact doc under the agreed contract | |
+| `counters` | 3 (U1 docs) before E.4. **F-X-1 closed (D.4 ran):** 5 before E.4 and **5** after — both loggers hit the one seeded audit-counter doc, which E.4 advances by 2; the subscriptions-history seed is unchanged. **F-X-1 open (D.4 skipped):** 3 before E.4, **4** after (`rating._next_log_id` upserts `_id: "SEQ_BILLING_AUDIT_LOG"`, field `value`) | |
 | `invoices` | 18,750 | Σ`lines[]` 149,963 |
 | `documents` | 2,000 | Σ`versions[]` 13,876 |
 | `document_snapshots` | 384 | |
@@ -130,7 +130,7 @@ All queries are ns-scoped (`{ns: "mongo_205236"}`) and read-only. Expected = cyc
 | `credit_notes` | 5 | |
 | `dunning_attempts` | 1 | |
 | `notifications` | 1 | |
-| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) **before E.4**; after E.4 exactly **3** (A = 2: `RATING-001` + `INVOICE-001`, both via `rating.compute_rating` → `rating.log_msg`, which self-seeds its counter and therefore logs whether or not D.4 ran) — record the observed A in the window log | `rating`'s counter (`_id` `SEQ_BILLING_AUDIT_LOG`, field `value`) ends at 3; `util`'s (`_id` `seq_billing_audit_log`, field `seq`, D.4-seeded) is untouched by E.4 — the two contracts are F-X-1 |
+| `billing_audit_log` | 1 (`_id` 1, `PLANS`/`fn_list_plans`) **before E.4**; after E.4 exactly **3** (A = 2: `RATING-001` + `INVOICE-001`, both via `rating.compute_rating` → `rating.log_msg`, which self-seeds its counter and therefore logs whether or not D.4 ran) — record the observed A in the window log | Audit counter after E.4 = **3** on both paths: closed → the unified D.4-seeded doc (seed 1 + 2); open → `rating`'s self-seeded `SEQ_BILLING_AUDIT_LOG`/`value` doc, and `util`'s `seq_billing_audit_log`/`seq` does not exist |
 
 E.1 and E.2 must be taken **before** any `GET /api/plans` or transcript replay; the 17 non-audit collections must stay
 exact through the whole of section E. Also: `countDocuments({})` == `countDocuments({ns})` for every collection (count guard), and no `*__staging` or
@@ -173,9 +173,11 @@ graded on the replay clones in the final cycle.
 
 ### E.5 Audit log
 
-`billing_audit_log` `countDocuments` == 3 and max `log_id` == 3 == `counters.SEQ_BILLING_AUDIT_LOG.value`. If D.4
-executed: the D.4-seeded docs are present and unchanged. If D.4 skipped: record "audit log unreliable until F-X-1 closed"
-in the window log. Either way, dump both collections as the post-verification
+`billing_audit_log` `countDocuments` == 3 and max `log_id` == 3 == the audit counter's value. **F-X-1 closed:** the
+audit counter is the single D.4-seeded doc under the agreed contract, now at 3 (seed 1 + 2 E.4 rows); the
+`SEQ_SUBSCRIPTIONS_HIST` seed is unchanged at 0; no stray `SEQ_BILLING_AUDIT_LOG`/`seq_billing_audit_log` doc under the
+other contract exists. **F-X-1 open:** the counter is `rating`'s self-seeded `SEQ_BILLING_AUDIT_LOG`/`value` doc at 3;
+record "audit log unreliable until F-X-1 closed" in the window log. Either way, dump both collections as the post-verification
 baseline.
 
 ---
