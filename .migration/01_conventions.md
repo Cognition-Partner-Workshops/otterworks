@@ -16,6 +16,24 @@ to any other database. Every collection is registered in `04_progress.md` before
 load. Loads are idempotent: drop-and-recreate the unit's collections in this run's
 databases at the start of every run.
 
+Allowlist file for the recon harness: `.migration/allowed_targets.json` (orchestrator-owned,
+lists exactly the two databases above; consumed by hardened harness builds, ignored by the
+pinned build).
+
+## Recon harness (pinned — merge/cutover gating authority)
+
+| Field | Value |
+|---|---|
+| Package | `skills/mongo-recon-harness/harness` in plugin repo `Cognition-Partner-Workshops/mongo-migration-plugin` |
+| Plugin commit | `8d4f787151ad460659d139c081ddc1284c08552c` (git tree id of the package `acd098ea3979c8a126e504445d99f91b7008bf7e`) |
+| Content sha256 | `ddaaeec35359b2bee98989a2b49de4b5aff63cdedea5edf7384a031c03dddabb` (sha256 of the sorted `<file sha256>  <path>` manifest of the 13 package files at that commit) |
+| Cache label (informational only) | `mongo-migration-plugin-6d021e15/0.2.1`; this label is not stable (it later resolved to plugin commit `65aa799e7babd52ad11d6465579d950f0dd8079b`, a different program) and must never be cited as the harness identity |
+
+Every verdict in `.migration/recon/**` and every wave/fix-pass/parallel-run report was produced by
+this pinned build. Any re-grade installs the harness from this commit and verifies the content
+sha256 before running. Moving to a newer harness is a STOP C decision (runbook §H.6), not a
+convention change.
+
 ## Secret names (by name only, never by value)
 
 | Tier | Purpose | Secret name |

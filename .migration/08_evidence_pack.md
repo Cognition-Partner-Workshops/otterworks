@@ -6,35 +6,44 @@ ns `mongo_205236` · secrets by NAME only (`MONGODB_ATLAS_URI`, `OW_BILLING_FIXT
 This file is an **index**. It verifies that the evidence exists, is internally consistent and is tied to one watermark;
 it re-runs nothing. Every path below is `branch:path` where the artefact lives off the run branch.
 
-## Status: **COMPLETE** (v2, post fix pass) — gap ledger in §8
+## Status: **COMPLETE** (v3, post independent audit) — gap ledger in §8, audit dispositions in §9
+
+v3 applies the dispositions of the independent audit (`tp-run/mongodb-20260901T205236Z--audit:.migration/recon/audit/countersign.md`,
+findings F-A-1…F-A-4; decision row 21). It changes **no data, tolerance, mapping shape or canonicalization** and re-runs nothing: the
+edits are (1) the harness is pinned by plugin-repo commit and content hash (§1, `01_conventions.md`, evidence-log header), (2) the
+orchestrator-owned allowlist `.migration/allowed_targets.json` is added to the run branch, (3) the runbook derives every expected
+counter/sequence value from a live `USER_SEQUENCES` read at freeze instead of fixture literals and discloses the single tooling
+write to legacy, (4) every write to the production target is reassigned to the CUSTOMER principal, (5) all abbreviated commit heads
+are expanded to 40 characters. Two new STOP C lines (runbook §H.6, §H.7) carry the audit items that need a human answer.
 
 The parity evidence is complete and green at the watermark (all 10 units, 3 consecutive GREEN full-estate cycles at
-run-branch head `74ecd69e`, which contains the F-U8-1/F-X-1 fix pass). Of the five gaps recorded by the v1 pack (watermark
-`0150de08`, decision row 18): gaps 1, 2 and 4 are **closed with committed evidence** (§8); gaps 3 and 5 are **converted to
+run-branch head `74ecd69e98876b8da26336a6d7cc24eba3e74697`, which contains the F-U8-1/F-X-1 fix pass). Of the five gaps recorded by the v1 pack (watermark
+`0150de08b072f15969a5a97da655a483b18ed939`, decision row 18): gaps 1, 2 and 4 are **closed with committed evidence** (§8); gaps 3 and 5 are **converted to
 explicit STOP C decision lines** (runbook §H.2, §H.3) by human decision (row 19). Nothing is papered over: every carried
 item is still listed in §6 with its disposition.
 
-v1 of this pack (INCOMPLETE, watermark `0150de08`, parallel-run branch `--parallel-run` @ `3279c93b`) is superseded by this
+v1 of this pack (INCOMPLETE, watermark `0150de08b072f15969a5a97da655a483b18ed939`, parallel-run branch `--parallel-run` @ `3279c93b75c3e6db2298312cf460f88c849aadf3`) is superseded by this
 revision and is not relied upon.
 
 ## 1. Watermark (single source of truth for the runbook)
 
 | Item | Value |
 |---|---|
-| Code | run-branch head `74ecd69e98876b8da26336a6d7cc24eba3e74697` (all 10 units merged; post fix-pass merge `5fe2af81` of PR #1457 @ `7791a93e`, decision rows 19–20) |
+| Code | run-branch head `74ecd69e98876b8da26336a6d7cc24eba3e74697` (all 10 units merged; post fix-pass merge `5fe2af81ed566ca9129489b30a1df5ae16c8544f` of PR #1457 @ `7791a93e7033ba9ac8b40429d31f84127aec05a7`, decision rows 19–20) |
 | Full-estate load | 2026-09-02 06:59:25 → 07:02:29 UTC (10 loaders, all rc 0) |
 | Source identity | seed `714559852` · `batch_no 85559852` · `source_ns demo` · manifest sha256 `0f4722866117edd2ea1f5cf933b294bf39a52c755cff222a3a3c6ca5e8e2ee89` · `FIXTURE_META.INITIALIZED_AT 2026-09-01 20:53:10.961888` |
 | Versions | mapping **v1.0.1** (`57de55f2…`) · tolerances **v1** (`d67ccdda…`) · canonicalization **v1** (`527cf87c…`) |
 | Cycles | 1: 07:02:43–07:06:42Z · 2: 07:06:48–07:11:16Z · 3 (final): 07:11:21–07:16:00Z · green streak 3 · red runs `[]` |
-| Evidence commit | `tp-run/mongodb-20260901T205236Z--parallel-run-v2` @ `2443d6f5bcf6f93445a2ee14226edb677af943a4` |
-| Superseded watermark | `0150de08` (`--parallel-run` @ `3279c93b`, load 05:25–05:28Z, cycles 05:30–05:44Z) — same source watermark, pre-fix code head; not relied upon |
+| Evidence commit | `tp-run/mongodb-20260901T205236Z--parallel-run-v2` @ `2443d6f5bcf6f93445a2ee14226edb677af943a4` (graded artefacts; header-only harness pin added at `de03da9748ad5210e1284708a322aed2c5d621d7`, F-A-1 — no evidence bytes changed) |
+| **Recon harness (pinned, F-A-1)** | `mongo-recon-harness` from plugin repo `Cognition-Partner-Workshops/mongo-migration-plugin` commit **`8d4f787151ad460659d139c081ddc1284c08552c`** (package `skills/mongo-recon-harness/harness`, `pyproject` version 0.1.0; git tree id `acd098ea3979c8a126e504445d99f91b7008bf7e`; content sha256 **`ddaaeec35359b2bee98989a2b49de4b5aff63cdedea5edf7384a031c03dddabb`** = sha256 of the sorted `<file sha256>  <path>` manifest of the 13 package files). This is the program that produced every PASS in §4–§5 and the audit's re-runs. The cache label `mongo-migration-plugin-6d021e15/0.2.1` used by earlier revisions is **not** an identifier: the same label now resolves to plugin commit `65aa799e7babd52ad11d6465579d950f0dd8079b` (hardened 2026-09-02), which requires `.migration/allowed_targets.json` and rejects mapping v1.0.1 (see §9 F-A-1, runbook §H.6). Any re-grade of this evidence must install the harness from commit `8d4f787151ad460659d139c081ddc1284c08552c` and verify the content hash first |
+| Superseded watermark | `0150de08b072f15969a5a97da655a483b18ed939` (`--parallel-run` @ `3279c93b75c3e6db2298312cf460f88c849aadf3`, load 05:25–05:28Z, cycles 05:30–05:44Z) — same source watermark, pre-fix code head; not relied upon |
 
 ## 2. Approved mapping spec
 
 | Version | Status | Where |
 |---|---|---|
 | v1.0 | frozen at STOP B (`05_decisions.md` row 8) | `.migration/03_mapping_spec.md` / `.json` |
-| v1.0.1 | grading-only amendment, `05_decisions.md` **row 9**: `codes` key.source `[CODE_TYPE, CODE_VAL]` → scalar `CODE_TYPE||':'||CODE_VAL`; target `_key`, shapes, tolerances and data unchanged; pre-authorized per STOP A | same files, `"version": "v1.0.1"`, sha256 `57de55f2…` byte-identical at every attested head, at `0150de08` and at `74ecd69e` |
+| v1.0.1 | grading-only amendment, `05_decisions.md` **row 9**: `codes` key.source `[CODE_TYPE, CODE_VAL]` → scalar `CODE_TYPE||':'||CODE_VAL`; target `_key`, shapes, tolerances and data unchanged; pre-authorized per STOP A | same files, `"version": "v1.0.1"`, sha256 `57de55f2…` byte-identical at every attested head, at `0150de08b072f15969a5a97da655a483b18ed939` and at `74ecd69e98876b8da26336a6d7cc24eba3e74697` |
 
 No tolerance, mapping-shape or canonicalization change was made after STOP B. Every "amendment" note in §6 is
 recorded as *described, not applied*.
@@ -73,7 +82,7 @@ the object at the merged head; the final cycle-3 tallies are in §5.
 | 25 | `PKG_OW_UTIL` | U6 | `ow_billing/util.py` | wave2b §0 U6 row, §2.1 (T4 5/5 via PLANS-00x) |
 | 26 | `PKG_PLANS` | U6 | `ow_billing/plans.py` | wave2b §0 U6 row, §2.1 |
 | 27 | `PKG_RATING` | U7 | `ow_billing/rating.py` | wave2b §0 U7 row, §2.2 (T4 8/8) |
-| 28 | `PKG_INVOICING` | U8 | `ow_billing/invoicing.py` | wave3 §0 U8 row, App. A §2.1 (T4 6/6); fix pass `fix_pass.md` (T4 6/6 at `7791a93e`, 26/26 probes, F-U8-1 closed) |
+| 28 | `PKG_INVOICING` | U8 | `ow_billing/invoicing.py` | wave3 §0 U8 row, App. A §2.1 (T4 6/6); fix pass `fix_pass.md` (T4 6/6 at `7791a93e7033ba9ac8b40429d31f84127aec05a7`, 26/26 probes, F-U8-1 closed) |
 | 29 | `PKG_DUNNING` | U9 | `ow_billing/dunning.py`, `jobs.py`, `/api/dunning/*` | wave3 §0 U9 row, App. A §2.2 (T4 5/5) |
 | 30 | `TRG_CUSTOMER_MASTER_SEQ` | U1 | `counters` + write path | wave1 (part1) U1 row (`counters` == `USER_SEQUENCES`) |
 | 31 | `TRG_CUSTOMER_MASTER_HIST` | U1 | `customers_history` append | wave1 (part1) U1 row (write-path smoke) |
@@ -99,28 +108,28 @@ Totals: 23 M · 15 R · 5 A · 1 X = 44. Mapped collections in the count guard: 
 
 | Wave | Units | Report | Verdict |
 |---|---|---|---|
-| 0 | U0 | `tp-run/mongodb-20260901T205236Z--wave0-recon-part1:.migration/recon/wave_reports/wave0.md` (LIVE gate @ `892eb88a`: `--wave0-recon`) | PASS |
-| 1 | U1, U2, U3, U4 | `tp-run/mongodb-20260901T205236Z--wave1-recon-part1-u2:.migration/recon/wave_reports/wave1.md` (U2 pass 3 @ `9e73ffea`; U1 @ `c5baa80a` in `--wave1-recon-part1`; U3 @ `dfa5e978`, U4 @ `3420f475` in `--wave1-recon`) | PASS |
-| 2a | U5 | `tp-run/mongodb-20260901T205236Z--wave2a-recon-part1:.migration/recon/wave_reports/wave2a.md` (@ `1aefd226`) | PASS |
-| 2b | U6, U7 | `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b.md` (@ `f463577b`, `f05741f3`); probe bundle **committed** at `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b_probes/{U6,U7}/` (branch head `59246e76`: `gate/{result.json,report.md,recon.summary.md}`, `tier4_replay.json` / `tier4_provenance.json`, `probe_u6.py`/`probe_u7.py`, `probes.json`, load reports, pre/post-reload fingerprints) | PASS with findings |
-| 3 | U8, U9 | `tp-run/mongodb-20260901T205236Z--wave3-recon-part1:.migration/recon/wave_reports/wave3.md` (@ `0024b45e`, `9f67ec79`; LIVE gate in App. A / `--wave3-recon`) | PASS with findings |
-| fix pass | U8 (+ U5/U6/U7 regression) | `tp-run/mongodb-20260901T205236Z--fix-recon:.migration/recon/wave_reports/fix_pass.md` (@ `7791a93e`; branch head `63a17306`; evidence `fix_pass_evidence/{U5,U6,U7,U8}/gate/`, `U8/gate_run2/` idempotency, `probes.py` + `probes_current_head.json` 26/26, `load_report.counters.json`, `source_pre/post.json` byte-identical, `target_pre/post.json` golden sha-identical, `fix_pass.recon.json` schema-validated) | PASS — closes F-U8-1, F-X-1 |
+| 0 | U0 | `tp-run/mongodb-20260901T205236Z--wave0-recon-part1:.migration/recon/wave_reports/wave0.md` (LIVE gate @ `892eb88ac0c149ce8e5f67903e9e636aae4f485d`: `--wave0-recon`) | PASS |
+| 1 | U1, U2, U3, U4 | `tp-run/mongodb-20260901T205236Z--wave1-recon-part1-u2:.migration/recon/wave_reports/wave1.md` (U2 pass 3 @ `9e73ffea31f41f37e10259a36f26b8be1f26da3b`; U1 @ `c5baa80ab8afd54191b74854ca996fdf133e2c86` in `--wave1-recon-part1`; U3 @ `dfa5e9781e08718a7707a0a14ef9e8513149ed92`, U4 @ `3420f475c29b8889bc8676cebb58a9b4faabff2a` in `--wave1-recon`) | PASS |
+| 2a | U5 | `tp-run/mongodb-20260901T205236Z--wave2a-recon-part1:.migration/recon/wave_reports/wave2a.md` (@ `1aefd226d917ec0ddd604159ce7196b924050f7e`) | PASS |
+| 2b | U6, U7 | `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b.md` (@ `f463577b014d4f8fc43328ad23af9b0470f30762`, `f05741f3d9cc9acb6c24dedac6d2217351c83318`); probe bundle **committed** at `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b_probes/{U6,U7}/` (branch head `59246e76a6475f9f2fd613cdc031c8ff97f0be9b`: `gate/{result.json,report.md,recon.summary.md}`, `tier4_replay.json` / `tier4_provenance.json`, `probe_u6.py`/`probe_u7.py`, `probes.json`, load reports, pre/post-reload fingerprints) | PASS with findings |
+| 3 | U8, U9 | `tp-run/mongodb-20260901T205236Z--wave3-recon-part1:.migration/recon/wave_reports/wave3.md` (@ `0024b45ed39005012ca88669be4dc80565a3c994`, `9f67ec79059fc25bd04d56d1891cd0851a9c47ee`; LIVE gate in App. A / `--wave3-recon`) | PASS with findings |
+| fix pass | U8 (+ U5/U6/U7 regression) | `tp-run/mongodb-20260901T205236Z--fix-recon:.migration/recon/wave_reports/fix_pass.md` (@ `7791a93e7033ba9ac8b40429d31f84127aec05a7`; branch head `63a1730661c5b32cc240afdd3642fbe1cd718fd8`; evidence `fix_pass_evidence/{U5,U6,U7,U8}/gate/`, `U8/gate_run2/` idempotency, `probes.py` + `probes_current_head.json` 26/26, `load_report.counters.json`, `source_pre/post.json` byte-identical, `target_pre/post.json` golden sha-identical, `fix_pass.recon.json` schema-validated) | PASS — closes F-U8-1, F-X-1 |
 
 Wave closes: `05_decisions.md` rows 10–16; fix-pass merge row 20. Per-unit merged status and "unverified paths": `04_progress.md`.
 
 ## 5. Parallel run and final recon at the watermark
 
-| Artefact | Path (branch `tp-run/mongodb-20260901T205236Z--parallel-run-v2` @ `2443d6f5`) |
+| Artefact | Path (branch `tp-run/mongodb-20260901T205236Z--parallel-run-v2` @ `2443d6f5bcf6f93445a2ee14226edb677af943a4`) |
 |---|---|
 | Parallel-run ledger (v2, CURRENT) | `.migration/recon/parallel_run/evidence_log.md` (+ machine-readable twin `evidence_log.json`) |
 | Final recon at the watermark | `.migration/recon/parallel_run/final_recon_at_watermark.md` |
 | Watermark source reads | `evidence/watermark/{source_pass1,source_pass2}.json`, `load_start_utc.txt` |
-| Full-estate load from `74ecd69e` | `evidence/load/U0..U9.load_report.json`, `U0..U9.log`, `load_summary.jsonl`, `load.console.log` |
+| Full-estate load from `74ecd69e98876b8da26336a6d7cc24eba3e74697` | `evidence/load/U0..U9.load_report.json`, `U0..U9.log`, `load_summary.jsonl`, `load.console.log` |
 | Cycles 1–3 | `evidence/cycle{1,2,3}/U0..U9/gate/{result.json,report.md,recon.summary.md[,tier4_provenance.json,tier4_replay.json]}`, `guards.json`, `source_pre.json`, `source_post.json`, `steps.jsonl`, `cycle{1,2,3}.console.log` |
 | Fix-pass acceptance probe at the watermark | `evidence/fix_acceptance_probe.txt` (read-only, after cycle 3; informational) |
 | Tools | `.migration/recon/parallel_run/tools/{cycle.sh,full_load.sh,guards.py,source_check.py,subset.py,build_evidence.py}` |
 
-The v1 ledger on `--parallel-run` @ `3279c93b` (watermark `0150de08`) is superseded and kept only as history.
+The v1 ledger on `--parallel-run` @ `3279c93b75c3e6db2298312cf460f88c849aadf3` (watermark `0150de08b072f15969a5a97da655a483b18ed939`) is superseded and kept only as history.
 
 Final-cycle tallies (cycle 3, byte-identical modulo `generated_at` to cycles 1–2 and to the wave-report / fix-pass tallies):
 
@@ -148,15 +157,21 @@ every `billing_invoices.lines[].invoice_id == parent _id` on golden (3 invoices 
 ## 6. Open-issues list with dispositions
 
 Every "described only / advisory / recommended, not applied" note from the wave reports and `05_decisions.md` rows 10–16,
-plus every carried finding. Dispositions: `accepted-as-is` · `deferred-to-decommission` · `needs-STOP-C-line`; items fixed
-and re-gated by the fix pass (rows 19–20) are marked `CLOSED` with their evidence. Exactly two items carry
-`needs-STOP-C-line`: F-U8-2 / F-U7-1 (§H.3) and the partial application scope (§H.2).
+plus every carried finding and the four independent-audit findings (row 21). Dispositions: `accepted-as-is` ·
+`deferred-to-decommission` · `needs-STOP-C-line` · `CLOSED (doc edit)` for audit items closed by a documentation/runbook edit
+in this revision; items fixed and re-gated by the fix pass (rows 19–20) are marked `CLOSED` with their evidence. Four items
+carry `needs-STOP-C-line`: F-U8-2 / F-U7-1 (§H.3), the partial application scope (§H.2), the hardened-harness re-grade
+(F-A-1, §H.6) and the acknowledgement of the tooling write to legacy (F-A-2, §H.7).
 
 | Id | Source | Item | Disposition | Rationale |
 |---|---|---|---|---|
-| F-U8-1 | wave3 §3; dec. 15, 19, 20 | `sp_issue_invoice` rebuilt `billing_invoices.lines[]` without the mapped `invoice_id` (code at `0150de08`) | **CLOSED** (fixed + re-gated) | PR #1457 @ `7791a93e` merged `5fe2af81`; `invoicing.py` rebuild emits `invoice_id` per line, `tests/test_invoicing.py` covers it. Independent LIVE re-gate `--fix-recon:…/fix_pass.md`: U8 T1 8/8, T2 36/36, T3 902/902, **T4 6/6** (INVOICE-001…006), idempotent rerun identical (`U8/gate_run2/`), probes `replay_u8_billing_invoices` 6 invoices / 17 rebuilt lines / 0 missing `invoice_id`. Re-confirmed at watermark `74ecd69e` in `--parallel-run-v2` cycles 1–3 (U8 PASS ×3) and `evidence/fix_acceptance_probe.txt` |
-| F-X-1 (incl. F-U7-3, dec. 14 (2)) | wave2b §3, wave3 §3; dec. 14/15, 19, 20 | Three `log_msg` call sites carried two `counters` contracts (`SEQ_BILLING_AUDIT_LOG`/`value` vs `seq_billing_audit_log`/`seq`); golden `counters` had no audit-sequence seed | **CLOSED** (fixed + re-gated) | Same PR: `rating.log_msg` and `invoicing.log_msg` are thin delegates to `util.log_msg`; `plans`/`dunning` call it directly; unseeded counter raises `LookupError` (loud, never self-seeds). Seed: `load_u1.py --counters-only` (`$max` upsert, never rewinds) under the one-off write granted by row 19 → golden `counters` = 5 docs each `seq == USER_SEQUENCES.LAST_NUMBER` (`seq_billing_audit_log` 2, `seq_subscriptions_hist` 1, …), shape `{_id, seq:Int64, source_sequence, ns}`; no legacy `SEQ_BILLING_AUDIT_LOG`/`value` doc anywhere. Fix-pass dynamic probe: util→rating→invoicing×2 from seed 2 returned ids `[3,4,5,6,7,8]`, monotonic, no collision. Re-confirmed at `74ecd69e`: `fix_acceptance_probe.txt` `counters_eq_user_sequences: true`; U6/U7/U8/U9 Tier-4 PASS ×3 cycles on the single contract |
-| F-U8-2 / F-U7-1 | wave2b §3, wave3 §3; dec. 15, 19 | Finalising/issuing a fixture-seeded period (tenant 1, ids `4000…01/02/03` ≠ md5) succeeds on Mongo where Oracle raises `ORA-02291` | **needs-STOP-C-line** → runbook **§H.3** | Behaviour decision (keep Oracle's error vs loader-side id normalisation) is the customer's; affects exactly 3 legacy periods. Carried by human decision (row 19); not re-probed in the fix pass; unchanged at `74ecd69e` |
+| F-A-1 | audit `countersign.md` (HIGH) | Harness cited only by cache label `6d021e15/0.2.1`, which now denotes plugin commit `65aa799e7babd52ad11d6465579d950f0dd8079b` (hardened): requires `.migration/allowed_targets.json` and rejects mapping v1.0.1 (`root_where` without `target_where` on `customers`, `invoices`, `document_snapshots`, `files`); evidence not reproducible from its cited identifier | **CLOSED (doc edit)** for the pin + allowlist · **needs-STOP-C-line** → runbook **§H.6** for the re-grade | Pinned by plugin commit `8d4f787151ad460659d139c081ddc1284c08552c` and content sha256 `ddaaeec3…dabb` in §1, `01_conventions.md` and the evidence-log header (`--parallel-run-v2`). `.migration/allowed_targets.json` = `{"databases": ["ow_tp_mongodb_205236", "ow_tp_mongodb_205236_quarantine"]}` added to the run branch (orchestrator-owned allowlist; not a data change). Re-grading the frozen mapping under the hardened harness would require `target_where` on 4 objects = a mapping-shape amendment, which this pass may not make; presented as §H.6 with recommendation **NO** (defer; harness pinned) |
+| F-A-2 | audit `countersign.md` (MEDIUM) | Watermark not reproducible from a clean deterministic fixture: fresh seed gives `BILLING_AUDIT_LOG` 0 / `SEQ_BILLING_AUDIT_LOG` 1; the graded source and the Atlas target hold 1 row / counter 2 (observer-induced source write by a wave-0 PL/SQL probe). U5 T1 fails and the count guard is 17/18 on a clean fixture; runbook D.4 hard-coded `seq_billing_audit_log == 2` | **CLOSED (doc edit)** · **needs-STOP-C-line** → runbook **§H.7** (acknowledgement) | Runbook D.2/D.4 (and E.1/E.4/E.5) now derive every expected counter/sequence value from the live `USER_SEQUENCES` / `BILLING_AUDIT_LOG` read at freeze (no fixture literals; the watermark values are quoted only as the values observed on 2026-09-02). New runbook section "Tooling write to legacy during the engagement" discloses the one `BILLING_AUDIT_LOG` row (`log_id` 1, `PLANS`/`fn_list_plans`) and one `SEQ_BILLING_AUDIT_LOG` increment produced by a wave-0 PL/SQL probe (guardrail 1 breach, disclosed, no further writes: source pre == post on all 8 parallel-run reads). The target was loaded from, and graded against, that post-probe source state, so target and source agree; the acknowledgement is a STOP C line (§H.7) |
+| F-A-3 | audit `countersign.md` (MEDIUM) | Runbook claimed every production-touching step is executed by the customer principal, but D.9/E.4 (Devin co-executor of transcript replays that write 2 `billing_audit_log` rows + counter increments to the production DB) and G.3 (Devin drops `replay_u*_*` clones from the production DB) were Devin writes to the production target | **CLOSED (doc edit)** | D.9, E.4 and G.3 reassigned: the CUSTOMER principal executes every write to the production target (E.4 replays run by CUSTOMER from the checked-in transcripts; G.3 clone drop is a CUSTOMER step in the decommission plan, after the retention decision). Devin observes and grades only (read-only reads, evidence writes to the evidence branch). Runbook line 6 ("every production-touching step … executed by the customer-held cutover principal") and §B.6 are now true |
+| F-A-4 | audit `countersign.md` (LOW) | Ledger/pack quoted 8-char heads while wave reports carry 40-char SHAs (no mismatch found; informational) | **CLOSED (doc edit)** | Every commit head in this pack, the runbook, `04_progress.md` and the evidence-log header is expanded to 40 characters (resolved with `git rev-parse` against the fetched `tp-run/mongodb-20260901T205236Z*` branches; all 18 heads resolved, none ambiguous) |
+| F-U8-1 | wave3 §3; dec. 15, 19, 20 | `sp_issue_invoice` rebuilt `billing_invoices.lines[]` without the mapped `invoice_id` (code at `0150de08b072f15969a5a97da655a483b18ed939`) | **CLOSED** (fixed + re-gated) | PR #1457 @ `7791a93e7033ba9ac8b40429d31f84127aec05a7` merged `5fe2af81ed566ca9129489b30a1df5ae16c8544f`; `invoicing.py` rebuild emits `invoice_id` per line, `tests/test_invoicing.py` covers it. Independent LIVE re-gate `--fix-recon:…/fix_pass.md`: U8 T1 8/8, T2 36/36, T3 902/902, **T4 6/6** (INVOICE-001…006), idempotent rerun identical (`U8/gate_run2/`), probes `replay_u8_billing_invoices` 6 invoices / 17 rebuilt lines / 0 missing `invoice_id`. Re-confirmed at watermark `74ecd69e98876b8da26336a6d7cc24eba3e74697` in `--parallel-run-v2` cycles 1–3 (U8 PASS ×3) and `evidence/fix_acceptance_probe.txt` |
+| F-X-1 (incl. F-U7-3, dec. 14 (2)) | wave2b §3, wave3 §3; dec. 14/15, 19, 20 | Three `log_msg` call sites carried two `counters` contracts (`SEQ_BILLING_AUDIT_LOG`/`value` vs `seq_billing_audit_log`/`seq`); golden `counters` had no audit-sequence seed | **CLOSED** (fixed + re-gated) | Same PR: `rating.log_msg` and `invoicing.log_msg` are thin delegates to `util.log_msg`; `plans`/`dunning` call it directly; unseeded counter raises `LookupError` (loud, never self-seeds). Seed: `load_u1.py --counters-only` (`$max` upsert, never rewinds) under the one-off write granted by row 19 → golden `counters` = 5 docs each `seq == USER_SEQUENCES.LAST_NUMBER` (`seq_billing_audit_log` 2, `seq_subscriptions_hist` 1, …), shape `{_id, seq:Int64, source_sequence, ns}`; no legacy `SEQ_BILLING_AUDIT_LOG`/`value` doc anywhere. Fix-pass dynamic probe: util→rating→invoicing×2 from seed 2 returned ids `[3,4,5,6,7,8]`, monotonic, no collision. Re-confirmed at `74ecd69e98876b8da26336a6d7cc24eba3e74697`: `fix_acceptance_probe.txt` `counters_eq_user_sequences: true`; U6/U7/U8/U9 Tier-4 PASS ×3 cycles on the single contract |
+| F-U8-2 / F-U7-1 | wave2b §3, wave3 §3; dec. 15, 19 | Finalising/issuing a fixture-seeded period (tenant 1, ids `4000…01/02/03` ≠ md5) succeeds on Mongo where Oracle raises `ORA-02291` | **needs-STOP-C-line** → runbook **§H.3** | Behaviour decision (keep Oracle's error vs loader-side id normalisation) is the customer's; affects exactly 3 legacy periods. Carried by human decision (row 19); not re-probed in the fix pass; unchanged at `74ecd69e98876b8da26336a6d7cc24eba3e74697` |
 | F-U6-1 | wave2b §3 | `util.f_str2dt` stricter than `TO_DATE('DD-MON-YY')`; no PL/SQL caller outside `PKG_OW_UTIL` | accepted-as-is | Dead branch in the estate; declared in the unit contract |
 | F-U6-2 | wave2b §3 | Repeated identical plan-change → HTTP 500 (legacy surfaces ORA-00001 as 500 too) | accepted-as-is | Parity with legacy behaviour |
 | F-U7-2 | wave2b §3; dec. 14 (1) | `billing_audit_log` excluded from U7 `GRADED_SOURCES` T1–T3; graded independently 1/1 equal; optional re-inclusion | accepted-as-is | Coverage exists via reviewer probe + U5/U6 gates; re-inclusion is additive and grading-only, not required for the verdict |
@@ -173,7 +188,7 @@ and re-gated by the fix pass (rows 19–20) are marked `CLOSED` with their evide
 | wave2a §6 | wave2a | Reviewer probes must not invoke `PKG_*` PL/SQL against the live fixture; `billing_audit_log` expected 1 not 0; spec text `units >= 0` vs enforced `> 0`; `counters` seeds from `USER_SEQUENCES` at cutover | accepted-as-is (first three) · CLOSED (seed — done by the F-X-1 fix, part of the U1 loader) | Process/documentation notes; the seed is now part of every full-estate load (`load_u1.py`), so no separate cutover step is needed |
 | U0 wave0 | ledger U0 row | No Tier-4 ops for U0; `plans.tier` DECODE unpersisted, graded by consuming unit | accepted-as-is | Reference data; consumed and graded by U6/U7 |
 | U1/U2/U3/U4 ledger | `04_progress.md` | Write-path smoke only for `customer_writes.py`; `derived_ungraded` twins unit-tested; RPT-114 checked under Flask test client not gunicorn; U3 `state_b64` never decoded; U4 file-service (Rust) read/write path against `files` not exercised; `HeadObject` path untested | accepted-as-is for data parity · **needs-STOP-C-line** for scope → runbook **§H.2 (d), (e)** (document-service and file-service are **not** repointed) | Data-layer parity is proven; application repoint for documents/files is out of the current scope by human decision (row 19) |
-| Application scope (spec row 43) | wave2b §2.1, wave3 App. A §2.3; dec. 18, 19 | 10 of 13 `app.py` routes still call Postgres `billing.*`; rating and invoicing have no Mongo HTTP route | **needs-STOP-C-line** → runbook **§H.2 (a), (b), (c)** | Partial application scope carried forward as explicit STOP C lines by human decision (row 19); unchanged at `74ecd69e` (`app.py` routes not touched by the fix pass) |
+| Application scope (spec row 43) | wave2b §2.1, wave3 App. A §2.3; dec. 18, 19 | 10 of 13 `app.py` routes still call Postgres `billing.*`; rating and invoicing have no Mongo HTTP route | **needs-STOP-C-line** → runbook **§H.2 (a), (b), (c)** | Partial application scope carried forward as explicit STOP C lines by human decision (row 19); unchanged at `74ecd69e98876b8da26336a6d7cc24eba3e74697` (`app.py` routes not touched by the fix pass) |
 | U5/U6/U9 ledger | `04_progress.md` | TTL expiry unobserved; concurrency paths unit-tested only; `JOB_NIGHTLY_DUNNING` replacement never scheduled; Flask routes carry no auth (matches legacy) | accepted-as-is | Verified at the level the legacy estate itself provides |
 
 ## 7. Stored-procedure track (Tier-4 parity per package)
@@ -183,14 +198,14 @@ whose `ORACLE_SOURCE_SHA 0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb
 `USER_SOURCE` for the five packages (`transcripts_match: true`, `--parallel-run-v2:…/evidence/cycle3/U{7,8,9}/gate/tier4_provenance.json`).
 U6 Tier-4 is `evidence/cycle3/U6/gate/tier4_replay.json` against the same source. All five packages are `VALID` in
 `USER_OBJECTS`; live bodies equal the checked-in `db/oracle/**/*.sql` (whitespace-normalised). Tier-4 pass counts below are
-the cycle-3 (final) values at `74ecd69e`, identical in cycles 1–2 and to the wave / fix-pass reports.
+the cycle-3 (final) values at `74ecd69e98876b8da26336a6d7cc24eba3e74697`, identical in cycles 1–2 and to the wave / fix-pass reports.
 
 | Package | Port | Transcripts | Tier-4 (final cycle) | Independent probes | Legacy still read by any code path? |
 |---|---|---|---|---|---|
 | `PKG_OW_UTIL` | `ow_billing/util.py` | exercised through PLANS-001…005 (no own transcript ids) | 5/5 (via U6) | wave2b §2.1: `f_md5_uuid` 7/7, `f_code_desc` 32+2 branches, `f_dt2str` ok, `f_str2dt` 10/15 (F-U6-1) | **Yes** — `app.py` `/`, `/plans`, `/plans/<t>/entitlement`, `/plans/<t>/change`, `/health` still call Postgres `billing.*` (spec row 43, calibration routes). Mongo equivalents live at `/api/plans`, `/api/tenants/<t>/entitlement`, `/api/tenants/<t>/plan-change` |
 | `PKG_PLANS` | `ow_billing/plans.py` | PLANS-001…005 | 5/5 | wave2b §2.1: `fn_list_plans` full parity, `fn_entitlement` 414 ops, `sp_change_plan` 8 paths, HTTP 71/72 | same as above |
 | `PKG_RATING` | `ow_billing/rating.py` | RATING-001…008 | 8/8 | wave2b §2.2: `fn_usage_rating` 552 ops 0 mismatches, `fn_usage_summary` 306 rows, `sp_finalize_rating` 5 paths (F-U7-1) | **Yes** — `app.py` `/api/rating/preview`, `/api/rating/finalize` still call Postgres `billing.*`; **no Mongo HTTP route exists** for rating (Python module only) |
-| `PKG_INVOICING` | `ow_billing/invoicing.py` | INVOICE-001…006 | 6/6 | wave3 App. A §2.1: `fn_invoice_preview` 280 ops, `sp_issue_invoice` 10 paths, `fn_invoice_lines` 4 (76/85 at `0024b45e`; F-U8-1 ×8, F-U8-2 ×1); fix pass at `7791a93e`: T4 6/6, 26/26 probes, `lines[].invoice_id` 17/17 on rebuilt lines (F-U8-1 closed; F-U8-2 remains a §H.3 line) | **Yes** — `app.py` `/api/invoices/<t>/preview`, `/api/invoices/<t>/issue`, `/api/invoices/<id>/lines` still call Postgres `billing.*`; **no Mongo HTTP route exists** for invoicing |
+| `PKG_INVOICING` | `ow_billing/invoicing.py` | INVOICE-001…006 | 6/6 | wave3 App. A §2.1: `fn_invoice_preview` 280 ops, `sp_issue_invoice` 10 paths, `fn_invoice_lines` 4 (76/85 at `0024b45ed39005012ca88669be4dc80565a3c994`; F-U8-1 ×8, F-U8-2 ×1); fix pass at `7791a93e7033ba9ac8b40429d31f84127aec05a7`: T4 6/6, 26/26 probes, `lines[].invoice_id` 17/17 on rebuilt lines (F-U8-1 closed; F-U8-2 remains a §H.3 line) | **Yes** — `app.py` `/api/invoices/<t>/preview`, `/api/invoices/<t>/issue`, `/api/invoices/<id>/lines` still call Postgres `billing.*`; **no Mongo HTTP route exists** for invoicing |
 | `PKG_DUNNING` | `ow_billing/dunning.py`, `jobs.py`, `/api/dunning/*` | DUNNING-001…005 | 5/5 | wave3 App. A §2.2: `fn_overdue_accounts` 16 as_of, `sp_schedule_dunning` 7 runs, `sp_suspend_overdue` 5 runs, routes 65/65 | No legacy read; Mongo routes exist. `JOB_NIGHTLY_DUNNING` replacement is env-gated (`OW_BILLING_JOB_NIGHTLY_DUNNING_ENABLED`) and never activated |
 
 `reports.py` RPT-114 (`/api/reports/month-end`, `/api/reports/reconciliation`): Mongo-only via `MONGODB_ATLAS_URI`
@@ -199,14 +214,29 @@ the cycle-3 (final) values at `74ecd69e`, identical in cycles 1–2 and to the w
 
 ## 8. Gap ledger (v1 gaps → v2 status)
 
-| # | v1 gap (watermark `0150de08`) | v2 status | Evidence |
+| # | v1 gap (watermark `0150de08b072f15969a5a97da655a483b18ed939`) | v2 status | Evidence |
 |---|---|---|---|
-| 1 | F-U8-1 not fixed, not re-gated | **CLOSED** | PR #1457 @ `7791a93e` → merge `5fe2af81` (dec. 20); `tp-run/mongodb-20260901T205236Z--fix-recon:.migration/recon/wave_reports/fix_pass.md` (U8 T4 6/6, idempotent, probes 26/26, `fix_pass_evidence/U8/gate/`, `U8/gate_run2/`, `probe_lines_after_gate.json`); `--parallel-run-v2:.migration/recon/parallel_run/evidence/cycle{1,2,3}/U8/gate/result.json` PASS at `74ecd69e`; `evidence/fix_acceptance_probe.txt` |
+| 1 | F-U8-1 not fixed, not re-gated | **CLOSED** | PR #1457 @ `7791a93e7033ba9ac8b40429d31f84127aec05a7` → merge `5fe2af81ed566ca9129489b30a1df5ae16c8544f` (dec. 20); `tp-run/mongodb-20260901T205236Z--fix-recon:.migration/recon/wave_reports/fix_pass.md` (U8 T4 6/6, idempotent, probes 26/26, `fix_pass_evidence/U8/gate/`, `U8/gate_run2/`, `probe_lines_after_gate.json`); `--parallel-run-v2:.migration/recon/parallel_run/evidence/cycle{1,2,3}/U8/gate/result.json` PASS at `74ecd69e98876b8da26336a6d7cc24eba3e74697`; `evidence/fix_acceptance_probe.txt` |
 | 2 | F-X-1 not consolidated; no audit/hist counter seed | **CLOSED** | same PR; `fix_pass_evidence/load_report.counters.json` (5/5 `seeded == oracle_last_number`, `advanced_preserved=[]`), `probes_current_head.json` (single contract, ids `[3..8]`); `--parallel-run-v2:…/evidence/load/U1.load_report.json` (counters 5) and `evidence/fix_acceptance_probe.txt` (`counters_eq_user_sequences: true`, no legacy `SEQ_*`/`value` docs); `04_progress.md` U1 register row |
 | 3 | F-U8-2 / F-U7-1 undecided | **STOP C line** (runbook §H.3) | decision row 19 ("carry forward as explicit STOP C decision lines"); §6 row F-U8-2 / F-U7-1 |
-| 4 | Wave-2b probe bundle machine-local | **CLOSED** | committed at `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b_probes/{U6,U7}/` (head `59246e76`; 39 files: gate results, `tier4_replay.json`/`tier4_provenance.json`, `probe_u6.py`/`probe_u7.py`, `probes.json`, load reports, fingerprints) — see §4 wave 2b row |
+| 4 | Wave-2b probe bundle machine-local | **CLOSED** | committed at `tp-run/mongodb-20260901T205236Z--wave2b-recon-part1:.migration/recon/wave_reports/wave2b_probes/{U6,U7}/` (head `59246e76a6475f9f2fd613cdc031c8ff97f0be9b`; 39 files: gate results, `tier4_replay.json`/`tier4_provenance.json`, `probe_u6.py`/`probe_u7.py`, `probes.json`, load reports, fingerprints) — see §4 wave 2b row |
 | 5 | Application scope partial | **STOP C lines** (runbook §A.2, §H.2 (a)–(e)) | decision row 19; §6 rows "Application scope" and "U1/U2/U3/U4 ledger"; §7 column "Legacy still read by any code path?" |
 
 No gap remains open: gaps 1, 2 and 4 are closed with committed evidence; gaps 3 and 5 are explicit STOP C decision lines
-that the orchestrator must present (runbook §H). Hence **COMPLETE**. The independent audit and STOP C have not started;
-this pack does not pre-empt either.
+that the orchestrator must present (runbook §H). Hence **COMPLETE**. STOP C has not started; this pack does not pre-empt it.
+
+## 9. Independent audit (v2 → v3)
+
+Audit: `tp-run/mongodb-20260901T205236Z--audit:.migration/recon/audit/countersign.md` (re-ran the 8 stock gates against the
+frozen evidence with the harness pinned to plugin commit `8d4f787151ad460659d139c081ddc1284c08552c`; verdict FINDINGS, four items).
+Dispositions per decision row 21; none changes data, tolerances, mapping shape or canonicalization.
+
+| Finding | Severity | Closing edit in v3 | STOP C line |
+|---|---|---|---|
+| F-A-1 | HIGH | Harness pinned by commit + content sha256 (§1; `01_conventions.md` "Recon harness"; `--parallel-run-v2` evidence-log header); `.migration/allowed_targets.json` added | **§H.6** — re-grade under the hardened harness (mapping-shape amendment) before cutover: recommendation **NO** |
+| F-A-2 | MEDIUM | Runbook D.2/D.4/E.1/E.4/E.5 derive expected counters from the live `USER_SEQUENCES` read at freeze; disclosure section "Tooling write to legacy during the engagement" | **§H.7** — explicit acknowledgement of the disclosed wave-0 probe write |
+| F-A-3 | MEDIUM | Runbook D.9, E.4, G.3 executor → CUSTOMER; Devin observes/grades only; line 6 and §B.6 now hold | — |
+| F-A-4 | LOW | All heads expanded to 40-char SHAs in pack, runbook, `04_progress.md`, evidence-log header | — |
+
+Every audit finding therefore has either a closing edit or an explicit STOP C line; the pack remains **COMPLETE** at watermark
+`74ecd69e98876b8da26336a6d7cc24eba3e74697`. The parity evidence itself (§4–§5) is unchanged by this revision.
