@@ -1,0 +1,494 @@
+{
+  "version": "v1.0.1",
+  "namespace": "mongo_205236",
+  "target_database": "ow_tp_mongodb_205236",
+  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
+  "params": {
+    "batch_no": "Oracle conversion/batch number for the namespace (85559852 for NS=demo)",
+    "source_ns": "DynamoDB ns partition value (demo)"
+  },
+  "excluded_objects": [
+    {
+      "object": "FIXTURE_META",
+      "reason": "fixture bookkeeping (INITIALIZED_AT, non-deterministic); no application reader"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "replay_u9_tenants",
+      "root_table": "TENANTS",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 0,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt_yn",
+          "source_type": "CHAR",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": ""
+    },
+    {
+      "collection": "replay_u9_subscriptions",
+      "root_table": "SUBSCRIPTIONS",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "starts_on": -1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "TRG_SUB_NO_UNCANCEL (status 30 may not revert) and TRG_SUBSCRIPTIONS_HIST move to the application write path (U6)."
+    },
+    {
+      "collection": "replay_u9_billing_invoices",
+      "root_table": "INVOICES",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_AT",
+          "target": "issued_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "SUBTOTAL",
+          "target": "subtotal",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TAX",
+          "target": "tax",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TOTAL",
+          "target": "total",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINES",
+          "child_where": null,
+          "parent_key": [
+            "INVOICE_ID"
+          ],
+          "key": {
+            "source": [
+              "ID"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "ID",
+              "target": "id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "INVOICE_ID",
+              "target": "invoice_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "LINE_NO",
+              "target": "line_no",
+              "source_type": "NUMBER(6,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "LINE_TYPE",
+              "target": "line_type",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "DESCRIPTION",
+              "target": "description",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            }
+          ]
+        }
+      ],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "issued_at": 1
+          }
+        },
+        {
+          "keys": {
+            "status_cd": 1,
+            "issued_at": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "Package-owned transactional invoices (distinct from the bulk INVOICE_HEADER feed \u2192 invoices). Lines rebuilt from scratch on every issue \u2192 single replaceOne."
+    },
+    {
+      "collection": "replay_u9_dunning_attempts",
+      "root_table": "DUNNING_ATTEMPTS",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attempt_no",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduled_for",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "invoice_id": 1,
+            "attempt_no": 1
+          },
+          "unique": true
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "UQ_DUNNING_ATTEMPTS preserved as a unique index; the swallowed WHEN OTHERS insert becomes an explicit duplicate-key no-op."
+    },
+    {
+      "collection": "replay_u9_notifications",
+      "root_table": "NOTIFICATIONS",
+      "family": "oracle",
+      "unit": "U9",
+      "wave": 2,
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": null,
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sent_at",
+          "source_type": "TIMESTAMP(6)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [],
+      "indexes": [
+        {
+          "keys": {
+            "tenant_id": 1,
+            "kind_cd": 1,
+            "sent_at": 1
+          },
+          "unique": true
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": ""
+    }
+  ]
+}
