@@ -1,0 +1,38 @@
+{
+ "wave": "wave3",
+ "session": "Part 1 re-attestation (independent recon; converted nothing; children's diagnoses not read)",
+ "fetched_at_utc": "2026-09-02T04:41Z (git fetch origin --prune)",
+ "run_branch": "tp-run/mongodb-20260901T205236Z",
+ "run_branch_head": "1c03cce78178e03d7740fab07d036b0bf0ee1d24",
+ "units": {
+  "U8": {
+   "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1447",
+   "branch": "tp-run/mongodb-20260901T205236Z--u8",
+   "current_head": "0024b45ed39005012ca88669be4dc80565a3c994",
+   "merge_commit_on_run_branch": "1d7aa08b5d884c0c66fa3bcb4afa72f403870d05",
+   "merge_base_with_first_parent": "080d6319611f8e767408edb6742398556299b782",
+   "merged": true,
+   "prior_live_recon_head": "0024b45ed39005012ca88669be4dc80565a3c994",
+   "head_equals_prior_attested_head": true,
+   "unit_owned_files_changed_between_head_and_run_head": [".migration/04_progress.md (shared ledger, 3 lines)"],
+   "unit_owned_code_unchanged": ["services/legacy-billing/app/ow_billing/invoicing.py","services/legacy-billing/tests/test_invoicing.py","scripts/tp_mongo/load_u8.py","scripts/tp_mongo/recon_report_u8.py",".migration/recon_ext/recon_u8.py",".migration/recon/U8/**"],
+   "carried_verdict": "PASS (with findings F-U8-1, F-U8-2, F-X-1)",
+   "carried_from": "tp-run/mongodb-20260901T205236Z--wave3-recon:.migration/recon/wave_reports/wave3.md @ 0f6490f369b87134a232e4e17bccd434c8405d0c (2026-09-02 03:56Z)"
+  },
+  "U9": {
+   "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1444",
+   "branch": "tp-run/mongodb-20260901T205236Z--u9",
+   "current_head": "9f67ec79059fc25bd04d56d1891cd0851a9c47ee",
+   "merge_commit_on_run_branch": "24592b0b65a53456d22c8c4b670a3a6245c1e239",
+   "merge_base_with_first_parent": "080d6319611f8e767408edb6742398556299b782",
+   "merged": true,
+   "prior_live_recon_head": "9f67ec79059fc25bd04d56d1891cd0851a9c47ee",
+   "head_equals_prior_attested_head": true,
+   "unit_owned_files_changed_between_head_and_run_head": [".migration/04_progress.md (shared ledger, 3 lines)"],
+   "unit_owned_code_unchanged": ["services/legacy-billing/app/ow_billing/dunning.py","services/legacy-billing/app/ow_billing/jobs.py","services/legacy-billing/app/ow_billing/routes.py","services/legacy-billing/app/app.py","services/legacy-billing/tests/test_dunning.py","scripts/tp_mongo/load_replay_u9.py","scripts/tp_mongo/recon_report_u9.py",".migration/recon_ext/recon_u9.py",".migration/recon/U9/**"],
+   "carried_verdict": "PASS",
+   "carried_from": "tp-run/mongodb-20260901T205236Z--wave3-recon:.migration/recon/wave_reports/wave3.md @ 0f6490f369b87134a232e4e17bccd434c8405d0c (2026-09-02 03:56Z)"
+  }
+ },
+ "unit_tests_at_run_head": "tests/test_invoicing.py + tests/test_dunning.py: 19 passed"
+}

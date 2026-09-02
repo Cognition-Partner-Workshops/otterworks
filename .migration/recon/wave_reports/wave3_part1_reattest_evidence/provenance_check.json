@@ -1,0 +1,15 @@
+{
+ "checked_in_oracle_source_sha_at_run_head_1c03cce7": "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55",
+ "transcripts_ORACLE_SOURCE_SHA": [
+  "0d326cad54d94cd64e8abb53585b37436eaad2193fdc15ba3596fbb8db3f0d55"
+ ],
+ "match": true,
+ "live_USER_SOURCE_body_equals_checked_in_file_whitespace_normalized": {
+  "PKG_INVOICING": true,
+  "PKG_DUNNING": true
+ },
+ "pkg_files": {
+  "PKG_INVOICING": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+  "PKG_DUNNING": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql"
+ }
+}
