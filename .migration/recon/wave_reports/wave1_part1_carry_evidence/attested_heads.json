@@ -1,0 +1,6 @@
+{
+  "wave": "wave1",
+  "run_branch_head": "da6e6ad2c1f9fa82656b744d229a5fee435c635f",
+  "U3": {"pr": 1420, "head": "dfa5e9781e08718a7707a0a14ef9e8513149ed92", "merge_commit": "811aed6f0ef89f414393e538e706abda86be2240", "status": "MERGED", "verdict": "PASS (carried)"},
+  "U4": {"pr": 1419, "head": "3420f475c29b8889bc8676cebb58a9b4faabff2a", "merge_commit": "cdb0abd4b27a0e4f9ee28468748940835fcec7d4", "status": "MERGED", "verdict": "PASS (carried)"}
+}

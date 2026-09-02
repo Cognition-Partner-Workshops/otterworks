@@ -1,0 +1,8 @@
+# target-only sanity read (no source connection opened; source-load cap untouched), 2026-09-02, parent machine
+# MONGODB_ATLAS_URI by name; db ow_tp_mongodb_205236 / ow_tp_mongodb_205236_quarantine
+documents            2000  (ns=mongo_205236: 2000)  idx [_id_, folder_id_1, owner_id_1, versions.id_1]
+document_snapshots    384  (ns=mongo_205236:  384)  idx [_id_, document_id_1_created_at_-1]
+files               10000  (ns=mongo_205236: 10000) idx [_id_, folder_id_1, owner_id_1_is_trashed_1]
+quarantine: orphan_document_snapshots 6 (U3); dirty_signup_dt 50, bad_csv_list 31 (U1); invoice_feed_orphan_lines 37 (U2)
+files.orphaned_metadata==true markers: 40 ; documents with version_gaps: 10 ; files__u4_staging residue: none
+=> identical to the load state attested in the prior LIVE reports for these heads.
