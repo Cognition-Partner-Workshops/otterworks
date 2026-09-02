@@ -1,0 +1,1 @@
+/home/ubuntu/cutover_work/pr/cycle2/U1/mapping_u1_subset.json ['customers', 'customers_history']

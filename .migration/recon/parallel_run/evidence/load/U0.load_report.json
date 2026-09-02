@@ -1,0 +1,44 @@
+{
+  "started_at": "2026-09-02T05:25:36.791725Z",
+  "finished_at": "2026-09-02T05:25:39.043792Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "ns": "mongo_205236",
+  "secret_names": {
+    "dsn": "OW_BILLING_FIXTURE_DSN",
+    "uri": "MONGODB_ATLAS_URI"
+  },
+  "collections": {
+    "codes": {
+      "root_table": "CODES",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 32,
+      "inserted": 32,
+      "docs_after": 32,
+      "ns_docs_after": 32,
+      "indexes": [
+        "code_type_1_code_val_1"
+      ]
+    },
+    "tenants": {
+      "root_table": "TENANTS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": []
+    },
+    "plans": {
+      "root_table": "PLANS",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": []
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "version": "v1.0.1",
+  "namespace": "mongo_205236",
+  "target_database": "ow_tp_mongodb_205236",
+  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
+  "params": {
+    "batch_no": "Oracle conversion/batch number for the namespace (85559852 for NS=demo)",
+    "source_ns": "DynamoDB ns partition value (demo)"
+  },
+  "excluded_objects": [
+    {
+      "object": "FIXTURE_META",
+      "reason": "fixture bookkeeping (INITIALIZED_AT, non-deterministic); no application reader"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "files",
+      "root_table": "otterworks-file-metadata",
+      "family": "dynamodb",
+      "unit": "U4",
+      "wave": 1,
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "root_where": "ns = '${source_ns}'",
+      "fields": [
+        {
+          "source": "id",
+          "target": "_id",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "name",
+          "target": "name",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "mime_type",
+          "target": "mime_type",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "size_bytes",
+          "target": "size_bytes",
+          "source_type": "N",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "s3_key",
+          "target": "s3_key",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "owner_id",
+          "target": "owner_id",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "folder_id",
+          "target": "folder_id",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "is_trashed",
+          "target": "is_trashed",
+          "source_type": "BOOL",
+          "bson_type": "bool",
+          "rules": []
+        },
+        {
+          "source": "version",
+          "target": "version",
+          "source_type": "N",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "created_at",
+          "target": "created_at",
+          "source_type": "S(iso8601)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "updated_at",
+          "target": "updated_at",
+          "source_type": "S(iso8601)",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ns",
+          "target": "source_ns",
+          "source_type": "S",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "derived_ungraded": [
+        {
+          "target": "orphaned_metadata",
+          "from": "s3_key presence",
+          "rule": "marker when the S3 object is absent (40 expected); reported, item still migrates"
+        }
+      ],
+      "indexes": [
+        {
+          "keys": {
+            "owner_id": 1,
+            "is_trashed": 1
+          }
+        },
+        {
+          "keys": {
+            "folder_id": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "Item-per-document 1:1. DynamoDB ns attribute is the tenant partition and is carried as source_ns; migration namespace is ns."
+    }
+  ]
+}

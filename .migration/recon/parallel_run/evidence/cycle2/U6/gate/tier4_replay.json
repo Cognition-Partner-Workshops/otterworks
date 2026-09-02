@@ -1,0 +1,85 @@
+[
+  {
+    "name": "PLANS-001",
+    "source": [
+      {
+        "business_fields.codes": "[\"STARTER\", \"GROWTH\", \"SCALE\"]",
+        "business_fields.fees": "[\"49.00\", \"149.00\", \"499.00\"]"
+      }
+    ],
+    "target": [
+      {
+        "business_fields.codes": "[\"STARTER\", \"GROWTH\", \"SCALE\"]",
+        "business_fields.fees": "[\"49.00\", \"149.00\", \"499.00\"]"
+      }
+    ]
+  },
+  {
+    "name": "PLANS-002",
+    "source": [
+      {
+        "business_fields.included_units": "100",
+        "business_fields.plan_code": "\"STARTER\"",
+        "business_fields.subscription_status": "\"active\"",
+        "business_fields.tier": "\"starter\""
+      }
+    ],
+    "target": [
+      {
+        "business_fields.plan_code": "\"STARTER\"",
+        "business_fields.tier": "\"starter\"",
+        "business_fields.included_units": "100",
+        "business_fields.subscription_status": "\"active\""
+      }
+    ]
+  },
+  {
+    "name": "PLANS-003",
+    "source": [
+      {
+        "business_fields.included_units": "500",
+        "business_fields.plan_code": "\"GROWTH\"",
+        "business_fields.subscription_status": "\"suspended\"",
+        "business_fields.tier": "\"growth\""
+      }
+    ],
+    "target": [
+      {
+        "business_fields.plan_code": "\"GROWTH\"",
+        "business_fields.tier": "\"growth\"",
+        "business_fields.included_units": "500",
+        "business_fields.subscription_status": "\"suspended\""
+      }
+    ]
+  },
+  {
+    "name": "PLANS-004",
+    "source": [
+      {
+        "business_fields.subscriptions": "[{\"ends_on\": \"2026-02-28\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000002\", \"starts_on\": \"2026-03-01\", \"status\": \"active\"}]",
+        "probes.subscription_rows": "[{\"ends_on\": \"2026-02-28\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000002\", \"starts_on\": \"2026-03-01\", \"status\": \"active\"}]"
+      }
+    ],
+    "target": [
+      {
+        "business_fields.subscriptions": "[{\"ends_on\": \"2026-02-28\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000002\", \"starts_on\": \"2026-03-01\", \"status\": \"active\"}]",
+        "probes.subscription_rows": "[{\"ends_on\": \"2026-02-28\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000002\", \"starts_on\": \"2026-03-01\", \"status\": \"active\"}]"
+      }
+    ]
+  },
+  {
+    "name": "PLANS-005",
+    "source": [
+      {
+        "business_fields.subscriptions": "[{\"ends_on\": \"2026-03-14\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000003\", \"starts_on\": \"2026-03-15\", \"status\": \"active\"}]",
+        "probes.subscription_rows": "[{\"ends_on\": \"2026-03-14\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000003\", \"starts_on\": \"2026-03-15\", \"status\": \"active\"}]"
+      }
+    ],
+    "target": [
+      {
+        "business_fields.subscriptions": "[{\"ends_on\": \"2026-03-14\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000003\", \"starts_on\": \"2026-03-15\", \"status\": \"active\"}]",
+        "probes.subscription_rows": "[{\"ends_on\": \"2026-03-14\", \"plan_id\": \"10000000-0000-0000-0000-000000000001\", \"starts_on\": \"2026-01-01\", \"status\": \"active\"}, {\"ends_on\": null, \"plan_id\": \"10000000-0000-0000-0000-000000000003\", \"starts_on\": \"2026-03-15\", \"status\": \"active\"}]"
+      }
+    ]
+  }
+]

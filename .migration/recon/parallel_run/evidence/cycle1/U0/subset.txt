@@ -1,0 +1,1 @@
+/home/ubuntu/cutover_work/pr/cycle1/U0/mapping_u0_subset.json ['codes', 'tenants', 'plans']

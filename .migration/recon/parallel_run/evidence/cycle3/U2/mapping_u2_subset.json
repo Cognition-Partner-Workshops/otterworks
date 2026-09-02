@@ -1,0 +1,349 @@
+{
+  "version": "v1.0.1",
+  "namespace": "mongo_205236",
+  "target_database": "ow_tp_mongodb_205236",
+  "quarantine_database": "ow_tp_mongodb_205236_quarantine",
+  "params": {
+    "batch_no": "Oracle conversion/batch number for the namespace (85559852 for NS=demo)",
+    "source_ns": "DynamoDB ns partition value (demo)"
+  },
+  "excluded_objects": [
+    {
+      "object": "FIXTURE_META",
+      "reason": "fixture bookkeeping (INITIALIZED_AT, non-deterministic); no application reader"
+    }
+  ],
+  "collections": [
+    {
+      "collection": "invoices",
+      "root_table": "INVOICE_HEADER",
+      "family": "oracle",
+      "unit": "U2",
+      "wave": 1,
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": "_id"
+      },
+      "root_where": "batch_no = ${batch_no}",
+      "fields": [
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_NO",
+          "target": "invoice_no",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "due_dt",
+          "source_type": "VARCHAR2",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "TOTAL_AMT",
+          "target": "total_amt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batch_no",
+          "source_type": "NUMBER(8,0)",
+          "bson_type": "int",
+          "rules": []
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINE",
+          "child_where": "batch_no = ${batch_no} AND invoice_id IN (SELECT invoice_id FROM invoice_header WHERE batch_no = ${batch_no})",
+          "parent_key": [
+            "INVOICE_ID"
+          ],
+          "key": {
+            "source": [
+              "LINE_ID"
+            ],
+            "target": "line_id"
+          },
+          "fields": [
+            {
+              "source": "LINE_ID",
+              "target": "line_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "INVOICE_NO",
+              "target": "invoice_no",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "INVOICE_ID",
+              "target": "invoice_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "CUST_ID",
+              "target": "cust_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "CUST_NO",
+              "target": "cust_no",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "CUST_NAME",
+              "target": "cust_name",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "TENANT_ID",
+              "target": "tenant_id",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "LINE_NO",
+              "target": "line_no",
+              "source_type": "NUMBER(6,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "LINE_TYPE_CD",
+              "target": "line_type_cd",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "ITEM_DESC",
+              "target": "item_desc",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "QTY",
+              "target": "qty",
+              "source_type": "NUMBER(12,3)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "UNIT_PRICE",
+              "target": "unit_price",
+              "source_type": "NUMBER(14,4)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "TAX_AMT",
+              "target": "tax_amt",
+              "source_type": "NUMBER(14,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            },
+            {
+              "source": "INVOICE_DT",
+              "target": "invoice_dt",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "SERVICE_PERIOD",
+              "target": "service_period",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "POSTED_YN",
+              "target": "posted_yn",
+              "source_type": "CHAR",
+              "bson_type": "string",
+              "rules": [
+                "rstrip_spaces",
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "GL_ACCT_CSV",
+              "target": "gl_acct_csv",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "BATCH_NO",
+              "target": "batch_no",
+              "source_type": "NUMBER(8,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "SRC_SYSTEM",
+              "target": "src_system",
+              "source_type": "VARCHAR2",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            }
+          ]
+        }
+      ],
+      "derived_ungraded": [
+        {
+          "target": "invoice_date",
+          "from": "INVOICE_DT",
+          "rule": "parse DD-MON-YY -> date or null"
+        },
+        {
+          "target": "due_date",
+          "from": "DUE_DT",
+          "rule": "parse DD-MON-YY -> date or null"
+        },
+        {
+          "target": "lines[].gl_accounts",
+          "from": "GL_ACCT_CSV",
+          "rule": "split ','"
+        },
+        {
+          "target": "status_desc",
+          "from": "STATUS_CD via codes(INV_STATUS)",
+          "rule": "$lookup at read time in RPT-114 aggregation; not stored"
+        }
+      ],
+      "indexes": [
+        {
+          "keys": {
+            "batch_no": 1,
+            "status_cd": 1
+          }
+        },
+        {
+          "keys": {
+            "cust_id": 1
+          }
+        },
+        {
+          "keys": {
+            "lines.line_id": 1
+          }
+        }
+      ],
+      "namespace_field": {
+        "target": "ns",
+        "value": "mongo_205236"
+      },
+      "notes": "Bounded embed (~8 lines/invoice, max observed 25). INVOICE_LINE rows whose invoice_id has no INVOICE_HEADER row -> quarantine.invoice_feed_orphan_lines (37 expected)."
+    }
+  ]
+}

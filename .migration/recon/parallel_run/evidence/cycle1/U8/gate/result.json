@@ -1,0 +1,95 @@
+{
+  "unit": "U8",
+  "mode": "live",
+  "mapping_version": "v1.0.1",
+  "tolerance_version": "v1",
+  "seed": 714559852,
+  "params": {
+    "batch_no": "85559852",
+    "source_ns": "demo"
+  },
+  "generated_at": "2026-09-02T05:33:49.639366+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 8,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 36,
+      "stats": {
+        "deferred_to_tier3": [
+          "replay_u8_plans.id",
+          "replay_u8_plans.code",
+          "replay_u8_plans.active_yn",
+          "replay_u8_subscriptions.id",
+          "replay_u8_subscriptions.tenant_id",
+          "replay_u8_subscriptions.plan_id",
+          "replay_u8_usage_events.id",
+          "replay_u8_usage_events.tenant_id",
+          "replay_u8_rating_periods.id",
+          "replay_u8_rating_periods.tenant_id",
+          "replay_u8_billing_invoices.id",
+          "replay_u8_billing_invoices.tenant_id",
+          "replay_u8_billing_invoices.period_id",
+          "replay_u8_credit_notes.id",
+          "replay_u8_credit_notes.tenant_id"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 902,
+      "stats": {
+        "replay_u8_plans": {
+          "mode": "full_diff",
+          "population": 3
+        },
+        "replay_u8_subscriptions": {
+          "mode": "full_diff",
+          "population": 69
+        },
+        "replay_u8_usage_events": {
+          "mode": "full_diff",
+          "population": 814
+        },
+        "replay_u8_rating_periods": {
+          "mode": "full_diff",
+          "population": 3
+        },
+        "embeds_graded": {
+          "replay_u8_rating_periods.results": 3,
+          "replay_u8_billing_invoices.lines": 2
+        },
+        "replay_u8_billing_invoices": {
+          "mode": "full_diff",
+          "population": 3
+        },
+        "replay_u8_credit_notes": {
+          "mode": "full_diff",
+          "population": 5
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 6,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS"
+}
