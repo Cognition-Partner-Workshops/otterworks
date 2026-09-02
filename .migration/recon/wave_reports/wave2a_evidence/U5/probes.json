@@ -1,0 +1,1007 @@
+{
+ "generated_at": "2026-09-02T00:53:55.016747+00:00",
+ "probes": [
+  {
+   "probe": "subscriptions: key set equality (src 69 / tgt 69)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "subscriptions: independent full value diff (69 docs x 7 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "subscriptions: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {
+    "ends_on": {
+     "src_null": 69,
+     "tgt_null": 69,
+     "tgt_missing": 0,
+     "nullable": "Y"
+    },
+    "suspended_on": {
+     "src_null": 68,
+     "tgt_null": 68,
+     "tgt_missing": 0,
+     "nullable": "Y"
+    }
+   }
+  },
+  {
+   "probe": "subscriptions: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "subscriptions: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "subscriptions: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "subscriptions: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "subscriptions: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "subscriptions_history: key set equality (src 0 / tgt 0)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "subscriptions_history: independent full value diff (0 docs x 10 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "subscriptions_history: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "subscriptions_history: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "subscriptions_history: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "subscriptions_history: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "subscriptions_history: no duplicate `hist_id`; `_id`==hist_id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "subscriptions_history: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "usage_events: key set equality (src 814 / tgt 814)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "usage_events: independent full value diff (814 docs x 5 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "usage_events: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "usage_events: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "usage_events: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "usage_events: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "usage_events: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "usage_events: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "rating_periods: key set equality (src 3 / tgt 3)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "rating_periods: independent full value diff (3 docs x 4 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "rating_periods: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "rating_periods: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "rating_periods: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "rating_periods: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "rating_periods: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "rating_periods: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "billing_invoices: key set equality (src 3 / tgt 3)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "billing_invoices: independent full value diff (3 docs x 8 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_invoices: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "billing_invoices: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "billing_invoices: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "billing_invoices: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "billing_invoices: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_invoices: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "credit_notes: key set equality (src 5 / tgt 5)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "credit_notes: independent full value diff (5 docs x 5 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "credit_notes: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "credit_notes: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "credit_notes: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "credit_notes: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "credit_notes: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "credit_notes: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "dunning_attempts: key set equality (src 1 / tgt 1)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "dunning_attempts: independent full value diff (1 docs x 6 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "dunning_attempts: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "dunning_attempts: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "dunning_attempts: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "dunning_attempts: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "dunning_attempts: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "dunning_attempts: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "notifications: key set equality (src 1 / tgt 1)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "notifications: independent full value diff (1 docs x 4 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "notifications: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "notifications: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "notifications: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "notifications: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "notifications: no duplicate `id`; `_id`==id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "notifications: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "billing_audit_log: key set equality (src 1 / tgt 1)",
+   "ok": true,
+   "detail": {
+    "only_src": [],
+    "only_tgt": []
+   }
+  },
+  {
+   "probe": "billing_audit_log: independent full value diff (1 docs x 4 fields)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_audit_log: null distribution per field (src NULL == tgt explicit null, 0 missing)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "billing_audit_log: field-set audit (exactly mapping fields + _id + ns[+embed])",
+   "ok": true,
+   "detail": {
+    "extra": {},
+    "missing": {}
+   }
+  },
+  {
+   "probe": "billing_audit_log: ns==mongo_205236 on 100%",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "billing_audit_log: BSON types per field == declared bson_type (or null)",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "billing_audit_log: no duplicate `log_id`; `_id`==log_id bijection",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_audit_log: no empty strings in string fields",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "rating_periods.results: per-parent embed length == child rows (hist src {1: 3, 0: 0} / tgt {1: 3})",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "rating_periods.results: orphan children in source (would abort loader)",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "rating_periods.results: element-level full value diff + field set",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "rating_periods.results: element `id` globally unique",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "results.used_units total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "0",
+    "tgt": "0"
+   }
+  },
+  {
+   "probe": "results.quota_units total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "300",
+    "tgt": "300"
+   }
+  },
+  {
+   "probe": "results.rollover_units total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "300",
+    "tgt": "300"
+   }
+  },
+  {
+   "probe": "results.billable_units total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "0",
+    "tgt": "0"
+   }
+  },
+  {
+   "probe": "results.overage_amount total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "0",
+    "tgt": "0.00"
+   }
+  },
+  {
+   "probe": "billing_invoices.lines: per-parent embed length == child rows (hist src {2: 1, 0: 2} / tgt {2: 1, 0: 2})",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "billing_invoices.lines: orphan children in source (would abort loader)",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "probe": "billing_invoices.lines: element-level full value diff + field set",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_invoices.lines: element `id` globally unique",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "billing_invoices.lines ordered by line_no asc",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "lines.amount total sum exact",
+   "ok": true,
+   "detail": {
+    "src": "161.29",
+    "tgt": "161.29"
+   }
+  },
+  {
+   "probe": "billing_invoices: (id, subtotal, sum(lines.amount)) identical relationship on both sides (note: invoice 1 subtotal 149 != lines 161.29 in SOURCE too \u2014 lines carry tax line; faithful)",
+   "ok": true,
+   "detail": {
+    "src": [
+     [
+      "60000000-0000-0000-0000-000000000001",
+      "149",
+      "161.29"
+     ],
+     [
+      "60000000-0000-0000-0000-000000000002",
+      "149",
+      "0"
+     ],
+     [
+      "60000000-0000-0000-0000-000000000003",
+      "49",
+      "0"
+     ]
+    ],
+    "tgt": [
+     [
+      "60000000-0000-0000-0000-000000000001",
+      "149.00",
+      "161.29"
+     ],
+     [
+      "60000000-0000-0000-0000-000000000002",
+      "149.00",
+      "0"
+     ],
+     [
+      "60000000-0000-0000-0000-000000000003",
+      "49.00",
+      "0"
+     ]
+    ]
+   }
+  },
+  {
+   "probe": "billing_invoices.subtotal sum/min/max exact (Decimal128)",
+   "ok": true,
+   "detail": {
+    "src": [
+     "347",
+     "49",
+     "149"
+    ]
+   }
+  },
+  {
+   "probe": "billing_invoices.tax sum/min/max exact (Decimal128)",
+   "ok": true,
+   "detail": {
+    "src": [
+     "28.62",
+     "4.04",
+     "12.29"
+    ]
+   }
+  },
+  {
+   "probe": "billing_invoices.total sum/min/max exact (Decimal128)",
+   "ok": true,
+   "detail": {
+    "src": [
+     "375.62",
+     "53.04",
+     "161.29"
+    ]
+   }
+  },
+  {
+   "probe": "credit_notes.amount sum/min/max exact (Decimal128)",
+   "ok": true,
+   "detail": {
+    "src": [
+     "145",
+     "5",
+     "55"
+    ]
+   }
+  },
+  {
+   "probe": "credit_notes.remaining_amount sum/min/max exact (Decimal128)",
+   "ok": true,
+   "detail": {
+    "src": [
+     "145",
+     "5",
+     "55"
+    ]
+   }
+  },
+  {
+   "probe": "usage_events.units sum/min/max + distinct tenants",
+   "ok": true,
+   "detail": {
+    "src": [
+     "336293",
+     "1",
+     "2201",
+     69
+    ]
+   }
+  },
+  {
+   "probe": "usage_events: min(units) > 0 (trigger invariant holds in data)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "subscriptions: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "usage_events: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "rating_periods: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_invoices: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "credit_notes: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "dunning_attempts: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "notifications: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "billing_audit_log: min/max boundary docs by every numeric/date column equal (both sides' extremes agree)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "subscriptions_history: exists, empty, indexes as declared",
+   "ok": true,
+   "detail": [
+    "_id_"
+   ]
+  },
+  {
+   "probe": "billing_audit_log: 1 doc == the post-seed PKG_OW_UTIL row (observer side effect), log_id long",
+   "ok": true,
+   "detail": {
+    "_id": 1,
+    "log_id": 1,
+    "logged_at": "2026-09-01 22:53:00",
+    "module": "PLANS",
+    "message": "fn_list_plans",
+    "ns": "mongo_205236"
+   }
+  },
+  {
+   "probe": "declared indexes (keys, unique, TTL) present exactly on all 9 collections",
+   "ok": true,
+   "detail": {}
+  },
+  {
+   "probe": "no *__staging residue in target db",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "usage_events has $jsonSchema validator, strict/error",
+   "ok": true,
+   "detail": {
+    "validator": {
+     "$jsonSchema": {
+      "bsonType": "object",
+      "required": [
+       "_id",
+       "id",
+       "tenant_id",
+       "occurred_at",
+       "units",
+       "kind_cd",
+       "ns"
+      ],
+      "properties": {
+       "units": {
+        "bsonType": "long",
+        "minimum": 1,
+        "description": "units must be > 0 (TRG_USAGE_EVENTS_CHECK)"
+       },
+       "kind_cd": {
+        "bsonType": "int"
+       },
+       "occurred_at": {
+        "bsonType": "date"
+       },
+       "tenant_id": {
+        "bsonType": "string"
+       },
+       "ns": {
+        "enum": [
+         "mongo_205236"
+        ]
+       }
+      }
+     }
+    },
+    "validationLevel": "strict",
+    "validationAction": "error"
+   }
+  },
+  {
+   "probe": "validator rejects units<=0 and wrong ns (TRG_USAGE_EVENTS_CHECK parity); nothing persisted",
+   "ok": true,
+   "detail": {
+    "units=0": "rejected",
+    "units=-1": "rejected",
+    "wrong ns": "rejected",
+    "units int32 (=5) not long": "rejected"
+   }
+  },
+  {
+   "probe": "validator: int32 `units` rejected (strict bsonType long) \u2014 write-path note for U6/U7",
+   "ok": true,
+   "detail": {
+    "units=0": "rejected",
+    "units=-1": "rejected",
+    "wrong ns": "rejected",
+    "units int32 (=5) not long": "rejected"
+   }
+  },
+  {
+   "probe": "usage_events count unchanged after negative tests",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "usage_events.kind_cd \u2282 codes USAGE_KIND (data holds; validator does not enforce the FK half of the trigger)",
+   "ok": true,
+   "detail": {
+    "kinds": [
+     1,
+     2,
+     3
+    ],
+    "used": [
+     1,
+     2,
+     3
+    ]
+   }
+  },
+  {
+   "probe": "quarantine: no U5 collections (none expected; loader aborts on orphans instead)",
+   "ok": true,
+   "detail": [
+    "dirty_signup_dt",
+    "invoice_feed_orphan_lines",
+    "orphan_document_snapshots",
+    "bad_csv_list"
+   ]
+  },
+  {
+   "probe": "cross: tenants/plans target id sets == source",
+   "ok": true,
+   "detail": {
+    "tenants": 69,
+    "plans": 3
+   }
+  },
+  {
+   "probe": "cross: subscriptions.tenant_id set == source; resolves to tenants: 69/69 (source 69/69)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: usage_events.tenant_id set == source; resolves to tenants: 69/69 (source 69/69)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: rating_periods.tenant_id set == source; resolves to tenants: 1/1 (source 1/1)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: billing_invoices.tenant_id set == source; resolves to tenants: 3/3 (source 3/3)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: credit_notes.tenant_id set == source; resolves to tenants: 3/3 (source 3/3)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: dunning_attempts.tenant_id set == source; resolves to tenants: 1/1 (source 1/1)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: notifications.tenant_id set == source; resolves to tenants: 1/1 (source 1/1)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: subscriptions.plan_id \u2282 plans (100%)",
+   "ok": true,
+   "detail": [
+    "10000000-0000-0000-0000-000000000001",
+    "10000000-0000-0000-0000-000000000002",
+    "10000000-0000-0000-0000-000000000003"
+   ]
+  },
+  {
+   "probe": "cross: codes in target == source (per type)",
+   "ok": true,
+   "detail": [
+    "CUST_STATUS",
+    "CUST_TYPE",
+    "DUN_STATUS",
+    "INV_STATUS",
+    "NOTIF_KIND",
+    "PHONE_TYPE",
+    "PLAN_TIER",
+    "SUB_STATUS",
+    "TENANT_STATUS",
+    "USAGE_KIND"
+   ]
+  },
+  {
+   "probe": "cross: subscriptions.status_cd values [10, 20] vs codes SUB_STATUS [10, 20, 30]",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: billing_invoices.status_cd values [20, 40] vs codes INV_STATUS [10, 20, 30, 40]",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: dunning_attempts.status_cd values [20] vs codes DUN_STATUS [10, 20, 30]",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: notifications.kind_cd values [2] vs codes NOTIF_KIND [1, 2, 3]",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: billing_invoices.period_id \u2282 rating_periods (target) == source resolution",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: dunning_attempts.invoice_id \u2282 billing_invoices",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: rating_periods.results[].subscription_id \u2282 subscriptions",
+   "ok": true,
+   "detail": [
+    "20000000-0000-0000-0000-000000000001"
+   ]
+  },
+  {
+   "probe": "cross: rating_periods results[].period_id == parent _id",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: billing_invoices lines[].invoice_id == parent _id",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "cross: subscriptions per tenant histogram equal",
+   "ok": true,
+   "detail": {
+    "1": 69
+   }
+  },
+  {
+   "probe": "other units' collections untouched (codes 32 / tenants 69 / plans 3 / customers 25000 / invoices 18750 / documents 2000 / document_snapshots 384 / files 10000)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "probe": "replay PKG_RATING.fn_usage_summary (kind, count, units) x 160 ops",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_DUNNING.fn_overdue_accounts x 4 as-of dates",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_INVOICING.fn_invoice_lines x 3 invoices",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_PLANS.fn_entitlement (tenants \u22c8 subscriptions \u22c8 plans, latest covering) x 207 ops",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_RATING rollover window (prior 3 months results) x 9 ops",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_INVOICING credit-note application order per tenant",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "probe": "replay PKG_DUNNING.sp_schedule_dunning read half (status 40 invoices, next attempt_no)",
+   "ok": true,
+   "detail": {
+    "src": [
+     [
+      "60000000-0000-0000-0000-000000000001",
+      "00000000-0000-0000-0000-000000000002",
+      1
+     ],
+     [
+      "60000000-0000-0000-0000-000000000002",
+      "00000000-0000-0000-0000-000000000005",
+      2
+     ]
+    ],
+    "tgt": [
+     [
+      "60000000-0000-0000-0000-000000000001",
+      "00000000-0000-0000-0000-000000000002",
+      1
+     ],
+     [
+      "60000000-0000-0000-0000-000000000002",
+      "00000000-0000-0000-0000-000000000005",
+      2
+     ]
+    ]
+   }
+  },
+  {
+   "probe": "replay PKG_DUNNING.sp_suspend_overdue read half (kind 3 notification exists per overdue tenant)",
+   "ok": true,
+   "detail": {
+    "src": {
+     "00000000-0000-0000-0000-000000000002": 0,
+     "00000000-0000-0000-0000-000000000005": 0
+    },
+    "tgt": {
+     "00000000-0000-0000-0000-000000000002": 0,
+     "00000000-0000-0000-0000-000000000005": 0
+    }
+   }
+  }
+ ],
+ "elapsed_s": 44.7,
+ "summary": {
+  "total": 142,
+  "ok": 142,
+  "flags": []
+ }
+}

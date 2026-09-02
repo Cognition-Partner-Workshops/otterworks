@@ -1,0 +1,48 @@
+[
+ {
+  "SUBSCRIPTIONS": 69,
+  "SUBSCRIPTIONS_HIST": 0,
+  "USAGE_EVENTS": 814,
+  "RATING_PERIODS": 3,
+  "RATING_RESULTS": 3,
+  "INVOICES": 3,
+  "INVOICE_LINES": 2,
+  "CREDIT_NOTES": 5,
+  "DUNNING_ATTEMPTS": 1,
+  "NOTIFICATIONS": 1,
+  "BILLING_AUDIT_LOG": 1,
+  "FIXTURE_META": "2026-09-01 20:53:10.961888",
+  "audit_rows": [
+   [
+    1,
+    "2026-09-01 22:53:00",
+    "PLANS",
+    "fn_list_plans",
+    "2026-09-01 22:52:58"
+   ]
+  ]
+ },
+ {
+  "SUBSCRIPTIONS": 69,
+  "SUBSCRIPTIONS_HIST": 0,
+  "USAGE_EVENTS": 814,
+  "RATING_PERIODS": 3,
+  "RATING_RESULTS": 3,
+  "INVOICES": 3,
+  "INVOICE_LINES": 2,
+  "CREDIT_NOTES": 5,
+  "DUNNING_ATTEMPTS": 1,
+  "NOTIFICATIONS": 1,
+  "BILLING_AUDIT_LOG": 1,
+  "FIXTURE_META": "2026-09-01 20:53:10.961888",
+  "audit_rows": [
+   [
+    1,
+    "2026-09-01 22:53:00",
+    "PLANS",
+    "fn_list_plans",
+    "2026-09-01 22:52:58"
+   ]
+  ]
+ }
+]
