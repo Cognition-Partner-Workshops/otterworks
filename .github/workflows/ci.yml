@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, 'devin/*-eol-upgrades']
 
 env:
   AWS_REGION: us-east-1
