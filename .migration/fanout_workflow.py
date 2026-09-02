@@ -74,6 +74,9 @@ RESUMED = {
     "U0": {"session": "devin-4a712cd3cdda4e22add668ce6fa915ca",
            "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1423",
            "branch": "tp-run/mongodb-20260901T205236Z--u0"},
+    "U2": {"session": "devin-663f09e932ba4eacbed5b0635a1ba5d4",
+           "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1432",
+           "branch": "tp-run/mongodb-20260901T205236Z--u2"},
 }
 
 UNIT_SCHEMA = {
