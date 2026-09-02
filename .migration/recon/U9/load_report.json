@@ -1,0 +1,98 @@
+{
+  "unit": "U9",
+  "started_at": "2026-09-02T02:38:36.003566Z",
+  "finished_at": "2026-09-02T02:38:40.916126Z",
+  "generated_at": "2026-09-02T02:38:40.916146Z",
+  "target_db": "ow_tp_mongodb_205236",
+  "ns": "mongo_205236",
+  "prefix": "replay_u9_",
+  "collections": {
+    "replay_u9_billing_invoices": {
+      "cloned_from": "billing_invoices",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 3,
+      "inserted": 3,
+      "docs_after": 3,
+      "ns_docs_after": 3,
+      "indexes": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "embedded": {
+        "lines": 2
+      }
+    },
+    "replay_u9_tenants": {
+      "cloned_from": "tenants",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": []
+    },
+    "replay_u9_subscriptions": {
+      "cloned_from": "subscriptions",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 69,
+      "inserted": 69,
+      "docs_after": 69,
+      "ns_docs_after": 69,
+      "indexes": [
+        "tenant_id_1_starts_on_-1"
+      ]
+    },
+    "replay_u9_dunning_attempts": {
+      "cloned_from": "dunning_attempts",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "invoice_id_1_attempt_no_1"
+      ]
+    },
+    "replay_u9_notifications": {
+      "cloned_from": "notifications",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ]
+    },
+    "replay_u9_billing_audit_log": {
+      "cloned_from": "billing_audit_log",
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [
+        "logged_at_1"
+      ]
+    },
+    "replay_u9_counters": {
+      "dropped": true,
+      "recreated": true,
+      "source_rows": 1,
+      "inserted": 1,
+      "docs_after": 1,
+      "ns_docs_after": 1,
+      "indexes": [],
+      "sequence_start": 1
+    }
+  },
+  "secret_names": {
+    "uri": "MONGODB_ATLAS_URI"
+  }
+}
