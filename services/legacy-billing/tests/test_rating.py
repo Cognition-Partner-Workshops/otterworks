@@ -211,3 +211,51 @@ def test_store_prefix_isolates_replay_clone():
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))
+
+
+def test_log_msg_reconciles_unseeded_sequence_past_existing_rows():
+    store = _store()
+    _seed(store)
+    store.billing_audit_log.insert_one(
+        {"_id": Int64(7), "log_id": Int64(7), "module": "PLANS", "message": "x", "ns": NS_VALUE}
+    )
+    rating.compute_rating(store, TENANT, FEB1, FEB28)
+    ids = sorted(d["log_id"] for d in store.billing_audit_log.find())
+    assert ids == [7, 8]
+    assert store.counters.find_one({"_id": rating.AUDIT_SEQUENCE})["value"] == 8
+
+
+def test_log_msg_failure_is_swallowed_like_the_autonomous_transaction():
+    store = _store()
+    _seed(store)
+    _event(store, "e1", datetime(2026, 2, 10), 5)
+    store.billing_audit_log.insert_one({"_id": Int64(1), "log_id": Int64(1), "ns": NS_VALUE})
+    store.billing_audit_log.insert_one({"_id": Int64(2), "log_id": Int64(1), "ns": NS_VALUE})
+    store.counters.insert_one({"_id": rating.AUDIT_SEQUENCE, "value": Int64(0), "ns": NS_VALUE})
+    # sequence yields 1 (dup), reconciles to max log_id=1, yields 2 (dup again) -> swallowed
+    assert rating.compute_rating(store, TENANT, FEB1, FEB28).used_units == Decimal(5)
+    assert store.billing_audit_log.count_documents({}) == 2
+
+
+def test_finalize_append_is_guarded_against_a_racing_writer():
+    store = _store()
+    _seed(store)
+    _event(store, "e1", datetime(2026, 2, 10), 160)
+    period_id = rating.md5_uuid(f"{TENANT}2026-02-01")
+    result_id = rating.md5_uuid(period_id)
+    # another finalization landed the (stale) result between our period upsert and append
+    store.rating_periods.insert_one(
+        {
+            "_id": period_id,
+            "id": period_id,
+            "tenant_id": TENANT,
+            "period_start": datetime(2026, 2, 1),
+            "period_end": datetime(2026, 2, 28),
+            "results": [{"id": result_id, "period_id": period_id, "used_units": Int64(0)}],
+            "ns": NS_VALUE,
+        }
+    )
+    doc = rating.sp_finalize_rating(store, TENANT, FEB1, FEB28)
+    assert [r["id"] for r in doc["results"]] == [result_id]
+    assert doc["results"][0]["used_units"] == 160
+    assert doc["results"][0]["billable_units"] == 60

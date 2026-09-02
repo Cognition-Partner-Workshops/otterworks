@@ -21,6 +21,7 @@ from typing import Any
 from bson import Decimal128, Int64
 from pymongo import ASCENDING, DESCENDING, ReturnDocument
 from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from . import NS_VALUE
 
@@ -147,25 +148,54 @@ class RatingStore:
         return self.coll("counters")
 
 
-def log_msg(store: RatingStore, module: str, message: str) -> None:
-    """pkg_ow_util.log_msg: BILLING_AUDIT_LOG row keyed from SEQ_BILLING_AUDIT_LOG."""
+def _next_log_id(store: RatingStore) -> Int64:
+    if store.counters.find_one({"_id": AUDIT_SEQUENCE}) is None:
+        _reconcile_log_sequence(store)
     counter = store.counters.find_one_and_update(
         {"_id": AUDIT_SEQUENCE},
         {"$inc": {"value": Int64(1)}, "$setOnInsert": {"ns": NS_VALUE}},
         upsert=True,
         return_document=ReturnDocument.AFTER,
     )
-    log_id = Int64(counter["value"])
-    store.billing_audit_log.insert_one(
-        {
-            "_id": log_id,
-            "log_id": log_id,
-            "logged_at": datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0),
-            "module": module,
-            "message": message,
-            "ns": NS_VALUE,
-        }
+    return Int64(counter["value"])
+
+
+def _reconcile_log_sequence(store: RatingStore) -> None:
+    """Move the sequence past every log_id already present (the shared `counters` is not
+    guaranteed to be seeded for SEQ_BILLING_AUDIT_LOG while the audit log is)."""
+    top = store.billing_audit_log.find_one(sort=[("log_id", DESCENDING)])
+    highest = Int64(top["log_id"]) if top else Int64(0)
+    store.counters.update_one(
+        {"_id": AUDIT_SEQUENCE},
+        {"$max": {"value": highest}, "$setOnInsert": {"ns": NS_VALUE}},
+        upsert=True,
     )
+
+
+def log_msg(store: RatingStore, module: str, message: str) -> None:
+    """pkg_ow_util.log_msg: autonomous-transaction logger; a failure to log never
+    reaches the caller (WHEN OTHERS THEN ROLLBACK)."""
+    try:
+        for attempt in range(2):
+            log_id = _next_log_id(store)
+            try:
+                store.billing_audit_log.insert_one(
+                    {
+                        "_id": log_id,
+                        "log_id": log_id,
+                        "logged_at": datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0),
+                        "module": module[:30],
+                        "message": message[:4000],
+                        "ns": NS_VALUE,
+                    }
+                )
+                return
+            except DuplicateKeyError:
+                if attempt:
+                    raise
+                _reconcile_log_sequence(store)
+    except PyMongoError:
+        return
 
 
 # --- compute_rating -------------------------------------------------------------
@@ -396,36 +426,36 @@ def sp_finalize_rating(
     result_id = md5_uuid(period_id)
     banked = greatest(_sub(rating.quota_units, rating.used_units), Decimal(0))
 
-    updated = store.rating_periods.update_one(
-        {"tenant_id": tenant_id, "period_start": p_start, "results.id": result_id},
+    # INSERT rating_results ... EXCEPTION WHEN DUP_VAL_ON_INDEX THEN UPDATE the four
+    # amounts. The append is guarded by `results.id != result_id` in the same atomic
+    # document update, so racing finalizations cannot push the id twice; the refresh
+    # then targets the single element that exists.
+    refreshed = {
+        "used_units": _long(rating.used_units),
+        "rollover_units": _long(banked),
+        "billable_units": _long(rating.billable_units),
+        "overage_amount": _money(rating.overage_amount),
+    }
+    period_key = {"tenant_id": tenant_id, "period_start": p_start}
+    store.rating_periods.update_one(
+        {**period_key, "results.id": {"$ne": result_id}},
         {
-            "$set": {
-                "results.$.used_units": _long(rating.used_units),
-                "results.$.rollover_units": _long(banked),
-                "results.$.billable_units": _long(rating.billable_units),
-                "results.$.overage_amount": _money(rating.overage_amount),
+            "$push": {
+                "results": {
+                    "id": result_id,
+                    "period_id": period_id,
+                    "subscription_id": sub_id,
+                    "quota_units": _long(rating.quota_units),
+                    "created_at": p_end,
+                    **refreshed,
+                }
             }
         },
     )
-    if updated.matched_count == 0:
-        store.rating_periods.update_one(
-            {"tenant_id": tenant_id, "period_start": p_start},
-            {
-                "$push": {
-                    "results": {
-                        "id": result_id,
-                        "period_id": period_id,
-                        "subscription_id": sub_id,
-                        "used_units": _long(rating.used_units),
-                        "quota_units": _long(rating.quota_units),
-                        "rollover_units": _long(banked),
-                        "billable_units": _long(rating.billable_units),
-                        "overage_amount": _money(rating.overage_amount),
-                        "created_at": p_end,
-                    }
-                }
-            },
-        )
+    store.rating_periods.update_one(
+        {**period_key, "results.id": result_id},
+        {"$set": {f"results.$.{k}": v for k, v in refreshed.items()}},
+    )
     log_msg(store, "RATING", f"finalized period={period_id}")
     return store.rating_periods.find_one({"tenant_id": tenant_id, "period_start": p_start})
 
