@@ -16,10 +16,12 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
 import reports as reports_module
+from bson import Decimal128
 from flask import Flask
 from reports import (
     ns_batch_no,
     reports,
+    shape_balance_row,
     shape_balances,
     shape_line_rows,
     shape_status_rows,
@@ -36,12 +38,13 @@ def client(monkeypatch):
             [("ISSUED", "CHARGE", 400, "12000.00", "345.00", 100)],
         ),
     )
+    checks = [
+        {"name": "customers-populated", "status": "pass", "expected": "> 0", "actual": 25000},
+        {"name": "customers-namespaced", "status": "pass", "expected": 25000, "actual": 25000},
+    ]
     monkeypatch.setattr(
-        reports_module,
-        "oracle_query",
-        lambda sql, params: {
-            reports_module.BALANCES_SQL: [(25000, "1234567.00", "8901.00")]
-        }[sql],
+        reports_module, "mongo_reconciliation",
+        lambda batch_no: ((25000, "1234567.00", "8901.00"), checks),
     )
     app = Flask(__name__)
     app.register_blueprint(reports)
@@ -78,6 +81,17 @@ def test_shapers():
     }
 
 
+def test_shape_balance_row_preserves_oracle_sum_null_semantics():
+    assert shape_balance_row([]) == (0, None, None)
+    all_null = {"customer_count": 3, "current_balance_total": 0, "current_balance_values": 0,
+                "past_due_total": 0, "past_due_values": 0}
+    assert shape_balance_row([all_null]) == (3, None, None)
+    mixed = {"customer_count": 3, "current_balance_total": Decimal128("12.5"),
+             "current_balance_values": 2, "past_due_total": Decimal128("0"),
+             "past_due_values": 1}
+    assert shape_balance_row([mixed]) == (3, "12.50", "0.00")
+
+
 def test_month_end_contract(client):
     body = client.get("/api/reports/month-end?ns=demo").get_json()
     assert body["report"] == "month-end-finance"
@@ -93,14 +107,35 @@ def test_month_end_contract(client):
 
 def test_reconciliation_contract(client):
     body = client.get("/api/reports/reconciliation?ns=demo").get_json()
-    assert body["source"]["engine"] == "oracle"
+    assert body["source"]["engine"] == "mongodb"
     assert body["balances"] == {
         "customer_count": 25000,
         "current_balance_total": "1234567.00",
         "past_due_total": "8901.00",
     }
-    assert body["status"] == "baseline"
-    assert body["checks"] == []
+    assert body["status"] == "pass"
+    assert [c["name"] for c in body["checks"]] == ["customers-populated", "customers-namespaced"]
+    assert all(c["status"] == "pass" for c in body["checks"])
+
+
+def test_reconciliation_fails_when_a_check_fails(client, monkeypatch):
+    checks = [{"name": "customers-namespaced", "status": "fail", "expected": 25000, "actual": 24999}]
+    monkeypatch.setattr(
+        reports_module, "mongo_reconciliation", lambda batch_no: ((24999, "1.00", "0.00"), checks)
+    )
+    body = client.get("/api/reports/reconciliation?ns=demo").get_json()
+    assert body["status"] == "fail"
+    assert body["checks"] == checks
+
+
+def test_reconciliation_target_offline_returns_503(client, monkeypatch):
+    def boom(batch_no):
+        raise RuntimeError("ServerSelectionTimeoutError")
+
+    monkeypatch.setattr(reports_module, "mongo_reconciliation", boom)
+    response = client.get("/api/reports/reconciliation")
+    assert response.status_code == 503
+    assert response.get_json()["error"] == "legacy estate unavailable"
 
 
 def test_estate_offline_returns_503(client, monkeypatch):
