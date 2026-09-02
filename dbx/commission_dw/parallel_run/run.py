@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -16,8 +17,12 @@ from client import Databricks, require_ns
 WAREHOUSE = "565cd2fd713738c4"
 JOB_NAME = "ow_tp_cdw_recon"
 NOTEBOOK_PATH = "/Shared/ow_tp/cdw/recon"
-SRC_ROOT = "/Shared/ow_tp/cdw/recon/src"
-BASELINE_ROOT = "/Shared/ow_tp/cdw/recon/baseline"
+NOTIFY_NOTEBOOK_PATH = "/Shared/ow_tp/cdw/recon_notify"
+SECRET_SCOPE = "ow_tp_cdw"
+WEBHOOK_URL_ENV = "DEVIN_CDW_WEBHOOK_URL"
+WEBHOOK_SECRET_ENV = "DEVIN_CDW_WEBHOOK_SECRET"
+SRC_ROOT = "/Shared/ow_tp/cdw/recon_src"
+BASELINE_ROOT = "/Shared/ow_tp/cdw/recon_src/baseline"
 REPORT_ROOT = "/Volumes/ow_tp/bronze/landing/{ns}/recon/{run_id}"
 BASELINE_FILES = (
     "manifest.json",
@@ -68,8 +73,8 @@ run_id = dbutils.widgets.get("run_id")
 ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
 env = dict(os.environ, DATABRICKS_DEMO_HOST=ctx.apiUrl().get(),
            DATABRICKS_DEMO_TOKEN=ctx.apiToken().get())
-SRC = "/Workspace/Shared/ow_tp/cdw/recon/src"
-BASELINE = "/Workspace/Shared/ow_tp/cdw/recon/baseline"
+SRC = "/Workspace/Shared/ow_tp/cdw/recon_src"
+BASELINE = "/Workspace/Shared/ow_tp/cdw/recon_src/baseline"
 OUT = f"/Volumes/ow_tp/bronze/landing/{ns}/recon/{run_id}/{task}"
 if task not in {"fact_commission", "mv_agent_commission_summary"}:
     raise ValueError(f"unknown task: {task}")
@@ -103,6 +108,89 @@ if staged_red.lower() == "true":
     )
 """
 
+NOTIFY_NOTEBOOK = """# Databricks notebook source
+# Final task (run_if ALL_DONE): forward the completed run to the remediation
+# automation webhook. Secret-scope values are never printed.
+import json
+import urllib.request
+
+dbutils.widgets.text("ns", "cdw")
+dbutils.widgets.text("staged_red", "false")
+dbutils.widgets.text("run_id", "")
+dbutils.widgets.text("job_id", "")
+ns = dbutils.widgets.get("ns")
+run_id = dbutils.widgets.get("run_id")
+ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
+host = ctx.apiUrl().get()
+token = ctx.apiToken().get()
+req = urllib.request.Request(
+    f"{host}/api/2.1/jobs/runs/get?run_id={run_id}",
+    headers={"Authorization": f"Bearer {token}"},
+)
+with urllib.request.urlopen(req, timeout=60) as resp:
+    run = json.load(resp)
+tasks = {}
+for task in run.get("tasks", []):
+    key = task["task_key"]
+    if key == "r3_notify":
+        continue
+    tasks[key] = {
+        "result_state": task.get("state", {}).get("result_state"),
+        "state_message": task.get("state", {}).get("state_message", ""),
+    }
+results = {t["result_state"] for t in tasks.values()}
+verdict = "GREEN" if results == {"SUCCESS"} else "RED"
+staged = any("STAGED RED RUN" in t["state_message"] for t in tasks.values())
+payload = {
+    "source": "databricks-jobs",
+    "job_name": run.get("run_name"),
+    "job_id": dbutils.widgets.get("job_id"),
+    "run_id": run_id,
+    "run_page_url": run.get("run_page_url"),
+    "ns": ns,
+    "verdict": verdict,
+    "staged_red": staged or dbutils.widgets.get("staged_red").lower() == "true",
+    "tasks": tasks,
+    "reports": {
+        key.split("_", 1)[1]: (
+            f"/Volumes/ow_tp/bronze/landing/{ns}/recon/{run_id}/"
+            f"{key.split('_', 1)[1]}/{key.split('_', 1)[1]}.recon.json"
+        )
+        for key in tasks
+    },
+}
+url = dbutils.secrets.get("SECRET_SCOPE", "devin_webhook_url")
+secret = dbutils.secrets.get("SECRET_SCOPE", "devin_webhook_secret")
+hook = urllib.request.Request(
+    url,
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json", "X-Webhook-Secret": secret},
+    method="POST",
+)
+with urllib.request.urlopen(hook, timeout=60) as resp:
+    print(f"webhook status={resp.status} verdict={verdict} staged_red={payload['staged_red']}")
+    dbutils.notebook.exit(json.dumps({
+        "webhook_status": resp.status,
+        "verdict": verdict,
+        "staged_red": payload["staged_red"],
+    }))
+""".replace("SECRET_SCOPE", SECRET_SCOPE)
+
+
+def ensure_webhook_secrets(dbx: Databricks) -> bool:
+    url = os.environ.get(WEBHOOK_URL_ENV)
+    secret = os.environ.get(WEBHOOK_SECRET_ENV)
+    if not url or not secret:
+        return False
+    scopes = dbx.ok("GET", "/api/2.0/secrets/scopes/list").get("scopes", [])
+    if not any(s.get("name") == SECRET_SCOPE for s in scopes):
+        dbx.ok("POST", "/api/2.0/secrets/scopes/create", {"scope": SECRET_SCOPE})
+    for key, value in (("devin_webhook_url", url), ("devin_webhook_secret", secret)):
+        dbx.ok("POST", "/api/2.0/secrets/put", {
+            "scope": SECRET_SCOPE, "key": key, "string_value": value,
+        })
+    return True
+
 
 def upload_file(dbx: Databricks, source: Path, destination: str) -> None:
     dbx.ok("POST", "/api/2.0/workspace/mkdirs", {"path": destination.rsplit("/", 1)[0]})
@@ -121,15 +209,14 @@ def workspace_relative(relative: str) -> str:
     return relative
 
 
-def deploy(dbx: Databricks, ns: str, webhook_id: str | None) -> int:
+def deploy(dbx: Databricks, ns: str, with_webhook: bool) -> int:
     source_settings = json.loads((HERE / "job.json").read_text(encoding="utf-8"))
     settings = json.loads(json.dumps(source_settings).replace("cdw", ns))
     settings["schedule"]["pause_status"] = "PAUSED"
-    if webhook_id:
-        settings["webhook_notifications"] = {
-            "on_success": [webhook_id],
-            "on_failure": [webhook_id],
-        }
+    if with_webhook and not ensure_webhook_secrets(dbx):
+        raise SystemExit(
+            f"--with-webhook needs {WEBHOOK_URL_ENV} and {WEBHOOK_SECRET_ENV} in the environment"
+        )
     for relative in UPLOADS:
         destination = (
             f"{SRC_ROOT.replace('/cdw/', f'/{ns}/')}/{workspace_relative(relative)}"
@@ -147,8 +234,17 @@ def deploy(dbx: Databricks, ns: str, webhook_id: str | None) -> int:
         DRIVER_NOTEBOOK.replace("/cdw/", f"/{ns}/"),
         language="PYTHON",
     )
+    if with_webhook:
+        dbx.import_notebook(
+            NOTIFY_NOTEBOOK_PATH.replace("/cdw/", f"/{ns}/"),
+            NOTIFY_NOTEBOOK,
+            language="PYTHON",
+        )
     job_id = dbx.upsert_job(settings)
-    print(f"job_id={job_id} name={settings['name']} pause_status=PAUSED")
+    print(
+        f"job_id={job_id} name={settings['name']} pause_status=PAUSED "
+        f"webhook={'wired' if with_webhook else 'none'}"
+    )
     return 0
 
 
@@ -167,13 +263,23 @@ def trigger(dbx: Databricks, ns: str, staged_red: bool) -> int:
     for task in result.get("tasks", []):
         task_key = task.get("task_key")
         task_state = task.get("state", {})
+        if task_key == "r3_notify":
+            print(
+                f"task={task_key} life_cycle_state={task_state.get('life_cycle_state')} "
+                f"result_state={task_state.get('result_state')}"
+            )
+            continue
         unit = task_key.removeprefix("r1_").removeprefix("r2_")
         report_path = f"{REPORT_ROOT.format(ns=ns, run_id=run_id)}/{unit}/{unit}.recon.json"
         print(
             f"task={task_key} life_cycle_state={task_state.get('life_cycle_state')} "
             f"result_state={task_state.get('result_state')} report={report_path}"
         )
-    return 0 if state.get("result_state") == "SUCCESS" else 1
+    recon_ok = all(
+        t.get("state", {}).get("result_state") == "SUCCESS"
+        for t in result.get("tasks", []) if t.get("task_key") != "r3_notify"
+    )
+    return 0 if recon_ok else 1
 
 
 def status(dbx: Databricks, ns: str) -> int:
@@ -207,7 +313,10 @@ def main() -> int:
     deploy_parser = subparsers.add_parser("deploy", help="upload the draft assets and upsert the paused job")
     deploy_parser.add_argument("--ns", default="cdw")
     deploy_parser.add_argument("--warehouse", default=WAREHOUSE)
-    deploy_parser.add_argument("--webhook-id")
+    deploy_parser.add_argument(
+        "--with-webhook", action="store_true",
+        help=f"add the r3_notify task; reads {WEBHOOK_URL_ENV}/{WEBHOOK_SECRET_ENV} into secret scope {SECRET_SCOPE}",
+    )
 
     trigger_parser = subparsers.add_parser("trigger", help="run the paused job and print task results")
     trigger_parser.add_argument("--ns", default="cdw")
@@ -222,7 +331,7 @@ def main() -> int:
     ns = require_ns(args.ns)
     dbx = Databricks(warehouse_id=args.warehouse)
     if args.command == "deploy":
-        return deploy(dbx, ns, args.webhook_id)
+        return deploy(dbx, ns, args.with_webhook)
     if args.command == "trigger":
         return trigger(dbx, ns, args.staged_red)
     return status(dbx, ns)
