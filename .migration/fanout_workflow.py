@@ -285,8 +285,11 @@ async def run_unit(uid):
             f"original child session {r['session']} after an orchestrator-approved resume; PR: {r['pr_url']} "
             f"(branch {r['branch']}, base {RUN_BRANCH}). Do NOT redo or re-run the migration. Verify only: the PR is "
             f"open against {RUN_BRANCH}; its head contains .migration/recon/{uid}/result.json with verdict PASS/GREEN, "
-            f"mapping_version v1.0.1, tolerance v1, run_mode fixture; the PR body has the required sections and no "
-            f"requester identification. Report verdict GREEN with pr_url/branch if all hold, else ESCALATE with what is missing.",
+            f"mapping_version v1.0.1, tolerance v1 (the harness has no fixture mode: result.json mode=live run against the "
+            f"local fixture DSN is expected; the fixture label lives in the repo-schema wrapper .migration/recon/{uid}/"
+            f"{uid.lower()}.recon.json run_mode=fixture); the PR body sections the child wrote contain no requester "
+            f"identification (ignore the platform-appended 'Requested by' footer, which no child controls). Report verdict "
+            f"GREEN with pr_url/branch if all hold, else ESCALATE with what is missing.",
             phase=f"convert-{uid}", schema=UNIT_SCHEMA, label=f"{u['title']} (resumed-evidence check)",
         )
     return await agent(
