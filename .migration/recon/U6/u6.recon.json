@@ -3,7 +3,7 @@
   "unit": "U6",
   "namespace": "mongo_205236",
   "prefix": "replay_u6_",
-  "generated_at": "2026-09-02T01:22:46.877862+00:00",
+  "generated_at": "2026-09-02T01:32:50.940586+00:00",
   "run_mode": "fixture",
   "harness": {
     "result": ".migration/recon/U6/result.json",
@@ -115,6 +115,17 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_billing_audit_log.indexes",
+      "expected": [
+        "logged_at_1"
+      ],
+      "actual": [
+        "logged_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_billing_invoices.count",
       "expected": 3,
       "actual": 3,
@@ -126,6 +137,19 @@
       "expected": 3,
       "actual": 3,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_billing_invoices.indexes",
+      "expected": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "actual": [
+        "status_cd_1_issued_at_1",
+        "tenant_id_1_issued_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {
@@ -143,6 +167,17 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_codes.indexes",
+      "expected": [
+        "code_type_1_code_val_1"
+      ],
+      "actual": [
+        "code_type_1_code_val_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_credit_notes.count",
       "expected": 5,
       "actual": 5,
@@ -154,6 +189,17 @@
       "expected": 5,
       "actual": 5,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_credit_notes.indexes",
+      "expected": [
+        "tenant_id_1_issued_on_1__id_1"
+      ],
+      "actual": [
+        "tenant_id_1_issued_on_1__id_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {
@@ -171,6 +217,17 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_dunning_attempts.indexes",
+      "expected": [
+        "invoice_id_1_attempt_no_1"
+      ],
+      "actual": [
+        "invoice_id_1_attempt_no_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_notifications.count",
       "expected": 1,
       "actual": 1,
@@ -182,6 +239,17 @@
       "expected": 1,
       "actual": 1,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_notifications.indexes",
+      "expected": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ],
+      "actual": [
+        "tenant_id_1_kind_cd_1_sent_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {
@@ -199,6 +267,13 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_plans.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_rating_periods.count",
       "expected": 3,
       "actual": 3,
@@ -210,6 +285,17 @@
       "expected": 3,
       "actual": 3,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_rating_periods.indexes",
+      "expected": [
+        "tenant_id_1_period_start_1"
+      ],
+      "actual": [
+        "tenant_id_1_period_start_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {
@@ -227,6 +313,17 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_subscriptions.indexes",
+      "expected": [
+        "tenant_id_1_starts_on_-1"
+      ],
+      "actual": [
+        "tenant_id_1_starts_on_-1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_subscriptions_history.count",
       "expected": 2,
       "actual": 2,
@@ -238,6 +335,13 @@
       "expected": 2,
       "actual": 2,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_subscriptions_history.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {
@@ -255,6 +359,13 @@
       "result": "pass"
     },
     {
+      "id": "target.replay_u6_tenants.indexes",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
+      "result": "pass"
+    },
+    {
       "id": "target.replay_u6_usage_events.count",
       "expected": 814,
       "actual": 814,
@@ -266,6 +377,17 @@
       "expected": 814,
       "actual": 814,
       "source_of_truth": "Atlas count_documents({ns: 'mongo_205236'})",
+      "result": "pass"
+    },
+    {
+      "id": "target.replay_u6_usage_events.indexes",
+      "expected": [
+        "tenant_id_1_occurred_at_1"
+      ],
+      "actual": [
+        "tenant_id_1_occurred_at_1"
+      ],
+      "source_of_truth": "Atlas list_indexes vs load_report.json",
       "result": "pass"
     },
     {

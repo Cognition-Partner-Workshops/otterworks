@@ -120,6 +120,12 @@ def build(
                     target["ns_counts"][collection],
                     f"Atlas count_documents({{ns: {NS_VALUE!r}}})",
                 ),
+                _check(
+                    f"target.{collection}.indexes",
+                    sorted(load["collections"][collection]["indexes"]),
+                    sorted(target["indexes"][collection]),
+                    "Atlas list_indexes vs load_report.json",
+                ),
             ]
         )
     checks.extend(
@@ -193,6 +199,14 @@ def _target_snapshot(database: Any) -> dict[str, Any]:
         },
         "ns_counts": {
             collection: database[collection].count_documents({"ns": NS_VALUE})
+            for collection in names
+        },
+        "indexes": {
+            collection: sorted(
+                index["name"]
+                for index in database[collection].list_indexes()
+                if index["name"] != "_id_"
+            )
             for collection in names
         },
     }

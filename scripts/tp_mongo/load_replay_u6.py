@@ -62,22 +62,22 @@ def _documents(
     return load_u5._documents(collection, rows, children)
 
 
-def _create_index(database: Any, collection: str) -> list[str]:
+def _create_index(database: Any, logical: str, physical: str) -> list[str]:
     index_names: list[str] = []
-    if collection == "codes":
+    if logical == "codes":
         index_names.append(
-            database[collection].create_index(
+            database[physical].create_index(
                 [("code_type", ASCENDING), ("code_val", ASCENDING)],
                 unique=True,
             )
         )
-    elif collection in load_u5.INDEXES:
-        keys, options = load_u5.INDEXES[collection]
+    elif logical in load_u5.INDEXES:
+        keys, options = load_u5.INDEXES[logical]
         if keys:
-            index_names.append(database[collection].create_index(keys, **options))
-        if collection == "billing_invoices":
+            index_names.append(database[physical].create_index(keys, **options))
+        if logical == "billing_invoices":
             index_names.append(
-                database[collection].create_index(
+                database[physical].create_index(
                     [("status_cd", ASCENDING), ("issued_at", ASCENDING)]
                 )
             )
@@ -111,7 +111,7 @@ def load_collection(
         database.create_collection(staging, **options)
         if documents:
             database[staging].insert_many(documents, ordered=True)
-        index_names = _create_index(database, staging)
+        index_names = _create_index(database, collection, staging)
         docs_after = database[staging].count_documents({})
         ns_docs_after = database[staging].count_documents({"ns": NS_VALUE})
         if docs_after != len(rows) or ns_docs_after != len(rows):
@@ -157,10 +157,6 @@ def _extract_sequences(connection: Any) -> dict[str, Int64]:
 
 
 def seed_counters(database: Any, sequences: dict[str, Int64]) -> dict[str, Any]:
-    name = collection_name("counters")
-    _assert_owned(name)
-    database.drop_collection(name)
-    database.create_collection(name)
     seeds = {}
     for sequence in ("seq_billing_audit_log", "seq_subscriptions_hist"):
         if sequence not in sequences:
@@ -169,7 +165,20 @@ def seed_counters(database: Any, sequences: dict[str, Int64]) -> dict[str, Any]:
             "_id": sequence,
             "seq": Int64(sequences[sequence] - 1),
         }
-    database[name].insert_many(list(seeds.values()), ordered=True)
+    target = collection_name("counters")
+    staging = collection_name("counters", staging=True)
+    _assert_owned(target)
+    _assert_owned(staging)
+    database.drop_collection(staging)
+    try:
+        database.create_collection(staging)
+        database[staging].insert_many(list(seeds.values()), ordered=True)
+        database[staging].rename(target, dropTarget=True)
+        if staging in database.list_collection_names():
+            raise RuntimeError("counters: staging collection remains after rename")
+    except Exception:
+        database.drop_collection(staging)
+        raise
     return seeds
 
 
