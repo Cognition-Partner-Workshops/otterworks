@@ -1,10 +1,14 @@
 """Shared test fixtures."""
 
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
+from contextlib import AsyncExitStack
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import String, TypeDecorator
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.dialects.sqlite.aiosqlite import SQLiteDialect_aiosqlite
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.base import Base
@@ -13,6 +17,29 @@ from app.main import app
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+class _HyphenatedUuid(TypeDecorator):
+    """Store uuids the way PostgreSQL renders them, rather than as bare hex.
+
+    Raw-SQL filters compare ``owner_id`` against a rendered uuid, so the test
+    database has to hold the same text PostgreSQL does.
+    """
+
+    impl = String(36)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        return str(value) if value is not None else None
+
+    def process_result_value(self, value, dialect):
+        return uuid.UUID(value) if value is not None else None
+
+
+SQLiteDialect_aiosqlite.colspecs = {
+    **SQLiteDialect_aiosqlite.colspecs,
+    PGUUID: _HyphenatedUuid,
+}
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
@@ -36,15 +63,51 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client_factory(
+    db_session: AsyncSession,
+) -> AsyncGenerator[Callable[..., object], None]:
+    """Build clients that call the app as a given user (via ``X-User-ID``)."""
+
     async def _override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    async with AsyncExitStack() as stack:
+
+        async def _make(user_id: uuid.UUID | None = None) -> AsyncClient:
+            headers = {"X-User-ID": str(user_id)} if user_id else {}
+            return await stack.enter_async_context(
+                AsyncClient(
+                    transport=transport, base_url="http://test", headers=headers
+                )
+            )
+
+        yield _make
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def client(client_factory, owner_id: uuid.UUID) -> AsyncClient:
+    """Client authenticated as ``owner_id``."""
+    return await client_factory(owner_id)
+
+
+@pytest.fixture
+async def anon_client(client_factory) -> AsyncClient:
+    """Client that sends no identity headers."""
+    return await client_factory()
+
+
+@pytest.fixture
+def other_user_id() -> uuid.UUID:
+    return uuid.uuid4()
+
+
+@pytest.fixture
+async def other_client(client_factory, other_user_id: uuid.UUID) -> AsyncClient:
+    """Client authenticated as a different user than ``owner_id``."""
+    return await client_factory(other_user_id)
 
 
 @pytest.fixture
