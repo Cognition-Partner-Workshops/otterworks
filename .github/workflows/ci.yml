@@ -31,6 +31,7 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      observability: ${{ steps.changes.outputs.observability }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -70,12 +71,36 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            observability:
+              - 'observability/**'
+              - 'services/api-gateway/internal/middleware/**'
+              - 'docs/runbooks/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
               - 'Makefile'
+
+  # Critical-API SLOs: the catalog is the source of truth, so the generated
+  # rules, probe targets, dashboard and gateway route table must not drift.
+  observability:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.observability == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml==6.0.2 pytest==8.2.0
+      - run: python observability/slo/generate.py --check
+      - run: pytest observability/slo/test_generate.py -q
+      - name: promtool check config and rules
+        run: |
+          docker run --rm -v "$PWD/observability/prometheus:/etc/prometheus" \
+            -w /etc/prometheus --entrypoint promtool prom/prometheus:v2.51.0 \
+            check config /etc/prometheus/prometheus.yml
 
   # Go - API Gateway
   api-gateway:
