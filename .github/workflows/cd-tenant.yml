@@ -216,19 +216,30 @@ jobs:
           tags=("${TENANT_TAG}")
           if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
           for t in "${tags[@]}"; do
-            current="$(aws ecr describe-images --repository-name "${REPOSITORY}" \
-                         --image-ids "imageTag=${t}" --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)"
+            previous="$(aws ecr batch-get-image --repository-name "${REPOSITORY}" \
+                          --image-ids "imageTag=${t}" --query 'images[0]' --output json 2>/dev/null || echo null)"
+            current="$(jq -r '.imageId.imageDigest // empty' <<<"${previous}")"
             if [ "${current}" = "${digest}" ]; then
               echo "${REPOSITORY}:${t} already points at ${digest}"
               continue
             fi
-            if [ -n "${current}" ] && [ "${current}" != "None" ]; then
+            if [ -n "${current}" ]; then
               aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
                 --image-ids "imageTag=${t}" --query 'failures' --output text
             fi
-            aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
-              --image-manifest "${manifest}" --image-manifest-media-type "${media_type}" \
-              --query 'image.imageId' --output text
+            if ! aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
+                   --image-manifest "${manifest}" --image-manifest-media-type "${media_type}" \
+                   --query 'image.imageId' --output text; then
+              echo "::error::failed to point ${REPOSITORY}:${t} at ${digest}"
+              if [ -n "${current}" ]; then
+                echo "restoring ${REPOSITORY}:${t} -> ${current}"
+                aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
+                  --image-manifest "$(jq -r '.imageManifest' <<<"${previous}")" \
+                  --image-manifest-media-type "$(jq -r '.imageManifestMediaType' <<<"${previous}")" \
+                  --query 'image.imageId' --output text || echo "::error::restore of ${REPOSITORY}:${t} failed"
+              fi
+              exit 1
+            fi
           done
 
   deploy:
