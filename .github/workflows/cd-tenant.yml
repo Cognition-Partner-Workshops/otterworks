@@ -164,41 +164,27 @@ jobs:
       #   <slug>-<sha>  immutable, exactly what this run built
       #   tenant-<id>   the environment's current build, what it deploys
       #   main          the golden image every other tenant falls back to
-      - name: Resolve image tags
-        id: tags
-        env:
-          REPO: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.service }}
-          IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
-          TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
-          GOLDEN: ${{ needs.plan.outputs.golden }}
-        run: |
-          set -euo pipefail
-          {
-            echo "list<<EOF"
-            echo "${REPO}:${IMAGE_TAG}"
-            echo "${REPO}:${TENANT_TAG}"
-            if [ "${GOLDEN}" = "true" ]; then echo "${REPO}:main"; fi
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      # The ECR repositories are IMMUTABLE, so a moving tag cannot be
-      # overwritten in place: untag the previous build first. The old image
-      # keeps its <slug>-<sha> tag, so nothing is lost.
-      - name: Release moving tags
+      #
+      # The repositories are IMMUTABLE, so only the first is pushed by the
+      # build; the moving tags are re-pointed afterwards (see "Move tags"). A
+      # rerun of a commit already in the registry skips the build.
+      - name: Check for existing image
+        id: existing
         env:
           REPOSITORY: otterworks/${{ matrix.service }}
-          TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
-          GOLDEN: ${{ needs.plan.outputs.golden }}
+          IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
         run: |
           set -euo pipefail
-          tags=("${TENANT_TAG}")
-          if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
-          for t in "${tags[@]}"; do
-            aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
-              --image-ids "imageTag=${t}" --query 'failures' --output text
-          done
+          if aws ecr describe-images --repository-name "${REPOSITORY}" \
+               --image-ids "imageTag=${IMAGE_TAG}" >/dev/null 2>&1; then
+            echo "::notice::${REPOSITORY}:${IMAGE_TAG} already exists, skipping build"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build and push
+        if: steps.existing.outputs.found != 'true'
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ${{ steps.ctx.outputs.path }}
@@ -206,7 +192,44 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          tags: ${{ steps.tags.outputs.list }}
+          tags: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.service }}:${{ needs.plan.outputs.image_tag }}
+
+      # Re-point each moving tag at the image just pushed. Untag, then re-tag
+      # from the pushed manifest; the previous build stays reachable by its own
+      # <slug>-<sha> tag. The old tag is only removed once the new image is
+      # known to exist, so a failed build leaves the environment deployable.
+      - name: Move tags
+        env:
+          REPOSITORY: otterworks/${{ matrix.service }}
+          IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
+          TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
+          GOLDEN: ${{ needs.plan.outputs.golden }}
+        run: |
+          set -euo pipefail
+          image="$(aws ecr batch-get-image --repository-name "${REPOSITORY}" \
+                     --image-ids "imageTag=${IMAGE_TAG}" --query 'images[0]' --output json)"
+          manifest="$(jq -r '.imageManifest' <<<"${image}")"
+          media_type="$(jq -r '.imageManifestMediaType' <<<"${image}")"
+          digest="$(jq -r '.imageId.imageDigest' <<<"${image}")"
+          [ -n "${manifest}" ] && [ "${manifest}" != "null" ] || { echo "::error::${REPOSITORY}:${IMAGE_TAG} not found"; exit 1; }
+
+          tags=("${TENANT_TAG}")
+          if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
+          for t in "${tags[@]}"; do
+            current="$(aws ecr describe-images --repository-name "${REPOSITORY}" \
+                         --image-ids "imageTag=${t}" --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)"
+            if [ "${current}" = "${digest}" ]; then
+              echo "${REPOSITORY}:${t} already points at ${digest}"
+              continue
+            fi
+            if [ -n "${current}" ] && [ "${current}" != "None" ]; then
+              aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
+                --image-ids "imageTag=${t}" --query 'failures' --output text
+            fi
+            aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
+              --image-manifest "${manifest}" --image-manifest-media-type "${media_type}" \
+              --query 'image.imageId' --output text
+          done
 
   deploy:
     needs: [plan, build]
