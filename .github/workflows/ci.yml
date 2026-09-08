@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, workshop, 'workshop-**']
   pull_request:
-    branches: [main]
+    branches: [main, workshop, 'review-base-**']
 
 env:
   AWS_REGION: us-east-1
