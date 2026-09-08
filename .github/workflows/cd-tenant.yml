@@ -181,6 +181,23 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      # The ECR repositories are IMMUTABLE, so a moving tag cannot be
+      # overwritten in place: untag the previous build first. The old image
+      # keeps its <slug>-<sha> tag, so nothing is lost.
+      - name: Release moving tags
+        env:
+          REPOSITORY: otterworks/${{ matrix.service }}
+          TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
+          GOLDEN: ${{ needs.plan.outputs.golden }}
+        run: |
+          set -euo pipefail
+          tags=("${TENANT_TAG}")
+          if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
+          for t in "${tags[@]}"; do
+            aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
+              --image-ids "imageTag=${t}" --query 'failures' --output text
+          done
+
       - name: Build and push
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
