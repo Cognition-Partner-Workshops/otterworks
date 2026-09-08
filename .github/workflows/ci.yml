@@ -31,6 +31,7 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      observability: ${{ steps.changes.outputs.observability }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -70,12 +71,41 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            observability:
+              - 'observability/**'
+              - 'services/api-gateway/internal/middleware/**'
+              - 'docs/runbooks/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
               - 'Makefile'
+
+  # Critical-API SLOs: the catalog is the source of truth, so the generated
+  # rules, probe targets, dashboard and gateway route table must not drift.
+  observability:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.observability == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml==6.0.2 pytest==8.2.0
+      - run: python observability/slo/generate.py --check
+      - run: pytest observability/slo/test_generate.py -q
+      - name: promtool check config and rules
+        run: |
+          docker run --rm -v "$PWD/observability/prometheus:/etc/prometheus" \
+            -w /etc/prometheus --entrypoint promtool prom/prometheus:v2.51.0 \
+            check config /etc/prometheus/prometheus.yml
+      - name: amtool check alert delivery config
+        run: |
+          docker run --rm -v "$PWD/observability/alertmanager:/etc/alertmanager" \
+            --entrypoint amtool prom/alertmanager:v0.27.0 \
+            check-config /etc/alertmanager/alertmanager.yml
 
   # Go - API Gateway
   api-gateway:
@@ -422,8 +452,8 @@ jobs:
     if: needs.detect-changes.outputs.api-tests == 'true' || needs.detect-changes.outputs.api-gateway == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
       - run: python -m pip install -r tests/api/requirements.txt
