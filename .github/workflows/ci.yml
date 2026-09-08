@@ -101,6 +101,11 @@ jobs:
           docker run --rm -v "$PWD/observability/prometheus:/etc/prometheus" \
             -w /etc/prometheus --entrypoint promtool prom/prometheus:v2.51.0 \
             check config /etc/prometheus/prometheus.yml
+      - name: amtool check alert delivery config
+        run: |
+          docker run --rm -v "$PWD/observability/alertmanager:/etc/alertmanager" \
+            --entrypoint amtool prom/alertmanager:v0.27.0 \
+            check-config /etc/alertmanager/alertmanager.yml
 
   # Go - API Gateway
   api-gateway:
