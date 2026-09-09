@@ -2,16 +2,21 @@
 
 The list endpoint supports ad-hoc metadata filters (title fragment, content
 type) and caller-chosen ordering. The repository builds the predicate list for
-those filters and reads the ``documents`` table directly.
+those filters and reads the ``documents`` table directly. Every caller value is
+bound as a query parameter; ORDER BY is resolved from an allow-list.
 """
 
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
 import structlog
-from sqlalchemy import text
+from sqlalchemy import column, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import ColumnElement
+
+from app.models.document import Document
 
 logger = structlog.get_logger()
 
@@ -30,6 +35,37 @@ COLUMNS = (
     "updated_at",
 )
 
+SORTABLE_COLUMNS = frozenset(COLUMNS)
+DIRECTIONS = {"asc": "ASC", "desc": "DESC"}
+LIKE_ESCAPE = "\\"
+
+documents = Document.__table__
+
+
+def _escape_like(fragment: str) -> str:
+    """Escape LIKE metacharacters so the fragment matches literally."""
+    return (
+        fragment.replace(LIKE_ESCAPE, LIKE_ESCAPE * 2)
+        .replace("%", LIKE_ESCAPE + "%")
+        .replace("_", LIKE_ESCAPE + "_")
+    )
+
+
+def resolve_order_by(sort: str, direction: str) -> str:
+    """Return the ORDER BY clause for an allow-listed column and direction."""
+    if sort not in SORTABLE_COLUMNS:
+        raise ValueError(f"Unsupported sort column: {sort!r}")
+    normalized = DIRECTIONS.get(str(direction).lower())
+    if normalized is None:
+        raise ValueError(f"Unsupported sort direction: {direction!r}")
+    return f"{sort} {normalized}"
+
+
+def _order_clause(sort: str, direction: str) -> ColumnElement[Any]:
+    column_name, normalized = resolve_order_by(sort, direction).split(" ")
+    column = documents.c[column_name]
+    return column.desc() if normalized == "DESC" else column.asc()
+
 
 class DocumentQueryRepository:
     """Reads the document table for the list endpoint's metadata filters."""
@@ -43,17 +79,19 @@ class DocumentQueryRepository:
         title_contains: str | None,
         content_type: str | None,
         folder_id: str | None = None,
-    ) -> str:
-        clauses = ["is_deleted = false", "is_template = false"]
+    ) -> list[ColumnElement[bool]]:
+        c = documents.c
+        clauses: list[ColumnElement[bool]] = [c.is_deleted.is_(False), c.is_template.is_(False)]
         if owner_id:
-            clauses.append(f"owner_id = '{owner_id}'")
+            clauses.append(c.owner_id == uuid.UUID(str(owner_id)))
         if folder_id:
-            clauses.append(f"folder_id = '{folder_id}'")
+            clauses.append(c.folder_id == uuid.UUID(str(folder_id)))
         if title_contains:
-            clauses.append(f"lower(title) LIKE lower('%{title_contains}%')")
+            pattern = f"%{_escape_like(title_contains)}%"
+            clauses.append(func.lower(c.title).like(func.lower(pattern), escape=LIKE_ESCAPE))
         if content_type:
-            clauses.append(f"content_type = '{content_type}'")
-        return " AND ".join(clauses)
+            clauses.append(c.content_type == content_type)
+        return clauses
 
     async def count_documents(
         self,
@@ -64,15 +102,9 @@ class DocumentQueryRepository:
         folder_id: str | None = None,
     ) -> int:
         """Count documents matching the metadata filters."""
-        sql = (
-            "SELECT count(*) FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-        )
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        where = self._where(owner_id, title_contains, content_type, folder_id)
+        stmt = select(func.count()).select_from(documents).where(*where)
+        result = await self.db.execute(stmt)
         return int(result.scalar_one())
 
     async def search_documents(
@@ -87,16 +119,20 @@ class DocumentQueryRepository:
         limit: int = 20,
         offset: int = 0,
     ) -> list[dict[str, Any]]:
-        """Return document rows matching the metadata filters, newest first."""
-        sql = (
-            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-            + f" ORDER BY {sort} {direction} LIMIT {limit} OFFSET {offset}"
+        """Return document rows matching the metadata filters, newest first.
+
+        Raises ``ValueError`` when ``sort`` or ``direction`` is not allow-listed.
+        """
+        order_by = _order_clause(sort, direction)
+        where = self._where(owner_id, title_contains, content_type, folder_id)
+        stmt = (
+            select(*[column(name) for name in COLUMNS])
+            .select_from(documents)
+            .where(*where)
+            .order_by(order_by)
+            .limit(int(limit))
+            .offset(int(offset))
         )
         logger.debug("document_filter_query", sort=sort, direction=direction)
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(stmt)
         return [dict(row._mapping) for row in result]
