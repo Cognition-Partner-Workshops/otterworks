@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       api-gateway: ${{ steps.changes.outputs.api-gateway }}
+      webhook-service: ${{ steps.changes.outputs.webhook-service }}
       auth-service: ${{ steps.changes.outputs.auth-service }}
       file-service: ${{ steps.changes.outputs.file-service }}
       document-service: ${{ steps.changes.outputs.document-service }}
@@ -39,6 +40,8 @@ jobs:
           filters: |
             api-gateway:
               - 'services/api-gateway/**'
+            webhook-service:
+              - 'services/webhook-service/**'
             auth-service:
               - 'services/auth-service/**'
             file-service:
@@ -93,6 +96,44 @@ jobs:
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
       - run: go build -o /dev/null ./cmd/server
+
+  # Go - Webhook Service and standalone sink
+  webhook-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.webhook-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/webhook-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: go build -o /dev/null ./cmd/server
+      - run: go vet ./...
+        working-directory: services/webhook-service/sink
+      - run: go test -race ./...
+        working-directory: services/webhook-service/sink
+      - run: go build -o /dev/null .
+        working-directory: services/webhook-service/sink
+
+  webhook-headless-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: BASE_REF=${{ github.event.pull_request.base.sha }} scripts/assert-headless.sh
+      - run: python -m pip install openapi-spec-validator==0.7.1
+      - run: openapi-spec-validator services/webhook-service/openapi.yaml
+      - run: go test -run 'Headless|Contract|OpenAPI' -v ./...
+        working-directory: services/webhook-service
 
   # Java - Auth Service
   auth-service:
