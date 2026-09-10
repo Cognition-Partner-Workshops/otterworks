@@ -31,6 +31,7 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      webhook-service: ${{ steps.changes.outputs.webhook-service }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -70,6 +71,8 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            webhook-service:
+              - 'services/webhook-service/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
@@ -93,6 +96,37 @@ jobs:
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
       - run: go build -o /dev/null ./cmd/server
+
+  # Go - Webhook Service (headless: unit tests, no-UI guard, JSON-only smoke)
+  webhook-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.webhook-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/webhook-service
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: '1.25'
+      - name: Headless guard (fail on any HTML/static/template/frontend content)
+        run: scripts/headless-guard.sh
+      - run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - run: go vet ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go build -o /dev/null ./cmd/server && go build -o /dev/null ./cmd/sink
+      - name: JSON-only smoke test against a live instance
+        run: |
+          DATABASE_URL=memory CONSUMER_ENABLED=false ALLOW_PRIVATE_TARGETS=true PORT=8092 go run ./cmd/server &
+          for i in $(seq 1 30); do curl -fsS http://localhost:8092/health >/dev/null 2>&1 && break; sleep 1; done
+          BASE_URL=http://localhost:8092 scripts/smoke-json-only.sh
+      - name: Container image is a single binary (no static/template files)
+        run: |
+          docker build -q -t webhook-service:ci .
+          files="$(docker run --rm --entrypoint sh webhook-service:ci -c 'find /app -type f')"
+          echo "$files"
+          test "$files" = "/app/server"
 
   # Java - Auth Service
   auth-service:
@@ -419,10 +453,10 @@ jobs:
   # Black-box API flow test validation
   api-flow-tests:
     needs: detect-changes
-    if: needs.detect-changes.outputs.api-tests == 'true' || needs.detect-changes.outputs.api-gateway == 'true'
+    if: needs.detect-changes.outputs.api-tests == 'true' || needs.detect-changes.outputs.api-gateway == 'true' || needs.detect-changes.outputs.webhook-service == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
