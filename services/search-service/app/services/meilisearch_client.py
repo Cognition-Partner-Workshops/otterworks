@@ -248,27 +248,35 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+        """Autocomplete suggestions using MeiliSearch prefix matching.
+
+        Hits from both indices are merged and ordered by MeiliSearch's
+        ``_rankingScore`` (requested via ``showRankingScore``); hits without a
+        score keep their original position at the end of the list.
+        """
+        best: dict[str, tuple[float, int]] = {}
 
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
             for hit in result["hits"]:
                 text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                if not text:
+                    continue
+                raw_score = hit.get("_rankingScore")
+                score = float(raw_score) if raw_score is not None else 0.0
+                current = best.get(text)
+                if current is None:
+                    best[text] = (score, len(best))
+                elif score > current[0]:
+                    best[text] = (score, current[1])
 
-        return suggestions
+        ranked = sorted(best.items(), key=lambda item: (-item[1][0], item[1][1]))
+        return [text for text, _ in ranked[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
