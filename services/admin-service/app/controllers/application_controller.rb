@@ -1,4 +1,9 @@
 class ApplicationController < ActionController::API
+  # auth-service issues USER/EDITOR/ADMIN/OWNER; OWNER is its super-admin tier.
+  ADMIN_ROLES = %w[admin super_admin owner].freeze
+  SUPER_ADMIN_ROLES = %w[super_admin owner].freeze
+
+  before_action :require_admin!
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -28,8 +33,24 @@ class ApplicationController < ActionController::API
     request.env['jwt.user_email']
   end
 
+  def current_user_roles
+    Array(request.env['jwt.user_roles']).map { |role| role.to_s.downcase }
+  end
+
   def current_user_role
-    request.env['jwt.user_role']
+    current_user_roles.first
+  end
+
+  def require_admin!
+    forbidden! unless (current_user_roles & ADMIN_ROLES).any?
+  end
+
+  def require_super_admin!
+    forbidden! unless (current_user_roles & SUPER_ADMIN_ROLES).any?
+  end
+
+  def forbidden!
+    render json: { error: 'Forbidden' }, status: :forbidden
   end
 
   def set_request_metadata
