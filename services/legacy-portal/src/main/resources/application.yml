@@ -29,6 +29,11 @@ management:
       probes:
         enabled: true
 
+# Access tokens are the HS256 JWTs issued by auth-service, so this must be the same secret
+# auth-service signs with. Deliberately no default: the app refuses to start without it.
+jwt:
+  secret: ${JWT_SECRET}
+
 ---
 # On-prem / VM profile: talks to a real PostgreSQL running alongside the app on the VM
 # (see docker-compose.onprem.yml and scripts/run-onprem.sh). The three schemas are created
