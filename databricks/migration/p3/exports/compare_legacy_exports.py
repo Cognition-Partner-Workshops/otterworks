@@ -23,6 +23,11 @@ carries its objects under `shapes`, and the shape is a path segment under the ex
 A shape the legacy left empty is checked as empty: the gate fails if the target wrote a
 file where the legacy wrote none, which no table comparison would notice.
 
+The set of files is compared, not just the files the legacy wrote. Every directory that
+holds an expected object is listed and an unexpected file in it fails the gate, so a
+consumer cannot be handed an object the legacy never wrote -- a stale one left by an
+earlier exporter, say, which overwriting the expected objects would not remove.
+
 One normalization, and only one: an object the manifest marks with a `wallclock_field`
 (`generated_at`) embeds `datetime.now()`, so the target's value for that single field is
 replaced by the legacy's and both sides are re-serialized identically. Everything else --
@@ -100,12 +105,39 @@ def download(w, path: str) -> bytes | None:
 
 
 def listing(w, path: str) -> list[str]:
+    """Every file under `path`, recursively. A missing directory holds nothing."""
     from databricks.sdk.errors import NotFound
 
     try:
-        return [entry.path for entry in w.files.list_directory_contents(path)]
+        entries = list(w.files.list_directory_contents(path))
     except NotFound:
         return []
+    found = []
+    for entry in entries:
+        if entry.is_directory:
+            found.extend(listing(w, entry.path))
+        else:
+            found.append(entry.path)
+    return found
+
+
+def extra_files(w, export_root: str, expected: set[str], run_date: str,
+                roots: list[str]) -> list[str]:
+    """Files the target wrote that this run date's legacy objects do not account for.
+
+    The export root outlives one run, so a blanket listing would flag every other date. A
+    file counts as this run's when it sits in a directory holding an expected object, or
+    when the run date is in its path -- which is how a stale object under a shape that
+    wrote something else, the case no per-key download can see, is caught.
+    """
+    wanted = {f"{export_root}/{key}" for key in expected}
+    directories = {path.rsplit("/", 1)[0] for path in wanted}
+    found: set[str] = set()
+    for root in roots:
+        for path in listing(w, f"{export_root}/{root}".rstrip("/")):
+            if path.rsplit("/", 1)[0] in directories or run_date in path:
+                found.add(path)
+    return sorted(found - wanted)
 
 
 def compare(w, unit: str, run_date: str, export_root: str | None = None) -> dict:
@@ -153,9 +185,18 @@ def compare(w, unit: str, run_date: str, export_root: str | None = None) -> dict
             problems.append(
                 f"{key}: target sha256 {results[key]['target_sha256']} != legacy "
                 f"{results[key]['legacy_sha256']}")
+
+    # An empty shape's whole prefix is already reported above, so its files are not
+    # repeated here.
+    roots = sorted(manifest["shapes"]) if "shapes" in manifest else [""]
+    unexpected = [
+        path for path in extra_files(w, export_root, set(objects), run_date, roots)
+        if not any(path.startswith(f"{export_root}/{prefix}/") for prefix in empty)]
+    for path in unexpected:
+        problems.append(f"{path}: the legacy wrote no such object and the target did")
     return {"unit": unit, "run_date": run_date, "export_root": export_root,
-            "compared": True, "objects": results, "problems": problems,
-            "verdict": "PASS" if not problems else "FAIL"}
+            "compared": True, "objects": results, "unexpected": unexpected,
+            "problems": problems, "verdict": "PASS" if not problems else "FAIL"}
 
 
 def main(argv: list[str] | None = None) -> int:
