@@ -193,9 +193,11 @@ properly needs the load to run on job compute that can reach Postgres.
 one `REPEATABLE READ READ ONLY` transaction and writes nothing until every read has
 succeeded, so a Postgres error cannot leave half the reference set replaced. The five writes
 are still five statements, so every row carries a `snapshot_id` from the run that produced
-it and `fct_subscription_mrr` refuses to build when `dim_plan`, `dim_tenant` and
-`fct_subscription` disagree on it. A load that dies between writes fails the next refresh
-instead of pricing new plans against old subscriptions.
+it and `fct_subscription_mrr` refuses to build when the five reference tables disagree on
+it. It checks all five, not only the three it reads: it is the first task in the refresh
+graph, so failing it also stops the usage and storage builds, which read rating results. A
+load that dies between writes fails the next refresh instead of pricing new plans against
+old subscriptions.
 
 It reads Lakebase branch `mig-p1-w2`, which is where pipeline 1's data landed. `mig-p1-w0`
 is the intake-era branch name still quoted in older briefs and holds only
