@@ -310,6 +310,19 @@ def list_bucket(s3, bucket: str, prefix: str = "") -> list[dict]:
     return sorted(out, key=lambda o: o["key"])
 
 
+def read_archive_records(s3, bucket: str, key: str) -> list[dict]:
+    """The archived bodies themselves, not just the object's size.
+
+    The recon compares the rows the legacy archived, so the baseline has to
+    carry them. Only the object listing survived the first capture, and each
+    probe overwrites the previous probe's object, so the contents are read back
+    inside the probe rather than recovered afterwards.
+    """
+    body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    lines = gzip.decompress(body).decode("utf-8").splitlines()
+    return [json.loads(line) for line in lines if line]
+
+
 def empty_bucket(s3, bucket: str) -> None:
     for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket):
         keys = [{"Key": o["Key"]} for o in page.get("Contents", [])]
@@ -430,8 +443,19 @@ def capture_audit_archive(snapshot: Path, out: Path, ns: str, cutoff: str) -> di
         after_rows = table.scan(Select="COUNT")["Count"]
         archive_objects = list_bucket(s3, ARCHIVE_BUCKET)
 
+        archived_records: list[dict] = []
+        report: dict | None = None
+        for obj in archive_objects:
+            if obj["key"].endswith(".jsonl.gz"):
+                archived_records = read_archive_records(s3, ARCHIVE_BUCKET, obj["key"])
+            elif "compliance" in obj["key"]:
+                report = json.loads(
+                    s3.get_object(Bucket=ARCHIVE_BUCKET, Key=obj["key"])["Body"].read())
+
         result.update({
             "shape": shape,
+            "archived_records": archived_records,
+            "compliance_report": report,
             "records_seeded": len(rows),
             "rows_before": before_rows,
             "rows_after": after_rows,
