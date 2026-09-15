@@ -7,8 +7,8 @@
 - Tolerance version: `v1`
 - Seed: `0` | Params: `{'batch': 'p3probe'}`
 - Tier 3 depth: `full`
-- Generated: 2026-09-15T17:47:49.062272+00:00
-- Cost: `{"source_statements": 5, "source_rows_fetched": 7, "target_statements": 4, "target_rows_fetched": 7, "elapsed_s": 2.997}`
+- Generated: 2026-09-15T18:00:44.900209+00:00
+- Cost: `{"source_statements": 5, "source_rows_fetched": 7, "target_statements": 4, "target_rows_fetched": 7, "elapsed_s": 2.195}`
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|

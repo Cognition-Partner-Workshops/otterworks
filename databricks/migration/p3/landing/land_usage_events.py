@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 EVENTS_TABLE = "ow_tp.bronze.usage_events_raw"
@@ -34,12 +35,13 @@ FILES = ("usage-events.ndjson",)
 CREATE_EVENTS = f"""
 CREATE TABLE IF NOT EXISTS {EVENTS_TABLE} (
   snapshot_batch STRING NOT NULL COMMENT 'immutable input snapshot this event came from',
+  source_line BIGINT NOT NULL COMMENT 'line of usage-events.ndjson this row came from; the landing key, because the legacy aggregates every record and does not require event_id to be unique',
   event_id STRING NOT NULL,
   event_type STRING NOT NULL COMMENT 'dotted analytics-service vocabulary, stored verbatim: document.created, storage.allocated, ...',
   user_id STRING COMMENT 'counted distinctly by active_users, unattributed values included as themselves',
   resource_id STRING,
   resource_type STRING,
-  event_ts STRING NOT NULL COMMENT 'the ISO-8601 instant the record carried; the rollup day is its UTC calendar day',
+  event_ts STRING NOT NULL COMMENT 'ISO-8601 instant; a record that carried epoch millis as a JSON number is normalised here the way the Scala Instant format reads it',
   bytes_attr STRING COMMENT "metadata['bytes'] as written. NULL means the record carried none, which the legacy reads as zero for that event",
   metadata_json STRING NOT NULL COMMENT 'the whole metadata map as canonical JSON',
   landed_at TIMESTAMP NOT NULL
@@ -112,11 +114,38 @@ def upload(w, snapshot: Path, volume_dir: str) -> list[str]:
     return written
 
 
+REQUIRED = ("eventId", "eventType", "userId", "resourceId", "resourceType", "metadata",
+            "timestamp")
+
+
+def instant(value, where: str) -> str:
+    """The instant as `AnalyticsEventJsonProtocol.instantFormat` reads it.
+
+    A JSON string is parsed as ISO-8601 and a JSON number is epoch milliseconds; anything
+    else is a deserialization error that takes the whole file down. Normalising the number
+    here is what keeps the rollup's UTC day right: the landed value is text, so a raw
+    '1709251200000' would reach `to_timestamp` as a formatted timestamp and miss its day.
+    """
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise SystemExit(f"{where}: timestamp {value!r} is neither an ISO-8601 string nor "
+                         "epoch millis; the legacy fails to load the file at all")
+    millis = int(value)
+    moment = datetime.fromtimestamp(millis / 1000, tz=timezone.utc)
+    stamp = moment.strftime("%Y-%m-%dT%H:%M:%S")
+    fraction = millis % 1000
+    return f"{stamp}.{fraction:03d}Z" if fraction else f"{stamp}Z"
+
+
 def event_rows(snapshot: Path, batch: str) -> list[tuple]:
-    """One row per NDJSON record.
+    """One row per NDJSON record, keyed by its line rather than by its event id.
 
     Blank lines and '#' comments are skipped because `EventLoader.fromString` skips them;
-    anything else that fails to parse is fatal here, as it is there.
+    anything else that fails to parse is fatal here, as it is there. `AnalyticsEvent` is a
+    seven-field case class read with `jsonFormat7`, so every field is required and metadata
+    is a string-to-string map: a record missing one does not land as a NULL, it stops the
+    load, because the legacy never aggregates that file at all.
     """
     rows = []
     text = (snapshot / "usage-events.ndjson").read_text()
@@ -129,15 +158,24 @@ def event_rows(snapshot: Path, batch: str) -> list[tuple]:
         except json.JSONDecodeError as exc:
             raise SystemExit(f"usage-events.ndjson:{number}: {exc}; the legacy loader "
                              "raises on the same line rather than skipping it") from exc
-        missing = [f for f in ("eventId", "eventType", "timestamp") if not record.get(f)]
+        where = f"usage-events.ndjson:{number}"
+        missing = [f for f in REQUIRED if f not in record or record[f] is None]
         if missing:
-            raise SystemExit(f"usage-events.ndjson:{number}: missing {', '.join(missing)}; "
-                             "AnalyticsEvent requires them and the legacy fails to load "
-                             "the file at all without them")
-        metadata = record.get("metadata") or {}
-        rows.append((batch, record["eventId"], record["eventType"], record.get("userId"),
-                     record.get("resourceId"), record.get("resourceType"),
-                     record["timestamp"], metadata.get("bytes"),
+            raise SystemExit(f"{where}: missing {', '.join(missing)}; AnalyticsEvent "
+                             "requires all seven fields and the legacy fails to load the "
+                             "file at all without them")
+        strings = [f for f in ("eventId", "eventType", "userId", "resourceId", "resourceType")
+                   if not isinstance(record[f], str)]
+        if strings:
+            raise SystemExit(f"{where}: {', '.join(strings)} must be a JSON string")
+        metadata = record["metadata"]
+        if not isinstance(metadata, dict) or not all(
+                isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()):
+            raise SystemExit(f"{where}: metadata must be a string-to-string map; "
+                             "Map[String, String] does not read anything else")
+        rows.append((batch, number, record["eventId"], record["eventType"], record["userId"],
+                     record["resourceId"], record["resourceType"],
+                     instant(record["timestamp"], where), metadata.get("bytes"),
                      json.dumps(metadata, sort_keys=True, separators=(",", ":"))))
     return rows
 
@@ -161,11 +199,13 @@ def insert_chunk(stage: str, columns: list[tuple[str, str]],
 
 
 def load(w, rows: list[tuple], batch: str) -> dict:
-    columns = [("snapshot_batch", "STRING"), ("event_id", "STRING"),
+    columns = [("snapshot_batch", "STRING"), ("source_line", "BIGINT"), ("event_id", "STRING"),
                ("event_type", "STRING"), ("user_id", "STRING"), ("resource_id", "STRING"),
                ("resource_type", "STRING"), ("event_ts", "STRING"),
                ("bytes_attr", "STRING"), ("metadata_json", "STRING")]
-    key = ["snapshot_batch", "event_id"]
+    # Keyed on the line, not the event id: the same id can legitimately appear twice and the
+    # legacy counts it twice, where a MERGE on the id would fail the rerun as ambiguous.
+    key = ["snapshot_batch", "source_line"]
     stage = f"{EVENTS_TABLE}_stage"
     execute(w, CREATE_EVENTS)
     execute(w, f"CREATE OR REPLACE TABLE {stage} ("

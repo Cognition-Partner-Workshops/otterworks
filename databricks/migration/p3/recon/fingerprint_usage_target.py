@@ -20,8 +20,8 @@ DIGEST = (
     "SELECT count(*), md5(concat_ws('|', sort_array(collect_list(to_json(struct({cols})))))) "
     "FROM ow_tp.{table} WHERE snapshot_batch = :batch")
 
-RAW_COLS = ("snapshot_batch, event_id, event_type, user_id, resource_id, resource_type, "
-            "event_ts, bytes_attr, metadata_json")
+RAW_COLS = ("snapshot_batch, source_line, event_id, event_type, user_id, resource_id, "
+            "resource_type, event_ts, bytes_attr, metadata_json")
 ROLLUP_COLS = ("snapshot_batch, date, total_events, active_users, documents_created, "
                "documents_viewed, documents_edited, files_uploaded, files_downloaded, "
                "collab_sessions, storage_allocated_bytes, storage_released_bytes, "

@@ -3,8 +3,8 @@
 - Mode: `live`
 - Merge eligible: yes (fixture/continuous evidence never merges)
 - Mapping `map-p3-v1` / tolerances `v1` / seed `0` / depth `full` / params `{'batch': 'p3probe'}`
-- Generated: 2026-09-15T17:47:49.062272+00:00
-- Cost: source 5 statements / 7 rows fetched; target 4 statements / 7 rows; 2.997s
+- Generated: 2026-09-15T18:00:44.900209+00:00
+- Cost: source 5 statements / 7 rows fetched; target 4 statements / 7 rows; 2.195s
 
 | Tier | Checks | Result |
 |---|---|---|
