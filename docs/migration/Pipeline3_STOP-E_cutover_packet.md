@@ -3,8 +3,9 @@
 **Pipeline:** OtterWorks product analytics — the five `etl/scripts/*.py` cron jobs and the
 Scala `UsageRollupJob` → six Lakeflow Jobs and SQL on Delta in `ow_tp` (five built, one
 removed from scope).
-**Date:** 2026-09-15 · **Status:** reissued — P3-Q3 closed, everything else awaiting customer
-decision · **Prepared by:** the pipeline-3 migration session.
+**Date:** 2026-09-15 · **Status:** final reissue — P3-Q3 closed, the analytics recon scope
+recorded and re-run green, everything else awaiting customer decision · **Prepared by:** the
+pipeline-3 migration session.
 
 **Nothing here authorizes a cutover.** Every schedule is PAUSED, no consumer has been
 repointed, no legacy script or crontab was changed, the converted cleanup job deletes nothing
@@ -79,6 +80,53 @@ Delta tables remain the governed output; the files are a compatibility output re
 
 ---
 
+## 1b. Recon scope: one unit's fixture was changing another unit's comparison
+
+Restoring the exports surfaced a failure that looked like a broken conversion and was not.
+Both halves are recorded, because the second one outlives pipeline 3.
+
+**P3-D10 — the analytics mapping now names the day it was always about.**
+`p3-analytics-daily`'s mapping compared whole gold tables against a one-day legacy baseline.
+Wave 2 seeds the 33 days before the run date into those same gold tables, because
+`user_activity_daily` reports over a 31-day window. The comparison therefore became 34 target
+days against 1 legacy day and failed Tier 1 on row counts. The conversion did not change; the
+shared table did. Every object in the mapping is now scoped on both sides with
+`summary_date = DATE '${run_date}'`. **No tolerance was widened and no field was dropped.**
+
+Official harness, re-run live from the change (#1640):
+
+```
+dbx-recon PASS: unit=p3-analytics-daily mode=live depth=full mapping=map-p3-v1
+                tolerances=v1 merge_eligible=True
+  Tier 1 counts_through_mapping    4 PASS
+  Tier 2 per_field_aggregates     25 PASS
+  Tier 3 keyed_diffs             224 PASS
+  params: run_date=2026-09-15, batch=p3probe
+```
+
+The 224 keyed rows are the same 224 the unit reconciled before the history was seeded, which
+is what shows the predicate selected the day rather than shrank the comparison.
+
+**P3-D11 — the cause is general, and it will bite the next pipeline.**
+`databricks/migration/p3/fixtures/seed_upstream_history.py` writes into gold tables that a
+different unit reconciles, so one unit's fixture silently changes another unit's comparison.
+Nothing in the harness detects it: the failure surfaces as a row-count mismatch that reads
+like a broken conversion, and the tempting fix — widening a tolerance — would have buried it.
+
+Pipeline 3's mitigation is that **every** mapping is now date- or batch-scoped, so a seeded
+neighbour cannot contaminate a unit's comparison. Review of #1640 caught that this was not yet
+true of `p3-audit-archive`, whose baseline loader rebuilds its source tables for one batch
+while the target loads keep earlier batches; a second batch would have failed the same way.
+Both audit objects are now scoped on `batch` / `snapshot_batch` + `run_date` and the unit was
+re-reconciled live: **PASS**, `depth=full`, `merge_eligible=true`, unchanged rows (#1642).
+
+The stronger fix, which pipeline 3 does **not** implement: namespace fixture writes away from
+the reconciled tables entirely. Date scoping only works while every mapping remembers to apply
+it, and a future unit that forgets gets a false failure with a misleading cause. **Whoever owns
+the fixture layer should do this before the next pipeline reuses it.**
+
+---
+
 ## 2. Delivery state
 
 4 waves, 8 units, all closed. One PR per unit into `tp-run/databricks-20260915T045714Z`.
@@ -86,18 +134,23 @@ Delta tables remain the governed output; the files are a compatibility output re
 | Wave | Unit | Replaces | Recon | PR |
 |---|---|---|---|---|
 | 0 | `p3-foundations` | — (plan, record contract, fixtures, captured legacy baselines, mapping specs) | no data movement | #1612, #1614, #1615 |
-| 1 | `p3-analytics-daily` | `etl/scripts/analytics_daily.py` | official **PASS**, live, full depth | #1616, #1617, #1625 |
+| 1 | `p3-analytics-daily` | `etl/scripts/analytics_daily.py` | official **PASS**, live, full depth | #1616, #1617, #1625, #1640 |
 | 1 | `p3-storage-cleanup` | `etl/scripts/storage_cleanup_daily.py` | official **PASS**, live, full depth | #1618 |
-| 1 | `p3-audit-archive` | `etl/scripts/audit_archive_weekly.py` | official **PASS**, live, full depth | #1619, #1626 |
+| 1 | `p3-audit-archive` | `etl/scripts/audit_archive_weekly.py` | official **PASS**, live, full depth | #1619, #1626, #1642 |
 | 1 | `p3-usage-rollup` | `services/.../batch/UsageRollupJob.scala` | official **PASS**, live, full depth | #1620, #1621 |
 | 1 | `p3-search-reindex` | `etl/scripts/search_reindex_weekly.py` | **not migrated** — declared coverage gap (P3-D05) | #1614 |
-| 2 | `p3-user-activity` | `etl/scripts/user_activity_daily.py` | official **PASS**, live, full depth | #1622, #1639 |
+| 2 | `p3-user-activity` | `etl/scripts/user_activity_daily.py` | official **PASS**, live, full depth | #1622, #1639, #1641 |
 | 3 | `p3-orchestration` | `etl/run.sh`, the five crontab rows, the Helm CronJob | structural only: no data movement | #1623 |
 
 Every verdict is an official `dbx-recon` verdict with `merge_eligible=true`, recomputed from
 the target, with idempotency proven by an actual rerun of the deployed job and whole-row
 content hashes compared — not row counts. Each unit was reconciled against **the legacy's own
 output**, captured by running the legacy job, never against a Python reimplementation of it.
+
+Three PRs in that table are **open, not merged** at the time of writing: #1640 (analytics
+mapping scope, P3-D10/P3-D11), #1642 (audit mapping scope) and #1641 (user-activity review
+fixes: an unknown source action order now propagates as NULL instead of a plausible-looking
+ordinal, and a backfill no longer moves the `latest/` report pointer backwards).
 
 What the target looks like today:
 
