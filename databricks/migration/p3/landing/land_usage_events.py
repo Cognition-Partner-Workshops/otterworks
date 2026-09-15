@@ -35,7 +35,7 @@ FILES = ("usage-events.ndjson",)
 CREATE_EVENTS = f"""
 CREATE TABLE IF NOT EXISTS {EVENTS_TABLE} (
   snapshot_batch STRING NOT NULL COMMENT 'immutable input snapshot this event came from',
-  source_line BIGINT NOT NULL COMMENT 'line of usage-events.ndjson this row came from; the landing key, because the legacy aggregates every record and does not require event_id to be unique',
+  source_line BIGINT COMMENT 'line of usage-events.ndjson this row came from; the landing key, because the legacy aggregates every record and does not require event_id to be unique. Nullable only so a table evolved by add_source_line() has the same schema as a fresh one; landing always writes it',
   event_id STRING NOT NULL,
   event_type STRING NOT NULL COMMENT 'dotted analytics-service vocabulary, stored verbatim: document.created, storage.allocated, ...',
   user_id STRING COMMENT 'counted distinctly by active_users, unattributed values included as themselves',
@@ -75,6 +75,23 @@ def execute(w, statement: str, parameters=None) -> list[list[str]]:
     if result.status and result.status.state and result.status.state.value != "SUCCEEDED":
         raise SystemExit(f"{result.status.state.value}: {result.status.error}")
     return (result.result.data_array if result.result else []) or []
+
+
+def add_source_line(w, batch: str) -> None:
+    """Give a table created before source_line the column, before it is merged on.
+
+    CREATE TABLE IF NOT EXISTS leaves an existing table alone, so a workspace that landed
+    this batch under the old event_id key would otherwise merge on a column that is not
+    there. The batch's rows are deleted rather than backfilled: their line numbers were
+    never recorded, and this run re-lands the whole snapshot. Rows of other batches keep a
+    NULL source_line until their own batch is landed again.
+    """
+    columns = {row[0] for row in execute(w, f"SHOW COLUMNS IN {EVENTS_TABLE}")}
+    if "source_line" in columns:
+        return
+    execute(w, f"ALTER TABLE {EVENTS_TABLE} ADD COLUMN source_line BIGINT COMMENT "
+               "'line of usage-events.ndjson this row came from' AFTER snapshot_batch")
+    execute(w, f"DELETE FROM {EVENTS_TABLE} WHERE snapshot_batch = :batch", {"batch": batch})
 
 
 def verify_snapshot(snapshot: Path) -> None:
@@ -208,6 +225,7 @@ def load(w, rows: list[tuple], batch: str) -> dict:
     key = ["snapshot_batch", "source_line"]
     stage = f"{EVENTS_TABLE}_stage"
     execute(w, CREATE_EVENTS)
+    add_source_line(w, batch)
     execute(w, f"CREATE OR REPLACE TABLE {stage} ("
                + ", ".join(f"{n} {t}" for n, t in columns) + ")")
     for start in range(0, len(rows), 25):
