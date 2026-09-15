@@ -237,7 +237,7 @@ WHEN NOT MATCHED THEN INSERT (
 def merge_silver(ns: Namespace, watermark: str, high: str) -> str:
     """Dedupe on event id, first arrival wins; a later copy only bumps the counters.
 
-    Two properties the obvious version does not have:
+    Three properties the obvious version does not have:
 
     * `COPY INTO` stamps every row of one load with the same `ingested_at`, so
       ordering on it alone cannot separate two copies that landed together. One
@@ -245,9 +245,13 @@ def merge_silver(ns: Namespace, watermark: str, high: str) -> str:
       each column independently, so a silver row is always one real event.
     * `seen_count` and `last_seen_at` are counted over every copy in bronze, not
       added to what is already in silver, so a retried stage converges on the
-      same numbers instead of inventing arrivals. Only copies that pass the same
-      validation count, so a rejected copy of the id cannot backdate
-      `first_seen_at` and make a timely event look late.
+      same numbers instead of inventing arrivals. Copies already recorded in the
+      rejects table are left out, so a rejected copy of the id cannot backdate
+      `first_seen_at` and make a timely event look late. Membership of that table
+      is the persisted decision; re-deriving it would let a row rejected for an
+      unknown usage kind turn valid later, once the code is added.
+    * The matched branch rewrites `first_seen_at` and the two fields derived from
+      it, so a row that predates this rule is corrected, not left contaminated.
     """
     return f"""MERGE INTO {ns.events} t
 USING (
@@ -257,8 +261,13 @@ USING (
   ),
   valid AS (SELECT * FROM batch WHERE reject_reason IS NULL),
   history AS (
-    SELECT *, {_REJECT_REASON} AS reject_reason
-    FROM ({_typed(ns)})
+    SELECT h.event_id, h.ingested_at
+    FROM ({_typed(ns)}) h
+    WHERE NOT EXISTS (
+      SELECT 1 FROM {ns.rejects} x
+      WHERE x.event_id <=> h.event_id
+        AND x.source_file <=> h.source_file
+        AND x.ingested_at <=> h.ingested_at)
   ),
   arrivals AS (
     SELECT event_id,
@@ -266,8 +275,7 @@ USING (
            MIN(ingested_at) AS first_seen_at,
            MAX(ingested_at) AS last_seen_at
     FROM history
-    WHERE reject_reason IS NULL
-      AND event_id IN (SELECT event_id FROM valid)
+    WHERE event_id IN (SELECT event_id FROM valid)
     GROUP BY event_id
   ),
   ranked AS (
@@ -284,8 +292,13 @@ USING (
 ) s
 ON t.event_id = s.event_id
 WHEN MATCHED THEN UPDATE SET
+  t.first_seen_at = s.first_seen_at,
   t.last_seen_at = GREATEST(t.last_seen_at, s.last_seen_at),
-  t.seen_count = s.seen_count
+  t.seen_count = s.seen_count,
+  t.arrival_lag_seconds =
+    CAST(UNIX_TIMESTAMP(s.first_seen_at) - UNIX_TIMESTAMP(t.occurred_at) AS BIGINT),
+  t.is_late =
+    (UNIX_TIMESTAMP(s.first_seen_at) - UNIX_TIMESTAMP(t.occurred_at)) > {LATE_THRESHOLD_SECONDS}
 WHEN NOT MATCHED THEN INSERT (
   event_id, tenant_id, occurred_at, event_date, period_start, period_end,
   kind_cd, metric, units, first_seen_at, last_seen_at, seen_count,

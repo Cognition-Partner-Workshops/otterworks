@@ -3,7 +3,7 @@
   "unit": "ow-tp-usage-meter",
   "namespace": "ow_tp",
   "run_mode": "live",
-  "generated_at": "2026-09-15T12:44:11+00:00",
+  "generated_at": "2026-09-15T12:52:34+00:00",
   "checks": [
     {
       "id": "meter_vs_direct_aggregate",
