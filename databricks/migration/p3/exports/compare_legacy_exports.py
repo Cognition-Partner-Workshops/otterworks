@@ -23,10 +23,12 @@ carries its objects under `shapes`, and the shape is a path segment under the ex
 A shape the legacy left empty is checked as empty: the gate fails if the target wrote a
 file where the legacy wrote none, which no table comparison would notice.
 
-The set of files is compared, not just the files the legacy wrote. Every directory that
-holds an expected object is listed and an unexpected file in it fails the gate, so a
-consumer cannot be handed an object the legacy never wrote -- a stale one left by an
-earlier exporter, say, which overwriting the expected objects would not remove.
+The set of files is compared, not just the files the legacy wrote. The whole export root
+is listed and any file this run does not account for fails the gate, so a consumer cannot
+be handed an object the legacy never wrote -- a stale one left by an earlier exporter,
+say, which overwriting the expected objects would not remove. Only a file whose path names
+a different run date is passed over, because the root holds every date the unit has ever
+exported.
 
 One normalization, and only one: an object the manifest marks with a `wallclock_field`
 (`generated_at`) embeds `datetime.now()`, so the target's value for that single field is
@@ -45,6 +47,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -121,22 +124,33 @@ def listing(w, path: str) -> list[str]:
     return found
 
 
-def extra_files(w, export_root: str, expected: set[str], run_date: str,
-                roots: list[str]) -> list[str]:
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+PARTITION_DATE = re.compile(r"year=(\d{4})/month=(\d{2})/day=(\d{2})")
+
+
+def dates_in(path: str) -> set[str]:
+    """Every run date a path names, in either spelling the legacy keys use."""
+    return set(ISO_DATE.findall(path)) | {
+        "-".join(parts) for parts in PARTITION_DATE.findall(path)}
+
+
+def extra_files(w, export_root: str, expected: set[str], run_date: str) -> list[str]:
     """Files the target wrote that this run date's legacy objects do not account for.
 
-    The export root outlives one run, so a blanket listing would flag every other date. A
-    file counts as this run's when it sits in a directory holding an expected object, or
-    when the run date is in its path -- which is how a stale object under a shape that
-    wrote something else, the case no per-key download can see, is caught.
+    The whole export root is listed, so an object under a shape the manifest never
+    declared, or one nested below an expected object's directory, is seen. The root
+    outlives one run, so a file is excused only when it proves it belongs to another run:
+    its path names a date, in either the `2026-09-15` or the `year=/month=/day=` spelling,
+    and none of the dates it names is this one. Anything else is this run's to account
+    for -- including an undated file no expected key covers.
     """
     wanted = {f"{export_root}/{key}" for key in expected}
-    directories = {path.rsplit("/", 1)[0] for path in wanted}
-    found: set[str] = set()
-    for root in roots:
-        for path in listing(w, f"{export_root}/{root}".rstrip("/")):
-            if path.rsplit("/", 1)[0] in directories or run_date in path:
-                found.add(path)
+    found = set()
+    for path in listing(w, export_root):
+        dates = dates_in(path[len(export_root):])
+        if dates and run_date not in dates:
+            continue
+        found.add(path)
     return sorted(found - wanted)
 
 
@@ -188,9 +202,8 @@ def compare(w, unit: str, run_date: str, export_root: str | None = None) -> dict
 
     # An empty shape's whole prefix is already reported above, so its files are not
     # repeated here.
-    roots = sorted(manifest["shapes"]) if "shapes" in manifest else [""]
     unexpected = [
-        path for path in extra_files(w, export_root, set(objects), run_date, roots)
+        path for path in extra_files(w, export_root, set(objects), run_date)
         if not any(path.startswith(f"{export_root}/{prefix}/") for prefix in empty)]
     for path in unexpected:
         problems.append(f"{path}: the legacy wrote no such object and the target did")

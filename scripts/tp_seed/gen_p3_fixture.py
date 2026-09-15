@@ -613,7 +613,11 @@ def audit_source_order(table, ns: str, slices: dict[str, list[dict]],
         ours = {item["id"] for item in rows}
         first = [r for r in audit_scan(table, cutoff) if r["id"] in ours]
         second = [r for r in audit_scan(table, cutoff) if r["id"] in ours]
-        if [list(r) for r in first] != [list(r) for r in second]:
+        # Identity as well as attribute order: every record of a shape carries the same
+        # attributes in the same order, so comparing attribute lists alone would accept a
+        # scan that returned the same records in a different sequence -- the thing the
+        # archive's line order actually depends on.
+        if [(r["id"], list(r)) for r in first] != [(r["id"], list(r)) for r in second]:
             raise SystemExit(
                 f"{shape}: two scans of the same table returned different orders, so the "
                 "legacy's own output order is not reproducible and no recorded order can "
