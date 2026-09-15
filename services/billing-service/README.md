@@ -29,9 +29,23 @@ The reset endpoint is disabled by default. Disposable local/CI Compose stacks
 enable it with `BILLING_SVC_ALLOW_INTERNAL_RESET=true`; published deployments
 should leave the setting disabled.
 
-The HTTP endpoints are intentionally unauthenticated in this parity fixture.
-Authentication and tenant scoping are out of scope here; an extraction that
-ships for real must add both at the edge before exposing these endpoints.
+The tenant endpoints (`/api/tenants/{tenant_id}/...`) and `/internal/reset`
+require an `Authorization: Bearer <token>` credential that the service verifies
+itself. Forwarded identity headers such as `X-User-ID` are never trusted.
+
+- Internal callers (the parity harness, operator jobs) send the shared
+  `BILLING_SVC_SERVICE_TOKEN` and may act on any tenant. The token is unset by
+  default, which disables this path entirely.
+- Users send the platform access JWT issued by auth-service. The service checks
+  the signature with `BILLING_SVC_JWT_SECRET` (the platform `JWT_SECRET`) and
+  then requires a `billing_svc.tenant_members` row linking the token's `sub` to
+  the path `tenant_id`; anything else is refused with 403. Unset
+  `BILLING_SVC_JWT_SECRET` disables the user path. The local fixture seeds no
+  memberships, so user tokens only work once a deployment provisions them.
+
+Requests without a valid credential get 401. The disposable Compose stack and
+the harness share a local development token; override it with
+`BILLING_SVC_TOKEN` when running `make procs-up` / `make procs-parity`.
 
 For the extracted target, a plan change with an already-scheduled later
 subscription preserves that later row. The response's `latest_*` fields always
@@ -44,7 +58,9 @@ HTTP 409 with an explicit conflict detail instead of leaking a 500; this is
 target-side error handling, not an additional parity rule.
 
 When using the workshop client with the default disposable stack, the Vite
-development proxy forwards `/billing-api/*` to the service on port `12109`.
+development proxy forwards `/billing-api/*` to the service on port `12109` and
+attaches `BILLING_SERVICE_TOKEN` as the bearer credential when that variable is
+set (use the stack's `BILLING_SVC_SERVICE_TOKEN` value).
 The billing screens are part of this local parity fixture only. Vite dev
 enables their routes by default; a preview requires building with
 `VITE_ENABLE_BILLING_FIXTURE=true` and then running `npm run start`. The

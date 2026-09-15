@@ -12,11 +12,18 @@ const apiProxy = {
     changeOrigin: true,
   },
 };
+// The dev/preview proxy stands in for the API gateway on the local billing fixture.
+// Set BILLING_SERVICE_TOKEN to the stack's BILLING_SVC_SERVICE_TOKEN; without it the
+// billing screens get 401 from the service.
+const billingServiceToken = process.env.BILLING_SERVICE_TOKEN;
 const billingProxy = {
   "/billing-api": {
     target: process.env.BILLING_SERVICE_URL || "http://localhost:12109",
     changeOrigin: true,
     rewrite: (path: string) => path.replace(/^\/billing-api/, ""),
+    ...(billingServiceToken
+      ? { headers: { Authorization: `Bearer ${billingServiceToken}` } }
+      : {}),
   },
 };
 
