@@ -178,18 +178,16 @@
           "target": "hour",
           "source_type": "STRING",
           "target_type": "STRING",
-          "rules": [
-            "zero-padded two-character string, not an int: '00'..'23', and the malformed/absent-timestamp fallback lands in '00' (C-2.8)"
-          ]
+          "rules": [],
+          "note": "compared as bytes: a zero-padded two-character string, not an int: '00'..'23', and the malformed/absent-timestamp fallback lands in '00' (C-2.8)"
         },
         {
           "source": "event_type",
           "target": "event_type",
           "source_type": "STRING",
           "target_type": "STRING",
-          "rules": [
-            "the event type as the legacy wrote it, including the literal 'NaN' for a row its frame could not type, and the dotted 'document.created' unnormalised (F-0.9)"
-          ]
+          "rules": [],
+          "note": "compared as bytes: the event type as the legacy wrote it, including the literal 'NaN' for a row its frame could not type, and the dotted 'document.created' unnormalised (F-0.9)"
         },
         {
           "source": "event_count",
