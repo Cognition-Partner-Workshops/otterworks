@@ -39,6 +39,23 @@ WITH params AS (
            ELSE CAST(:as_of_ts AS TIMESTAMP_NTZ)
          END AS as_of_ts
 ),
+ref_snapshot AS (
+  -- The Lakebase reference load stamps every row of every reference table with one
+  -- snapshot_id. The five tables are written by five statements, so a load that dies
+  -- between them leaves plans from one read next to subscriptions from another. Pricing
+  -- that mixture is worse than not refreshing: it fails the run instead.
+  SELECT CASE
+           WHEN COUNT(DISTINCT snapshot_id) > 1
+             THEN raise_error(CONCAT(
+                    'reference tables disagree on snapshot_id (',
+                    CONCAT_WS(', ', COLLECT_SET(snapshot_id)),
+                    '): rerun ingest_lakebase_reference.py'))
+           ELSE MAX(snapshot_id)
+         END AS snapshot_id
+  FROM (SELECT snapshot_id FROM ow_tp.gold.dim_plan
+        UNION SELECT snapshot_id FROM ow_tp.gold.fct_subscription
+        UNION SELECT snapshot_id FROM ow_tp.gold.dim_tenant)
+),
 sub AS (
   SELECT
     s.subscription_id,
@@ -53,6 +70,7 @@ sub AS (
       AND (s.ends_on IS NULL OR s.ends_on >= p.as_of_ts) AS covers_as_of
   FROM ow_tp.gold.fct_subscription s
   CROSS JOIN params p
+  CROSS JOIN ref_snapshot g
 ),
 ranked AS (
   SELECT
