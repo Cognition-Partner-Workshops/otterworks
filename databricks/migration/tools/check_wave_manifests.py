@@ -103,7 +103,14 @@ def check_no_data_movement(path: Path, unit: str, where: str) -> None:
         if not isinstance(entry, str) or not entry.strip():
             raise SystemExit(f"{where}: {path.name} for {unit} has a non-path evidence "
                             f"entry {entry!r}")
-        if not (ROOT / entry).exists():
+        resolved = (ROOT / entry).resolve()
+        # An absolute entry, a ../ escape or a symlink out of the tree all resolve to a
+        # file that exists but that no reviewer can open from the PR, so containment is
+        # checked before existence.
+        if not resolved.is_relative_to(ROOT.resolve()):
+            raise SystemExit(f"{where}: {path.name} for {unit} cites evidence outside "
+                             f"the repository: {entry}")
+        if not resolved.exists():
             raise SystemExit(f"{where}: {path.name} for {unit} cites evidence that does "
                              f"not exist in the repo: {entry}")
 
