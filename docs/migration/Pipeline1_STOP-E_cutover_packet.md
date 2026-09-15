@@ -223,7 +223,31 @@ Cutover requires, in one reply: the three owner names (§5), the `reports.py` ro
 (§4), and an explicit authorization to repoint, executed with the customer-held cutover
 principal. Until then pipeline 1 stops here.
 
-Recommended sequencing once authorized: install the missing FKs and the usage-events
-validation rule → one authorized committed live run of the converted routines → stand up the
-out-of-database audit writer → deploy the shim → repoint consumer 1 → resolve consumer 2 per
-the decision above → retire the shim on the owner's date.
+Recommended sequencing once authorized:
+
+1. **Finish the schema on `mig-p1-w2`:** add `FK_SUB_PLAN` and `FK_SUB_TENANT` to
+   `billing.subscriptions`, and an equivalent of `TRG_USAGE_EVENTS_CHECK` on
+   `billing.usage_events`.
+2. **Stand up the out-of-database audit writer** (owner 2) and point `billing.log_msg` at it,
+   so the behaviour under test in step 4 is the one production will run — not the
+   known-defective in-transaction version.
+3. **Promote the database.** Everything delivered lives on Lakebase branch `mig-p1-w2`;
+   `production` has none of it. Promote `mig-p1-w2` → the production branch of project
+   `ow-tp-billing` (Lakebase branch promotion, with the pre-promotion production branch
+   retained as the rollback point), then verify on the **production endpoint** that every
+   object exists: the `billing` tables with their row counts, the constraints, and the
+   routines `sp_issue_invoice`, `fn_invoice_preview`, `fn_invoice_lines`,
+   `sp_finalize_rating`, `fn_usage_rating`, `fn_usage_summary`, `sp_schedule_dunning`,
+   `sp_suspend_overdue`, `fn_overdue_accounts`, `sp_assign_plan`, `fn_plan_entitlements`,
+   `log_msg`. **This step is not authorized by this packet and no session has ever written
+   the production branch;** it is the customer's to execute with the cutover principal.
+4. **One committed live run** of the converted routines on the promoted database, covering
+   both the success path and a **caller rollback**, to prove the audit row survives the
+   rollback and the rating→invoicing hand-off writes `billing.rating_state`. Roll back to the
+   retained branch if it fails.
+5. Deploy the shim → repoint consumer 1 → resolve consumer 2 per the decision above.
+6. Retire the shim on owner 1's date.
+
+Steps 3 and 4 in that order matter: repointing a consumer before the promotion sends
+production traffic to a database where `billing.sp_issue_invoice` does not exist, and
+validating before step 2 only exercises the implementation being replaced.
