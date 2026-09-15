@@ -130,9 +130,14 @@ def verify_snapshot(snapshot: Path) -> None:
 
 
 def upload(w, snapshot: Path, volume_dir: str) -> list[str]:
-    """Copy the snapshot files into the governed volume, overwriting with identical bytes."""
+    """Copy the snapshot files into the governed volume, overwriting with identical bytes.
+
+    The manifest travels with them: the job task lands from the volume copy with
+    `--skip-upload`, and `verify_snapshot` has to be able to check that copy against the
+    same checksums the local run checked, not trust it because it is in a volume.
+    """
     written = []
-    for _, name in STREAMS:
+    for _, name in (*STREAMS, ("manifest", "manifest.json")):
         target = f"{volume_dir}/{name}"
         w.files.upload(target, (snapshot / name).open("rb"), overwrite=True)
         written.append(target)
