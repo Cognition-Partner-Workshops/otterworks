@@ -63,7 +63,7 @@ def read_summary(w, run_date: str, batch: str) -> list[str]:
     from databricks.sdk.service.sql import StatementParameterListItem
 
     statement = (f"SELECT {', '.join(COLUMNS)} FROM {SUMMARY_TABLE} "
-                 "WHERE report_date = CAST(:run_date AS DATE) AND snapshot_batch = :batch")
+                 "WHERE summary_date = CAST(:run_date AS DATE) AND snapshot_batch = :batch")
     result = w.statement_execution.execute_statement(
         statement=statement, warehouse_id=WAREHOUSE, wait_timeout="50s",
         parameters=[StatementParameterListItem(name="run_date", value=run_date),
