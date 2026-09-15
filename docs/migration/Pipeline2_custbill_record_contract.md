@@ -103,6 +103,14 @@ either, which is the actual requirement.
 **C-6.2** Turning any expectation into a real filter is a post-cutover decision for the user
 (P2-D02), not a migration change.
 
+**C-6.3** Hard rule, and the acceptance test for it: **gold contains every record the legacy
+chain produced, byte for byte, including the corrupt ones.** Quarantine is an additional
+observability table and is never a gate on the output. `count(gold) == count(legacy report
+rows)` and `count(silver) == count(legacy psv lines)` hold *independently of how many rows
+quarantine holds*, and a recon that satisfies row counts only because an expectation removed
+a row is a failed recon. If any expectation is ever found to drop a record from gold, the
+unit stops and the behaviour goes back to the user rather than being reconciled around.
+
 ## 7. Aggregation and report contract
 
 | Clause | Contract | Evidence |

@@ -65,6 +65,20 @@ No target above collides with any pipeline 1 unit (all of which sit under `ow_tp
 | **D4-01 / D-007** | Consumer: gold table + byte-compatible CSV/`.xls` export, sendmail dropped. | Already decided by the parent; confirm at STOP E. If a human consumer surfaces, repoint to the gold table or the volume export, never a revived mail pipe. | STOP E |
 | **D3-01** | Does `CB77340` keep dropping to SFTP, or is it repointed at the landing volume, and who makes that change? | Not mine. User decision. | STOP E |
 
+### Behaviour changes (named, not buried)
+
+Approved at STOP C on the condition that they are stated in every wave brief and in the
+STOP E packet, in prose — a reader must not have to open a recon JSON to learn we changed
+what the legacy chain did.
+
+| id | Behaviour change | Blast radius |
+|---|---|---|
+| **P2-D01** | The legacy can parse a half-written file; the target cannot. Landing is atomic (staging name + rename) and the parse is a dependency edge, not a 5-minute guess. | Output differs from the legacy only on a run where the legacy would have produced a corrupt report from a partial file. Cannot be exercised against pinned inputs, so it is untested by construction and listed as an unverified path in every recon report as well as here. |
+| — | The target does not delete source files, does not write `/tmp` lock files, and fails loudly where the legacy ends a stage in `\|\| true`. | Operational only; no effect on row content. |
+| — | sendmail is dropped in favour of the job's failure notification (D4-01/D-007). | No live consumer exists to lose. |
+
+Everything else in this plan reproduces the legacy exactly, corruption included.
+
 ## 4. Waves
 
 Serial by construction — the chain is four dependency-ordered stages, so every wave is one
