@@ -175,6 +175,11 @@ WHEN NOT MATCHED THEN INSERT *"""
 # Rows arriving from bronze since the silver watermark, typed once and reused by the
 # reject and the merge statements.
 def _typed_batch(ns: Namespace, watermark: str, high: str) -> str:
+    return _typed(ns, f"""WHERE r.ingested_at > CAST('{watermark}' AS TIMESTAMP_NTZ)
+  AND r.ingested_at <= CAST('{high}' AS TIMESTAMP_NTZ)""")
+
+
+def _typed(ns: Namespace, where: str = "") -> str:
     return f"""SELECT r.event_id,
        r.tenant_id,
        TRY_CAST(r.occurred_at AS TIMESTAMP_NTZ) AS occurred_at,
@@ -190,8 +195,7 @@ FROM {ns.raw} r
 LEFT JOIN (SELECT CAST(code_val AS SMALLINT) AS code_val, code_desc AS code_name
            FROM ow_tp.bronze.codes WHERE code_type = 'USAGE_KIND') c
   ON TRY_CAST(r.kind_cd AS SMALLINT) = c.code_val
-WHERE r.ingested_at > CAST('{watermark}' AS TIMESTAMP_NTZ)
-  AND r.ingested_at <= CAST('{high}' AS TIMESTAMP_NTZ)"""
+{where}"""
 
 
 _REJECT_REASON = """CASE
@@ -241,7 +245,9 @@ def merge_silver(ns: Namespace, watermark: str, high: str) -> str:
       each column independently, so a silver row is always one real event.
     * `seen_count` and `last_seen_at` are counted over every copy in bronze, not
       added to what is already in silver, so a retried stage converges on the
-      same numbers instead of inventing arrivals.
+      same numbers instead of inventing arrivals. Only copies that pass the same
+      validation count, so a rejected copy of the id cannot backdate
+      `first_seen_at` and make a timely event look late.
     """
     return f"""MERGE INTO {ns.events} t
 USING (
@@ -250,14 +256,19 @@ USING (
     FROM ({_typed_batch(ns, watermark, high)})
   ),
   valid AS (SELECT * FROM batch WHERE reject_reason IS NULL),
+  history AS (
+    SELECT *, {_REJECT_REASON} AS reject_reason
+    FROM ({_typed(ns)})
+  ),
   arrivals AS (
-    SELECT r.event_id,
+    SELECT event_id,
            COUNT(*) AS seen_count,
-           MIN(r.ingested_at) AS first_seen_at,
-           MAX(r.ingested_at) AS last_seen_at
-    FROM {ns.raw} r
-    WHERE r.event_id IN (SELECT event_id FROM valid)
-    GROUP BY r.event_id
+           MIN(ingested_at) AS first_seen_at,
+           MAX(ingested_at) AS last_seen_at
+    FROM history
+    WHERE reject_reason IS NULL
+      AND event_id IN (SELECT event_id FROM valid)
+    GROUP BY event_id
   ),
   ranked AS (
     SELECT *, ROW_NUMBER() OVER (
