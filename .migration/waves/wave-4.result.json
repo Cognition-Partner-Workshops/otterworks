@@ -197,7 +197,9 @@
   "close_conditions": [
    "Before cutover the owner authorizes one committed live run of the converted routines, so the audit-write path and the rating_state hand-off are proven rather than installed.",
    "log_msg is moved out of the caller's transaction to meet P1-D1, which needs an out-of-database writer and a named owner (P1-D1a).",
-   "Oracle FK_SUB_PLAN and FK_SUB_TENANT are added to billing.subscriptions by the unit that owns that table."
+   "Oracle FK_SUB_PLAN and FK_SUB_TENANT are added to billing.subscriptions by the unit that owns that table.",
+   "An equivalent of Oracle TRG_USAGE_EVENTS_CHECK (units > 0, known kind) is installed on billing.usage_events, as a CHECK constraint or trigger, before the operational table takes application writes.",
+   "A named owner and a stated mechanism exist for keeping the two usage_events copies in step (billing.usage_events and ow_tp.silver.usage_events), each refreshed from Oracle/CDC and never from the other copy."
   ],
   "findings": [
    "All four units AGREE on an independent recompute. usage_events: Oracle 814, Lakebase 814, Delta 814, identical SHA-256 row digest in all three and empty set differences both ways; the two tracks also agree with each other. pkg_rating and pkg_invoicing read faithful to the Oracle packages, including the YYYYMMDD string-date comparison, the three-month rollover window with its month-end quirk, the 101-unit tier boundary, suspension proration, tax 0.0825, the credit burn-down order and its running-counter quirk, and log_msg at every Oracle call point. fn_usage_summary matched Oracle live on 18 of 18 tenant-periods and fn_invoice_lines matched live.",
