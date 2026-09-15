@@ -113,7 +113,11 @@ analytics_prefix = analytics/daily
 def _aws_kwargs() -> dict:
     endpoint = os.environ.get("AWS_ENDPOINT_URL")
     if not endpoint:
-        return {}
+        raise SystemExit(
+            "AWS_ENDPOINT_URL is unset. This capture seeds buckets and tables and runs "
+            "the legacy scripts against them; without an endpoint boto3 resolves to "
+            "whatever real account the session is authenticated to. Point it at the "
+            "local estate, e.g. AWS_ENDPOINT_URL=http://localhost:4566.")
     return {"endpoint_url": endpoint,
             "aws_access_key_id": LOCALSTACK_ACCOUNT_ID,
             "aws_secret_access_key": LOCALSTACK_ACCOUNT_ID}
@@ -318,7 +322,14 @@ def read_archive_records(s3, bucket: str, key: str) -> list[dict]:
     probe overwrites the previous probe's object, so the contents are read back
     inside the probe rather than recovered afterwards.
     """
-    body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    try:
+        body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    except s3.exceptions.InvalidObjectState:
+        # The legacy writes the archive as GLACIER, which is not readable in place.
+        s3.restore_object(Bucket=bucket, Key=key,
+                          RestoreRequest={"Days": 1,
+                                          "GlacierJobParameters": {"Tier": "Expedited"}})
+        body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
     lines = gzip.decompress(body).decode("utf-8").splitlines()
     return [json.loads(line) for line in lines if line]
 
