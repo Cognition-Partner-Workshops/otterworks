@@ -45,7 +45,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import boto3
@@ -154,10 +154,21 @@ def fixture_config():
     point the next legacy invocation on this host at clone buckets and a
     placeholder database, so the original bytes, permissions and ownership are
     restored on every exit path, and a file this runner created is removed again.
+
+    Replacing the file gives the new copy this process's ownership, and only
+    root can give it back. A config owned by someone else is therefore refused
+    before it is touched: finishing the capture at the cost of leaving the
+    host's ETL config unreadable by the account that owns it is not a trade
+    this runner gets to make.
     """
     existed = CONFIG_PATH.exists()
     original = CONFIG_PATH.read_bytes() if existed else None
     st = CONFIG_PATH.stat() if existed else None
+    if st is not None and st.st_uid != os.geteuid() and os.geteuid() != 0:
+        raise SystemExit(
+            f"{CONFIG_PATH} is owned by uid {st.st_uid} and this process is uid "
+            f"{os.geteuid()}: restoring its ownership afterwards would fail and the "
+            f"owner would lose access to it. Re-run as that user or as root.")
     try:
         write_config()
         yield
@@ -189,11 +200,42 @@ def restore_file(path: Path, data: bytes, st: os.stat_result) -> None:
     try:
         os.chown(path, st.st_uid, st.st_gid)
     except PermissionError:
-        print(
-            f"warning: restored {path} but could not restore its owner "
-            f"({st.st_uid}:{st.st_gid}); re-run as that owner or root",
-            file=sys.stderr,
-        )
+        raise SystemExit(
+            f"restored the contents of {path} but could not give it back to "
+            f"{st.st_uid}:{st.st_gid}; it is now owned by uid {os.geteuid()} and the "
+            f"original owner may no longer be able to read it. Fix the ownership "
+            f"before running anything else on this host.") from None
+
+
+def foreign_rows(table, scan_kwargs: dict, seeded: set[str]) -> list[str]:
+    """Key values the legacy's own scan would read that this capture did not seed.
+
+    The fixture tables are shared, and no legacy scan filters by namespace: the
+    analytics job takes every row for the run date and the audit job every row
+    below its cutoff. A leftover row from another namespace would be aggregated
+    into the baseline and become source-side evidence for the migration, with
+    the capture exiting 0 and every behavioural assertion still passing. So the
+    input is checked for identity, not just the output for plausibility.
+    """
+    key_name = table.key_schema[0]["AttributeName"]
+    extra, kwargs = [], dict(scan_kwargs)
+    while True:
+        resp = table.scan(**kwargs)
+        extra += [item[key_name] for item in resp.get("Items", [])
+                  if item[key_name] not in seeded]
+        if "LastEvaluatedKey" not in resp:
+            return sorted(extra)
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+
+
+def require_isolated(table, scan_kwargs: dict, seeded: set[str], what: str) -> None:
+    extra = foreign_rows(table, scan_kwargs, seeded)
+    if extra:
+        raise SystemExit(
+            f"{table.name} holds {len(extra)} row(s) that {what} would read and this "
+            f"capture did not seed, e.g. {extra[:5]}. They would be aggregated into the "
+            f"baseline. Clear the other namespace's rows for this window, or capture "
+            f"against a table no other run shares.")
 
 
 def verify_snapshot(snapshot: Path, manifest: dict) -> None:
@@ -339,7 +381,7 @@ def capture_storage_cleanup(snapshot: Path, out: Path) -> dict:
 # ── audit archive: three shapes, three outcomes ──────────────────────────────
 
 
-def capture_audit_archive(snapshot: Path, out: Path, ns: str) -> dict:
+def capture_audit_archive(snapshot: Path, out: Path, ns: str, cutoff: str) -> dict:
     """Run the legacy once per record shape against a table holding only that shape.
 
     Mixing the shapes in one table would hide the interesting result: the
@@ -370,6 +412,14 @@ def capture_audit_archive(snapshot: Path, out: Path, ns: str) -> dict:
         with table.batch_writer() as batch:
             for item in rows:
                 batch.put_item(Item=item)
+
+        require_isolated(
+            table,
+            {"FilterExpression": "#ts < :cutoff",
+             "ExpressionAttributeNames": {"#ts": "timestamp"},
+             "ExpressionAttributeValues": {":cutoff": cutoff}},
+            {item["id"] for item in rows},
+            "audit_archive_weekly.py")
 
         empty_bucket(s3, ARCHIVE_BUCKET)
         before_rows = table.scan(Select="COUNT")["Count"]
@@ -410,7 +460,7 @@ def capture_audit_archive(snapshot: Path, out: Path, ns: str) -> dict:
 # ── analytics daily ──────────────────────────────────────────────────────────
 
 
-def capture_analytics_daily(snapshot: Path, out: Path) -> dict:
+def capture_analytics_daily(snapshot: Path, out: Path, ns: str) -> dict:
     """Seed SQS + DynamoDB from the snapshot, run the legacy, read back its S3 output.
 
     The job drains the queue as it reads it (F-0.1), so the queue is recreated
@@ -422,6 +472,7 @@ def capture_analytics_daily(snapshot: Path, out: Path) -> dict:
     s3, sqs, ddb = aws("s3"), aws("sqs"), aws_resource("dynamodb")
     dynamo_events = json.loads((snapshot / "analytics_dynamodb_events.json").read_text())
     sqs_events = json.loads((snapshot / "analytics_sqs_events.json").read_text())
+    run_date = json.loads((snapshot / "manifest.json").read_text())["run_date"]
 
     ensure_bucket(s3, DATA_LAKE_BUCKET)
     empty_bucket(s3, DATA_LAKE_BUCKET)
@@ -435,7 +486,14 @@ def capture_analytics_daily(snapshot: Path, out: Path) -> dict:
     table = ddb.Table(ANALYTICS_TABLE)
     with table.batch_writer() as batch:
         for ev in dynamo_events:
-            batch.put_item(Item=ev)
+            batch.put_item(Item={**ev, "ns": ns})
+
+    require_isolated(
+        table,
+        {"FilterExpression": "begins_with(event_date, :ds)",
+         "ExpressionAttributeValues": {":ds": run_date}},
+        {ev["event_id"] for ev in dynamo_events},
+        "analytics_daily.py")
 
     result = run_legacy("analytics_daily.py")
 
@@ -465,6 +523,15 @@ def capture_analytics_daily(snapshot: Path, out: Path) -> dict:
     (out / "p3-analytics-daily.baseline.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n")
     return result
+
+
+def legacy_audit_cutoff() -> str:
+    """The cutoff audit_archive_weekly.py will compute for a run started now."""
+    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+    # Naive on purpose: the legacy builds this string the same way, and the
+    # comparison is against its literal, not against a point in time.
+    return (datetime.strptime(today, "%Y-%m-%d")  # noqa: DTZ007
+            - timedelta(days=90)).isoformat() + "Z"
 
 
 def _decode_output(key: str, body: bytes):
@@ -560,7 +627,7 @@ def run_probes(snapshot: Path, out: Path, ns: str, wanted: set[str],
     having observed something else is a broken capture, not a new baseline.
     """
     if "analytics-daily" in wanted:
-        r = capture_analytics_daily(snapshot, out)
+        r = capture_analytics_daily(snapshot, out, ns)
         check(r["exit_code"] == 0,
               f"analytics_daily.py exited {r['exit_code']}, expected 0")
         check(bool(r["objects_written"]),
@@ -602,7 +669,10 @@ def run_probes(snapshot: Path, out: Path, ns: str, wanted: set[str],
               f"matches expected orphan set: {r['delete_set_matches_expected']}")
 
     if "audit-archive" in wanted:
-        p = capture_audit_archive(snapshot, out, ns)
+        # The legacy dates its cutoff from datetime.now(), so the isolation check
+        # has to use that cutoff and not the fixture's, which differ under
+        # --allow-date-drift.
+        p = capture_audit_archive(snapshot, out, ns, legacy_audit_cutoff())
         # F-0.4 / F-0.4a / F-0.4b. A-tsonly exiting 1 is the expected result,
         # not a failed capture: the job archives, then dies on KeyError.
         # No shape deletes from the source table.
