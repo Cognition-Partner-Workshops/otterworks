@@ -209,6 +209,25 @@ _REJECT_REASON = """CASE
 END"""
 
 
+def _not_quarantined(ns: Namespace, alias: str) -> str:
+    """True for a bronze row that is not the row a reject was recorded for.
+
+    One `COPY INTO` load stamps every row with the same `ingested_at`, so the
+    file and the arrival time do not identify a row on their own: a good and a
+    bad copy of one event id in one file share both. The whole raw payload is
+    compared, which is what the rejects table stores.
+    """
+    return f"""NOT EXISTS (
+    SELECT 1 FROM {ns.rejects} x
+    WHERE x.event_id <=> {alias}.event_id
+      AND x.tenant_id <=> {alias}.tenant_id
+      AND x.occurred_at <=> {alias}.occurred_at_raw
+      AND x.units <=> {alias}.units_raw
+      AND x.kind_cd <=> {alias}.kind_cd_raw
+      AND x.source_file <=> {alias}.source_file
+      AND x.ingested_at <=> {alias}.ingested_at)"""
+
+
 def quarantine_rejects(ns: Namespace, watermark: str, high: str) -> str:
     """Nothing missing or unattributable reaches the meter; it lands here instead.
 
@@ -256,18 +275,15 @@ def merge_silver(ns: Namespace, watermark: str, high: str) -> str:
     return f"""MERGE INTO {ns.events} t
 USING (
   WITH batch AS (
-    SELECT *, {_REJECT_REASON} AS reject_reason
-    FROM ({_typed_batch(ns, watermark, high)})
+    SELECT b.*, {_REJECT_REASON} AS reject_reason
+    FROM ({_typed_batch(ns, watermark, high)}) b
+    WHERE {_not_quarantined(ns, "b")}
   ),
   valid AS (SELECT * FROM batch WHERE reject_reason IS NULL),
   history AS (
     SELECT h.event_id, h.ingested_at
     FROM ({_typed(ns)}) h
-    WHERE NOT EXISTS (
-      SELECT 1 FROM {ns.rejects} x
-      WHERE x.event_id <=> h.event_id
-        AND x.source_file <=> h.source_file
-        AND x.ingested_at <=> h.ingested_at)
+    WHERE {_not_quarantined(ns, "h")}
   ),
   arrivals AS (
     SELECT event_id,

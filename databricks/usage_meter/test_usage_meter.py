@@ -170,7 +170,21 @@ class UsageMeterTest(unittest.TestCase):
         self.assertEqual(row["units"], 10)
         self.assertEqual(self.cell("2026-03-01")["units_total"], 45)
 
-    def test_08_empty_input_changes_nothing(self) -> None:
+    def test_08_good_and_bad_copy_in_one_file(self) -> None:
+        # One load stamps both copies with the same file and ingest time, so the
+        # reject must be matched on its payload or the good copy vanishes with it.
+        eid = self.id_for("e7")
+        write_batch([event(eid, "2026-03-10 09:00:00", 0),
+                     event(eid, "2026-03-10 09:00:00", 7)], ns=TEST)
+        self.run_pipeline()
+        self.assertEqual(
+            self.ex.scalar(f"SELECT units FROM {TEST.events} WHERE event_id = '{eid}'"), 7)
+        self.assertEqual(
+            self.ex.scalar(f"SELECT reject_reason FROM {TEST.rejects} "
+                           f"WHERE event_id = '{eid}'"), "units must be > 0")
+        self.assertEqual(self.cell("2026-03-01")["units_total"], 52)
+
+    def test_09_empty_input_changes_nothing(self) -> None:
         before = self.digest()
         stats = self.run_pipeline()
         self.assertEqual(stats["ingest"]["rows_landed"], 0)
@@ -179,12 +193,12 @@ class UsageMeterTest(unittest.TestCase):
         self.assertEqual(stats["meter"]["cells_written"], 0)
         self.assertEqual(self.digest(), before)
 
-    def test_09_rerun_is_idempotent(self) -> None:
+    def test_10_rerun_is_idempotent(self) -> None:
         before = self.digest()
         self.run_pipeline()
         self.run_pipeline()
         self.assertEqual(self.digest(), before)
-        self.assertEqual(self.ex.scalar(f"SELECT COUNT(*) FROM {TEST.events}"), 6)
+        self.assertEqual(self.ex.scalar(f"SELECT COUNT(*) FROM {TEST.events}"), 7)
 
 
 if __name__ == "__main__":
