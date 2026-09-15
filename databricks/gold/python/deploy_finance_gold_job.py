@@ -33,7 +33,10 @@ Not in this job: the Lakebase reference ingestion
 (`databricks/gold/python/ingest_lakebase_reference.py`). It needs Python compute to reach
 Postgres, and no new clusters may be created here, so it is run deliberately rather than on
 a schedule. The tables it loads (plans, tenants, subscriptions, credit notes, rating
-results) change rarely; the ones this job rebuilds are the ones that move.
+results) change rarely; the ones this job rebuilds are the ones that move. The staleness
+window that leaves is not silent: `build_dq_exceptions` raises `reference_snapshot_stale`
+once a reference snapshot is more than 7 days old, so a scheduled refresh that prices ARR
+from an old snapshot says so on the dashboard.
 """
 from __future__ import annotations
 

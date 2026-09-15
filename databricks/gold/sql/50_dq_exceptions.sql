@@ -41,20 +41,34 @@ LEFT JOIN (SELECT invoice_id, SUM(amount) AS line_sum
 WHERE h.total_amt <> COALESCE(l.line_sum, 0)
 
 UNION ALL
--- Unparseable dates on an open invoice: the ageing bucket becomes 'unknown' and the balance
--- stays in the total rather than being dropped or silently aged.
+-- Unparseable due date on an open invoice: ageing reads the due date only, so this is the
+-- failure that sends the invoice to the 'unknown' bucket. The balance stays in the total
+-- rather than being dropped or silently aged.
 SELECT
   'invoice', h.invoice_id, NULL, h.tenant_id,
-  'unparseable_date',
-  CONCAT('invoice_dt=', COALESCE(h.invoice_dt, '<null>'),
-         ' due_dt=', COALESCE(h.due_dt, '<null>')),
+  'unparseable_due_date',
+  CONCAT('due_dt=', COALESCE(h.due_dt, '<null>')),
   'open balance kept, ageing bucket = unknown',
   CAST(h.total_amt AS DECIMAL(14,2)),
   CAST(current_timestamp() AS TIMESTAMP_NTZ)
 FROM ow_tp.silver.invoice_header h
 WHERE h.status_cd IN (20, 40)
-  AND (TRY_TO_TIMESTAMP(h.due_dt, 'dd-MMM-yy') IS NULL
-       OR TRY_TO_TIMESTAMP(h.invoice_dt, 'dd-MMM-yy') IS NULL)
+  AND TRY_TO_TIMESTAMP(h.due_dt, 'dd-MMM-yy') IS NULL
+
+UNION ALL
+-- Unparseable invoice date on an open invoice. Ageing is unaffected — it is computed from
+-- the due date — but the invoice drops out of the date-quality checks that compare the two
+-- dates, and out of the default as-of date, which is the latest parsed invoice date.
+SELECT
+  'invoice', h.invoice_id, NULL, h.tenant_id,
+  'unparseable_invoice_date',
+  CONCAT('invoice_dt=', COALESCE(h.invoice_dt, '<null>')),
+  'aged normally from the due date; excluded from the due-before-invoice check and from the default as-of date',
+  CAST(h.total_amt AS DECIMAL(14,2)),
+  CAST(current_timestamp() AS TIMESTAMP_NTZ)
+FROM ow_tp.silver.invoice_header h
+WHERE h.status_cd IN (20, 40)
+  AND TRY_TO_TIMESTAMP(h.invoice_dt, 'dd-MMM-yy') IS NULL
 
 UNION ALL
 -- Due date before invoice date: parses cleanly, so ageing still works, but the invoice is
@@ -87,6 +101,37 @@ WHERE l.gl_acct_csv IS NOT NULL
   AND NOT (l.gl_acct_csv RLIKE '^[0-9]+(,[0-9]+)*$')
 
 UNION ALL
+-- Customer name on an invoice line disagrees with the customer master. AR labels customers
+-- from ow_tp.bronze.customer_master, so a stale denormalised copy on a line no longer
+-- changes any reported name; it is recorded here rather than being resolved by picking one.
+SELECT
+  'customer', x.cust_id, NULL, NULL,
+  'customer_name_disagrees_with_master',
+  CONCAT('master=', COALESCE(m.cust_name, '<null>'),
+         ' invoice_line=', COALESCE(x.line_name, '<null>')),
+  'AR reports the customer master name; the invoice-line copy is ignored',
+  NULL,
+  CAST(current_timestamp() AS TIMESTAMP_NTZ)
+FROM (SELECT cust_id, MAX(cust_name) AS line_name
+        FROM ow_tp.silver.invoice_line GROUP BY cust_id) x
+JOIN ow_tp.bronze.customer_master m ON m.cust_id = x.cust_id
+WHERE m.cust_name IS DISTINCT FROM x.line_name
+
+UNION ALL
+-- Open invoice whose customer is absent from the customer master: it would be reported
+-- with no customer name at all, so the gap is recorded rather than left blank on a report.
+SELECT
+  'invoice', h.invoice_id, NULL, h.tenant_id,
+  'customer_missing_from_master',
+  CONCAT('cust_id=', COALESCE(h.cust_id, '<null>')),
+  'open balance kept; customer name reported as NULL',
+  CAST(h.total_amt AS DECIMAL(14,2)),
+  CAST(current_timestamp() AS TIMESTAMP_NTZ)
+FROM ow_tp.silver.invoice_header h
+LEFT ANTI JOIN ow_tp.bronze.customer_master m ON m.cust_id = h.cust_id
+WHERE h.status_cd IN (20, 40)
+
+UNION ALL
 -- Cross-domain tenant id: the invoice ledger's tenant ids come from the legacy customer
 -- master and do not intersect the Lakebase billing tenant ids at all, so AR cannot be
 -- joined to subscriptions or usage by tenant. Recorded once per open invoice rather than
@@ -114,6 +159,32 @@ SELECT
   CAST(current_timestamp() AS TIMESTAMP_NTZ)
 FROM ow_tp.gold.fct_usage_period u
 WHERE u.plan_id IS NULL OR u.overage_rate IS NULL
+
+UNION ALL
+-- Stale Lakebase reference snapshot. The scheduled job rebuilds the metric tables but
+-- cannot reload Lakebase (that needs Python compute, and no cluster may be created here),
+-- so a plan change or a suspension in the OLTP system reaches ARR only after someone runs
+-- databricks/gold/python/ingest_lakebase_reference.py. This row makes that visible on the
+-- dashboard instead of leaving a stale run rate to look current.
+SELECT
+  'reference_snapshot', x.table_name, NULL, NULL,
+  'reference_snapshot_stale',
+  CONCAT('ingested_at=', CAST(x.ingested_at AS STRING),
+         ' branch=', COALESCE(x.source_lakebase_branch, '<null>')),
+  'ARR/MRR and entitlements are priced from a snapshot older than 7 days',
+  NULL,
+  CAST(current_timestamp() AS TIMESTAMP_NTZ)
+FROM (
+  SELECT 'dim_plan' AS table_name, MAX(ingested_at) AS ingested_at,
+         MAX(source_lakebase_branch) AS source_lakebase_branch FROM ow_tp.gold.dim_plan
+  UNION ALL
+  SELECT 'fct_subscription', MAX(ingested_at), MAX(source_lakebase_branch)
+    FROM ow_tp.gold.fct_subscription
+  UNION ALL
+  SELECT 'dim_tenant', MAX(ingested_at), MAX(source_lakebase_branch)
+    FROM ow_tp.gold.dim_tenant
+) x
+WHERE x.ingested_at < current_timestamp() - INTERVAL 7 DAYS
 
 UNION ALL
 -- Subscription pointing at a plan that no longer exists: it would price at NULL, so it is

@@ -29,11 +29,17 @@ WITH params AS (
   -- invoice date rather than at today: the migrated history stops on 2025-12-28, so a
   -- default of current_date() would put every open invoice in 90+ and hide the shape of
   -- the book. A dated run is a parameter change, not an edit to this statement.
-  SELECT COALESCE(
-           TRY_CAST(NULLIF(:as_of_date, '') AS DATE),
-           (SELECT MAX(CAST(invoice_dt_parsed AS DATE))
-              FROM ow_tp.silver.invoice_header WHERE status_cd IN (20, 40))
-         ) AS as_of_date
+  -- Only an empty value defaults. A value that is present but not a date fails the run,
+  -- rather than quietly ageing the book at the ledger's own latest date under a label
+  -- saying otherwise.
+  SELECT CASE
+           WHEN NULLIF(:as_of_date, '') IS NULL
+             THEN (SELECT MAX(CAST(invoice_dt_parsed AS DATE))
+                     FROM ow_tp.silver.invoice_header WHERE status_cd IN (20, 40))
+           WHEN TRY_CAST(:as_of_date AS DATE) IS NULL
+             THEN raise_error(CONCAT('as_of_date is not a date: ', :as_of_date))
+           ELSE CAST(:as_of_date AS DATE)
+         END AS as_of_date
 ),
 open_inv AS (
   SELECT
@@ -83,6 +89,10 @@ SELECT
 FROM open_inv o
 LEFT JOIN ow_tp.bronze.codes st
        ON st.code_type = 'INV_STATUS' AND st.code_val = o.status_cd
-LEFT JOIN (SELECT cust_id, MAX(cust_name) AS cust_name
-             FROM ow_tp.silver.invoice_line GROUP BY cust_id) c
+-- The customer name comes from the customer master, one row per cust_id, and not from the
+-- denormalised copy on invoice lines: an invoice with no lines would otherwise have no
+-- name, and a customer renamed between invoices would be labelled by whichever of its line
+-- copies sorted highest. Line copies that disagree with the master are recorded in
+-- ow_tp.gold.dq_exceptions.
+LEFT JOIN ow_tp.bronze.customer_master c
        ON c.cust_id = o.cust_id

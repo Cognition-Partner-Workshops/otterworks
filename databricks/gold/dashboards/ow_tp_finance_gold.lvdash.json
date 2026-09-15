@@ -55,12 +55,12 @@
       "displayName": "AR by customer",
       "queryLines": [
         "SELECT `Customer` AS customer,\n",
-        "       `Ageing Bucket` AS ageing_bucket,\n",
         "       MEASURE(`Open Balance`) AS open_balance,\n",
+        "       MEASURE(`Balance Past Due`) AS balance_past_due,\n",
         "       MEASURE(`Open Invoices`) AS open_invoices\n",
         "FROM mv_ar_ageing\n",
         "GROUP BY ALL\n",
-        "ORDER BY 3 DESC\n",
+        "ORDER BY 2 DESC\n",
         "LIMIT 20"
       ]
     },
@@ -441,7 +441,7 @@
                   "datasetName": "ds_ar_top_customers",
                   "fields": [
                     { "name": "customer", "expression": "`customer`" },
-                    { "name": "ageing_bucket", "expression": "`ageing_bucket`" },
+                    { "name": "balance_past_due", "expression": "`balance_past_due`" },
                     { "name": "open_balance", "expression": "`open_balance`" },
                     { "name": "open_invoices", "expression": "`open_invoices`" }
                   ],
@@ -456,8 +456,8 @@
               "encodings": {
                 "columns": [
                   { "fieldName": "customer", "displayName": "Customer", "booleanValues": ["false", "true"], "type": "string" },
-                  { "fieldName": "ageing_bucket", "displayName": "Bucket", "booleanValues": ["false", "true"], "type": "string" },
                   { "fieldName": "open_balance", "displayName": "Open balance", "type": "float" },
+                  { "fieldName": "balance_past_due", "displayName": "Past due", "type": "float" },
                   { "fieldName": "open_invoices", "displayName": "Invoices", "type": "integer" }
                 ]
               }

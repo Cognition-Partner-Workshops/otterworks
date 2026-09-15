@@ -37,6 +37,7 @@ import decimal
 import json
 
 import psycopg
+from apply_gold_sql import run
 from databricks.sdk import WorkspaceClient
 
 PROJECT = "ow-tp-billing"
@@ -45,7 +46,6 @@ DATABASE = "ow_tp"
 # the guard is restated here: a branch outside this list, `production` above all, is refused
 # before a credential is requested.
 ALLOWED_BRANCHES = ("mig-p1-w0", "mig-p1-w1", "mig-p1-w2", "mig-p2-w1", "mig-p3-w1")
-WAREHOUSE = "565cd2fd713738c4"
 CATALOG, SCHEMA = "ow_tp", "gold"
 
 # (gold table, comment, source query, [(column, delta type)]). The column list is the
@@ -172,11 +172,10 @@ def main(argv: list[str] | None = None) -> int:
             summary[table] = len(rows)
             if args.dry_run:
                 continue
-            statement = rebuild_statement(table, comment, columns, rows, args.branch)
-            result = w.statement_execution.execute_statement(
-                statement=statement, warehouse_id=WAREHOUSE, wait_timeout="50s")
-            if result.status and result.status.state and result.status.state.value != "SUCCEEDED":
-                raise SystemExit(f"{table}: {result.status.error}")
+            # run() polls to a terminal state. A wait timeout only bounds the API call, not
+            # the statement, so treating PENDING/RUNNING as failure would abandon a CTAS that
+            # then replaces the table after the load has already given up on the rest.
+            run(w, rebuild_statement(table, comment, columns, rows, args.branch), {})
 
     print(json.dumps({"branch": args.branch, "dry_run": args.dry_run,
                       "rows_ingested": summary}, indent=2))

@@ -28,9 +28,16 @@ AS
 WITH params AS (
   -- as_of_ts is a job parameter. Empty (the default) means "now": a refresh with no
   -- argument prices the book at the moment it runs, and a backdated run is a parameter
-  -- change rather than an edit to this statement.
-  SELECT COALESCE(TRY_CAST(NULLIF(:as_of_ts, '') AS TIMESTAMP_NTZ),
-                  CAST(current_timestamp() AS TIMESTAMP_NTZ)) AS as_of_ts
+  -- change rather than an edit to this statement. Only an empty value defaults; a value
+  -- that is present but not a timestamp fails the run, because a backdated rebuild that
+  -- quietly republishes today's book is worse than no rebuild.
+  SELECT CASE
+           WHEN NULLIF(:as_of_ts, '') IS NULL
+             THEN CAST(current_timestamp() AS TIMESTAMP_NTZ)
+           WHEN TRY_CAST(:as_of_ts AS TIMESTAMP_NTZ) IS NULL
+             THEN raise_error(CONCAT('as_of_ts is not a timestamp: ', :as_of_ts))
+           ELSE CAST(:as_of_ts AS TIMESTAMP_NTZ)
+         END AS as_of_ts
 ),
 sub AS (
   SELECT

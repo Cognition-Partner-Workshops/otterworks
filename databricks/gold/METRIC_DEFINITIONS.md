@@ -79,11 +79,15 @@ the header is the single authority for money and the line problems go to `dq_exc
 **Buckets** are by days past due at `as_of_date`: `not yet due` (≤ 0), `0-30`, `31-60`,
 `61-90`, `90+`.
 
-**An unparseable date never makes money disappear.** If the due date is null or does not
-parse as the legacy `DD-MON-YY`, the invoice goes to the `unknown` bucket and stays in the
-open balance total. It is never aged to 90+ (which would overstate collections risk) and
-never dropped (which would understate the receivable). Today all 18,750 headers parse, so
-`unknown` is empty — the rule exists so that stops being silently true.
+**An unparseable date never makes money disappear.** Ageing reads the **due date** only. If
+the due date is null or does not parse as the legacy `DD-MON-YY`, the invoice goes to the
+`unknown` bucket and stays in the open balance total. It is never aged to 90+ (which would
+overstate collections risk) and never dropped (which would understate the receivable). An
+unparseable **invoice** date does not change the bucket at all: the invoice ages normally
+from its due date, but it drops out of the due-before-invoice check and out of the default
+as-of date. The two failures are separate `dq_exceptions` rules, `unparseable_due_date` and
+`unparseable_invoice_date`, because their consequences differ. Today all 18,750 headers
+parse on both dates, so both rules are empty — they exist so that stops being silently true.
 
 A due date **earlier** than the invoice date parses fine and ages normally, but the invoice
 is past due on issue, so the bucket is a poor collections signal. 4,184 open invoices are
@@ -91,6 +95,16 @@ like this and each is flagged (`due_before_invoice_date`).
 
 `as_of_date` left empty ages the ledger at its own latest open-invoice date (2025-12-28)
 rather than today. Defaulting to today would put the entire book in 90+ and hide its shape.
+Only an **empty** value means "derive it": a value that is present but not a date fails the
+run rather than falling back to the default, and the same rule applies to `as_of_ts` on
+ARR/MRR. A typo in a backdated rebuild is an error, not a silently different number.
+
+**Customer names come from `ow_tp.bronze.customer_master`**, one row per `cust_id`, not from
+the denormalised copy on invoice lines: an invoice with no lines would otherwise be
+nameless, and a renamed customer would be labelled by whichever line copy sorted highest.
+Line copies that disagree with the master, and open invoices whose customer is missing from
+it, are recorded (`customer_name_disagrees_with_master`, `customer_missing_from_master`).
+Today all 8,252 open invoices resolve a name and no copy disagrees.
 
 **AR is not joined to tenants.** The invoice ledger's `tenant_id` values come from the legacy
 customer master and do not intersect the Lakebase billing tenant ids at all. AR is therefore
@@ -165,6 +179,12 @@ The Lakebase reference load (`ingest_lakebase_reference.py`) is not a job task: 
 Python compute to reach Postgres and no new clusters may be created here, so it is run
 deliberately. Those tables (plans, tenants, subscriptions, credit notes, rating results)
 change rarely; the ones the job rebuilds are the ones that move.
+
+That is a real staleness window: a plan change or a suspension in the OLTP system does not
+reach ARR until the load is run. Rather than leave it implicit, `dq_exceptions` raises
+`reference_snapshot_stale` once a reference snapshot is more than 7 days old, so the
+dashboard shows the run rate is being priced from an old snapshot. Closing the window
+properly needs the load to run on job compute that can reach Postgres.
 
 It reads Lakebase branch `mig-p1-w2`, which is where pipeline 1's data landed. `mig-p1-w0`
 is the intake-era branch name still quoted in older briefs and holds only
