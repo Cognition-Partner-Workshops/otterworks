@@ -252,8 +252,11 @@ Recommended sequencing once authorized:
    rollback**, to prove the audit row survives the rollback and the rating→invoicing hand-off
    writes `billing.rating_state`. Roll back to the retained branch if it fails.
 5. Repoint consumer 1 → resolve consumer 2 per the decision above.
-6. Retire the shim on owner 1's date — which also retires the audit path built into it,
-   unless it was built as a standalone sink.
+6. Retire the shim on owner 1's date — **only after** its audit path has moved to a
+   standalone sink or the replacement caller layer, with the rollback validation from step 4
+   re-run against that permanent path. Rollback-surviving audit logging outlives the shim;
+   `billing.log_msg` stays transaction-bound, so retiring the shim while it is the only
+   out-of-database writer puts the divergence straight back.
 
 The order matters in two places. Repointing a consumer before the promotion sends production
 traffic to a database where `billing.sp_issue_invoice` does not exist. And validating before
