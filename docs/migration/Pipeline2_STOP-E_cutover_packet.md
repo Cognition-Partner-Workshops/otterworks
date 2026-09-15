@@ -39,7 +39,7 @@ separately. Only the first two need answering before anything can be scheduled.
 | 1 | `p2-sftp-ingest` | `jobs/sftp_ingest_poll.ksh` | official **PASS**, live, full depth | #1603 |
 | 2 | `p2-custbill-parse` | `jobs/parse_custbill_fixedwidth.sh` | official **PASS**, live, full depth | #1606, #1607 |
 | 3 | `p2-finance-close` | `jobs/finance_excel_report.pl` | official **PASS**, live, full depth | #1608, #1609 |
-| 4 | `p2-orchestration` | `run_all.sh` + the CUSTBILL cron entries | structural **PASS** (24 checks) | #1610, #1612 |
+| 4 | `p2-orchestration` | `run_all.sh` + the CUSTBILL cron entries | structural **PASS** (24 checks) | #1610, #1613 |
 
 Unlike pipeline 1, these are **official harness verdicts** with `merge_eligible=true`: the
 source here is files on disk, so the harness's Oracle-adapter limitation does not apply.
@@ -47,7 +47,7 @@ Money is exact, row counts exact, dates ISO-canonicalized, anomalies compared as
 every result was recomputed from the target rather than from the artifact that produced it.
 Idempotency was proven by an actual rerun in every wave.
 
-One fix after wave 4 closed (#1612): both jobs used to start the shared pipeline directly,
+One fix after wave 4 closed (#1613): both jobs used to start the shared pipeline directly,
 and a pipeline allows one active update, so an ingest still running at 02:10 failed the close
 with "Pipeline update already in progress" — reproduced in the workspace. The close now runs
 the ingest job instead, so a late ingest delays the close rather than failing it; also proven
