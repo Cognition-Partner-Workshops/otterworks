@@ -103,6 +103,15 @@ has exactly one target, `migration`; there is no production target to deploy by 
 | `ow_tp_p3_usage_rollup_daily` | `0 0 2 * * ?` | PAUSED | 1 | yes | 0 | 3 | 3 |
 | `ow_tp_p3_user_activity_daily` | `0 0 5 * * ?` | PAUSED | 1 | yes | 0 | 6 | 5 + 1 `run_job_task` |
 
+Every schedule is `timezone_id: UTC`, which matters as much as the expression: the same cron in
+another zone fires at a different instant. The table is produced by
+`databricks/migration/p3/recon/audit_job_graph.py`, which also compares the deployed task keys
+and `depends_on` edges against the graph declared in the script, requires
+`environment_key: serverless` and the full retry triple (`max_retries`,
+`min_retry_interval_millis`, `retry_on_timeout`) on every working task, and rejects all three of
+those on the `run_job_task`. Checking only the tasks the API returns would let a job that
+deployed with tasks missing pass every rule vacuously.
+
 The two 02:00 jobs (`analytics_daily` and `usage_rollup_daily`) no longer collide with anything:
 they share no box, no table and no input, and the legacy 02:00/02:10 overlap with
 `finance_excel_report.pl` disappeared with pipeline 2's conversion. The 02:30 cleanup job

@@ -16,8 +16,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "land_events": {
@@ -26,8 +28,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_gold_hourly": {
@@ -38,8 +42,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_gold_summary": {
@@ -50,8 +56,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_gold_top_user_actions": {
@@ -62,8 +70,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_gold_top_users": {
@@ -74,8 +84,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_silver": {
@@ -86,8 +98,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "publish_summary": {
@@ -98,12 +112,15 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       }
     },
-    "timeout_seconds": 3600
+    "timeout_seconds": 3600,
+    "timezone_id": "UTC"
   },
   "ow_tp_p3_audit_archive_weekly": {
     "cron": "0 0 3 ? * SUN",
@@ -122,8 +139,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "create_tables": {
@@ -134,8 +153,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "land_audit_events": {
@@ -144,8 +165,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "report_run": {
@@ -156,8 +179,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "write_compliance_report": {
@@ -168,12 +193,15 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       }
     },
-    "timeout_seconds": 3600
+    "timeout_seconds": 3600,
+    "timezone_id": "UTC"
   },
   "ow_tp_p3_storage_cleanup_daily": {
     "cron": "0 30 2 * * ?",
@@ -192,8 +220,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "create_tables": {
@@ -204,8 +234,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "land_inventory": {
@@ -214,8 +246,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "report_candidates": {
@@ -226,12 +260,15 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       }
     },
-    "timeout_seconds": 3600
+    "timeout_seconds": 3600,
+    "timezone_id": "UTC"
   },
   "ow_tp_p3_usage_rollup_daily": {
     "cron": "0 0 2 * * ?",
@@ -250,8 +287,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "land_usage_events": {
@@ -260,8 +299,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_gold_usage_rollup": {
@@ -272,12 +313,15 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       }
     },
-    "timeout_seconds": 3600
+    "timeout_seconds": 3600,
+    "timezone_id": "UTC"
   },
   "ow_tp_p3_user_activity_daily": {
     "cron": "0 0 5 * * ?",
@@ -296,8 +340,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_report": {
@@ -308,8 +354,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_report_days": {
@@ -320,8 +368,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_user_actions": {
@@ -332,8 +382,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "load_user_summary": {
@@ -344,8 +396,10 @@
         "existing_cluster_id": null,
         "kind": "spark_python_task",
         "max_retries": 2,
+        "min_retry_interval_millis": 300000,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": true,
         "target_job_id": null
       },
       "upstream_analytics_daily": {
@@ -354,11 +408,14 @@
         "existing_cluster_id": null,
         "kind": "run_job_task",
         "max_retries": null,
+        "min_retry_interval_millis": null,
         "new_cluster": false,
         "pipeline_id": null,
+        "retry_on_timeout": null,
         "target_job_id": 778915537808125
       }
     },
-    "timeout_seconds": 3600
+    "timeout_seconds": 3600,
+    "timezone_id": "UTC"
   }
 }
