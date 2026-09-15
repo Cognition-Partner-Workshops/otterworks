@@ -15,7 +15,7 @@ import os
 import re
 import sys
 from collections import Counter
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 ROOT = Path(__file__).resolve().parents[3]
 WAVES = ROOT / ".migration/waves"
@@ -103,10 +103,14 @@ def check_no_data_movement(path: Path, unit: str, where: str) -> None:
         if not isinstance(entry, str) or not entry.strip():
             raise SystemExit(f"{where}: {path.name} for {unit} has a non-path evidence "
                             f"entry {entry!r}")
+        # Evidence is a link a reviewer follows in the PR, so it is repo-relative by
+        # definition: an absolute path describes one machine's checkout, and a ../ escape
+        # or a symlink out of the tree resolves to a file that exists but is not in the
+        # repository at all.
+        if PurePosixPath(entry).is_absolute() or PureWindowsPath(entry).is_absolute():
+            raise SystemExit(f"{where}: {path.name} for {unit} cites evidence by absolute "
+                             f"path; use a path relative to the repository root: {entry}")
         resolved = (ROOT / entry).resolve()
-        # An absolute entry, a ../ escape or a symlink out of the tree all resolve to a
-        # file that exists but that no reviewer can open from the PR, so containment is
-        # checked before existence.
         if not resolved.is_relative_to(ROOT.resolve()):
             raise SystemExit(f"{where}: {path.name} for {unit} cites evidence outside "
                              f"the repository: {entry}")
