@@ -76,9 +76,14 @@ fields from the same non-deterministic sources.
 - `compute_preview` is inlined into `fn_invoice_preview`, the way Oracle's own function
   reaches it; the five package globals are the columns the preview projects, so no session
   state survives (P1-D4).
-- The `pkg_rating.g_overage_amount` hand-off is read from `billing.rating_state` by
-  `sp_issue_invoice` and passed to the preview as an explicit argument (P1-D4). The argument
-  defaults to NULL, so the source's three-argument call shape is unchanged.
+- The overage the invoice is built from is `fn_usage_rating`'s result, not the finalize-time
+  `billing.rating_state` value. Oracle's `compute_preview` assigns
+  `g_overage := pkg_rating.g_overage_amount` unconditionally after its own `compute_rating`
+  call, so the second computation always wins; preferring the stored value would bill a stale
+  overage if usage lands between the two statements. `billing.rating_state` remains the
+  explicit form of the hand-off (P1-D4), written by `sp_finalize_rating` in unit
+  p1-pkg-rating. First revision of this unit read it back and preferred it; corrected after
+  review, see "Evidence recomputed after the review fix" below.
 - `sp_finalize_rating` is CALLed, never re-converted; its rating-table and audit writes are
   declared (D-009).
 - The 0.0825 tax rate keeps its value as a named constant.
@@ -97,8 +102,23 @@ fields from the same non-deterministic sources.
 - `log_msg`'s audit write is kept, including the message text, which reproduces Oracle's
   unformatted `TO_CHAR(number)` (`0`, `46.08`, `.5`).
 
+## Evidence recomputed after the review fix
+
+The merge-evidence run below was taken against the first revision of
+`w4b_pkg_invoicing.sql`, which preferred the stored `billing.rating_state` overage over the
+recomputation. That precedence was corrected afterwards. The two values are equal in every
+fixture and recon scenario — one transaction, no concurrent usage between the finalize and
+the preview — so no compared value moves, and re-running the live read would have breached
+the one-live-read-per-unit cap. What was re-run on the corrected code: the SQL was reapplied
+to `mig-p1-w2`, all five fixture scenarios were re-compared against the Oracle expectations
+(`fixture/lakebase_behaviour_check.json`, five PASS), and both target-state digests were
+retaken (`idempotency/run1.json`, `idempotency/run2.json`, identical). The live tier results
+themselves are carried forward, not recomputed; that is listed as an unverified path.
+
 ## NOT DATA-PROVEN / unverified paths
 
+- **The live merge-evidence run predates the review fix** described above; only the fixture
+  comparison and the target digests were recomputed on the shipped code.
 - **Tiers 5–7 source-side metadata** are unverified on the JDBC route — structural, not a
   failure of this unit, and the reason `merge_eligible` is false.
 - **Live Oracle invocation of the package is not exercised.** The read-only user has no

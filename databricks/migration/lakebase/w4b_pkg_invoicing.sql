@@ -32,15 +32,15 @@
 -- contract (D4-02 lists a shim over it) and is reproduced column for column, in order, with
 -- the same names, the same line numbers and the same literal descriptions.
 --
--- p_overage is the one addition, and it is the explicit form of a package global, not new
--- behaviour: Oracle's compute_preview calls pkg_rating.compute_rating and then reads
--- pkg_rating.g_overage_amount out of session state. On Lakebase that hand-off is the
--- billing.rating_state row sp_finalize_rating writes (P1-D4), so sp_issue_invoice reads it
--- and passes it in. The call to billing.fn_usage_rating stays in either case: it is Oracle's
--- compute_rating call, including the audit row it writes (D-009), and when p_overage is NULL
--- - a standalone preview, the way a reporting consumer calls it - its overage is what the
--- preview uses, exactly as Oracle does. The parameter defaults to NULL so the three-argument
--- call shape the source exposes is unchanged.
+-- The overage is the recomputation, never the finalize-time value. Oracle's compute_preview
+-- calls pkg_rating.compute_rating and then assigns g_overage := pkg_rating.g_overage_amount
+-- unconditionally, so whatever sp_finalize_rating computed moments earlier is overwritten and
+-- the invoice is built from the second computation. The converted preview does the same: it
+-- calls billing.fn_usage_rating - Oracle's compute_rating, including the audit row it writes
+-- (D-009) - and uses that result. billing.rating_state stays the explicit form of the
+-- g_overage_amount hand-off (P1-D4), written by sp_finalize_rating in unit p1-pkg-rating;
+-- reading it back here and preferring it over the recomputation would bill a stale overage
+-- whenever usage lands between the two statements, which Oracle does not do.
 --
 -- Conversions:
 --   * `ROWNUM <= 1` over an ordered inline view becomes ORDER BY starts_on DESC LIMIT 1, and
@@ -62,10 +62,14 @@
 --     content changes, and sp_issue_invoice's per-line accumulation is order-independent.
 --   * Oracle reads an empty VARCHAR2 as NULL and Postgres does not, so the tenant id is
 --     normalised with NULLIF (trap 1).
+-- An earlier revision of this unit carried a fourth argument. Postgres treats an argument
+-- list as part of the identity, so CREATE OR REPLACE would leave that overload in place and
+-- the three-argument call would then resolve to neither. Drop it before creating.
+DROP FUNCTION IF EXISTS billing.fn_invoice_preview(text, timestamp, timestamp, numeric);
+
 CREATE OR REPLACE FUNCTION billing.fn_invoice_preview(p_tenant_id text,
                                                       p_period_start timestamp,
-                                                      p_period_end timestamp,
-                                                      p_overage numeric DEFAULT NULL)
+                                                      p_period_end timestamp)
 RETURNS TABLE (
     line_no        integer,
     line_type      text,
@@ -105,7 +109,7 @@ BEGIN
     -- pkg_rating.compute_rating, then the g_overage_amount read.
     SELECT * INTO v_rating
       FROM billing.fn_usage_rating(v_tenant_id, p_period_start, p_period_end);
-    v_overage := COALESCE(p_overage, v_rating.overage_amount);
+    v_overage := v_rating.overage_amount;
 
     -- Open credit notes, summed one row at a time.
     FOR r IN SELECT cn.remaining_amount
@@ -146,11 +150,10 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION billing.fn_invoice_preview(text, timestamp, timestamp, numeric) IS
+COMMENT ON FUNCTION billing.fn_invoice_preview(text, timestamp, timestamp) IS
     'Migration unit p1-pkg-invoicing (U-23) from Oracle pkg_invoicing.fn_invoice_preview, '
-    'with compute_preview inlined. p_overage is the explicit billing.rating_state hand-off '
-    'sp_issue_invoice passes in (P1-D4); NULL means compute it here, as a standalone Oracle '
-    'preview does.';
+    'with compute_preview inlined: the overage is billing.fn_usage_rating''s result, the '
+    'recomputation Oracle also uses, not the finalize-time billing.rating_state value.';
 
 -- fn_invoice_lines: pkg_invoicing.fn_invoice_lines.
 --
@@ -184,13 +187,10 @@ COMMENT ON FUNCTION billing.fn_invoice_lines(text) IS
 --     does, so a NULL tenant id derives the same id on both engines.
 --   * pkg_rating.sp_finalize_rating is CALLed, not re-converted; the rating tables and the
 --     rating_state row it writes are this batch's declared runtime writes (D-009).
---   * The g_overage_amount hand-off is read from billing.rating_state, keyed by
---     (tenant_id, period_id), and passed into fn_invoice_preview (P1-D4). Oracle re-runs
---     compute_rating inside compute_preview and reads the global it just set; the converted
---     preview still calls fn_usage_rating (same audit row, same computation) and uses the
---     state value, which finalize wrote from that same computation moments earlier in the
---     same transaction. If no rating_state row exists, the value is NULL and the preview
---     falls back to its own computation - the Oracle path exactly.
+--     The g_overage_amount hand-off it writes to billing.rating_state (P1-D4) is state that
+--     belongs to that unit; this procedure does not read it back, because Oracle does not:
+--     compute_preview overwrites the global with its own compute_rating call, so the invoice
+--     is built from the recomputation, not from what finalize stored.
 --   * INSERT-then-catch-DUP_VAL_ON_INDEX stays insert-then-catch, on unique_violation, rather
 --     than becoming ON CONFLICT: the source's UPDATE branch sets only status_cd and must not
 --     reset subtotal/tax/total to the zeros the INSERT carries.
@@ -224,7 +224,6 @@ DECLARE
     v_tenant_id  text := NULLIF(p_tenant_id, '');
     v_period_id  varchar(36);
     v_invoice_id varchar(36);
-    v_overage    numeric;
     v_subtotal   numeric := 0;
     v_tax        numeric := 0;
     v_total      numeric := 0;
@@ -237,13 +236,6 @@ BEGIN
     v_invoice_id := billing.f_md5_uuid(concat(v_period_id, 'invoice'));
 
     CALL billing.sp_finalize_rating(v_tenant_id, p_period_start, p_period_end);
-
-    -- The package-global hand-off from pkg_rating, as state rather than session state.
-    SELECT rs.overage_amount
-      INTO v_overage
-      FROM billing.rating_state rs
-     WHERE rs.tenant_id = v_tenant_id
-       AND rs.period_id = v_period_id;
 
     BEGIN
         INSERT INTO billing.invoices (
@@ -262,7 +254,7 @@ BEGIN
 
     FOR r IN SELECT *
                FROM billing.fn_invoice_preview(v_tenant_id, p_period_start,
-                                               p_period_end, v_overage) LOOP
+                                               p_period_end) LOOP
         INSERT INTO billing.invoice_lines (
             id, invoice_id, line_no, line_type, description, amount
         ) VALUES (
@@ -319,5 +311,6 @@ $$;
 
 COMMENT ON PROCEDURE billing.sp_issue_invoice(text, timestamp, timestamp) IS
     'Migration unit p1-pkg-invoicing (U-23) from Oracle pkg_invoicing.sp_issue_invoice, the '
-    'modern invoice generation (D9-01). Calls billing.sp_finalize_rating and reads the '
-    'billing.rating_state hand-off (P1-D4); keeps the log_msg audit write (D-009).';
+    'modern invoice generation (D9-01). Calls billing.sp_finalize_rating, whose '
+    'billing.rating_state hand-off (P1-D4) the preview recomputes as Oracle does; keeps the '
+    'log_msg audit write (D-009).';

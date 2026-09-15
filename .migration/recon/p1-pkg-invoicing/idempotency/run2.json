@@ -1,8 +1,8 @@
 {
   "kind": "target-state-digest",
   "unit": "p1-pkg-invoicing",
-  "run_id": "3d06b4360c1c4f42980af10be6df7614",
-  "finished_at": "2026-09-15T11:35:06.241585+00:00",
+  "run_id": "4203f88ad0314d32915c3fbe6eaf778d",
+  "finished_at": "2026-09-15T11:41:36.172276+00:00",
   "tables": [
     {
       "table": "ow_tp.billing.credit_notes",
