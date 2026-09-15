@@ -22,6 +22,10 @@ sys.path.insert(0, str(ROOT / "databricks/migration/p2/landing"))
 
 import land_custbill_files as landing
 
+# The real one-second window is the point of the helper, but waiting it out four
+# times buys nothing here; every test drives the producer by hand.
+landing.STABILITY_WAIT_S = 0
+
 failures: list[str] = []
 
 
@@ -173,7 +177,6 @@ def test_a_file_still_being_written_is_not_published() -> None:
             return handle
 
         landing.open = growing_open
-        landing.STABILITY_WAIT_S = 0
         try:
             result, fake = _run(tmp, {})
         finally:
@@ -185,11 +188,42 @@ def test_a_file_still_being_written_is_not_published() -> None:
         )
 
 
+def test_a_producer_that_pauses_over_the_window_is_not_published() -> None:
+    """Nothing moves during the read itself; the growth lands inside the wait."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = pathlib.Path(tmp, "CUSTBILL_A.dat")
+        path.write_bytes(b"first half")
+
+        real_time = landing.time
+        state = {"waits": 0}
+
+        class PausingProducer:
+            """A writer that is mid-burst: it appends whenever we wait on it."""
+
+            def sleep(self, _seconds):
+                state["waits"] += 1
+                with open(path, "ab") as fh:
+                    fh.write(b" more")
+                os.utime(path, ns=(0, state["waits"] * 1_000_000_000))
+
+        landing.time = PausingProducer()
+        try:
+            result, fake = _run(tmp, {})
+        finally:
+            landing.time = real_time
+        check(
+            "a producer pausing mid-burst never lands a prefix",
+            [u["file"] for u in result["unstable"]] == ["CUSTBILL_A.dat"] and not fake.uploads,
+            repr(result),
+        )
+
+
 if __name__ == "__main__":
     test_same_name_same_length_different_bytes_is_a_conflict()
     test_identical_rerun_is_a_skip()
     test_first_landing_uploads_and_records_the_digest()
     test_a_file_still_being_written_is_not_published()
+    test_a_producer_that_pauses_over_the_window_is_not_published()
     print()
     if failures:
         print(f"{len(failures)} failure(s)")

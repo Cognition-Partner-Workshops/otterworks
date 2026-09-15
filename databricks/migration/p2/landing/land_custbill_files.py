@@ -61,14 +61,17 @@ def _digest(payload: bytes) -> str:
 def _read_when_stable(local: str) -> tuple[bytes, bool]:
     """Read the source file and say whether the producer was done with it.
 
-    Returns (payload, stable). The file is read once, then re-stat'd: if size or
-    mtime moved while we were reading, the bytes we hold are a prefix of a file
-    still being written and publishing them would freeze that prefix under the
-    final name forever. One retry after the stability wait, then give up and
-    leave the file for the next run.
+    Returns (payload, stable). The file must be unchanged across a window that
+    starts STABILITY_WAIT_S before the read and ends after it: stat, wait, read,
+    stat again. Reading first and only then waiting is not enough, because a
+    large read can finish inside a producer's pause between writes and the
+    prefix would look stable. Publishing a prefix freezes it under the final
+    name forever, so anything that moved inside the window is left for the next
+    run instead. One retry, then give up on the file.
     """
-    for attempt in (0, 1):
+    for _attempt in (0, 1):
         before = os.stat(local)
+        time.sleep(STABILITY_WAIT_S)
         with open(local, "rb") as fh:
             payload = fh.read()
         after = os.stat(local)
@@ -78,8 +81,6 @@ def _read_when_stable(local: str) -> tuple[bytes, bool]:
         )
         if unchanged:
             return payload, True
-        if attempt == 0:
-            time.sleep(STABILITY_WAIT_S)
     return b"", False
 
 
