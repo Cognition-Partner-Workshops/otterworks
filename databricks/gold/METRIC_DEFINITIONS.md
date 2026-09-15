@@ -165,3 +165,7 @@ The Lakebase reference load (`ingest_lakebase_reference.py`) is not a job task: 
 Python compute to reach Postgres and no new clusters may be created here, so it is run
 deliberately. Those tables (plans, tenants, subscriptions, credit notes, rating results)
 change rarely; the ones the job rebuilds are the ones that move.
+
+It reads Lakebase branch `mig-p1-w2`, which is where pipeline 1's data landed. `mig-p1-w0`
+is the intake-era branch name still quoted in older briefs and holds only
+`billing_audit_log`, `md5_parity_input` and `rating_state`.
