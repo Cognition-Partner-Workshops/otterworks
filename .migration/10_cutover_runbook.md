@@ -62,8 +62,16 @@ going on. A stale copy is a silent data-loss event.
 | `db.invoices.countDocuments({source:"billing"})` | 3 |
 | `db.invoice_lines_orphaned.countDocuments({})` | 37 |
 | `db.tenants.countDocuments({})` | 69 |
-| Sum of `invoices.totalAmount` where `source:"conversion"` | equal to Oracle's `SUM(TOTAL_AMT)` on `INVOICE_HEADER` to 0.01 |
+| `db.invoices.aggregate([{$match:{source:"conversion"}},{$group:{_id:null,t:{$sum:{$toDecimal:"$totals.total"}}}}])` | `187618458.58`, equal to Oracle's `SUM(TOTAL_AMT)` on `INVOICE_HEADER` to 0.01 |
 | RPT-114 run against Atlas for the last closed month | line-for-line equal to the Oracle run |
+
+RPT-114 has no Atlas implementation yet: the report is Oracle SQL in
+`services/legacy-billing/app/reports.py` and rewriting it against `invoices` is customer
+work under D2-2. Either schedule that rewrite before the window or drop the row and accept
+the count and sum checks as the verification — say which at STOP C.
+
+The field is `totals.total` (Decimal128). There is no `totalAmount`; a query against that
+name returns nothing and looks like a pass.
 
 Then Devin runs the first-cycle recon and posts the result.
 
