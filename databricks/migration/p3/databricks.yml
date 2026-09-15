@@ -237,6 +237,11 @@ resources:
         # date produces the same archive set.
         - name: run_date
           default: "{{job.trigger.time.iso_date}}"
+        # As on ow_tp_p3_analytics_daily: land_audit_events reads an already-captured
+        # snapshot directory, so a scheduled run needs one for its own date and fails
+        # loudly when there is none. Capturing that snapshot from DynamoDB is not part of
+        # this unit -- it is the source-extraction step the pipeline still lacks, and a
+        # STOP E item. A recon or backfill run passes --params snapshot_batch=<id>.
         - name: snapshot_batch
           default: "{{job.trigger.time.iso_date}}"
       tasks:
