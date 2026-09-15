@@ -58,16 +58,20 @@ UPSERT = """
 """
 
 
-def read_summary(w, run_date: str, batch: str) -> list[str]:
-    """The one gold row for this date and batch, in the legacy's column order."""
+def read_summary(w, run_date: str) -> list[str]:
+    """The one gold row for this date, in the legacy's column order.
+
+    The gold summary is one row per day: the load replaces the whole date, so the
+    batch that produced it is a property of the silver rows underneath, not of this
+    table, and publishing reads the date the gold load just wrote.
+    """
     from databricks.sdk.service.sql import StatementParameterListItem
 
     statement = (f"SELECT {', '.join(COLUMNS)} FROM {SUMMARY_TABLE} "
-                 "WHERE summary_date = CAST(:run_date AS DATE) AND snapshot_batch = :batch")
+                 "WHERE summary_date = CAST(:run_date AS DATE)")
     result = w.statement_execution.execute_statement(
         statement=statement, warehouse_id=WAREHOUSE, wait_timeout="50s",
-        parameters=[StatementParameterListItem(name="run_date", value=run_date),
-                    StatementParameterListItem(name="batch", value=batch)])
+        parameters=[StatementParameterListItem(name="run_date", value=run_date)])
     while result.status and result.status.state and result.status.state.value in (
             "PENDING", "RUNNING"):
         result = w.statement_execution.get_statement(result.statement_id)
@@ -78,8 +82,8 @@ def read_summary(w, run_date: str, batch: str) -> list[str]:
         # The legacy writes a summary for every day it processes, including an all-zero one
         # for an empty day, so "no row" means the transformation did not run, not "no data".
         raise SystemExit(
-            f"{SUMMARY_TABLE} holds {len(rows)} rows for {run_date} batch {batch}; "
-            "expected exactly one. Run the gold load for this date before publishing.")
+            f"{SUMMARY_TABLE} holds {len(rows)} rows for {run_date}; expected exactly "
+            "one. Run the gold load for this date before publishing.")
     return rows[0]
 
 
@@ -118,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     from databricks.sdk import WorkspaceClient
 
     w = WorkspaceClient()
-    values = read_summary(w, args.run_date, args.batch)
+    values = read_summary(w, args.run_date)
     publish({"host": args.pg_host, "port": int(args.pg_port),
              "dbname": args.pg_database, "user": args.pg_user},
             w.dbutils.secrets.get(SECRET_SCOPE, SECRET_KEY), args.run_date, values)
