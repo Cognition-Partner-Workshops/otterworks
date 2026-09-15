@@ -62,6 +62,31 @@ def validator(workflow: Path):
     return ns["validate_manifest"]
 
 
+def check_no_data_movement(path: Path, unit: str, where: str) -> None:
+    """A unit with no mapping spec must say, in a readable file, why it needs none.
+
+    Read the file rather than test that it exists: an empty or placeholder declaration
+    would otherwise buy a unit the same exemption as a real one, and the exemption is
+    exactly the thing that removes it from reconciliation.
+    """
+    if not path.exists():
+        raise SystemExit(f"{where}: unit {unit} has neither a mapping spec nor a "
+                         "no_data_movement.json declaring why it needs none")
+    try:
+        declaration = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"{where}: {path.name} for {unit} is not valid JSON: {exc}") from exc
+    if not isinstance(declaration, dict):
+        raise SystemExit(f"{where}: {path.name} for {unit} must be a JSON object")
+    if declaration.get("unit") != unit:
+        raise SystemExit(f"{where}: {path.name} declares unit "
+                         f"{declaration.get('unit')!r}, not {unit!r}")
+    for field in ("reason", "evidence", "declared_at"):
+        value = declaration.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise SystemExit(f"{where}: {path.name} for {unit} needs a non-empty {field}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workflow", help="path to the migration-fanout workflow.py")
@@ -99,10 +124,8 @@ def main() -> int:
                 # failure case: an unmapped unit with no declaration is one nobody can
                 # reconcile.
                 unit_dir = UNITS / unit
-                if not ((unit_dir / "mapping_spec.json").exists()
-                        or (unit_dir / "no_data_movement.json").exists()):
-                    raise SystemExit(f"{where}: unit {unit} has neither a mapping spec nor a "
-                                     "no_data_movement.json declaring why it needs none")
+                if not (unit_dir / "mapping_spec.json").exists():
+                    check_no_data_movement(unit_dir / "no_data_movement.json", unit, where)
             for target in batch["write_targets"]:
                 if target in targets:
                     raise SystemExit(f"write-target collision on {target}: "
