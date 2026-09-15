@@ -203,6 +203,17 @@ def test_lakebase_score_range_is_enforced_by_a_constraint():
     assert "risk_band IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'EXEMPT')" in text
 
 
+def test_publish_reads_whole_results_from_one_pinned_snapshot():
+    text = code(Path(__file__).resolve().parents[1] / "sync_to_lakebase.py")
+    # a result over one chunk must be walked to the end and checked against the manifest,
+    # or the queue publishes as a silent prefix
+    assert "next_chunk_internal_link" in text
+    assert "total_row_count" in text
+    # and all three tables must come from the versions seen at one instant
+    assert "VERSION AS OF" in text
+    assert "_table_versions" in text
+
+
 @pytest.mark.parametrize(
     "path",
     sorted(SQL_DIR.glob("*.sql"))

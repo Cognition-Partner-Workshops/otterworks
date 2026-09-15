@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "ow_tp_dunning_risk",
   "namespace": "ow_tp",
-  "generated_at": "2026-09-15T12:10:03+00:00",
+  "generated_at": "2026-09-15T12:20:24+00:00",
   "run_mode": "live",
   "checks": [
     {
@@ -258,10 +258,6 @@
       "CRITICAL": 16
     },
     "backtest": {
-      "coverage:dunning_outcome_label:closed_all": {
-        "n": 0,
-        "value": 0.0
-      },
       "rule_lift:PRIOR_OVERDUE_MED:closed_2021_plus": {
         "n": 286,
         "value": 0.188811
@@ -294,6 +290,18 @@
         "n": 138,
         "value": 0.202899
       },
+      "coverage:past_due_vs_limit:closed_all": {
+        "n": 2601,
+        "value": 0.19636
+      },
+      "coverage:dunning_outcome_label:closed_all": {
+        "n": 0,
+        "value": 0.0
+      },
+      "baseline:overdue_rate:closed_all": {
+        "n": 13246,
+        "value": 0.207459
+      },
       "band_outcome:LOW:closed_2021_plus": {
         "n": 3578,
         "value": 0.20654
@@ -305,14 +313,6 @@
       "band_outcome:MEDIUM:closed_2021_plus": {
         "n": 257,
         "value": 0.178988
-      },
-      "discrimination:auc:closed_2021_plus": {
-        "n": 3838,
-        "value": 0.494597
-      },
-      "discrimination:auc:closed_all": {
-        "n": 13246,
-        "value": 0.501178
       },
       "band_outcome:LOW:closed_all": {
         "n": 12661,
@@ -326,25 +326,25 @@
         "n": 582,
         "value": 0.209622
       },
-      "coverage:prior_overdue_rate:closed_all": {
-        "n": 11982,
-        "value": 0.90457
+      "discrimination:auc:closed_2021_plus": {
+        "n": 3838,
+        "value": 0.494597
+      },
+      "discrimination:auc:closed_all": {
+        "n": 13246,
+        "value": 0.501178
       },
       "coverage:amt_vs_account_norm:closed_all": {
         "n": 11982,
         "value": 0.90457
       },
-      "coverage:past_due_vs_limit:closed_all": {
-        "n": 2601,
-        "value": 0.19636
+      "coverage:prior_overdue_rate:closed_all": {
+        "n": 11982,
+        "value": 0.90457
       },
       "baseline:overdue_rate:closed_2021_plus": {
         "n": 3838,
         "value": 0.205055
-      },
-      "baseline:overdue_rate:closed_all": {
-        "n": 13246,
-        "value": 0.207459
       }
     },
     "backtest_band_outcome_closed_all": {

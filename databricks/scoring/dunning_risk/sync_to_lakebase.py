@@ -109,7 +109,36 @@ def _read_gold(token: str, sql: str) -> tuple[list[str], list[list]]:
     if payload["status"]["state"] != "SUCCEEDED":
         raise RuntimeError(f"{sql[:60]}...: {payload['status']}")
     columns = [c["name"] for c in payload["manifest"]["schema"]["columns"]]
-    return columns, payload.get("result", {}).get("data_array", []) or []
+
+    # A result larger than one chunk arrives as a first chunk plus a link to the next. Taking
+    # only the first would truncate the queue silently, so walk the whole chain and check the
+    # total against the manifest before anything is published.
+    chunk = payload.get("result", {}) or {}
+    rows = list(chunk.get("data_array") or [])
+    while chunk.get("next_chunk_internal_link"):
+        nxt = requests.get(
+            f"{host}{chunk['next_chunk_internal_link']}", headers=headers, timeout=120
+        )
+        nxt.raise_for_status()
+        chunk = nxt.json()
+        rows.extend(chunk.get("data_array") or [])
+
+    expected = payload["manifest"].get("total_row_count")
+    if expected is not None and len(rows) != expected:
+        raise RuntimeError(
+            f"{sql[:60]}...: read {len(rows)} rows but the manifest reports {expected}"
+        )
+    return columns, rows
+
+
+def _table_versions(token: str) -> dict[str, int]:
+    """Current Delta version of each gold table, read in one statement."""
+    sql = " UNION ALL ".join(
+        f"SELECT '{gold}' AS tbl, max(version) AS v FROM (DESCRIBE HISTORY {gold})"
+        for gold, _, _, _ in TABLES
+    )
+    _, rows = _read_gold(token, sql)
+    return {tbl: int(v) for tbl, v in rows}
 
 
 def coerce(column: str, value):
@@ -139,14 +168,28 @@ def main() -> int:
         return 2
 
     token = _warehouse_token()
+
+    # The three gold tables are rebuilt by three separate job tasks, so reading them with
+    # three separate statements could pair new invoice scores with old rule points. Pin every
+    # read to the versions observed at one instant, and refuse to publish if a rebuild landed
+    # while we were reading — that snapshot may itself be half a run.
+    versions = _table_versions(token)
     staged = []
     for gold, target, columns, predicate in TABLES:
-        select = f"SELECT {', '.join(columns)} FROM {gold}"
+        select = f"SELECT {', '.join(columns)} FROM {gold} VERSION AS OF {versions[gold]}"
         if predicate:
             select += f" WHERE {predicate}"
         names, rows = _read_gold(token, select)
         staged.append((target, names, rows))
-        print(f"read {len(rows)} rows from {gold}")
+        print(f"read {len(rows)} rows from {gold} v{versions[gold]}")
+
+    moved = {t: v for t, v in _table_versions(token).items() if versions[t] != v}
+    if moved:
+        raise RuntimeError(
+            "a scoring run rebuilt "
+            + ", ".join(sorted(moved))
+            + " while this publish was reading; nothing was written. Rerun once it finishes."
+        )
 
     # One transaction for all three tables. TRUNCATE is transactional in Postgres, so a
     # reader mid-load keeps seeing the previous run's queue until this commits.
