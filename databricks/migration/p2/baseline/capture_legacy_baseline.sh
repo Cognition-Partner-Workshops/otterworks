@@ -15,7 +15,10 @@ OUT=${1:-$REPO/databricks/migration/p2/baseline/captured}
 ROOT=${OTTERWORKS_LEGACY_ROOT:-/tmp/ow-p2-baseline}
 
 rm -rf "$ROOT"
-mkdir -p "$OUT/inputs" "$OUT/parsed" "$OUT/reports"
+# The captured tree is evidence, so it is rebuilt, not added to: a file left behind by an
+# earlier fixture set would be read as part of this baseline by anything comparing against it.
+rm -rf "$OUT/inputs" "$OUT/parsed" "$OUT/reports" "$OUT/logs"
+mkdir -p "$OUT/inputs" "$OUT/parsed" "$OUT/reports" "$OUT/logs"
 
 export OTTERWORKS_LEGACY_ROOT="$ROOT"
 export RUN_ALL_SLEEP=0
@@ -30,15 +33,16 @@ python3 "$REPO/databricks/migration/p2/baseline/gen_probe_fixture.py" "$ROOT" >/
 cp "$ROOT"/sftp-drop/upload/*.dat "$OUT/inputs/"
 
 # 3. the real legacy chain, stage by stage
-make -C "$REPO" legacy-etl-run JOB=sftp_ingest_poll          >"$OUT/reports/stage1_ingest.log" 2>&1
-make -C "$REPO" legacy-etl-run JOB=parse_custbill_fixedwidth >"$OUT/reports/stage2_parse.log"  2>&1
-make -C "$REPO" legacy-etl-run JOB=finance_excel_report      >"$OUT/reports/stage3_close.log"  2>&1
+# .txt, not .log: the repo ignores *.log, and an uncommitted baseline is not a baseline.
+make -C "$REPO" legacy-etl-run JOB=sftp_ingest_poll          >"$OUT/logs/stage1_ingest.txt" 2>&1
+make -C "$REPO" legacy-etl-run JOB=parse_custbill_fixedwidth >"$OUT/logs/stage2_parse.txt"  2>&1
+make -C "$REPO" legacy-etl-run JOB=finance_excel_report      >"$OUT/logs/stage3_close.txt"  2>&1
 
 cp "$ROOT"/parsed/*.psv "$OUT/parsed/" 2>/dev/null || true
 cp "$ROOT"/reports/*.csv "$ROOT"/reports/*.xls "$OUT/reports/" 2>/dev/null || true
 
 # 4. rerun proof: the parser renames its input .done, so a second pass must be a no-op
-make -C "$REPO" legacy-etl-run JOB=parse_custbill_fixedwidth >"$OUT/reports/stage2_parse_rerun.log" 2>&1
+make -C "$REPO" legacy-etl-run JOB=parse_custbill_fixedwidth >"$OUT/logs/stage2_parse_rerun.txt" 2>&1
 
 # 5. the .xls is a byte copy of the .csv, not a workbook
 for csv in "$OUT"/reports/*.csv; do

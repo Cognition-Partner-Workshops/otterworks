@@ -73,13 +73,15 @@ def main() -> int:
     allowed_branches = set(json.loads(ALLOWED.read_text())["lakebase_branches"])
     placed: dict[str, str] = {}
     targets: dict[str, str] = {}
-    target_wave: dict[str, int] = {}
-    runtime: list[tuple[str, int, str]] = []  # (target, wave, where)
+    target_wave: dict[tuple[str, str], int] = {}
+    runtime: list[tuple[str, str, int, str]] = []  # (pipeline, target, wave, where)
     # the fan-out workflow writes wave-<N>.result.json beside the manifests; only the
-    # manifests are validated here
-    for path in sorted(p for p in WAVES.glob("wave-*.json")
-                       if re.fullmatch(r"wave-\d+\.json", p.name)):
+    # manifests are validated here. A manifest is either wave-<N>.json (pipeline 1, which
+    # predates the prefix) or <pipeline>-wave-<N>.json.
+    for path in sorted(p for p in WAVES.glob("*wave-*.json")
+                       if re.fullmatch(r"(?:[a-z0-9]+-)?wave-\d+\.json", p.name)):
         manifest = json.loads(path.read_text())
+        pipeline = manifest.get("pipeline", "p1")
         validate(manifest)
         validate(manifest, doctor)
         branch = manifest["controls"].get("lakebase_branch")
@@ -92,29 +94,37 @@ def main() -> int:
                 if unit in placed:
                     raise SystemExit(f"unit {unit} in two batches: {placed[unit]} and {where}")
                 placed[unit] = where
-                if not (UNITS / unit / "mapping_spec.json").exists():
-                    raise SystemExit(f"{where}: unit {unit} has no mapping spec")
+                # A unit either maps source fields to target fields, or declares in
+                # writing that it moves no data (a docs/contract unit). Silence is the
+                # failure case: an unmapped unit with no declaration is one nobody can
+                # reconcile.
+                unit_dir = UNITS / unit
+                if not ((unit_dir / "mapping_spec.json").exists()
+                        or (unit_dir / "no_data_movement.json").exists()):
+                    raise SystemExit(f"{where}: unit {unit} has neither a mapping spec nor a "
+                                     "no_data_movement.json declaring why it needs none")
             for target in batch["write_targets"]:
                 if target in targets:
                     raise SystemExit(f"write-target collision on {target}: "
                                      f"{targets[target]} and {where}")
                 targets[target] = where
-                target_wave[target] = manifest["wave"]
+                target_wave[(pipeline, target)] = manifest["wave"]
             for target in batch.get("runtime_writes", []):
-                runtime.append((target, manifest["wave"], where))
+                runtime.append((pipeline, target, manifest["wave"], where))
         print(f"{path.name}: ok - width {manifest['width']}, "
               f"{len(manifest['batches'])} batches, "
               f"{sum(len(b['units']) for b in manifest['batches'])} units")
     # A runtime write is DML into a table another unit owns. It is safe only when that owner
     # merged in a STRICTLY earlier wave: same-wave batches run concurrently on one Lakebase
     # branch, so two writers there race with nothing to separate them.
-    for target, wave, where in runtime:
-        if target not in target_wave:
+    # Wave numbers restart per pipeline, so the ordering is only meaningful within one.
+    for pipeline, target, wave, where in runtime:
+        if (pipeline, target) not in target_wave:
             raise SystemExit(f"{where}: runtime write to {target}, which no batch owns")
-        if target_wave[target] >= wave:
+        if target_wave[(pipeline, target)] >= wave:
             raise SystemExit(
                 f"{where}: runtime write to {target} owned by {targets[target]} in wave "
-                f"{target_wave[target]}; the owner must merge in an earlier wave or the two "
+                f"{target_wave[(pipeline, target)]}; the owner must merge in an earlier wave or the two "
                 "batches race on the shared branch")
 
     mapped = {d.name for d in UNITS.iterdir() if d.is_dir()}

@@ -5,7 +5,7 @@
     "ow_tp_p2_custbill_ingest",
     "ow_tp_p2_finance_close"
   ],
-  "golden_baseline_location": "databricks/migration/p2/baseline/captured/reports/ (stage logs: the legacy stage order and exit behaviour) plus etl/crontab and etl/legacy-extra/crontab as committed",
+  "golden_baseline_location": "databricks/migration/p2/baseline/captured/logs/ (stage1_ingest.txt, stage2_parse.txt, stage3_close.txt, stage2_parse_rerun.txt: the legacy stage order, exit behaviour and rerun no-op) plus etl/crontab and etl/legacy-extra/crontab as committed",
   "trigger_granularity": "per-batch",
   "encoding_policy": {
     "input_encoding": "not applicable - this unit moves no data. It converts two crontabs and a shell driver into job definitions",
