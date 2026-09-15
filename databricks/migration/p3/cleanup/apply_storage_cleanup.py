@@ -34,6 +34,7 @@ WAREHOUSE = "565cd2fd713738c4"
 CANDIDATES = "ow_tp.silver.storage_cleanup_candidates"
 LEGACY_DELETE_SET = "ow_tp.bronze.p3_cleanup_legacy_delete_set"
 INVENTORY = "ow_tp.bronze.p3_cleanup_inventory_raw"
+LANDING_RUNS = "ow_tp.bronze.p3_cleanup_landing_runs"
 # The legacy's own constant, kept so the two reports are comparable. Not a price lookup.
 GB_MONTH_USD = 0.023
 
@@ -74,11 +75,13 @@ def report(w, run_date: str, batch: str) -> dict:
         batch=batch, run_date=run_date)
     total_objects, total_bytes = int(listed[0][0]), int(listed[0][1])
     orphan_objects, orphan_bytes = int(orphans[0][0]), int(orphans[0][1])
-    if total_objects == 0:
+    landed = query(w, f"SELECT count(*) FROM {LANDING_RUNS} WHERE snapshot_batch = :batch",
+                   batch=batch)
+    if int(landed[0][0]) == 0:
         raise SystemExit(
-            f"{INVENTORY} holds no files/ objects for batch {batch}; the listing did not "
-            "land. An empty listing makes every candidate set empty, which is not a clean "
-            "bucket, it is a missing input.")
+            f"{LANDING_RUNS} has no receipt for batch {batch}: the listing never landed. "
+            "An unlanded listing makes every candidate set empty, which would read as a "
+            "bucket with nothing to clean up.")
     freed_gb = orphan_bytes / (1024 ** 3)
     return {
         "run_date": run_date,
@@ -88,7 +91,8 @@ def report(w, run_date: str, batch: str) -> dict:
         "total_size_gb": round(total_bytes / (1024 ** 3), 4),
         "orphaned_objects": orphan_objects,
         "orphaned_size_bytes": orphan_bytes,
-        "orphan_percentage": round(orphan_objects / total_objects * 100, 2),
+        # C-4.6: an empty bucket reports zero, as the legacy does, not a division error.
+        "orphan_percentage": round(orphan_objects / total_objects * 100, 2) if total_objects else 0,
         "gb_freed": round(freed_gb, 4),
         "estimated_monthly_savings_usd": round(freed_gb * GB_MONTH_USD, 4),
         # The legacy reports what it deleted. This job reports what it would delete.

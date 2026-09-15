@@ -211,9 +211,9 @@ resources:
 
     ow_tp_p3_storage_cleanup_daily:
       name: ow_tp_p3_storage_cleanup_daily
-      # Legacy: 0 3 * * * on the ETL box.
+      # Legacy: 30 2 * * * on the ETL box.
       schedule:
-        quartz_cron_expression: "0 0 3 * * ?"
+        quartz_cron_expression: "0 30 2 * * ?"
         timezone_id: UTC
         pause_status: PAUSED
       max_concurrent_runs: 1

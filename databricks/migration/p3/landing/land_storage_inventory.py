@@ -29,6 +29,7 @@ from pathlib import Path
 
 INVENTORY_TABLE = "ow_tp.bronze.p3_cleanup_inventory_raw"
 METADATA_TABLE = "ow_tp.bronze.p3_cleanup_metadata_raw"
+RUNS_TABLE = "ow_tp.bronze.p3_cleanup_landing_runs"
 DEFAULT_VOLUME = "/Volumes/ow_tp/bronze/landing/analytics"
 WAREHOUSE = "565cd2fd713738c4"
 FILES = ("file_inventory.json", "file_metadata.json")
@@ -55,6 +56,17 @@ CREATE TABLE IF NOT EXISTS {METADATA_TABLE} (
 )
 USING DELTA
 COMMENT 'Durable copy of the otterworks-file-metadata scan that names which objects are still referenced.'
+"""
+
+CREATE_RUNS = f"""
+CREATE TABLE IF NOT EXISTS {RUNS_TABLE} (
+  snapshot_batch STRING NOT NULL,
+  objects_landed BIGINT NOT NULL COMMENT 'rows in the snapshot listing, every prefix',
+  metadata_landed BIGINT NOT NULL,
+  landed_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'One row per landed snapshot. A snapshot that legitimately holds no objects lands zero inventory rows, so the row count alone cannot tell an empty bucket from a listing that never arrived; this receipt can.'
 """
 
 
@@ -131,6 +143,21 @@ def metadata_rows(snapshot: Path, batch: str) -> list[tuple]:
     rows = json.loads((snapshot / "file_metadata.json").read_text())
     return [(batch, row["id"], row.get("s3_key"), row.get("owner_id"),
              row.get("size_bytes")) for row in rows]
+
+
+def record_run(w, batch: str, objects: int, metadata: int) -> None:
+    """Receipt that this batch was landed, whatever it contained."""
+    execute(w, CREATE_RUNS)
+    execute(w, f"""
+        MERGE INTO {RUNS_TABLE} AS t
+        USING (SELECT :batch AS snapshot_batch, CAST(:objects AS BIGINT) AS objects_landed,
+                      CAST(:metadata AS BIGINT) AS metadata_landed) AS s
+        ON t.snapshot_batch = s.snapshot_batch
+        WHEN MATCHED THEN UPDATE SET t.objects_landed = s.objects_landed,
+            t.metadata_landed = s.metadata_landed, t.landed_at = current_timestamp()
+        WHEN NOT MATCHED THEN INSERT (snapshot_batch, objects_landed, metadata_landed, landed_at)
+            VALUES (s.snapshot_batch, s.objects_landed, s.metadata_landed, current_timestamp())
+    """, {"batch": batch, "objects": str(objects), "metadata": str(metadata)})
 
 
 def load(w, table: str, create: str, columns: list[tuple[str, str]], key: list[str],
@@ -211,6 +238,8 @@ def main(argv: list[str] | None = None) -> int:
             ["snapshot_batch", "file_id"],
             metadata_rows(snapshot, args.batch), args.batch),
     }
+    record_run(w, args.batch, result["inventory"]["rows_in_table"],
+               result["metadata"]["rows_in_table"])
     json.dump(result, sys.stdout, sort_keys=True)
     print()
     return 0
