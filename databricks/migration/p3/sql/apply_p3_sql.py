@@ -52,4 +52,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    # A Databricks python task runs this under IPython, where a SystemExit --
+    # even SystemExit(0) -- fails the task. Only a real failure exits.
+    if (code := main()):
+        raise SystemExit(code)
