@@ -3,8 +3,8 @@
 **Pipeline:** OtterWorks product analytics — the five `etl/scripts/*.py` cron jobs and the
 Scala `UsageRollupJob` → six Lakeflow Jobs and SQL on Delta in `ow_tp` (five built, one
 removed from scope).
-**Date:** 2026-09-15 · **Status:** awaiting customer decision · **Prepared by:** the
-pipeline-3 migration session.
+**Date:** 2026-09-15 · **Status:** reissued — P3-Q3 closed, everything else awaiting customer
+decision · **Prepared by:** the pipeline-3 migration session.
 
 **Nothing here authorizes a cutover.** Every schedule is PAUSED, no consumer has been
 repointed, no legacy script or crontab was changed, the converted cleanup job deletes nothing
@@ -19,12 +19,63 @@ and an explicit reply.
 |---|---|---|
 | **P3-Q1** | **Provision `ow_tp/analytics_postgres_password`**, or accept that the serving leg stays unverified. The secret named in the brief does not exist in the workspace; scope `ow_tp` holds only `sftp_host`, `sftp_user`, `sftp_password`. `publish_summary` fails on the lookup, so the analytics job has never completed green end to end, and neither has the user-activity chain that depends on it. | **Provision it** (plus the serving host, database and user to pass) and I rerun the two tasks. No plaintext fallback was added and none should be. |
 | **P3-Q2** | **Rotate the credentials in `etl/config.ini`** — plaintext AWS keys, the Postgres password and the MeiliSearch key, committed and therefore in source history. | **Rotate, customer-owned.** Migration removed them from the converted code, not from history. Rotation is not a migration action and was not performed. |
-| **P3-Q3** | **Do the legacy report files still have consumers?** The plan declared export volumes for three units (`/Volumes/ow_tp/gold/exports/{analytics,audit-archive,user-activity}/`) and all three shipped as Delta tables only — values reconciled row by row, file interface not reproduced. Nothing in this repo reads the legacy S3 report objects. | **Say which.** If dead: record the substitution and close it. If live: one follow-up PR per unit adding an export task plus the byte-compare gate the plan asked for. Do not unpause those three jobs as a file-interface replacement until this is answered. |
+| **P3-Q3** | ~~Do the legacy report files still have consumers?~~ **Closed 2026-09-15 — no longer a customer question.** The files are restored and byte-compared; see §1a. | **Closed.** No decision needed. |
 | **P3-Q4** | **Does the Scala usage rollup have a real input and a real consumer in production?** In this estate it reads a seed file baked into the image and writes to an `emptyDir` that dies with the pod (F-0.5, F-0.6) — a nightly job whose output nobody can read. It was migrated anyway (P3-D07) because it is cheap and the table is useful. | **Answer before unpausing it.** If production is the same shape, the honest move is to delete the CronJob rather than schedule its replacement. |
 | **P3-Q5** | **Enable deletion in the storage-cleanup job?** Per P3-D03 the converted job computes and persists the delete set and never deletes. The delete set was proven equal to the legacy's, as a set of key+size. | **Leave it off.** Turn it on, if ever, as its own change with its own approval — never as a side effect of unpausing the schedule. |
 | **P3-Q6** | **Prune the audit source after archiving?** Per P3-D04 the converted job archives and never prunes. The legacy tries and fails (F-0.4). | **Leave it off.** Pruning a compliance source is a customer action with its own retention decision behind it. |
 | **P3-Q7** | **Confirm `search_reindex_weekly.py` stays a service-side job** (P3-D05, approved at STOP C). It reads two in-cluster HTTP services and writes MeiliSearch; there is no Databricks target in it. | **Confirm.** It is a declared coverage gap, not a delivered unit. Nothing on Databricks reindexes search after cutover. |
 | **P3-Q8** | **The analytics job would run twice a day** if both schedules are activated as written: its own 02:00 trigger and the 05:00 `run_job_task` from user-activity. Idempotent, but paid for twice. | **Drop the analytics job's own schedule at cutover** and let user-activity drive it, or accept the second run. Do not solve it by going back to a time offset. |
+
+---
+
+## 1a. P3-Q3, closed: an acceptance criterion I dropped, and what put it back
+
+This one is written up twice on purpose — the mistake and the fix — because only writing down
+the fix hides how the gap got in.
+
+**What I did wrong.** The plan declared, for three units, that the converted job writes the
+legacy's report objects to an export volume and that a **byte compare against the legacy's own
+file** is the acceptance gate. I shipped Delta tables only and reconciled the tables instead.
+That is not a smaller version of the declared gate, it is a different one: table parity proves
+the values, and says nothing about the bytes a consumer reads — key order in a JSON object,
+number formatting, gzip framing, the `latest/` pointer, whether a file is written at all on an
+empty day. I then justified it with "nothing in this repo reads those objects," which is not
+evidence: the repo is the estate's code, not its consumers. An analyst pulling
+`activity_report.json` off S3 leaves no trace in it. I removed an acceptance criterion without
+a decision row, and reported the unit green against a gate I had quietly swapped.
+
+**What put it back.** One follow-up PR per unit, each adding the export task and the byte gate:
+
+| Unit | Objects restored | PR |
+|---|---|---|
+| `p3-analytics-daily` | `reports/analytics/daily/<date>/report.json`, and the gzipped `summary.json.gz`, `hourly_breakdown.json.gz`, `top_users.jsonl.gz` under `analytics/daily/year=/month=/day=/` | #1625 |
+| `p3-audit-archive` | `audit-archive/<date>/audit_events.jsonl.gz`, `manifest.json`, `compliance_report.json` | #1626 |
+| `p3-user-activity` | `reports/user-activity/<date>/activity_report.json`, `reports/user-activity/latest/activity_report.json`, `reports/user-activity/<date>/user_summaries.jsonl` | #1639 |
+| all three | covered-date gate, whole-root unexpected-file detection, generated audit scan order | #1627 |
+
+Each job now runs `export_*` after its gold tables, then `compare_*_objects`, which reads the
+files **back off the volume** and compares them byte for byte against the legacy's own objects,
+frozen at wave 0 in `databricks/migration/p3/exports/legacy_objects/`. The gate fails on a
+missing object, a byte mismatch, an unexpected file anywhere under the export root, and on a
+file written under a shape the legacy leaves empty. `generated_at` is the only normalized
+field — it is a clock reading on both sides. A comparison run for a date the frozen manifest
+does not cover **fails** rather than passing vacuously; a condition task gates the comparator
+so a genuine other-date run skips it visibly instead.
+
+Two things this surfaced that table parity could never have caught:
+
+- **`actions_by_type` key order is shipped output.** The legacy builds that JSON object while
+  walking the day's events in arrival order. Gold had aggregated the order away, so the report
+  could not be rebuilt byte-exactly from Delta at all. Both action tables now carry
+  `action_ordinal`, and the exporter refuses to build a report if any ordinal is NULL rather
+  than guessing.
+- **The audit archive's scan order** is likewise part of its bytes, and is now generated with
+  the fixture and checksummed rather than assumed.
+
+**What is still not proven.** The destination differs: the legacy writes to S3, the target
+writes to a Unity Catalog volume, and no S3 write is performed or reconciled. Anyone who wants
+the files to land in the legacy bucket needs a copy step and a decision about who owns it. The
+Delta tables remain the governed output; the files are a compatibility output rebuilt from them.
 
 ---
 
@@ -35,12 +86,12 @@ and an explicit reply.
 | Wave | Unit | Replaces | Recon | PR |
 |---|---|---|---|---|
 | 0 | `p3-foundations` | — (plan, record contract, fixtures, captured legacy baselines, mapping specs) | no data movement | #1612, #1614, #1615 |
-| 1 | `p3-analytics-daily` | `etl/scripts/analytics_daily.py` | official **PASS**, live, full depth | #1616, #1617 |
+| 1 | `p3-analytics-daily` | `etl/scripts/analytics_daily.py` | official **PASS**, live, full depth | #1616, #1617, #1625 |
 | 1 | `p3-storage-cleanup` | `etl/scripts/storage_cleanup_daily.py` | official **PASS**, live, full depth | #1618 |
-| 1 | `p3-audit-archive` | `etl/scripts/audit_archive_weekly.py` | official **PASS**, live, full depth | #1619 |
+| 1 | `p3-audit-archive` | `etl/scripts/audit_archive_weekly.py` | official **PASS**, live, full depth | #1619, #1626 |
 | 1 | `p3-usage-rollup` | `services/.../batch/UsageRollupJob.scala` | official **PASS**, live, full depth | #1620, #1621 |
 | 1 | `p3-search-reindex` | `etl/scripts/search_reindex_weekly.py` | **not migrated** — declared coverage gap (P3-D05) | #1614 |
-| 2 | `p3-user-activity` | `etl/scripts/user_activity_daily.py` | official **PASS**, live, full depth | #1622 |
+| 2 | `p3-user-activity` | `etl/scripts/user_activity_daily.py` | official **PASS**, live, full depth | #1622, #1639 |
 | 3 | `p3-orchestration` | `etl/run.sh`, the five crontab rows, the Helm CronJob | structural only: no data movement | #1623 |
 
 Every verdict is an official `dbx-recon` verdict with `merge_eligible=true`, recomputed from
@@ -100,7 +151,7 @@ statement about what the customer's production environment does; each is a quest
 | **P3-D06** | The Scala rollup became SQL on Delta — no JAR task, no cluster. | Accepted at STOP C. Reconciled against the real JVM job's own output, not a reimplementation. |
 | **P3-D08** | `execution_date` / `run_date` is an explicit job parameter instead of the box's wall clock. | Additive. A same-day run is unchanged; a rerun for an older date is now possible. |
 | **Orchestration** | `user_activity_daily`'s three-hour wait on `analytics_daily` became a dependency edge (`run_job_task` on the owning job). | Accepted. The legacy guess silently produced a shorter report when the 02:00 run was late; the edge cannot. See P3-Q8 for the cost. |
-| **Exports** | The three units that wrote report files now write Delta tables only. | **Not a recorded decision — an unrecorded substitution, my error.** See P3-Q3. |
+| **Exports** | The three units that wrote report files write Delta tables **and** rebuild the legacy report objects on an export volume, byte-compared against the legacy's own files. | **Restored.** Shipping tables only was an unrecorded substitution and my error; both the substitution and the restoration are written up in §1a. The only remaining difference is the destination: a Unity Catalog volume, not S3. |
 
 ---
 
@@ -125,9 +176,8 @@ Stated plainly, because "all units passed" would be misleading.
   expressions are verified as configuration.
 - **Retries and failure notifications are configured, not exercised.** `failure_webhooks` is
   empty in the `migration` target on purpose, so `on_failure` delivers nothing today.
-- **Report files are not reconciled** because they are not produced (P3-Q3). Row parity stands
-  in for the byte compare the plan specified for `p3-analytics-daily`, `p3-audit-archive` and
-  `p3-user-activity`.
+- **Report files are byte-compared, but only for the date the frozen manifest covers** and only
+  on the volume. The legacy's S3 destination is not written and not reconciled (§1a).
 - **Rows, not structure.** The harness compares row data, not table properties, comments or
   grants — including grants on the landing volume.
 - **Only the pinned fixture set** is exercised. Notably the audit unit's `A-estate` probe
@@ -192,8 +242,8 @@ one-line ledger action for whoever owns `.migration/`.
 
 ## 9. Cutover sequence, once authorized
 
-1. Answer §1. **P3-Q1** (the secret) and **P3-Q3** (exports) gate whether the analytics and
-   user-activity jobs are complete at all; the rest gate what is safe to unpause.
+1. Answer §1. **P3-Q1** (the secret) gates whether the analytics and user-activity jobs are
+   complete at all; the rest gate what is safe to unpause. P3-Q3 is closed (§1a).
 2. Rotate the `etl/config.ini` credentials (P3-Q2) — independent of everything else, and worth
    doing whether or not cutover happens.
 3. Set `failure_webhooks` to a real destination. Today a failed run notifies nobody.
