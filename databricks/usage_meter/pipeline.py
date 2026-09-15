@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from typing import Any
 
@@ -39,6 +40,8 @@ from meter_sql import (
 )
 
 EPOCH = "1900-01-01 00:00:00"
+# The subdirectory ends up in a volume path and a SQL source literal.
+SAFE_SUBDIR = re.compile(r"[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*")
 
 
 def _ts(value: Any) -> str:
@@ -59,6 +62,8 @@ def ensure_objects(ex: Executor, ns: Namespace = PRODUCTION, with_volume: bool =
 
 
 def ingest(ex: Executor, ns: Namespace = PRODUCTION, subdir: str = "") -> dict[str, Any]:
+    if subdir and not SAFE_SUBDIR.fullmatch(subdir):
+        raise SystemExit(f"refusing to read {subdir!r}: not a plain landing subdirectory")
     before = _ts(ex.scalar(read_watermark(ns, "bronze")))
     ex.sql(copy_into_bronze(ns, subdir))
     row = ex.one(bronze_high_watermark(ns, before)) or {}

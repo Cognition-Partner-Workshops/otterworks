@@ -61,7 +61,9 @@ def main(argv: list[str]) -> int:
 
     ex = get_executor()
     records = snapshot_records(ex)
-    path = write_batch(records, subdir=args.subdir, name="usage_events_backfill.json")
+    # A fresh file name every export: COPY INTO skips a path it has already read,
+    # so overwriting one would make later exports invisible.
+    path = write_batch(records, subdir=args.subdir)
     print(json.dumps({"records": len(records), "path": path}))
     return 0
 

@@ -206,38 +206,75 @@ END"""
 
 
 def quarantine_rejects(ns: Namespace, watermark: str, high: str) -> str:
-    """Nothing missing or unattributable reaches the meter; it lands here instead."""
-    return f"""INSERT INTO {ns.rejects}
-SELECT event_id, tenant_id, occurred_at_raw, units_raw, kind_cd_raw,
-       {_REJECT_REASON} AS reject_reason,
-       source_file, ingested_at,
-       CAST(current_timestamp() AS TIMESTAMP_NTZ) AS rejected_at
-FROM ({_typed_batch(ns, watermark, high)})
-WHERE {_REJECT_REASON} IS NOT NULL"""
+    """Nothing missing or unattributable reaches the meter; it lands here instead.
+
+    Merged rather than inserted: a stage that fails after this statement and is
+    retried replays the same bronze rows, and a reject row must not double.
+    """
+    return f"""MERGE INTO {ns.rejects} t
+USING (
+  SELECT event_id, tenant_id, occurred_at_raw, units_raw, kind_cd_raw,
+         {_REJECT_REASON} AS reject_reason,
+         source_file, ingested_at
+  FROM ({_typed_batch(ns, watermark, high)})
+  WHERE {_REJECT_REASON} IS NOT NULL
+) s
+ON t.event_id <=> s.event_id AND t.source_file <=> s.source_file
+   AND t.ingested_at <=> s.ingested_at AND t.reject_reason = s.reject_reason
+WHEN NOT MATCHED THEN INSERT (
+  event_id, tenant_id, occurred_at, units, kind_cd, reject_reason,
+  source_file, ingested_at, rejected_at
+) VALUES (
+  s.event_id, s.tenant_id, s.occurred_at_raw, s.units_raw, s.kind_cd_raw, s.reject_reason,
+  s.source_file, s.ingested_at, CAST(current_timestamp() AS TIMESTAMP_NTZ)
+)"""
 
 
 def merge_silver(ns: Namespace, watermark: str, high: str) -> str:
-    """Dedupe on event id, first arrival wins; a later copy only bumps the counters."""
+    """Dedupe on event id, first arrival wins; a later copy only bumps the counters.
+
+    Two properties the obvious version does not have:
+
+    * `COPY INTO` stamps every row of one load with the same `ingested_at`, so
+      ordering on it alone cannot separate two copies that landed together. One
+      whole row is picked by `ROW_NUMBER` over a total order, instead of taking
+      each column independently, so a silver row is always one real event.
+    * `seen_count` and `last_seen_at` are counted over every copy in bronze, not
+      added to what is already in silver, so a retried stage converges on the
+      same numbers instead of inventing arrivals.
+    """
     return f"""MERGE INTO {ns.events} t
 USING (
-  SELECT event_id,
-         MIN_BY(tenant_id, ingested_at) AS tenant_id,
-         MIN_BY(occurred_at, ingested_at) AS occurred_at,
-         MIN_BY(units, ingested_at) AS units,
-         MIN_BY(kind_cd, ingested_at) AS kind_cd,
-         MIN_BY(metric, ingested_at) AS metric,
-         MIN_BY(source_file, ingested_at) AS source_file,
-         MIN(ingested_at) AS first_seen_at,
-         MAX(ingested_at) AS last_seen_at,
-         COUNT(*) AS seen_count
-  FROM ({_typed_batch(ns, watermark, high)})
-  WHERE {_REJECT_REASON} IS NULL
-  GROUP BY event_id
+  WITH batch AS (
+    SELECT *, {_REJECT_REASON} AS reject_reason
+    FROM ({_typed_batch(ns, watermark, high)})
+  ),
+  valid AS (SELECT * FROM batch WHERE reject_reason IS NULL),
+  arrivals AS (
+    SELECT r.event_id,
+           COUNT(*) AS seen_count,
+           MIN(r.ingested_at) AS first_seen_at,
+           MAX(r.ingested_at) AS last_seen_at
+    FROM {ns.raw} r
+    WHERE r.event_id IN (SELECT event_id FROM valid)
+    GROUP BY r.event_id
+  ),
+  ranked AS (
+    SELECT *, ROW_NUMBER() OVER (
+      PARTITION BY event_id
+      ORDER BY ingested_at, source_file, occurred_at, units, kind_cd, tenant_id) AS rn
+    FROM valid
+  )
+  SELECT v.event_id, v.tenant_id, v.occurred_at, v.units, v.kind_cd, v.metric, v.source_file,
+         a.first_seen_at, a.last_seen_at, a.seen_count
+  FROM ranked v
+  JOIN arrivals a ON a.event_id = v.event_id
+  WHERE v.rn = 1
 ) s
 ON t.event_id = s.event_id
 WHEN MATCHED THEN UPDATE SET
   t.last_seen_at = GREATEST(t.last_seen_at, s.last_seen_at),
-  t.seen_count = t.seen_count + s.seen_count
+  t.seen_count = s.seen_count
 WHEN NOT MATCHED THEN INSERT (
   event_id, tenant_id, occurred_at, event_date, period_start, period_end,
   kind_cd, metric, units, first_seen_at, last_seen_at, seen_count,

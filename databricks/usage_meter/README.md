@@ -18,7 +18,10 @@ current period to the billing application through Lakebase.
 
 - **Dedupe.** Silver is merged on `event_id`. A replayed event updates `seen_count` and
   `last_seen_at`; the first arrival's values win, so a replay with different units cannot
-  move the meter.
+  move the meter. Two copies landing in the same `COPY INTO` share an `ingested_at`, so the
+  surviving row is picked whole by `ROW_NUMBER` over a total order rather than column by
+  column, and `seen_count` is counted over bronze rather than added to, so a retried stage
+  converges instead of inflating. Rejects are merged, not inserted, for the same reason.
 - **Late arrivals.** The watermark bounds *what is read*, never *what is recomputed*. An
   event's calendar month comes from `occurred_at`, so a backdated event reopens its own
   period: the meter recomputes exactly the tenant/metric/period cells the new rows touch,
@@ -31,8 +34,8 @@ current period to the billing application through Lakebase.
   event's own calendar date, so they agree with rating rather than with UTC midnight.
 - **Rejects, not fail-open.** Missing tenant, non-positive units and unknown usage kinds
   go to the reject table with a reason and never reach the meter.
-- **Lakebase.** The publish is one transaction: stage, delete the current-period slice,
-  upsert, stamp `billing.usage_meter_sync_state`. Readers see the old period or the new
+- **Lakebase.** The publish is one transaction: stage, delete every target row not in the
+  stage (so a period that is no longer current leaves with it), upsert, stamp `billing.usage_meter_sync_state`. Readers see the old period or the new
   one, never a half-written one. Branch `mig-p1-w0` only; the code refuses any branch
   outside the allowlist and never touches `production`.
 

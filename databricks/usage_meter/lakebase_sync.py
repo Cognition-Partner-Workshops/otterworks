@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import date
 from typing import Any
 
 # The Lakeflow task execs this file without setting __file__, so fall back to argv.
@@ -100,7 +101,8 @@ def sync(branch: str = "mig-p1-w0", period: str | None = None,
     import psycopg
 
     ex = get_executor()
-    period_start = period or str(ex.scalar(current_period(ns)))
+    # The period reaches Databricks SQL as a literal, so it is parsed as a date first.
+    period_start = str(date.fromisoformat(period)) if period else str(ex.scalar(current_period(ns)))
     rows = ex.sql(current_period_rows(ns, period_start))
     if not rows:
         raise SystemExit(f"meter has no rows for period {period_start}")
@@ -130,10 +132,12 @@ def sync(branch: str = "mig-p1-w0", period: str | None = None,
             ) as copy:
                 for record in payload:
                     copy.write_row(record + (synced_at,))
-            cur.execute(f"DELETE FROM {TABLE} t WHERE t.period_start = %s"
-                        " AND NOT EXISTS (SELECT 1 FROM stage_usage_meter s"
+            # The table holds the current period only, so rows from a period that is
+            # no longer current go too, not just rows missing from this one.
+            cur.execute(f"DELETE FROM {TABLE} t WHERE NOT EXISTS ("
+                        "SELECT 1 FROM stage_usage_meter s"
                         " WHERE s.tenant_id = t.tenant_id AND s.metric = t.metric"
-                        " AND s.period_start = t.period_start)", (period_start,))
+                        " AND s.period_start = t.period_start)")
             cur.execute(f"""INSERT INTO {TABLE}
 SELECT * FROM stage_usage_meter
 ON CONFLICT (tenant_id, metric, period_start) DO UPDATE SET

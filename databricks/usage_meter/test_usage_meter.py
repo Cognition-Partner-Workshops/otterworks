@@ -30,6 +30,16 @@ TEST = Namespace(
 TENANT = "selftest-tenant-0001"
 
 
+def _clear_landing() -> None:
+    """Batches from an earlier run would be read again once bronze is dropped."""
+    from databricks.sdk import WorkspaceClient
+
+    w = WorkspaceClient()
+    for entry in w.files.list_directory_contents(TEST.landing):
+        if not entry.is_directory:
+            w.files.delete(entry.path)
+
+
 def event(event_id: str, occurred_at: str, units: int, kind_cd: int = 1,
           tenant_id: str = TENANT) -> dict[str, str]:
     return {"event_id": event_id, "tenant_id": tenant_id, "occurred_at": occurred_at,
@@ -49,6 +59,7 @@ class UsageMeterTest(unittest.TestCase):
         for table in TEST.all_tables():
             cls.ex.sql(f"DROP TABLE IF EXISTS {table}")
         ensure_objects(cls.ex, TEST)
+        _clear_landing()
 
     def id_for(self, name: str) -> str:
         return f"{self.prefix}-{name}"
