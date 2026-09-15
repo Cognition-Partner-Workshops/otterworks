@@ -41,18 +41,21 @@ from datetime import datetime, timedelta, timezone
 PROJECT = "ow-tp-billing"
 DATABASE = "ow_tp"
 SCHEMA = "billing"
-# The wave branch. Never `production`: enabling this job against production data is part of
-# the STOP E cutover decision, which this code does not get to make.
+# This unit's write target, and the only branch the task will connect to. `production` is
+# not merely excluded: repointing it is the STOP E cutover decision, which this code does
+# not get to make, and a mistyped branch name must fail rather than write dunning rows
+# somewhere outside the unit's declared target.
 DEFAULT_BRANCH = "mig-p1-w2"
-FORBIDDEN_BRANCHES = ("production",)
+ALLOWED_BRANCHES = (DEFAULT_BRANCH,)
 
 
 def lakebase_dsn(branch: str, database: str = DATABASE) -> str:
     """Mint a short-lived Lakebase DSN for `branch` from the running identity."""
     from databricks.sdk import WorkspaceClient
 
-    if branch in FORBIDDEN_BRANCHES:
-        raise SystemExit(f"refusing to run against the {branch!r} Lakebase branch")
+    if branch not in ALLOWED_BRANCHES:
+        raise SystemExit(f"refusing to run against the {branch!r} Lakebase branch; "
+                         f"this job writes only {', '.join(ALLOWED_BRANCHES)}")
     w = WorkspaceClient()
     parent = f"projects/{PROJECT}/branches/{branch}"
     endpoints = w.api_client.do("GET", f"/api/2.0/postgres/{parent}/endpoints")
@@ -77,10 +80,14 @@ def run_chain(conn, as_of: datetime, schema: str = SCHEMA) -> dict:
     The caller owns the transaction: the job commits it, the run-history check rolls it
     back so a fixture comparison leaves the shared branch as it found it.
     """
+    from psycopg import sql
+
+    name = sql.Identifier(schema)
     with conn.cursor() as cur:
-        cur.execute(f"CALL {schema}.sp_schedule_dunning(%s, %s, %s)", (as_of, 0, None))
+        cur.execute(sql.SQL("CALL {}.sp_schedule_dunning(%s, %s, %s)").format(name),
+                    (as_of, 0, None))
         scheduled_cnt, last_run_dt = cur.fetchone()
-        cur.execute(f"CALL {schema}.sp_suspend_overdue(%s)", (as_of,))
+        cur.execute(sql.SQL("CALL {}.sp_suspend_overdue(%s)").format(name), (as_of,))
     return {"as_of": as_of.isoformat(), "scheduled_cnt": scheduled_cnt,
             "last_run_dt": last_run_dt.isoformat() if last_run_dt else None}
 

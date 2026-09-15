@@ -110,8 +110,15 @@ def main(argv: list[str] | None = None) -> int:
     parent_path = f"/Users/{w.current_user.me().user_name}/ow_tp_migration"
     settings = job_settings(upload_task(w, parent_path))
 
-    existing = next((job for job in w.jobs.list(name=JOB_NAME)
-                     if job.settings and job.settings.name == JOB_NAME), None)
+    # A job name is not unique: an interrupted deploy can leave two jobs called this, and
+    # resetting one of them would leave the other scheduling dunning attempts of its own.
+    matches = [job for job in w.jobs.list(name=JOB_NAME)
+               if job.settings and job.settings.name == JOB_NAME]
+    if len(matches) > 1:
+        raise SystemExit(f"{len(matches)} jobs are named {JOB_NAME} "
+                         f"({', '.join(str(m.job_id) for m in matches)}); "
+                         "delete the duplicates before deploying")
+    existing = matches[0] if matches else None
     if existing is None:
         job_id = w.jobs.create(**_typed(settings)).job_id
         action = "created"
