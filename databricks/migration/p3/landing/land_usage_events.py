@@ -82,16 +82,18 @@ def add_source_line(w, batch: str) -> None:
 
     CREATE TABLE IF NOT EXISTS leaves an existing table alone, so a workspace that landed
     this batch under the old event_id key would otherwise merge on a column that is not
-    there. The batch's rows are deleted rather than backfilled: their line numbers were
-    never recorded, and this run re-lands the whole snapshot. Rows of other batches keep a
-    NULL source_line until their own batch is landed again.
+    there. The batch's keyless rows are deleted rather than backfilled: their line numbers
+    were never recorded, and this run re-lands the whole snapshot. The delete runs on every
+    landing, not only the one that adds the column, because a batch landed before the
+    column existed keeps its NULL keys until its own landing clears them, and a NULL never
+    matches the merge condition.
     """
     columns = {row[0] for row in execute(w, f"SHOW COLUMNS IN {EVENTS_TABLE}")}
-    if "source_line" in columns:
-        return
-    execute(w, f"ALTER TABLE {EVENTS_TABLE} ADD COLUMN source_line BIGINT COMMENT "
-               "'line of usage-events.ndjson this row came from' AFTER snapshot_batch")
-    execute(w, f"DELETE FROM {EVENTS_TABLE} WHERE snapshot_batch = :batch", {"batch": batch})
+    if "source_line" not in columns:
+        execute(w, f"ALTER TABLE {EVENTS_TABLE} ADD COLUMN source_line BIGINT COMMENT "
+                   "'line of usage-events.ndjson this row came from' AFTER snapshot_batch")
+    execute(w, f"DELETE FROM {EVENTS_TABLE} "
+               "WHERE snapshot_batch = :batch AND source_line IS NULL", {"batch": batch})
 
 
 def verify_snapshot(snapshot: Path) -> None:
