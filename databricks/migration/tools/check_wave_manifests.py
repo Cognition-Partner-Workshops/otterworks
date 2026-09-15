@@ -62,12 +62,18 @@ def validator(workflow: Path):
     return ns["validate_manifest"]
 
 
-def check_no_data_movement(path: Path, unit: str, where: str) -> None:
-    """A unit with no mapping spec must say, in a readable file, why it needs none.
+DECLARED_AT = re.compile(r"p\d+ wave \d+$")
+PLACEHOLDER = re.compile(r"^(todo|tbd|tba|n/?a|none|fixme|xxx|\.+)$", re.IGNORECASE)
+MIN_REASON = 80
 
-    Read the file rather than test that it exists: an empty or placeholder declaration
-    would otherwise buy a unit the same exemption as a real one, and the exemption is
-    exactly the thing that removes it from reconciliation.
+
+def check_no_data_movement(path: Path, unit: str, where: str) -> None:
+    """A unit with no mapping spec must say, in a checkable file, why it needs none.
+
+    The exemption this file grants is the thing that removes a unit from reconciliation,
+    so it is checked rather than taken on trust: the unit has to match, the reason has to
+    be prose rather than a placeholder, every evidence entry has to be a repo path that
+    exists, and the wave has to be named in the form the manifests use.
     """
     if not path.exists():
         raise SystemExit(f"{where}: unit {unit} has neither a mapping spec nor a "
@@ -81,10 +87,30 @@ def check_no_data_movement(path: Path, unit: str, where: str) -> None:
     if declaration.get("unit") != unit:
         raise SystemExit(f"{where}: {path.name} declares unit "
                          f"{declaration.get('unit')!r}, not {unit!r}")
-    for field in ("reason", "evidence", "declared_at"):
-        value = declaration.get(field)
-        if not isinstance(value, str) or not value.strip():
-            raise SystemExit(f"{where}: {path.name} for {unit} needs a non-empty {field}")
+
+    reason = declaration.get("reason")
+    if not isinstance(reason, str) or PLACEHOLDER.match(reason.strip()) \
+            or len(reason.strip()) < MIN_REASON:
+        raise SystemExit(f"{where}: {path.name} for {unit} needs a reason of at least "
+                         f"{MIN_REASON} characters saying what the unit does instead of "
+                         "moving data")
+
+    evidence = declaration.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise SystemExit(f"{where}: {path.name} for {unit} needs an evidence list of "
+                         "repo paths a reviewer can open")
+    for entry in evidence:
+        if not isinstance(entry, str) or not entry.strip():
+            raise SystemExit(f"{where}: {path.name} for {unit} has a non-path evidence "
+                            f"entry {entry!r}")
+        if not (ROOT / entry).exists():
+            raise SystemExit(f"{where}: {path.name} for {unit} cites evidence that does "
+                             f"not exist in the repo: {entry}")
+
+    declared_at = declaration.get("declared_at")
+    if not isinstance(declared_at, str) or not DECLARED_AT.match(declared_at.strip()):
+        raise SystemExit(f"{where}: {path.name} for {unit} needs declared_at in the form "
+                         f"'p<pipeline> wave <n>', not {declared_at!r}")
 
 
 def main() -> int:
