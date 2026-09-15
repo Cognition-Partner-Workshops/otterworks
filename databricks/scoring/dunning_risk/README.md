@@ -1,9 +1,14 @@
 # ow_tp dunning risk
 
-A score that ranks the overdue queue. Today `pkg_dunning.sp_schedule_dunning` walks every
-status-40 invoice in one undifferentiated loop, schedules the next attempt, and hides any
-failure behind `WHEN OTHERS THEN NULL`. This adds the missing input: a number and a list of
-reasons per open invoice, so the queue can be worked worst-first.
+**This ranks the overdue queue by invoice age and outstanding exposure. It is not a
+validated predictor of who will default or who will pay** — its non-aging signals score at
+chance against the only label this data has, and there is no dunning-outcome history to
+test them against at all (see "How honest the validation is").
+
+Even so, ordering is worth having. `pkg_dunning.sp_schedule_dunning` walks every status-40
+invoice in one undifferentiated loop, schedules the next attempt, and hides any failure
+behind `WHEN OTHERS THEN NULL`. This adds the missing input: a number and a list of reasons
+per open invoice, so the queue can be worked worst-first.
 
 **It is an input, not an instruction.** Nothing here schedules, sends, skips, suspends or
 writes off anything. The tables are read-only facts; the dunning process and the people
@@ -36,10 +41,18 @@ age plus one other concern reaches HIGH. **They were not fitted.** See below.
 Short version: the aging part of the score is sound because it is arithmetic, and the rest
 is not validated.
 
-- There is no dunning-outcome label. `billing.dunning_attempts` holds **one row**, on
-  Lakebase, on a tenant key space that does not intersect the migrated invoice history. So
-  "did chasing this invoice recover the money" cannot be tested here at all. The recon
-  report records that coverage as 0 rows rather than quietly substituting something else.
+- There is no dunning-outcome label, and that is a gap in the data, not a choice made
+  here. `billing.dunning_attempts` holds **one row**, it exists only on Lakebase, and its
+  tenant keys do not intersect the migrated invoice history, so nothing joins. "Did chasing
+  this invoice recover the money" cannot be asked here at all. The recon report records
+  that coverage as 0 rows rather than quietly substituting something else.
+
+  Three things would have to exist before the non-aging signals could be tested: a dunning
+  attempt history over a meaningful span (one row per attempt, with invoice, attempt time,
+  channel and level), an outcome per attempt (paid after contact, promised, disputed,
+  escalated, no response) with the payment date so recovery can be timed, and a key that
+  joins those attempts to the invoices in Delta. With about a year of that, the points
+  could be fitted rather than chosen.
 - The closest available label is "the invoice ended status 40". Against it, on the 13,246
   closed invoices, the non-aging rules give **AUC 0.5012**, and on the 2021-onward holdout
   **0.4946**. Chance is 0.5. They do not discriminate.
