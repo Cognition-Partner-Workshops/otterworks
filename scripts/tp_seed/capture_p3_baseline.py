@@ -155,20 +155,23 @@ def fixture_config():
     placeholder database, so the original bytes, permissions and ownership are
     restored on every exit path, and a file this runner created is removed again.
 
-    Replacing the file gives the new copy this process's ownership, and only
-    root can give it back. A config owned by someone else is therefore refused
-    before it is touched: finishing the capture at the cost of leaving the
-    host's ETL config unreadable by the account that owns it is not a trade
-    this runner gets to make.
+    Replacing the file gives the new copy this process's ownership, and an
+    unprivileged caller can only hand it back to itself and to a group it is a
+    member of. A config it could not fully restore is therefore refused before
+    it is touched: finishing the capture at the cost of leaving the host's ETL
+    config unreadable by the account or group that owns it is not a trade this
+    runner gets to make.
     """
     existed = CONFIG_PATH.exists()
     original = CONFIG_PATH.read_bytes() if existed else None
     st = CONFIG_PATH.stat() if existed else None
-    if st is not None and st.st_uid != os.geteuid() and os.geteuid() != 0:
+    if st is not None and os.geteuid() != 0 and (
+            st.st_uid != os.geteuid() or st.st_gid not in {os.getegid(), *os.getgroups()}):
         raise SystemExit(
-            f"{CONFIG_PATH} is owned by uid {st.st_uid} and this process is uid "
-            f"{os.geteuid()}: restoring its ownership afterwards would fail and the "
-            f"owner would lose access to it. Re-run as that user or as root.")
+            f"{CONFIG_PATH} is owned by {st.st_uid}:{st.st_gid}, which uid "
+            f"{os.geteuid()} cannot restore: the capture would replace it and then "
+            f"fail to give it back, and its owners would lose access. Re-run as its "
+            f"owner with membership of that group, or as root.")
     try:
         write_config()
         yield
@@ -472,7 +475,11 @@ def capture_analytics_daily(snapshot: Path, out: Path, ns: str) -> dict:
     s3, sqs, ddb = aws("s3"), aws("sqs"), aws_resource("dynamodb")
     dynamo_events = json.loads((snapshot / "analytics_dynamodb_events.json").read_text())
     sqs_events = json.loads((snapshot / "analytics_sqs_events.json").read_text())
-    run_date = json.loads((snapshot / "manifest.json").read_text())["run_date"]
+    # The legacy partitions on datetime.now(UTC), not on the fixture's run_date,
+    # and the two differ under --allow-date-drift. The isolation check has to
+    # scan the day the legacy will scan, or a foreign row dated today walks into
+    # the baseline unseen.
+    scan_date = legacy_analytics_date()
 
     ensure_bucket(s3, DATA_LAKE_BUCKET)
     empty_bucket(s3, DATA_LAKE_BUCKET)
@@ -491,11 +498,17 @@ def capture_analytics_daily(snapshot: Path, out: Path, ns: str) -> dict:
     require_isolated(
         table,
         {"FilterExpression": "begins_with(event_date, :ds)",
-         "ExpressionAttributeValues": {":ds": run_date}},
+         "ExpressionAttributeValues": {":ds": scan_date}},
         {ev["event_id"] for ev in dynamo_events},
         "analytics_daily.py")
 
     result = run_legacy("analytics_daily.py")
+
+    if legacy_analytics_date() != scan_date:
+        raise SystemExit(
+            f"the UTC date rolled from {scan_date} to {legacy_analytics_date()} during "
+            f"the capture, so analytics_daily.py did not read the day the isolation "
+            f"check inspected. Re-run it.")
 
     objects = list_bucket(s3, DATA_LAKE_BUCKET)
     outputs = {}
@@ -523,6 +536,11 @@ def capture_analytics_daily(snapshot: Path, out: Path, ns: str) -> dict:
     (out / "p3-analytics-daily.baseline.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n")
     return result
+
+
+def legacy_analytics_date() -> str:
+    """The partition date analytics_daily.py will compute for a run started now."""
+    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
 
 def legacy_audit_cutoff() -> str:
