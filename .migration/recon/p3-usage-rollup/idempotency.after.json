@@ -1,0 +1,13 @@
+{
+  "snapshot_batch": "p3probe",
+  "tables": {
+    "bronze.usage_events_raw": {
+      "rows": 471,
+      "md5": "a6c34c23010a31471b2966856bd262eb"
+    },
+    "gold.usage_rollup": {
+      "rows": 7,
+      "md5": "559f21581a10e8517ba63be78219549c"
+    }
+  }
+}
