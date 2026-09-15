@@ -228,9 +228,15 @@ Recommended sequencing once authorized:
 1. **Finish the schema on `mig-p1-w2`:** add `FK_SUB_PLAN` and `FK_SUB_TENANT` to
    `billing.subscriptions`, and an equivalent of `TRG_USAGE_EVENTS_CHECK` on
    `billing.usage_events`.
-2. **Stand up the out-of-database audit writer** (owner 2) and point `billing.log_msg` at it,
-   so the behaviour under test in step 4 is the one production will run — not the
-   known-defective in-transaction version.
+2. **Build the out-of-database audit path** (owner 2) and deploy it before validating.
+   `billing.log_msg` cannot call out: Postgres has no autonomous transaction and a second
+   connection needs `dblink` or `postgres_fdw`, both refused by this Lakebase project, so
+   there is no in-database wiring that makes the function rollback-surviving. The writer has
+   to sit **above** the database — the D4-02 shim service holding a second connection, or an
+   async sink the shim publishes to — and every caller path that must keep its audit trail
+   has to go through it. That includes the nightly dunning job, which does not call through
+   the shim today; scoping that path is part of owner 2's work. The in-database
+   `billing.log_msg` insert stays as the in-transaction best effort it is.
 3. **Promote the database.** Everything delivered lives on Lakebase branch `mig-p1-w2`;
    `production` has none of it. Promote `mig-p1-w2` → the production branch of project
    `ow-tp-billing` (Lakebase branch promotion, with the pre-promotion production branch
@@ -241,13 +247,15 @@ Recommended sequencing once authorized:
    `sp_suspend_overdue`, `fn_overdue_accounts`, `sp_assign_plan`, `fn_plan_entitlements`,
    `log_msg`. **This step is not authorized by this packet and no session has ever written
    the production branch;** it is the customer's to execute with the cutover principal.
-4. **One committed live run** of the converted routines on the promoted database, covering
-   both the success path and a **caller rollback**, to prove the audit row survives the
-   rollback and the rating→invoicing hand-off writes `billing.rating_state`. Roll back to the
-   retained branch if it fails.
-5. Deploy the shim → repoint consumer 1 → resolve consumer 2 per the decision above.
-6. Retire the shim on owner 1's date.
+4. **One committed live run** of the converted routines on the promoted database, driven
+   **through the shim and its audit path**, covering both the success path and a **caller
+   rollback**, to prove the audit row survives the rollback and the rating→invoicing hand-off
+   writes `billing.rating_state`. Roll back to the retained branch if it fails.
+5. Repoint consumer 1 → resolve consumer 2 per the decision above.
+6. Retire the shim on owner 1's date — which also retires the audit path built into it,
+   unless it was built as a standalone sink.
 
-Steps 3 and 4 in that order matter: repointing a consumer before the promotion sends
-production traffic to a database where `billing.sp_issue_invoice` does not exist, and
-validating before step 2 only exercises the implementation being replaced.
+The order matters in two places. Repointing a consumer before the promotion sends production
+traffic to a database where `billing.sp_issue_invoice` does not exist. And validating before
+the audit path is deployed can only exercise the in-transaction `log_msg` that is being
+replaced, which is the behaviour already known to fail.
