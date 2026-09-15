@@ -77,23 +77,19 @@ def execute(w, statement: str, parameters=None) -> list[list[str]]:
     return (result.result.data_array if result.result else []) or []
 
 
-def add_source_line(w, batch: str) -> None:
+def add_source_line(w) -> None:
     """Give a table created before source_line the column, before it is merged on.
 
     CREATE TABLE IF NOT EXISTS leaves an existing table alone, so a workspace that landed
-    this batch under the old event_id key would otherwise merge on a column that is not
-    there. The batch's keyless rows are deleted rather than backfilled: their line numbers
-    were never recorded, and this run re-lands the whole snapshot. The delete runs on every
-    landing, not only the one that adds the column, because a batch landed before the
-    column existed keeps its NULL keys until its own landing clears them, and a NULL never
-    matches the merge condition.
+    under the old event_id key would otherwise merge on a column that is not there. The
+    rows it already holds get a NULL source_line; the merge deletes those of the batch it
+    is landing, since their line numbers were never recorded and the same snapshot is
+    being written again.
     """
     columns = {row[0] for row in execute(w, f"SHOW COLUMNS IN {EVENTS_TABLE}")}
     if "source_line" not in columns:
         execute(w, f"ALTER TABLE {EVENTS_TABLE} ADD COLUMN source_line BIGINT COMMENT "
                    "'line of usage-events.ndjson this row came from' AFTER snapshot_batch")
-    execute(w, f"DELETE FROM {EVENTS_TABLE} "
-               "WHERE snapshot_batch = :batch AND source_line IS NULL", {"batch": batch})
 
 
 def verify_snapshot(snapshot: Path) -> None:
@@ -227,7 +223,7 @@ def load(w, rows: list[tuple], batch: str) -> dict:
     key = ["snapshot_batch", "source_line"]
     stage = f"{EVENTS_TABLE}_stage"
     execute(w, CREATE_EVENTS)
-    add_source_line(w, batch)
+    add_source_line(w)
     execute(w, f"CREATE OR REPLACE TABLE {stage} ("
                + ", ".join(f"{n} {t}" for n, t in columns) + ")")
     for start in range(0, len(rows), 25):
@@ -243,7 +239,9 @@ def load(w, rows: list[tuple], batch: str) -> dict:
         WHEN MATCHED THEN UPDATE SET {updates}, t.landed_at = current_timestamp()
         WHEN NOT MATCHED THEN INSERT ({', '.join(names)}, landed_at)
             VALUES ({', '.join('s.' + n for n in names)}, current_timestamp())
-    """)
+        WHEN NOT MATCHED BY SOURCE AND t.snapshot_batch = :batch AND t.source_line IS NULL
+            THEN DELETE
+    """, {"batch": batch})
     execute(w, f"DROP TABLE IF EXISTS {stage}")
     counted = execute(w, f"SELECT count(*) FROM {EVENTS_TABLE} WHERE snapshot_batch = :batch",
                       {"batch": batch})
