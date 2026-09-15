@@ -126,6 +126,12 @@ Stated plainly, because "all units passed" would be misleading:
   query for a Databricks-family source. 16 of 17 rows green.
 - Wall-clock columns (`parsed_at`, `quarantined_at`, `closed_at`) are excluded from the
   diffs and fingerprints as target-side values with no legacy counterpart.
+- **The close's 3600-second timeout is not sized against real ingest volumes.** The close now
+  waits for the ingest job (see §2), and that wait counts against its own timeout, so a long
+  ingest or a queue of them can in principle exhaust it and produce no export for the day.
+  Against the pinned fixtures an ingest run takes minutes, so it never came close; the real
+  drop is bigger. Measure a production-sized ingest at cutover and set the close timeout
+  above the worst-case wait plus one full ingest and export.
 
 ---
 
@@ -144,7 +150,12 @@ Stated plainly, because "all units passed" would be misleading:
 
 ## 7. Cutover sequence, once authorized
 
-1. Answer D3-01 and D4-01 (§1). Set `failure_webhooks` to a real notification destination.
+1. Confirm **all four** decisions in §1, not just the two blocking ones: D3-01 and D4-01 gate
+   the shape, and P2-D04 (timezone, which also sets the export date stamp) and P2-D05 (the
+   dropped Sunday re-run) take effect the moment the schedules are deployed and unpaused, so
+   a parent default must not become live without the customer saying so. Then set
+   `failure_webhooks` to a real notification destination, and size `timeout_seconds` on the
+   close against the real ingest duration (see §5).
 2. Deploy the bundle to a production target — that drops the development-mode `[dev ...]`
    name prefix, leaving `ow_tp_p2_custbill_ingest` and `ow_tp_p2_finance_close`.
 3. Run both jobs once by hand against the day's real drop and compare the export against the
