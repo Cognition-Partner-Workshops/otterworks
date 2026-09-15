@@ -17,7 +17,9 @@ from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.sql import StatementParameterListItem
 
 WAREHOUSE = "565cd2fd713738c4"
-SQL_DIR = Path(__file__).resolve().parent
+# A Databricks python task execs this file, so there is no __file__ to resolve
+# against; it passes the paths relative to the bundle root instead.
+SQL_DIR = Path(globals().get("__file__", "sql/apply_p3_sql.py")).resolve().parent
 
 
 def run(w: WorkspaceClient, statement: str, params: dict[str, str]) -> list[list[str]]:
