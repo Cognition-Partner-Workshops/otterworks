@@ -1,12 +1,13 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { IncidentsComponent } from './incidents.component';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { Incident } from '../../core/models/incident.model';
-import { of, throwError } from 'rxjs';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 function makeIncident(overrides: Partial<Incident> = {}): Incident {
   return {
@@ -33,7 +34,6 @@ describe('IncidentsComponent', () => {
   let component: IncidentsComponent;
   let fixture: ComponentFixture<IncidentsComponent>;
   let apiSpy: jasmine.SpyObj<AdminApiService>;
-  let dialog: MatDialog;
 
   beforeEach(async () => {
     apiSpy = jasmine.createSpyObj('AdminApiService', [
@@ -46,21 +46,19 @@ describe('IncidentsComponent', () => {
     apiSpy.getAutoInvestigate.and.returnValue(of({ enabled: true }));
 
     await TestBed.configureTestingModule({
-      imports: [
-        IncidentsComponent,
-        HttpClientTestingModule,
+    imports: [IncidentsComponent,
         NoopAnimationsModule,
         MatDialogModule,
-        OverlayModule,
-      ],
-      providers: [
+        OverlayModule],
+    providers: [
         { provide: AdminApiService, useValue: apiSpy },
-      ],
-    }).compileComponents();
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+    ]
+}).compileComponents();
 
     fixture = TestBed.createComponent(IncidentsComponent);
     component = fixture.componentInstance;
-    dialog = TestBed.inject(MatDialog);
   });
 
   it('should create', () => {
@@ -126,9 +124,9 @@ describe('IncidentsComponent', () => {
   });
 
   function spyDialog(confirmed: boolean): void {
-    spyOn((component as any).dialog, 'open').and.returnValue({
+    spyOn(component['dialog'], 'open').and.returnValue({
       afterClosed: () => of(confirmed),
-    } as any);
+    } as Partial<MatDialogRef<unknown, boolean>> as MatDialogRef<unknown, boolean>);
   }
 
   describe('resolveIncident', () => {

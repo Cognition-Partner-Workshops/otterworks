@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, delay, map } from 'rxjs/operators';
+import { tap, delay } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface AuthUser {
@@ -12,19 +12,15 @@ export interface AuthUser {
   token: string;
 }
 
-interface LoginResponse {
-  user: AuthUser;
-  token: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+
   private readonly TOKEN_KEY = 'ow_admin_token';
   private readonly USER_KEY = 'ow_admin_user';
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getStoredUser());
   currentUser$ = this.currentUserSubject.asObservable();
-
-  constructor(private http: HttpClient, private router: Router) {}
 
   get isAuthenticated(): boolean {
     return !!this.getToken();
@@ -40,7 +36,7 @@ export class AuthService {
 
   login(email: string, password: string): Observable<AuthUser> {
     // In production, this would call the real API:
-    // return this.http.post<LoginResponse>('/api/v1/admin/auth/login', { email, password })
+    // return this.http.post<{ user: AuthUser; token: string }>('/api/v1/admin/auth/login', { email, password })
     return this.mockLogin(email, password).pipe(
       tap(user => {
         localStorage.setItem(this.TOKEN_KEY, user.token);
