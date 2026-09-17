@@ -26,6 +26,10 @@ env:
   TRIVY_VERSION: "0.71.0"
   MAX_FIX_ATTEMPTS: 2
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
+  SONAR_PROJECT_KEY: Cognition-Partner-Workshops_otterworks
+  SONAR_ORGANIZATION: cognition-partner-workshops
+  DEVIN_TRIVY_WEBHOOK_URL: https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-ea3b9981a9c84d6ba476ec498b40ced5
+  DEVIN_SONAR_WEBHOOK_URL: https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-0dacfd8d718245e686f2f03d8917ac52
 
 # ─────────────────────────────────────────────────────────────
 #  Path 1: Trivy dependency scan (pull_request trigger)
@@ -158,16 +162,18 @@ jobs:
       needs.sast-scan.outputs.exceeded_max == 'false'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Devin remediation via webhook (Trivy findings)
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+
+      - name: Build webhook payload (Trivy findings)
+        id: payload
         env:
-          DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
           BRANCH: ${{ github.head_ref }}
           PR_NUM: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           FINDINGS_SUMMARY: ${{ needs.sast-scan.outputs.findings_summary }}
         run: |
-          WEBHOOK_URL="https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-ea3b9981a9c84d6ba476ec498b40ced5"
-
           REQUEST_BODY=$(jq -n \
             --arg branch "$BRANCH" \
             --arg pr_number "$PR_NUM" \
@@ -181,34 +187,19 @@ jobs:
               findings_summary: $findings
             }')
 
-          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            -H "X-Webhook-Secret: ${DEVIN_WEBHOOK_SECRET}" \
-            -H "Content-Type: application/json" \
-            -d "$REQUEST_BODY" \
-            "${WEBHOOK_URL}")
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "request_body<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$REQUEST_BODY" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
 
-          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
-          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
-
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "Devin automation webhook triggered successfully (HTTP ${HTTP_CODE})"
-
-            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
-
-            {
-              echo "## Devin SAST Auto-Fix Triggered (Trivy)"
-              echo ""
-              echo "A Devin automation has been triggered to remediate dependency vulnerabilities."
-              if [ -n "$SESSION_URL" ]; then
-                echo ""
-                echo "**Session:** ${SESSION_URL}"
-              fi
-            } >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "::error::Failed to trigger Devin webhook (HTTP ${HTTP_CODE})"
-            echo "$HTTP_BODY"
-            exit 1
-          fi
+      - name: Trigger Devin remediation via webhook (Trivy findings)
+        uses: ./.github/actions/trigger-devin-webhook
+        with:
+          webhook-url: ${{ env.DEVIN_TRIVY_WEBHOOK_URL }}
+          webhook-secret: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+          request-body: ${{ steps.payload.outputs.request_body }}
+          summary-heading: Devin SAST Auto-Fix Triggered (Trivy)
+          summary-text: A Devin automation has been triggered to remediate dependency vulnerabilities.
 
   escalate:
     needs: sast-scan
@@ -285,8 +276,8 @@ jobs:
         with:
           args: >
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.projectKey=Cognition-Partner-Workshops_otterworks
-            -Dsonar.organization=cognition-partner-workshops
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
             -Dsonar.pullrequest.branch=${{ github.head_ref }}
             -Dsonar.pullrequest.base=${{ github.base_ref }}
@@ -306,7 +297,7 @@ jobs:
           CE_TIMED_OUT=false
           for i in $(seq 1 30); do
             CE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
-              "https://sonarcloud.io/api/ce/activity?component=Cognition-Partner-Workshops_otterworks&ps=1&status=PENDING,IN_PROGRESS" \
+              "https://sonarcloud.io/api/ce/activity?component=${SONAR_PROJECT_KEY}&ps=1&status=PENDING,IN_PROGRESS" \
               | jq -r '.tasks | length')
 
             if [ "$CE_STATUS" = "0" ]; then
@@ -325,7 +316,7 @@ jobs:
           fi
 
           GATE_STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUM}" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUM}" \
             | jq -r '.projectStatus.status // "NONE"')
 
           echo "Quality gate status: ${GATE_STATUS}"
@@ -350,6 +341,10 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+
       - name: Check for prior remediation attempts
         id: pr_check
         env:
@@ -368,22 +363,19 @@ jobs:
 
           echo "should_run=true" >> "$GITHUB_OUTPUT"
 
-      - name: Trigger Devin remediation via webhook (SonarCloud findings)
+      - name: Build webhook payload (SonarCloud findings)
         if: steps.pr_check.outputs.should_run == 'true'
+        id: payload
         env:
-          GH_TOKEN: ${{ github.token }}
-          DEVIN_SONAR_WEBHOOK_SECRET: ${{ secrets.DEVIN_SONAR_WEBHOOK_SECRET }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.head_ref }}
           REPO: ${{ github.repository }}
         run: |
-          WEBHOOK_URL="https://partner-workshops.devinenterprise.com/api/webhooks/automations/org-9d35f03b68c64253b53de2a8ea69a691/auto-0dacfd8d718245e686f2f03d8917ac52"
-
           REQUEST_BODY=$(jq -n \
             --arg branch "$PR_BRANCH" \
             --arg pr_number "$PR_NUMBER" \
             --arg repo "$REPO" \
-            --arg dashboard "https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUMBER}" \
+            --arg dashboard "https://sonarcloud.io/dashboard?id=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUMBER}" \
             '{
               source: "sonarcloud",
               branch: $branch,
@@ -392,44 +384,39 @@ jobs:
               sonarcloud_dashboard: $dashboard
             }')
 
-          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            -H "X-Webhook-Secret: ${DEVIN_SONAR_WEBHOOK_SECRET}" \
-            -H "Content-Type: application/json" \
-            -d "$REQUEST_BODY" \
-            "${WEBHOOK_URL}")
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "request_body<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$REQUEST_BODY" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
 
-          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
-          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+      - name: Trigger Devin remediation via webhook (SonarCloud findings)
+        if: steps.pr_check.outputs.should_run == 'true'
+        uses: ./.github/actions/trigger-devin-webhook
+        with:
+          webhook-url: ${{ env.DEVIN_SONAR_WEBHOOK_URL }}
+          webhook-secret: ${{ secrets.DEVIN_SONAR_WEBHOOK_SECRET }}
+          request-body: ${{ steps.payload.outputs.request_body }}
+          summary-heading: Devin SAST Auto-Fix Triggered (SonarCloud)
+          summary-text: |-
+            SonarCloud quality gate failed on PR #${{ github.event.pull_request.number }}.
+            A Devin automation has been triggered for remediation.
 
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "Devin automation webhook triggered successfully (HTTP ${HTTP_CODE})"
-
-            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
-
-            {
-              echo "## Devin SAST Auto-Fix Triggered (SonarCloud)"
-              echo ""
-              echo "SonarCloud quality gate failed on PR #${PR_NUMBER}."
-              echo "A Devin automation has been triggered for remediation."
-              if [ -n "$SESSION_URL" ]; then
-                echo ""
-                echo "**Session:** ${SESSION_URL}"
-              fi
-            } >> "$GITHUB_STEP_SUMMARY"
-
-            COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
+      - name: Comment on PR about remediation
+        if: steps.pr_check.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          COMMENT="## Devin SAST Auto-Fix — Remediation In Progress
 
           SonarCloud quality gate failed on this branch. A Devin automation
           has been triggered for a **one-time remediation attempt**.
 
-          **[SonarCloud Dashboard](https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_otterworks&pullRequest=${PR_NUMBER})**
+          **[SonarCloud Dashboard](https://sonarcloud.io/dashboard?id=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUMBER})**
 
           Devin will commit the fix directly to branch \`${PR_BRANCH}\`.
           SonarCloud will re-analyze once the fix is pushed."
 
-            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$COMMENT"
-          else
-            echo "::error::Failed to trigger Devin webhook (HTTP ${HTTP_CODE})"
-            echo "$HTTP_BODY"
-            exit 1
-          fi
+          gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$COMMENT"
