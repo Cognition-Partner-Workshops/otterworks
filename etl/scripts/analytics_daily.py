@@ -158,9 +158,10 @@ def main():
         df["eventType"] = df["event_type"]
     if "eventType" not in df.columns:
         df["eventType"] = "unknown"
+    df["eventType"] = df["eventType"].where(df["eventType"].notna(), "unknown")
 
     # Resolve user ID from whichever field is populated
-    df["resolved_user_id"] = "unknown"
+    df["resolved_user_id"] = pd.Series("unknown", index=df.index, dtype="object")
     for col in ["ownerId", "editedBy", "authorId", "deletedBy", "userId"]:
         if col in df.columns:
             mask = (df["resolved_user_id"] == "unknown") & df[col].notna() & (df[col] != "")
@@ -230,7 +231,7 @@ def main():
         uploaded = df[df["eventType"] == "file_uploaded"]
         files_uploaded = len(uploaded)
         if "sizeBytes" in df.columns:
-            bytes_uploaded = int(uploaded["sizeBytes"].fillna(0).sum())
+            bytes_uploaded = int(pd.to_numeric(uploaded["sizeBytes"], errors="coerce").fillna(0).sum())
         if "fileId" in df.columns:
             active_files.update(uploaded["fileId"].dropna().unique())
 
