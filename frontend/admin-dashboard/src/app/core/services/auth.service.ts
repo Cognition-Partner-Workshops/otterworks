@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, delay, map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface AuthUser {
@@ -12,15 +12,34 @@ export interface AuthUser {
   token: string;
 }
 
-interface LoginResponse {
-  user: AuthUser;
-  token: string;
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  roles: string[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'ow_admin_token';
+  private readonly REFRESH_TOKEN_KEY = 'ow_admin_refresh_token';
   private readonly USER_KEY = 'ow_admin_user';
+  private refreshInFlight$: Observable<string> | null = null;
+  private sessionEpoch = 0;
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getStoredUser());
   currentUser$ = this.currentUserSubject.asObservable();
 
@@ -39,19 +58,99 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<AuthUser> {
-    // In production, this would call the real API:
-    // return this.http.post<LoginResponse>('/api/v1/admin/auth/login', { email, password })
-    return this.mockLogin(email, password).pipe(
-      tap(user => {
-        localStorage.setItem(this.TOKEN_KEY, user.token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      })
+    if (password.length < 1) {
+      return throwError(() => new Error('Invalid credentials'));
+    }
+
+    const sessionEpoch = this.sessionEpoch;
+    return this.http.post<AuthResponse>('/api/v1/auth/login', { email, password }).pipe(
+      catchError(error => {
+        if (error instanceof HttpErrorResponse && [400, 401].includes(error.status)) {
+          return throwError(() => new Error('Invalid credentials'));
+        }
+        return throwError(() => error instanceof Error ? error : new Error('Login failed'));
+      }),
+      switchMap(response => this.http.get<UserProfile>('/api/v1/auth/profile', {
+        headers: new HttpHeaders({ Authorization: `Bearer ${response.accessToken}` }),
+      }).pipe(
+        map(profile => {
+          if (!profile.roles.includes('ADMIN')) {
+            throw new Error('Insufficient privileges: admin access required');
+          }
+          return { response, profile };
+        }),
+        catchError(error => throwError(() => error instanceof Error
+          ? error
+          : new Error('Unable to verify admin privileges'))),
+      )),
+      map(({ response, profile }) => ({
+        user: this.toAuthUser(profile, response.accessToken),
+        refreshToken: response.refreshToken,
+      })),
+      tap(({ user, refreshToken }) => this.persistSession(user, refreshToken, sessionEpoch)),
+      map(({ user }) => user),
     );
   }
 
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+  }
+
+  refreshSession(): Observable<string> {
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    const sessionEpoch = this.sessionEpoch;
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this.logout();
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    this.refreshInFlight$ = this.http.post<AuthResponse>(
+      '/api/v1/auth/refresh',
+      {},
+      { headers: new HttpHeaders({ Authorization: `Bearer ${refreshToken}` }) },
+    ).pipe(
+      switchMap(response => this.http.get<UserProfile>('/api/v1/auth/profile', {
+        headers: new HttpHeaders({ Authorization: `Bearer ${response.accessToken}` }),
+      }).pipe(
+        map(profile => {
+          if (!profile.roles.includes('ADMIN')) {
+            throw new Error('Insufficient privileges: admin access required');
+          }
+          return {
+            user: this.toAuthUser(profile, response.accessToken),
+            refreshToken: response.refreshToken,
+          };
+        }),
+        catchError(error => throwError(() => error instanceof Error
+          ? error
+          : new Error('Unable to verify admin privileges'))),
+      )),
+      tap(({ user, refreshToken }) => this.persistSession(user, refreshToken, sessionEpoch)),
+      map(({ user }) => user.token),
+      catchError(error => {
+        this.logout();
+        return throwError(() => error instanceof Error ? error : new Error('Session refresh failed'));
+      }),
+      finalize(() => {
+        if (this.sessionEpoch === sessionEpoch) {
+          this.refreshInFlight$ = null;
+        }
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+
+    return this.refreshInFlight$;
+  }
+
   logout(): void {
+    this.sessionEpoch++;
+    this.refreshInFlight$ = null;
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
@@ -69,17 +168,23 @@ export class AuthService {
     return null;
   }
 
-  private mockLogin(email: string, password: string): Observable<AuthUser> {
-    if (password.length < 1) {
-      return throwError(() => new Error('Invalid credentials'));
-    }
-    const user: AuthUser = {
-      id: 'a0000000-0000-0000-0000-000000000001',
-      email,
-      displayName: 'Admin User',
-      role: 'admin',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VyX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJhZG1pbkBvdHRlcndvcmtzLmRldiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxOTI0OTA1NjAwfQ.hD5dwgrPNRTzbXa6lbA83Aru7BvQVIQc0rGVySkF1fA',
+  private toAuthUser(user: UserProfile, token: string): AuthUser {
+    return {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      role: user.roles.includes('ADMIN') ? 'admin' : 'user',
+      token,
     };
-    return of(user).pipe(delay(800));
+  }
+
+  private persistSession(user: AuthUser, refreshToken: string, sessionEpoch: number): void {
+    if (sessionEpoch !== this.sessionEpoch) {
+      return;
+    }
+    localStorage.setItem(this.TOKEN_KEY, user.token);
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 }
