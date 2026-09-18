@@ -263,6 +263,7 @@ def load_collection(conn: oracledb.Connection, db: Database, cmap: CollectionMap
             if attrs:
                 doc["attributes"] = attrs
                 n_attrs += len(attrs)
+                n_raw += sum(1 for a in attrs for k in a if k.endswith("_raw"))
         batch.append(doc)
         if len(batch) >= batch_size:
             coll.insert_many(batch, ordered=False)
