@@ -66,9 +66,10 @@ application running with its own PostgreSQL database.
 `BILLING_BACKEND` selects where the Flask routes read from:
 
 - `postgres` (default): the PL/pgSQL functions and procedures in `db/`.
-- `mongo`: the migrated `ow_billing` database (`MONGO_URI`, `MONGO_DB`). The
-  Compose profile starts a `mongo:7` service for it, on
-  `127.0.0.1:${PROCS_MONGO_PORT}`. The read routes (`/`, `/plans`,
+- `mongo`: the migrated `ow_billing` database (`MONGO_URI`, `MONGO_DB`).
+  `make procs-up NS=<ns> BILLING_BACKEND=mongo` enables the `mongo` Compose
+  profile, which starts a `mongo:7` service on `127.0.0.1:${PROCS_MONGO_PORT}`;
+  with the postgres backend the mongo service is not started. The read routes (`/`, `/plans`,
   `/plans/<tenant>/entitlement`, `/api/invoices/<tenant>/preview`,
   `/api/invoices/<invoice>/lines`, `/api/dunning/overdue`, and the
   `/api/rating/preview` POST) return the same JSON as the Postgres functions.

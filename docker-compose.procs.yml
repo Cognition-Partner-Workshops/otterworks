@@ -25,6 +25,7 @@ services:
 
   legacy-billing-mongo:
     image: mongo:7
+    profiles: ["mongo"]
     ports:
       - "127.0.0.1:${PROCS_MONGO_PORT:-27017}:27017"
     volumes:
