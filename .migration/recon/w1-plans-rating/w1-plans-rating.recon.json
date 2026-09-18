@@ -1,0 +1,132 @@
+{
+  "kind": "recon-report",
+  "unit": "w1-plans-rating",
+  "mode": "fixture",
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "merge_eligible_reason": "fixture evidence",
+  "live_recon": "live recon: not run, no source access",
+  "tolerance_version": "tol-1",
+  "mapping_version": "map-1",
+  "redacted": true,
+  "generated_at": "2026-09-18T22:16:59.257324+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 8,
+      "stats": {
+        "source_counts": {
+          "codes": 32,
+          "tenants": 69,
+          "plans": 3,
+          "subscriptions": 69,
+          "usageEvents": 814,
+          "ratingPeriods": 3,
+          "ratingResults": 3,
+          "subscriptionsHist": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 40,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.codeDesc",
+          "tenants.name",
+          "tenants.taxExempt",
+          "plans.code",
+          "plans.monthlyFee",
+          "plans.overageRate",
+          "plans.active",
+          "subscriptions.tenantId",
+          "subscriptions.planId",
+          "subscriptions.endsOn",
+          "subscriptions.suspendedOn",
+          "usageEvents.tenantId",
+          "ratingPeriods.tenantId",
+          "ratingResults.periodId",
+          "ratingResults.subscriptionId",
+          "ratingResults.overageAmount",
+          "subscriptionsHist.histDt",
+          "subscriptionsHist.histOp",
+          "subscriptionsHist.id",
+          "subscriptionsHist.tenantId",
+          "subscriptionsHist.planId",
+          "subscriptionsHist.startsOn",
+          "subscriptionsHist.endsOn",
+          "subscriptionsHist.statusCd",
+          "subscriptionsHist.suspendedOn"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 993,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32,
+          "duplicate_source_key_count": 0
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 69,
+          "duplicate_source_key_count": 0
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptions": {
+          "mode": "full_diff",
+          "population": 69,
+          "duplicate_source_key_count": 0
+        },
+        "usageEvents": {
+          "mode": "full_diff",
+          "population": 814,
+          "duplicate_source_key_count": 0
+        },
+        "ratingPeriods": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        },
+        "ratingResults": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptionsHist": {
+          "mode": "full_diff",
+          "population": 0,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "unverified_paths": [
+    "live/snapshot recon against a customer source (no source access in offline mode)",
+    "write paths (history triggers, pkg_* procedures) are not exercised by this loader"
+  ],
+  "source": "result.json"
+}

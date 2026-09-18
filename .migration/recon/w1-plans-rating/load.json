@@ -1,0 +1,64 @@
+{
+  "unit": "w1-plans-rating",
+  "mapping_version": "map-1",
+  "target_db": "ow_billing",
+  "collections": {
+    "tenants": {
+      "documents": 69,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "plans": {
+      "documents": 3,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "subscriptions": {
+      "documents": 69,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "subscriptionsHist": {
+      "documents": 0,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.0
+    },
+    "usageEvents": {
+      "documents": 814,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.02
+    },
+    "ratingPeriods": {
+      "documents": 3,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "ratingResults": {
+      "documents": 3,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "codes": {
+      "documents": 32,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.02
+    }
+  },
+  "seconds": 0.09
+}
