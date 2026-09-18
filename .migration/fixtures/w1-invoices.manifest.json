@@ -1,0 +1,15 @@
+{
+  "unit": "w1-invoices",
+  "source": "local Oracle container OW_BILLING@FREEPDB1 (make oracle-billing-seed NS=demo, seed batch 85559852), read-only",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-18T21:56:23Z",
+  "produced_by": "services/legacy-billing/migration/load.py --unit w1-invoices",
+  "row_counts": {
+    "invoices": 3,
+    "creditNotes": 5,
+    "invoiceHeader": 18750,
+    "invoiceLine": 150000
+  },
+  "note": "No production rows exist in this fixture. Fixture evidence is not production parity."
+}
