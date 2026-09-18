@@ -1,0 +1,54 @@
+[
+  {
+    "name": "GET /plans: active plans with fee and included units",
+    "collection": "plans",
+    "rules": [],
+    "source_sql": "SELECT p.id AS id, p.code AS code, p.monthly_fee AS monthly_fee, p.included_units AS included_units FROM plans p WHERE p.active_yn = 'Y' ORDER BY p.id",
+    "target_pipeline": [
+      {"$match": {"active": true}},
+      {"$project": {"_id": 0, "ID": "$_id", "CODE": "$code", "MONTHLY_FEE": "$monthlyFee", "INCLUDED_UNITS": "$includedUnits"}},
+      {"$sort": {"ID": 1}}
+    ]
+  },
+  {
+    "name": "entitlement: active subscription count per tenant",
+    "collection": "subscriptions",
+    "rules": [],
+    "source_sql": "SELECT tenant_id AS tenant_id, COUNT(*) AS n FROM subscriptions WHERE status_cd = 10 GROUP BY tenant_id",
+    "target_pipeline": [
+      {"$match": {"statusCd": 10}},
+      {"$group": {"_id": "$tenantId", "N": {"$sum": 1}}},
+      {"$project": {"_id": 0, "TENANT_ID": "$_id", "N": 1}}
+    ]
+  },
+  {
+    "name": "pkg_rating input: usage units per tenant",
+    "collection": "usageEvents",
+    "rules": [],
+    "source_sql": "SELECT tenant_id AS tenant_id, COUNT(*) AS n, SUM(units) AS units FROM usage_events GROUP BY tenant_id",
+    "target_pipeline": [
+      {"$group": {"_id": "$tenantId", "N": {"$sum": 1}, "UNITS": {"$sum": "$units"}}},
+      {"$project": {"_id": 0, "TENANT_ID": "$_id", "N": 1, "UNITS": 1}}
+    ]
+  },
+  {
+    "name": "pkg_rating output: billable units per rating period",
+    "collection": "ratingResults",
+    "rules": [],
+    "source_sql": "SELECT period_id AS period_id, COUNT(*) AS n, SUM(billable_units) AS billable FROM rating_results GROUP BY period_id",
+    "target_pipeline": [
+      {"$group": {"_id": "$periodId", "N": {"$sum": 1}, "BILLABLE": {"$sum": "$billableUnits"}}},
+      {"$project": {"_id": 0, "PERIOD_ID": "$_id", "N": 1, "BILLABLE": 1}}
+    ]
+  },
+  {
+    "name": "reference data: codes per code_type",
+    "collection": "codes",
+    "rules": [],
+    "source_sql": "SELECT code_type AS code_type, COUNT(*) AS n FROM codes GROUP BY code_type",
+    "target_pipeline": [
+      {"$group": {"_id": "$codeType", "N": {"$sum": 1}}},
+      {"$project": {"_id": 0, "CODE_TYPE": "$_id", "N": 1}}
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "unit": "w1-plans-rating",
+  "source": "local Oracle container OW_BILLING@FREEPDB1 (make oracle-billing-seed NS=demo, seed batch 85559852), read-only",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-18T21:56:23Z",
+  "produced_by": "services/legacy-billing/migration/load.py --unit w1-plans-rating",
+  "row_counts": {
+    "tenants": 69,
+    "plans": 3,
+    "subscriptions": 69,
+    "subscriptionsHist": 0,
+    "usageEvents": 814,
+    "ratingPeriods": 3,
+    "ratingResults": 3,
+    "codes": 32
+  },
+  "note": "No production rows exist in this fixture. Fixture evidence is not production parity."
+}
