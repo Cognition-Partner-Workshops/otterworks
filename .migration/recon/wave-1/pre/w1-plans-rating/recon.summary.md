@@ -3,7 +3,7 @@
 - Mode: `fixture` (fixture data: NOT a merge verdict, run live once before merging)
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Mapping `map-1` / tolerances `tol-1` / seed `1`
-- Generated: 2026-09-18T22:37:19.501547+00:00
+- Generated: 2026-09-18T22:25:15.684414+00:00
 
 | Tier | Checks | Result |
 |---|---|---|

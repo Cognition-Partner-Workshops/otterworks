@@ -50,7 +50,7 @@
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.01
+      "seconds": 0.0
     },
     "codes": {
       "documents": 32,
@@ -60,5 +60,5 @@
       "seconds": 0.01
     }
   },
-  "seconds": 0.08
+  "seconds": 0.06
 }

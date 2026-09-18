@@ -1,0 +1,75 @@
+{
+  collections: 15,
+  counts: {
+    codes: 32,
+    creditNotes: 5,
+    customerMaster: 25000,
+    dunningAttempts: 1,
+    entityAttrValue: 8333,
+    invoiceHeader: 18750,
+    invoiceLine: 150000,
+    invoices: 3,
+    notifications: 1,
+    plans: 3,
+    ratingPeriods: 3,
+    ratingResults: 3,
+    subscriptions: 69,
+    tenants: 69,
+    usageEvents: 814
+  },
+  embedded_lines: {
+    _id: null,
+    total: 2,
+    max: 2,
+    zero: 2
+  },
+  sample_invoice_keys: [
+    '_id',
+    'tenantId',
+    'periodId',
+    'issuedAt',
+    'subtotal',
+    'tax',
+    'total',
+    'statusCd',
+    'lines'
+  ],
+  orphan_finance_lines: [
+    {
+      n: 37
+    }
+  ],
+  invoiceLine_keys: [
+    '_id',
+    'invoiceNo',
+    'invoiceId',
+    'custId',
+    'custNo',
+    'custName',
+    'tenantId',
+    'lineNo',
+    'lineTypeCd',
+    'itemDesc',
+    'qty',
+    'unitPrice',
+    'amount',
+    'taxAmt',
+    'invoiceDt',
+    'servicePeriod',
+    'posted',
+    'glAcct',
+    'batchNo',
+    'srcSystem'
+  ],
+  subs_without_plan: [],
+  subs_keys: [
+    '_id',
+    'tenantId',
+    'planId',
+    'startsOn',
+    'statusCd'
+  ],
+  dunning_without_invoice: [],
+  eav_attached: 7075,
+  raw_dates: 0
+}

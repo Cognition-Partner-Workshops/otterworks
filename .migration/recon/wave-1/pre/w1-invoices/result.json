@@ -1,15 +1,14 @@
 {
-  "kind": "recon-report",
   "unit": "w1-invoices",
   "mode": "fixture",
-  "verdict": "PASS",
-  "merge_eligible": false,
-  "merge_eligible_reason": "fixture evidence",
-  "live_recon": "live recon: not run, no source access",
-  "tolerance_version": "tol-1",
   "mapping_version": "map-1",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-18T21:49:26.072012+00:00",
   "redacted": true,
-  "generated_at": "2026-09-18T22:37:17.414895+00:00",
+  "redaction_salted": true,
   "tiers": [
     {
       "tier": 1,
@@ -120,9 +119,7 @@
       "findings": []
     }
   ],
-  "unverified_paths": [
-    "live/snapshot recon against a customer source (no source access in offline mode)",
-    "write paths (history triggers, pkg_* procedures) are not exercised by this loader"
-  ],
-  "source": "result.json"
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false
 }

@@ -8,7 +8,7 @@
       "embedded_elements": 0,
       "unparseable_dates": 50,
       "attached_attributes": 8333,
-      "seconds": 2.39
+      "seconds": 2.23
     },
     "customerMasterHist": {
       "documents": 0,
@@ -22,8 +22,8 @@
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.21
+      "seconds": 0.15
     }
   },
-  "seconds": 2.62
+  "seconds": 2.39
 }
