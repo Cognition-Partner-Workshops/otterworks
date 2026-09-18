@@ -1,0 +1,46 @@
+[
+  {
+    "name": "attribute pattern: EAV rows attached to customer documents (count per customer)",
+    "collection": "customerMaster",
+    "rules": [],
+    "source_sql": "SELECT e.entity_id AS cust_id, COUNT(*) AS n_attrs FROM entity_attr_value e WHERE e.entity_type = 'CUSTOMER' GROUP BY e.entity_id ORDER BY e.entity_id",
+    "target_pipeline": [
+      {"$match": {"attributes.0": {"$exists": true}}},
+      {"$project": {"_id": 0, "CUST_ID": "$_id", "N_ATTRS": {"$size": "$attributes"}}},
+      {"$sort": {"CUST_ID": 1}}
+    ]
+  },
+  {
+    "name": "TAX_REGION_OVERRIDE spellings survive as strings (distinct value, count)",
+    "collection": "customerMaster",
+    "rules": [],
+    "source_sql": "SELECT attr_value AS val, COUNT(*) AS n FROM entity_attr_value WHERE entity_type = 'CUSTOMER' AND attr_name = 'TAX_REGION_OVERRIDE' GROUP BY attr_value ORDER BY attr_value",
+    "target_pipeline": [
+      {"$unwind": "$attributes"},
+      {"$match": {"attributes.name": "TAX_REGION_OVERRIDE"}},
+      {"$group": {"_id": "$attributes.value", "N": {"$sum": 1}}},
+      {"$project": {"_id": 0, "VAL": "$_id", "N": 1}},
+      {"$sort": {"VAL": 1}}
+    ]
+  },
+  {
+    "name": "customers per tenant and status code (the 155-column table, grouped)",
+    "collection": "customerMaster",
+    "rules": [],
+    "source_sql": "SELECT tenant_id AS tenant_id, status_cd AS status_cd, COUNT(*) AS n FROM customer_master GROUP BY tenant_id, status_cd",
+    "target_pipeline": [
+      {"$group": {"_id": {"t": "$tenantId", "s": "$statusCd"}, "N": {"$sum": 1}}},
+      {"$project": {"_id": 0, "TENANT_ID": "$_id.t", "STATUS_CD": "$_id.s", "N": 1}}
+    ]
+  },
+  {
+    "name": "history archive: hist rows per operation (trigger output, loaded once)",
+    "collection": "customerMasterHist",
+    "rules": [],
+    "source_sql": "SELECT hist_op AS hist_op, COUNT(*) AS n FROM customer_master_hist GROUP BY hist_op",
+    "target_pipeline": [
+      {"$group": {"_id": "$histOp", "N": {"$sum": 1}}},
+      {"$project": {"_id": 0, "HIST_OP": "$_id", "N": 1}}
+    ]
+  }
+]
