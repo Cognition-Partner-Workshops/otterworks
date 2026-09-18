@@ -1,1 +1,5506 @@
-{}
+{
+  "version": "map-1",
+  "source_family": "oracle",
+  "collections": [
+    {
+      "collection": "codes",
+      "root_table": "CODES",
+      "key": {
+        "source": [
+          "CODE_TYPE",
+          "CODE_VAL"
+        ],
+        "target": [
+          "codeType",
+          "codeVal"
+        ]
+      },
+      "fields": [
+        {
+          "source": "CODE_DESC",
+          "target": "codeDesc",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "CODE_TYPE",
+            "target": "codeType",
+            "source_type": "VARCHAR2(30)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          },
+          {
+            "source": "CODE_VAL",
+            "target": "codeVal",
+            "source_type": "NUMBER(4)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": [],
+        "pattern": "reference_data",
+        "proposal": "CODES stays a small reference collection keyed by (codeType, codeVal); *_CD columns keep their numeric value on load so recon compares like with like, and the application resolves descriptions through codes (as pkg_ow_util.f_code_desc does today).",
+        "pattern_evidence": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS)."
+      }
+    },
+    {
+      "collection": "tenants",
+      "root_table": "TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "taxExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ],
+        "pattern": "reference_data"
+      }
+    },
+    {
+      "collection": "plans",
+      "root_table": "PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "CODE",
+          "target": "code",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tierCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "MONTHLY_FEE",
+          "target": "monthlyFee",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "INCLUDED_UNITS",
+          "target": "includedUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "OVERAGE_RATE",
+          "target": "overageRate",
+          "source_type": "NUMBER(12,6)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "ACTIVE_YN",
+          "target": "active",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "TIER_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ],
+        "pattern": "reference_data"
+      }
+    },
+    {
+      "collection": "subscriptions",
+      "root_table": "SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "planId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "startsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "endsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspendedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "PLAN_ID"
+            ],
+            "to": "plans",
+            "why": "child owns its own lifecycle"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "usageEvents",
+      "root_table": "USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurredAt",
+          "source_type": "TIMESTAMP",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kindCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "KIND_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "ratingPeriods",
+      "root_table": "RATING_PERIODS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_START",
+          "target": "periodStart",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "PERIOD_END",
+          "target": "periodEnd",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": []
+      }
+    },
+    {
+      "collection": "ratingResults",
+      "root_table": "RATING_RESULTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "PERIOD_ID",
+          "target": "periodId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "SUBSCRIPTION_ID",
+          "target": "subscriptionId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "USED_UNITS",
+          "target": "usedUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "QUOTA_UNITS",
+          "target": "quotaUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "ROLLOVER_UNITS",
+          "target": "rolloverUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "BILLABLE_UNITS",
+          "target": "billableUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "OVERAGE_AMOUNT",
+          "target": "overageAmount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "CREATED_AT",
+          "target": "createdAt",
+          "source_type": "TIMESTAMP",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "PERIOD_ID"
+            ],
+            "to": "ratingPeriods",
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "SUBSCRIPTION_ID"
+            ],
+            "to": "subscriptions",
+            "why": "child owns its own lifecycle"
+          }
+        ],
+        "open_questions": []
+      }
+    },
+    {
+      "collection": "invoices",
+      "root_table": "INVOICES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "periodId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_AT",
+          "target": "issuedAt",
+          "source_type": "TIMESTAMP",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "SUBTOTAL",
+          "target": "subtotal",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TAX",
+          "target": "tax",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "TOTAL",
+          "target": "total",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINES",
+          "child_key": [
+            "ID"
+          ],
+          "child_fields": [
+            {
+              "source": "ID",
+              "target": "id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "INVOICE_ID",
+              "target": "invoiceId",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "LINE_NO",
+              "target": "lineNo",
+              "source_type": "NUMBER(6)",
+              "bson_type": "long",
+              "rules": []
+            },
+            {
+              "source": "LINE_TYPE",
+              "target": "lineType",
+              "source_type": "VARCHAR2(10)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "DESCRIPTION",
+              "target": "description",
+              "source_type": "VARCHAR2(400)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            }
+          ],
+          "parent_key": [
+            "INVOICE_ID"
+          ],
+          "key": {
+            "source": [
+              "LINE_NO"
+            ],
+            "target": "lineNo"
+          },
+          "fields": [
+            {
+              "source": "ID",
+              "target": "id",
+              "source_type": "VARCHAR2(36)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "LINE_TYPE",
+              "target": "lineType",
+              "source_type": "VARCHAR2(10)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "DESCRIPTION",
+              "target": "description",
+              "source_type": "VARCHAR2(400)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ]
+            },
+            {
+              "source": "AMOUNT",
+              "target": "amount",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ]
+            }
+          ],
+          "cardinality": "1:few",
+          "cardinality_basis": "derived",
+          "evidence": "FK FK_IL_INVOICE ON DELETE CASCADE; unique UQ_INVOICE_LINES led by parent key; services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period.; element key ['LINE_NO']: services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field."
+        }
+      ],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "PERIOD_ID"
+            ],
+            "to": "ratingPeriods",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "creditNotes",
+      "root_table": "CREDIT_NOTES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_ON",
+          "target": "issuedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "REMAINING_AMOUNT",
+          "target": "remainingAmount",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": []
+      }
+    },
+    {
+      "collection": "dunningAttempts",
+      "root_table": "DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoiceId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attemptNo",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduledFor",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "INVOICE_ID"
+            ],
+            "to": "invoices",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "notifications",
+      "root_table": "NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kindCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sentAt",
+          "source_type": "TIMESTAMP",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "KIND_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "billingAuditLog",
+      "root_table": "BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "LOGGED_AT",
+          "target": "loggedAt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "sequence+trigger identity: keep numeric _id on load, application generates ids after cutover",
+        "key_fields": [
+          {
+            "source": "LOG_ID",
+            "target": "logId",
+            "source_type": "NUMBER(12)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": []
+      }
+    },
+    {
+      "collection": "subscriptionsHist",
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "HIST_DT",
+          "target": "histDt",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "HIST_OP",
+          "target": "histOp",
+          "source_type": "VARCHAR2(3)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "planId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "startsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "endsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspendedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "HIST_ID",
+            "target": "histId",
+            "source_type": "NUMBER(12)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "unenforced_pointer",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "TENANT_ID",
+              "PLAN_ID"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+          },
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          },
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "HIST_DT"
+            ]
+          }
+        ],
+        "pattern": "history_copy",
+        "of_table": "SUBSCRIPTIONS",
+        "proposal": "Same treatment as customerMasterHist: separate archive collection, one document per hist row, app-written after cutover.",
+        "pattern_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription."
+      }
+    },
+    {
+      "collection": "customerMaster",
+      "root_table": "CUSTOMER_MASTER",
+      "key": {
+        "source": [
+          "CUST_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "CUST_SEQ_NO",
+          "target": "custSeqNo",
+          "source_type": "NUMBER(12)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NO",
+          "target": "custNo",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "custName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NAME_UPPER",
+          "target": "custNameUpper",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LEGAL_NAME",
+          "target": "legalName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DBA_NAME",
+          "target": "dbaName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_1",
+          "target": "addrLine1",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_2",
+          "target": "addrLine2",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_3",
+          "target": "addrLine3",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_4",
+          "target": "addrLine4",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_5",
+          "target": "addrLine5",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_6",
+          "target": "addrLine6",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CITY",
+          "target": "city",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATE_CD",
+          "target": "stateCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ZIP",
+          "target": "zip",
+          "source_type": "VARCHAR2(12)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ZIP4",
+          "target": "zip4",
+          "source_type": "VARCHAR2(6)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "COUNTRY_CD",
+          "target": "countryCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_1",
+          "target": "mailAddrLine1",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_2",
+          "target": "mailAddrLine2",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_3",
+          "target": "mailAddrLine3",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_4",
+          "target": "mailAddrLine4",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_5",
+          "target": "mailAddrLine5",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_6",
+          "target": "mailAddrLine6",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_CITY",
+          "target": "mailCity",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_STATE_CD",
+          "target": "mailStateCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ZIP",
+          "target": "mailZip",
+          "source_type": "VARCHAR2(12)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE1",
+          "target": "phone1",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE2",
+          "target": "phone2",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE3",
+          "target": "phone3",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE4",
+          "target": "phone4",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE1_TYPE_CD",
+          "target": "phone1TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE2_TYPE_CD",
+          "target": "phone2TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE3_TYPE_CD",
+          "target": "phone3TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE4_TYPE_CD",
+          "target": "phone4TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FAX",
+          "target": "fax",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_1",
+          "target": "email1",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_2",
+          "target": "email2",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_3",
+          "target": "email3",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SIGNUP_DT",
+          "target": "signupDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_ACTIVITY_DT",
+          "target": "lastActivityDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_INVOICE_DT",
+          "target": "lastInvoiceDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_PAYMENT_DT",
+          "target": "lastPaymentDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TERMINATE_DT",
+          "target": "terminateDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SUB_STATUS_CD",
+          "target": "subStatusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_TYPE_CD",
+          "target": "custTypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SEGMENT_CD",
+          "target": "segmentCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "REGION_CD",
+          "target": "regionCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TERRITORY_CD",
+          "target": "territoryCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CHANNEL_CD",
+          "target": "channelCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "RATE_CLASS_CD",
+          "target": "rateClassCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "taxExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREDIT_HOLD_YN",
+          "target": "creditHold",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DUNNING_EXEMPT_YN",
+          "target": "dunningExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "VIP_YN",
+          "target": "vip",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUR_BAL_AMT",
+          "target": "curBalAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PAST_DUE_AMT",
+          "target": "pastDueAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "YTD_BILLED_AMT",
+          "target": "ytdBilledAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LTD_BILLED_AMT",
+          "target": "ltdBilledAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "YTD_PAID_AMT",
+          "target": "ytdPaidAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREDIT_LIMIT_AMT",
+          "target": "creditLimitAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "RELATED_ACCT_IDS",
+          "target": "relatedAcctIds",
+          "source_type": "VARCHAR2(2000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CHILD_ACCT_IDS",
+          "target": "childAcctIds",
+          "source_type": "VARCHAR2(2000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PROMO_CODES_CSV",
+          "target": "promoCodes",
+          "source_type": "VARCHAR2(1000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CONTACT_NOTES",
+          "target": "contactNotes",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LEGACY_SYS_KEY",
+          "target": "legacySysKey",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAINFRAME_ACCT_NO",
+          "target": "mainframeAcctNo",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CONVERSION_BATCH_NO",
+          "target": "conversionBatchNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_01",
+          "target": "flag01",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_02",
+          "target": "flag02",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_03",
+          "target": "flag03",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_04",
+          "target": "flag04",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_05",
+          "target": "flag05",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_06",
+          "target": "flag06",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_07",
+          "target": "flag07",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_08",
+          "target": "flag08",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_09",
+          "target": "flag09",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_10",
+          "target": "flag10",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_11",
+          "target": "flag11",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_12",
+          "target": "flag12",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_13",
+          "target": "flag13",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_14",
+          "target": "flag14",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_15",
+          "target": "flag15",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_16",
+          "target": "flag16",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_17",
+          "target": "flag17",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_18",
+          "target": "flag18",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_19",
+          "target": "flag19",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_20",
+          "target": "flag20",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_01",
+          "target": "udf01",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_02",
+          "target": "udf02",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_03",
+          "target": "udf03",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_04",
+          "target": "udf04",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_05",
+          "target": "udf05",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_06",
+          "target": "udf06",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_07",
+          "target": "udf07",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_08",
+          "target": "udf08",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_09",
+          "target": "udf09",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_10",
+          "target": "udf10",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_11",
+          "target": "udf11",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_12",
+          "target": "udf12",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_13",
+          "target": "udf13",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_14",
+          "target": "udf14",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_15",
+          "target": "udf15",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_16",
+          "target": "udf16",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_17",
+          "target": "udf17",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_18",
+          "target": "udf18",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_19",
+          "target": "udf19",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_20",
+          "target": "udf20",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_21",
+          "target": "udf21",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_22",
+          "target": "udf22",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_23",
+          "target": "udf23",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_24",
+          "target": "udf24",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_25",
+          "target": "udf25",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_26",
+          "target": "udf26",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_27",
+          "target": "udf27",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_28",
+          "target": "udf28",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_29",
+          "target": "udf29",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_30",
+          "target": "udf30",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_31",
+          "target": "udf31",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_32",
+          "target": "udf32",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_33",
+          "target": "udf33",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_34",
+          "target": "udf34",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_35",
+          "target": "udf35",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_36",
+          "target": "udf36",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_37",
+          "target": "udf37",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_38",
+          "target": "udf38",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_39",
+          "target": "udf39",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_40",
+          "target": "udf40",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_01",
+          "target": "udfAmt01",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_02",
+          "target": "udfAmt02",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_03",
+          "target": "udfAmt03",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_04",
+          "target": "udfAmt04",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_05",
+          "target": "udfAmt05",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_06",
+          "target": "udfAmt06",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_07",
+          "target": "udfAmt07",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_08",
+          "target": "udfAmt08",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_09",
+          "target": "udfAmt09",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_10",
+          "target": "udfAmt10",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_01",
+          "target": "udfDt01",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_02",
+          "target": "udfDt02",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_03",
+          "target": "udfDt03",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_04",
+          "target": "udfDt04",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_05",
+          "target": "udfDt05",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_06",
+          "target": "udfDt06",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_07",
+          "target": "udfDt07",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_08",
+          "target": "udfDt08",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_09",
+          "target": "udfDt09",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_10",
+          "target": "udfDt10",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_BY",
+          "target": "createdBy",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_DT",
+          "target": "createdDt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UPDATED_BY",
+          "target": "updatedBy",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UPDATED_DT",
+          "target": "updatedDt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ROW_VERSION_NO",
+          "target": "rowVersionNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "CUST_ID",
+            "target": "custId",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "repeating_group",
+            "evidence": "numbered column series; candidate arrays",
+            "groups": {
+              "ADDR_LINE": [
+                "ADDR_LINE_1",
+                "ADDR_LINE_2",
+                "ADDR_LINE_3",
+                "ADDR_LINE_4",
+                "ADDR_LINE_5",
+                "ADDR_LINE_6"
+              ],
+              "MAIL_ADDR_LINE": [
+                "MAIL_ADDR_LINE_1",
+                "MAIL_ADDR_LINE_2",
+                "MAIL_ADDR_LINE_3",
+                "MAIL_ADDR_LINE_4",
+                "MAIL_ADDR_LINE_5",
+                "MAIL_ADDR_LINE_6"
+              ],
+              "PHONE": [
+                "PHONE1",
+                "PHONE2",
+                "PHONE3",
+                "PHONE4"
+              ],
+              "EMAIL": [
+                "EMAIL_1",
+                "EMAIL_2",
+                "EMAIL_3"
+              ],
+              "FLAG": [
+                "FLAG_01",
+                "FLAG_02",
+                "FLAG_03",
+                "FLAG_04",
+                "FLAG_05",
+                "FLAG_06",
+                "FLAG_07",
+                "FLAG_08",
+                "FLAG_09",
+                "FLAG_10",
+                "FLAG_11",
+                "FLAG_12",
+                "FLAG_13",
+                "FLAG_14",
+                "FLAG_15",
+                "FLAG_16",
+                "FLAG_17",
+                "FLAG_18",
+                "FLAG_19",
+                "FLAG_20"
+              ],
+              "UDF": [
+                "UDF_01",
+                "UDF_02",
+                "UDF_03",
+                "UDF_04",
+                "UDF_05",
+                "UDF_06",
+                "UDF_07",
+                "UDF_08",
+                "UDF_09",
+                "UDF_10",
+                "UDF_11",
+                "UDF_12",
+                "UDF_13",
+                "UDF_14",
+                "UDF_15",
+                "UDF_16",
+                "UDF_17",
+                "UDF_18",
+                "UDF_19",
+                "UDF_20",
+                "UDF_21",
+                "UDF_22",
+                "UDF_23",
+                "UDF_24",
+                "UDF_25",
+                "UDF_26",
+                "UDF_27",
+                "UDF_28",
+                "UDF_29",
+                "UDF_30",
+                "UDF_31",
+                "UDF_32",
+                "UDF_33",
+                "UDF_34",
+                "UDF_35",
+                "UDF_36",
+                "UDF_37",
+                "UDF_38",
+                "UDF_39",
+                "UDF_40"
+              ],
+              "UDF_AMT": [
+                "UDF_AMT_01",
+                "UDF_AMT_02",
+                "UDF_AMT_03",
+                "UDF_AMT_04",
+                "UDF_AMT_05",
+                "UDF_AMT_06",
+                "UDF_AMT_07",
+                "UDF_AMT_08",
+                "UDF_AMT_09",
+                "UDF_AMT_10"
+              ],
+              "UDF_DT": [
+                "UDF_DT_01",
+                "UDF_DT_02",
+                "UDF_DT_03",
+                "UDF_DT_04",
+                "UDF_DT_05",
+                "UDF_DT_06",
+                "UDF_DT_07",
+                "UDF_DT_08",
+                "UDF_DT_09",
+                "UDF_DT_10"
+              ]
+            },
+            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then"
+          },
+          {
+            "kind": "unenforced_pointer",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "TENANT_ID"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+          },
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "PHONE1_TYPE_CD",
+              "PHONE2_TYPE_CD",
+              "PHONE3_TYPE_CD",
+              "PHONE4_TYPE_CD",
+              "STATUS_CD",
+              "SUB_STATUS_CD",
+              "CUST_TYPE_CD",
+              "SEGMENT_CD",
+              "REGION_CD",
+              "TERRITORY_CD",
+              "CHANNEL_CD",
+              "RATE_CLASS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          },
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "SIGNUP_DT",
+              "LAST_ACTIVITY_DT",
+              "LAST_INVOICE_DT",
+              "LAST_PAYMENT_DT",
+              "TERMINATE_DT"
+            ]
+          },
+          {
+            "kind": "csv_list",
+            "evidence": "delimited list in a string column",
+            "columns": [
+              "RELATED_ACCT_IDS",
+              "CHILD_ACCT_IDS",
+              "PROMO_CODES_CSV"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "collection": "customerMasterHist",
+      "root_table": "CUSTOMER_MASTER_HIST",
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "HIST_DT",
+          "target": "histDt",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "HIST_OP",
+          "target": "histOp",
+          "source_type": "VARCHAR2(3)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "custId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_SEQ_NO",
+          "target": "custSeqNo",
+          "source_type": "NUMBER(12)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NO",
+          "target": "custNo",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "custName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NAME_UPPER",
+          "target": "custNameUpper",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LEGAL_NAME",
+          "target": "legalName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DBA_NAME",
+          "target": "dbaName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_1",
+          "target": "addrLine1",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_2",
+          "target": "addrLine2",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_3",
+          "target": "addrLine3",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_4",
+          "target": "addrLine4",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_5",
+          "target": "addrLine5",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ADDR_LINE_6",
+          "target": "addrLine6",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CITY",
+          "target": "city",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATE_CD",
+          "target": "stateCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ZIP",
+          "target": "zip",
+          "source_type": "VARCHAR2(12)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ZIP4",
+          "target": "zip4",
+          "source_type": "VARCHAR2(6)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "COUNTRY_CD",
+          "target": "countryCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_1",
+          "target": "mailAddrLine1",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_2",
+          "target": "mailAddrLine2",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_3",
+          "target": "mailAddrLine3",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_4",
+          "target": "mailAddrLine4",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_5",
+          "target": "mailAddrLine5",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ADDR_LINE_6",
+          "target": "mailAddrLine6",
+          "source_type": "VARCHAR2(120)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_CITY",
+          "target": "mailCity",
+          "source_type": "VARCHAR2(80)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_STATE_CD",
+          "target": "mailStateCd",
+          "source_type": "VARCHAR2(4)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAIL_ZIP",
+          "target": "mailZip",
+          "source_type": "VARCHAR2(12)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE1",
+          "target": "phone1",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE2",
+          "target": "phone2",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE3",
+          "target": "phone3",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE4",
+          "target": "phone4",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE1_TYPE_CD",
+          "target": "phone1TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE2_TYPE_CD",
+          "target": "phone2TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE3_TYPE_CD",
+          "target": "phone3TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PHONE4_TYPE_CD",
+          "target": "phone4TypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FAX",
+          "target": "fax",
+          "source_type": "VARCHAR2(25)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_1",
+          "target": "email1",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_2",
+          "target": "email2",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "EMAIL_3",
+          "target": "email3",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SIGNUP_DT",
+          "target": "signupDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_ACTIVITY_DT",
+          "target": "lastActivityDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_INVOICE_DT",
+          "target": "lastInvoiceDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LAST_PAYMENT_DT",
+          "target": "lastPaymentDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TERMINATE_DT",
+          "target": "terminateDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SUB_STATUS_CD",
+          "target": "subStatusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_TYPE_CD",
+          "target": "custTypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SEGMENT_CD",
+          "target": "segmentCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "REGION_CD",
+          "target": "regionCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TERRITORY_CD",
+          "target": "territoryCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CHANNEL_CD",
+          "target": "channelCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "RATE_CLASS_CD",
+          "target": "rateClassCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "taxExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREDIT_HOLD_YN",
+          "target": "creditHold",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DUNNING_EXEMPT_YN",
+          "target": "dunningExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "VIP_YN",
+          "target": "vip",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUR_BAL_AMT",
+          "target": "curBalAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PAST_DUE_AMT",
+          "target": "pastDueAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "YTD_BILLED_AMT",
+          "target": "ytdBilledAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LTD_BILLED_AMT",
+          "target": "ltdBilledAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "YTD_PAID_AMT",
+          "target": "ytdPaidAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREDIT_LIMIT_AMT",
+          "target": "creditLimitAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "RELATED_ACCT_IDS",
+          "target": "relatedAcctIds",
+          "source_type": "VARCHAR2(2000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CHILD_ACCT_IDS",
+          "target": "childAcctIds",
+          "source_type": "VARCHAR2(2000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PROMO_CODES_CSV",
+          "target": "promoCodes",
+          "source_type": "VARCHAR2(1000)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CONTACT_NOTES",
+          "target": "contactNotes",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LEGACY_SYS_KEY",
+          "target": "legacySysKey",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MAINFRAME_ACCT_NO",
+          "target": "mainframeAcctNo",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CONVERSION_BATCH_NO",
+          "target": "conversionBatchNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_01",
+          "target": "flag01",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_02",
+          "target": "flag02",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_03",
+          "target": "flag03",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_04",
+          "target": "flag04",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_05",
+          "target": "flag05",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_06",
+          "target": "flag06",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_07",
+          "target": "flag07",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_08",
+          "target": "flag08",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_09",
+          "target": "flag09",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_10",
+          "target": "flag10",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_11",
+          "target": "flag11",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_12",
+          "target": "flag12",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_13",
+          "target": "flag13",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_14",
+          "target": "flag14",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_15",
+          "target": "flag15",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_16",
+          "target": "flag16",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_17",
+          "target": "flag17",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_18",
+          "target": "flag18",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_19",
+          "target": "flag19",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "FLAG_20",
+          "target": "flag20",
+          "source_type": "CHAR(1)",
+          "bson_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_01",
+          "target": "udf01",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_02",
+          "target": "udf02",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_03",
+          "target": "udf03",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_04",
+          "target": "udf04",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_05",
+          "target": "udf05",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_06",
+          "target": "udf06",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_07",
+          "target": "udf07",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_08",
+          "target": "udf08",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_09",
+          "target": "udf09",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_10",
+          "target": "udf10",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_11",
+          "target": "udf11",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_12",
+          "target": "udf12",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_13",
+          "target": "udf13",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_14",
+          "target": "udf14",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_15",
+          "target": "udf15",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_16",
+          "target": "udf16",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_17",
+          "target": "udf17",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_18",
+          "target": "udf18",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_19",
+          "target": "udf19",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_20",
+          "target": "udf20",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_21",
+          "target": "udf21",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_22",
+          "target": "udf22",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_23",
+          "target": "udf23",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_24",
+          "target": "udf24",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_25",
+          "target": "udf25",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_26",
+          "target": "udf26",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_27",
+          "target": "udf27",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_28",
+          "target": "udf28",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_29",
+          "target": "udf29",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_30",
+          "target": "udf30",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_31",
+          "target": "udf31",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_32",
+          "target": "udf32",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_33",
+          "target": "udf33",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_34",
+          "target": "udf34",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_35",
+          "target": "udf35",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_36",
+          "target": "udf36",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_37",
+          "target": "udf37",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_38",
+          "target": "udf38",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_39",
+          "target": "udf39",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_40",
+          "target": "udf40",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_01",
+          "target": "udfAmt01",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_02",
+          "target": "udfAmt02",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_03",
+          "target": "udfAmt03",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_04",
+          "target": "udfAmt04",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_05",
+          "target": "udfAmt05",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_06",
+          "target": "udfAmt06",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_07",
+          "target": "udfAmt07",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_08",
+          "target": "udfAmt08",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_09",
+          "target": "udfAmt09",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_AMT_10",
+          "target": "udfAmt10",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_01",
+          "target": "udfDt01",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_02",
+          "target": "udfDt02",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_03",
+          "target": "udfDt03",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_04",
+          "target": "udfDt04",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_05",
+          "target": "udfDt05",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_06",
+          "target": "udfDt06",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_07",
+          "target": "udfDt07",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_08",
+          "target": "udfDt08",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_09",
+          "target": "udfDt09",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UDF_DT_10",
+          "target": "udfDt10",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_BY",
+          "target": "createdBy",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_DT",
+          "target": "createdDt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UPDATED_BY",
+          "target": "updatedBy",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UPDATED_DT",
+          "target": "updatedDt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ROW_VERSION_NO",
+          "target": "rowVersionNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "HIST_ID",
+            "target": "histId",
+            "source_type": "NUMBER(12)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "repeating_group",
+            "evidence": "numbered column series; candidate arrays",
+            "groups": {
+              "ADDR_LINE": [
+                "ADDR_LINE_1",
+                "ADDR_LINE_2",
+                "ADDR_LINE_3",
+                "ADDR_LINE_4",
+                "ADDR_LINE_5",
+                "ADDR_LINE_6"
+              ],
+              "MAIL_ADDR_LINE": [
+                "MAIL_ADDR_LINE_1",
+                "MAIL_ADDR_LINE_2",
+                "MAIL_ADDR_LINE_3",
+                "MAIL_ADDR_LINE_4",
+                "MAIL_ADDR_LINE_5",
+                "MAIL_ADDR_LINE_6"
+              ],
+              "PHONE": [
+                "PHONE1",
+                "PHONE2",
+                "PHONE3",
+                "PHONE4"
+              ],
+              "EMAIL": [
+                "EMAIL_1",
+                "EMAIL_2",
+                "EMAIL_3"
+              ],
+              "FLAG": [
+                "FLAG_01",
+                "FLAG_02",
+                "FLAG_03",
+                "FLAG_04",
+                "FLAG_05",
+                "FLAG_06",
+                "FLAG_07",
+                "FLAG_08",
+                "FLAG_09",
+                "FLAG_10",
+                "FLAG_11",
+                "FLAG_12",
+                "FLAG_13",
+                "FLAG_14",
+                "FLAG_15",
+                "FLAG_16",
+                "FLAG_17",
+                "FLAG_18",
+                "FLAG_19",
+                "FLAG_20"
+              ],
+              "UDF": [
+                "UDF_01",
+                "UDF_02",
+                "UDF_03",
+                "UDF_04",
+                "UDF_05",
+                "UDF_06",
+                "UDF_07",
+                "UDF_08",
+                "UDF_09",
+                "UDF_10",
+                "UDF_11",
+                "UDF_12",
+                "UDF_13",
+                "UDF_14",
+                "UDF_15",
+                "UDF_16",
+                "UDF_17",
+                "UDF_18",
+                "UDF_19",
+                "UDF_20",
+                "UDF_21",
+                "UDF_22",
+                "UDF_23",
+                "UDF_24",
+                "UDF_25",
+                "UDF_26",
+                "UDF_27",
+                "UDF_28",
+                "UDF_29",
+                "UDF_30",
+                "UDF_31",
+                "UDF_32",
+                "UDF_33",
+                "UDF_34",
+                "UDF_35",
+                "UDF_36",
+                "UDF_37",
+                "UDF_38",
+                "UDF_39",
+                "UDF_40"
+              ],
+              "UDF_AMT": [
+                "UDF_AMT_01",
+                "UDF_AMT_02",
+                "UDF_AMT_03",
+                "UDF_AMT_04",
+                "UDF_AMT_05",
+                "UDF_AMT_06",
+                "UDF_AMT_07",
+                "UDF_AMT_08",
+                "UDF_AMT_09",
+                "UDF_AMT_10"
+              ],
+              "UDF_DT": [
+                "UDF_DT_01",
+                "UDF_DT_02",
+                "UDF_DT_03",
+                "UDF_DT_04",
+                "UDF_DT_05",
+                "UDF_DT_06",
+                "UDF_DT_07",
+                "UDF_DT_08",
+                "UDF_DT_09",
+                "UDF_DT_10"
+              ]
+            },
+            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then"
+          },
+          {
+            "kind": "unenforced_pointer",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "TENANT_ID"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+          },
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "PHONE1_TYPE_CD",
+              "PHONE2_TYPE_CD",
+              "PHONE3_TYPE_CD",
+              "PHONE4_TYPE_CD",
+              "STATUS_CD",
+              "SUB_STATUS_CD",
+              "CUST_TYPE_CD",
+              "SEGMENT_CD",
+              "REGION_CD",
+              "TERRITORY_CD",
+              "CHANNEL_CD",
+              "RATE_CLASS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          },
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "HIST_DT",
+              "SIGNUP_DT",
+              "LAST_ACTIVITY_DT",
+              "LAST_INVOICE_DT",
+              "LAST_PAYMENT_DT",
+              "TERMINATE_DT"
+            ]
+          },
+          {
+            "kind": "csv_list",
+            "evidence": "delimited list in a string column",
+            "columns": [
+              "RELATED_ACCT_IDS",
+              "CHILD_ACCT_IDS",
+              "PROMO_CODES_CSV"
+            ]
+          }
+        ],
+        "pattern": "history_copy",
+        "of_table": "CUSTOMER_MASTER",
+        "proposal": "Keep CUSTOMER_MASTER_HIST as a separate archive collection loaded once (one document per hist row, same field mapping as customerMaster plus histId, histDt, histOp). No trigger equivalent after cutover; the application writes a history document explicitly on update or delete (document versioning owned by the app, not the database).",
+        "pattern_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document."
+      }
+    },
+    {
+      "collection": "entityAttrValue",
+      "root_table": "ENTITY_ATTR_VALUE",
+      "key": {
+        "source": [
+          "EAV_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "ENTITY_TYPE",
+          "target": "entityType",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ENTITY_ID",
+          "target": "entityId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTR_NAME",
+          "target": "attrName",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTR_VALUE",
+          "target": "attrValue",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ATTR_TYPE",
+          "target": "attrType",
+          "source_type": "VARCHAR2(10)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_DT",
+          "target": "createdDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "sequence+trigger identity: keep numeric _id on load, application generates ids after cutover",
+        "key_fields": [
+          {
+            "source": "EAV_ID",
+            "target": "eavId",
+            "source_type": "NUMBER(14)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "CREATED_DT"
+            ]
+          }
+        ],
+        "pattern": "attribute",
+        "proposal": "Load ENTITY_ATTR_VALUE as an attributes array on the owning document: attributes: [{name, value, type, createdDt}] keyed by (entity_type, entity_id). This run keeps entityAttrValue as its own collection for reconciliation and adds the array on customerMaster in the loader; attr_value stays a string, no boolean coercion (eight spellings of TAX_REGION_OVERRIDE observed in the fixture).",
+        "pattern_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9))."
+      }
+    },
+    {
+      "collection": "invoiceLine",
+      "root_table": "INVOICE_LINE",
+      "key": {
+        "source": [
+          "LINE_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "INVOICE_NO",
+          "target": "invoiceNo",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoiceId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "custId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NO",
+          "target": "custNo",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "custName",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LINE_NO",
+          "target": "lineNo",
+          "source_type": "NUMBER(6)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "LINE_TYPE_CD",
+          "target": "lineTypeCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ITEM_DESC",
+          "target": "itemDesc",
+          "source_type": "VARCHAR2(400)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "QTY",
+          "target": "qty",
+          "source_type": "NUMBER(12,3)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "UNIT_PRICE",
+          "target": "unitPrice",
+          "source_type": "NUMBER(14,4)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TAX_AMT",
+          "target": "taxAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoiceDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SERVICE_PERIOD",
+          "target": "servicePeriod",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "POSTED_YN",
+          "target": "posted",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "GL_ACCT_CSV",
+          "target": "glAcct",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "array",
+          "rules": [
+            "csv_to_array",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batchNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SRC_SYSTEM",
+          "target": "srcSystem",
+          "source_type": "VARCHAR2(10)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "LINE_ID",
+            "target": "lineId",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "unenforced_pointer",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "INVOICE_ID",
+              "TENANT_ID"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+          },
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "LINE_TYPE_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          },
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "INVOICE_DT"
+            ]
+          },
+          {
+            "kind": "csv_list",
+            "evidence": "delimited list in a string column",
+            "columns": [
+              "GL_ACCT_CSV"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "collection": "invoiceHeader",
+      "root_table": "INVOICE_HEADER",
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "INVOICE_NO",
+          "target": "invoiceNo",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "custId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoiceDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "dueDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TOTAL_AMT",
+          "target": "totalAmt",
+          "source_type": "NUMBER(14,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batchNo",
+          "source_type": "NUMBER(8)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "INVOICE_ID",
+            "target": "invoiceId",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "unenforced_pointer",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "TENANT_ID"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+          },
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          },
+          {
+            "kind": "date_as_string",
+            "evidence": "date kept as text (DD-MON-YY style)",
+            "columns": [
+              "INVOICE_DT",
+              "DUE_DT"
+            ]
+          }
+        ],
+        "pattern": "reference",
+        "proposal": "INVOICE_HEADER and INVOICE_LINE (the mainframe-conversion feed) stay two collections referenced by invoiceId. 37 INVOICE_LINE rows in the fixture point at no header, and the join in reports.py drops orphans on purpose, so embedding would silently change RPT-114 totals.",
+        "pattern_evidence": "services/legacy-billing/app/reports.py: LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it."
+      }
+    }
+  ],
+  "canonicalization": {
+    "version": "map-1-canon",
+    "rules": [
+      {
+        "rule": "decimal_round",
+        "applies_to": "decimal",
+        "params": {}
+      },
+      {
+        "rule": "datetime_utc_truncate_ms",
+        "applies_to": "date",
+        "params": {}
+      },
+      {
+        "rule": "rstrip_spaces",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "empty_string_is_null",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "null_missing_equiv",
+        "applies_to": "*",
+        "params": {}
+      },
+      {
+        "rule": "yn_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "csv_to_array",
+        "applies_to": "array",
+        "params": {}
+      },
+      {
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y"
+        }
+      }
+    ]
+  },
+  "modeling": {
+    "mode": "offline_ddl",
+    "cardinality_default": "assumed",
+    "census_inputs": [
+      {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "sha256": "d995f979986279bebca15d6ffeb415eb29142dcbf34c10ad2819f1507a51bcc4",
+        "bytes": 9597
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "sha256": "82bb170a52a38a96cfafd9bf7312e4e805f022422118ac428283d68dd514c485",
+        "bytes": 21587
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "sha256": "281ab68226737b005314864c45f93399801dedbc7da095dd0202f34a412a897c",
+        "bytes": 10707
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "sha256": "95bc8b949f4514099385c68894d02caf83b5fabb301186aff7cb83e25e2e777d",
+        "bytes": 1554
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/setup/01_users.sql",
+        "sha256": "592a7b34f47db07c81e621cfdbc9346deb03b50e10e3e82e3ffb65e38fffe587",
+        "bytes": 403
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+        "sha256": "94728593735247e7a2fccfe7db56613cf99e1b0be46a24924e5395a483d09b71",
+        "bytes": 3132
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "sha256": "ae58f53d325488e2a6c52c3496355b18fd9064b5ecc77ef001597da645ac90b4",
+        "bytes": 4429
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "sha256": "e755afbb9cf8253a8c6fb3546a553941ee2e14b307469b392dfca5e97249ff0e",
+        "bytes": 9618
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "sha256": "c6b1b5b24dbb0dc1526aa227bbc14dc73567cfaf092edf8546f1a3d04411dd2a",
+        "bytes": 8276
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "sha256": "26d0b2fc7de60869e729c6569053e19145464c2338685e937aa59286bc16e93d",
+        "bytes": 4316
+      }
+    ],
+    "not_known_from_ddl": [
+      "row counts and table sizes (drives embed vs reference and the 16 MB document ceiling)",
+      "foreign-key fan-out per parent (1:N is assumed for every FK; bounded vs unbounded is unknown)",
+      "null rates and value domains (defaults and NOT NULL are the only signal)",
+      "application access patterns (read-together vs written-separately)",
+      "semantics of triggers, packages, and scheduler jobs (names and targets only)",
+      "whether unenforced *_ID pointers actually resolve"
+    ],
+    "unresolved": [],
+    "decisions": [
+      {
+        "op": "embed",
+        "child_table": "INVOICE_LINES",
+        "into": "invoices",
+        "array_path": "lines",
+        "cardinality": "1:few",
+        "basis": "derived",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "set_key",
+        "embed": {
+          "into": "invoices",
+          "child_table": "INVOICE_LINES"
+        },
+        "columns": [
+          "LINE_NO"
+        ],
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "entityAttrValue",
+        "pattern": "attribute",
+        "detail": "Load ENTITY_ATTR_VALUE as an attributes array on the owning document: attributes: [{name, value, type, createdDt}] keyed by (entity_type, entity_id). This run keeps entityAttrValue as its own collection for reconciliation and adds the array on customerMaster in the loader; attr_value stays a string, no boolean coercion (eight spellings of TAX_REGION_OVERRIDE observed in the fixture).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9))."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9)).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "customerMasterHist",
+        "pattern": "history_copy",
+        "detail": "Keep CUSTOMER_MASTER_HIST as a separate archive collection loaded once (one document per hist row, same field mapping as customerMaster plus histId, histDt, histOp). No trigger equivalent after cutover; the application writes a history document explicitly on update or delete (document versioning owned by the app, not the database).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "subscriptionsHist",
+        "pattern": "history_copy",
+        "detail": "Same treatment as customerMasterHist: separate archive collection, one document per hist row, app-written after cutover.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "codes",
+        "pattern": "reference_data",
+        "detail": "CODES stays a small reference collection keyed by (codeType, codeVal); *_CD columns keep their numeric value on load so recon compares like with like, and the application resolves descriptions through codes (as pkg_ow_util.f_code_desc does today).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "note": "f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS)."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "invoiceHeader",
+        "pattern": "reference",
+        "detail": "INVOICE_HEADER and INVOICE_LINE (the mainframe-conversion feed) stay two collections referenced by invoiceId. 37 INVOICE_LINE rows in the fixture point at no header, and the join in reports.py drops orphans on purpose, so embedding would silently change RPT-114 totals.",
+        "evidence": {
+          "file": "services/legacy-billing/app/reports.py",
+          "note": "LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it."
+        },
+        "cited": "services/legacy-billing/app/reports.py: LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review"
+        },
+        "resolution": "Reviewed all five packages. pkg_plans, pkg_rating, pkg_invoicing, pkg_dunning are the read and write entrypoints the Flask app calls through procs/oracle/oracle_map.yaml; pkg_ow_util holds f_md5_uuid and f_code_desc. Read routes are reimplemented in the app's mongo backend (playbook 5); write procedures stay in Oracle until the customer run.",
+        "evidence": {
+          "file": "procs/oracle/oracle_map.yaml",
+          "note": "entrypoints maps each billing.fn_*/sp_* to its pkg_* equivalent; transcripts under procs/oracle/transcripts/ record the observed outputs."
+        },
+        "cited": "procs/oracle/oracle_map.yaml: entrypoints maps each billing.fn_*/sp_* to its pkg_* equivalent; transcripts under procs/oracle/transcripts/ record the observed outputs.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic"
+        },
+        "resolution": "TRG_CUSTOMER_MASTER_HIST and TRG_SUBSCRIPTIONS_HIST become app-written history documents (history_copy pattern). TRG_SUB_NO_UNCANCEL and TRG_USAGE_EVENTS_CHECK are validation rules that move into the application write path; they are not needed for the read-only cutover in this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trigger bodies reviewed; the two _HIST triggers copy rows, the other two raise on invalid transitions."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger bodies reviewed; the two _HIST triggers copy rows, the other two raise on invalid transitions.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job"
+        },
+        "resolution": "JOB_NIGHTLY_DUNNING and JOB_PURGE_AUDIT_LOG are DISABLED in the DDL. After cutover they need an application scheduler owner; recorded in 07_dependency_register.md, out of scope for this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "note": "both DBMS_SCHEDULER jobs are created with enabled => FALSE."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql: both DBMS_SCHEDULER jobs are created with enabled => FALSE.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unparsed_statement"
+        },
+        "resolution": "CREATE USER and GRANT in setup/01_users.sql are credential and privilege statements, not schema; secrets are referenced by name only.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/setup/01_users.sql",
+          "note": "the two statements are the schema owner bootstrap."
+        },
+        "cited": "services/legacy-billing/db/oracle/setup/01_users.sql: the two statements are the schema owner bootstrap.",
+        "status": "PROPOSED"
+      }
+    ]
+  }
+}

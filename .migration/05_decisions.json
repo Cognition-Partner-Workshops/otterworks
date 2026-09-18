@@ -1,0 +1,109 @@
+[
+  {
+    "op": "embed",
+    "child_table": "INVOICE_LINES",
+    "into": "invoices",
+    "array_path": "lines",
+    "cardinality": "1:few",
+    "basis": "derived",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "note": "sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period."
+    }
+  },
+  {
+    "op": "set_key",
+    "embed": {"into": "invoices", "child_table": "INVOICE_LINES"},
+    "columns": ["LINE_NO"],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "note": "fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field."
+    }
+  },
+  {
+    "op": "pattern",
+    "collection": "entityAttrValue",
+    "pattern": "attribute",
+    "detail": "Load ENTITY_ATTR_VALUE as an attributes array on the owning document: attributes: [{name, value, type, createdDt}] keyed by (entity_type, entity_id). This run keeps entityAttrValue as its own collection for reconciliation and adds the array on customerMaster in the loader; attr_value stays a string, no boolean coercion (eight spellings of TAX_REGION_OVERRIDE observed in the fixture).",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "note": "entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9))."
+    }
+  },
+  {
+    "op": "pattern",
+    "collection": "customerMasterHist",
+    "pattern": "history_copy",
+    "detail": "Keep CUSTOMER_MASTER_HIST as a separate archive collection loaded once (one document per hist row, same field mapping as customerMaster plus histId, histDt, histOp). No trigger equivalent after cutover; the application writes a history document explicitly on update or delete (document versioning owned by the app, not the database).",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "note": "trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document."
+    }
+  },
+  {
+    "op": "pattern",
+    "collection": "subscriptionsHist",
+    "pattern": "history_copy",
+    "detail": "Same treatment as customerMasterHist: separate archive collection, one document per hist row, app-written after cutover.",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "note": "trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription."
+    }
+  },
+  {
+    "op": "pattern",
+    "collection": "codes",
+    "pattern": "reference_data",
+    "detail": "CODES stays a small reference collection keyed by (codeType, codeVal); *_CD columns keep their numeric value on load so recon compares like with like, and the application resolves descriptions through codes (as pkg_ow_util.f_code_desc does today).",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "note": "f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS)."
+    }
+  },
+  {
+    "op": "pattern",
+    "collection": "invoiceHeader",
+    "pattern": "reference",
+    "detail": "INVOICE_HEADER and INVOICE_LINE (the mainframe-conversion feed) stay two collections referenced by invoiceId. 37 INVOICE_LINE rows in the fixture point at no header, and the join in reports.py drops orphans on purpose, so embedding would silently change RPT-114 totals.",
+    "evidence": {
+      "file": "services/legacy-billing/app/reports.py",
+      "note": "LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it."
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {"kind": "plsql_unit_needs_manual_review"},
+    "resolution": "Reviewed all five packages. pkg_plans, pkg_rating, pkg_invoicing, pkg_dunning are the read and write entrypoints the Flask app calls through procs/oracle/oracle_map.yaml; pkg_ow_util holds f_md5_uuid and f_code_desc. Read routes are reimplemented in the app's mongo backend (playbook 5); write procedures stay in Oracle until the customer run.",
+    "evidence": {
+      "file": "procs/oracle/oracle_map.yaml",
+      "note": "entrypoints maps each billing.fn_*/sp_* to its pkg_* equivalent; transcripts under procs/oracle/transcripts/ record the observed outputs."
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {"kind": "trigger_business_logic"},
+    "resolution": "TRG_CUSTOMER_MASTER_HIST and TRG_SUBSCRIPTIONS_HIST become app-written history documents (history_copy pattern). TRG_SUB_NO_UNCANCEL and TRG_USAGE_EVENTS_CHECK are validation rules that move into the application write path; they are not needed for the read-only cutover in this run.",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "note": "trigger bodies reviewed; the two _HIST triggers copy rows, the other two raise on invalid transitions."
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {"kind": "scheduler_job"},
+    "resolution": "JOB_NIGHTLY_DUNNING and JOB_PURGE_AUDIT_LOG are DISABLED in the DDL. After cutover they need an application scheduler owner; recorded in 07_dependency_register.md, out of scope for this run.",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+      "note": "both DBMS_SCHEDULER jobs are created with enabled => FALSE."
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {"kind": "unparsed_statement"},
+    "resolution": "CREATE USER and GRANT in setup/01_users.sql are credential and privilege statements, not schema; secrets are referenced by name only.",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/setup/01_users.sql",
+      "note": "the two statements are the schema owner bootstrap."
+    }
+  }
+]
