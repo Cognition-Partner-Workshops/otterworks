@@ -1,0 +1,290 @@
+# Critical API catalog.
+#
+# This file is the single source of truth for which edge APIs are considered
+# critical, what reliability they are held to, and who owns them. Everything
+# else -- Prometheus SLI/burn-rate rules, the blackbox probe target list, the
+# gateway route label table and the SLO dashboard -- is generated from it by
+# observability/slo/generate.py. Edit this file, then run `make slo-generate`.
+#
+# Fields per endpoint:
+#   id                  stable identifier, used for rule/panel naming
+#   service             backend service that owns the endpoint
+#   owner               team paged when the endpoint burns its error budget
+#   method / route      HTTP method and gateway route template ({id} params)
+#   tier                critical | high
+#   availability        fraction of non-5xx responses over the SLO window
+#   latency.threshold   latency budget in seconds (must be a histogram bucket)
+#   latency.objective   fraction of requests that must land under threshold
+#   expect_traffic      true when a sustained drop to zero traffic is an outage
+#   runbook             runbook slug under docs/runbooks/
+
+version: 1
+
+slo_window: 30d
+
+# Histogram buckets available on api_gateway_http_request_duration_seconds.
+# latency.threshold must be one of these or the SLI silently mis-measures.
+latency_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+# Multi-window, multi-burn-rate alerting (Google SRE workbook). A page fires
+# only when both the long and the short window agree, which keeps single
+# scrape blips from waking anyone up and still catches fast burns in minutes.
+burn_rates:
+  - name: fast
+    factor: 14.4
+    long_window: 1h
+    short_window: 5m
+    severity: critical
+    budget_consumed: 2% of the 30d budget in 1 hour
+  - name: medium
+    factor: 6
+    long_window: 6h
+    short_window: 30m
+    severity: critical
+    budget_consumed: 5% of the 30d budget in 6 hours
+  - name: slow
+    factor: 3
+    long_window: 1d
+    short_window: 2h
+    severity: warning
+    budget_consumed: 10% of the 30d budget in 1 day
+  - name: very_slow
+    factor: 1
+    long_window: 3d
+    short_window: 6h
+    severity: warning
+    budget_consumed: 10% of the 30d budget in 3 days
+
+probe:
+  # Warn when a health check is this slow. Must stay below the blackbox module
+  # timeout in observability/blackbox/blackbox.yml, otherwise a slow probe is
+  # recorded as a failure and the warning can never fire.
+  max_duration_seconds: 2
+
+endpoints:
+  - id: auth_login
+    service: auth-service
+    owner: identity
+    method: POST
+    route: /api/v1/auth/login
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: auth_refresh
+    service: auth-service
+    owner: identity
+    method: POST
+    route: /api/v1/auth/refresh
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 0.5
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: auth_profile
+    service: auth-service
+    owner: identity
+    method: GET
+    route: /api/v1/auth/profile
+    tier: high
+    availability: 0.995
+    latency:
+      threshold: 0.5
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: documents_list
+    service: document-service
+    owner: documents
+    method: GET
+    route: /api/v1/documents
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: documents_create
+    service: document-service
+    owner: documents
+    method: POST
+    route: /api/v1/documents
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: documents_get
+    service: document-service
+    owner: documents
+    method: GET
+    route: /api/v1/documents/{id}
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: documents_update
+    service: document-service
+    owner: documents
+    method: PUT
+    route: /api/v1/documents/{id}
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: documents_export
+    service: document-service
+    owner: documents
+    method: GET
+    route: /api/v1/documents/{id}/export
+    tier: high
+    availability: 0.99
+    latency:
+      threshold: 2.5
+      objective: 0.95
+    expect_traffic: false
+    runbook: critical-api-slo
+
+  - id: files_upload
+    service: file-service
+    owner: storage
+    method: POST
+    route: /api/v1/files/upload
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 2.5
+      objective: 0.95
+    expect_traffic: true
+    runbook: file-upload-failure
+
+  - id: files_download
+    service: file-service
+    owner: storage
+    method: GET
+    route: /api/v1/files/{id}/download
+    tier: critical
+    availability: 0.999
+    latency:
+      threshold: 2.5
+      objective: 0.95
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: files_list
+    service: file-service
+    owner: storage
+    method: GET
+    route: /api/v1/files
+    tier: high
+    availability: 0.995
+    latency:
+      threshold: 1
+      objective: 0.99
+    expect_traffic: true
+    runbook: critical-api-slo
+
+  - id: search_query
+    service: search-service
+    owner: discovery
+    method: GET
+    route: /api/v1/search
+    tier: high
+    availability: 0.995
+    latency:
+      threshold: 0.5
+      objective: 0.99
+    expect_traffic: true
+    runbook: search-suggest-500
+
+  - id: notifications_list
+    service: notification-service
+    owner: engagement
+    method: GET
+    route: /api/v1/notifications
+    tier: high
+    availability: 0.995
+    latency:
+      threshold: 0.5
+      objective: 0.99
+    expect_traffic: true
+    runbook: notification-processing-failure
+
+  - id: collab_presence
+    service: collab-service
+    owner: collaboration
+    method: GET
+    route: /api/v1/collab/documents/{id}/presence
+    tier: high
+    availability: 0.995
+    latency:
+      threshold: 0.5
+      objective: 0.99
+    expect_traffic: false
+    runbook: critical-api-slo
+
+# Synthetic liveness probes, run on a fixed interval whether or not users are
+# sending traffic, so a quiet-hours outage is detected instead of showing up as
+# "no data". They carry no SLO of their own but page immediately on failure.
+#
+# They deliberately probe /health rather than the catalogued endpoints: the
+# gateway answers an unauthenticated request to a protected route with 401
+# before the proxy reaches the backend, so a credential-free endpoint probe
+# would stay green through a total backend outage. Probing each backend's own
+# /health needs no credentials and still fails when that backend is down.
+health_probes:
+  - id: gateway_health
+    backend: api-gateway
+    url: http://api-gateway:8080/health
+    expect_status: [200]
+  - id: auth_health
+    backend: auth-service
+    owner: identity
+    url: http://auth-service:8081/health
+    expect_status: [200]
+  - id: document_health
+    backend: document-service
+    owner: documents
+    url: http://document-service:8083/health
+    expect_status: [200]
+  - id: file_health
+    backend: file-service
+    owner: storage
+    url: http://file-service:8082/health
+    expect_status: [200]
+  - id: search_health
+    backend: search-service
+    owner: discovery
+    url: http://search-service:8087/health
+    expect_status: [200]
+  - id: notification_health
+    backend: notification-service
+    owner: engagement
+    url: http://notification-service:8086/health
+    expect_status: [200]
+  - id: collab_health
+    backend: collab-service
+    owner: collaboration
+    url: http://collab-service:8084/health
+    expect_status: [200]
