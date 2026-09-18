@@ -47,9 +47,10 @@ services:
         condition: service_healthy
         required: false
     environment:
-      # postgres (default) or mongo; the mongo backend serves the read routes from
-      # the ow_billing document model and answers 501 on the write routes.
-      BILLING_BACKEND: ${BILLING_BACKEND:-mongo}
+      # mongo or postgres. `make procs-up` defaults to mongo and enables the mongo
+      # profile with it; this file on its own falls back to postgres because a
+      # bare `docker compose up` does not activate the profile.
+      BILLING_BACKEND: ${BILLING_BACKEND:-postgres}
       MONGO_URI: mongodb://legacy-billing-mongo:27017
       MONGO_DB: ow_billing
       DB_HOST: legacy-billing-db
