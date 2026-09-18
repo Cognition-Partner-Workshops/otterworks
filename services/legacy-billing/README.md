@@ -61,6 +61,25 @@ make procs-down NS=dev
 The Compose profile is separate from the Helm/EKS path. It models the
 application running with its own PostgreSQL database.
 
+### Storage backend
+
+`BILLING_BACKEND` selects where the Flask routes read from:
+
+- `postgres` (default): the PL/pgSQL functions and procedures in `db/`.
+- `mongo`: the migrated `ow_billing` database (`MONGO_URI`, `MONGO_DB`). The
+  Compose profile starts a `mongo:7` service for it, on
+  `127.0.0.1:${PROCS_MONGO_PORT}`. The read routes (`/`, `/plans`,
+  `/plans/<tenant>/entitlement`, `/api/invoices/<tenant>/preview`,
+  `/api/invoices/<invoice>/lines`, `/api/dunning/overdue`, and the
+  `/api/rating/preview` POST) return the same JSON as the Postgres functions.
+  The write routes (`/plans/<tenant>/change`, `/api/rating/finalize`,
+  `/api/invoices/<tenant>/issue`, `/api/dunning/schedule`,
+  `/api/dunning/suspend`) still go through PostgreSQL procedures and answer
+  `501` on the mongo backend.
+
+`/health` reports which backend is active. Switching back is
+`BILLING_BACKEND=postgres` and a restart; no data moves.
+
 ## Database layout
 
 - `db/schema.sql` — tables and constraints
