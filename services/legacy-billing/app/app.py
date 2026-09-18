@@ -16,7 +16,7 @@ BACKENDS = ("postgres", "mongo")
 
 
 def backend():
-    name = os.getenv("BILLING_BACKEND", "postgres")
+    name = os.getenv("BILLING_BACKEND", "mongo")
     if name not in BACKENDS:
         raise RuntimeError(f"BILLING_BACKEND must be one of {BACKENDS}, got {name!r}")
     return name

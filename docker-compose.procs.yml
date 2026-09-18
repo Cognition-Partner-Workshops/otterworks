@@ -49,7 +49,7 @@ services:
     environment:
       # postgres (default) or mongo; the mongo backend serves the read routes from
       # the ow_billing document model and answers 501 on the write routes.
-      BILLING_BACKEND: ${BILLING_BACKEND:-postgres}
+      BILLING_BACKEND: ${BILLING_BACKEND:-mongo}
       MONGO_URI: mongodb://legacy-billing-mongo:27017
       MONGO_DB: ow_billing
       DB_HOST: legacy-billing-db

@@ -65,11 +65,12 @@ application running with its own PostgreSQL database.
 
 `BILLING_BACKEND` selects where the Flask routes read from:
 
-- `postgres` (default): the PL/pgSQL functions and procedures in `db/`.
-- `mongo`: the migrated `ow_billing` database (`MONGO_URI`, `MONGO_DB`).
-  `make procs-up NS=<ns> BILLING_BACKEND=mongo` enables the `mongo` Compose
-  profile, which starts a `mongo:7` service on `127.0.0.1:${PROCS_MONGO_PORT}`;
-  with the postgres backend the mongo service is not started. The read routes (`/`, `/plans`,
+- `postgres`: the PL/pgSQL functions and procedures in `db/`. Run with
+  `make procs-up NS=<ns> BILLING_BACKEND=postgres`; the mongo service is then
+  not started.
+- `mongo` (default): the migrated `ow_billing` database (`MONGO_URI`, `MONGO_DB`).
+  `make procs-up` enables the `mongo` Compose profile, which starts a `mongo:7`
+  service on `127.0.0.1:${PROCS_MONGO_PORT}`. The read routes (`/`, `/plans`,
   `/plans/<tenant>/entitlement`, `/api/invoices/<tenant>/preview`,
   `/api/invoices/<invoice>/lines`, `/api/dunning/overdue`, and the
   `/api/rating/preview` POST) return the same JSON as the Postgres functions.
@@ -78,7 +79,7 @@ application running with its own PostgreSQL database.
   `/api/dunning/suspend`) still go through PostgreSQL procedures and answer
   `501` on the mongo backend.
 
-`/health` reports which backend is active. Switching back is
+`/health` reports which backend is active. Rollback is
 `BILLING_BACKEND=postgres` and a restart; no data moves.
 
 ## Database layout
