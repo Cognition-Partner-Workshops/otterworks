@@ -23,6 +23,19 @@ services:
       timeout: 5s
       retries: 20
 
+  legacy-billing-mongo:
+    image: mongo:7
+    profiles: ["mongo"]
+    ports:
+      - "127.0.0.1:${PROCS_MONGO_PORT:-27017}:27017"
+    volumes:
+      - legacy-billing-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
   legacy-billing:
     build:
       context: ./services/legacy-billing
@@ -30,7 +43,16 @@ services:
     depends_on:
       legacy-billing-db:
         condition: service_healthy
+      legacy-billing-mongo:
+        condition: service_healthy
+        required: false
     environment:
+      # mongo or postgres. `make procs-up` defaults to mongo and enables the mongo
+      # profile with it; this file on its own falls back to postgres because a
+      # bare `docker compose up` does not activate the profile.
+      BILLING_BACKEND: ${BILLING_BACKEND:-postgres}
+      MONGO_URI: mongodb://legacy-billing-mongo:27017
+      MONGO_DB: ow_billing
       DB_HOST: legacy-billing-db
       DB_PORT: 5432
       DB_NAME: billing_${NS:-dev}
@@ -86,4 +108,5 @@ services:
 
 volumes:
   legacy-billing-db-data:
+  legacy-billing-mongo-data:
   billing-service-db-data:

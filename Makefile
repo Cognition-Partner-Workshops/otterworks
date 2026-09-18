@@ -56,7 +56,10 @@ PROCS_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(5543
 PROCS_APP_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(8096 + $(PROCS_PORT_OFFSET))")
 PROCS_TARGET_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(56432 + $(PROCS_PORT_OFFSET))")
 PROCS_TARGET_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(12096 + $(PROCS_PORT_OFFSET))")
-PROCS_ENV = NS=$(NS) PROCS_DB_PORT=$(PROCS_DB_PORT) PROCS_APP_PORT=$(PROCS_APP_PORT) PROCS_TARGET_DB_PORT=$(PROCS_TARGET_DB_PORT) PROCS_TARGET_PORT=$(PROCS_TARGET_PORT)
+PROCS_MONGO_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(28017 + $(PROCS_PORT_OFFSET))")
+BILLING_BACKEND ?= mongo
+PROCS_PROFILES = $(if $(filter mongo,$(BILLING_BACKEND)),mongo,)
+PROCS_ENV = NS=$(NS) PROCS_DB_PORT=$(PROCS_DB_PORT) PROCS_APP_PORT=$(PROCS_APP_PORT) PROCS_TARGET_DB_PORT=$(PROCS_TARGET_DB_PORT) PROCS_TARGET_PORT=$(PROCS_TARGET_PORT) PROCS_MONGO_PORT=$(PROCS_MONGO_PORT) BILLING_BACKEND=$(BILLING_BACKEND) COMPOSE_PROFILES=$(PROCS_PROFILES)
 
 procs-validate:
 	@test -n "$(NS)" || (echo "NS is required, e.g. make procs-up NS=dev" >&2; exit 2)
@@ -67,7 +70,7 @@ procs-up: procs-validate ## Start the legacy billing stored-procedure stack (NS=
 	$(PROCS_ENV) $(PROCS_COMPOSE) up -d --build --wait
 
 procs-down: procs-validate ## Stop the legacy billing stored-procedure stack (NS=<namespace>)
-	$(PROCS_ENV) $(PROCS_COMPOSE) down -v
+	$(PROCS_ENV) $(PROCS_COMPOSE) --profile mongo down -v
 
 procs-record: procs-validate ## Record legacy billing transcripts (NS=<namespace>, MODULE and OUTPUT_DIR optional)
 	TZ=UTC LC_ALL=C $(PROCS_ENV) DB_NAME=billing_$(NS) DB_PORT=$(PROCS_DB_PORT) $(PROCS_UV) procs/harness/record.py $(if $(MODULE),--module $(MODULE),) $(if $(OUTPUT_DIR),--output-dir $(OUTPUT_DIR),) $(if $(ALLOW_RERECORD),--allow-rerecord,) $(if $(RERECORD_REASON),--rerecord-reason $(RERECORD_REASON),)
