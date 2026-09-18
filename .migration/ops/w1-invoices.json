@@ -1,0 +1,46 @@
+[
+  {
+    "name": "fn_invoice_lines: lines of every invoice, ordered by line_no",
+    "collection": "invoices",
+    "rules": [],
+    "source_sql": "SELECT l.invoice_id AS invoice_id, l.line_no AS line_no, l.line_type AS line_type, l.amount AS amount FROM invoice_lines l ORDER BY l.invoice_id, l.line_no",
+    "target_pipeline": [
+      {"$unwind": "$lines"},
+      {"$project": {"_id": 0, "INVOICE_ID": "$_id", "LINE_NO": "$lines.lineNo", "LINE_TYPE": "$lines.lineType", "AMOUNT": "$lines.amount"}},
+      {"$sort": {"INVOICE_ID": 1, "LINE_NO": 1}}
+    ]
+  },
+  {
+    "name": "invoice totals per tenant (sum of TOTAL, count)",
+    "collection": "invoices",
+    "rules": [],
+    "source_sql": "SELECT tenant_id AS tenant_id, COUNT(*) AS n, SUM(total) AS total FROM invoices GROUP BY tenant_id",
+    "target_pipeline": [
+      {"$group": {"_id": "$tenantId", "N": {"$sum": 1}, "TOTAL": {"$sum": "$total"}}},
+      {"$project": {"_id": 0, "TENANT_ID": "$_id", "N": 1, "TOTAL": 1}}
+    ]
+  },
+  {
+    "name": "RPT-114 join: finance feed lines whose header exists, per batch",
+    "collection": "invoiceLine",
+    "rules": [],
+    "source_sql": "SELECT h.batch_no AS batch_no, COUNT(*) AS n_lines, SUM(l.amount) AS amt FROM invoice_header h, invoice_line l WHERE h.invoice_id = l.invoice_id GROUP BY h.batch_no",
+    "target_pipeline": [
+      {"$lookup": {"from": "invoiceHeader", "localField": "invoiceId", "foreignField": "_id", "as": "h"}},
+      {"$unwind": "$h"},
+      {"$group": {"_id": "$h.batchNo", "N_LINES": {"$sum": 1}, "AMT": {"$sum": "$amount"}}},
+      {"$project": {"_id": 0, "BATCH_NO": "$_id", "N_LINES": 1, "AMT": 1}}
+    ]
+  },
+  {
+    "name": "orphan finance feed lines (no header): count",
+    "collection": "invoiceLine",
+    "rules": [],
+    "source_sql": "SELECT COUNT(*) AS n_orphans FROM invoice_line l WHERE NOT EXISTS (SELECT 1 FROM invoice_header h WHERE h.invoice_id = l.invoice_id)",
+    "target_pipeline": [
+      {"$lookup": {"from": "invoiceHeader", "localField": "invoiceId", "foreignField": "_id", "as": "h"}},
+      {"$match": {"h": {"$size": 0}}},
+      {"$count": "N_ORPHANS"}
+    ]
+  }
+]

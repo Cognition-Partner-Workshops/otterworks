@@ -1,0 +1,128 @@
+{
+  "kind": "recon-report",
+  "unit": "w1-invoices",
+  "mode": "fixture",
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "merge_eligible_reason": "fixture evidence",
+  "live_recon": "live recon: not run, no source access",
+  "tolerance_version": "tol-1",
+  "mapping_version": "map-1",
+  "redacted": true,
+  "generated_at": "2026-09-18T21:49:26.072012+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "source_counts": {
+          "invoices": 3,
+          "creditNotes": 5,
+          "invoiceLine": 150000,
+          "invoiceHeader": 18750
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 38,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoices.tenantId",
+          "invoices.periodId",
+          "invoices.subtotal",
+          "invoices.tax",
+          "invoices.total",
+          "creditNotes.tenantId",
+          "creditNotes.amount",
+          "creditNotes.remainingAmount",
+          "invoiceLine.invoiceNo",
+          "invoiceLine.invoiceId",
+          "invoiceLine.custId",
+          "invoiceLine.custNo",
+          "invoiceLine.custName",
+          "invoiceLine.tenantId",
+          "invoiceLine.lineNo",
+          "invoiceLine.lineTypeCd",
+          "invoiceLine.itemDesc",
+          "invoiceLine.qty",
+          "invoiceLine.qty",
+          "invoiceLine.unitPrice",
+          "invoiceLine.unitPrice",
+          "invoiceLine.amount",
+          "invoiceLine.amount",
+          "invoiceLine.taxAmt",
+          "invoiceLine.taxAmt",
+          "invoiceLine.invoiceDt",
+          "invoiceLine.servicePeriod",
+          "invoiceLine.posted",
+          "invoiceLine.glAcct",
+          "invoiceLine.batchNo",
+          "invoiceLine.srcSystem",
+          "invoiceHeader.invoiceNo",
+          "invoiceHeader.custId",
+          "invoiceHeader.tenantId",
+          "invoiceHeader.invoiceDt",
+          "invoiceHeader.dueDt",
+          "invoiceHeader.statusCd",
+          "invoiceHeader.totalAmt",
+          "invoiceHeader.totalAmt",
+          "invoiceHeader.batchNo"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 19764,
+      "stats": {
+        "invoices": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        },
+        "embeds_graded": {
+          "invoices.lines": 2
+        },
+        "creditNotes": {
+          "mode": "full_diff",
+          "population": 5,
+          "duplicate_source_key_count": 0
+        },
+        "invoiceLine": {
+          "mode": "stratified_sample",
+          "population": 150000,
+          "sampled": 1004,
+          "coverage": 0.006693,
+          "duplicate_source_key_count": 0
+        },
+        "invoiceHeader": {
+          "mode": "full_diff",
+          "population": 18750,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "unverified_paths": [
+    "live/snapshot recon against a customer source (no source access in offline mode)",
+    "write paths (history triggers, pkg_* procedures) are not exercised by this loader"
+  ],
+  "source": "result.json"
+}

@@ -1,0 +1,32 @@
+{
+  "unit": "w1-invoices",
+  "mapping_version": "map-1",
+  "target_db": "ow_billing",
+  "collections": {
+    "invoices": {
+      "documents": 3,
+      "embedded_elements": 2,
+      "unparseable_dates": 0,
+      "seconds": 0.01
+    },
+    "creditNotes": {
+      "documents": 5,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "seconds": 0.02
+    },
+    "invoiceHeader": {
+      "documents": 18750,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "seconds": 0.61
+    },
+    "invoiceLine": {
+      "documents": 150000,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "seconds": 8.23
+    }
+  },
+  "seconds": 8.87
+}
