@@ -70,7 +70,7 @@ procs-up: procs-validate ## Start the legacy billing stored-procedure stack (NS=
 	$(PROCS_ENV) $(PROCS_COMPOSE) up -d --build --wait
 
 procs-down: procs-validate ## Stop the legacy billing stored-procedure stack (NS=<namespace>)
-	$(PROCS_ENV) $(PROCS_COMPOSE) down -v
+	$(PROCS_ENV) $(PROCS_COMPOSE) --profile mongo down -v
 
 procs-record: procs-validate ## Record legacy billing transcripts (NS=<namespace>, MODULE and OUTPUT_DIR optional)
 	TZ=UTC LC_ALL=C $(PROCS_ENV) DB_NAME=billing_$(NS) DB_PORT=$(PROCS_DB_PORT) $(PROCS_UV) procs/harness/record.py $(if $(MODULE),--module $(MODULE),) $(if $(OUTPUT_DIR),--output-dir $(OUTPUT_DIR),) $(if $(ALLOW_RERECORD),--allow-rerecord,) $(if $(RERECORD_REASON),--rerecord-reason $(RERECORD_REASON),)
