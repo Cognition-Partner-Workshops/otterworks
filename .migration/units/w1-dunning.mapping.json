@@ -1,0 +1,488 @@
+{
+  "version": "map-1",
+  "source_family": "oracle",
+  "collections": [
+    {
+      "collection": "dunningAttempts",
+      "root_table": "DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoiceId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attemptNo",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduledFor",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "INVOICE_ID"
+            ],
+            "to": "invoices",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "notifications",
+      "root_table": "NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kindCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sentAt",
+          "source_type": "TIMESTAMP",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "code_lookup",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "KIND_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "billingAuditLog",
+      "root_table": "BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "LOGGED_AT",
+          "target": "loggedAt",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "sequence+trigger identity: keep numeric _id on load, application generates ids after cutover",
+        "key_fields": [
+          {
+            "source": "LOG_ID",
+            "target": "logId",
+            "source_type": "NUMBER(12)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": []
+      }
+    }
+  ],
+  "canonicalization": {
+    "version": "map-1-canon",
+    "rules": [
+      {
+        "rule": "decimal_round",
+        "applies_to": "decimal",
+        "params": {}
+      },
+      {
+        "rule": "datetime_utc_truncate_ms",
+        "applies_to": "date",
+        "params": {}
+      },
+      {
+        "rule": "rstrip_spaces",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "empty_string_is_null",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "null_missing_equiv",
+        "applies_to": "*",
+        "params": {}
+      },
+      {
+        "rule": "yn_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "csv_to_array",
+        "applies_to": "array",
+        "params": {}
+      },
+      {
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y"
+        }
+      }
+    ]
+  },
+  "modeling": {
+    "mode": "offline_ddl",
+    "cardinality_default": "assumed",
+    "census_inputs": [
+      {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "sha256": "d995f979986279bebca15d6ffeb415eb29142dcbf34c10ad2819f1507a51bcc4",
+        "bytes": 9597
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "sha256": "82bb170a52a38a96cfafd9bf7312e4e805f022422118ac428283d68dd514c485",
+        "bytes": 21587
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "sha256": "281ab68226737b005314864c45f93399801dedbc7da095dd0202f34a412a897c",
+        "bytes": 10707
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "sha256": "95bc8b949f4514099385c68894d02caf83b5fabb301186aff7cb83e25e2e777d",
+        "bytes": 1554
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/setup/01_users.sql",
+        "sha256": "592a7b34f47db07c81e621cfdbc9346deb03b50e10e3e82e3ffb65e38fffe587",
+        "bytes": 403
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+        "sha256": "94728593735247e7a2fccfe7db56613cf99e1b0be46a24924e5395a483d09b71",
+        "bytes": 3132
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "sha256": "ae58f53d325488e2a6c52c3496355b18fd9064b5ecc77ef001597da645ac90b4",
+        "bytes": 4429
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "sha256": "e755afbb9cf8253a8c6fb3546a553941ee2e14b307469b392dfca5e97249ff0e",
+        "bytes": 9618
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "sha256": "c6b1b5b24dbb0dc1526aa227bbc14dc73567cfaf092edf8546f1a3d04411dd2a",
+        "bytes": 8276
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "sha256": "26d0b2fc7de60869e729c6569053e19145464c2338685e937aa59286bc16e93d",
+        "bytes": 4316
+      }
+    ],
+    "not_known_from_ddl": [
+      "row counts and table sizes (drives embed vs reference and the 16 MB document ceiling)",
+      "foreign-key fan-out per parent (1:N is assumed for every FK; bounded vs unbounded is unknown)",
+      "null rates and value domains (defaults and NOT NULL are the only signal)",
+      "application access patterns (read-together vs written-separately)",
+      "semantics of triggers, packages, and scheduler jobs (names and targets only)",
+      "whether unenforced *_ID pointers actually resolve"
+    ],
+    "unresolved": [],
+    "decisions": [
+      {
+        "op": "embed",
+        "child_table": "INVOICE_LINES",
+        "into": "invoices",
+        "array_path": "lines",
+        "cardinality": "1:few",
+        "basis": "derived",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: sp_issue_invoice deletes and rewrites all INVOICE_LINES for one invoice in one call (DELETE FROM invoice_lines WHERE invoice_id, then INSERT per preview row); fn_invoice_lines only ever reads lines by invoice_id ORDER BY line_no. Lines are owned by, written with, and read with their invoice: one plan line, one usage line, one tax line, at most one credit line per period.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "set_key",
+        "embed": {
+          "into": "invoices",
+          "child_table": "INVOICE_LINES"
+        },
+        "columns": [
+          "LINE_NO"
+        ],
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: fn_invoice_lines returns line_no, line_type, description, amount ORDER BY line_no; sp_issue_invoice derives the line id from invoice_id || line_no. LINE_NO is the natural element key inside an invoice; the surrogate ID is kept as a field.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "entityAttrValue",
+        "pattern": "attribute",
+        "detail": "Load ENTITY_ATTR_VALUE as an attributes array on the owning document: attributes: [{name, value, type, createdDt}] keyed by (entity_type, entity_id). This run keeps entityAttrValue as its own collection for reconciliation and adds the array on customerMaster in the loader; attr_value stays a string, no boolean coercion (eight spellings of TAX_REGION_OVERRIDE observed in the fixture).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9))."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: entity_attr_value is the typed-as-strings dumping ground for everything that never got a column (entity_type, entity_id, attr_name, attr_value VARCHAR2(4000), attr_type default STR, created_dt VARCHAR2(9)).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "customerMasterHist",
+        "pattern": "history_copy",
+        "detail": "Keep CUSTOMER_MASTER_HIST as a separate archive collection loaded once (one document per hist row, same field mapping as customerMaster plus histId, histDt, histOp). No trigger equivalent after cutover; the application writes a history document explicitly on update or delete (document versioning owned by the app, not the database).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_customer_master_hist copies all 155 :OLD columns plus hist_id, hist_dt (TO_CHAR DD-MON-YY HH24:MI:SS), hist_op into customer_master_hist AFTER UPDATE OR DELETE. Full-row copies, unbounded per customer, so they cannot embed under the customer document.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "subscriptionsHist",
+        "pattern": "history_copy",
+        "detail": "Same treatment as customerMasterHist: separate archive collection, one document per hist row, app-written after cutover.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trg_subscriptions_hist writes a full-row copy of subscriptions into subscriptions_hist; unbounded per subscription.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "codes",
+        "pattern": "reference_data",
+        "detail": "CODES stays a small reference collection keyed by (codeType, codeVal); *_CD columns keep their numeric value on load so recon compares like with like, and the application resolves descriptions through codes (as pkg_ow_util.f_code_desc does today).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "note": "f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS)."
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: f_code_desc: SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2, and reports.py joins invoice_header.status_cd to codes(INV_STATUS).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "invoiceHeader",
+        "pattern": "reference",
+        "detail": "INVOICE_HEADER and INVOICE_LINE (the mainframe-conversion feed) stay two collections referenced by invoiceId. 37 INVOICE_LINE rows in the fixture point at no header, and the join in reports.py drops orphans on purpose, so embedding would silently change RPT-114 totals.",
+        "evidence": {
+          "file": "services/legacy-billing/app/reports.py",
+          "note": "LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it."
+        },
+        "cited": "services/legacy-billing/app/reports.py: LINE_SQL joins invoice_header h, invoice_line l on h.invoice_id = l.invoice_id and the module docstring says orphaned INVOICE_LINE rows fall out of the join, exactly as finance always ran it.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review"
+        },
+        "resolution": "Reviewed all five packages. pkg_plans, pkg_rating, pkg_invoicing, pkg_dunning are the read and write entrypoints the Flask app calls through procs/oracle/oracle_map.yaml; pkg_ow_util holds f_md5_uuid and f_code_desc. Read routes are reimplemented in the app's mongo backend (playbook 5); write procedures stay in Oracle until the customer run.",
+        "evidence": {
+          "file": "procs/oracle/oracle_map.yaml",
+          "note": "entrypoints maps each billing.fn_*/sp_* to its pkg_* equivalent; transcripts under procs/oracle/transcripts/ record the observed outputs."
+        },
+        "cited": "procs/oracle/oracle_map.yaml: entrypoints maps each billing.fn_*/sp_* to its pkg_* equivalent; transcripts under procs/oracle/transcripts/ record the observed outputs.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic"
+        },
+        "resolution": "TRG_CUSTOMER_MASTER_HIST and TRG_SUBSCRIPTIONS_HIST become app-written history documents (history_copy pattern). TRG_SUB_NO_UNCANCEL and TRG_USAGE_EVENTS_CHECK are validation rules that move into the application write path; they are not needed for the read-only cutover in this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "note": "trigger bodies reviewed; the two _HIST triggers copy rows, the other two raise on invalid transitions."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger bodies reviewed; the two _HIST triggers copy rows, the other two raise on invalid transitions.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job"
+        },
+        "resolution": "JOB_NIGHTLY_DUNNING and JOB_PURGE_AUDIT_LOG are DISABLED in the DDL. After cutover they need an application scheduler owner; recorded in 07_dependency_register.md, out of scope for this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "note": "both DBMS_SCHEDULER jobs are created with enabled => FALSE."
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql: both DBMS_SCHEDULER jobs are created with enabled => FALSE.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unparsed_statement"
+        },
+        "resolution": "CREATE USER and GRANT in setup/01_users.sql are credential and privilege statements, not schema; secrets are referenced by name only.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/setup/01_users.sql",
+          "note": "the two statements are the schema owner bootstrap."
+        },
+        "cited": "services/legacy-billing/db/oracle/setup/01_users.sql: the two statements are the schema owner bootstrap.",
+        "status": "PROPOSED"
+      }
+    ]
+  },
+  "unit": "w1-dunning",
+  "derived_from": ".migration/03_mapping_spec.json"
+}

@@ -1,0 +1,29 @@
+{
+  "unit": "w1-dunning",
+  "mapping_version": "map-1",
+  "target_db": "ow_billing",
+  "collections": {
+    "dunningAttempts": {
+      "documents": 1,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "notifications": {
+      "documents": 1,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.01
+    },
+    "billingAuditLog": {
+      "documents": 0,
+      "embedded_elements": 0,
+      "unparseable_dates": 0,
+      "attached_attributes": 0,
+      "seconds": 0.0
+    }
+  },
+  "seconds": 0.02
+}

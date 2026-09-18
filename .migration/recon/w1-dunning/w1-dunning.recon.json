@@ -1,0 +1,82 @@
+{
+  "kind": "recon-report",
+  "unit": "w1-dunning",
+  "mode": "fixture",
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "merge_eligible_reason": "fixture evidence",
+  "live_recon": "live recon: not run, no source access",
+  "tolerance_version": "tol-1",
+  "mapping_version": "map-1",
+  "redacted": true,
+  "generated_at": "2026-09-18T22:27:48.915651+00:00",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "dunningAttempts": 1,
+          "notifications": 1,
+          "billingAuditLog": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 11,
+      "stats": {
+        "deferred_to_tier3": [
+          "dunningAttempts.tenantId",
+          "dunningAttempts.invoiceId",
+          "notifications.tenantId",
+          "billingAuditLog.module",
+          "billingAuditLog.message"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "dunningAttempts": {
+          "mode": "full_diff",
+          "population": 1,
+          "duplicate_source_key_count": 0
+        },
+        "notifications": {
+          "mode": "full_diff",
+          "population": 1,
+          "duplicate_source_key_count": 0
+        },
+        "billingAuditLog": {
+          "mode": "full_diff",
+          "population": 0,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "unverified_paths": [
+    "live/snapshot recon against a customer source (no source access in offline mode)",
+    "write paths (history triggers, pkg_* procedures) are not exercised by this loader"
+  ],
+  "source": "result.json"
+}

@@ -1,0 +1,168 @@
+[
+  {
+    "name": "GET /api/dunning/overdue: fn_overdue_accounts(as_of 2026-02-28) rows",
+    "collection": "invoices",
+    "rules": [],
+    "source_sql": "SELECT i.tenant_id AS tenant_id, i.id AS invoice_id, i.total AS total, TRUNC(DATE '2026-02-28') - TRUNC(CAST(i.issued_at AS DATE)) AS days_overdue, DECODE(t.status_cd, 10, 'active', 20, 'suspended', 'UNKNOWN') AS tenant_status FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id AND i.status_cd = 40 AND TO_CHAR(i.issued_at, 'YYYYMMDD') < '20260228' ORDER BY i.issued_at, i.id",
+    "target_pipeline": [
+      {
+        "$match": {
+          "statusCd": 40,
+          "$expr": {
+            "$lt": [
+              "$issuedAt",
+              {
+                "$dateFromString": {
+                  "dateString": "2026-02-28T00:00:00Z"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "$lookup": {
+          "from": "tenants",
+          "localField": "tenantId",
+          "foreignField": "_id",
+          "as": "t"
+        }
+      },
+      {
+        "$unwind": {
+          "path": "$t",
+          "preserveNullAndEmptyArrays": true
+        }
+      },
+      {
+        "$sort": {
+          "issuedAt": 1,
+          "_id": 1
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "TENANT_ID": "$tenantId",
+          "INVOICE_ID": "$_id",
+          "TOTAL": "$total",
+          "DAYS_OVERDUE": {
+            "$dateDiff": {
+              "startDate": {
+                "$dateTrunc": {
+                  "date": "$issuedAt",
+                  "unit": "day"
+                }
+              },
+              "endDate": {
+                "$dateFromString": {
+                  "dateString": "2026-02-28T00:00:00Z"
+                }
+              },
+              "unit": "day"
+            }
+          },
+          "TENANT_STATUS": {
+            "$switch": {
+              "branches": [
+                {
+                  "case": {
+                    "$eq": [
+                      "$t.statusCd",
+                      10
+                    ]
+                  },
+                  "then": "active"
+                },
+                {
+                  "case": {
+                    "$eq": [
+                      "$t.statusCd",
+                      20
+                    ]
+                  },
+                  "then": "suspended"
+                }
+              ],
+              "default": "UNKNOWN"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "dunning attempts per invoice, ordered (pkg_dunning reads by invoice)",
+    "collection": "dunningAttempts",
+    "rules": [],
+    "source_sql": "SELECT invoice_id AS invoice_id, COUNT(*) AS n FROM dunning_attempts GROUP BY invoice_id ORDER BY invoice_id",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$invoiceId",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "INVOICE_ID": "$_id",
+          "N": 1
+        }
+      },
+      {
+        "$sort": {
+          "INVOICE_ID": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications per kind",
+    "collection": "notifications",
+    "rules": [],
+    "source_sql": "SELECT kind_cd AS kind_cd, COUNT(*) AS n FROM notifications GROUP BY kind_cd",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$kindCd",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "KIND_CD": "$_id",
+          "N": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "billing audit log entries per module (the swallowed-exception trail)",
+    "collection": "billingAuditLog",
+    "rules": [],
+    "source_sql": "SELECT module AS module, COUNT(*) AS n FROM billing_audit_log GROUP BY module",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$module",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "MODULE": "$_id",
+          "N": 1
+        }
+      }
+    ]
+  }
+]
