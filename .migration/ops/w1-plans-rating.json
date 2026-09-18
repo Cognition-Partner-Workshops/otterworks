@@ -14,9 +14,9 @@
     "name": "entitlement: active subscription count per tenant",
     "collection": "subscriptions",
     "rules": [],
-    "source_sql": "SELECT tenant_id AS tenant_id, COUNT(*) AS n FROM subscriptions WHERE status_cd = 1 GROUP BY tenant_id",
+    "source_sql": "SELECT tenant_id AS tenant_id, COUNT(*) AS n FROM subscriptions WHERE status_cd = 10 GROUP BY tenant_id",
     "target_pipeline": [
-      {"$match": {"statusCd": 1}},
+      {"$match": {"statusCd": 10}},
       {"$group": {"_id": "$tenantId", "N": {"$sum": 1}}},
       {"$project": {"_id": 0, "TENANT_ID": "$_id", "N": 1}}
     ]

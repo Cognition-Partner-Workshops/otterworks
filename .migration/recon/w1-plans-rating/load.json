@@ -50,15 +50,15 @@
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.01
+      "seconds": 0.0
     },
     "codes": {
       "documents": 32,
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.02
+      "seconds": 0.01
     }
   },
-  "seconds": 0.09
+  "seconds": 0.06
 }
