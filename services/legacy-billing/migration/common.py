@@ -29,6 +29,8 @@ oracledb.defaults.fetch_decimals = True
 _IDENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _YN_TRUE = {"Y", "T", "1", "TRUE", "YES"}
 _YN_FALSE = {"N", "F", "0", "FALSE", "NO"}
+# VARCHAR2 date columns: DD-MON-YY in the master tables, DD-MON-YY HH24:MI:SS from the history triggers.
+_DATE_STRING_FORMATS = ("%d-%b-%y", "%d-%b-%y %H:%M:%S")
 
 
 class LoaderError(Exception):
@@ -93,6 +95,9 @@ class CollectionMap:
     embeds: list[EmbedMap]
 
 
+_ATTR_CREATED_DT = FieldMap("CREATED_DT", "createdDt", "DATE", "date")
+
+
 def _fields(raw: list[dict]) -> list[FieldMap]:
     return [FieldMap(f["source"], f["target"], f.get("source_type", ""),
                      f.get("bson_type", ""), list(f.get("rules", []))) for f in raw]
@@ -152,11 +157,13 @@ def convert(value: Any, f: FieldMap, raw_out: dict[str, Any]) -> Any:
         if isinstance(value, dt.date):
             return dt.datetime(value.year, value.month, value.day)
         if isinstance(value, str):
-            try:
-                return dt.datetime.strptime(value.strip(), "%d-%b-%y")
-            except ValueError:
-                raw_out[f"{f.target}_raw"] = value
-                return None
+            for fmt in _DATE_STRING_FORMATS:
+                try:
+                    return dt.datetime.strptime(value.strip(), fmt)
+                except ValueError:
+                    continue
+            raw_out[f"{f.target}_raw"] = value
+            return None
     return value
 
 
@@ -227,8 +234,11 @@ def load_attributes(conn: oracledb.Connection, entity_type: str) -> dict[str, li
             attr["value"] = value
         if attr_type not in (None, ""):
             attr["type"] = attr_type
-        if created not in (None, ""):
-            attr["createdDt"] = created
+        raw: dict[str, Any] = {}
+        converted = convert(created, _ATTR_CREATED_DT, raw)
+        if converted is not None:
+            attr["createdDt"] = converted
+        attr.update(raw)
         out.setdefault(entity_id, []).append(attr)
     cur.close()
     return out

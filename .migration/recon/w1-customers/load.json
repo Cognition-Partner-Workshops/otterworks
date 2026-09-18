@@ -8,22 +8,22 @@
       "embedded_elements": 0,
       "unparseable_dates": 50,
       "attached_attributes": 8333,
-      "seconds": 2.18
+      "seconds": 2.27
     },
     "customerMasterHist": {
       "documents": 0,
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.02
+      "seconds": 0.05
     },
     "entityAttrValue": {
       "documents": 8333,
       "embedded_elements": 0,
       "unparseable_dates": 0,
       "attached_attributes": 0,
-      "seconds": 0.15
+      "seconds": 0.16
     }
   },
-  "seconds": 2.35
+  "seconds": 2.48
 }
