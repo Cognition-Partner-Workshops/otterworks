@@ -7,6 +7,7 @@ two backends diff clean. Write routes are not implemented here: the history trig
 and `sp_*` procedures stay on the relational side until a customer run.
 """
 
+import calendar
 import os
 from datetime import date, datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
@@ -67,6 +68,8 @@ def _first_digit(x, weight):
 
 
 def num(value):
+    if value is None:
+        return None
     text = str(value)
     return text.lstrip("-") if value == 0 else text
 
@@ -134,8 +137,8 @@ def usage_rating(tenant_id, start, end):
     start, end = as_day(start), as_day(end)
     sub = current_subscription(tenant_id, start, end)
     plan = db().plans.find_one({"_id": sub["planId"]}) if sub else None
-    included = plan["includedUnits"] if plan else 0
-    rate = dec(plan["overageRate"]) if plan else Decimal(0)
+    included = plan["includedUnits"] if plan else None
+    rate = dec(plan["overageRate"]) if plan else None
 
     used = sum(
         u.get("units", 0)
@@ -154,12 +157,17 @@ def usage_rating(tenant_id, start, end):
     prior_sum = sum(
         r.get("rolloverUnits", 0) for r in db().ratingResults.find({"periodId": {"$in": period_ids}})
     )
-    prior = min(2 * included, prior_sum)
-    rollover = min(prior, included * 2)
-    billable = max(used - rollover - included, 0)
-    first = min(billable, 101)
-    second = max(billable - 101, 0)
-    amount = scaled(first * rate + second * rate * Decimal("1.5"), 2)
+    # PostgreSQL LEAST/GREATEST skip NULL operands, so a tenant with no covering
+    # subscription still rates: null quota and amount, zero billable units.
+    if plan is None:
+        rollover, billable, first, second, amount = prior_sum, 0, 0, 0, None
+    else:
+        prior = min(2 * included, prior_sum)
+        rollover = min(prior, included * 2)
+        billable = max(used - rollover - included, 0)
+        first = min(billable, 101)
+        second = max(billable - 101, 0)
+        amount = scaled(first * rate + second * rate * Decimal("1.5"), 2)
 
     suspended_on = sub.get("suspendedOn") if sub else None
     if sub and sub.get("statusCd") == 20 and suspended_on is not None \
@@ -189,15 +197,14 @@ def _minus_months(day, months):
     while month <= 0:
         month += 12
         year -= 1
-    return day.replace(year=year, month=month)
+    last = calendar.monthrange(year, month)[1]
+    return day.replace(year=year, month=month, day=min(day.day, last))
 
 
 def invoice_preview(tenant_id, start, end):
     rating = usage_rating(tenant_id, start, end)
     plan = rating["_plan"]
-    if plan is None:
-        return []
-    fee = dec(plan["monthlyFee"])
+    fee = dec(plan["monthlyFee"]) if plan else None
     overage = rating["overage_amount"]
     open_notes = [
         dec(c["remainingAmount"]) for c in db().creditNotes.find(
@@ -205,10 +212,22 @@ def invoice_preview(tenant_id, start, end):
     ]
     credit = scaled(sum(open_notes), 2) if open_notes else Decimal(0)
     tenant = db().tenants.find_one({"_id": tenant_id}) or {}
-    tax = Decimal(0) if tenant.get("taxExempt") else (fee + overage) * TAX_RATE
-    half_tax = pg_div(tax, 2)
-    credit_applied = min(credit, scaled(fee + overage + tax, 2))
+    if tenant.get("taxExempt"):
+        tax = Decimal(0)
+    elif plan is None:
+        tax = None
+    else:
+        tax = (fee + overage) * TAX_RATE
+    half_tax = pg_div(tax, 2) if tax is not None else None
+    # LEAST(credit, NULL) is credit in PostgreSQL
+    if plan is None:
+        credit_applied = credit
+    else:
+        credit_applied = min(credit, scaled(fee + overage + tax, 2))
     zero = Decimal(0)
+    code = plan["code"] if plan else None
+    fee2 = scaled(fee, 2) if plan else None
+    overage2 = scaled(overage, 2) if plan else None
 
     def line(no, kind, desc, amount, applied, total):
         return {
@@ -218,8 +237,8 @@ def invoice_preview(tenant_id, start, end):
         }
 
     return [
-        line(1, "plan", plan["code"], scaled(fee, 2), zero, scaled(fee, 2)),
-        line(2, "usage", "usage overage", scaled(overage, 2), zero, scaled(overage, 2)),
+        line(1, "plan", code, fee2, zero, fee2),
+        line(2, "usage", "usage overage", overage2, zero, overage2),
         line(3, "tax", "regional tax", half_tax, zero, half_tax),
         line(4, "tax", "local tax", half_tax, zero, half_tax),
         line(5, "credit", "credit notes", zero, credit_applied, -credit_applied),

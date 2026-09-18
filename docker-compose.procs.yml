@@ -44,6 +44,7 @@ services:
         condition: service_healthy
       legacy-billing-mongo:
         condition: service_healthy
+        required: false
     environment:
       # postgres (default) or mongo; the mongo backend serves the read routes from
       # the ow_billing document model and answers 501 on the write routes.
