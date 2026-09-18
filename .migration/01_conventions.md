@@ -5,7 +5,7 @@
 - Recon mode: `offline`. Evidence is fixture-only. A fixture PASS is never parity and never makes a unit merge-eligible for production.
 - Branches: work branch `tp-run/mongodb-20260918T212022Z`. Unit branches `migrate/billing/w1-<unit>` off the work branch. PRs target the work branch only. Never main, never tech-partnerships.
 - PR shape: Decisions, Code, Evidence. Unverified paths first. Under 2,000 characters. `recon.summary.md` rendered, raw JSON linked. Each unit PR states `live recon: not run, no source access`.
-- Collections: snake_case, singular domain names (`customers`, `invoices`, `plans`, `codes`, `dunning_attempts`). Fields: snake_case, lowercased Oracle column names.
+- Collections and fields: the names emitted by `model_proposal.py` and approved in map-1 at STOP B (camelCase, e.g. `customerMaster`, `invoices.lines`, `dunningAttempts`; fields `tenantId`, `statusCd`). The recon harness grades through the same mapping, so loader, ops and app read the one approved spelling.
 - Secrets by name only: `ORACLE_BILLING_DSN` (source, read-only), `MONGO_LOCAL_URI` (target). Values never appear in `.migration/`, PRs, or the walkthrough.
 - Artifacts: `.migration/recon/<unit_id>/` redacted (harness default). No raw source rows are committed.
 - Every plugin command runs as `env -u MONGODB_ATLAS_URI ...`.

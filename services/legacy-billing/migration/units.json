@@ -1,0 +1,18 @@
+{
+  "w1-customers": {
+    "description": "Customer master, its full-row history archive, and the attribute (EAV) table",
+    "collections": ["customerMaster", "customerMasterHist", "entityAttrValue"]
+  },
+  "w1-invoices": {
+    "description": "Invoices with embedded lines, credit notes, and the finance feed header/line tables (kept referenced: orphan lines)",
+    "collections": ["invoices", "creditNotes", "invoiceHeader", "invoiceLine"]
+  },
+  "w1-plans-rating": {
+    "description": "Tenants, plans, subscriptions and their history, usage events, rating periods and results, reference codes",
+    "collections": ["tenants", "plans", "subscriptions", "subscriptionsHist", "usageEvents", "ratingPeriods", "ratingResults", "codes"]
+  },
+  "w1-dunning": {
+    "description": "Dunning attempts, notifications, billing audit log",
+    "collections": ["dunningAttempts", "notifications", "billingAuditLog"]
+  }
+}
