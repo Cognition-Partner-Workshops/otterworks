@@ -1,12 +1,94 @@
 [
   {
-    "name": "GET /api/dunning/overdue input: attempts per tenant and status",
-    "collection": "dunningAttempts",
+    "name": "GET /api/dunning/overdue: fn_overdue_accounts(as_of 2026-02-28) rows",
+    "collection": "invoices",
     "rules": [],
-    "source_sql": "SELECT tenant_id AS tenant_id, status_cd AS status_cd, COUNT(*) AS n, MAX(attempt_no) AS max_attempt FROM dunning_attempts GROUP BY tenant_id, status_cd",
+    "source_sql": "SELECT i.tenant_id AS tenant_id, i.id AS invoice_id, i.total AS total, TRUNC(DATE '2026-02-28') - TRUNC(CAST(i.issued_at AS DATE)) AS days_overdue, DECODE(t.status_cd, 10, 'active', 20, 'suspended', 'UNKNOWN') AS tenant_status FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id AND i.status_cd = 40 AND TO_CHAR(i.issued_at, 'YYYYMMDD') < '20260228' ORDER BY i.issued_at, i.id",
     "target_pipeline": [
-      {"$group": {"_id": {"t": "$tenantId", "s": "$statusCd"}, "N": {"$sum": 1}, "MAX_ATTEMPT": {"$max": "$attemptNo"}}},
-      {"$project": {"_id": 0, "TENANT_ID": "$_id.t", "STATUS_CD": "$_id.s", "N": 1, "MAX_ATTEMPT": 1}}
+      {
+        "$match": {
+          "statusCd": 40,
+          "$expr": {
+            "$lt": [
+              "$issuedAt",
+              {
+                "$dateFromString": {
+                  "dateString": "2026-02-28T00:00:00Z"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "$lookup": {
+          "from": "tenants",
+          "localField": "tenantId",
+          "foreignField": "_id",
+          "as": "t"
+        }
+      },
+      {
+        "$unwind": {
+          "path": "$t",
+          "preserveNullAndEmptyArrays": true
+        }
+      },
+      {
+        "$sort": {
+          "issuedAt": 1,
+          "_id": 1
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "TENANT_ID": "$tenantId",
+          "INVOICE_ID": "$_id",
+          "TOTAL": "$total",
+          "DAYS_OVERDUE": {
+            "$dateDiff": {
+              "startDate": {
+                "$dateTrunc": {
+                  "date": "$issuedAt",
+                  "unit": "day"
+                }
+              },
+              "endDate": {
+                "$dateFromString": {
+                  "dateString": "2026-02-28T00:00:00Z"
+                }
+              },
+              "unit": "day"
+            }
+          },
+          "TENANT_STATUS": {
+            "$switch": {
+              "branches": [
+                {
+                  "case": {
+                    "$eq": [
+                      "$t.statusCd",
+                      10
+                    ]
+                  },
+                  "then": "active"
+                },
+                {
+                  "case": {
+                    "$eq": [
+                      "$t.statusCd",
+                      20
+                    ]
+                  },
+                  "then": "suspended"
+                }
+              ],
+              "default": "UNKNOWN"
+            }
+          }
+        }
+      }
     ]
   },
   {
@@ -15,9 +97,26 @@
     "rules": [],
     "source_sql": "SELECT invoice_id AS invoice_id, COUNT(*) AS n FROM dunning_attempts GROUP BY invoice_id ORDER BY invoice_id",
     "target_pipeline": [
-      {"$group": {"_id": "$invoiceId", "N": {"$sum": 1}}},
-      {"$project": {"_id": 0, "INVOICE_ID": "$_id", "N": 1}},
-      {"$sort": {"INVOICE_ID": 1}}
+      {
+        "$group": {
+          "_id": "$invoiceId",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "INVOICE_ID": "$_id",
+          "N": 1
+        }
+      },
+      {
+        "$sort": {
+          "INVOICE_ID": 1
+        }
+      }
     ]
   },
   {
@@ -26,8 +125,21 @@
     "rules": [],
     "source_sql": "SELECT kind_cd AS kind_cd, COUNT(*) AS n FROM notifications GROUP BY kind_cd",
     "target_pipeline": [
-      {"$group": {"_id": "$kindCd", "N": {"$sum": 1}}},
-      {"$project": {"_id": 0, "KIND_CD": "$_id", "N": 1}}
+      {
+        "$group": {
+          "_id": "$kindCd",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "KIND_CD": "$_id",
+          "N": 1
+        }
+      }
     ]
   },
   {
@@ -36,8 +148,21 @@
     "rules": [],
     "source_sql": "SELECT module AS module, COUNT(*) AS n FROM billing_audit_log GROUP BY module",
     "target_pipeline": [
-      {"$group": {"_id": "$module", "N": {"$sum": 1}}},
-      {"$project": {"_id": 0, "MODULE": "$_id", "N": 1}}
+      {
+        "$group": {
+          "_id": "$module",
+          "N": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "MODULE": "$_id",
+          "N": 1
+        }
+      }
     ]
   }
 ]
