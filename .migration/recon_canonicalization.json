@@ -1,0 +1,11 @@
+[
+  {"rule": "decimal_round", "applies_to": "NUMBER->Decimal128", "params": {"mode": "half_even"}},
+  {"rule": "datetime_utc_truncate_ms", "applies_to": "DATE,TIMESTAMP*->date", "params": {"precision": "ms"}},
+  {"rule": "rstrip_spaces", "applies_to": "CHAR->string", "params": {}},
+  {"rule": "empty_string_is_null", "applies_to": "VARCHAR2,NVARCHAR2,CHAR->string", "params": {"target_policy": "missing_field"}},
+  {"rule": "null_missing_equiv", "applies_to": "*", "params": {"policy": "null_equals_missing"}},
+  {"rule": "collation_casefold", "applies_to": "string", "params": {"enabled_if": "NLS case-insensitive comparisons found in census"}},
+  {"rule": "yn_to_bool", "applies_to": "CHAR(1) *_YN->bool", "params": {}},
+  {"rule": "csv_to_array", "applies_to": "VARCHAR2 *_CSV,*_IDS->array", "params": {"delimiter": ",", "drop_empty": true}},
+  {"rule": "date_string_to_date", "applies_to": "VARCHAR2 *_DT holding DD-MON-YY->date", "params": {"format": "%d-%b-%y", "unparseable": "null"}}
+]
