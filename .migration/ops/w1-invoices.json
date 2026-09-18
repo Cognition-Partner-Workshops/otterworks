@@ -159,18 +159,14 @@
       },
       {
         "$unionWith": {
-          "coll": "invoiceLine",
           "pipeline": [
             {
-              "$limit": 1
-            },
-            {
-              "$project": {
-                "_id": null,
-                "N_ORPHANS": {
-                  "$literal": 0
+              "$documents": [
+                {
+                  "_id": null,
+                  "N_ORPHANS": 0
                 }
-              }
+              ]
             }
           ]
         }
