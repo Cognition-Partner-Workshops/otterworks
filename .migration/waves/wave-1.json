@@ -1,0 +1,87 @@
+{
+ "wave": 1,
+ "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+ "branch": "tp-run/mongodb-20260922T142645Z",
+ "backend": "local-sequential",
+ "child_macro": "playbook file skills/install-mongo-kit/playbooks/3-unit_migration.md executed by hand (no !mongo_* macros in this install)",
+ "verify_macro": "skills/install-mongo-kit/playbooks/4-reconciliation_and_parallel_run.md, fixture mode only",
+ "width": 1,
+ "breaker_threshold": 3,
+ "auto_merge": false,
+ "child_minutes": 45,
+ "recon_mode": "offline",
+ "allowed_targets": ".migration/allowed_targets.json",
+ "depends_on_waves": [
+  0
+ ],
+ "expected_cost_note": "3 units incl. the XL wide-embed unit (customers); expect ~3x wave 0",
+ "batches": [
+  {
+   "id": "w1-b01",
+   "units": [
+    "tenancy-plans"
+   ],
+   "source_tables": [
+    "TENANTS",
+    "PLANS",
+    "SUBSCRIPTIONS",
+    "SUBSCRIPTIONS_HIST"
+   ],
+   "collections": [
+    "tenants",
+    "plans",
+    "subscriptions",
+    "subscriptionVersions"
+   ],
+   "write_targets": [
+    "ow_billing_offline.tenants",
+    "ow_billing_offline.plans",
+    "ow_billing_offline.subscriptions",
+    "ow_billing_offline.subscriptionVersions"
+   ],
+   "fixture_manifest": ".migration/fixtures/w1-b01.json",
+   "brief": "Tenancy and plan estate (pkg_plans). subscriptionVersions holds one document per SUBSCRIPTIONS_HIST row; histDt parsed as DD-MON-YY HH24:MI:SS (01_tables.sql:218). Port trg_sub_no_uncancel (01_tables.sql:224-236) as a documented application guard in the unit notes; no data effect. Seed: closed/open/cancelled subscriptions, history rows with the string timestamp, status_cd values not in CODES.\n\nRepo otterworks, branch tp-run/mongodb-20260922T142645Z (PR target; never tech-partnerships/main). recon_mode offline, stop_mode hard: run every command as `env -u MONGODB_ATLAS_URI ...`; local Docker only (Oracle Free 127.0.0.1:1521 FREEPDB1 fixture built from services/legacy-billing/db/oracle/{schema,packages}/*.sql minus 04_upgrade_static.sql (D-010), MongoDB mongo:7 127.0.0.1:27017, target db ow_billing_offline only). Legacy tree services/legacy-billing/ is read-only. Contract: .migration/02_tolerances.json (tol-1), mapping .migration/03_mapping_spec.json (map-draft-2, regenerate only via model_patch.py + 05_decisions.json), census .migration/census.json. Fixture: synthetic seed under migration/mongo/fixtures/ that exercises every census trap for this unit's tables (string dates incl. unparseable, Y/N flags incl. NULL, CSV lists incl. malformed, repeating groups, orphans/unenforced pointers, sequence ids, empty strings, CHAR padding); write .migration/fixtures/<batch>.json {source,method,masked_columns,produced_at,produced_by,row_counts}. Loader: migration/mongo/loaders/<unit>.py, spec-driven from 03_mapping_spec.json, idempotent (upsert by key; rerun yields zero diff). Verify: harness `recon run --mode fixture` (venv /home/ubuntu/mmp-venv) PASS, then one fault injection (delete/alter one target doc or field) proving FAIL, then rerun loader and PASS again; evidence redacted under .migration/recon/<unit>/ incl. recon.summary.md. `make tp-smoke` before the PR. One held PR per unit into the tp-run branch: sections Decisions / Code / Evidence, unverified paths first, recon.summary.md rendered, `merge_eligible: false` stated. Do not merge. Cap 3 recon reruns; same-class failure x3 across units halts the wave."
+  },
+  {
+   "id": "w1-b02",
+   "units": [
+    "customers"
+   ],
+   "source_tables": [
+    "CUSTOMER_MASTER",
+    "ENTITY_ATTR_VALUE",
+    "CUSTOMER_MASTER_HIST"
+   ],
+   "collections": [
+    "customers",
+    "customerVersions"
+   ],
+   "write_targets": [
+    "ow_billing_offline.customers",
+    "ow_billing_offline.customerVersions"
+   ],
+   "fixture_manifest": ".migration/fixtures/w1-b02.json",
+   "brief": "Wide customer master (155 columns) + EAV + full-row history. customers embeds ENTITY_ATTR_VALUE rows WHERE ENTITY_TYPE = 'CUSTOMER' as attributes[] keyed eavId (facade.py:286-299); target_where {} counts all customers docs. Non-CUSTOMER rows: apply the STOP B answer to U-1 (recommended: separate entityAttrValue collection, added by decision) before loading. EAV rows whose ENTITY_ID matches no customer are quarantined and counted in recon.summary.md. Sparse columns -> missing; *_yn -> bool; *_dt text -> date DD-MON-YY (unparseable -> missing + quarantine list); *_ids/*_csv -> arrays (malformed -> quarantine). customerVersions one doc per CUSTOMER_MASTER_HIST row (histDt DD-MON-YY HH24:MI:SS, 02_horror.sql:370). Repeating groups stay flat unless STOP B U-3 says otherwise. Seed: 150+ customers with every group populated/sparse, dirty dates, bad CSVs, FLAG_NN values Y/N/NULL/other, EAV rows of type CUSTOMER and one other type, orphan EAV rows, 2+ history rows per changed customer.\n\nRepo otterworks, branch tp-run/mongodb-20260922T142645Z (PR target; never tech-partnerships/main). recon_mode offline, stop_mode hard: run every command as `env -u MONGODB_ATLAS_URI ...`; local Docker only (Oracle Free 127.0.0.1:1521 FREEPDB1 fixture built from services/legacy-billing/db/oracle/{schema,packages}/*.sql minus 04_upgrade_static.sql (D-010), MongoDB mongo:7 127.0.0.1:27017, target db ow_billing_offline only). Legacy tree services/legacy-billing/ is read-only. Contract: .migration/02_tolerances.json (tol-1), mapping .migration/03_mapping_spec.json (map-draft-2, regenerate only via model_patch.py + 05_decisions.json), census .migration/census.json. Fixture: synthetic seed under migration/mongo/fixtures/ that exercises every census trap for this unit's tables (string dates incl. unparseable, Y/N flags incl. NULL, CSV lists incl. malformed, repeating groups, orphans/unenforced pointers, sequence ids, empty strings, CHAR padding); write .migration/fixtures/<batch>.json {source,method,masked_columns,produced_at,produced_by,row_counts}. Loader: migration/mongo/loaders/<unit>.py, spec-driven from 03_mapping_spec.json, idempotent (upsert by key; rerun yields zero diff). Verify: harness `recon run --mode fixture` (venv /home/ubuntu/mmp-venv) PASS, then one fault injection (delete/alter one target doc or field) proving FAIL, then rerun loader and PASS again; evidence redacted under .migration/recon/<unit>/ incl. recon.summary.md. `make tp-smoke` before the PR. One held PR per unit into the tp-run branch: sections Decisions / Code / Evidence, unverified paths first, recon.summary.md rendered, `merge_eligible: false` stated. Do not merge. Cap 3 recon reruns; same-class failure x3 across units halts the wave."
+  },
+  {
+   "id": "w1-b03",
+   "units": [
+    "legacy-invoice-feed"
+   ],
+   "source_tables": [
+    "INVOICE_HEADER",
+    "INVOICE_LINE"
+   ],
+   "collections": [
+    "legacyInvoices",
+    "legacyInvoiceLines"
+   ],
+   "write_targets": [
+    "ow_billing_offline.legacyInvoices",
+    "ow_billing_offline.legacyInvoiceLines"
+   ],
+   "fixture_manifest": ".migration/fixtures/w1-b03.json",
+   "brief": "Mainframe-conversion invoice feed read by RPT-114 (app/reports.py:42-89) and the CUSTBILL extract (etl/legacy-extra/tools/oracle_custbill_extract.py:15-28). Lines stay a separate collection referenced by invoiceId (no FK; orphans exist by contract, billing-report-contract.md:30-31) unless STOP B U-2 chooses embed. invoiceDt/dueDt DD-MON-YY -> date; GL split CSV -> array; DECODE line types stay numeric. Recon counts orphan lines (invoiceId with no header) and reports them. Seed: 500 headers, ~4000 lines incl. 37+ orphans, dirty dates, copied customer fields that disagree with customers, quantities/prices at NUMBER scale edges.\n\nRepo otterworks, branch tp-run/mongodb-20260922T142645Z (PR target; never tech-partnerships/main). recon_mode offline, stop_mode hard: run every command as `env -u MONGODB_ATLAS_URI ...`; local Docker only (Oracle Free 127.0.0.1:1521 FREEPDB1 fixture built from services/legacy-billing/db/oracle/{schema,packages}/*.sql minus 04_upgrade_static.sql (D-010), MongoDB mongo:7 127.0.0.1:27017, target db ow_billing_offline only). Legacy tree services/legacy-billing/ is read-only. Contract: .migration/02_tolerances.json (tol-1), mapping .migration/03_mapping_spec.json (map-draft-2, regenerate only via model_patch.py + 05_decisions.json), census .migration/census.json. Fixture: synthetic seed under migration/mongo/fixtures/ that exercises every census trap for this unit's tables (string dates incl. unparseable, Y/N flags incl. NULL, CSV lists incl. malformed, repeating groups, orphans/unenforced pointers, sequence ids, empty strings, CHAR padding); write .migration/fixtures/<batch>.json {source,method,masked_columns,produced_at,produced_by,row_counts}. Loader: migration/mongo/loaders/<unit>.py, spec-driven from 03_mapping_spec.json, idempotent (upsert by key; rerun yields zero diff). Verify: harness `recon run --mode fixture` (venv /home/ubuntu/mmp-venv) PASS, then one fault injection (delete/alter one target doc or field) proving FAIL, then rerun loader and PASS again; evidence redacted under .migration/recon/<unit>/ incl. recon.summary.md. `make tp-smoke` before the PR. One held PR per unit into the tp-run branch: sections Decisions / Code / Evidence, unverified paths first, recon.summary.md rendered, `merge_eligible: false` stated. Do not merge. Cap 3 recon reruns; same-class failure x3 across units halts the wave."
+  }
+ ]
+}
