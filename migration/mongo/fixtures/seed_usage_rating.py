@@ -58,8 +58,10 @@ def _seed(conn) -> dict:
     ensure_subscriptions(cur, ["SYNTH-SUB-OPEN", "SYNTH-SUB-CLOSED",
                                "SYNTH-SUB-CXL", "SYNTH-SUB-SUSP",
                                "SYNTH-SUB-UNKNOWN"])
+    # rating_periods are referenced by invoices (fk_inv_period): upsert via
+    # MERGE (converge to canonical values) instead of delete+insert.
+    ensure_rating_periods(cur, [f"SYNTH-RP-{i:04d}" for i in range(N_PERIODS)])
     cur.execute("DELETE FROM rating_results WHERE id LIKE 'SYNTH-RR-%'")
-    cur.execute("DELETE FROM rating_periods WHERE id LIKE 'SYNTH-RP-%'")
     cur.execute("DELETE FROM usage_events WHERE id LIKE 'SYNTH-UE-%'")
 
     ev_rows = []
@@ -75,18 +77,6 @@ def _seed(conn) -> dict:
             [1, 2, 3][i % 3],            # trigger rejects kinds outside CODES
         ))
     cur.executemany("INSERT INTO usage_events (id,tenant_id,occurred_at,units,kind_cd) VALUES (:1,:2,:3,:4,:5)", ev_rows)
-
-    rp_rows = []
-    for i in range(N_PERIODS):
-        # UQ_RATING_PERIODS (tenant_id, period_start): unique start per row
-        start = dt.date(2026, (i // 3) + 1, (i % 3) * 9 + 1)
-        rp_rows.append((
-            f"SYNTH-RP-{i:04d}",
-            TENANTS[i % 3],
-            start,
-            start + dt.timedelta(days=25),
-        ))
-    cur.executemany("INSERT INTO rating_periods (id,tenant_id,period_start,period_end) VALUES (:1,:2,:3,:4)", rp_rows)
 
     rr_rows = []
     rid = 0
