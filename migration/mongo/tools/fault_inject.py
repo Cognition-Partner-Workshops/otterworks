@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import sys
+from pathlib import Path
 
 TARGET_DB = "ow_billing_offline"
 
@@ -33,6 +34,9 @@ def main() -> int:
     uri = os.environ.get("MONGO_LOCAL_URI")
     if not uri:
         sys.exit("MONGO_LOCAL_URI not set")
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "loaders"))
+    from spec_loader import require_local_uri
+    require_local_uri(uri)
     from pymongo import MongoClient
     coll = MongoClient(uri)[TARGET_DB][args.collection]
     doc = coll.find_one()
