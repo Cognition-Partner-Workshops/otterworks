@@ -11,12 +11,15 @@ days. Migrated replacement: TTL index `loggedAt expireAfterSeconds=7776000`
 `logged_at` values are within 90 days so recon counts match before any
 expiry.
 
-## Indexes mirroring Oracle unique constraints
+## Indexes mirroring Oracle constraints
 
-The loader also creates unique compound indexes mirroring the Oracle UQs:
-`dunningAttempts (invoiceId, attemptNo)` for UQ_DUNNING_ATTEMPTS and
-`notifications (tenantId, kindCd, sentAt)` for UQ_NOTIFICATIONS — the
-same natural dedupe keys the seeded traps exercise.
+`dunningAttempts (invoiceId, attemptNo)` is a unique compound index
+mirroring UQ_DUNNING_ATTEMPTS (integer keys, lossless).
+`notifications (tenantId, kindCd, sentAt)` indexes the UQ_NOTIFICATIONS
+dedupe key but is **not unique on the target**: T4 truncates `sentAt` to
+milliseconds, so a unique index could reject two legal Oracle rows that
+differ only below 1 ms. Enforcing the dedupe needs a target dedupe
+contract decision — open item, logged as a coverage gap.
 
 ## Open: JOB_NIGHTLY_DUNNING owner
 
