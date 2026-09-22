@@ -1,0 +1,101 @@
+{
+  "unit": "invoicing",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:27:56.090265+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "invoices": 44,
+          "creditNotes": 20
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 8,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoices.tenantId",
+          "invoices.periodId",
+          "invoices.issuedAt",
+          "invoices.subtotal",
+          "invoices.tax",
+          "invoices.total",
+          "creditNotes.tenantId",
+          "creditNotes.issuedOn",
+          "creditNotes.amount",
+          "creditNotes.remainingAmount"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "invoices.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "invoices.periodId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "creditNotes.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 3
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 183,
+      "stats": {
+        "invoices": {
+          "mode": "full_diff",
+          "population": 44,
+          "duplicate_source_key_count": 0
+        },
+        "embeds_graded": {
+          "invoices.lines": 119
+        },
+        "creditNotes": {
+          "mode": "full_diff",
+          "population": 20,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
