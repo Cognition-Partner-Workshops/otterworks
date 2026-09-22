@@ -27,7 +27,8 @@ def _redact(_id):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--collection", required=True)
-    ap.add_argument("--mode", choices=["drop-one", "alter-field"], required=True)
+    ap.add_argument("--mode", choices=["drop-one", "alter-field", "alter-embed"],
+                    required=True)
     args = ap.parse_args()
     if os.environ.get("MONGODB_ATLAS_URI"):
         sys.exit("MONGODB_ATLAS_URI is set: offline mode refuses remote targets")
@@ -46,6 +47,20 @@ def main() -> int:
         coll.delete_one({"_id": doc["_id"]})
         print(f"dropped {args.collection}._id={_redact(doc['_id'])}")
         return 0
+    if args.mode == "alter-embed":
+        for d in coll.find({}):
+            for k, v in d.items():
+                if isinstance(v, list) and v and isinstance(v[0], dict):
+                    inner = ("amount" if "amount" in v[0]
+                             else next(iter(v[0]), None))
+                    if inner is None:
+                        continue
+                    coll.update_one({"_id": d["_id"]},
+                                    {"$set": {f"{k}.0.{inner}": "__fault_injected__"}})
+                    print(f"altered {args.collection}._id={_redact(d['_id'])} "
+                          f"{k}[0].{inner!r}")
+                    return 0
+        sys.exit(f"{args.collection}: no embedded elements to alter")
     field = next((k for k in doc if k != "_id"), None)
     if field is None:
         coll.delete_one({"_id": doc["_id"]})
