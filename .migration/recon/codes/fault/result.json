@@ -1,0 +1,86 @@
+{
+  "unit": "codes",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T20:47:31.303656+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "codes": 41
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.codeDesc"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "codes.codeDesc",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": false,
+      "checks_run": 42,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 41,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": [
+        {
+          "collection": "codes",
+          "check": "missing_doc",
+          "detail": "missing document key=tuple:2f06660fde32",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "codes",
+          "check": "extra_doc",
+          "detail": "extra document key=tuple:73f0fad491ac",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "merge_eligible": false,
+  "error": null
+}
