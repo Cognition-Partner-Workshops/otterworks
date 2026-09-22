@@ -131,6 +131,8 @@ def _convert_value(field: dict, value: Any) -> tuple[Any, str | None]:
     if _has_rule(rules, "csv_to_array") or (bson_type == "array" and isinstance(value, str)):
         if not isinstance(value, str):
             return value, None
+        if _csv_malformed(value):
+            return _OMIT, "malformed csv"
         return [p.strip() for p in value.split(",") if p.strip() != ""], None
     if bson_type in ("long", "int"):
         return int(decimal.Decimal(str(value))), None
@@ -150,6 +152,28 @@ def _convert_value(field: dict, value: Any) -> tuple[Any, str | None]:
         except ValueError:
             return value, f"malformed json {value!r}"
     return value, None
+
+
+def _csv_malformed(value: str) -> bool:
+    """Malformed list grammar (D-decision: malformed lists quarantine):
+    any quote char, a newline, a ';'/'|' delimiter, or an empty item between
+    delimiters ('a,,b'). Leading/trailing empties are dropped, not malformed."""
+    if any(ch in value for ch in ('"', "'", "\n", "\r", ";", "|")):
+        return True
+    return ",," in value
+
+
+def require_local_uri(uri: str) -> None:
+    """Offline mode: every node in the Mongo URI must be exactly 127.0.0.1 or
+    localhost. Anything else (suffix matches like localhost.evil.example
+    included) refuses the run."""
+    from pymongo.uri_parser import parse_uri
+    nodes = parse_uri(uri)["nodelist"]
+    if not nodes:
+        raise ValueError(f"no nodes in Mongo URI")
+    for host, _port in nodes:
+        if host not in ("127.0.0.1", "localhost"):
+            raise ValueError(f"offline mode refuses non-local Mongo host {host!r}")
 
 
 class _Omit:
@@ -204,7 +228,8 @@ def _field_source_cols(field_specs: list[dict]) -> list[str]:
 
 
 def _collection_stats() -> dict:
-    return {"read": 0, "upserted": 0, "modified": 0, "deleted": 0, "quarantined": 0}
+    return {"read": 0, "upserted": 0, "modified": 0, "deleted": 0,
+            "quarantined": 0, "orphan_children": 0}
 
 
 def load_collections(spec_path: str | Path, collection_names: list[str],
@@ -265,7 +290,7 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
             grouped: dict[tuple, list[dict]] = {}
             for crow in _select(oracle_conn, e_sql):
                 grouped.setdefault(tuple(crow.get(c) for c in e_parent_key), []).append(crow)
-            embed_rows.append({"emb": emb, "grouped": grouped})
+            embed_rows.append({"emb": emb, "grouped": grouped, "consumed": set()})
         target = mongo_db[name]
         live_key_forms: set[str] = set()
         for row in rows:
@@ -285,6 +310,7 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 emb = entry["emb"]
                 parent_ref = emb.get("parent_ref") or key_src
                 ref_tuple = tuple(row.get(c) for c in parent_ref)
+                entry["consumed"].add(ref_tuple)
                 children = entry["grouped"].get(ref_tuple, [])
                 elements = []
                 for crow in children:
@@ -312,6 +338,24 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
             st["upserted"] += 1
             st["modified"] += res.modified_count or 0
             live_key_forms.add(json.dumps(_id, sort_keys=True, default=str))
+        # Orphan children: rows in an embed group whose parent_ref tuple no
+        # root row consumed. Quarantined to file, never written.
+        orphan_children = 0
+        for entry in embed_rows:
+            emb = entry["emb"]
+            child_key_cols = list(emb.get("key", {}).get("source", [])) or \
+                list(emb.get("parent_key", []))
+            for ref_tuple, rows_ in entry["grouped"].items():
+                if ref_tuple in entry["consumed"]:
+                    continue
+                for crow in rows_:
+                    quarantine.append({
+                        "source_key": {k: crow.get(k) for k in child_key_cols},
+                        "field": emb["array_path"],
+                        "reason": "child row has no root row",
+                    })
+                    orphan_children += 1
+        st["orphan_children"] += orphan_children
         # Converge: remove target docs no longer in the source key set.
         removed = 0
         for existing in target.find({}, {"_id": 1}):
@@ -320,10 +364,12 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 removed += 1
         st["deleted"] = removed
         st["quarantined"] = len(quarantine)
+        qf = quarantine_dir / f"{name}.jsonl"
         if quarantine:
-            qf = quarantine_dir / f"{name}.jsonl"
-            with qf.open("a", encoding="utf-8") as fh:
+            with qf.open("w", encoding="utf-8") as fh:
                 for item in quarantine:
                     fh.write(json.dumps(item, default=str) + "\n")
+        elif qf.exists():
+            qf.unlink()
         stats[name] = st
     return stats
