@@ -28,7 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _local import require_local_dsn  # noqa: E402
 from _parents import (ensure_tenants, ensure_rating_periods,
-                      ensure_invoices)  # noqa: E402
+                      ensure_invoices, prune_stale)  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPO_ROOT / ".migration" / "fixtures" / "w2-b02.json"
@@ -65,8 +65,15 @@ def _seed(conn) -> dict:
     ensure_rating_periods(cur, PERIODS)
     # invoices are referenced by dunning_attempts (fk_da_invoice): upsert
     # via MERGE (converge to canonical values) instead of delete+insert.
-    ensure_invoices(cur, [f"SYNTH-IV-{i:04d}" for i in range(N_INVOICES)])
+    canon_iv = [f"SYNTH-IV-{i:04d}" for i in range(N_INVOICES)]
+    ensure_invoices(cur, canon_iv)
+    # Drop stale SYNTH-IV rows outside the canonical set (e.g. left by a
+    # run with a different N): deleted only when nothing references them;
+    # a referenced stale row raises naming the ids.
     cur.execute("DELETE FROM invoice_lines WHERE id LIKE 'SYNTH-IL-%'")
+    prune_stale(cur, "invoices", "SYNTH-IV-%", canon_iv,
+                referenced_by=[("dunning_attempts", "invoice_id"),
+                               ("invoice_lines", "invoice_id")])
     cur.execute("DELETE FROM credit_notes WHERE id LIKE 'SYNTH-CN-%'")
 
     line_rows = []
