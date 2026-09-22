@@ -1,5 +1,10 @@
 # Unit notes: customers (w1-b02)
 
+> Branch: `migrate/billing/w1-customers-r2`. The name
+> `migrate/billing/w1-customers` collided with an older, divergent remote
+> branch (Sep-18 effort, different layout); the push was rejected
+> non-fast-forward and this unit was renamed rather than overwritten.
+
 Collections: `customers` (embeds ENTITY_ATTR_VALUE WHERE
 ENTITY_TYPE='CUSTOMER' as `attributes[]`, keyed eavId),
 `customerVersions` (CUSTOMER_MASTER_HIST, histDt parsed from
