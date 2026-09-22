@@ -1,0 +1,88 @@
+{
+  "unit": "usage-rating",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:25:33.399166+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "usageEvents": 133,
+          "ratingPeriods": 33
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "deferred_to_tier3": [
+          "usageEvents.tenantId",
+          "usageEvents.occurredAt",
+          "ratingPeriods.tenantId",
+          "ratingPeriods.periodStart",
+          "ratingPeriods.periodEnd"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "usageEvents.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "ratingPeriods.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 2
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 229,
+      "stats": {
+        "usageEvents": {
+          "mode": "full_diff",
+          "population": 133,
+          "duplicate_source_key_count": 0
+        },
+        "ratingPeriods": {
+          "mode": "full_diff",
+          "population": 33,
+          "duplicate_source_key_count": 0
+        },
+        "embeds_graded": {
+          "ratingPeriods.results": 63
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
