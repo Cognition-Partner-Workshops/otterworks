@@ -1028,5 +1028,29 @@
    "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
   },
   "assume_text_date": true
+ },
+ {
+  "op": "remainder",
+  "parent": "customers",
+  "child_table": "ENTITY_ATTR_VALUE",
+  "collection": "entityAttrValue",
+  "target_where": {
+   "entityType": {
+    "$ne": "CUSTOMER"
+   }
+  },
+  "evidence": {
+   "source": "customer",
+   "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299)."
+  }
+ },
+ {
+  "op": "reference",
+  "child_table": "INVOICE_LINE",
+  "from": "legacyInvoices",
+  "evidence": {
+   "source": "customer",
+   "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-2 recommended: INVOICE_LINE stays a referenced collection (legacyInvoiceLines); orphan lines exist and app/reports.py:67 drops them by inner join, an embed would lose them."
+  }
  }
 ]

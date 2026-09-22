@@ -1,5 +1,5 @@
 {
-  "version": "map-draft-2",
+  "version": "map-draft-3",
   "source_family": "oracle",
   "collections": [
     {
@@ -5675,10 +5675,100 @@
           }
         ]
       }
+    },
+    {
+      "collection": "entityAttrValue",
+      "root_table": "ENTITY_ATTR_VALUE",
+      "root_where": "NOT (ENTITY_TYPE = 'CUSTOMER')",
+      "target_where": "{\"entityType\": {\"$ne\": \"CUSTOMER\"}}",
+      "key": {
+        "source": [
+          "EAV_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "ENTITY_TYPE",
+          "target": "entityType",
+          "source_type": "VARCHAR2(30)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ENTITY_ID",
+          "target": "entityId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTR_NAME",
+          "target": "attrName",
+          "source_type": "VARCHAR2(100)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTR_VALUE",
+          "target": "attrValue",
+          "source_type": "VARCHAR2(4000)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ATTR_TYPE",
+          "target": "attrType",
+          "source_type": "VARCHAR2(10)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "CREATED_DT",
+          "target": "createdDt",
+          "source_type": "VARCHAR2(9)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date:dby-b3d57e",
+            "null_missing_equiv"
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql:385: created_dt VARCHAR2(9) -- DD-MON-YY"
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "EAV_ID",
+            "target": "eavId",
+            "source_type": "NUMBER(14)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "references": [],
+        "open_questions": [],
+        "note": "customer statement: STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299)."
+      }
     }
   ],
   "canonicalization": {
-    "version": "map-draft-2-canon",
+    "version": "map-draft-3-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -5808,16 +5898,7 @@
       "semantics of triggers, packages, and scheduler jobs (names and targets only)",
       "whether unenforced *_ID pointers actually resolve"
     ],
-    "unresolved": [
-      {
-        "kind": "scoped_embed_remainder",
-        "parent": "customers",
-        "child": "ENTITY_ATTR_VALUE",
-        "array_path": "attributes",
-        "child_where": "ENTITY_TYPE = 'CUSTOMER'",
-        "note": "rows where NOT (ENTITY_TYPE = 'CUSTOMER') are in no collection after this embed; embed them elsewhere, or keep entityAttrValue as a collection with root_where"
-      }
-    ],
+    "unresolved": [],
     "decisions": [
       {
         "op": "rename",
@@ -7027,6 +7108,34 @@
         },
         "assume_text_date": true,
         "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "remainder",
+        "parent": "customers",
+        "child_table": "ENTITY_ATTR_VALUE",
+        "collection": "entityAttrValue",
+        "target_where": {
+          "entityType": {
+            "$ne": "CUSTOMER"
+          }
+        },
+        "evidence": {
+          "source": "customer",
+          "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299)."
+        },
+        "cited": "customer statement: STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "reference",
+        "child_table": "INVOICE_LINE",
+        "from": "legacyInvoices",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-2 recommended: INVOICE_LINE stays a referenced collection (legacyInvoiceLines); orphan lines exist and app/reports.py:67 drops them by inner join, an embed would lose them."
+        },
+        "cited": "customer statement: STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-2 recommended: INVOICE_LINE stays a referenced collection (legacyInvoiceLines); orphan lines exist and app/reports.py:67 drops them by inner join, an embed would lose them.",
         "status": "PROPOSED"
       }
     ],
