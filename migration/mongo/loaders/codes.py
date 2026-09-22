@@ -28,6 +28,9 @@ def _connect_oracle():
         dsn = json.loads(raw)
     except json.JSONDecodeError:
         sys.exit("ORACLE_FIXTURE_DSN must be JSON {user,password,dsn}")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from spec_loader import require_local_oracle_dsn
+    require_local_oracle_dsn(dsn["dsn"])
     return oracledb.connect(user=dsn["user"], password=dsn["password"], dsn=dsn["dsn"])
 
 
