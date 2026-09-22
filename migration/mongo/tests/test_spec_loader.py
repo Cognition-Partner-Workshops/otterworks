@@ -329,6 +329,12 @@ def test_embed_quarantine_uses_child_key_and_dedupes(tmp_path):
     csv_field = {"source": "GL", "target": "gl",
                  "source_type": "VARCHAR2(100)", "bson_type": "array",
                  "rules": ["csv_to_array"]}
+    st_field = {"source": "STATUS", "target": "status",
+                "source_type": "CHAR(1)", "bson_type": "string",
+                "rules": ["empty_string_is_null"]}
+    st_field2 = {"source": "STATUS", "target": "legacyStatus",
+                 "source_type": "CHAR(1)", "bson_type": "string",
+                 "rules": ["empty_string_is_null"]}
     spec = {"version": "1", "collections": [{
         "collection": "parents", "root_table": "PARENTS",
         "key": {"source": ["ID"], "target": "_id"},
@@ -336,15 +342,16 @@ def test_embed_quarantine_uses_child_key_and_dedupes(tmp_path):
         "embeds": [{"array_path": "kids", "child_table": "KIDS",
                     "parent_key": ["PARENT_ID"],
                     "key": {"source": ["KID_ID"], "target": "kidId"},
-                    "fields": [csv_field],
-                    "child_fields": [csv_field]}]}]}
+                    "fields": [csv_field, st_field],
+                    "child_fields": [csv_field, st_field2]}]}]}
     sp = tmp_path / "spec.json"
     sp.write_text(json.dumps(spec))
 
     class FakeCursor:
         def execute(self, sql, params=None):
             if "KIDS" in sql:
-                self._rows = [{"PARENT_ID": "p1", "KID_ID": "k1", "GL": "a,,b"}]
+                self._rows = [{"PARENT_ID": "p1", "KID_ID": "k1",
+                               "GL": "a,,b", "STATUS": "A"}]
             else:
                 self._rows = [{"ID": "p1"}]
             cols = [w.strip() for w in
@@ -375,9 +382,22 @@ def test_embed_quarantine_uses_child_key_and_dedupes(tmp_path):
         def __getitem__(self, n):
             return FakeColl()
 
-    stats = load_collections(sp, ["parents"], FakeConn(), FakeDb())
+    docs = {}
+
+    class RecColl(FakeColl):
+        def replace_one(self, f, d, upsert=False):
+            docs[f["_id"]] = d
+            return self._Res()
+
+    class RecDb:
+        def __getitem__(self, n):
+            return RecColl()
+
+    stats = load_collections(sp, ["parents"], FakeConn(), RecDb())
     assert stats["parents"]["quarantined"] == 1
     qf = (tmp_path / "quarantine" / "parents.jsonl").read_text().strip()
     entry = json.loads(qf)
     assert entry["source_key"] == {"KID_ID": "k1"}
     assert "malformed" in entry["reason"]
+    kid = docs["p1"]["kids"][0]
+    assert kid["status"] == "A" and kid["legacyStatus"] == "A"
