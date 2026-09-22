@@ -1,0 +1,160 @@
+{
+  "unit": "tenancy-plans",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:00:24.944601+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {
+        "source_counts": {
+          "tenants": 13,
+          "plans": 6,
+          "subscriptions": 15,
+          "subscriptionVersions": 12
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 10,
+      "stats": {
+        "deferred_to_tier3": [
+          "tenants.name",
+          "tenants.taxExempt",
+          "plans.code",
+          "plans.monthlyFee",
+          "plans.overageRate",
+          "plans.active",
+          "subscriptions.tenantId",
+          "subscriptions.planId",
+          "subscriptions.startsOn",
+          "subscriptions.endsOn",
+          "subscriptions.suspendedOn",
+          "subscriptionVersions.histDt",
+          "subscriptionVersions.histOp",
+          "subscriptionVersions.id",
+          "subscriptionVersions.tenantId",
+          "subscriptionVersions.planId",
+          "subscriptionVersions.startsOn",
+          "subscriptionVersions.endsOn",
+          "subscriptionVersions.statusCd",
+          "subscriptionVersions.suspendedOn"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "tenants.name",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "plans.code",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptions.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptions.planId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionVersions.histOp",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionVersions.id",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionVersions.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionVersions.planId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 14
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 46,
+      "stats": {
+        "tenants": {
+          "mode": "full_diff",
+          "population": 13,
+          "duplicate_source_key_count": 0
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 6,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptions": {
+          "mode": "full_diff",
+          "population": 15,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptionVersions": {
+          "mode": "full_diff",
+          "population": 12,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}

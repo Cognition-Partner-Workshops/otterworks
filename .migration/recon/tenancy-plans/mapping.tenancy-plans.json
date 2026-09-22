@@ -1,0 +1,1971 @@
+{
+  "version": "map-draft-3",
+  "source_family": "oracle",
+  "collections": [
+    {
+      "collection": "tenants",
+      "root_table": "TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "taxExempt",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "natural_keys": [
+          {
+            "name": "UQ_TENANTS_NAME",
+            "columns": [
+              "NAME"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [],
+        "resolved_questions": [
+          {
+            "kind": "code_lookup",
+            "table": "TENANTS",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection",
+            "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+            "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "plans",
+      "root_table": "PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "CODE",
+          "target": "code",
+          "source_type": "VARCHAR2(50)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tierCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "MONTHLY_FEE",
+          "target": "monthlyFee",
+          "source_type": "NUMBER(12,2)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "INCLUDED_UNITS",
+          "target": "includedUnits",
+          "source_type": "NUMBER(10)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "OVERAGE_RATE",
+          "target": "overageRate",
+          "source_type": "NUMBER(12,6)",
+          "bson_type": "decimal",
+          "rules": [
+            "decimal_round"
+          ]
+        },
+        {
+          "source": "ACTIVE_YN",
+          "target": "active",
+          "source_type": "CHAR(1)",
+          "bson_type": "bool",
+          "rules": [
+            "yn_to_bool"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "natural_keys": [
+          {
+            "name": "UQ_PLANS_CODE",
+            "columns": [
+              "CODE"
+            ]
+          }
+        ],
+        "references": [],
+        "open_questions": [],
+        "resolved_questions": [
+          {
+            "kind": "code_lookup",
+            "table": "PLANS",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "TIER_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection",
+            "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+            "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "subscriptions",
+      "root_table": "SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "planId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "startsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "endsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": []
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspendedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "ID",
+            "target": "id",
+            "source_type": "VARCHAR2(36)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null"
+            ]
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "TENANT_ID"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "ID"
+            ],
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "PLAN_ID"
+            ],
+            "to": "plans",
+            "to_columns": [
+              "ID"
+            ],
+            "why": "child owns its own lifecycle"
+          }
+        ],
+        "open_questions": [],
+        "resolved_questions": [
+          {
+            "kind": "code_lookup",
+            "table": "SUBSCRIPTIONS",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection",
+            "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+            "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+          }
+        ]
+      }
+    },
+    {
+      "collection": "subscriptionVersions",
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "HIST_DT",
+          "target": "histDt",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "date",
+          "rules": [
+            "date_string_to_date:dbyHMS-30dd8b",
+            "null_missing_equiv"
+          ],
+          "date_format": "%d-%b-%y %H:%M:%S",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql:218: trg_subscriptions_hist writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+        },
+        {
+          "source": "HIST_OP",
+          "target": "histOp",
+          "source_type": "VARCHAR2(3)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenantId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "planId",
+          "source_type": "VARCHAR2(36)",
+          "bson_type": "string",
+          "rules": [
+            "empty_string_is_null",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "startsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "endsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "statusCd",
+          "source_type": "NUMBER(4)",
+          "bson_type": "long",
+          "rules": [
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspendedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "HIST_ID",
+            "target": "histId",
+            "source_type": "NUMBER(12)",
+            "bson_type": "long",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [],
+        "open_questions": [],
+        "pattern": "history_copy",
+        "of_table": "SUBSCRIPTIONS",
+        "proposal": "separate versions collection keyed by history id; do not embed unbounded history",
+        "patterns": [
+          {
+            "pattern": "history_copy",
+            "detail": "separate versions collection keyed by history id; do not embed unbounded history",
+            "evidence": "proposed from census trap"
+          },
+          {
+            "pattern": "document_versioning",
+            "detail": "one document per history row",
+            "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222: AFTER UPDATE/DELETE trigger copies the whole row per change"
+          }
+        ],
+        "resolved_questions": [
+          {
+            "kind": "code_lookup",
+            "table": "SUBSCRIPTIONS_HIST",
+            "evidence": "*_CD numeric columns; resolve through the codes table",
+            "columns": [
+              "STATUS_CD"
+            ],
+            "proposal": "keep the numeric code; resolve to a label in the app or a codes collection",
+            "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+            "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+          },
+          {
+            "kind": "unenforced_pointer",
+            "table": "SUBSCRIPTIONS_HIST",
+            "evidence": "*_ID column with a matching table and no FK",
+            "columns": [
+              "TENANT_ID",
+              "PLAN_ID"
+            ],
+            "targets": [
+              "TENANTS",
+              "PLANS"
+            ],
+            "proposal": "treat as reference; verify pointer resolves before embedding anything",
+            "resolution": "history rows keep tenantId/planId as plain reference fields",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:190-200: no FK declared"
+          }
+        ]
+      }
+    }
+  ],
+  "canonicalization": {
+    "version": "map-draft-3-canon",
+    "rules": [
+      {
+        "rule": "decimal_round",
+        "applies_to": "decimal",
+        "params": {}
+      },
+      {
+        "rule": "datetime_utc_truncate_ms",
+        "applies_to": "date",
+        "params": {}
+      },
+      {
+        "rule": "rstrip_spaces",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "null_missing_equiv",
+        "applies_to": "*",
+        "params": {}
+      },
+      {
+        "rule": "yn_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "int_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "csv_to_array",
+        "applies_to": "array",
+        "params": {}
+      },
+      {
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y"
+        }
+      },
+      {
+        "rule": "empty_string_is_null",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "name": "date_string_to_date:dbyHMS-30dd8b",
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y %H:%M:%S"
+        }
+      },
+      {
+        "name": "date_string_to_date:dby-b3d57e",
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y"
+        }
+      }
+    ]
+  },
+  "modeling": {
+    "mode": "offline_ddl",
+    "cardinality_default": "assumed",
+    "census_inputs": [
+      {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "sha256": "d995f979986279bebca15d6ffeb415eb29142dcbf34c10ad2819f1507a51bcc4",
+        "bytes": 9597
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "sha256": "82bb170a52a38a96cfafd9bf7312e4e805f022422118ac428283d68dd514c485",
+        "bytes": 21587
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "sha256": "ec5cba7751a75dc5450e9a62a0c211f047245c2658e9990e06d5c2121a89914c",
+        "bytes": 14341
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "sha256": "95bc8b949f4514099385c68894d02caf83b5fabb301186aff7cb83e25e2e777d",
+        "bytes": 1554
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "sha256": "b357aa3457bd6d4506315651a27e6f12386f52c81d5c30c346a8950f2dfb8e3f",
+        "bytes": 6287
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+        "sha256": "94728593735247e7a2fccfe7db56613cf99e1b0be46a24924e5395a483d09b71",
+        "bytes": 3132
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "sha256": "ae58f53d325488e2a6c52c3496355b18fd9064b5ecc77ef001597da645ac90b4",
+        "bytes": 4429
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "sha256": "e755afbb9cf8253a8c6fb3546a553941ee2e14b307469b392dfca5e97249ff0e",
+        "bytes": 9618
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "sha256": "c6b1b5b24dbb0dc1526aa227bbc14dc73567cfaf092edf8546f1a3d04411dd2a",
+        "bytes": 8276
+      },
+      {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "sha256": "26d0b2fc7de60869e729c6569053e19145464c2338685e937aa59286bc16e93d",
+        "bytes": 4316
+      }
+    ],
+    "not_known_from_ddl": [
+      "row counts and table sizes (drives embed vs reference and the 16 MB document ceiling)",
+      "foreign-key fan-out per parent (1:N is assumed for every FK; bounded vs unbounded is unknown)",
+      "null rates and value domains (defaults and NOT NULL are the only signal)",
+      "application access patterns (read-together vs written-separately)",
+      "semantics of triggers, packages, and scheduler jobs (names and targets only)",
+      "whether unenforced *_ID pointers actually resolve"
+    ],
+    "unresolved": [],
+    "decisions": [
+      {
+        "op": "rename",
+        "collection": "customerMaster",
+        "to": "customers",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:146",
+          "note": "target collection name used by the estate's own MongoDB runbook for CUSTOMER_MASTER + EAV"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:146: target collection name used by the estate's own MongoDB runbook for CUSTOMER_MASTER + EAV",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "rename",
+        "collection": "customerMasterHist",
+        "to": "customerVersions",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:181-183",
+          "note": "full-row history copy of CUSTOMER_MASTER; versions collection, not embedded (unbounded)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:181-183: full-row history copy of CUSTOMER_MASTER; versions collection, not embedded (unbounded)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "rename",
+        "collection": "subscriptionsHist",
+        "to": "subscriptionVersions",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:190-192",
+          "note": "full-row history copy of SUBSCRIPTIONS; versions collection, not embedded (unbounded)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:190-192: full-row history copy of SUBSCRIPTIONS; versions collection, not embedded (unbounded)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "rename",
+        "collection": "invoiceHeader",
+        "to": "legacyInvoices",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:147",
+          "note": "mainframe-conversion invoice feed (INVOICE_HEADER) is a separate estate from INVOICES; named to avoid collision"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:147: mainframe-conversion invoice feed (INVOICE_HEADER) is a separate estate from INVOICES; named to avoid collision",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "rename",
+        "collection": "invoiceLine",
+        "to": "legacyInvoiceLines",
+        "evidence": {
+          "file": "services/legacy-billing/app/reports.py:67-68",
+          "note": "INVOICE_LINE rows are read only via the report join; kept as their own collection (see reference decision)"
+        },
+        "cited": "services/legacy-billing/app/reports.py:67-68: INVOICE_LINE rows are read only via the report join; kept as their own collection (see reference decision)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "RATING_RESULTS",
+        "into": "ratingPeriods",
+        "array_path": "results",
+        "cardinality": "1:few",
+        "parent_key": [
+          "PERIOD_ID"
+        ],
+        "basis": "derived",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:199-209",
+          "note": "sp_finalize_rating upserts rating_periods and rating_results in one transaction; fn reads join rr/rp (line 88); one result per subscription per period"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:199-209: sp_finalize_rating upserts rating_periods and rating_results in one transaction; fn reads join rr/rp (line 88); one result per subscription per period",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "INVOICE_LINES",
+        "into": "invoices",
+        "array_path": "lines",
+        "cardinality": "1:few",
+        "parent_key": [
+          "INVOICE_ID"
+        ],
+        "basis": "derived",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:150-157",
+          "note": "sp_issue_invoice deletes and rebuilds all lines of the invoice with the invoice (FK ON DELETE CASCADE at 01_tables.sql:132); facade reads lines per invoice_id (app/facade.py:258-272); ~4 lines per invoice (plan, usage, tax, credit)"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:150-157: sp_issue_invoice deletes and rebuilds all lines of the invoice with the invoice (FK ON DELETE CASCADE at 01_tables.sql:132); facade reads lines per invoice_id (app/facade.py:258-272); ~4 lines per invoice (plan, usage, tax, credit)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "ENTITY_ATTR_VALUE",
+        "into": "customers",
+        "array_path": "attributes",
+        "cardinality": "1:few",
+        "parent_key": [
+          "ENTITY_ID"
+        ],
+        "basis": "derived",
+        "child_where": "ENTITY_TYPE = 'CUSTOMER'",
+        "target_where": {},
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:286-299",
+          "note": "GET /billing/customer reads customer_master then entity_attr_value WHERE entity_type='CUSTOMER' AND entity_id=cust_id and returns them as body.attributes; attribute pattern per runbook-mongodb.md:146"
+        },
+        "cited": "services/legacy-billing/app/facade.py:286-299: GET /billing/customer reads customer_master then entity_attr_value WHERE entity_type='CUSTOMER' AND entity_id=cust_id and returns them as body.attributes; attribute pattern per runbook-mongodb.md:146",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "reference",
+        "child_table": "INVOICE_LINE",
+        "from": "legacyInvoices",
+        "evidence": {
+          "file": "services/legacy-billing/app/reports.py:67-68",
+          "note": "INVOICE_LINE has no FK to INVOICE_HEADER and orphaned lines exist by contract (docs/tech-partnerships/billing-report-contract.md:30-31); embedding would drop or misplace orphans, so lines stay a collection referenced by invoiceId; the report join becomes a $lookup. Embed is offered as STOP B alternative U-2."
+        },
+        "cited": "services/legacy-billing/app/reports.py:67-68: INVOICE_LINE has no FK to INVOICE_HEADER and orphaned lines exist by contract (docs/tech-partnerships/billing-report-contract.md:30-31); embedding would drop or misplace orphans, so lines stay a collection referenced by invoiceId; the report join becomes a $lookup. Embed is offered as STOP B alternative U-2.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "subscriptionVersions",
+        "field": "HIST_DT",
+        "format": "%d-%b-%y %H:%M:%S",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:218",
+          "note": "trg_subscriptions_hist writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:218: trg_subscriptions_hist writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "HIST_DT",
+        "format": "%d-%b-%y %H:%M:%S",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:370",
+          "note": "trg_customer_master_hist writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:370: trg_customer_master_hist writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "SIGNUP_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "LAST_ACTIVITY_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:63-67: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "SIGNUP_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "LAST_ACTIVITY_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:225-229: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "legacyInvoiceLines",
+        "field": "INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:420",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:420: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "legacyInvoices",
+        "field": "INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:434-435",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:434-435: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "legacyInvoices",
+        "field": "DUE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:434-435",
+          "note": "VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:434-435: VARCHAR2(9) 'DD-MON-YY' text date per DDL comment (02_horror.sql:4) and pkg_ow_util.f_dt2str/f_str2dt (packages/01_pkg_util.sql); ETL parses with TO_DATE(..,'DD-MON-RR') (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28); unparseable values -> missing + quarantine (T9)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "embed": {
+          "into": "customers",
+          "child_table": "ENTITY_ATTR_VALUE"
+        },
+        "field": "CREATED_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:385",
+          "note": "created_dt VARCHAR2(9) -- DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:385: created_dt VARCHAR2(9) -- DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "billingAuditLog",
+        "pattern": "ttl",
+        "detail": "TTL index on loggedAt expireAfterSeconds=90d replaces JOB_PURGE_AUDIT_LOG; loader keeps numeric _id",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql:19-24",
+          "note": "nightly DELETE ... WHERE logged_at < SYSDATE - 90"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql:19-24: nightly DELETE ... WHERE logged_at < SYSDATE - 90",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "usageEvents",
+        "pattern": "bucket",
+        "detail": "bucket candidate only after fan-out is measured; loaded 1 doc per event now; append-only; compound index (tenantId, occurredAt); no embedding into tenants (unbounded)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:60-75",
+          "note": "compute_rating aggregates usage_events by tenant and period window; facade lists by tenant (app/facade.py:211-224)"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:60-75: compute_rating aggregates usage_events by tenant and period window; facade lists by tenant (app/facade.py:211-224)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "customerVersions",
+        "pattern": "document_versioning",
+        "detail": "one document per history row; histOp + histDt; never embedded",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:360-375",
+          "note": "AFTER UPDATE/DELETE trigger copies the whole row per change"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:360-375: AFTER UPDATE/DELETE trigger copies the whole row per change",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "subscriptionVersions",
+        "pattern": "document_versioning",
+        "detail": "one document per history row",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222",
+          "note": "AFTER UPDATE/DELETE trigger copies the whole row per change"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222: AFTER UPDATE/DELETE trigger copies the whole row per change",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "customers",
+        "pattern": "attribute",
+        "detail": "EAV rows folded into attributes[] of {attrName, attrValue, attrType, createdDt}; 155 base columns kept 1:1 (sparse -> optional fields); CSV lists -> arrays; Y/N -> bool",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:146",
+          "note": "estate runbook's stated target shape for CUSTOMER_MASTER + EAV"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:146: estate runbook's stated target shape for CUSTOMER_MASTER + EAV",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_OW_UTIL",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_OW_UTIL",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_PLANS",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_PLANS",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_RATING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_RATING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_INVOICING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_INVOICING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_DUNNING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_DUNNING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "note": "package read in full"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package read in full",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "SUBSCRIPTIONS",
+          "name": "TRG_SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "history copy -> subscriptionVersions collection; app writes versions explicitly after cutover",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222",
+          "note": "trigger body read"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222: trigger body read",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "SUBSCRIPTIONS",
+          "name": "TRG_SUB_NO_UNCANCEL"
+        },
+        "resolution": "business rule (cancelled never returns to 30) becomes an application-level guard; JSON schema validation cannot express transitions",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:224-236",
+          "note": "trigger body read"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:224-236: trigger body read",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "USAGE_EVENTS",
+          "name": "TRG_USAGE_EVENTS_CHECK"
+        },
+        "resolution": "units>0 and known kind_cd become JSON schema validation on usageEvents plus app check",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:238-252",
+          "note": "trigger body read"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:238-252: trigger body read",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "CUSTOMER_MASTER",
+          "name": "TRG_CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "history copy -> customerVersions collection",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:360-375",
+          "note": "trigger body read"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:360-375: trigger body read",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job",
+          "name": "JOB_NIGHTLY_DUNNING"
+        },
+        "resolution": "disabled in DDL (enabled=>FALSE); becomes a scheduled job in the billing service calling the ported dunning logic; owner needed at STOP B (U-5)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql:8-17",
+          "note": "job definition"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql:8-17: job definition",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job",
+          "name": "JOB_PURGE_AUDIT_LOG"
+        },
+        "resolution": "replaced by TTL index on billingAuditLog.loggedAt (90 days)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql:19-27",
+          "note": "job definition"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql:19-27: job definition",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unparsed_statement",
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+          "line": 6
+        },
+        "resolution": "fixture bootstrap marker maintenance (fixture_meta) with no data-model content; script excluded from the offline Oracle fixture (D-010)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:1-12",
+          "note": "anonymous block on user_tab_columns/fixture_meta"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:1-12: anonymous block on user_tab_columns/fixture_meta",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unparsed_statement",
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+          "line": 170
+        },
+        "resolution": "fixture_meta MERGE; same exclusion as line 6",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:170",
+          "note": "MERGE INTO fixture_meta"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:170: MERGE INTO fixture_meta",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "tenants",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "plans",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptions",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "usageEvents",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "invoices",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "dunningAttempts",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "notifications",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptionVersions",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customers",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customerVersions",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "legacyInvoiceLines",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "legacyInvoices",
+        "match": {
+          "kind": "code_lookup"
+        },
+        "resolution": "keep the numeric *_cd field; labels resolved at read from the codes collection exactly as the facade joins CODES today",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:110-128",
+          "note": "facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)"
+        },
+        "cited": "services/legacy-billing/app/facade.py:110-128: facade joins codes on every read; contract keeps UNKNOWN(<cd>) semantics (docs/tech-partnerships/billing-report-contract.md:28-30)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customers",
+        "match": {
+          "kind": "repeating_group"
+        },
+        "resolution": "numbered series kept 1:1 as optional fields (empty -> missing); the facade returns SELECT * rows by column name and the UI reads them as-is, so collapsing to arrays has no application evidence yet (U-3)",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:286-292",
+          "note": "SELECT * FROM customer_master returned verbatim; frontend/client-app/src/features/billing/api.ts:137"
+        },
+        "cited": "services/legacy-billing/app/facade.py:286-292: SELECT * FROM customer_master returned verbatim; frontend/client-app/src/features/billing/api.ts:137",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customerVersions",
+        "match": {
+          "kind": "repeating_group"
+        },
+        "resolution": "numbered series kept 1:1 as optional fields (empty -> missing); the facade returns SELECT * rows by column name and the UI reads them as-is, so collapsing to arrays has no application evidence yet (U-3)",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py:286-292",
+          "note": "SELECT * FROM customer_master returned verbatim; frontend/client-app/src/features/billing/api.ts:137"
+        },
+        "cited": "services/legacy-billing/app/facade.py:286-292: SELECT * FROM customer_master returned verbatim; frontend/client-app/src/features/billing/api.ts:137",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptionVersions",
+        "match": {
+          "kind": "unenforced_pointer"
+        },
+        "resolution": "history rows keep tenantId/planId as plain reference fields",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql:190-200",
+          "note": "no FK declared"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql:190-200: no FK declared",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customers",
+        "match": {
+          "kind": "unenforced_pointer"
+        },
+        "resolution": "tenantId kept as reference; facade filters customer_master by tenant_id (app/facade.py:287)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:22-30",
+          "note": "no FK declared"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:22-30: no FK declared",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customerVersions",
+        "match": {
+          "kind": "unenforced_pointer"
+        },
+        "resolution": "tenantId kept as reference",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:181-190",
+          "note": "no FK declared"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:181-190: no FK declared",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "legacyInvoiceLines",
+        "match": {
+          "kind": "unenforced_pointer"
+        },
+        "resolution": "invoiceId/tenantId kept as references; unresolved pointers counted as orphans in unit recon",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:405-428",
+          "note": "no FK declared"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:405-428: no FK declared",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "legacyInvoices",
+        "match": {
+          "kind": "unenforced_pointer"
+        },
+        "resolution": "tenantId kept as reference; extract joins tenants (etl/legacy-extra/tools/oracle_custbill_extract.py:22-28)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql:429-440",
+          "note": "no FK declared"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql:429-440: no FK declared",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customers",
+        "match": {
+          "kind": "csv_list"
+        },
+        "resolution": "csv_to_array (split ',', trim, drop empty) per T11; malformed lists (unbalanced quotes, stray delimiters) quarantined and enumerated",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:146",
+          "note": "CSV lists -> real arrays"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:146: CSV lists -> real arrays",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "customerVersions",
+        "match": {
+          "kind": "csv_list"
+        },
+        "resolution": "csv_to_array (split ',', trim, drop empty) per T11; malformed lists (unbalanced quotes, stray delimiters) quarantined and enumerated",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:146",
+          "note": "CSV lists -> real arrays"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:146: CSV lists -> real arrays",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "legacyInvoiceLines",
+        "match": {
+          "kind": "csv_list"
+        },
+        "resolution": "csv_to_array (split ',', trim, drop empty) per T11; malformed lists (unbalanced quotes, stray delimiters) quarantined and enumerated",
+        "evidence": {
+          "file": "docs/tech-partnerships/runbook-mongodb.md:146",
+          "note": "CSV lists -> real arrays"
+        },
+        "cited": "docs/tech-partnerships/runbook-mongodb.md:146: CSV lists -> real arrays",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_01",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_02",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_03",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_04",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_05",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_06",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_07",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_08",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_09",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customers",
+        "field": "UDF_DT_10",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_01",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_02",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_03",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_04",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_05",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_06",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_07",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_08",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_09",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerVersions",
+        "field": "UDF_DT_10",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own."
+        },
+        "assume_text_date": true,
+        "cited": "customer statement: STOP A reply 'Approved' accepted tol-1 row T9: VARCHAR2 *_dt text dates -> date, DD-MON-YY, unparseable -> missing + quarantine. UDF_DT_01..10 are VARCHAR2(9) *_dt columns (02_horror.sql:163-172) with no DDL comment of their own.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "remainder",
+        "parent": "customers",
+        "child_table": "ENTITY_ATTR_VALUE",
+        "collection": "entityAttrValue",
+        "target_where": {
+          "entityType": {
+            "$ne": "CUSTOMER"
+          }
+        },
+        "evidence": {
+          "source": "customer",
+          "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299)."
+        },
+        "cited": "customer statement: STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-1 recommended: rows with ENTITY_TYPE <> 'CUSTOMER' go to a separate entityAttrValue collection (schema/02_horror.sql entity_attr_value has no FK; only CUSTOMER rows are read by app/facade.py:294-299).",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "reference",
+        "child_table": "INVOICE_LINE",
+        "from": "legacyInvoices",
+        "evidence": {
+          "source": "customer",
+          "note": "STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-2 recommended: INVOICE_LINE stays a referenced collection (legacyInvoiceLines); orphan lines exist and app/reports.py:67 drops them by inner join, an embed would lose them."
+        },
+        "cited": "customer statement: STOP B reply 'go' (2026-09-22) accepted map-draft-2 with the recommended answer for U-1..U-4; U-5/U-6 owners not named. U-2 recommended: INVOICE_LINE stays a referenced collection (legacyInvoiceLines); orphan lines exist and app/reports.py:67 drops them by inner join, an embed would lose them.",
+        "status": "PROPOSED"
+      }
+    ],
+    "resolved": [
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_OW_UTIL",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_OW_UTIL",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_PLANS",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_PLANS",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_RATING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_RATING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_INVOICING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_INVOICING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_DUNNING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package read in full"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_DUNNING",
+        "resolution": "reviewed by hand; behaviour summarised in 07_dependency_register.md (D3) and ported as application logic in the owning unit; data migration copies table state only",
+        "evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package read in full"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "SUBSCRIPTIONS",
+        "name": "TRG_SUBSCRIPTIONS_HIST",
+        "resolution": "history copy -> subscriptionVersions collection; app writes versions explicitly after cutover",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql:210-222: trigger body read"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "SUBSCRIPTIONS",
+        "name": "TRG_SUB_NO_UNCANCEL",
+        "resolution": "business rule (cancelled never returns to 30) becomes an application-level guard; JSON schema validation cannot express transitions",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql:224-236: trigger body read"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "USAGE_EVENTS",
+        "name": "TRG_USAGE_EVENTS_CHECK",
+        "resolution": "units>0 and known kind_cd become JSON schema validation on usageEvents plus app check",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql:238-252: trigger body read"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "CUSTOMER_MASTER",
+        "name": "TRG_CUSTOMER_MASTER_HIST",
+        "resolution": "history copy -> customerVersions collection",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql:360-375: trigger body read"
+      },
+      {
+        "kind": "scheduler_job",
+        "name": "JOB_NIGHTLY_DUNNING",
+        "repeat_interval": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0",
+        "note": "batch logic lives in the database; needs an owner after migration",
+        "resolution": "disabled in DDL (enabled=>FALSE); becomes a scheduled job in the billing service calling the ported dunning logic; owner needed at STOP B (U-5)",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_jobs.sql:8-17: job definition"
+      },
+      {
+        "kind": "scheduler_job",
+        "name": "JOB_PURGE_AUDIT_LOG",
+        "repeat_interval": "FREQ=DAILY;BYHOUR=3;BYMINUTE=30",
+        "note": "batch logic lives in the database; needs an owner after migration",
+        "resolution": "replaced by TTL index on billingAuditLog.loggedAt (90 days)",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_jobs.sql:19-27: job definition"
+      },
+      {
+        "kind": "unparsed_statement",
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "line": 6,
+        "statement": "DECLARE marker_columns NUMBER; BEGIN SELECT COUNT(*) INTO marker_columns FROM user_tab_columns WHERE table_name = 'FIXTURE_META' AND column_name = 'MARKER'; IF marker_columns = 0 THEN EXECUTE IMMEDIAT",
+        "resolution": "fixture bootstrap marker maintenance (fixture_meta) with no data-model content; script excluded from the offline Oracle fixture (D-010)",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:1-12: anonymous block on user_tab_columns/fixture_meta"
+      },
+      {
+        "kind": "unparsed_statement",
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "line": 170,
+        "statement": "MERGE INTO fixture_meta target USING (SELECT 'static_seed_version' AS marker, '2' AS value FROM dual) source ON (target.marker = source.marker) WHEN MATCHED THEN UPDATE SET target.value = source.value",
+        "resolution": "fixture_meta MERGE; same exclusion as line 6",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:170: MERGE INTO fixture_meta"
+      }
+    ]
+  }
+}

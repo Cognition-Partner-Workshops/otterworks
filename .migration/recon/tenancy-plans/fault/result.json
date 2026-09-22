@@ -1,0 +1,43 @@
+{
+  "unit": "tenancy-plans",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:00:17.961716+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": false,
+      "checks_run": 4,
+      "stats": {
+        "source_counts": {
+          "tenants": 13,
+          "plans": 6,
+          "subscriptions": 15,
+          "subscriptionVersions": 12
+        }
+      },
+      "findings": [
+        {
+          "collection": "subscriptions",
+          "check": "root_count",
+          "detail": "rows(SUBSCRIPTIONS)=15 vs docs=14",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "merge_eligible": false,
+  "error": null
+}
