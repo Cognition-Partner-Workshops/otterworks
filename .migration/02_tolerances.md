@@ -1,4 +1,4 @@
-# 02_tolerances — correctness contract, version `tol-1` (PROPOSED, awaiting STOP A)
+# 02_tolerances — correctness contract, version `tol-1` (APPROVED at STOP A, 2026-09-22)
 
 Recon mode: **OFFLINE**. The harness runs only against the local Oracle Free fixture and local MongoDB. A fixture PASS proves the mapping spec and the loader agree on synthetic data; it is never parity with production. The customer must run LIVE or SNAPSHOT recon inside their network before STOP C.
 
@@ -39,3 +39,4 @@ Recon mode: **OFFLINE**. The harness runs only against the local Oracle Free fix
 | Date | Version | Change | Approved by |
 |---|---|---|---|
 | 2026-09-22 | tol-1 | initial proposal | pending STOP A |
+| 2026-09-22 | tol-1 | approved at STOP A; customer reply, verbatim: "Approved" | customer (this session) |

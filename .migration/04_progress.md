@@ -9,4 +9,4 @@ Legend: Parity is always reported with its mode; `fixture` never counts as parit
 ## Phase log
 | Date | Phase | Result |
 |---|---|---|
-| 2026-09-22 | Setup | `.migration/` written, offline guard PASS, awaiting STOP A |
+| 2026-09-22 | Setup | `.migration/` written, offline guard PASS, STOP A approved (reply: "Approved") |
