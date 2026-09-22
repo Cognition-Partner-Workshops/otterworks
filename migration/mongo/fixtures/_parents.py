@@ -125,8 +125,8 @@ def ensure_rating_periods(cur, ids, values=None):
         try:
             row = values.get(pid) or _rp_row(int(pid.rsplit("-", 1)[1]))
         except (ValueError, IndexError):
-            row = (pid, "SYNTH-TEN-1", dt.date(2026, 1, 1),
-                   dt.date(2026, 1, 26))
+            row = (pid, "SYNTH-TEN-1", dt.date(2020, 1, 1),
+                   dt.date(2020, 1, 26))
         ensure_tenants(cur, [row[1]])
         cur.execute(
             """MERGE INTO rating_periods t
