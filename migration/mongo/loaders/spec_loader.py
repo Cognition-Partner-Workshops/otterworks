@@ -346,7 +346,7 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 e_sql += " WHERE " + _quote_where(child_where)
             e_key_cols = list(emb.get("key", {}).get("source", []))
             order_cols = list(dict.fromkeys(
-                e_parent_key + e_key_cols or e_parent_key + e_cols))
+                e_parent_key + (e_key_cols or e_cols)))
             e_sql += " ORDER BY " + ", ".join(order_cols)
             grouped: dict[tuple, list[dict]] = {}
             for crow in _select(oracle_conn, e_sql):
