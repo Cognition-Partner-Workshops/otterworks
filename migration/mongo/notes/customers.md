@@ -45,3 +45,13 @@ values outside CODES. 60 hist rows (2+/changed customer for the first 30,
 plus sparse rows). 600 EAV rows: 550 CUSTOMER with matching ENTITY_ID, 50
 PLAN/TENANT/INVOICE incl. unmatched ENTITY_IDs (load to entityAttrValue,
 no parent needed).
+
+## Seeder idempotency vs trg_customer_master_hist
+
+`trg_customer_master_hist` (02_horror.sql:358) copies each UPDATEd/DELETEd
+customer_master row into CUSTOMER_MASTER_HIST. The seed cleanup order is
+EAV -> CUSTOMER_MASTER -> CUSTOMER_MASTER_HIST so trigger-written DEL copies
+are removed after the customer delete; the hist cleanup also matches the
+seeded hist_id band (`hist_id >= 9100000`) because sparse seed rows have a
+NULL cust_id that LIKE cannot match. Verified: two consecutive runs both
+report CUSTOMER_MASTER_HIST = 60 (previously it grew on every rerun).
