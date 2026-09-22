@@ -303,3 +303,81 @@ def test_apply_fields_omits_missing_and_quarantines():
     _apply_fields(row, fields, doc, q, {"A"})
     assert doc == {}
     assert len(q) == 1 and q[0]["field"] == "C"
+
+
+def test_collections_not_in_spec_refused(tmp_path):
+    import json
+    import pytest
+    from spec_loader import load_collections
+    spec = {"version": "1", "collections": [
+        {"collection": "codes", "root_table": "CODES",
+         "key": {"source": ["ID"], "target": "_id"}, "fields": []}]}
+    sp = tmp_path / "s.json"
+    sp.write_text(json.dumps(spec))
+    with pytest.raises(ValueError, match="collections not in spec"):
+        load_collections(sp, ["nope"], None, None)
+
+
+def test_embed_quarantine_uses_child_key_and_dedupes(tmp_path):
+    """Malformed child value quarantines once (fields+child_fields overlap
+    deduped) and is keyed by the embed's own key cols, not the root key."""
+    import json
+    import spec_loader
+    from spec_loader import load_collections
+    spec_loader.QUARANTINE_DIR = tmp_path / "quarantine"
+
+    csv_field = {"source": "GL", "target": "gl",
+                 "source_type": "VARCHAR2(100)", "bson_type": "array",
+                 "rules": ["csv_to_array"]}
+    spec = {"version": "1", "collections": [{
+        "collection": "parents", "root_table": "PARENTS",
+        "key": {"source": ["ID"], "target": "_id"},
+        "fields": [],
+        "embeds": [{"array_path": "kids", "child_table": "KIDS",
+                    "parent_key": ["PARENT_ID"],
+                    "key": {"source": ["KID_ID"], "target": "kidId"},
+                    "fields": [csv_field],
+                    "child_fields": [csv_field]}]}]}
+    sp = tmp_path / "spec.json"
+    sp.write_text(json.dumps(spec))
+
+    class FakeCursor:
+        def execute(self, sql, params=None):
+            if "KIDS" in sql:
+                self._rows = [{"PARENT_ID": "p1", "KID_ID": "k1", "GL": "a,,b"}]
+            else:
+                self._rows = [{"ID": "p1"}]
+            cols = [w.strip() for w in
+                    sql.split("FROM")[0].replace("SELECT", "").split(",")]
+            self.description = [(c,) for c in cols]
+
+        def fetchall(self):
+            return [tuple(r.get(c[0]) for c in self.description) for r in self._rows]
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+    class FakeColl:
+        class _Res:
+            modified_count = 0
+
+        def replace_one(self, f, d, upsert=False):
+            return self._Res()
+
+        def find(self, *a, **k):
+            return []
+
+        def delete_one(self, f):
+            pass
+
+    class FakeDb:
+        def __getitem__(self, n):
+            return FakeColl()
+
+    stats = load_collections(sp, ["parents"], FakeConn(), FakeDb())
+    assert stats["parents"]["quarantined"] == 1
+    qf = (tmp_path / "quarantine" / "parents.jsonl").read_text().strip()
+    entry = json.loads(qf)
+    assert entry["source_key"] == {"KID_ID": "k1"}
+    assert "malformed" in entry["reason"]
