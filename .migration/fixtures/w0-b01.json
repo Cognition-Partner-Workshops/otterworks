@@ -1,0 +1,10 @@
+{
+  "source": "oracle fixture FIXTURE@FREEPDB1 built from services/legacy-billing/db/oracle DDL",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-22T20:45:00Z",
+  "produced_by": "migration/mongo/fixtures/seed_codes.py",
+  "row_counts": {
+    "CODES": 41
+  }
+}
