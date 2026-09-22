@@ -2,6 +2,8 @@
 """Synthetic seed for unit `invoicing`: INVOICES + INVOICE_LINES +
 CREDIT_NOTES in the LOCAL Oracle fixture only (wave-2 batch w2-b02).
 Idempotent: deletes SYNTH-% rows then re-inserts.
+Parents (tenants SYNTH-TEN-*, periods SYNTH-RP-*) are merged in if
+missing so the seeder runs on a fresh fixture.
 
 INVOICE_LINES.invoice_id is a REAL FK (ON DELETE CASCADE): orphan lines
 cannot exist here, unlike legacy-invoice-feed. Lines embed as lines[]
@@ -25,6 +27,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _local import require_local_dsn  # noqa: E402
+from _parents import (ensure_tenants, ensure_rating_periods,
+                      ensure_invoices)  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPO_ROOT / ".migration" / "fixtures" / "w2-b02.json"
@@ -57,6 +61,8 @@ def _connect():
 
 def _seed(conn) -> dict:
     cur = conn.cursor()
+    ensure_tenants(cur, TENANTS)
+    ensure_rating_periods(cur, PERIODS)
     cur.execute("DELETE FROM invoice_lines WHERE id LIKE 'SYNTH-IL-%'")
     cur.execute("DELETE FROM invoices WHERE id LIKE 'SYNTH-IV-%'")
     cur.execute("DELETE FROM credit_notes WHERE id LIKE 'SYNTH-CN-%'")
@@ -130,10 +136,40 @@ def _write_manifest(counts: dict) -> None:
     print(f"wrote {MANIFEST}")
 
 
+def _self_test(conn) -> None:
+    """Prove _parents works on a fresh fixture: merge *-SELFTEST parents
+    (invoice -> period -> tenant), insert one child, delete in reverse FK
+    order."""
+    cur = conn.cursor()
+    ensure_invoices(cur, ["SYNTH-IV-SELFTEST"], values={
+        "SYNTH-IV-SELFTEST": (
+            "SYNTH-IV-SELFTEST", "SYNTH-TEN-SELFTEST", "SYNTH-RP-SELFTEST",
+            dt.datetime(2025, 2, 2), 0.01, 0.05, 0.06, 0)})
+    cur.execute("INSERT INTO invoice_lines (id,invoice_id,line_no,line_type,description,amount) VALUES (:1,:2,:3,:4,:5,:6)",
+                ("SYNTH-IL-SELFTEST", "SYNTH-IV-SELFTEST", 1, "BASE",
+                 "self-test line", 0.01))
+    cur.execute("DELETE FROM invoice_lines WHERE id = 'SYNTH-IL-SELFTEST'")
+    cur.execute("DELETE FROM invoices WHERE id = 'SYNTH-IV-SELFTEST'")
+    cur.execute("DELETE FROM rating_periods WHERE id = 'SYNTH-RP-SELFTEST'")
+    cur.execute("DELETE FROM tenants WHERE id = 'SYNTH-TEN-SELFTEST'")
+    conn.commit()
+    print("self-test OK: merged tenant/period/invoice parents, inserted an "
+          "invoice_lines child, cleaned up in reverse FK order")
+
+
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--self-test", action="store_true",
+                    help="merge *-SELFTEST parents + one child row, then clean up")
+    args = ap.parse_args()
     connection(os.environ.get(
         "MONGO_LOCAL_URI", "mongodb://127.0.0.1:27017/ow_billing_offline"))
     conn = _connect()
+    if args.self_test:
+        _self_test(conn)
+        conn.close()
+        return 0
     counts = _seed(conn)
     conn.close()
     _write_manifest(counts)
