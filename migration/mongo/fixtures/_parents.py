@@ -181,6 +181,59 @@ def ensure_rating_periods(cur, ids, values=None):
             row)
 
 
+def prune_stale(cur, table, prefix, keep_ids, referenced_by=()):
+    """Delete `<prefix>` rows whose id is not in `keep_ids`, but only when
+    nothing in `referenced_by` ((table, column) pairs) still references
+    them. Raises naming the ids if a stale row is still referenced.
+    Returns the number of rows deleted."""
+    keep = set(keep_ids)
+    if table == "invoices":
+        cur.execute("SELECT id FROM invoices WHERE id LIKE :1", (prefix,))
+    elif table == "rating_periods":
+        cur.execute("SELECT id FROM rating_periods WHERE id LIKE :1",
+                    (prefix,))
+    else:
+        raise ValueError(f"prune_stale: unsupported table {table!r}")
+    stale = [r[0] for r in cur.fetchall() if r[0] not in keep]
+    if not stale:
+        return 0
+    referenced = set()
+    for rid in stale:
+        for rtable, col in referenced_by:
+            if rtable == "dunning_attempts" and col == "invoice_id":
+                cur.execute(
+                    "SELECT 1 FROM dunning_attempts WHERE invoice_id = :1 "
+                    "AND ROWNUM = 1", (rid,))
+            elif rtable == "invoice_lines" and col == "invoice_id":
+                cur.execute(
+                    "SELECT 1 FROM invoice_lines WHERE invoice_id = :1 "
+                    "AND ROWNUM = 1", (rid,))
+            elif rtable == "invoices" and col == "period_id":
+                cur.execute(
+                    "SELECT 1 FROM invoices WHERE period_id = :1 "
+                    "AND ROWNUM = 1", (rid,))
+            elif rtable == "rating_results" and col == "period_id":
+                cur.execute(
+                    "SELECT 1 FROM rating_results WHERE period_id = :1 "
+                    "AND ROWNUM = 1", (rid,))
+            else:
+                raise ValueError(
+                    f"prune_stale: unsupported ref {rtable}.{col}")
+            if cur.fetchone():
+                referenced.add(rid)
+                break
+    if referenced:
+        raise RuntimeError(
+            f"prune_stale: stale {table} rows still referenced: "
+            f"{sorted(referenced)}")
+    for rid in stale:
+        if table == "invoices":
+            cur.execute("DELETE FROM invoices WHERE id = :1", (rid,))
+        else:
+            cur.execute("DELETE FROM rating_periods WHERE id = :1", (rid,))
+    return len(stale)
+
+
 def ensure_invoices(cur, ids, values=None):
     """MERGE invoice parents (each invoice's period + tenant parents first).
     `values` may override a non-canonical id with an explicit row tuple."""
