@@ -55,11 +55,19 @@ def main() -> int:
     stats = load_collections(SPEC, COLLECTIONS, conn, db)
     db["billingAuditLog"].create_index(
         "loggedAt", expireAfterSeconds=TTL_SECONDS)
+    # Mirror Oracle UQ_DUNNING_ATTEMPTS / UQ_NOTIFICATIONS as unique
+    # compound indexes on the dedupe keys.
+    db["dunningAttempts"].create_index(
+        [("invoiceId", 1), ("attemptNo", 1)], unique=True)
+    db["notifications"].create_index(
+        [("tenantId", 1), ("kindCd", 1), ("sentAt", 1)], unique=True)
     for name, st in stats.items():
         print(f"{name}: read={st['read']} upserted={st['upserted']} "
               f"modified={st['modified']} deleted={st['deleted']} "
               f"quarantined={st['quarantined']} orphans={st['orphan_children']}")
     print(f"billingAuditLog: TTL index on loggedAt expireAfterSeconds={TTL_SECONDS}")
+    print("dunningAttempts: unique index on (invoiceId, attemptNo) [UQ_DUNNING_ATTEMPTS]")
+    print("notifications: unique index on (tenantId, kindCd, sentAt) [UQ_NOTIFICATIONS]")
     conn.close()
     return 0
 

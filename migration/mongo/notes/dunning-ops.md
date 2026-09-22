@@ -11,6 +11,13 @@ days. Migrated replacement: TTL index `loggedAt expireAfterSeconds=7776000`
 `logged_at` values are within 90 days so recon counts match before any
 expiry.
 
+## Indexes mirroring Oracle unique constraints
+
+The loader also creates unique compound indexes mirroring the Oracle UQs:
+`dunningAttempts (invoiceId, attemptNo)` for UQ_DUNNING_ATTEMPTS and
+`notifications (tenantId, kindCd, sentAt)` for UQ_NOTIFICATIONS — the
+same natural dedupe keys the seeded traps exercise.
+
 ## Open: JOB_NIGHTLY_DUNNING owner
 
 STOP B U-5 leaves the owner of the nightly dunning job open — it becomes a
