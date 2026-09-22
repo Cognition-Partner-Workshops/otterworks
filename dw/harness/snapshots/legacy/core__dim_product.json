@@ -1,0 +1,121 @@
+{
+  "columns": [
+    {
+      "digest": 172024058014285159965441932304580309725,
+      "distinct": 8000,
+      "max": "8000",
+      "min": "1",
+      "name": "product_id",
+      "non_null": 8000,
+      "scale": 0,
+      "sum": "32004000",
+      "type": "bigint"
+    },
+    {
+      "digest": 211028211446716733237966850921800653598,
+      "distinct": 8000,
+      "max": "Product 999",
+      "min": "Product 1",
+      "name": "product_name",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 138034329015936023414762296569567170141,
+      "distinct": 6,
+      "max": "Outdoors",
+      "min": "Apparel",
+      "name": "category",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 28324693006507393965015354696940358113,
+      "distinct": 24,
+      "max": "Subcat 9",
+      "min": "Subcat 0",
+      "name": "subcategory",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 139607176263978006296017487470343791176,
+      "distinct": 40,
+      "max": "Brand 9",
+      "min": "Brand 0",
+      "name": "brand",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 10959885684991244977622904561558927111,
+      "distinct": 7322,
+      "max": "244.95",
+      "min": "5.07",
+      "name": "unit_cost",
+      "non_null": 8000,
+      "scale": 2,
+      "sum": "1000295.58",
+      "type": "numeric"
+    },
+    {
+      "digest": 332359493826503270803906231990514792615,
+      "distinct": 7322,
+      "max": "355.18",
+      "min": "7.35",
+      "name": "list_price",
+      "non_null": 8000,
+      "scale": 2,
+      "sum": "1450430.56",
+      "type": "numeric"
+    },
+    {
+      "digest": 65731124395417844259394029732496680320,
+      "distinct": 2,
+      "max": "true",
+      "min": "false",
+      "name": "is_active",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "boolean"
+    },
+    {
+      "digest": 65319926520748021843223191703024491571,
+      "distinct": 120,
+      "max": "120",
+      "min": "1",
+      "name": "supplier_id",
+      "non_null": 8000,
+      "scale": 0,
+      "sum": "483319",
+      "type": "integer"
+    },
+    {
+      "digest": 159936903047769098564693669752326518016,
+      "distinct": 1,
+      "max": "2026-01-01 03:20:00",
+      "min": "2026-01-01 03:20:00",
+      "name": "load_ts",
+      "non_null": 8000,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    }
+  ],
+  "engine": "postgres",
+  "fingerprint": "69487aad39ea351a16845b7b7327f84a4ba6b12683af07d8fe0cc232db235ca6",
+  "manifest_format": 4,
+  "ordered": null,
+  "row_count": 8000,
+  "row_digest": 190552598273047584135876318945102794791,
+  "table": "core.dim_product"
+}
