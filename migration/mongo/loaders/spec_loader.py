@@ -105,10 +105,10 @@ def _convert_value(field: dict, value: Any) -> tuple[Any, str | None]:
     bson_type = field.get("bson_type", "string")
     source_type = field.get("source_type", "") or ""
     if isinstance(value, str):
-        if value == "" and _has_rule(rules, "empty_string_is_null"):
-            return _OMIT, None
         if source_type.upper().startswith("CHAR") or _has_rule(rules, "rstrip_spaces"):
             value = value.rstrip(" ")
+        if value == "" and _has_rule(rules, "empty_string_is_null"):
+            return _OMIT, None
     if bson_type == "bool" or _has_rule(rules, "yn_to_bool") or _has_rule(rules, "int_to_bool"):
         if isinstance(value, str):
             token = value.strip().upper()
@@ -160,7 +160,19 @@ def _csv_malformed(value: str) -> bool:
     delimiters ('a,,b'). Leading/trailing empties are dropped, not malformed."""
     if any(ch in value for ch in ('"', "'", "\n", "\r", ";", "|")):
         return True
-    return ",," in value
+    parts = value.split(",")
+    return any(p.strip() == "" for p in parts[1:-1])
+
+
+def require_local_oracle_dsn(dsn: str) -> None:
+    """Offline mode: the Oracle easy-connect DSN must be local. Host is the
+    text before the first ':' or '/'; a '(' in the string means a TNS
+    descriptor, which is refused outright."""
+    if "(" in dsn:
+        raise ValueError("offline mode refuses TNS descriptors in the Oracle DSN")
+    host = dsn.split(":", 1)[0].split("/", 1)[0]
+    if host not in ("127.0.0.1", "localhost"):
+        raise ValueError(f"offline mode refuses non-local Oracle host {host!r}")
 
 
 def require_local_uri(uri: str) -> None:
@@ -215,8 +227,44 @@ def _select(conn, sql: str, params: dict | None = None) -> list[dict[str, Any]]:
     return [dict(zip(cols, r)) for r in cur.fetchall()]
 
 
+_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$#]*$")
+_TABLE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$#]*(\.[A-Za-z_][A-Za-z0-9_$#]*)*$")
+_PARAM_VALUE_RE = re.compile(r"^[A-Za-z0-9_.:@-]+$")
+# Mirrors the recon harness (recon/config.py READ_ONLY_PREDICATE_KEYWORDS);
+# kept as a copy so the loader has no plugin dependency.
+_READ_ONLY_PREDICATE_KEYWORDS = re.compile(
+    r"\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|call|"
+    r"exec|execute|copy|unload|into|union|lock|skip\s+locked|for\s+update|wait\s+\d+|"
+    r"updlock|xlock|holdlock|tablock|tablockx|rowlock|paglock|readcommittedlock|"
+    r"serializable|repeatableread)\b",
+    re.IGNORECASE)
+_SQL_NOISE = re.compile(r"'(?:[^']|'')*'|/\*.*?\*/|--[^\r\n]*", re.DOTALL)
+
+
+def _validate_identifier(name: str) -> str:
+    if not _IDENT_RE.fullmatch(name or ""):
+        raise ValueError(f"invalid identifier: {name!r}")
+    return name
+
+
+def _validate_table(name: str) -> str:
+    if not _TABLE_RE.fullmatch(name or ""):
+        raise ValueError(f"invalid table identifier: {name!r}")
+    return name
+
+
+def _validate_predicate(value: str) -> str:
+    if any(tok in value for tok in (";", "--", "/*")):
+        raise ValueError(f"predicate must be a single expression: {value!r}")
+    keyword_text = _SQL_NOISE.sub(
+        lambda m: "''" if m.group().startswith("'") else " ", value)
+    if _READ_ONLY_PREDICATE_KEYWORDS.search(keyword_text):
+        raise ValueError(f"predicate must be read-only: {value!r}")
+    return value
+
+
 def _quote_where(where: str) -> str:
-    return f"({where})"
+    return f"({_validate_predicate(where)})"
 
 
 def _field_source_cols(field_specs: list[dict]) -> list[str]:
@@ -240,6 +288,9 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
     same convention as the recon harness loader."""
     spec = json.loads(Path(spec_path).read_text())
     params = params or {}
+    for k, v in params.items():
+        if not _PARAM_VALUE_RE.fullmatch(str(v)):
+            raise ValueError(f"invalid --param value for {k!r}")
     wanted = set(collection_names)
     stats: dict[str, dict] = {}
     quarantine_dir = QUARANTINE_DIR
@@ -264,6 +315,9 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
         for emb in embeds:
             parent_ref_cols.update(emb.get("parent_ref") or key_src)
         sel_cols = all_cols + [c for c in parent_ref_cols if c not in all_cols]
+        _validate_table(coll["root_table"])
+        for c in sel_cols:
+            _validate_identifier(c)
         sql = f"SELECT {', '.join(sel_cols)} FROM {coll['root_table']}"
         root_where = coll.get("root_where")
         if root_where:
@@ -281,12 +335,19 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
             e_cols = (e_parent_key
                       + [c for c in _field_source_cols(e_field_specs) if c not in e_parent_key]
                       + [c for c in emb.get("key", {}).get("source", []) if c not in e_parent_key])
+            _validate_table(emb["child_table"])
+            for c in e_cols:
+                _validate_identifier(c)
             e_sql = f"SELECT {', '.join(dict.fromkeys(e_cols))} FROM {emb['child_table']}"
             child_where = emb.get("child_where")
             if child_where:
                 for k, v in params.items():
                     child_where = child_where.replace("${" + k + "}", str(v))
                 e_sql += " WHERE " + _quote_where(child_where)
+            e_key_cols = list(emb.get("key", {}).get("source", []))
+            order_cols = list(dict.fromkeys(
+                e_parent_key + e_key_cols or e_parent_key + e_cols))
+            e_sql += " ORDER BY " + ", ".join(order_cols)
             grouped: dict[tuple, list[dict]] = {}
             for crow in _select(oracle_conn, e_sql):
                 grouped.setdefault(tuple(crow.get(c) for c in e_parent_key), []).append(crow)
@@ -316,7 +377,7 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 for crow in children:
                     edoc: dict[str, Any] = {}
                     ekey = emb.get("key", {})
-                    efields = [f for f in emb.get("fields", [])
+                    efields = [f for f in emb.get("fields", []) + emb.get("child_fields", [])
                                if f["source"] not in emb.get("parent_key", [])]
                     _apply_fields(crow, efields, edoc, quarantine, key_cols)
                     esrc = ekey.get("source", [])
@@ -356,9 +417,11 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                     })
                     orphan_children += 1
         st["orphan_children"] += orphan_children
-        # Converge: remove target docs no longer in the source key set.
+        # Converge: remove target docs no longer in the source key set,
+        # scoped to target_where when the spec scopes the collection.
         removed = 0
-        for existing in target.find({}, {"_id": 1}):
+        scope = json.loads(coll["target_where"]) if coll.get("target_where") else {}
+        for existing in target.find(scope, {"_id": 1}):
             if json.dumps(existing["_id"], sort_keys=True, default=str) not in live_key_forms:
                 target.delete_one({"_id": existing["_id"]})
                 removed += 1
