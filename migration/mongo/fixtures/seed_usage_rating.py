@@ -4,9 +4,8 @@ RATING_RESULTS in the LOCAL Oracle fixture only (wave-2 batch w2-b01).
 Idempotent: deletes SYNTH-% rows then re-inserts.
 
 Seed: periods with 0, 1 and several results; TIMESTAMP events at ms
-precision; kind_cd values outside CODES. All UNITS > 0 -- the fixture
-carries trg_usage_events_check which enforces it (application guard, see
-notes/usage-rating.md).
+precision; kind_cd limited to values in CODES. All UNITS > 0 -- the fixture
+carries trg_usage_events_check which enforces both (see notes/usage-rating.md).
 
 Oracle only: the seeder never writes to Mongo.
 """
@@ -65,7 +64,7 @@ def _seed(conn) -> dict:
             TENANTS[i % 3],
             ts,
             (i % 500) + 1,                       # units > 0 (trigger check)
-            [1, 2, 3][i % 3],            # 77/88 unknown to CODES
+            [1, 2, 3][i % 3],            # trigger rejects kinds outside CODES
         ))
     cur.executemany("INSERT INTO usage_events (id,tenant_id,occurred_at,units,kind_cd) VALUES (:1,:2,:3,:4,:5)", ev_rows)
 

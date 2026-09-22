@@ -6,7 +6,7 @@ Collections: `usageEvents` (USAGE_EVENTS, keyed id), `ratingPeriods`
 
 ## Trigger port: trg_usage_events_check (01_tables.sql:238-252)
 
-The Oracle trigger enforces `UNITS > 0` on insert/update of USAGE_EVENTS.
+The Oracle trigger enforces `UNITS > 0` and `kind_cd IN CODES('USAGE_KIND')` on insert/update of USAGE_EVENTS.
 Migrated replacement: JSON-schema validation `units > 0` on `usageEvents`
 plus a billing-service application check at write time. **Not created in
 this unit** — the validator lands with the application cutover; noted here
@@ -25,7 +25,7 @@ codes unit's unknown-value traps instead.
 
 120 usage events: TIMESTAMP at ms precision (microsecond component
 multiples of 1000 so `datetime_utc_truncate_ms` is lossless), `kind_cd`
-values 77/88 outside CODES, all UNITS > 0. 30 rating periods with 0, 1, 2,
+only 1/2/3 (see Fixture note), all UNITS > 0. 30 rating periods with 0, 1, 2,
 3 or 4 embedded results (60 result rows total) — T1 counts
 `sum(len(results))` against `count(RATING_RESULTS)`.
 
