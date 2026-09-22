@@ -25,7 +25,7 @@ def _oracle_orphans() -> int:
     require_local_oracle_dsn(dsn["dsn"])
     conn = oracledb.connect(user=dsn["user"], password=dsn["password"], dsn=dsn["dsn"])
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM invoice_line WHERE invoice_id NOT IN (SELECT invoice_id FROM invoice_header)")
+    cur.execute("SELECT COUNT(*) FROM invoice_line l WHERE NOT EXISTS (SELECT 1 FROM invoice_header h WHERE h.invoice_id = l.invoice_id)")
     n = cur.fetchone()[0]
     conn.close()
     return n
