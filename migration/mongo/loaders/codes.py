@@ -40,7 +40,8 @@ def main() -> int:
         sys.exit("MONGO_LOCAL_URI not set (e.g. mongodb://127.0.0.1:27017)")
     from pymongo import MongoClient
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from spec_loader import load_collections
+    from spec_loader import load_collections, require_local_uri
+    require_local_uri(uri)
     conn = _connect_oracle()
     db = MongoClient(uri)[TARGET_DB]
     stats = load_collections(SPEC, COLLECTIONS, conn, db)
