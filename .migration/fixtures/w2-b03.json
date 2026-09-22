@@ -1,0 +1,12 @@
+{
+  "source": "oracle fixture FIXTURE@FREEPDB1 built from services/legacy-billing/db/oracle DDL",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-22T21:29:19.921212+00:00",
+  "produced_by": "migration/mongo/fixtures/seed_dunning_ops.py",
+  "row_counts": {
+    "DUNNING_ATTEMPTS": 61,
+    "NOTIFICATIONS": 21,
+    "BILLING_AUDIT_LOG": 15
+  }
+}
