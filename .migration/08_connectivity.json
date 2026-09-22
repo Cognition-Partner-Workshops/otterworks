@@ -1,0 +1,35 @@
+{
+  "resolved_at": "2026-09-22T14:33Z",
+  "recon_mode": "offline",
+  "stop_mode": "hard",
+  "source_access": {
+    "mode": "ddl_only",
+    "family": "oracle",
+    "artefacts": [
+      "services/legacy-billing/db/oracle/schema/*.sql",
+      "services/legacy-billing/db/oracle/packages/*.sql"
+    ],
+    "principal_secret": null,
+    "probe": "not applicable (offline by intake; not an availability fallback)",
+    "fixture": "Oracle Free container from skills/schema-modeling/docker-compose.local.yml --profile oracle; never the source system"
+  },
+  "target_access": {
+    "mode": "local",
+    "uri_env": "MONGO_LOCAL_URI",
+    "database": "ow_billing_offline",
+    "atlas_uri_env": "MONGODB_ATLAS_URI",
+    "atlas_uri_env_present_in_environment": true,
+    "atlas_uri_used": false,
+    "merge_evidence": false
+  },
+  "mcp_servers": "none configured by the plugin; none used",
+  "offline_guard": {
+    "script": "skills/schema-modeling/offline_guard.py",
+    "pass_command": "env -u MONGODB_ATLAS_URI MONGO_LOCAL_URI=mongodb://localhost:27017 python3 offline_guard.py --repo .",
+    "pass_output": "offline guard: OK (no MCP config, no Atlas URI, MONGO_LOCAL_URI is local)",
+    "pass_exit": 0,
+    "refuse_command": "MONGO_LOCAL_URI=mongodb://localhost:27017 python3 offline_guard.py --repo .   (MONGODB_ATLAS_URI left set)",
+    "refuse_output": "offline guard: MONGODB_ATLAS_URI is set (often inherited from the org environment): there is no target connectivity in offline mode. Run every offline command as `env -u MONGODB_ATLAS_URI <command>`.",
+    "refuse_exit": 1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "databases": ["ow_billing_offline"],
+  "catalogs": ["ow_billing_offline"],
+  "target_hosts": ["localhost", "127.0.0.1"],
+  "run_mode": "fixture",
+  "note": "recon_mode offline: the only write target is the local MongoDB database ow_billing_offline. The co-installed dbx-migration hook (dbx_guard.py) rejects an empty 'catalogs' list, so the same single local database name is carried there (D-005). No Databricks catalog exists or is used."
+}
