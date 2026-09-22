@@ -1,0 +1,187 @@
+{
+  "unit": "legacy-invoice-feed",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:11:06.413782+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "source_counts": {
+          "legacyInvoiceLines": 4000,
+          "legacyInvoices": 500
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "deferred_to_tier3": [
+          "legacyInvoiceLines.invoiceNo",
+          "legacyInvoiceLines.invoiceId",
+          "legacyInvoiceLines.custId",
+          "legacyInvoiceLines.custNo",
+          "legacyInvoiceLines.custName",
+          "legacyInvoiceLines.tenantId",
+          "legacyInvoiceLines.lineNo",
+          "legacyInvoiceLines.lineTypeCd",
+          "legacyInvoiceLines.itemDesc",
+          "legacyInvoiceLines.qty",
+          "legacyInvoiceLines.unitPrice",
+          "legacyInvoiceLines.amount",
+          "legacyInvoiceLines.taxAmt",
+          "legacyInvoiceLines.invoiceDt",
+          "legacyInvoiceLines.servicePeriod",
+          "legacyInvoiceLines.posted",
+          "legacyInvoiceLines.glAcct",
+          "legacyInvoiceLines.batchNo",
+          "legacyInvoiceLines.srcSystem",
+          "legacyInvoices.invoiceNo",
+          "legacyInvoices.custId",
+          "legacyInvoices.tenantId",
+          "legacyInvoices.invoiceDt",
+          "legacyInvoices.dueDt",
+          "legacyInvoices.statusCd",
+          "legacyInvoices.totalAmt",
+          "legacyInvoices.batchNo"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "legacyInvoiceLines.invoiceNo",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.invoiceId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.custId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.custNo",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.custName",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.itemDesc",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.servicePeriod",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoiceLines.srcSystem",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoices.invoiceNo",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoices.custId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "legacyInvoices.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 22
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 4500,
+      "stats": {
+        "legacyInvoiceLines": {
+          "mode": "full_diff",
+          "population": 4000,
+          "duplicate_source_key_count": 0
+        },
+        "legacyInvoices": {
+          "mode": "full_diff",
+          "population": 500,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
