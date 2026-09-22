@@ -55,3 +55,7 @@ are removed after the customer delete; the hist cleanup also matches the
 seeded hist_id band (`hist_id >= 9100000`) because sparse seed rows have a
 NULL cust_id that LIKE cannot match. Verified: two consecutive runs both
 report CUSTOMER_MASTER_HIST = 60 (previously it grew on every rerun).
+
+## Full convergence on entityAttrValue
+
+The loader passes `full_converge={"entityAttrValue"}`: per map-draft-3 D-013 this unit is the only writer of that collection, so the whole target converges and a CUSTOMER-type doc stranded by an earlier unscoped load is deleted rather than surviving out-of-scope.

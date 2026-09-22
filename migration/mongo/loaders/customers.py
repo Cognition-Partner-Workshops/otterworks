@@ -49,7 +49,8 @@ def main() -> int:
     require_local_uri(uri)
     conn = _connect_oracle()
     db = MongoClient(uri)[TARGET_DB]
-    stats = load_collections(SPEC, COLLECTIONS, conn, db)
+    stats = load_collections(SPEC, COLLECTIONS, conn, db,
+                           full_converge={"entityAttrValue"})
     for name, st in stats.items():
         print(f"{name}: read={st['read']} upserted={st['upserted']} "
               f"modified={st['modified']} deleted={st['deleted']} "
