@@ -63,26 +63,16 @@ def _seed(conn) -> dict:
     cur = conn.cursor()
     ensure_tenants(cur, TENANTS)
     ensure_rating_periods(cur, PERIODS)
+    # invoices are referenced by dunning_attempts (fk_da_invoice): upsert
+    # via MERGE (converge to canonical values) instead of delete+insert.
+    ensure_invoices(cur, [f"SYNTH-IV-{i:04d}" for i in range(N_INVOICES)])
     cur.execute("DELETE FROM invoice_lines WHERE id LIKE 'SYNTH-IL-%'")
-    cur.execute("DELETE FROM invoices WHERE id LIKE 'SYNTH-IV-%'")
     cur.execute("DELETE FROM credit_notes WHERE id LIKE 'SYNTH-CN-%'")
 
-    inv_rows = []
     line_rows = []
     lid = 0
     for i in range(N_INVOICES):
         iid = f"SYNTH-IV-{i:04d}"
-        inv_rows.append((
-            iid,
-            TENANTS[i % 3],
-            PERIODS[i % len(PERIODS)],
-            datetime(2026, (i % 9) + 1, (i % 27) + 1, 12, 0, 0,
-                     ((i * 211) % 1000) * 1000),
-            float(AMTS[i % len(AMTS)]),
-            float(AMTS[(i + 1) % len(AMTS)]),
-            float(AMTS[(i + 2) % len(AMTS)]),
-            [0, 1, 2, 3, 55][i % 5],          # 55 = status not in CODES
-        ))
         for k in range(i % 7):                # 0..6 lines per invoice
             line_rows.append((
                 f"SYNTH-IL-{lid:05d}",
@@ -93,7 +83,6 @@ def _seed(conn) -> dict:
                 float(AMTS[(lid + k) % len(AMTS)]),
             ))
             lid += 1
-    cur.executemany("INSERT INTO invoices (id,tenant_id,period_id,issued_at,subtotal,tax,total,status_cd) VALUES (:1,:2,:3,:4,:5,:6,:7,:8)", inv_rows)
     cur.executemany("INSERT INTO invoice_lines (id,invoice_id,line_no,line_type,description,amount) VALUES (:1,:2,:3,:4,:5,:6)", line_rows)
 
     cn_rows = []

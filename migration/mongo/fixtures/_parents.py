@@ -74,6 +74,13 @@ def ensure_tenants(cur, ids, values=None):
                USING (SELECT :1 id, :2 name, :3 tax_exempt_yn, :4 status_cd
                       FROM dual) s
                ON (t.id = s.id)
+               WHEN MATCHED THEN UPDATE SET
+                   t.name = s.name,
+                   t.tax_exempt_yn = s.tax_exempt_yn,
+                   t.status_cd = s.status_cd
+               WHERE DECODE(t.name, s.name, 0, 1) = 1
+                  OR DECODE(t.tax_exempt_yn, s.tax_exempt_yn, 0, 1) = 1
+                  OR DECODE(t.status_cd, s.status_cd, 0, 1) = 1
                WHEN NOT MATCHED THEN INSERT (id, name, tax_exempt_yn, status_cd)
                    VALUES (s.id, s.name, s.tax_exempt_yn, s.status_cd)""",
             row)
@@ -87,6 +94,19 @@ def ensure_plan(cur, pid):
                         :5 included_units, :6 overage_rate, :7 active_yn
                   FROM dual) s
            ON (t.id = s.id)
+           WHEN MATCHED THEN UPDATE SET
+               t.code = s.code,
+               t.tier_cd = s.tier_cd,
+               t.monthly_fee = s.monthly_fee,
+               t.included_units = s.included_units,
+               t.overage_rate = s.overage_rate,
+               t.active_yn = s.active_yn
+           WHERE DECODE(t.code, s.code, 0, 1) = 1
+              OR DECODE(t.tier_cd, s.tier_cd, 0, 1) = 1
+              OR DECODE(t.monthly_fee, s.monthly_fee, 0, 1) = 1
+              OR DECODE(t.included_units, s.included_units, 0, 1) = 1
+              OR DECODE(t.overage_rate, s.overage_rate, 0, 1) = 1
+              OR DECODE(t.active_yn, s.active_yn, 0, 1) = 1
            WHEN NOT MATCHED THEN INSERT (id, code, tier_cd, monthly_fee,
                included_units, overage_rate, active_yn)
                VALUES (s.id, s.code, s.tier_cd, s.monthly_fee,
@@ -110,6 +130,21 @@ def ensure_subscriptions(cur, ids, values=None):
                             :5 ends_on, :6 status_cd, :7 suspended_on
                       FROM dual) s
                ON (t.id = s.id)
+               -- guard: skip the UPDATE when nothing changed, so a rerun
+               -- does not fire trg_subscriptions_hist into SUBSCRIPTIONS_HIST
+               WHEN MATCHED THEN UPDATE SET
+                   t.tenant_id = s.tenant_id,
+                   t.plan_id = s.plan_id,
+                   t.starts_on = s.starts_on,
+                   t.ends_on = s.ends_on,
+                   t.status_cd = s.status_cd,
+                   t.suspended_on = s.suspended_on
+               WHERE DECODE(t.tenant_id, s.tenant_id, 0, 1) = 1
+                  OR DECODE(t.plan_id, s.plan_id, 0, 1) = 1
+                  OR DECODE(t.starts_on, s.starts_on, 0, 1) = 1
+                  OR DECODE(t.ends_on, s.ends_on, 0, 1) = 1
+                  OR DECODE(t.status_cd, s.status_cd, 0, 1) = 1
+                  OR DECODE(t.suspended_on, s.suspended_on, 0, 1) = 1
                WHEN NOT MATCHED THEN INSERT (id, tenant_id, plan_id, starts_on,
                    ends_on, status_cd, suspended_on)
                    VALUES (s.id, s.tenant_id, s.plan_id, s.starts_on,
@@ -133,6 +168,13 @@ def ensure_rating_periods(cur, ids, values=None):
                USING (SELECT :1 id, :2 tenant_id, :3 period_start,
                             :4 period_end FROM dual) s
                ON (t.id = s.id)
+               WHEN MATCHED THEN UPDATE SET
+                   t.tenant_id = s.tenant_id,
+                   t.period_start = s.period_start,
+                   t.period_end = s.period_end
+               WHERE DECODE(t.tenant_id, s.tenant_id, 0, 1) = 1
+                  OR DECODE(t.period_start, s.period_start, 0, 1) = 1
+                  OR DECODE(t.period_end, s.period_end, 0, 1) = 1
                WHEN NOT MATCHED THEN INSERT (id, tenant_id, period_start,
                    period_end)
                    VALUES (s.id, s.tenant_id, s.period_start, s.period_end)""",
@@ -158,6 +200,21 @@ def ensure_invoices(cur, ids, values=None):
                             :5 subtotal, :6 tax, :7 total, :8 status_cd
                       FROM dual) s
                ON (t.id = s.id)
+               WHEN MATCHED THEN UPDATE SET
+                   t.tenant_id = s.tenant_id,
+                   t.period_id = s.period_id,
+                   t.issued_at = s.issued_at,
+                   t.subtotal = s.subtotal,
+                   t.tax = s.tax,
+                   t.total = s.total,
+                   t.status_cd = s.status_cd
+               WHERE DECODE(t.tenant_id, s.tenant_id, 0, 1) = 1
+                  OR DECODE(t.period_id, s.period_id, 0, 1) = 1
+                  OR DECODE(t.issued_at, s.issued_at, 0, 1) = 1
+                  OR DECODE(t.subtotal, s.subtotal, 0, 1) = 1
+                  OR DECODE(t.tax, s.tax, 0, 1) = 1
+                  OR DECODE(t.total, s.total, 0, 1) = 1
+                  OR DECODE(t.status_cd, s.status_cd, 0, 1) = 1
                WHEN NOT MATCHED THEN INSERT (id, tenant_id, period_id,
                    issued_at, subtotal, tax, total, status_cd)
                    VALUES (s.id, s.tenant_id, s.period_id, s.issued_at,
