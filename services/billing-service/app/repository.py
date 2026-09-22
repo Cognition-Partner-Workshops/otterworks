@@ -6,7 +6,14 @@ from uuid import UUID
 
 import psycopg
 
-from app.domain import EntitlementRow, PlanRow, SubscriptionRow
+from app.domain import (
+    EntitlementRow,
+    PlanRow,
+    PriorRatingRow,
+    RatingResultRow,
+    SubscriptionRow,
+    UsageEventRow,
+)
 
 
 class PostgresPlansRepository:
@@ -108,3 +115,116 @@ class PostgresPlansRepository:
             """,
             (subscription_id, tenant_id, plan_id, starts_on, status),
         )
+
+
+class PostgresRatingRepository:
+    def __init__(self, connection: psycopg.Connection) -> None:
+        self.connection = connection
+        self.plans = PostgresPlansRepository(connection)
+
+    def list_plans(self) -> list[PlanRow]:
+        return self.plans.list_plans()
+
+    def list_subscriptions(self, tenant_id: UUID) -> list[SubscriptionRow]:
+        return self.plans.list_subscriptions(tenant_id)
+
+    def list_usage_events(self, tenant_id: UUID) -> list[UsageEventRow]:
+        rows = self.connection.execute(
+            """
+            SELECT tenant_id, occurred_at, units, kind
+            FROM billing_svc.usage_events
+            WHERE tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [
+            UsageEventRow(
+                tenant_id=row["tenant_id"],
+                occurred_at=row["occurred_at"],
+                units=row["units"],
+                kind=row["kind"],
+            )
+            for row in rows
+        ]
+
+    def list_prior_ratings(self, tenant_id: UUID) -> list[PriorRatingRow]:
+        rows = self.connection.execute(
+            """
+            SELECT rp.period_start, rr.rollover_units
+            FROM billing_svc.rating_results rr
+            JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
+            WHERE rp.tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [
+            PriorRatingRow(
+                period_start=row["period_start"],
+                rollover_units=row["rollover_units"],
+            )
+            for row in rows
+        ]
+
+    def upsert_rating_period(
+        self, period_id: UUID, tenant_id: UUID, period_start: date, period_end: date
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_periods (id, tenant_id, period_start, period_end)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (tenant_id, period_start) DO UPDATE SET
+                period_end = EXCLUDED.period_end
+            """,
+            (period_id, tenant_id, period_start, period_end),
+        )
+
+    def get_rating_result(self, result_id: UUID) -> RatingResultRow | None:
+        row = self.connection.execute(
+            """
+            SELECT id, period_id, subscription_id, used_units, quota_units,
+                   rollover_units, billable_units, overage_amount, created_at
+            FROM billing_svc.rating_results
+            WHERE id = %s
+            """,
+            (result_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return RatingResultRow(
+            result_id=row["id"],
+            period_id=row["period_id"],
+            subscription_id=row["subscription_id"],
+            used_units=row["used_units"],
+            quota_units=row["quota_units"],
+            rollover_units=row["rollover_units"],
+            billable_units=row["billable_units"],
+            overage_amount=Decimal(row["overage_amount"]),
+            created_at=row["created_at"],
+        )
+
+    def upsert_rating_result(self, result: RatingResultRow) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_results (
+                id, period_id, subscription_id, used_units, quota_units,
+                rollover_units, billable_units, overage_amount, created_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                used_units = EXCLUDED.used_units,
+                rollover_units = EXCLUDED.rollover_units,
+                billable_units = EXCLUDED.billable_units,
+                overage_amount = EXCLUDED.overage_amount
+            """,
+            (
+                result.result_id,
+                result.period_id,
+                result.subscription_id,
+                result.used_units,
+                result.quota_units,
+                result.rollover_units,
+                result.billable_units,
+                result.overage_amount,
+                result.created_at,
+            ),
+        )
+
