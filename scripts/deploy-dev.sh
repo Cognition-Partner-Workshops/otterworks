@@ -31,6 +31,9 @@ GOLDEN_HOST_SUFFIX="${GOLDEN_HOST_SUFFIX:-otterworks.app}"
 JWT_SECRET="${JWT_SECRET:-$(openssl rand -hex 32)}"
 # Rails (admin-service) session key. Stable value recommended across redeploys.
 SECRET_KEY_BASE="${SECRET_KEY_BASE:-$(openssl rand -hex 64)}"
+# Password for the seeded admin user. Demo default matches the local compose
+# stack; override for anything that is not a throwaway demo environment.
+SEED_ADMIN_PASSWORD="${SEED_ADMIN_PASSWORD:-Admin123!}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -349,7 +352,8 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${DB_NAME}")
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${DB_USER}")
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
-      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
+      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}"
+      add_secret SEED_ADMIN_PASSWORD "${SEED_ADMIN_PASSWORD}" ;;
     file-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
