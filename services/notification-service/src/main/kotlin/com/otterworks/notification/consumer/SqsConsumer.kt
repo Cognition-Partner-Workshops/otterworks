@@ -95,6 +95,8 @@ class SqsConsumer(
                                 logger.debug { "Deleted SQS message: ${msg.messageId}" }
                             } else {
                                 processingErrorsCounter?.increment()
+                                // Left undeleted: the queue's redrive policy moves
+                                // repeatedly-failing messages to the DLQ for inspection.
                                 logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
                             }
                         } catch (e: Exception) {
