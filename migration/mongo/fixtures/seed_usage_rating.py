@@ -2,6 +2,8 @@
 """Synthetic seed for unit `usage-rating`: USAGE_EVENTS + RATING_PERIODS +
 RATING_RESULTS in the LOCAL Oracle fixture only (wave-2 batch w2-b01).
 Idempotent: deletes SYNTH-% rows then re-inserts.
+Parents (tenants SYNTH-TEN-*, subscriptions SYNTH-SUB-*) are merged in if
+missing so the seeder runs on a fresh fixture.
 
 Seed: periods with 0, 1 and several results; TIMESTAMP events at ms
 precision; kind_cd limited to values in CODES. All UNITS > 0 -- the fixture
@@ -21,6 +23,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _local import require_local_dsn  # noqa: E402
+from _parents import (ensure_tenants, ensure_subscriptions,
+                      ensure_rating_periods)  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPO_ROOT / ".migration" / "fixtures" / "w2-b01.json"
@@ -50,6 +54,10 @@ def _connect():
 
 def _seed(conn) -> dict:
     cur = conn.cursor()
+    ensure_tenants(cur, ["SYNTH-TEN-1", "SYNTH-TEN-2", "SYNTH-TEN-3"])
+    ensure_subscriptions(cur, ["SYNTH-SUB-OPEN", "SYNTH-SUB-CLOSED",
+                               "SYNTH-SUB-CXL", "SYNTH-SUB-SUSP",
+                               "SYNTH-SUB-UNKNOWN"])
     cur.execute("DELETE FROM rating_results WHERE id LIKE 'SYNTH-RR-%'")
     cur.execute("DELETE FROM rating_periods WHERE id LIKE 'SYNTH-RP-%'")
     cur.execute("DELETE FROM usage_events WHERE id LIKE 'SYNTH-UE-%'")
@@ -129,10 +137,43 @@ def _write_manifest(counts: dict) -> None:
     print(f"wrote {MANIFEST}")
 
 
+def _self_test(conn) -> None:
+    """Prove _parents works on a fresh fixture: merge *-SELFTEST parents,
+    insert one child, delete child then parents in reverse FK order."""
+    cur = conn.cursor()
+    ensure_tenants(cur, ["SYNTH-TEN-SELFTEST"])
+    ensure_subscriptions(cur, ["SYNTH-SUB-SELFTEST"])
+    ensure_rating_periods(cur, ["SYNTH-RP-SELFTEST"], values={
+        "SYNTH-RP-SELFTEST": ("SYNTH-RP-SELFTEST", "SYNTH-TEN-SELFTEST",
+                              dt.date(2025, 1, 1), dt.date(2025, 1, 26))})
+    cur.execute("INSERT INTO rating_results (id,period_id,subscription_id,used_units,quota_units,rollover_units,billable_units,overage_amount,created_at) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9)",
+                ("SYNTH-RR-SELFTEST", "SYNTH-RP-SELFTEST",
+                 "SYNTH-SUB-SELFTEST", 1, 10, 0, 10, 0.00,
+                 datetime(2026, 9, 20)))
+    cur.execute("DELETE FROM rating_results WHERE id = 'SYNTH-RR-SELFTEST'")
+    cur.execute("DELETE FROM rating_periods WHERE id = 'SYNTH-RP-SELFTEST'")
+    cur.execute("DELETE FROM subscriptions WHERE id = 'SYNTH-SUB-SELFTEST'")
+    # trg_subscriptions_hist copies the deleted sub into HIST; clean that too
+    cur.execute("DELETE FROM subscriptions_hist WHERE id = 'SYNTH-SUB-SELFTEST'")
+    cur.execute("DELETE FROM tenants WHERE id = 'SYNTH-TEN-SELFTEST'")
+    conn.commit()
+    print("self-test OK: merged tenant/sub/period parents, inserted a "
+          "rating_results child, cleaned up in reverse FK order")
+
+
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--self-test", action="store_true",
+                    help="merge *-SELFTEST parents + one child row, then clean up")
+    args = ap.parse_args()
     connection(os.environ.get(
         "MONGO_LOCAL_URI", "mongodb://127.0.0.1:27017/ow_billing_offline"))
     conn = _connect()
+    if args.self_test:
+        _self_test(conn)
+        conn.close()
+        return 0
     counts = _seed(conn)
     conn.close()
     _write_manifest(counts)
