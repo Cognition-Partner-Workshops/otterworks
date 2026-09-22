@@ -1,0 +1,47 @@
+name: ETL Airflow DAGs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-airflow.yml'
+  pull_request:
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-airflow.yml'
+
+jobs:
+  dags:
+    name: DAG import check + pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: etl/airflow
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      # Spark 3.5 (used by the analytics PySpark tests) supports Java 8/11/17.
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            etl/airflow/requirements-dev.txt
+            etl/airflow/constraints-2.8.4-python3.11.txt
+
+      - name: Install pinned requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt -c constraints-2.8.4-python3.11.txt
+
+      - name: DAG import check
+        run: ./check.sh import
+
+      - name: pytest
+        run: ./check.sh test
