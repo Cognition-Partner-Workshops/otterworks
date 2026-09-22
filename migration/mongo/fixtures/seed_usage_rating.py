@@ -24,7 +24,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _local import require_local_dsn  # noqa: E402
 from _parents import (ensure_tenants, ensure_subscriptions,
-                      ensure_rating_periods)  # noqa: E402
+                      ensure_rating_periods, prune_stale)  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPO_ROOT / ".migration" / "fixtures" / "w2-b01.json"
@@ -60,9 +60,16 @@ def _seed(conn) -> dict:
                                "SYNTH-SUB-UNKNOWN"])
     # rating_periods are referenced by invoices (fk_inv_period): upsert via
     # MERGE (converge to canonical values) instead of delete+insert.
-    ensure_rating_periods(cur, [f"SYNTH-RP-{i:04d}" for i in range(N_PERIODS)])
+    canon_rp = [f"SYNTH-RP-{i:04d}" for i in range(N_PERIODS)]
+    ensure_rating_periods(cur, canon_rp)
     cur.execute("DELETE FROM rating_results WHERE id LIKE 'SYNTH-RR-%'")
     cur.execute("DELETE FROM usage_events WHERE id LIKE 'SYNTH-UE-%'")
+    # Drop stale SYNTH-RP rows outside the canonical set (e.g. left by a
+    # run with a different N): deleted only when unreferenced; a stale
+    # period still referenced by an invoice raises naming the ids.
+    prune_stale(cur, "rating_periods", "SYNTH-RP-%", canon_rp,
+                referenced_by=[("invoices", "period_id"),
+                               ("rating_results", "period_id")])
 
     ev_rows = []
     for i in range(N_EVENTS):
