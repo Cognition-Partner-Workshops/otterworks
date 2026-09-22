@@ -1,0 +1,42 @@
+{
+  "unit": "dunning-ops",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:29:26.353191+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": false,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "dunningAttempts": 61,
+          "notifications": 21,
+          "billingAuditLog": 15
+        }
+      },
+      "findings": [
+        {
+          "collection": "billingAuditLog",
+          "check": "root_count",
+          "detail": "rows(BILLING_AUDIT_LOG)=15 vs docs=14",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "merge_eligible": false,
+  "error": null
+}

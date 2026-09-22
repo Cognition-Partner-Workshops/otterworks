@@ -1,0 +1,118 @@
+{
+  "unit": "dunning-ops",
+  "mode": "fixture",
+  "mapping_version": "map-draft-3",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-22T21:29:28.391199+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "dunningAttempts": 61,
+          "notifications": 21,
+          "billingAuditLog": 15
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 6,
+      "stats": {
+        "deferred_to_tier3": [
+          "dunningAttempts.tenantId",
+          "dunningAttempts.invoiceId",
+          "dunningAttempts.scheduledFor",
+          "notifications.tenantId",
+          "notifications.sentAt",
+          "billingAuditLog.loggedAt",
+          "billingAuditLog.module",
+          "billingAuditLog.message"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "dunningAttempts.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "dunningAttempts.invoiceId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "notifications.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "billingAuditLog.module",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "billingAuditLog.message",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 5
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 97,
+      "stats": {
+        "dunningAttempts": {
+          "mode": "full_diff",
+          "population": 61,
+          "duplicate_source_key_count": 0
+        },
+        "notifications": {
+          "mode": "full_diff",
+          "population": 21,
+          "duplicate_source_key_count": 0
+        },
+        "billingAuditLog": {
+          "mode": "full_diff",
+          "population": 15,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
