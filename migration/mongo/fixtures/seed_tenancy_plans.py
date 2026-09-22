@@ -156,6 +156,12 @@ def main() -> int:
                    plan_id = s.plan_id, starts_on = s.starts_on,
                    ends_on = s.ends_on, status_cd = s.status_cd,
                    suspended_on = s.suspended_on
+               WHERE DECODE(t.tenant_id, s.tenant_id, 0, 1) = 1
+                  OR DECODE(t.plan_id, s.plan_id, 0, 1) = 1
+                  OR DECODE(t.starts_on, s.starts_on, 0, 1) = 1
+                  OR DECODE(t.ends_on, s.ends_on, 0, 1) = 1
+                  OR DECODE(t.status_cd, s.status_cd, 0, 1) = 1
+                  OR DECODE(t.suspended_on, s.suspended_on, 0, 1) = 1
                WHEN NOT MATCHED THEN INSERT VALUES (s.id, s.tenant_id,
                    s.plan_id, s.starts_on, s.ends_on, s.status_cd,
                    s.suspended_on)""",

@@ -33,3 +33,15 @@ must implement the same refusal.
 - Fixture seeds `status_cd = 42` on SYNTH-SUB-UNKNOWN and `status_cd = 999`
   on SYNTH-TEN-3: codes resolve to labels at read time (facade.py:110-128)
   with the UNKNOWN(<cd>) contract; no code lookups are denormalised.
+
+## Seeder idempotency vs trg_subscriptions_hist
+
+`trg_subscriptions_hist` fires on UPDATE/DELETE of SUBSCRIPTIONS, so an
+unconditional `WHEN MATCHED THEN UPDATE` MERGE grew SUBSCRIPTIONS_HIST on
+every rerun (8→12). The MERGE now carries a `WHERE DECODE(t.c, s.c, 0, 1)
+= 1 OR ...` over every non-key column, so an unchanged row does not update
+and the trigger does not fire. Verified: two consecutive seeder runs both
+report `SUBSCRIPTIONS_HIST = 12` (the four extra rows are trigger-written
+copies from earlier reruns and were already inside the recon evidence;
+counts did not change, so evidence stands). CUSTOMER_MASTER has no history
+trigger in this fixture — no other seeder needs the guard.
