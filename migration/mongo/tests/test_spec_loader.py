@@ -403,3 +403,106 @@ def test_embed_quarantine_uses_child_key_and_dedupes(tmp_path):
     assert "malformed" in entry["reason"]
     kid = docs["p1"]["kids"][0]
     assert kid["status"] == "A" and kid["legacyStatus"] == "A"
+
+
+def _eav_fakes(rows_by_table, seed_docs):
+    class FakeCursor:
+        def execute(self, sql, params=None):
+            table = [t for t in rows_by_table if t in sql][0]
+            self._rows = rows_by_table[table]
+            cols = [w.strip() for w in
+                    sql.split("FROM")[0].replace("SELECT", "").split(",")]
+            self.description = [(c,) for c in cols]
+
+        def fetchall(self):
+            return [tuple(r.get(c[0]) for c in self.description) for r in self._rows]
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+    class FakeColl:
+        def __init__(self):
+            self.docs = dict(seed_docs)
+
+        class _Res:
+            modified_count = 0
+
+        def replace_one(self, f, d, upsert=False):
+            self.docs[f["_id"]] = d
+            return self._Res()
+
+        def find(self, f=None, proj=None):
+            def ok(d):
+                for k, v in (f or {}).items():
+                    if isinstance(v, dict) and "$ne" in v:
+                        if d.get(k) == v["$ne"]:
+                            return False
+                    elif d.get(k) != v:
+                        return False
+                return True
+            return [{"_id": i} for i, d in self.docs.items() if ok(d)]
+
+        def delete_one(self, f):
+            self.docs.pop(f["_id"], None)
+
+    class FakeDb:
+        def __init__(self):
+            self.coll = FakeColl()
+
+        def __getitem__(self, n):
+            return self.coll
+
+    return FakeConn(), FakeDb()
+
+
+def _scoped_entry(root, target="eav", tw={"entityType": {"$ne": "CUSTOMER"}}):
+    return {
+        "collection": target, "root_table": root,
+        "root_where": "ETYPE != 'CUSTOMER'",
+        "target_where": json_dumps(tw),
+        "key": {"source": ["ID"], "target": "_id"},
+        "fields": [{"source": "ETYPE", "target": "entityType",
+                    "source_type": "VARCHAR2(30)", "bson_type": "string",
+                    "rules": ["empty_string_is_null"]}]}
+
+
+import json as _json
+def json_dumps(x):
+    return _json.dumps(x)
+
+
+def test_scoped_convergence_sole_owner_deletes_out_of_scope(tmp_path):
+    """Sole owner of the collection: convergence ignores target_where, so a
+    doc that fell out of scope is removed."""
+    import json
+    import spec_loader
+    from spec_loader import load_collections
+    spec_loader.QUARANTINE_DIR = tmp_path / "quarantine"
+    spec = {"version": "1", "collections": [_scoped_entry("EAV")]}
+    sp = tmp_path / "s.json"
+    sp.write_text(json.dumps(spec))
+    conn, db = _eav_fakes({"EAV": [{"ID": "e1", "ETYPE": "PLAN"}]},
+                          {"z1": {"_id": "z1", "entityType": "CUSTOMER"}})
+    load_collections(sp, ["eav"], conn, db)
+    assert "z1" not in db.coll.docs
+    assert "e1" in db.coll.docs
+
+
+def test_scoped_convergence_shared_target_keeps_out_of_scope(tmp_path):
+    """Two spec entries write the same collection: the scoped delete leaves
+    out-of-scope docs alone."""
+    import json
+    import spec_loader
+    from spec_loader import load_collections
+    spec_loader.QUARANTINE_DIR = tmp_path / "quarantine"
+    spec = {"version": "1", "collections": [
+        _scoped_entry("EAV"), _scoped_entry("EAVB")]}
+    sp = tmp_path / "s.json"
+    sp.write_text(json.dumps(spec))
+    conn, db = _eav_fakes(
+        {"EAV": [{"ID": "e1", "ETYPE": "PLAN"}],
+         "EAVB": [{"ID": "e2", "ETYPE": "TENANT"}]},
+        {"z1": {"_id": "z1", "entityType": "CUSTOMER"}})
+    load_collections(sp, ["eav"], conn, db)
+    assert "z1" in db.coll.docs
