@@ -381,13 +381,14 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 for crow in children:
                     edoc: dict[str, Any] = {}
                     ekey = emb.get("key", {})
-                    seen_src: set[str] = set()
+                    seen_f: set[str] = set()
                     efields = []
                     for f in (emb.get("fields", []) + emb.get("child_fields", [])):
+                        fkey = json.dumps(f, sort_keys=True)
                         if (f["source"] in emb.get("parent_key", [])
-                                or f["source"] in seen_src):
+                                or fkey in seen_f):
                             continue
-                        seen_src.add(f["source"])
+                        seen_f.add(fkey)
                         efields.append(f)
                     _apply_fields(crow, efields, edoc, quarantine,
                                   set(ekey.get("source", []))
