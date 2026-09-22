@@ -111,7 +111,9 @@ def test_orphan_embed_rows_quarantined(tmp_path):
     """load_collections with a fake row source: child rows whose parent_key
     group no root row consumed land in quarantine with orphan_children count."""
     import json
+    import spec_loader
     from spec_loader import load_collections
+    spec_loader.QUARANTINE_DIR = tmp_path / "quarantine"
 
     spec = {"version": "1", "collections": [{
         "collection": "parents", "root_table": "PARENTS",
