@@ -43,20 +43,22 @@ SYNTHETIC_ROWS = [
 
 
 def connection(uri: str):
-    """Mongo target handle; the URI carries the declared database."""
+    """Declares the migration target for the offline run. MongoClient is lazy
+    -- this opens no socket; the seeder only ever touches Oracle."""
     from pymongo import MongoClient
     return MongoClient(uri)
 
 
 def _connect(dsn_override=None):
     import oracledb
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _local import require_local_dsn
     raw = os.environ.get("ORACLE_FIXTURE_DSN")
     if not raw:
         sys.exit("ORACLE_FIXTURE_DSN not set (JSON {user,password,dsn})")
     dsn = json.loads(raw)
     easy = dsn_override or dsn["dsn"]
-    if not easy.startswith(("127.0.0.1", "localhost")):
-        sys.exit("offline fixture must be local (127.0.0.1 or localhost)")
+    require_local_dsn(easy)
     return oracledb.connect(user=dsn["user"], password=dsn["password"],
                             dsn=easy)
 
@@ -67,9 +69,8 @@ def main() -> int:
                     help="override the dsn field of ORACLE_FIXTURE_DSN "
                          "(spell the fixture host out, e.g. 127.0.0.1:1521/FREEPDB1)")
     args = ap.parse_args()
-    target = connection(os.environ.get(
+    connection(os.environ.get(
         "MONGO_LOCAL_URI", "mongodb://127.0.0.1:27017/ow_billing_offline"))
-    target.admin.command("ping")  # fixture target must be reachable before seeding
     conn = _connect(args.dsn)
     cur = conn.cursor()
     for row in SYNTHETIC_ROWS:

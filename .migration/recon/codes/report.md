@@ -6,7 +6,7 @@
 - Mapping version: `map-draft-3`
 - Tolerance version: `tol-1`
 - Seed: `1`
-- Generated: 2026-09-22T20:47:48.573090+00:00
+- Generated: 2026-09-22T20:57:37.827199+00:00
 - 1 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 1 string fields: min/max/distinct deferred to Tier 3
 
