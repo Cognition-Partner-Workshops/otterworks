@@ -10,7 +10,8 @@ Conversions follow the Oracle source profile (skills/mongo-migration/profiles/
 oracle.md) so loaded values canonicalize equal to the source under
 recon/canon.py:
 
-- CHAR/VARCHAR2: trailing spaces stripped; Oracle '' (read back as NULL) or a
+- CHAR (and fields with rstrip_spaces): trailing spaces stripped; VARCHAR2
+  preserved (tol-1 T6); Oracle '' (read back as NULL) or a
   NULL with `empty_string_is_null` -> field omitted.
 - `yn_to_bool` / bson_type "bool": Y/N-style flags -> bool.
 - NUMBER(p,0) -> int; NUMBER(p,s) s>0 or bare NUMBER -> bson Decimal128
@@ -292,6 +293,9 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
         if not _PARAM_VALUE_RE.fullmatch(str(v)):
             raise ValueError(f"invalid --param value for {k!r}")
     wanted = set(collection_names)
+    matched = {c["collection"] for c in spec["collections"]} & wanted
+    if wanted - matched:
+        raise ValueError(f"collections not in spec: {sorted(wanted - matched)}")
     stats: dict[str, dict] = {}
     quarantine_dir = QUARANTINE_DIR
     quarantine_dir.mkdir(parents=True, exist_ok=True)
@@ -377,9 +381,17 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                 for crow in children:
                     edoc: dict[str, Any] = {}
                     ekey = emb.get("key", {})
-                    efields = [f for f in emb.get("fields", []) + emb.get("child_fields", [])
-                               if f["source"] not in emb.get("parent_key", [])]
-                    _apply_fields(crow, efields, edoc, quarantine, key_cols)
+                    seen_src: set[str] = set()
+                    efields = []
+                    for f in (emb.get("fields", []) + emb.get("child_fields", [])):
+                        if (f["source"] in emb.get("parent_key", [])
+                                or f["source"] in seen_src):
+                            continue
+                        seen_src.add(f["source"])
+                        efields.append(f)
+                    _apply_fields(crow, efields, edoc, quarantine,
+                                  set(ekey.get("source", []))
+                                  or set(emb.get("parent_key", [])))
                     esrc = ekey.get("source", [])
                     etgt = ekey.get("target", [])
                     if isinstance(etgt, str):
