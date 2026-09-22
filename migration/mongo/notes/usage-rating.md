@@ -14,8 +14,12 @@ per the unit brief so the port is tracked.
 
 ## Fixture note
 
-`trg_usage_events_check` is real in the fixture DDL, so baseline UNITS are
-all > 0 (a <=0 seed would fail at insert, not at recon).
+`trg_usage_events_check` is real in the fixture DDL and enforces BOTH
+`units > 0` AND `kind_cd in CODES('USAGE_KIND')` (ORA-20002 on unknown
+kind). Coverage gap: the brief's "kind_cd unknown to CODES" trap is
+unseedable on this unit's table — the trigger rejects it at insert. Only
+valid kinds (1/2/3) are seeded; unknown-kind handling is covered by the
+codes unit's unknown-value traps instead.
 
 ## Traps seeded
 
