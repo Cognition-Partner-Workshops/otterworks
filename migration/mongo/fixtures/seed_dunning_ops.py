@@ -2,6 +2,9 @@
 """Synthetic seed for unit `dunning-ops`: DUNNING_ATTEMPTS + NOTIFICATIONS +
 BILLING_AUDIT_LOG in the LOCAL Oracle fixture only (wave-2 batch w2-b03).
 Idempotent: deletes SYNTH-% rows then re-inserts.
+Parents (tenants SYNTH-TEN-*, invoices SYNTH-IV-* and their own
+period/tenant parents) are merged in if missing so the seeder runs on a
+fresh fixture.
 
 Constraints honoured: UQ_DUNNING_ATTEMPTS (invoice_id, attempt_no),
 UQ_NOTIFICATIONS (tenant_id, kind_cd, sent_at) -- the natural dedupe key,
@@ -25,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _local import require_local_dsn  # noqa: E402
+from _parents import ensure_tenants, ensure_invoices  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPO_ROOT / ".migration" / "fixtures" / "w2-b03.json"
@@ -53,6 +57,8 @@ def _connect():
 
 def _seed(conn) -> dict:
     cur = conn.cursor()
+    ensure_tenants(cur, TENANTS)
+    ensure_invoices(cur, INVOICES)
     cur.execute("DELETE FROM dunning_attempts WHERE id LIKE 'SYNTH-DA-%'")
     cur.execute("DELETE FROM notifications WHERE id LIKE 'SYNTH-NT-%'")
     cur.execute("DELETE FROM billing_audit_log WHERE log_id >= 8800000")
@@ -88,7 +94,7 @@ def _seed(conn) -> dict:
     for i in range(15):
         bal_rows.append((
             8800000 + i,                      # explicit log_id band
-            dt.date(2026, 7, 1) + dt.timedelta(days=i),   # within 90 days
+            dt.date.today() - dt.timedelta(days=i),  # always < 15 days old
             ["RATING", "INVOICING", "DUNNING", "UTIL", None][i % 5],
             ("audit message %d " % i + "x" * 4000)[:4000],  # 4000-char edge
         ))
@@ -122,10 +128,40 @@ def _write_manifest(counts: dict) -> None:
     print(f"wrote {MANIFEST}")
 
 
+def _self_test(conn) -> None:
+    """Prove _parents works on a fresh fixture: ensure_invoices merges the
+    invoice and its period/tenant parents; insert one child, delete in
+    reverse FK order."""
+    cur = conn.cursor()
+    ensure_invoices(cur, ["SYNTH-IV-SELFTEST"], values={
+        "SYNTH-IV-SELFTEST": (
+            "SYNTH-IV-SELFTEST", "SYNTH-TEN-SELFTEST", "SYNTH-RP-SELFTEST",
+            dt.datetime(2025, 2, 2), 0.01, 0.05, 0.06, 0)})
+    cur.execute("INSERT INTO dunning_attempts (id,tenant_id,invoice_id,attempt_no,scheduled_for,status_cd) VALUES (:1,:2,:3,:4,:5,:6)",
+                ("SYNTH-DA-SELFTEST", "SYNTH-TEN-SELFTEST",
+                 "SYNTH-IV-SELFTEST", 1, dt.date(2025, 2, 3), 1))
+    cur.execute("DELETE FROM dunning_attempts WHERE id = 'SYNTH-DA-SELFTEST'")
+    cur.execute("DELETE FROM invoices WHERE id = 'SYNTH-IV-SELFTEST'")
+    cur.execute("DELETE FROM rating_periods WHERE id = 'SYNTH-RP-SELFTEST'")
+    cur.execute("DELETE FROM tenants WHERE id = 'SYNTH-TEN-SELFTEST'")
+    conn.commit()
+    print("self-test OK: merged tenant/period/invoice parents, inserted a "
+          "dunning_attempts child, cleaned up in reverse FK order")
+
+
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--self-test", action="store_true",
+                    help="merge *-SELFTEST parents + one child row, then clean up")
+    args = ap.parse_args()
     connection(os.environ.get(
         "MONGO_LOCAL_URI", "mongodb://127.0.0.1:27017/ow_billing_offline"))
     conn = _connect()
+    if args.self_test:
+        _self_test(conn)
+        conn.close()
+        return 0
     counts = _seed(conn)
     conn.close()
     _write_manifest(counts)
