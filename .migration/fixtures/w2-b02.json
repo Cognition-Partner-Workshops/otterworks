@@ -1,0 +1,12 @@
+{
+  "source": "oracle fixture FIXTURE@FREEPDB1 built from services/legacy-billing/db/oracle DDL",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-22T21:27:28.480931+00:00",
+  "produced_by": "migration/mongo/fixtures/seed_invoicing.py",
+  "row_counts": {
+    "INVOICES": 44,
+    "INVOICE_LINES": 119,
+    "CREDIT_NOTES": 20
+  }
+}
