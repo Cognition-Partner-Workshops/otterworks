@@ -1,0 +1,12 @@
+{
+  "source": "oracle fixture FIXTURE@FREEPDB1 built from services/legacy-billing/db/oracle DDL",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-09-22T21:25:17.842089+00:00",
+  "produced_by": "migration/mongo/fixtures/seed_usage_rating.py",
+  "row_counts": {
+    "USAGE_EVENTS": 133,
+    "RATING_PERIODS": 33,
+    "RATING_RESULTS": 63
+  }
+}
