@@ -31,10 +31,10 @@ materialised as top-level fields (the harness keys documents on
 
 Idempotency: every row is `replace_one({_id}, upsert=True)`; after the load the
 target's docs whose `_id` is absent from the source key set are deleted, so a
-rerun converges to zero diff. When `target_where` scopes the collection and
-another spec entry writes the same collection name (shared target), the
-delete is scoped to `target_where`; a sole-owner collection converges over
-the whole target, so out-of-scope leftovers are removed.
+rerun converges to zero diff. The delete is scoped to `target_where` when
+the spec has one; collections named in `full_converge` (caller asserts sole
+ownership of the target collection) converge over the whole target, so
+out-of-scope leftovers are removed.
 """
 
 from __future__ import annotations
@@ -285,7 +285,8 @@ def _collection_stats() -> dict:
 
 
 def load_collections(spec_path: str | Path, collection_names: list[str],
-                     oracle_conn, mongo_db, params: dict | None = None) -> dict:
+                     oracle_conn, mongo_db, params: dict | None = None,
+                     full_converge: frozenset[str] | set[str] = frozenset()) -> dict:
     """Load the named collections from `spec_path` into `mongo_db`.
 
     `params` substitutes ${name} placeholders in root_where/child_where, the
@@ -434,14 +435,13 @@ def load_collections(spec_path: str | Path, collection_names: list[str],
                     orphan_children += 1
         st["orphan_children"] += orphan_children
         # Converge: remove target docs no longer in the source key set.
-        # target_where scopes the delete ONLY for a shared target (another
-        # spec entry writes the same collection); a sole owner converges
-        # over the whole collection so out-of-scope leftovers are removed.
+        # Scoped to target_where by default; collections named in
+        # full_converge converge over the whole collection, removing
+        # out-of-scope leftovers.
         removed = 0
-        shared = sum(1 for c in spec["collections"]
-                     if c["collection"] == name) > 1
-        scope = (json.loads(coll["target_where"])
-                 if shared and coll.get("target_where") else {})
+        scope = ({} if name in full_converge
+                 else json.loads(coll["target_where"])
+                 if coll.get("target_where") else {})
         for existing in target.find(scope, {"_id": 1}):
             if json.dumps(existing["_id"], sort_keys=True, default=str) not in live_key_forms:
                 target.delete_one({"_id": existing["_id"]})

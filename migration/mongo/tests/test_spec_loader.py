@@ -469,10 +469,9 @@ import json as _json
 def json_dumps(x):
     return _json.dumps(x)
 
-
-def test_scoped_convergence_sole_owner_deletes_out_of_scope(tmp_path):
-    """Sole owner of the collection: convergence ignores target_where, so a
-    doc that fell out of scope is removed."""
+def test_scoped_convergence_default_keeps_out_of_scope(tmp_path):
+    """Default: the convergence delete is scoped to target_where, so an
+    out-of-scope doc survives."""
     import json
     import spec_loader
     from spec_loader import load_collections
@@ -483,24 +482,22 @@ def test_scoped_convergence_sole_owner_deletes_out_of_scope(tmp_path):
     conn, db = _eav_fakes({"EAV": [{"ID": "e1", "ETYPE": "PLAN"}]},
                           {"z1": {"_id": "z1", "entityType": "CUSTOMER"}})
     load_collections(sp, ["eav"], conn, db)
-    assert "z1" not in db.coll.docs
+    assert "z1" in db.coll.docs
     assert "e1" in db.coll.docs
 
 
-def test_scoped_convergence_shared_target_keeps_out_of_scope(tmp_path):
-    """Two spec entries write the same collection: the scoped delete leaves
-    out-of-scope docs alone."""
+def test_scoped_convergence_full_converge_deletes_out_of_scope(tmp_path):
+    """full_converge names a collection the caller asserts it solely owns:
+    the whole target converges, removing out-of-scope leftovers."""
     import json
     import spec_loader
     from spec_loader import load_collections
     spec_loader.QUARANTINE_DIR = tmp_path / "quarantine"
-    spec = {"version": "1", "collections": [
-        _scoped_entry("EAV"), _scoped_entry("EAVB")]}
+    spec = {"version": "1", "collections": [_scoped_entry("EAV")]}
     sp = tmp_path / "s.json"
     sp.write_text(json.dumps(spec))
-    conn, db = _eav_fakes(
-        {"EAV": [{"ID": "e1", "ETYPE": "PLAN"}],
-         "EAVB": [{"ID": "e2", "ETYPE": "TENANT"}]},
-        {"z1": {"_id": "z1", "entityType": "CUSTOMER"}})
-    load_collections(sp, ["eav"], conn, db)
-    assert "z1" in db.coll.docs
+    conn, db = _eav_fakes({"EAV": [{"ID": "e1", "ETYPE": "PLAN"}]},
+                          {"z1": {"_id": "z1", "entityType": "CUSTOMER"}})
+    load_collections(sp, ["eav"], conn, db, full_converge={"eav"})
+    assert "z1" not in db.coll.docs
+    assert "e1" in db.coll.docs
