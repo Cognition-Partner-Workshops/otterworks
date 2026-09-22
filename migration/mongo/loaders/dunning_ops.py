@@ -52,6 +52,15 @@ def main() -> int:
     require_local_uri(uri)
     conn = _connect_oracle()
     db = MongoClient(uri)[TARGET_DB]
+    # Drop a stale UNIQUE (tenantId, kindCd, sentAt) index left by an
+    # earlier loader version: recreating it non-unique below would fail
+    # with an index-options conflict.
+    for iname, ispec in db["notifications"].index_information().items():
+        if (iname != "_id_" and ispec.get("unique")
+                and ispec.get("key") == [("tenantId", 1), ("kindCd", 1),
+                                         ("sentAt", 1)]):
+            db["notifications"].drop_index(iname)
+            print(f"notifications: dropped stale unique index {iname}")
     stats = load_collections(SPEC, COLLECTIONS, conn, db)
     db["billingAuditLog"].create_index(
         "loggedAt", expireAfterSeconds=TTL_SECONDS)
