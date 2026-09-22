@@ -1,13 +1,21 @@
-"""Shared fixture helpers: locality checks for the offline Oracle fixture."""
+"""Shared fixture helpers: locality checks for the offline Oracle fixture.
+
+`require_local_dsn` is the spec_loader implementation re-exported so fixture
+seeders and unit loaders share one definition.
+"""
 
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "loaders"))
+
+from spec_loader import require_local_oracle_dsn  # noqa: E402
 
 
 def require_local_dsn(easy_connect: str) -> None:
-    """The fixture DSN must be local: host is the text before the first ':'
-    or '/' and must be exactly 127.0.0.1 or localhost."""
-    host = easy_connect.split(":", 1)[0].split("/", 1)[0]
-    if host not in ("127.0.0.1", "localhost"):
-        sys.exit("offline fixture must be local (127.0.0.1 or localhost)")
+    try:
+        require_local_oracle_dsn(easy_connect)
+    except ValueError as exc:
+        sys.exit(str(exc))
