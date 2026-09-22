@@ -83,7 +83,7 @@ def test_csv_to_array():
 
 
 def test_csv_malformed_quarantines():
-    for bad in ("a,,b", 'a,"b', "a,'b", "a\nb", "a;b", "a|b"):
+    for bad in ("a,,b", "a, ,b", "a,  ,b", 'a,"b', "a,'b", "a\nb", "a;b", "a|b"):
         v, r = _convert_value(f(bson_type="array", rules=["csv_to_array"]), bad)
         assert v is _OMIT and r == "malformed csv", bad
 
@@ -179,6 +179,96 @@ def test_orphan_embed_rows_quarantined(tmp_path):
     assert stats["parents"]["orphan_children"] == 1
     assert stats["parents"]["quarantined"] == 1
     assert db.coll.docs["p1"]["kids"] == [{"kidId": "k1", "kname": "a"}]
+
+
+def test_char_whitespace_only_omits():
+    v, r = _convert_value(f(source_type="CHAR(4)", rules=["empty_string_is_null"]), "    ")
+    assert v is _OMIT and r is None
+
+
+def test_require_local_oracle_dsn():
+    from spec_loader import require_local_oracle_dsn
+    import pytest
+    require_local_oracle_dsn("127.0.0.1:1521/FREEPDB1")
+    require_local_oracle_dsn("localhost/FREEPDB1")
+    with pytest.raises(ValueError):
+        require_local_oracle_dsn("db.prod.internal:1521/FREEPDB1")
+    with pytest.raises(ValueError):
+        require_local_oracle_dsn("(DESCRIPTION=(ADDRESS=...) (CONNECT_DATA=...))")
+
+
+def test_embed_order_by_and_predicates(tmp_path):
+    import json
+    import pytest
+    from spec_loader import load_collections
+
+    base = {"version": "1", "collections": [{
+        "collection": "parents", "root_table": "PARENTS",
+        "key": {"source": ["ID"], "target": "_id"}, "fields": [],
+        "embeds": [{"array_path": "kids", "child_table": "KIDS",
+                    "parent_key": ["PARENT_ID"],
+                    "key": {"source": ["KID_ID"], "target": "kidId"},
+                    "fields": []}]}]}
+    sp = tmp_path / "s.json"
+    sp.write_text(json.dumps(base))
+
+    sqls = []
+
+    class FakeCursor:
+        description = None
+
+        def execute(self, sql, params=None):
+            sqls.append(sql)
+            self._rows = []
+            if "KIDS" in sql:
+                self._rows = [{"PARENT_ID": "p1", "KID_ID": "k1"}]
+                self.description = [("PARENT_ID",), ("KID_ID",)]
+            else:
+                self._rows = [{"ID": "p1"}]
+                self.description = [("ID",)]
+
+        def fetchall(self):
+            return [tuple(r[c[0]] for c in self.description) for r in self._rows]
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+    class FakeColl:
+        class _Res:
+            modified_count = 0
+
+        def replace_one(self, f, d, upsert=False):
+            return self._Res()
+
+        def find(self, *a, **k):
+            return []
+
+        def delete_one(self, f):
+            pass
+
+    class FakeDb:
+        def __getitem__(self, n):
+            return FakeColl()
+
+    load_collections(sp, ["parents"], FakeConn(), FakeDb())
+    kids_sql = next(s for s in sqls if "KIDS" in s)
+    assert kids_sql.rstrip().endswith("ORDER BY PARENT_ID, KID_ID")
+
+    for bad in ("ID = 1; DROP TABLE x", "x = 1 UNION SELECT 2"):
+        spec_bad = json.loads(json.dumps(base))
+        spec_bad["collections"][0]["root_where"] = bad
+        sp.write_text(json.dumps(spec_bad))
+        with pytest.raises(ValueError):
+            load_collections(sp, ["parents"], FakeConn(), FakeDb())
+
+    full = json.loads((Path(__file__).resolve().parents[3]
+                       / ".migration" / "03_mapping_spec.json").read_text())
+    fp = tmp_path / "full.json"
+    fp.write_text(json.dumps(full))
+    names = [c["collection"] for c in full["collections"]]
+    stats = load_collections(fp, names, FakeConn(), FakeDb())
+    assert sorted(stats) == sorted(names)
 
 
 def test_composite_key_subdocument():
