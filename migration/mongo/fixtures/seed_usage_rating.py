@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import datetime as dt
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -70,12 +71,13 @@ def _seed(conn) -> dict:
 
     rp_rows = []
     for i in range(N_PERIODS):
-        mo = (i % 9) + 1
+        # UQ_RATING_PERIODS (tenant_id, period_start): unique start per row
+        start = dt.date(2026, (i // 3) + 1, (i % 3) * 9 + 1)
         rp_rows.append((
             f"SYNTH-RP-{i:04d}",
             TENANTS[i % 3],
-            datetime(2026, mo, 1),
-            datetime(2026, mo, 28),
+            start,
+            start + dt.timedelta(days=25),
         ))
     cur.executemany("INSERT INTO rating_periods (id,tenant_id,period_start,period_end) VALUES (:1,:2,:3,:4)", rp_rows)
 
@@ -87,7 +89,9 @@ def _seed(conn) -> dict:
             rr_rows.append((
                 f"SYNTH-RR-{rid:05d}",
                 f"SYNTH-RP-{i:04d}",
-                f"SYNTH-SUB-{i:04d}-{k}",
+                # FK_RR_SUB: subscription_id must exist in SUBSCRIPTIONS
+                ["SYNTH-SUB-OPEN", "SYNTH-SUB-CLOSED", "SYNTH-SUB-CXL",
+                 "SYNTH-SUB-SUSP", "SYNTH-SUB-UNKNOWN"][rid % 5],
                 (rid % 800) + 1,
                 1000,
                 rid % 100,
