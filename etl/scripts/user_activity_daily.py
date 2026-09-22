@@ -29,6 +29,14 @@ def main():
     aws_access_key = config.get("aws", "access_key")
     aws_secret_key = config.get("aws", "secret_key")
     aws_region = config.get("aws", "region")
+    # Account that must own the S3 buckets (ExpectedBucketOwner); defaults to the
+    # caller's own account when config.ini predates the setting.
+    aws_account_id = config.get("aws", "account_id", fallback="") or boto3.client(
+        "sts",
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        region_name=aws_region,
+    ).get_caller_identity()["Account"]
 
     db_host = config.get("database", "host")
     db_port = config.getint("database", "port")
@@ -144,7 +152,11 @@ def main():
         key = "analytics/daily/year=%s/month=%s/day=%s/top_users.jsonl.gz" % (year, month, day)
 
         try:
-            response = s3_client.get_object(Bucket=data_lake_bucket, Key=key)
+            response = s3_client.get_object(
+                Bucket=data_lake_bucket,
+                Key=key,
+                ExpectedBucketOwner=aws_account_id,
+            )
             body = response["Body"].read()
             decompressed = gzip.decompress(body).decode("utf-8")
 
@@ -217,6 +229,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=report_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
+        ExpectedBucketOwner=aws_account_id,
     )
 
     # Store latest pointer for admin-service
@@ -225,6 +238,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=latest_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
+        ExpectedBucketOwner=aws_account_id,
     )
 
     # Store per-user summaries as JSONL for individual user lookups
@@ -236,6 +250,7 @@ def main():
             Bucket=data_lake_bucket,
             Key=users_key,
             Body=("\n".join(lines) + "\n").encode("utf-8"),
+            ExpectedBucketOwner=aws_account_id,
         )
 
     print("[%s] Stored activity report: %d user summaries at s3://%s/%s" % (
