@@ -253,6 +253,19 @@ def test_embed_order_by_and_predicates(tmp_path):
     kids_sql = next(s for s in sqls if "KIDS" in s)
     assert kids_sql.rstrip().endswith("ORDER BY PARENT_ID, KID_ID")
 
+    # keyless embed: ORDER BY falls back to parent_key + all selected cols
+    spec_nokey = json.loads(json.dumps(base))
+    spec_nokey["collections"][0]["embeds"] = [{
+        "array_path": "kids", "child_table": "KIDS",
+        "parent_key": ["PARENT_ID"],
+        "fields": [{"source": "KNAME", "target": "kname",
+                    "source_type": "VARCHAR2(50)", "bson_type": "string",
+                    "rules": []}]}]
+    sp.write_text(json.dumps(spec_nokey))
+    load_collections(sp, ["parents"], FakeConn(), FakeDb())
+    nokey_sql = [s for s in sqls if "KIDS" in s][-1]
+    assert nokey_sql.rstrip().endswith("ORDER BY PARENT_ID, KNAME")
+
     for bad in ("ID = 1; DROP TABLE x", "x = 1 UNION SELECT 2"):
         spec_bad = json.loads(json.dumps(base))
         spec_bad["collections"][0]["root_where"] = bad
