@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
+
 /**
  * Application configuration — wires up RestTemplate and external service URLs.
  *
@@ -60,6 +62,11 @@ public class AppConfig {
         factory.setConnectTimeout(connectionTimeout);
 
         return new RestTemplate(factory);
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
     }
 
     public String getAnalyticsServiceUrl() {
