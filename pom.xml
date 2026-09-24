@@ -34,6 +34,8 @@
         <commons-io.version>2.16.1</commons-io.version>
         <!-- Guava -->
         <guava.version>33.4.0-jre</guava.version>
+        <!-- Structured JSON logging -->
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
         <!-- Commons Text — report banner/footer interpolation -->
         <commons-text.version>1.12.0</commons-text.version>
     </properties>
@@ -128,10 +130,25 @@
             <artifactId>httpclient5</artifactId>
         </dependency>
 
-        <!-- Observability (also legacy versions) -->
+        <!-- Observability -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-statsd</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
+        </dependency>
+
+        <!-- Caching -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
 
         <!-- OpenCSV -->
@@ -147,10 +164,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- H2 at runtime scope so the `local` profile can run with no external services -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

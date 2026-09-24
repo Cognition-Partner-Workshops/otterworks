@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="ddService" source="spring.application.name" defaultValue="report-service"/>
+
+    <!-- Human-readable pattern for local development -->
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [trace=%X{dd.trace_id:-} span=%X{dd.span_id:-}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <!-- Structured JSON for every other profile (dd.trace_id / dd.span_id are injected into MDC
+         by the Datadog tracer when DD_LOGS_INJECTION=true; the MDC provider emits them when present) -->
+    <springProfile name="!local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>dd.trace_id</includeMdcKeyName>
+                <includeMdcKeyName>dd.span_id</includeMdcKeyName>
+                <includeMdcKeyName>dd.service</includeMdcKeyName>
+                <includeMdcKeyName>dd.env</includeMdcKeyName>
+                <includeMdcKeyName>dd.version</includeMdcKeyName>
+                <includeMdcKeyName>reportId</includeMdcKeyName>
+                <includeMdcKeyName>scheduleId</includeMdcKeyName>
+                <customFields>{"service":"${ddService}"}</customFields>
+                <fieldNames>
+                    <timestamp>timestamp</timestamp>
+                    <version>[ignore]</version>
+                    <levelValue>[ignore]</levelValue>
+                </fieldNames>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
