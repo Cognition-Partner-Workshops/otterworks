@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -97,6 +99,83 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by MeiliSearch _rankingScore, highest first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.2},
+                {"title": "High", "_rankingScore": 0.9},
+                {"name": "Mid", "_rankingScore": 0.5},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Mid", "Low"]
+        params = mock_index.search.call_args.args[1]
+        assert params["showRankingScore"] is True
+
+    def test_suggest_hits_without_ranking_score(self, client, mock_meilisearch_client):
+        """Hits missing _rankingScore never crash the handler and sort last."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "Unscored"},
+                {"title": "Scored", "_rankingScore": 0.4},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Scored", "Unscored"]
+
+    def test_suggest_no_hits(self, client, mock_meilisearch_client):
+        """No matching hits returns an empty list, not a 500."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 0, "hits": []}
+
+        response = client.get("/api/v1/search/suggest?q=zz")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
+    def test_suggest_one_index_failing_keeps_other_results(self, client, mock_meilisearch_client):
+        """A failure on one index does not discard the other index's suggestions."""
+        docs_index = mock_meilisearch_client.index.return_value
+        docs_index.search.side_effect = [
+            {"estimatedTotalHits": 1, "hits": [{"title": "From Docs", "_rankingScore": 0.7}]},
+            RuntimeError("files index unavailable"),
+        ]
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["From Docs"]
+
+    def test_suggest_one_index_failing_other_empty_is_not_an_error(self, client, mock_meilisearch_client):
+        """A healthy index with no hits plus a failing index returns [] without raising."""
+        docs_index = mock_meilisearch_client.index.return_value
+        docs_index.search.side_effect = [
+            {"estimatedTotalHits": 0, "hits": []},
+            RuntimeError("files index unavailable"),
+        ]
+
+        with patch("app.api.search.logger") as api_logger:
+            response = client.get("/api/v1/search/suggest?q=zz")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+        api_logger.exception.assert_not_called()
+
+    def test_suggest_backend_error_degrades_gracefully(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure returns 200 with empty suggestions."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meili down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""

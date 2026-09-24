@@ -248,27 +248,44 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+        """Autocomplete suggestions using MeiliSearch prefix matching.
+
+        Suggestions from both indexes are ordered by MeiliSearch's
+        ``_rankingScore`` (highest first). Hits without a score sort last.
+        A failing index is skipped so the other index's hits still return;
+        the caller only sees an error if every index fails.
+        """
+        scored: dict[str, float] = {}
+        errors: list[Exception] = []
+        succeeded = 0
 
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
-            result = index.search(prefix, {
-                "limit": size,
-                "attributesToRetrieve": ["title", "name"],
-            })
-            for hit in result["hits"]:
+            try:
+                result = index.search(prefix, {
+                    "limit": size,
+                    "attributesToRetrieve": ["title", "name"],
+                    "showRankingScore": True,
+                })
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("suggest_index_failed", index=index_name, error=str(exc))
+                errors.append(exc)
+                continue
+            succeeded += 1
+            for hit in result.get("hits", []):
                 text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                if not text:
+                    continue
+                score = hit.get("_rankingScore")
+                score = float(score) if isinstance(score, (int, float)) else 0.0
+                if text not in scored or score > scored[text]:
+                    scored[text] = score
 
-        return suggestions
+        if errors and not succeeded:
+            raise errors[0]
+
+        ranked = sorted(scored.items(), key=lambda item: item[1], reverse=True)
+        return [text for text, _ in ranked[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
