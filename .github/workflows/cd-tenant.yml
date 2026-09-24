@@ -80,6 +80,11 @@ jobs:
             admin-dashboard: ['frontend/admin-dashboard/**']
             deployable: ['services/**', 'frontend/**', 'infrastructure/helm/**', 'scripts/**']
 
+      # The document-service chart ships copies of the incident alert rules
+      # and dashboard; refuse to deploy a tenant whose copies have drifted.
+      - name: Check incident chart files are in sync
+        run: scripts/sync-incident-chart-files.sh --check
+
       - name: Select services and tags
         id: select
         env:
