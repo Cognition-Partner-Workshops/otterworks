@@ -1,10 +1,11 @@
 package com.otterworks.report.service;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.util.ReportDateUtils;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,19 +20,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Fetches report data from analytics and audit services via REST.
- *
- * LEGACY PATTERNS:
- * - RestTemplate instead of WebClient (reactive) or RestClient (Spring 6.1+)
- * - Guava LoadingCache (old version 28, CVEs) instead of Caffeine or Spring Cache
- * - Manual JSON response handling with Map<String, Object>
- * - java.util.Date parameters
- * - Commons Lang 2 StringUtils
- * - Checked exceptions wrapped in RuntimeException
  */
 @Service
 public class ReportDataFetcher {
@@ -41,30 +33,23 @@ public class ReportDataFetcher {
     private final RestTemplate restTemplate;
     private final AppConfig appConfig;
 
-    // LEGACY: Guava 28 LoadingCache. Upgrade target: Caffeine (Spring Boot default) or Spring @Cacheable
-    private final LoadingCache<String, List<Map<String, Object>>> dataCache;
+    private final Cache<String, List<Map<String, Object>>> dataCache;
 
-    public ReportDataFetcher(RestTemplate restTemplate, AppConfig appConfig) {
+    public ReportDataFetcher(RestTemplate restTemplate, AppConfig appConfig, MeterRegistry meterRegistry) {
         this.restTemplate = restTemplate;
         this.appConfig = appConfig;
 
-        this.dataCache = CacheBuilder.newBuilder()
+        this.dataCache = Caffeine.newBuilder()
                 .maximumSize(100)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
-                .build(new CacheLoader<String, List<Map<String, Object>>>() {
-                    @Override
-                    public List<Map<String, Object>> load(String key) throws Exception {
-                        // Cache loader delegates to the appropriate fetch method
-                        return Collections.emptyList();
-                    }
-                });
+                .recordStats()
+                .build();
+
+        CaffeineCacheMetrics.monitor(meterRegistry, dataCache, "reportDataCache");
     }
 
     /**
      * Fetch analytics data for a date range.
-     *
-     * LEGACY: Uses RestTemplate.getForEntity with manual URL construction.
-     * Modern approach: WebClient with URI builder and reactive types.
      */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> fetchAnalyticsData(Date dateFrom, Date dateTo, Map<String, String> parameters) {
@@ -73,7 +58,7 @@ public class ReportDataFetcher {
                 + (metric != null ? ":metric=" + metric : "");
 
         try {
-            return dataCache.get(cacheKey, () -> {
+            List<Map<String, Object>> cached = dataCache.get(cacheKey, key -> {
                 String url = appConfig.getAnalyticsServiceUrl() + "/api/v1/analytics/events"
                         + "?from=" + ReportDateUtils.toIsoString(dateFrom)
                         + "&to=" + ReportDateUtils.toIsoString(dateTo);
@@ -84,15 +69,14 @@ public class ReportDataFetcher {
 
                 logger.info("Fetching analytics data from: {}", url);
 
-                // Let RestClientException propagate so fallback data is NOT cached.
-                // Only successful responses are stored in the Guava cache.
                 ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
                 if (response.getBody() != null && response.getBody().containsKey("events")) {
                     return (List<Map<String, Object>>) response.getBody().get("events");
                 }
                 return Collections.emptyList();
             });
-        } catch (ExecutionException e) {
+            return cached != null ? cached : Collections.emptyList();
+        } catch (Exception e) {
             logger.error("Failed to fetch analytics data, using sample data: {}", e.getMessage());
             return generateSampleAnalyticsData(dateFrom, dateTo);
         }
@@ -106,44 +90,49 @@ public class ReportDataFetcher {
         String cacheKey = "audit:" + ReportDateUtils.toIsoString(dateFrom) + ":" + ReportDateUtils.toIsoString(dateTo);
 
         try {
-            return dataCache.get(cacheKey, () -> {
+            List<Map<String, Object>> cached = dataCache.get(cacheKey, key -> {
                 String url = appConfig.getAuditServiceUrl() + "/api/v1/audit/events"
                         + "?from=" + ReportDateUtils.toIsoString(dateFrom)
                         + "&to=" + ReportDateUtils.toIsoString(dateTo);
 
                 logger.info("Fetching audit data from: {}", url);
 
-                // Let RestClientException propagate so fallback data is NOT cached.
                 ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
                 if (response.getBody() != null && response.getBody().containsKey("events")) {
                     return (List<Map<String, Object>>) response.getBody().get("events");
                 }
                 return Collections.emptyList();
             });
-        } catch (ExecutionException e) {
+            return cached != null ? cached : Collections.emptyList();
+        } catch (Exception e) {
             logger.error("Failed to fetch audit data, using sample data: {}", e.getMessage());
             return generateSampleAuditData(dateFrom, dateTo);
         }
     }
 
     /**
-     * Fetch user activity data.
+     * Fetch user activity data (now cached).
      */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> fetchUserActivityData(Date dateFrom, Date dateTo, Map<String, String> parameters) {
-        String url = appConfig.getAuthServiceUrl() + "/api/v1/users/activity"
-                + "?from=" + ReportDateUtils.toIsoString(dateFrom)
-                + "&to=" + ReportDateUtils.toIsoString(dateTo);
-
-        logger.info("Fetching user activity from: {}", url);
+        String cacheKey = "user-activity:" + ReportDateUtils.toIsoString(dateFrom) + ":" + ReportDateUtils.toIsoString(dateTo);
 
         try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            if (response.getBody() != null && response.getBody().containsKey("activities")) {
-                return (List<Map<String, Object>>) response.getBody().get("activities");
-            }
-            return Collections.emptyList();
-        } catch (RestClientException e) {
+            List<Map<String, Object>> cached = dataCache.get(cacheKey, key -> {
+                String url = appConfig.getAuthServiceUrl() + "/api/v1/users/activity"
+                        + "?from=" + ReportDateUtils.toIsoString(dateFrom)
+                        + "&to=" + ReportDateUtils.toIsoString(dateTo);
+
+                logger.info("Fetching user activity from: {}", url);
+
+                ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                if (response.getBody() != null && response.getBody().containsKey("activities")) {
+                    return (List<Map<String, Object>>) response.getBody().get("activities");
+                }
+                return Collections.emptyList();
+            });
+            return cached != null ? cached : Collections.emptyList();
+        } catch (Exception e) {
             logger.error("Failed to fetch user activity data: {}", e.getMessage());
             return generateSampleUserActivityData(dateFrom, dateTo);
         }

@@ -10,10 +10,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,10 +159,8 @@ public class ReportController {
         }
 
         try {
-            // LEGACY: Commons IO FileUtils.readFileToByteArray loads entire file into memory
-            // Modern approach: InputStreamResource with streaming, or S3 presigned URL
-            byte[] fileContent = FileUtils.readFileToByteArray(file);
-            ByteArrayResource resource = new ByteArrayResource(fileContent);
+            // Stream the file — no full byte[] in memory
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
             String contentType = getContentType(report.getReportType());
             String fileName = file.getName();
@@ -170,10 +168,10 @@ public class ReportController {
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                    .contentLength(fileContent.length)
+                    .contentLength(file.length())
                     .body(resource);
 
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             logger.error("Failed to read report file {}: {}", report.getFilePath(), e.getMessage());
             return ResponseEntity.notFound().build();
         }

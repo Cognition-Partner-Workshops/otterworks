@@ -8,16 +8,22 @@ import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.model.ReportType;
 import com.otterworks.report.repository.ReportRepository;
 import com.otterworks.report.util.ReportDateUtils;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * Separate bean for async report generation.
@@ -41,6 +47,8 @@ public class ReportGenerationWorker {
     private final ExcelReportGenerator excelGenerator;
     private final AppConfig appConfig;
     private final ObjectMapper objectMapper;
+    private final MeterRegistry meterRegistry;
+    private final Executor reportGenerationExecutor;
 
     public ReportGenerationWorker(
             ReportRepository reportRepository,
@@ -48,7 +56,9 @@ public class ReportGenerationWorker {
             PdfReportGenerator pdfGenerator,
             CsvReportGenerator csvGenerator,
             ExcelReportGenerator excelGenerator,
-            AppConfig appConfig) {
+            AppConfig appConfig,
+            MeterRegistry meterRegistry,
+            Executor reportGenerationExecutor) {
         this.reportRepository = reportRepository;
         this.dataFetcher = dataFetcher;
         this.pdfGenerator = pdfGenerator;
@@ -56,15 +66,14 @@ public class ReportGenerationWorker {
         this.excelGenerator = excelGenerator;
         this.appConfig = appConfig;
         this.objectMapper = new ObjectMapper();
+        this.meterRegistry = meterRegistry;
+        this.reportGenerationExecutor = reportGenerationExecutor;
     }
 
     /**
      * Async report generation — runs in background thread pool.
-     *
-     * LEGACY: @Async with no return type (fire-and-forget).
-     * Modern approach: return CompletableFuture<Void> or use reactive pipeline.
      */
-    @Async
+    @Async("reportGenerationExecutor")
     @SuppressWarnings("unchecked")
     public void generateReportAsync(Long reportId) {
         Optional<Report> optReport = reportRepository.findById(reportId);
@@ -77,6 +86,10 @@ public class ReportGenerationWorker {
         report.setStatus(ReportStatus.GENERATING);
         reportRepository.save(report);
 
+        Timer.Sample timerSample = Timer.start(meterRegistry);
+        String reportType = report.getReportType() != null ? report.getReportType().name() : "UNKNOWN";
+        String category = report.getCategory() != null ? report.getCategory().name() : "UNKNOWN";
+
         try {
             // Parse parameters
             Map<String, String> params = null;
@@ -84,7 +97,7 @@ public class ReportGenerationWorker {
                 params = objectMapper.readValue(report.getParameters(), Map.class);
             }
 
-            // Fetch data based on category
+            // Fetch data based on category — parallel for categories needing multiple sources
             List<Map<String, Object>> data = fetchDataForCategory(
                     report.getCategory(), report.getDateFrom(), report.getDateTo(), params);
 
@@ -109,12 +122,36 @@ public class ReportGenerationWorker {
             logger.info("Report {} completed: {} rows, {} bytes, took {}",
                     reportId, data.size(), outputFile.length(), duration);
 
+            // Record success metrics
+            timerSample.stop(Timer.builder("reports.generation.duration")
+                    .tag("report_type", reportType)
+                    .tag("format", category)
+                    .register(meterRegistry));
+            Counter.builder("reports.generated")
+                    .tag("report_type", category)
+                    .tag("format", reportType)
+                    .tag("outcome", "success")
+                    .register(meterRegistry)
+                    .increment();
+
         } catch (Exception e) {
             logger.error("Report generation failed for {}: {}", reportId, e.getMessage(), e);
             report.setStatus(ReportStatus.FAILED);
             report.setCompletedAt(new Date());
             report.setErrorMessage(e.getMessage());
             reportRepository.save(report);
+
+            // Record failure metrics
+            timerSample.stop(Timer.builder("reports.generation.duration")
+                    .tag("report_type", reportType)
+                    .tag("format", category)
+                    .register(meterRegistry));
+            Counter.builder("reports.generated")
+                    .tag("report_type", category)
+                    .tag("format", reportType)
+                    .tag("outcome", "failure")
+                    .register(meterRegistry)
+                    .increment();
         }
     }
 
@@ -122,12 +159,22 @@ public class ReportGenerationWorker {
             ReportCategory category, Date dateFrom, Date dateTo, Map<String, String> params) {
 
         switch (category) {
+            case COMPLIANCE: {
+                // Compliance needs both analytics and audit — fetch in parallel
+                CompletableFuture<List<Map<String, Object>>> analyticsFuture =
+                        CompletableFuture.supplyAsync(() -> dataFetcher.fetchAnalyticsData(dateFrom, dateTo, params), reportGenerationExecutor);
+                CompletableFuture<List<Map<String, Object>>> auditFuture =
+                        CompletableFuture.supplyAsync(() -> dataFetcher.fetchAuditData(dateFrom, dateTo, params), reportGenerationExecutor);
+                List<Map<String, Object>> combined = new ArrayList<>();
+                combined.addAll(analyticsFuture.join());
+                combined.addAll(auditFuture.join());
+                return combined;
+            }
             case USAGE_ANALYTICS:
             case COLLABORATION_METRICS:
             case SYSTEM_HEALTH:
                 return dataFetcher.fetchAnalyticsData(dateFrom, dateTo, params);
             case AUDIT_LOG:
-            case COMPLIANCE:
                 return dataFetcher.fetchAuditData(dateFrom, dateTo, params);
             case USER_ACTIVITY:
             case STORAGE_SUMMARY:
