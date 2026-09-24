@@ -1,0 +1,63 @@
+[
+  {
+    "name": "[report-service] Report failure rate above 10%",
+    "type": "query alert",
+    "query": "sum(last_15m):( sum:reports.generated{service:report-service,outcome:failure}.as_count() / sum:reports.generated{service:report-service}.as_count() ) * 100 > 10",
+    "message": "More than 10% of report generations failed in the last 15 minutes ({{value}}%).\n\nCheck upstream analytics/audit/auth services and recent deploys.\n\n@slack-report-service-alerts",
+    "tags": ["service:report-service", "team:reporting", "managed-by:observability-as-code"],
+    "priority": 2,
+    "options": {
+      "thresholds": { "critical": 10, "warning": 5 },
+      "notify_no_data": false,
+      "require_full_window": false,
+      "renotify_interval": 60,
+      "evaluation_delay": 60,
+      "include_tags": true
+    }
+  },
+  {
+    "name": "[report-service] Report generation p95 latency above 30s",
+    "type": "query alert",
+    "query": "avg(last_10m):avg:reports.generation.duration.95percentile{service:report-service} > 30000",
+    "message": "p95 report generation duration is {{value}} ms over the last 10 minutes.\n\nLikely causes: slow upstream fetches (check cache hit ratio `cache.gets{cache:report-data,result:miss}`), executor saturation (`executor.queued{name:report-gen}`), or oversized reports.\n\n@slack-report-service-alerts",
+    "tags": ["service:report-service", "team:reporting", "managed-by:observability-as-code"],
+    "priority": 3,
+    "options": {
+      "thresholds": { "critical": 30000, "warning": 15000 },
+      "notify_no_data": false,
+      "require_full_window": false,
+      "renotify_interval": 60,
+      "include_tags": true
+    }
+  },
+  {
+    "name": "[report-service] Report queue depth above 50",
+    "type": "query alert",
+    "query": "min(last_10m):avg:reports.queue.depth{service:report-service} > 50",
+    "message": "More than 50 reports have been pending or generating for 10 minutes ({{value}}).\n\nGeneration is not keeping up with demand: check `executor.active{name:report-gen}` and consider raising `REPORT_EXECUTOR_MAX` / scaling out.\n\n@slack-report-service-alerts",
+    "tags": ["service:report-service", "team:reporting", "managed-by:observability-as-code"],
+    "priority": 3,
+    "options": {
+      "thresholds": { "critical": 50, "warning": 25 },
+      "notify_no_data": true,
+      "no_data_timeframe": 20,
+      "require_full_window": true,
+      "renotify_interval": 30,
+      "include_tags": true
+    }
+  },
+  {
+    "name": "[report-service] No reports generated in 1h",
+    "type": "query alert",
+    "query": "sum(last_1h):sum:reports.generated{service:report-service}.as_count() < 1",
+    "message": "No report generation completed (success or failure) in the last hour while the service is expected to be busy.\n\nCheck that the service is up and that schedules are firing (`report_schedules` table, scheduler logs).\n\n@slack-report-service-alerts",
+    "tags": ["service:report-service", "team:reporting", "managed-by:observability-as-code"],
+    "priority": 4,
+    "options": {
+      "thresholds": { "critical": 1 },
+      "notify_no_data": false,
+      "require_full_window": true,
+      "include_tags": true
+    }
+  }
+]

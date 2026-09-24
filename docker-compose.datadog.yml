@@ -1,0 +1,57 @@
+# Local Datadog stack: Agent 7 (DogStatsD + APM) plus the report-service wired to it.
+#
+#   export DD_API_KEY=...            # never committed; read from the shell environment
+#   docker compose -f docker-compose.datadog.yml up --build
+#
+# The report-service runs with the `local` profile (H2 in-memory, no upstream services) so the stack
+# is self-contained; override SPRING_PROFILES_ACTIVE / SPRING_DATASOURCE_* to point at real infra.
+services:
+  datadog-agent:
+    image: datadog/agent:7
+    container_name: datadog-agent
+    environment:
+      DD_API_KEY: ${DD_API_KEY:?DD_API_KEY must be set in the environment}
+      DD_SITE: ${DD_SITE:-datadoghq.com}
+      DD_HOSTNAME: ${DD_HOSTNAME:-report-service-local}
+      DD_ENV: ${DD_ENV:-local}
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_DOGSTATSD_ORIGIN_DETECTION: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+    ports:
+      - "8125:8125/udp"   # DogStatsD
+      - "8126:8126"       # APM trace intake
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    healthcheck:
+      test: ["CMD", "agent", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  report-service:
+    build: .
+    container_name: report-service
+    depends_on:
+      - datadog-agent
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      DD_SERVICE: report-service
+      DD_ENV: ${DD_ENV:-local}
+      DD_VERSION: ${DD_VERSION:-0.1.0}
+      DD_AGENT_HOST: datadog-agent
+      DD_TRACE_AGENT_PORT: "8126"
+      DD_DOGSTATSD_PORT: "8125"
+      DD_LOGS_INJECTION: "true"
+      DD_METRICS_ENABLED: "true"
+    ports:
+      - "8091:8091"
+    labels:
+      com.datadoghq.tags.service: report-service
+      com.datadoghq.tags.env: ${DD_ENV:-local}
+      com.datadoghq.tags.version: ${DD_VERSION:-0.1.0}
+      com.datadoghq.ad.logs: '[{"source": "java", "service": "report-service"}]'
