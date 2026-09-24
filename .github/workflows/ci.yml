@@ -4,13 +4,21 @@ on:
   push:
     branches: [main, workshop, 'workshop-**']
   pull_request:
-    branches: [main, workshop, 'review-base-**']
+    branches: [main, workshop, 'review-base-**', 'demo-**']
 
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
 
 jobs:
+  # The document-service chart renders generated copies of the incident alert
+  # rules and dashboard; they must match observability/.
+  incident-chart-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/sync-incident-chart-files.sh --check
+
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
