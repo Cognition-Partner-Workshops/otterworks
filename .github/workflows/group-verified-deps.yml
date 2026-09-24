@@ -1,0 +1,163 @@
+name: Group Verified Dependency PRs
+
+# Second hop of the Track 1 pipeline (see renovate-verify.yml):
+#
+#   Devin posts "✅ Build verified" on a dependency PR
+#     → this workflow fires on the comment
+#     → POST to the "deps-group" Devin automation webhook
+#     → Devin enumerates every open dependency PR carrying "✅ Build verified",
+#       groups compatible bumps (shared version property → one PR, DeepWiki
+#       module structure), cherry-picks them onto one combined branch,
+#       re-runs make deps-tests / deps-gate, and opens ONE combined PR.
+#
+# Devin never merges its own PRs: the combined PR is left for a human.
+# Bot-loop prevention: only Devin's comment on a non-Devin PR triggers this,
+# and the concurrency group collapses a burst of verifications into one run.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+
+env:
+  VERIFIED_MARKER: "✅ Build verified"
+
+jobs:
+  trigger-grouping:
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.user.login == 'devin-ai-integration[bot]' &&
+      contains(github.event.comment.body, '✅ Build verified')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deps-group-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - name: Confirm the PR is a dependency bump and not Devin's own
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUM: ${{ github.event.issue.number }}
+        run: |
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUM}")
+          AUTHOR=$(echo "$PR_JSON" | jq -r '.user.login')
+          BRANCH=$(echo "$PR_JSON" | jq -r '.head.ref')
+          STATE=$(echo "$PR_JSON" | jq -r '.state')
+          echo "author=${AUTHOR}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
+
+          if [ "$AUTHOR" = "devin-ai-integration[bot]" ]; then
+            echo "Comment is on a Devin-authored PR (probably the combined PR). Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$STATE" != "open" ]; then
+            echo "PR is ${STATE}. Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
+      - name: List all open PRs currently marked verified
+        id: verified
+        if: steps.check.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Candidate set for the grouping agent: open, non-Devin PRs whose
+          # latest Devin comment carries the marker. Sent as a hint; the agent
+          # re-derives the list itself so stale webhooks stay harmless.
+          VERIFIED=$(gh api "repos/${REPO}/pulls?state=open&per_page=100" \
+            --jq '.[] | select(.user.login != "devin-ai-integration[bot]") | "\(.number) \(.head.ref)"' \
+            | while read -r num ref; do
+                if gh api "repos/${REPO}/issues/${num}/comments?per_page=100" \
+                     --jq '[.[] | select(.user.login == "devin-ai-integration[bot]" and (.body | contains("✅ Build verified")))] | length' \
+                   | grep -qv '^0$'; then
+                  echo "${num} ${ref}"
+                fi
+              done)
+          echo "Verified dependency PRs:"
+          echo "$VERIFIED"
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "verified_prs<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$VERIFIED" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Devin grouping automation via webhook
+        if: steps.check.outputs.should_run == 'true'
+        env:
+          WEBHOOK_URL: ${{ vars.DEVIN_DEPS_GROUP_WEBHOOK_URL }}
+          DEVIN_DEPS_GROUP_WEBHOOK_SECRET: ${{ secrets.DEVIN_DEPS_GROUP_WEBHOOK_SECRET }}
+          DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+          REPO: ${{ github.repository }}
+          PR_NUM: ${{ github.event.issue.number }}
+          PR_URL: ${{ github.event.issue.html_url }}
+          BRANCH: ${{ steps.check.outputs.branch }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          VERIFIED_PRS: ${{ steps.verified.outputs.verified_prs }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::error::Repository variable DEVIN_DEPS_GROUP_WEBHOOK_URL is not set. Create the deps-group automation and store its webhook URL."
+            exit 1
+          fi
+          SECRET="${DEVIN_DEPS_GROUP_WEBHOOK_SECRET:-$DEVIN_WEBHOOK_SECRET}"
+
+          REQUEST_BODY=$(jq -n \
+            --arg repo "$REPO" \
+            --arg pr_number "$PR_NUM" \
+            --arg pr_url "$PR_URL" \
+            --arg branch "$BRANCH" \
+            --arg comment_url "$COMMENT_URL" \
+            --arg comment "$COMMENT_BODY" \
+            --arg verified "$VERIFIED_PRS" \
+            --arg marker "$VERIFIED_MARKER" \
+            '{
+              source: "deps-verified-comment",
+              repository: $repo,
+              pr_number: $pr_number,
+              pr_url: $pr_url,
+              branch: $branch,
+              comment_url: $comment_url,
+              verification_comment: ($comment | .[0:3000]),
+              verified_marker: $marker,
+              verified_prs: ($verified | split("\n") | map(select(length > 0)) | map(split(" ") | {number: (.[0] | tonumber), branch: .[1]}))
+            }')
+
+          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            -H "X-Webhook-Secret: ${SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST_BODY" \
+            "${WEBHOOK_URL}")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Devin grouping automation triggered (HTTP ${HTTP_CODE})"
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
+            {
+              echo "## Devin Dependency Grouping Triggered"
+              echo ""
+              echo "PR #${PR_NUM} was marked **${VERIFIED_MARKER}**. The grouping automation will combine all verified bumps into one PR."
+              echo ""
+              echo "Verified PRs at trigger time:"
+              echo '```'
+              echo "${VERIFIED_PRS:-<none>}"
+              echo '```'
+              if [ -n "$SESSION_URL" ]; then
+                echo ""
+                echo "**Session:** ${SESSION_URL}"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Failed to trigger Devin grouping webhook (HTTP ${HTTP_CODE})"
+            echo "$HTTP_BODY"
+            exit 1
+          fi

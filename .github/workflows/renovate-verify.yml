@@ -1,0 +1,317 @@
+name: Dependency Bump Verification
+
+# Event-driven dependency pipeline, modelled on sast-auto-remediate.yml:
+#
+#   Dependabot/Renovate opens a bump PR (or a human touches a manifest)
+#     → this workflow summarises the changed dependencies
+#     → POST to the "deps-verify" Devin automation webhook
+#     → Devin checks out the branch, runs make deps-inventory / deps-tests /
+#       deps-gate / deps-transcript, fixes breakage, and on all-green posts a
+#       PR comment that starts with "✅ Build verified"
+#     → that comment triggers group-verified-deps.yml (the grouping automation)
+#
+# Bot-loop prevention: skips PRs authored by devin-ai-integration[bot].
+# Escalation: after MAX_FIX_ATTEMPTS Devin commits on the PR, opens an issue.
+#
+# Detector: this repo has no renovate.json today. Dependabot PRs are produced
+# by .github/dependabot.yml (added alongside this workflow); the manifest path
+# filter below also catches human-authored bumps and Renovate if it is enabled
+# later. See docs/demo-runsheet.md.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+    paths:
+      - "**/pom.xml"
+      - "**/build.gradle"
+      - "**/build.gradle.kts"
+      - "**/settings.gradle"
+      - "**/settings.gradle.kts"
+      - "**/gradle.properties"
+      - "**/gradle/libs.versions.toml"
+      - "**/package.json"
+      - "**/package-lock.json"
+      - "**/pnpm-lock.yaml"
+      - "**/requirements*.txt"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "**/Gemfile"
+      - "**/Gemfile.lock"
+      - "**/*.csproj"
+      - "**/Directory.Packages.props"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  MAX_FIX_ATTEMPTS: 2
+  DEPENDENCY_BOTS: "dependabot[bot] renovate[bot] app/dependabot app/renovate"
+
+jobs:
+  detect:
+    # Bot-loop guard: never re-trigger on Devin's own commits/PRs.
+    if: github.event.pull_request.user.login != 'devin-ai-integration[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      is_dependency_pr: ${{ steps.classify.outputs.is_dependency_pr }}
+      bot_authored: ${{ steps.classify.outputs.bot_authored }}
+      changed_manifests: ${{ steps.classify.outputs.changed_manifests }}
+      dependency_summary: ${{ steps.summary.outputs.dependency_summary }}
+      attempt_count: ${{ steps.counter.outputs.attempt_count }}
+      exceeded_max: ${{ steps.counter.outputs.exceeded_max }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify PR (bot author or manifest change)
+        id: classify
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          BOT_AUTHORED=false
+          for bot in $DEPENDENCY_BOTS; do
+            if [ "$PR_AUTHOR" = "$bot" ]; then BOT_AUTHORED=true; fi
+          done
+          echo "bot_authored=${BOT_AUTHORED}" >> "$GITHUB_OUTPUT"
+
+          # Manifest files touched by the PR (the `paths:` filter already
+          # gated the run, but we want the list for the summary).
+          CHANGED=$(gh api "repos/${REPO}/pulls/${PR_NUM}/files?per_page=100" \
+            --jq '.[].filename' \
+            | grep -E '(^|/)(pom\.xml|build\.gradle(\.kts)?|settings\.gradle(\.kts)?|gradle\.properties|libs\.versions\.toml|package(-lock)?\.json|pnpm-lock\.yaml|requirements[^/]*\.txt|pyproject\.toml|uv\.lock|Cargo\.(toml|lock)|go\.(mod|sum)|Gemfile(\.lock)?|[^/]+\.csproj|Directory\.Packages\.props)$' \
+            || true)
+          COUNT=$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l | tr -d ' ')
+          echo "Changed manifests (${COUNT}):"
+          printf '%s\n' "$CHANGED"
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "changed_manifests<<$EOF" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+          if [ "$BOT_AUTHORED" = "true" ] || [ "$COUNT" -gt 0 ]; then
+            echo "is_dependency_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_dependency_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Count prior fix attempts
+        id: counter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ATTEMPT_COUNT=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
+            --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
+          echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
+          if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
+            echo "exceeded_max=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exceeded_max=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summarise changed dependencies
+        id: summary
+        if: steps.classify.outputs.is_dependency_pr == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CHANGED: ${{ steps.classify.outputs.changed_manifests }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Compact "file: -old / +new" digest of version-looking lines in each
+          # manifest, for the PR comment and the Devin prompt. Truncated to
+          # 3000 chars for GHA output limits.
+          {
+            echo "PR title: ${PR_TITLE}"
+            echo ""
+            printf '%s\n' "$CHANGED" | sed '/^$/d' | while read -r f; do
+              echo "### ${f}"
+              git diff "${BASE_SHA}" "${HEAD_SHA}" -- "$f" \
+                | grep -E '^[-+][^-+]' \
+                | grep -Ei 'version|[0-9]+\.[0-9]+' \
+                | head -40
+              echo ""
+            done
+          } | head -c 3000 > dep-summary.md
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "dependency_summary<<$EOF" >> "$GITHUB_OUTPUT"
+          cat dep-summary.md >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+  comment-summary:
+    needs: detect
+    if: needs.detect.outputs.is_dependency_pr == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post dependency summary to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPENDENCY_SUMMARY: ${{ needs.detect.outputs.dependency_summary }}
+          ATTEMPT_COUNT: ${{ needs.detect.outputs.attempt_count }}
+          MAX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
+          BOT_AUTHORED: ${{ needs.detect.outputs.bot_authored }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          BODY="## :package: Dependency Bump Detected
+
+          Bot-authored: **${BOT_AUTHORED}**. Devin has been asked to build and verify this bump with the \`make deps-*\` harness (inventory → tests → advisory gate → behaviour transcript). Expect a **✅ Build verified** comment on success.
+
+          ${DEPENDENCY_SUMMARY}
+
+          ---
+          **Verification attempt:** ${ATTEMPT_COUNT} / ${MAX_ATTEMPTS}"
+
+          gh api \
+            "repos/${REPO}/issues/${PR_NUM}/comments" \
+            -f body="$BODY"
+
+  trigger-devin:
+    needs: detect
+    if: |
+      needs.detect.outputs.is_dependency_pr == 'true' &&
+      needs.detect.outputs.exceeded_max == 'false'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deps-verify-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Trigger Devin dependency verification via webhook
+        env:
+          # URL of the "deps-verify" automation (Settings → Automations →
+          # webhook trigger). Stored as a repository variable so this file
+          # carries no environment-specific IDs.
+          WEBHOOK_URL: ${{ vars.DEVIN_DEPS_VERIFY_WEBHOOK_URL }}
+          DEVIN_DEPS_VERIFY_WEBHOOK_SECRET: ${{ secrets.DEVIN_DEPS_VERIFY_WEBHOOK_SECRET }}
+          DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+          BRANCH: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REPO: ${{ github.repository }}
+          BOT_AUTHORED: ${{ needs.detect.outputs.bot_authored }}
+          CHANGED_MANIFESTS: ${{ needs.detect.outputs.changed_manifests }}
+          DEPENDENCY_SUMMARY: ${{ needs.detect.outputs.dependency_summary }}
+          ATTEMPT_COUNT: ${{ needs.detect.outputs.attempt_count }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::error::Repository variable DEVIN_DEPS_VERIFY_WEBHOOK_URL is not set. Create the deps-verify automation and store its webhook URL."
+            exit 1
+          fi
+          SECRET="${DEVIN_DEPS_VERIFY_WEBHOOK_SECRET:-$DEVIN_WEBHOOK_SECRET}"
+
+          REQUEST_BODY=$(jq -n \
+            --arg branch "$BRANCH" \
+            --arg head_sha "$HEAD_SHA" \
+            --arg pr_number "$PR_NUM" \
+            --arg pr_url "$PR_URL" \
+            --arg pr_author "$PR_AUTHOR" \
+            --arg repo "$REPO" \
+            --arg bot_authored "$BOT_AUTHORED" \
+            --arg manifests "$CHANGED_MANIFESTS" \
+            --arg summary "$DEPENDENCY_SUMMARY" \
+            --arg attempt "$ATTEMPT_COUNT" \
+            --arg max_attempts "$MAX_FIX_ATTEMPTS" \
+            '{
+              source: "dependency-bump",
+              branch: $branch,
+              head_sha: $head_sha,
+              pr_number: $pr_number,
+              pr_url: $pr_url,
+              pr_author: $pr_author,
+              repository: $repo,
+              bot_authored: ($bot_authored == "true"),
+              changed_manifests: ($manifests | split("\n") | map(select(length > 0))),
+              dependency_summary: $summary,
+              attempt: ($attempt | tonumber),
+              max_attempts: ($max_attempts | tonumber)
+            }')
+
+          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            -H "X-Webhook-Secret: ${SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST_BODY" \
+            "${WEBHOOK_URL}")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '/^HTTP_STATUS:/d')
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep '^HTTP_STATUS:' | cut -d: -f2)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Devin automation webhook triggered successfully (HTTP ${HTTP_CODE})"
+            SESSION_URL=$(echo "$HTTP_BODY" | jq -r '.url // empty')
+            {
+              echo "## Devin Dependency Verification Triggered"
+              echo ""
+              echo "PR #${PR_NUM} (\`${BRANCH}\`) was sent to the deps-verify automation."
+              if [ -n "$SESSION_URL" ]; then
+                echo ""
+                echo "**Session:** ${SESSION_URL}"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Failed to trigger Devin webhook (HTTP ${HTTP_CODE})"
+            echo "$HTTP_BODY"
+            exit 1
+          fi
+
+  escalate:
+    needs: detect
+    if: |
+      needs.detect.outputs.is_dependency_pr == 'true' &&
+      needs.detect.outputs.exceeded_max == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open escalation issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          DEPENDENCY_SUMMARY: ${{ needs.detect.outputs.dependency_summary }}
+          FIX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
+        run: |
+          BODY="## Automated dependency verification exhausted
+
+          Devin made **${FIX_ATTEMPTS}** fix commits on PR #${PR_NUM} and the bump still does not pass the \`make deps-*\` harness.
+
+          ### Changed dependencies
+
+          ${DEPENDENCY_SUMMARY}
+
+          ### Next steps
+
+          - Read the last verification comment on the PR for the failing target and exit code
+          - Check whether the bump is a major with breaking API changes (e.g. javax → jakarta)
+          - Decide: pin to the nearest non-breaking release, or take the major with a code migration
+
+          _Opened automatically by the dependency verification pipeline._"
+
+          gh api "repos/${REPO}/issues" \
+            -f title="[Deps] Unverified dependency bump on PR #${PR_NUM}" \
+            -f body="$BODY" \
+            -f "labels[]=dependencies" \
+            -f "labels[]=needs-human-review"
+
+      - name: Comment on PR about escalation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          FIX_ATTEMPTS: ${{ env.MAX_FIX_ATTEMPTS }}
+        run: |
+          gh api \
+            "repos/${REPO}/issues/${PR_NUM}/comments" \
+            -f body=":rotating_light: **Escalation:** Devin has attempted ${FIX_ATTEMPTS} fix cycles on this dependency bump without a green harness run. A GitHub Issue has been opened for manual review."
