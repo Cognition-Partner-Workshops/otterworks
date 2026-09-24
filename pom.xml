@@ -33,7 +33,6 @@
         <!-- Commons IO -->
         <commons-io.version>2.16.1</commons-io.version>
         <!-- Guava -->
-        <guava.version>33.4.0-jre</guava.version>
         <!-- Structured JSON logging -->
         <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
         <!-- Commons Text — report banner/footer interpolation -->
@@ -115,13 +114,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
-        </dependency>
-
-        <!-- Guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
 
         <!-- Apache HttpClient 5 -->

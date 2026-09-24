@@ -24,7 +24,7 @@ public record ReportProperties(
             @DefaultValue("100") int queueCapacity) {
     }
 
-    public record Fetch(@DefaultValue("4") int parallelism) {
+    public record Fetch(@DefaultValue("16") int parallelism) {
     }
 
     public record Schedule(@DefaultValue("60s") Duration pollInterval) {
