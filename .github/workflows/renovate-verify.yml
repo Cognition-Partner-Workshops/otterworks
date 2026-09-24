@@ -14,41 +14,24 @@ name: Dependency Bump Verification
 # Escalation: after MAX_FIX_ATTEMPTS Devin commits on the PR, opens an issue.
 #
 # Detector: this repo has no renovate.json today. Dependabot PRs are produced
-# by .github/dependabot.yml (added alongside this workflow); the manifest path
-# filter below also catches human-authored bumps and Renovate if it is enabled
-# later. See docs/demo-runsheet.md.
+# by .github/dependabot.yml (added alongside this workflow). There is no
+# `paths:` filter on the trigger: a path filter is evaluated before any job
+# runs and cannot be overridden by the author check, so it would drop
+# Dependabot's GitHub Actions bumps (they touch workflow files, not
+# manifests). The `detect` job classifies instead: bot-authored PRs always
+# qualify; human PRs qualify only if they touch a dependency manifest. All
+# other PRs end after `detect` with every downstream job skipped.
+# See docs/demo-runsheet.md.
 
 on:
   pull_request:
     types: [opened, synchronize]
     branches: [main]
-    paths:
-      - "**/pom.xml"
-      - "**/build.gradle"
-      - "**/build.gradle.kts"
-      - "**/settings.gradle"
-      - "**/settings.gradle.kts"
-      - "**/gradle.properties"
-      - "**/gradle/libs.versions.toml"
-      - "**/package.json"
-      - "**/package-lock.json"
-      - "**/pnpm-lock.yaml"
-      - "**/requirements*.txt"
-      - "**/pyproject.toml"
-      - "**/uv.lock"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
-      - "**/go.mod"
-      - "**/go.sum"
-      - "**/Gemfile"
-      - "**/Gemfile.lock"
-      - "**/*.csproj"
-      - "**/Directory.Packages.props"
 
+# Least privilege: `detect` checks out the PR head, so it gets a read-only
+# token; only the jobs that comment / open issues get write scopes.
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
 
 env:
   MAX_FIX_ATTEMPTS: 2
@@ -59,6 +42,9 @@ jobs:
     # Bot-loop guard: never re-trigger on Devin's own commits/PRs.
     if: github.event.pull_request.user.login != 'devin-ai-integration[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       is_dependency_pr: ${{ steps.classify.outputs.is_dependency_pr }}
       bot_authored: ${{ steps.classify.outputs.bot_authored }}
@@ -85,13 +71,19 @@ jobs:
           done
           echo "bot_authored=${BOT_AUTHORED}" >> "$GITHUB_OUTPUT"
 
-          # Manifest files touched by the PR (the `paths:` filter already
-          # gated the run, but we want the list for the summary).
-          CHANGED=$(gh api "repos/${REPO}/pulls/${PR_NUM}/files?per_page=100" \
-            --jq '.[].filename' \
+          # Manifest files touched by the PR. This is the gate for human PRs;
+          # a bot PR that touches no manifest (a GitHub Actions bump edits
+          # .github/workflows/*.yml) is still a dependency PR and its changed
+          # files are the "manifests" the summary and Devin work from.
+          FILES=$(gh api "repos/${REPO}/pulls/${PR_NUM}/files?per_page=100" --jq '.[].filename')
+          CHANGED=$(printf '%s\n' "$FILES" \
             | grep -E '(^|/)(pom\.xml|build\.gradle(\.kts)?|settings\.gradle(\.kts)?|gradle\.properties|libs\.versions\.toml|package(-lock)?\.json|pnpm-lock\.yaml|requirements[^/]*\.txt|pyproject\.toml|uv\.lock|Cargo\.(toml|lock)|go\.(mod|sum)|Gemfile(\.lock)?|[^/]+\.csproj|Directory\.Packages\.props)$' \
             || true)
           COUNT=$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$BOT_AUTHORED" = "true" ] && [ "$COUNT" -eq 0 ]; then
+            CHANGED="$FILES"
+            COUNT=$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l | tr -d ' ')
+          fi
           echo "Changed manifests (${COUNT}):"
           printf '%s\n' "$CHANGED"
 
@@ -111,11 +103,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Every Devin commit on the branch is a fix attempt. The head that
+          # carries the MAX_FIX_ATTEMPTS-th fix is still verified (that is the
+          # run that can post "Build verified"); only a push beyond it escalates.
           ATTEMPT_COUNT=$(gh api \
             "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
             --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
           echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
-          if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
+          if [ "$ATTEMPT_COUNT" -gt "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
             echo "exceeded_max=true" >> "$GITHUB_OUTPUT"
           else
             echo "exceeded_max=false" >> "$GITHUB_OUTPUT"
@@ -155,6 +150,8 @@ jobs:
     needs: detect
     if: needs.detect.outputs.is_dependency_pr == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Post dependency summary to PR
         env:
@@ -185,6 +182,8 @@ jobs:
       needs.detect.outputs.is_dependency_pr == 'true' &&
       needs.detect.outputs.exceeded_max == 'false'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     concurrency:
       group: deps-verify-${{ github.event.pull_request.number }}
       cancel-in-progress: true
@@ -274,6 +273,9 @@ jobs:
       needs.detect.outputs.is_dependency_pr == 'true' &&
       needs.detect.outputs.exceeded_max == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
     steps:
       - name: Open escalation issue
         env:
