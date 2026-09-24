@@ -1,0 +1,63 @@
+{
+  "title": "Report Service Dashboard",
+  "description": "Operational dashboard for the OtterWorks Report Service",
+  "widgets": [
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Reports Generated (by outcome)",
+        "requests": [
+          {
+            "q": "sum:reports.generated{*} by {outcome}.as_count()",
+            "display_type": "bars"
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Report Generation Duration (p50/p95)",
+        "requests": [
+          {
+            "q": "p50:reports.generation.duration{*}",
+            "display_type": "line"
+          },
+          {
+            "q": "p95:reports.generation.duration{*}",
+            "display_type": "line"
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Report Queue Depth",
+        "requests": [
+          {
+            "q": "avg:reports.queue.depth{*}",
+            "display_type": "line"
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Cache Hit/Miss Rate",
+        "requests": [
+          {
+            "q": "sum:cache.gets{cache:reportDataCache,result:hit}.as_count()",
+            "display_type": "line"
+          },
+          {
+            "q": "sum:cache.gets{cache:reportDataCache,result:miss}.as_count()",
+            "display_type": "line"
+          }
+        ]
+      }
+    }
+  ],
+  "layout_type": "ordered"
+}

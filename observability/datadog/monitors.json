@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Report Generation Failure Rate",
+    "type": "metric alert",
+    "query": "sum(last_5m):sum:reports.generated{outcome:failure}.as_count() / sum:reports.generated{*}.as_count() > 0.1",
+    "message": "Report failure rate exceeds 10% over the last 5 minutes. Check report-service logs.",
+    "tags": ["service:report-service", "team:platform"],
+    "options": {
+      "thresholds": {
+        "critical": 0.1,
+        "warning": 0.05
+      },
+      "notify_no_data": false,
+      "renotify_interval": 300
+    }
+  },
+  {
+    "name": "Report Generation P95 Latency",
+    "type": "metric alert",
+    "query": "avg(last_5m):p95:reports.generation.duration{*} > 30000",
+    "message": "P95 report generation latency exceeds 30s. Investigate slow reports.",
+    "tags": ["service:report-service", "team:platform"],
+    "options": {
+      "thresholds": {
+        "critical": 30000,
+        "warning": 15000
+      },
+      "notify_no_data": false,
+      "renotify_interval": 300
+    }
+  },
+  {
+    "name": "Report Queue Depth High",
+    "type": "metric alert",
+    "query": "avg(last_5m):avg:reports.queue.depth{*} > 50",
+    "message": "Report generation queue depth exceeds 50. Consider scaling or investigating backlog.",
+    "tags": ["service:report-service", "team:platform"],
+    "options": {
+      "thresholds": {
+        "critical": 50,
+        "warning": 25
+      },
+      "notify_no_data": false,
+      "renotify_interval": 300
+    }
+  }
+]
