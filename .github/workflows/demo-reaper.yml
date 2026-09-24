@@ -68,9 +68,11 @@ jobs:
           # teardown-tenant.sh drops the tenant PostgreSQL database.
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           REAPER_GRACE: ${{ inputs.grace || '15m' }}
+          EVENT_NAME: ${{ github.event_name }}
+          APPLY: ${{ inputs.apply }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.apply }}" = "true" ]; then
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$APPLY" = "true" ]; then
             MODE=--apply
           else
             MODE=--dry-run

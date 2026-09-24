@@ -32,8 +32,8 @@ jobs:
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
           filters: |
@@ -435,8 +435,8 @@ jobs:
   migration-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
           filters: |
@@ -448,7 +448,7 @@ jobs:
               - 'migration/source/copybooks/**'
               - 'infrastructure/helm/migration-job/**'
       - if: steps.changes.outputs.ldm == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
       - if: steps.changes.outputs.ldm == 'true'
@@ -461,7 +461,7 @@ jobs:
         run: python -m pytest -q
         working-directory: migration/job
       - if: steps.changes.outputs.ldm == 'true'
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
       - if: steps.changes.outputs.ldm == 'true'
         run: >
           helm lint infrastructure/helm/migration-job --strict
