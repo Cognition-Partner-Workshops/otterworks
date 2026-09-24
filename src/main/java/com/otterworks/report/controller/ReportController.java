@@ -10,10 +10,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,25 +156,13 @@ public class ReportController {
             return ResponseEntity.notFound().build();
         }
 
-        try {
-            // LEGACY: Commons IO FileUtils.readFileToByteArray loads entire file into memory
-            // Modern approach: InputStreamResource with streaming, or S3 presigned URL
-            byte[] fileContent = FileUtils.readFileToByteArray(file);
-            ByteArrayResource resource = new ByteArrayResource(fileContent);
-
-            String contentType = getContentType(report.getReportType());
-            String fileName = file.getName();
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                    .contentLength(fileContent.length)
-                    .body(resource);
-
-        } catch (IOException e) {
-            logger.error("Failed to read report file {}: {}", report.getFilePath(), e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
+        // FileSystemResource is streamed to the servlet output by ResourceHttpMessageConverter;
+        // the file is never held in memory as a whole.
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(getContentType(report.getReportType())))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .contentLength(file.length())
+                .body(new FileSystemResource(file));
     }
 
     @DeleteMapping("/{id}")
