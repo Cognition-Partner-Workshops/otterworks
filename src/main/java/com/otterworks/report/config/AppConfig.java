@@ -1,8 +1,8 @@
 package com.otterworks.report.config;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,20 +45,19 @@ public class AppConfig {
     @Value("${otterworks.report.read-timeout:30000}")
     private int readTimeout;
 
-    // LEGACY: RestTemplate with Apache HttpComponents 4.x connection pool
+    // LEGACY: RestTemplate with Apache HttpComponents connection pool
     @Bean
     public RestTemplate restTemplate() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(50);
         connectionManager.setDefaultMaxPerRoute(20);
 
-        CloseableHttpClient httpClient = HttpClients.custom()
+        HttpClient httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .build();
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
         factory.setConnectTimeout(connectionTimeout);
-        factory.setReadTimeout(readTimeout);
 
         return new RestTemplate(factory);
     }
