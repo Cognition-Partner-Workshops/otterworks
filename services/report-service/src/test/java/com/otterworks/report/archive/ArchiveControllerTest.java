@@ -2,8 +2,8 @@ package com.otterworks.report.archive;
 
 import com.otterworks.report.archive.ArchiveDocument.ArchiveEvent;
 import com.otterworks.report.archive.ArchiveDocument.ArchiveVersion;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -24,7 +24,7 @@ public class ArchiveControllerTest {
     private ArchiveStore store;
     private MockMvc mvc;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         store = mock(ArchiveStore.class);
         when(store.storeName()).thenReturn("db2");

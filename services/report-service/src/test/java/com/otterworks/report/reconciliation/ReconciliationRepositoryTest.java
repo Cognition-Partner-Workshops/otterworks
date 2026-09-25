@@ -1,26 +1,26 @@
 package com.otterworks.report.reconciliation;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.TimeZone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ReconciliationRepositoryTest {
 
     private TimeZone original;
 
-    @Before
+    @BeforeEach
     public void pinNonUtcZone() {
         original = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
     }
 
-    @After
+    @AfterEach
     public void restoreZone() {
         TimeZone.setDefault(original);
     }
