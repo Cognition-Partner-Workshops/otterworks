@@ -40,8 +40,8 @@ jobs:
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
           filters: |
@@ -437,3 +437,43 @@ jobs:
       - run: python -m pip install -r tests/api/requirements.txt
       - run: python -m py_compile tests/api/*.py
       - run: python -m pytest tests/api --collect-only -q
+
+  # Legacy data migration job (migration/job): ruff + pytest with in-memory drivers, Helm lint of the
+  # one-shot Job chart. Self-contained path filter so the existing detect-changes job is untouched.
+  migration-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            ldm:
+              - 'migration/job/**'
+              - 'migration/target/sql/**'
+              - 'migration/manifest.yaml'
+              - 'migration/manifests/**'
+              - 'migration/source/copybooks/**'
+              - 'infrastructure/helm/migration-job/**'
+      - if: steps.changes.outputs.ldm == 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pip install -e '.[dev]'
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        run: ruff check . && ruff format --check .
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pytest -q
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/migration-job --strict
+          --set namespaceToken=ci1-after --set stage=extract --set runId=ci
+          --set image.tag=ci --set expires=2026-01-01T00:00:00Z
+          --set-file manifest.base=migration/manifest.yaml
+          --set-file manifest.overlay=migration/manifests/d24-after.yaml
