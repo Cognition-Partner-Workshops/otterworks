@@ -14,7 +14,10 @@ name: TP Airbyte Ingestion
 # AIRBYTE_CLIENT_ID, AIRBYTE_CLIENT_SECRET, DATABRICKS_DEMO_HOST,
 # DATABRICKS_AIRBYTE_CLIENT_ID, DATABRICKS_AIRBYTE_CLIENT_SECRET (OAuth2 service
 # principal for the destination), AWS_TP_ROLE_ARN (the ow-tp-airbyte-github-actions
-# OIDC role from ingestion/airbyte/ci-role/, trusted for tp-run/* refs only).
+# OIDC role from ingestion/airbyte/ci-role/, trusted for tp-run/* refs only),
+# AIRBYTE_CUSTBILL_FEED_URLS (newline-separated presigned URLs of the CUSTBILL
+# fixed-width files under <ns>/custbill_feed/; the definition id of the published
+# custom connector is a non-secret default in variables.tf).
 # Until AWS_TP_ROLE_ARN is set the apply job is skipped with a notice rather than
 # failing, so lint still gates the PR.
 
@@ -109,6 +112,8 @@ jobs:
           TF_VAR_databricks_host: ${{ secrets.DATABRICKS_DEMO_HOST }}
           TF_VAR_databricks_client_id: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_ID }}
           TF_VAR_databricks_client_secret: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_SECRET }}
+          # Newline-separated presigned URLs for the CUSTBILL fixed-width feed files.
+          TF_VAR_custbill_feed_urls: ${{ secrets.AIRBYTE_CUSTBILL_FEED_URLS }}
         run: |
           terraform plan -no-color -out=tfplan
           terraform apply -no-color tfplan
