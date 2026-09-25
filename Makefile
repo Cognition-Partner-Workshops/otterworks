@@ -373,6 +373,32 @@ endif
 	$(call validate_ns)
 	AIRBYTE_CONNECTION_ID=$$($(AIRBYTE_TF) output -raw connection_id) python3 ingestion/airbyte/tools/sync_and_recon.py --ns $(NS) --manifest $(AIRBYTE_LANDING_DIR)/$(NS)/manifest.json
 
+tp-airbyte-diagnose: ## Print the last non-green job on the billing connection and what the API exposes about it (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-airbyte-diagnose NS=demo)
+endif
+	$(call validate_ns)
+	AIRBYTE_CONNECTION_ID=$$($(AIRBYTE_TF) output -raw connection_id) python3 ingestion/airbyte/tools/diagnose.py
+
+tp-airbyte-repair: ## Re-import the billing S3 source so Terraform re-pushes its credentials, then apply only the billing targets (NS=<ns>)
+ifndef NS
+	$(error NS is required, e.g. make tp-airbyte-repair NS=demo)
+endif
+	$(call validate_ns)
+	set -e; \
+	SCHEMA=$$($(AIRBYTE_TF) output -raw destination_schema); \
+	case "$$SCHEMA" in *.airbyte_$(NS)) ;; *) echo "initialised state is for '$$SCHEMA', not NS=$(NS); run make tp-airbyte-init NS=$(NS) first" >&2; exit 1;; esac; \
+	SOURCE_ID=$$($(AIRBYTE_TF) output -raw source_id); \
+	BACKUP=$$(mktemp -t airbyte-$(NS)-XXXXXX); trap 'rm -f $$BACKUP' EXIT; \
+	$(AIRBYTE_TF) state pull > $$BACKUP; \
+	TF_VAR_namespace=$(NS) $(AIRBYTE_TF) state rm airbyte_source_s3.billing_landing; \
+	if ! TF_VAR_namespace=$(NS) $(AIRBYTE_TF) import -input=false airbyte_source_s3.billing_landing $$SOURCE_ID; then \
+	  echo "import failed; restoring previous state" >&2; \
+	  if ! $(AIRBYTE_TF) state push -force $$BACKUP; then trap - EXIT; echo "restore failed; state snapshot kept at $$BACKUP (contains credentials) for manual 'terraform state push'" >&2; fi; \
+	  exit 1; \
+	fi; \
+	TF_VAR_namespace=$(NS) $(AIRBYTE_TF) apply -input=false -auto-approve -target=airbyte_source_s3.billing_landing -target=airbyte_connection.billing
+
 tp-pain-mongodb: ## Beat 1 opener: "just add a field" blast radius on the Oracle estate (NS=<namespace>; needs oracle-billing-up + oracle-billing-seed)
 ifndef NS
 	$(error NS is required, e.g. make tp-pain-mongodb NS=demo)
