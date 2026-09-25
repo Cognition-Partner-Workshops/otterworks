@@ -1,0 +1,114 @@
+name: TP Airbyte Ingestion
+
+# Airbyte Cloud pipelines are code: every change to ingestion/airbyte is a PR.
+# Pull requests get fmt/validate only (no cloud credentials are exposed to PR
+# code). Pushes to a tp-run/* branch run `terraform plan` and then apply; the
+# plan is only ever printed to the job log (Terraform redacts sensitive values
+# there), never posted or uploaded.
+#
+# The run namespace always comes from ingestion/airbyte/NAMESPACE on the branch,
+# so each tp-run/* branch owns exactly one state file and set of resources and
+# no run can be pointed at another run's state.
+#
+# Repository secrets required (never committed): AIRBYTE_WORKSPACE_ID,
+# AIRBYTE_CLIENT_ID, AIRBYTE_CLIENT_SECRET, DATABRICKS_DEMO_HOST,
+# DATABRICKS_AIRBYTE_CLIENT_ID, DATABRICKS_AIRBYTE_CLIENT_SECRET (OAuth2 service
+# principal for the destination), AWS_TP_ROLE_ARN (the ow-tp-airbyte-github-actions
+# OIDC role from ingestion/airbyte/ci-role/, trusted for tp-run/* refs only).
+# Until AWS_TP_ROLE_ARN is set the apply job is skipped with a notice rather than
+# failing, so lint still gates the PR.
+
+on:
+  pull_request:
+    branches: [tech-partnerships, 'tp-run/**']
+    paths: ['ingestion/airbyte/**', '.github/workflows/tp-airbyte.yml']
+  push:
+    branches: ['tp-run/**']
+    paths: ['ingestion/airbyte/**']
+  workflow_dispatch:
+
+concurrency:
+  group: tp-airbyte-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  AWS_REGION: us-east-1
+
+defaults:
+  run:
+    working-directory: ingestion/airbyte
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
+      - name: Python tools compile
+        run: python3 -m py_compile tools/*.py
+      - name: Namespace file is valid
+        run: grep -Eqx '[a-z0-9]{1,31}' NAMESPACE
+
+  apply:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check CI secrets
+        id: secrets
+        env:
+          ROLE: ${{ secrets.AWS_TP_ROLE_ARN }}
+        working-directory: .
+        run: |
+          if [ -z "$ROLE" ]; then
+            echo "::notice::AWS_TP_ROLE_ARN not configured; skipping terraform plan/apply"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.configured == 'true'
+      - name: Resolve namespace
+        id: ns
+        if: steps.secrets.outputs.configured == 'true'
+        run: |
+          ns="$(cat NAMESPACE)"
+          echo "$ns" | grep -Eqx '[a-z0-9]{1,31}' || { echo "::error::invalid namespace '$ns'"; exit 1; }
+          echo "ns=$ns" >> "$GITHUB_OUTPUT"
+      - uses: hashicorp/setup-terraform@v3
+        if: steps.secrets.outputs.configured == 'true'
+        with:
+          terraform_version: "1.9.8"
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        if: steps.secrets.outputs.configured == 'true'
+        with:
+          role-to-assume: ${{ secrets.AWS_TP_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - if: steps.secrets.outputs.configured == 'true'
+        run: terraform init -backend-config="key=ow-tp/airbyte/${{ steps.ns.outputs.ns }}.tfstate"
+      - name: Plan and apply
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          TF_VAR_namespace: ${{ steps.ns.outputs.ns }}
+          TF_VAR_airbyte_workspace_id: ${{ secrets.AIRBYTE_WORKSPACE_ID }}
+          TF_VAR_airbyte_client_id: ${{ secrets.AIRBYTE_CLIENT_ID }}
+          TF_VAR_airbyte_client_secret: ${{ secrets.AIRBYTE_CLIENT_SECRET }}
+          TF_VAR_databricks_host: ${{ secrets.DATABRICKS_DEMO_HOST }}
+          TF_VAR_databricks_client_id: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_ID }}
+          TF_VAR_databricks_client_secret: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_SECRET }}
+        run: |
+          terraform plan -no-color -out=tfplan
+          terraform apply -no-color tfplan
