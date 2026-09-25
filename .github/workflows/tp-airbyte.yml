@@ -2,13 +2,13 @@ name: TP Airbyte Ingestion
 
 # Airbyte Cloud pipelines are code: every change to ingestion/airbyte is a PR.
 # Pull requests get fmt/validate only (no cloud credentials are exposed to PR
-# code). Pushes to a tp-run/* branch run `terraform plan` and then apply, with
-# the plan kept as a job artifact rather than posted to the PR so sensitive
-# provider attributes never end up in comments.
+# code). Pushes to a tp-run/* branch run `terraform plan` and then apply; the
+# plan is only ever printed to the job log (Terraform redacts sensitive values
+# there), never posted or uploaded.
 #
-# The run namespace comes from ingestion/airbyte/NAMESPACE on the branch (so
-# each tp-run/* branch owns exactly one state file and set of resources), or
-# from the workflow_dispatch input.
+# The run namespace always comes from ingestion/airbyte/NAMESPACE on the branch,
+# so each tp-run/* branch owns exactly one state file and set of resources and
+# no run can be pointed at another run's state.
 #
 # Repository secrets required (never committed): AIRBYTE_WORKSPACE_ID,
 # AIRBYTE_CLIENT_ID, AIRBYTE_CLIENT_SECRET, DATABRICKS_DEMO_HOST,
@@ -26,10 +26,6 @@ on:
     branches: ['tp-run/**']
     paths: ['ingestion/airbyte/**']
   workflow_dispatch:
-    inputs:
-      namespace:
-        description: Run namespace (NS); defaults to ingestion/airbyte/NAMESPACE
-        required: false
 
 concurrency:
   group: tp-airbyte-${{ github.ref }}
@@ -88,10 +84,8 @@ jobs:
       - name: Resolve namespace
         id: ns
         if: steps.secrets.outputs.configured == 'true'
-        env:
-          INPUT_NS: ${{ github.event.inputs.namespace }}
         run: |
-          ns="${INPUT_NS:-$(cat NAMESPACE)}"
+          ns="$(cat NAMESPACE)"
           echo "$ns" | grep -Eqx '[a-z0-9]{1,31}' || { echo "::error::invalid namespace '$ns'"; exit 1; }
           echo "ns=$ns" >> "$GITHUB_OUTPUT"
       - uses: hashicorp/setup-terraform@v3
@@ -116,11 +110,5 @@ jobs:
           TF_VAR_databricks_client_id: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_ID }}
           TF_VAR_databricks_client_secret: ${{ secrets.DATABRICKS_AIRBYTE_CLIENT_SECRET }}
         run: |
-          terraform plan -no-color -out=tfplan | tee plan.txt
+          terraform plan -no-color -out=tfplan
           terraform apply -no-color tfplan
-      - uses: actions/upload-artifact@v4
-        if: always() && steps.secrets.outputs.configured == 'true'
-        with:
-          name: airbyte-plan-${{ steps.ns.outputs.ns }}-${{ github.sha }}
-          path: ingestion/airbyte/plan.txt
-          retention-days: 14
