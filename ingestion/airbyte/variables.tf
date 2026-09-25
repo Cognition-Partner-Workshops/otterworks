@@ -88,3 +88,50 @@ variable "streams" {
     entity_attr_value = { sync_mode = "full_refresh_overwrite" }
   }
 }
+
+variable "google_sheets_spreadsheet_url" {
+  description = "Share link of the billing export spreadsheet (same sheet the Fivetran connector read)."
+  type        = string
+  default     = "https://docs.google.com/spreadsheets/d/1OiNyOfHhBBDy0xyTBWduyo8kSnjMQOjPFSmJEfToF80"
+}
+
+variable "google_sheets_tabs" {
+  description = "Spreadsheet tabs landed as streams (one Databricks table each)."
+  type        = list(string)
+  default     = ["customers", "invoices"]
+}
+
+variable "google_sheets_credentials" {
+  description = <<-EOT
+    Google auth for the Sheets source, from env only (TF_VAR_google_sheets_credentials).
+    Either a service-account JSON, or the OAuth client + refresh token that Airbyte's
+    consent flow produced. Only read when the source is CREATED; a source that was
+    authorised in the Airbyte UI and imported needs none of it (see gsheets.tf).
+    The provider requires every OAuth attribute to be non-null even for an imported
+    source, so the defaults are the literal marker "import-only". Creating a source
+    with that marker fails Airbyte's connection check at apply time instead of
+    producing a source that cannot read the sheet (see the check block in gsheets.tf).
+  EOT
+  type = object({
+    service_account_json = optional(string)
+    oauth_client_id      = optional(string, "import-only")
+    oauth_client_secret  = optional(string, "import-only")
+    oauth_refresh_token  = optional(string, "import-only")
+  })
+  validation {
+    condition = (
+      var.google_sheets_credentials.service_account_json != null
+      || alltrue([for v in [var.google_sheets_credentials.oauth_client_id, var.google_sheets_credentials.oauth_client_secret, var.google_sheets_credentials.oauth_refresh_token] : v == "import-only"])
+      || alltrue([for v in [var.google_sheets_credentials.oauth_client_id, var.google_sheets_credentials.oauth_client_secret, var.google_sheets_credentials.oauth_refresh_token] : v != "import-only"])
+    )
+    error_message = "OAuth needs oauth_client_id, oauth_client_secret and oauth_refresh_token together (or use service_account_json)."
+  }
+  default   = {}
+  sensitive = true
+}
+
+variable "gsheets_sync_cron" {
+  description = "Quartz cron for the Google Sheets connection; every 6 hours, matching the Fivetran schedule."
+  type        = string
+  default     = "0 0 0/6 * * ? UTC"
+}
