@@ -1,0 +1,102 @@
+{
+  "unit": "u-05-dunning-data",
+  "mode": "fixture",
+  "target_class": "local",
+  "mapping_version": "map-draft-2",
+  "tolerance_version": "tol-1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-26T17:56:32.945737+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "source_counts": {
+          "dunningAttempts": 1,
+          "notifications": 1
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "deferred_to_tier3": [
+          "dunningAttempts.tenantId",
+          "dunningAttempts.invoiceId",
+          "dunningAttempts.scheduledFor",
+          "notifications.tenantId",
+          "notifications.sentAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "dunningAttempts.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "dunningAttempts.invoiceId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "notifications.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 3
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "dunningAttempts": {
+          "mode": "full_diff",
+          "population": 1,
+          "duplicate_source_key_count": 0
+        },
+        "notifications": {
+          "mode": "full_diff",
+          "population": 1,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
