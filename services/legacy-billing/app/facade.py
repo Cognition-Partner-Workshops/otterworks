@@ -371,6 +371,8 @@ def usage_event():
         return jsonify(error="internal usage ingest not configured"), 503
     if request.headers.get("X-Internal-Token") != expected_token:
         return jsonify(error="unauthorized"), 401
+    if backend_name() not in ("oracle", "mongo"):
+        return _not_available()
     raw_body = request.get_data(cache=True)
     if len(raw_body) > 16 * 1024:
         return jsonify(error="invalid usage event", detail="request body exceeds 16 KB"), 400
@@ -410,8 +412,6 @@ def usage_event():
         if result == "duplicate":
             return jsonify(status="duplicate")
         return jsonify(status="recorded"), 201
-    if not _oracle_only():
-        return _not_available()
     try:
         with oracle.oracle_connect() as connection:
             oracle.ensure_tenant(connection, tenant_id, payload.get("email"))
