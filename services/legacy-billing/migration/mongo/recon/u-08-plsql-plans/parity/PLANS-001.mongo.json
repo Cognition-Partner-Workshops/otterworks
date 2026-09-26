@@ -1,0 +1,21 @@
+{
+ "scenario": "PLANS-001",
+ "module": "plans",
+ "entrypoint": "billing.fn_list_plans",
+ "mongo_entrypoint": "plans_service.list_plans",
+ "inputs": {},
+ "business_fields": {
+  "codes": [
+   "STARTER",
+   "GROWTH",
+   "SCALE"
+  ],
+  "fees": [
+   "49.00",
+   "149.00",
+   "499.00"
+  ]
+ },
+ "probes": {},
+ "parity": "PASS"
+}

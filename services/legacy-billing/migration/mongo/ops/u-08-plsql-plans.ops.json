@@ -1,0 +1,199 @@
+[
+ {
+  "name": "list_plans",
+  "collection": "plans",
+  "source_sql": "SELECT CODE, TIER_CD, MONTHLY_FEE, INCLUDED_UNITS, OVERAGE_RATE FROM PLANS WHERE NVL(ACTIVE_YN,'N')='Y' ORDER BY MONTHLY_FEE, CODE",
+  "target_pipeline": [
+   {
+    "$match": {
+     "$or": [
+      {
+       "active": true
+      },
+      {
+       "active": {
+        "$exists": false
+       }
+      }
+     ]
+    }
+   },
+   {
+    "$sort": {
+     "monthlyFee": 1,
+     "code": 1
+    }
+   },
+   {
+    "$project": {
+     "_id": 0,
+     "CODE": "$code",
+     "TIER_CD": "$tierCd",
+     "MONTHLY_FEE": "$monthlyFee",
+     "INCLUDED_UNITS": "$includedUnits",
+     "OVERAGE_RATE": "$overageRate"
+    }
+   }
+  ],
+  "rules": [
+   "null_missing_equiv"
+  ]
+ },
+ {
+  "name": "entitlement_covering_sub_tenant_1",
+  "collection": "subscriptions",
+  "source_sql": "SELECT PLAN_ID, STATUS_CD, STARTS_ON, ENDS_ON, SUSPENDED_ON FROM SUBSCRIPTIONS WHERE TENANT_ID = 'a0000000-0000-0000-0000-000000000001' AND STARTS_ON <= DATE '2026-02-28' AND (ENDS_ON IS NULL OR ENDS_ON >= DATE '2026-02-28')",
+  "target_pipeline": [
+   {
+    "$match": {
+     "tenantId": "a0000000-0000-0000-0000-000000000001",
+     "startsOn": {
+      "$lte": {
+       "$date": "2026-02-28T00:00:00Z"
+      }
+     }
+    }
+   },
+   {
+    "$match": {
+     "$or": [
+      {
+       "endsOn": null
+      },
+      {
+       "endsOn": {
+        "$gte": {
+         "$date": "2026-02-28T00:00:00Z"
+        }
+       }
+      }
+     ]
+    }
+   },
+   {
+    "$project": {
+     "_id": 0,
+     "PLAN_ID": "$planId",
+     "STATUS_CD": "$statusCd",
+     "STARTS_ON": "$startsOn",
+     "ENDS_ON": {
+      "$ifNull": [
+       "$endsOn",
+       null
+      ]
+     },
+     "SUSPENDED_ON": {
+      "$ifNull": [
+       "$suspendedOn",
+       null
+      ]
+     }
+    }
+   }
+  ],
+  "rules": [
+   "datetime_utc_truncate_ms",
+   "null_missing_equiv"
+  ]
+ },
+ {
+  "name": "tenant_row_tenant_1",
+  "collection": "tenants",
+  "source_sql": "SELECT ID, NAME, TAX_EXEMPT_YN, STATUS_CD FROM TENANTS WHERE ID = 'a0000000-0000-0000-0000-000000000001'",
+  "target_pipeline": [
+   {
+    "$match": {
+     "_id": "a0000000-0000-0000-0000-000000000001"
+    }
+   },
+   {
+    "$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "NAME": "$name",
+     "TAX_EXEMPT_YN": {
+      "$cond": [
+       {"$eq": ["$taxExempt", null]},
+       null,
+       {"$cond": ["$taxExempt", "Y", "N"]}
+      ]
+     },
+     "STATUS_CD": "$statusCd"
+    }
+   }
+  ],
+  "rules": [
+   "null_missing_equiv"
+  ]
+ },
+ {
+  "name": "subscriptions_hist_tail",
+  "collection": "subscriptionsHist",
+  "source_sql": "SELECT HIST_ID, HIST_DT, HIST_OP, ID, TENANT_ID, PLAN_ID, STARTS_ON, ENDS_ON, STATUS_CD, SUSPENDED_ON FROM SUBSCRIPTIONS_HIST",
+  "target_pipeline": [
+   {
+    "$project": {
+     "_id": 0,
+     "HIST_ID": "$_id",
+     "HIST_DT": {
+      "$ifNull": [
+       "$histDt",
+       null
+      ]
+     },
+     "HIST_OP": {
+      "$ifNull": [
+       "$histOp",
+       null
+      ]
+     },
+     "ID": {
+      "$ifNull": [
+       "$id",
+       null
+      ]
+     },
+     "TENANT_ID": {
+      "$ifNull": [
+       "$tenantId",
+       null
+      ]
+     },
+     "PLAN_ID": {
+      "$ifNull": [
+       "$planId",
+       null
+      ]
+     },
+     "STARTS_ON": {
+      "$ifNull": [
+       "$startsOn",
+       null
+      ]
+     },
+     "ENDS_ON": {
+      "$ifNull": [
+       "$endsOn",
+       null
+      ]
+     },
+     "STATUS_CD": {
+      "$ifNull": [
+       "$statusCd",
+       null
+      ]
+     },
+     "SUSPENDED_ON": {
+      "$ifNull": [
+       "$suspendedOn",
+       null
+      ]
+     }
+    }
+   }
+  ],
+  "rules": [
+   "null_missing_equiv"
+  ]
+ }
+]

@@ -1,0 +1,55 @@
+[
+ {
+  "name": "codes_lookup",
+  "collection": "codes",
+  "source_sql": "SELECT CODE_TYPE, CODE_VAL, CODE_DESC FROM CODES",
+  "target_pipeline": [
+   {
+    "$project": {
+     "_id": 0,
+     "CODE_TYPE": "$codeType",
+     "CODE_VAL": "$codeVal",
+     "CODE_DESC": {
+      "$ifNull": [
+       "$codeDesc",
+       null
+      ]
+     }
+    }
+   }
+  ],
+  "rules": [
+   "null_missing_equiv"
+  ]
+ },
+ {
+  "name": "audit_log_rows",
+  "collection": "billingAuditLog",
+  "source_sql": "SELECT LOG_ID, LOGGED_AT, MODULE, MESSAGE FROM BILLING_AUDIT_LOG",
+  "target_pipeline": [
+   {
+    "$project": {
+     "_id": 0,
+     "LOG_ID": "$_id",
+     "LOGGED_AT": "$loggedAt",
+     "MODULE": {
+      "$ifNull": [
+       "$module",
+       null
+      ]
+     },
+     "MESSAGE": {
+      "$ifNull": [
+       "$message",
+       null
+      ]
+     }
+    }
+   }
+  ],
+  "rules": [
+   "datetime_utc_truncate_ms",
+   "null_missing_equiv"
+  ]
+ }
+]

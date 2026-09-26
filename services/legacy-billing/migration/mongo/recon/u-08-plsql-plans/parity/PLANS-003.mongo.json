@@ -1,0 +1,18 @@
+{
+ "scenario": "PLANS-003",
+ "module": "plans",
+ "entrypoint": "billing.fn_entitlement",
+ "mongo_entrypoint": "plans_service.entitlement",
+ "inputs": {
+  "as_of": "2026-02-28",
+  "tenant_id": "00000000-0000-0000-0000-000000000002"
+ },
+ "business_fields": {
+  "plan_code": "GROWTH",
+  "tier": "growth",
+  "included_units": 500,
+  "subscription_status": "suspended"
+ },
+ "probes": {},
+ "parity": "PASS"
+}

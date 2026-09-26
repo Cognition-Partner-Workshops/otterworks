@@ -1,0 +1,44 @@
+{
+ "scenario": "PLANS-005",
+ "module": "plans",
+ "entrypoint": "billing.sp_change_plan",
+ "mongo_entrypoint": "plans_service.change_plan",
+ "inputs": {
+  "effective_on": "2026-03-15",
+  "plan_id": "10000000-0000-0000-0000-000000000003",
+  "tenant_id": "00000000-0000-0000-0000-000000000004"
+ },
+ "business_fields": {
+  "subscriptions": [
+   {
+    "plan_id": "10000000-0000-0000-0000-000000000001",
+    "starts_on": "2026-01-01",
+    "ends_on": "2026-03-14",
+    "status": "active"
+   },
+   {
+    "plan_id": "10000000-0000-0000-0000-000000000003",
+    "starts_on": "2026-03-15",
+    "ends_on": null,
+    "status": "active"
+   }
+  ]
+ },
+ "probes": {
+  "subscription_rows": [
+   {
+    "plan_id": "10000000-0000-0000-0000-000000000001",
+    "starts_on": "2026-01-01",
+    "ends_on": "2026-03-14",
+    "status": "active"
+   },
+   {
+    "plan_id": "10000000-0000-0000-0000-000000000003",
+    "starts_on": "2026-03-15",
+    "ends_on": null,
+    "status": "active"
+   }
+  ]
+ },
+ "parity": "PASS"
+}
