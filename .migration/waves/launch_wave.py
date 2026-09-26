@@ -12,7 +12,7 @@ import glob
 REPO = "/home/ubuntu/repos/otterworks"
 WAVE = 1
 RUN_ID = "wfr-cc00292593f54696bc43d58b68bedd34"
-RESUME = False   # True only when continuing a halted/interrupted run
+RESUME = True
 # -----------------------------------
 
 os.chdir(REPO)
