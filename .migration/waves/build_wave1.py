@@ -86,7 +86,7 @@ STEP ORDER:
 {live_cmd}
     Live PASS with result.json merge_eligible=true is the merge evidence. If it fails, you may fix the loader and re-run live only within the cap of 3 total harness runs in live mode; report honestly.
  4. run `load.py --mode live` a second time and show counts unchanged (idempotency proof).
- 5. `make tp-smoke` must be green. Run the checklist in .agents/skills/tp-pre-pr-self-check/SKILL.md (items about ow_tp prefixes / catalogs do not apply to this Mongo engagement; say so explicitly rather than ticking them).
+ 5. run `make tp-smoke`; it must be green, except that if it fails solely because a toolchain is absent on your VM (known: `go: command not found` in services/api-gateway) list that under Unverified paths in the PR and rely on the PR's tp-golden-smoke CI check, which must pass. Run the checklist in .agents/skills/tp-pre-pr-self-check/SKILL.md (items about ow_tp prefixes / catalogs do not apply to this Mongo engagement; say so explicitly rather than ticking them).
  6. commit in order (loader, recon evidence, fixes), push, open ONE PR into {BRANCH}. PR body < 2000 chars: Unverified paths first, then Decisions, Code, Evidence (recon.summary.md content for fixture and live, counts per collection, getIndexes() both sides, idempotency counts), then a PROFILE FEEDBACK section (every rule you had to work out yourself; write "none" if empty). No production document values in the PR.
  7. Report: status (PASS only if live recon PASS + merge_eligible=true + PR open), pr_url, branch, recon_verdict, recon_mode=live, target_class=migration_cluster, write_targets exactly {json.dumps([f"mmp_rt_billing_n.{u}" for u in units + extra_targets])}, skill_feedback, one_line_summary.
 

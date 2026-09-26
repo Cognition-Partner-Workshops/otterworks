@@ -30,6 +30,7 @@ Field marks: FACT (intake), DISCOVERED (probed), PROPOSED (defaulted, confirmed 
 | Atlas project / cluster | `otterworks-demos` / `otterworks-demo` (shared M0 free tier, keep workload small) | FACT |
 | Migration database | `mmp_rt_billing_n` (the only allowlisted write target, see `allowed_targets.json`) | FACT |
 | Migration credential | secret `MONGODB_MMP_RT_TARGET_N_URI` (Atlas user `mmp_rt_target_n`, readWrite@mmp_rt_billing_n only) | FACT (corrected intake) |
+| Fixture DSN | secret `MONGODB_MMP_RT_TARGET_N_URI`, database `mmp_rt_billing_n`, collections `fx_src_<collection>` (synthetic; manifests `.migration/fixtures/w1-b0N.json`) | phase 2 |
 | Forbidden credentials | `MONGODB_MMP_RT_TARGET_URI` (other engagement, no access), `MONGODB_ATLAS_URI` (never use) | FACT |
 | Driver language(s) | Node/TypeScript (`services/collab-service`, `frontend/*`) | DISCOVERED |
 
