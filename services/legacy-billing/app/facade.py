@@ -5,7 +5,6 @@ from datetime import date, datetime, timezone
 import oracledb
 from backends import backend_name, oracle
 from flask import Blueprint, jsonify, request
-from pymongo.errors import PyMongoError
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
 internal = Blueprint("internal", __name__)
@@ -241,6 +240,8 @@ def invoices():
         return error
     mongo = _reads()
     if mongo is not None:
+        from pymongo.errors import PyMongoError
+
         try:
             return jsonify(mongo.invoices(tenant_id))
         except PyMongoError:
@@ -274,6 +275,8 @@ def invoice_lines(invoice_id):
         return error
     mongo = _reads()
     if mongo is not None:
+        from pymongo.errors import PyMongoError
+
         try:
             if not mongo.invoice_owned(invoice_id, tenant_id):
                 return jsonify(error="invoice not found"), 404
