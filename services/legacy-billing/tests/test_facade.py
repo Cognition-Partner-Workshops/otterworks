@@ -4,6 +4,7 @@ from pathlib import Path
 
 import oracledb
 import pytest
+from pymongo.errors import PyMongoError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
@@ -158,13 +159,27 @@ def test_me_shape(monkeypatch):
         "entitlement",
         lambda tenant_id, on: [{"tenant_id": tenant_id, "plan_code": "GROWTH"}],
     )
-    rows = iter(
-        [
-            [{"tenant_id": "t1", "name": "admin@example.com", "status": "active", "tax_exempt": "N"}],
-            [{"cust_no": "OW-1", "cust_name": "Admin", "cur_bal_amt": "1.00"}],
-        ]
+    monkeypatch.setattr(
+        facade_module.oracle,
+        "query",
+        lambda sql, params=(): [
+            {
+                "tenant_id": "t1",
+                "name": "admin@example.com",
+                "status": "active",
+                "tax_exempt": "N",
+            }
+        ],
     )
-    monkeypatch.setattr(facade_module.oracle, "query", lambda sql, params=(): next(rows))
+    monkeypatch.setattr(
+        facade_module.mongo_customers,
+        "customer_summary_for_tenant",
+        lambda tenant_id: {
+            "cust_no": "OW-1",
+            "cust_name": "Admin",
+            "cur_bal_amt": "1.00",
+        },
+    )
     response = app.test_client().get(
         "/api/v1/billing/me",
         headers={"X-User-ID": "t1", "X-User-Email": "admin@example.com"},
@@ -172,6 +187,72 @@ def test_me_shape(monkeypatch):
     assert response.status_code == 200
     assert response.get_json()["entitlement"][0]["plan_code"] == "GROWTH"
     assert response.get_json()["customer"]["cust_no"] == "OW-1"
+
+
+def test_customer_shape(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    monkeypatch.setattr(facade_module, "_ensure", lambda tenant_id: None)
+    monkeypatch.setattr(
+        facade_module.mongo_customers,
+        "customer_for_tenant",
+        lambda tenant_id: {
+            "cust_id": "cust-1",
+            "cust_no": "OW-1",
+            "cust_name": "Admin",
+            "attributes": [
+                {
+                    "eav_id": 7,
+                    "entity_type": "CUSTOMER",
+                    "entity_id": "cust-1",
+                    "attr_name": "segment",
+                    "attr_value": "gold",
+                }
+            ],
+        },
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/customer", headers={"X-User-ID": "t1"}
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["cust_id"] == "cust-1"
+    assert body["attributes"][0]["eav_id"] == 7
+    assert body["attributes"][0]["attr_name"] == "segment"
+
+
+def test_customer_not_found_404(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    monkeypatch.setattr(facade_module, "_ensure", lambda tenant_id: None)
+    monkeypatch.setattr(
+        facade_module.mongo_customers,
+        "customer_for_tenant",
+        lambda tenant_id: None,
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/customer", headers={"X-User-ID": "t1"}
+    )
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "customer not found"}
+
+
+def test_customer_mongo_failure_503(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    monkeypatch.setattr(facade_module, "_ensure", lambda tenant_id: None)
+
+    def fail(tenant_id):
+        raise PyMongoError("connection refused")
+
+    monkeypatch.setattr(
+        facade_module.mongo_customers, "customer_for_tenant", fail
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/customer", headers={"X-User-ID": "t1"}
+    )
+    assert response.status_code == 503
+    assert response.get_json() == {
+        "error": "legacy estate unavailable",
+        "detail": "the Oracle billing estate is not reachable",
+    }
 
 
 def test_facade_oracle_failure_returns_503(monkeypatch):

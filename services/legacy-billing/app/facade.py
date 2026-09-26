@@ -4,8 +4,10 @@ from datetime import date, datetime, timezone
 
 import oracledb
 from flask import Blueprint, jsonify, request
+from pymongo.errors import PyMongoError
 
 from backends import backend_name
+from backends import mongo_customers
 from backends import oracle
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
@@ -117,20 +119,12 @@ def me():
                 WHERE t.id = :1""",
             (tenant_id,),
         )
-        customer = oracle.query(
-            """SELECT cust_no, cust_name, cur_bal_amt, past_due_amt,
-                      credit_hold_yn
-                 FROM customer_master
-                WHERE tenant_id = :1
-                ORDER BY cust_seq_no
-                FETCH FIRST 1 ROWS ONLY""",
-            (tenant_id,),
-        )
+        customer = mongo_customers.customer_summary_for_tenant(tenant_id)
         body = tenant_rows[0]
         body["entitlement"] = entitlement
-        body["customer"] = customer[0] if customer else None
+        body["customer"] = customer
         return jsonify(body)
-    except oracledb.Error:
+    except (oracledb.Error, PyMongoError):
         return jsonify(UNAVAILABLE), 503
 
 
@@ -283,21 +277,11 @@ def customer():
         return _not_available()
     try:
         _ensure(tenant_id)
-        customers = oracle.query(
-            "SELECT * FROM customer_master WHERE tenant_id = :1 ORDER BY cust_seq_no FETCH FIRST 1 ROWS ONLY",
-            (tenant_id,),
-        )
-        if not customers:
+        body = mongo_customers.customer_for_tenant(tenant_id)
+        if body is None:
             return jsonify(error="customer not found"), 404
-        body = customers[0]
-        body["attributes"] = oracle.query(
-            """SELECT * FROM entity_attr_value
-                WHERE entity_type = 'CUSTOMER' AND entity_id = :1
-                ORDER BY eav_id""",
-            (customers[0]["cust_id"],),
-        )
         return jsonify(body)
-    except oracledb.Error:
+    except (oracledb.Error, PyMongoError):
         return jsonify(UNAVAILABLE), 503
 
 
