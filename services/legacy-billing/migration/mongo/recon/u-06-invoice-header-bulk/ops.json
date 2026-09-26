@@ -1,0 +1,35 @@
+[
+  {
+    "name": "month_end_by_status_demo",
+    "collection": "invoiceHeader",
+    "rules": ["decimal_round"],
+    "source_sql": "SELECT h.status_cd AS STATUS_CD, COUNT(*) AS INVOICE_COUNT, SUM(h.total_amt) AS HEADER_TOTAL_AMT FROM invoice_header h WHERE h.batch_no = 85559852 GROUP BY h.status_cd",
+    "target_pipeline": [
+      {"$match": {"batchNo": 85559852}},
+      {"$group": {"_id": "$statusCd", "INVOICE_COUNT": {"$sum": 1}, "HEADER_TOTAL_AMT": {"$sum": "$totalAmt"}}},
+      {"$project": {"_id": 0, "STATUS_CD": "$_id", "INVOICE_COUNT": 1, "HEADER_TOTAL_AMT": 1}}
+    ]
+  },
+  {
+    "name": "month_end_by_status_line_type_demo",
+    "collection": "invoiceHeader",
+    "rules": ["decimal_round"],
+    "source_sql": "SELECT h.status_cd AS STATUS_CD, l.line_type_cd AS LINE_TYPE_CD, COUNT(*) AS LINE_COUNT, SUM(l.amount) AS LINE_AMOUNT, SUM(l.tax_amt) AS LINE_TAX, COUNT(DISTINCT h.invoice_id) AS INVOICES_TOUCHED FROM invoice_header h, invoice_line l WHERE h.batch_no = 85559852 AND h.invoice_id = l.invoice_id GROUP BY h.status_cd, l.line_type_cd",
+    "target_pipeline": [
+      {"$match": {"batchNo": 85559852}},
+      {"$unwind": "$lines"},
+      {"$group": {"_id": {"s": "$statusCd", "t": "$lines.lineTypeCd"}, "LINE_COUNT": {"$sum": 1}, "LINE_AMOUNT": {"$sum": "$lines.amount"}, "LINE_TAX": {"$sum": "$lines.taxAmt"}, "inv": {"$addToSet": "$_id"}}},
+      {"$project": {"_id": 0, "STATUS_CD": "$_id.s", "LINE_TYPE_CD": "$_id.t", "LINE_COUNT": 1, "LINE_AMOUNT": 1, "LINE_TAX": 1, "INVOICES_TOUCHED": {"$size": "$inv"}}}
+    ]
+  },
+  {
+    "name": "custbill_scope_demo",
+    "collection": "invoiceHeader",
+    "rules": ["decimal_round", "datetime_utc_truncate_ms"],
+    "source_sql": "SELECT h.invoice_id AS INVOICE_ID, h.cust_id AS CUST_ID, TO_DATE(h.invoice_dt, 'DD-MON-RR') AS PERIOD_END, h.total_amt AS TOTAL_AMT, CASE WHEN h.total_amt < 0 THEN '02' ELSE '01' END AS RECORD_TYPE FROM invoice_header h WHERE h.batch_no = 85559852 OR h.tenant_id = 'a0000000-0000-0000-0000-000000000001'",
+    "target_pipeline": [
+      {"$match": {"$or": [{"batchNo": 85559852}, {"tenantId": "a0000000-0000-0000-0000-000000000001"}]}},
+      {"$project": {"_id": 0, "INVOICE_ID": "$_id", "CUST_ID": "$custId", "PERIOD_END": "$invoiceDt", "TOTAL_AMT": "$totalAmt", "RECORD_TYPE": {"$cond": [{"$lt": ["$totalAmt", 0]}, "02", "01"]}}}
+    ]
+  }
+]
