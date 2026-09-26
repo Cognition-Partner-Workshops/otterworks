@@ -33,6 +33,59 @@ def ns_batch_no(ns):
     return seed % 90_000_000 + 1_000_000
 
 
+def mongo_rows(db, ns, admin_tenant_id=ADMIN_TENANT_ID):
+    """CUSTBILL scope rows from MongoDB ``invoiceHeader`` + ``customerMaster``.
+
+    Inner-join semantics via ``$unwind``: a header with no customer produces
+    no record, exactly like the Oracle JOIN.
+    """
+    pipeline = [
+        {
+            "$match": {
+                "$or": [
+                    {"batchNo": ns_batch_no(ns)},
+                    {"tenantId": admin_tenant_id},
+                ]
+            }
+        },
+        {
+            "$lookup": {
+                "from": "customerMaster",
+                "localField": "custId",
+                "foreignField": "_id",
+                "as": "cust",
+            }
+        },
+        {"$unwind": "$cust"},
+        {
+            "$project": {
+                "_id": 0,
+                "invoice_id": "$_id",
+                "cust_no": "$cust.custNo",
+                "cust_name": "$cust.custName",
+                "period_end": "$invoiceDt",
+                "total_amt": "$totalAmt",
+            }
+        },
+    ]
+    rows = []
+    for doc in db["invoiceHeader"].aggregate(pipeline):
+        total = doc.get("total_amt")
+        if hasattr(total, "to_decimal"):
+            total = total.to_decimal()
+        rows.append(
+            {
+                "invoice_id": doc["invoice_id"],
+                "cust_no": doc.get("cust_no"),
+                "cust_name": doc.get("cust_name"),
+                "period_end": doc.get("period_end"),
+                "total_amt": total,
+                "record_type": "02" if total is not None and total < 0 else "01",
+            }
+        )
+    return rows
+
+
 def _period_text(value):
     if isinstance(value, datetime):
         value = value.date()
@@ -49,6 +102,8 @@ def _amount_cents(value):
 def format_record(row):
     cust_no = _ascii_text(row["cust_no"])[:10].ljust(10)
     name = _ascii_text(row["cust_name"])[:30].ljust(30)
+    if row.get("period_end") is None:
+        raise ValueError(f"invoice {row['invoice_id']} has no invoiceDt")
     period_end = _period_text(row["period_end"])
     cents = _amount_cents(row["total_amt"])
     if abs(cents) > 999_999_999_999:
@@ -90,10 +145,29 @@ def sort_rows(rows):
     ))
 
 
-def extract(ns, out_dir, connection=None):
+def extract(ns, out_dir, connection=None, backend=None):
+    backend = backend or os.getenv("BILLING_BACKEND", "oracle")
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
     filename = f"CUSTBILL_{ns.upper()}_ORACLE.dat"
+    if backend == "mongo":
+        from pymongo import MongoClient
+
+        client = MongoClient(os.getenv("MONGO_LOCAL_URI", "mongodb://localhost:27017"))
+        try:
+            db = client[os.getenv("MONGO_DB", "ow_billing_migration")]
+            rows = mongo_rows(db, ns)
+        finally:
+            client.close()
+        rows = sort_rows(rows)
+        destination = out_path / filename
+        temporary = destination.with_name(f"{destination.name}.tmp")
+        with temporary.open("w", encoding="ascii", newline="\n") as output:
+            for row in rows:
+                output.write(format_record(row))
+                output.write("\n")
+        os.replace(temporary, destination)
+        return destination, len(rows)
     if connection is None:
         connection = oracledb.connect(
             user=os.getenv("ORACLE_USER", "ow_billing"),

@@ -5,7 +5,8 @@ db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt and the CODES lookup conventions):
 invoice counts and header totals by status, plus a line rollup by status and
 line type. Orphaned INVOICE_LINE rows fall out of the join, exactly as finance
 always ran it. Rows are namespace-scoped through the deterministic
-conversion batch number.
+conversion batch number. On the MongoDB backend the orphans are already
+quarantined at load, so they simply never reach ``lines[]``.
 """
 
 import hashlib
@@ -18,6 +19,7 @@ from pathlib import Path
 
 from flask import Blueprint, jsonify, request
 
+from backends import backend_name
 from oracle_conn import oracle_connect as connect_oracle
 
 reports = Blueprint("reports", __name__)
@@ -32,6 +34,12 @@ SOURCE = {
     "engine": "oracle",
     "system": "OW_BILLING legacy estate (Oracle FREEPDB1)",
     "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
+}
+
+MONGO_SOURCE = {
+    "engine": "mongodb",
+    "system": "ow_billing_migration.invoiceHeader (MongoDB)",
+    "detail": "invoiceHeader.lines aggregation via codes lookup (RPT-114)",
 }
 
 FINANCE_SOURCE = {
@@ -143,7 +151,7 @@ def report_meta(ns):
     return {
         "namespace": ns,
         "batch_no": ns_batch_no(ns),
-        "source": SOURCE,
+        "source": MONGO_SOURCE if backend_name() == "mongo" else SOURCE,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
@@ -161,8 +169,15 @@ def month_end():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
-        line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
+        if backend_name() == "mongo":
+            from backends import mongo
+
+            db = mongo.get_db()
+            status_rows = mongo.month_end_status_rows(db, batch_no)
+            line_rows = mongo.month_end_line_rows(db, batch_no)
+        else:
+            status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
+            line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
     except Exception:  # estate offline: fail closed, never fabricate numbers
         logger.exception("month-end report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
