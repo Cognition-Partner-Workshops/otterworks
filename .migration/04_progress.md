@@ -1,6 +1,6 @@
 # 04 Progress ledger
 
-Phase: 1 setup (STOP A pending)
+Phase: 2 inventory and model (STOP A approved D-003)
 
 | Unit | Wave | Status | Parity | Quarantine rate | Unverified paths | Cost | PR |
 |---|---|---|---|---|---|---|---|
