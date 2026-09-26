@@ -1,11 +1,12 @@
 # 07 Dependency register
 
-States: FOUND, DECIDED (owner and plan named), DONE. Filled in playbook 2.
+States: FOUND, DECIDED (owner and plan named), DONE. Filled in playbook 2 from `.migration/census/`.
 
-| ID | Class | Finding | Owner / plan | State |
+| ID | Class | Finding (evidence) | Owner / plan | State |
 |---|---|---|---|---|
-| DEP-001 | D1 Other writers | Intake: no stored logic in `mmp_rt_src`. App writers to be confirmed by code census (`services/collab-service`, `frontend/`). | — | FOUND |
-| DEP-002 | D2 Other readers | Intake headline: `frontend/` and `services/collab-service/` read this shape. Census in playbook 2. | — | FOUND |
-| DEP-003 | D3 Scheduled logic | None declared (no stored logic; TTL/cron to be checked in census). | — | FOUND |
-| DEP-004 | D4 Access | `RECON_REDACT_SALT` not set in the environment: live recon output is redacted with an unsalted hash (harness warning, still runs). Request: customer sets org secret `RECON_REDACT_SALT` (any random string). Not blocking. | customer app owner | FOUND |
-| DEP-005 | D4 Access | `mongosync` binary absent on the VM; mongosync path (profile: eligible for source >= 6.0) would need it installed. Movement fallback: `mongodump`/`mongorestore` (present) or driver-based scoped loader. | orchestrator | FOUND |
+| DEP-001 | D1 Other writers | No stored logic (no `system.js` docs, no validators, no TTL — `census/source_census.json` → `special`). Repo-wide code census (`census/app_code_census.md`): zero `mongodb`/`mongoose` dependencies in any `package.json`; `services/collab-service` uses Redis only. No application writer to `mmp_rt_src` exists in this repo; the only known writer is the customer's out-of-repo seeding. | customer app owner: confirm no external writer during parallel run; orchestrator: final catch-up count/checksum at cutover prep covers any drift. | DECIDED |
+| DEP-002 | D2 Other readers | Intake headline "frontend/ and services/collab-service/ read this shape" is not borne out by code: the only `mongodb` hits are a display badge in admin-dashboard `billing-report` (`engine: 'mongodb'` label), no driver, no queries. Nothing in this repo reads `mmp_rt_src`. | customer app owner: name the real reader(s) for the runbook repoint list; runbook lists "connection string swap for every consumer of `mmp_rt_src`" as a customer-executed step. | DECIDED |
+| DEP-003 | D3 Scheduled logic | No TTL indexes, no capped/timeseries/views, no validators, no Atlas triggers visible to the `read` principal. Nothing to reschedule. | none needed; re-check `getCollectionInfos` + `getIndexes` at cutover prep. | DONE |
+| DEP-004 | D4 Access | `RECON_REDACT_SALT` not set: recon output uses an unsalted hash (harness warning, still runs). | customer app owner: set org secret `RECON_REDACT_SALT`. Not blocking (STOP A P4). | DECIDED |
+| DEP-005 | D4 Access | `mongosync` absent on the VM. Source principal is `read@mmp_rt_src` only: `sh.status`, FCV `getParameter`, `admin.system.users/roles`, `local.oplog.rs` all Unauthorized (`census/source_census.json` → `errors`), so mongosync eligibility could not be proven from the source side either. | movement = per-collection driver loader (pymongo in `~/.venvs/recon`), idempotent drop+reload per unit (STOP A P5). Final catch-up at cutover = full reload + recon (6 MB, seconds). | DECIDED |
+| DEP-006 | D4 Access | Target principal `mmp_rt_target_n` is `readWrite@mmp_rt_billing_n` only; index creation is allowed by readWrite, cluster-level ops (FCV, users) are not. | in scope: none needed. | DONE |

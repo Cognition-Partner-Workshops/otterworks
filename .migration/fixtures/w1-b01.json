@@ -1,0 +1,26 @@
+{
+ "batch": "w1-b01",
+ "source": "synthetic generator migration/mmp_rt/fixture/generate_fixture.py, shaped from .migration/census/source_census.json (field names and BSON types only)",
+ "method": "synthetic",
+ "masked_columns": [],
+ "produced_at": "2026-09-26T17:40:00Z",
+ "produced_by": "orchestrator session devin-02901ba7764144a6a8fbc7d97f9edbd8 (mongo_migrate phase 2)",
+ "location": {
+  "uri_secret": "MONGODB_MMP_RT_TARGET_N_URI",
+  "database": "mmp_rt_billing_n",
+  "collections": {
+   "users": "fx_src_users",
+   "folders": "fx_src_folders"
+  }
+ },
+ "row_counts": {
+  "users": 50,
+  "folders": 30
+ },
+ "planted_data_quality": {
+  "comments": "2 orphan documentId",
+  "documents": "5 null folderId",
+  "users": "2 case-variant duplicate e-mail groups",
+  "audit_events": "10 string ts (ISO-8601 with offset)"
+ }
+}

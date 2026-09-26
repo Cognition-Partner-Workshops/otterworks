@@ -1,0 +1,1111 @@
+{
+ "errors": {
+  "sh_status": "OperationFailure: (Unauthorized) not authorized on admin to execute command { shardingState: 1, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 10}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }, full error: {'ok': 0, 'errmsg': '(Unauthorized) not authorized on admin to execute command { shardingState: 1, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 10}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }', 'code': 8000, 'codeName': 'AtlasError'}",
+  "fcv": "OperationFailure: user is not allowed to do action [getParameter] on [admin.], full error: {'ok': 0, 'errmsg': 'user is not allowed to do action [getParameter] on [admin.]', 'code': 8000, 'codeName': 'AtlasError'}",
+  "admin_users": "OperationFailure: (Unauthorized) not authorized on admin to execute command { find: \"system.users\", filter: {  }, projection: { user: 1, db: 1, roles: 1 }, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }, full error: {'ok': 0, 'errmsg': '(Unauthorized) not authorized on admin to execute command { find: \"system.users\", filter: {  }, projection: { user: 1, db: 1, roles: 1 }, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }', 'code': 8000, 'codeName': 'AtlasError'}",
+  "admin_roles": "OperationFailure: (Unauthorized) not authorized on admin to execute command { find: \"system.roles\", filter: {  }, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }, full error: {'ok': 0, 'errmsg': '(Unauthorized) not authorized on admin to execute command { find: \"system.roles\", filter: {  }, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }', 'code': 8000, 'codeName': 'AtlasError'}",
+  "oplog_stats": "OperationFailure: (Unauthorized) not authorized on local to execute command { collStats: \"oplog.rs\", lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"local\" }, full error: {'ok': 0, 'errmsg': '(Unauthorized) not authorized on local to execute command { collStats: \"oplog.rs\", lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 13}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"local\" }', 'code': 8000, 'codeName': 'AtlasError'}"
+ },
+ "version": "8.0.32",
+ "server_buildinfo_subset": {
+  "version": "8.0.32",
+  "gitVersion": "f9eb55a7cc900f33a722a5b32a0fdbf54385c749",
+  "modules": [
+   "enterprise"
+  ],
+  "maxBsonObjectSize": 16777216,
+  "storageEngines": [
+   "devnull",
+   "inMemory",
+   "queryable_wt",
+   "wiredTiger"
+  ],
+  "ok": 1.0
+ },
+ "rs_status": {
+  "set": "atlas-lfpftr-shard-0",
+  "date": {
+   "$date": "2026-09-26T17:15:21.425Z"
+  },
+  "myState": 1,
+  "term": 626,
+  "syncSourceHost": "",
+  "syncSourceId": -1,
+  "heartbeatIntervalMillis": 2000,
+  "majorityVoteCount": 2,
+  "writeMajorityCount": 2,
+  "votingMembersCount": 3,
+  "writableVotingMembersCount": 3,
+  "optimes": {
+   "lastCommittedOpTime": {
+    "ts": {
+     "$timestamp": {
+      "t": 1790442921,
+      "i": 10
+     }
+    },
+    "t": 626
+   },
+   "lastCommittedWallTime": {
+    "$date": "2026-09-26T17:15:21.376Z"
+   },
+   "readConcernMajorityOpTime": {
+    "ts": {
+     "$timestamp": {
+      "t": 1790442921,
+      "i": 10
+     }
+    },
+    "t": 626
+   },
+   "appliedOpTime": {
+    "ts": {
+     "$timestamp": {
+      "t": 1790442921,
+      "i": 10
+     }
+    },
+    "t": 626
+   },
+   "durableOpTime": {
+    "ts": {
+     "$timestamp": {
+      "t": 1790442921,
+      "i": 10
+     }
+    },
+    "t": 626
+   },
+   "writtenOpTime": {
+    "ts": {
+     "$timestamp": {
+      "t": 1790442921,
+      "i": 10
+     }
+    },
+    "t": 626
+   },
+   "lastAppliedWallTime": {
+    "$date": "2026-09-26T17:15:21.376Z"
+   },
+   "lastDurableWallTime": {
+    "$date": "2026-09-26T17:15:21.376Z"
+   },
+   "lastWrittenWallTime": {
+    "$date": "2026-09-26T17:15:21.376Z"
+   }
+  },
+  "lastStableRecoveryTimestamp": {
+   "$timestamp": {
+    "t": 1790442875,
+    "i": 6
+   }
+  },
+  "electionCandidateMetrics": {
+   "lastElectionReason": "stepUpRequestSkipDryRun",
+   "lastElectionDate": {
+    "$date": "2026-09-08T17:34:42.041Z"
+   },
+   "electionTerm": 626,
+   "lastCommittedOpTimeAtElection": {
+    "ts": {
+     "$timestamp": {
+      "t": 1788888881,
+      "i": 14
+     }
+    },
+    "t": 625
+   },
+   "lastSeenWrittenOpTimeAtElection": {
+    "ts": {
+     "$timestamp": {
+      "t": 1788888881,
+      "i": 14
+     }
+    },
+    "t": 625
+   },
+   "lastSeenOpTimeAtElection": {
+    "ts": {
+     "$timestamp": {
+      "t": 1788888881,
+      "i": 14
+     }
+    },
+    "t": 625
+   },
+   "numVotesNeeded": 2,
+   "priorityAtElection": 7.0,
+   "electionTimeoutMillis": 5000,
+   "priorPrimaryMemberId": 2,
+   "numCatchUpOps": 0,
+   "newTermStartDate": {
+    "$date": "2026-09-08T17:34:42.105Z"
+   },
+   "wMajorityWriteAvailabilityDate": {
+    "$date": "2026-09-08T17:34:42.200Z"
+   }
+  },
+  "members": [
+   {
+    "_id": 0,
+    "name": "ac-zsgrgnt-shard-00-00.cgbijgv.mongodb.net:27017",
+    "health": 1.0,
+    "state": 2,
+    "stateStr": "SECONDARY",
+    "uptime": 1554425,
+    "optime": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442920,
+       "i": 7
+      }
+     },
+     "t": 626
+    },
+    "optimeDurable": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442920,
+       "i": 7
+      }
+     },
+     "t": 626
+    },
+    "optimeWritten": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442920,
+       "i": 7
+      }
+     },
+     "t": 626
+    },
+    "optimeDate": {
+     "$date": "2026-09-26T17:15:20Z"
+    },
+    "optimeDurableDate": {
+     "$date": "2026-09-26T17:15:20Z"
+    },
+    "optimeWrittenDate": {
+     "$date": "2026-09-26T17:15:20Z"
+    },
+    "lastAppliedWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastDurableWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastWrittenWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastHeartbeat": {
+     "$date": "2026-09-26T17:15:20.580Z"
+    },
+    "lastHeartbeatRecv": {
+     "$date": "2026-09-26T17:15:20.546Z"
+    },
+    "pingMs": 0,
+    "lastHeartbeatMessage": "",
+    "syncSourceHost": "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net:27017",
+    "syncSourceId": 1,
+    "infoMessage": "",
+    "configVersion": 225,
+    "configTerm": 626
+   },
+   {
+    "_id": 1,
+    "name": "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net:27017",
+    "health": 1.0,
+    "state": 1,
+    "stateStr": "PRIMARY",
+    "uptime": 1554503,
+    "optime": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442921,
+       "i": 10
+      }
+     },
+     "t": 626
+    },
+    "optimeDate": {
+     "$date": "2026-09-26T17:15:21Z"
+    },
+    "optimeWritten": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442921,
+       "i": 10
+      }
+     },
+     "t": 626
+    },
+    "optimeWrittenDate": {
+     "$date": "2026-09-26T17:15:21Z"
+    },
+    "lastAppliedWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastDurableWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastWrittenWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "syncSourceHost": "",
+    "syncSourceId": -1,
+    "infoMessage": "",
+    "electionTime": {
+     "$timestamp": {
+      "t": 1788888882,
+      "i": 1
+     }
+    },
+    "electionDate": {
+     "$date": "2026-09-08T17:34:42Z"
+    },
+    "configVersion": 225,
+    "configTerm": 626,
+    "self": true,
+    "lastHeartbeatMessage": ""
+   },
+   {
+    "_id": 2,
+    "name": "ac-zsgrgnt-shard-00-02.cgbijgv.mongodb.net:27017",
+    "health": 1.0,
+    "state": 2,
+    "stateStr": "SECONDARY",
+    "uptime": 1553579,
+    "optime": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442921,
+       "i": 10
+      }
+     },
+     "t": 626
+    },
+    "optimeDurable": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442921,
+       "i": 10
+      }
+     },
+     "t": 626
+    },
+    "optimeWritten": {
+     "ts": {
+      "$timestamp": {
+       "t": 1790442921,
+       "i": 10
+      }
+     },
+     "t": 626
+    },
+    "optimeDate": {
+     "$date": "2026-09-26T17:15:21Z"
+    },
+    "optimeDurableDate": {
+     "$date": "2026-09-26T17:15:21Z"
+    },
+    "optimeWrittenDate": {
+     "$date": "2026-09-26T17:15:21Z"
+    },
+    "lastAppliedWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastDurableWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastWrittenWallTime": {
+     "$date": "2026-09-26T17:15:21.376Z"
+    },
+    "lastHeartbeat": {
+     "$date": "2026-09-26T17:15:21.404Z"
+    },
+    "lastHeartbeatRecv": {
+     "$date": "2026-09-26T17:15:21.407Z"
+    },
+    "pingMs": 0,
+    "lastHeartbeatMessage": "",
+    "syncSourceHost": "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net:27017",
+    "syncSourceId": 1,
+    "infoMessage": "",
+    "configVersion": 225,
+    "configTerm": 626
+   }
+  ],
+  "ok": 1.0,
+  "$clusterTime": {
+   "clusterTime": {
+    "$timestamp": {
+     "t": 1790442921,
+     "i": 10
+    }
+   },
+   "signature": {
+    "hash": {
+     "$binary": {
+      "base64": "5ZcLqKEIsJdf+jXPEzhfX8t8jH0=",
+      "subType": "00"
+     }
+    },
+    "keyId": 7632001523140001798
+   }
+  },
+  "operationTime": {
+   "$timestamp": {
+    "t": 1790442921,
+    "i": 10
+   }
+  }
+ },
+ "sh_status": {
+  "shardingState_error": "OperationFailure: (Unauthorized) not authorized on admin to execute command { shardingState: 1, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 10}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }, full error: {'ok': 0, 'errmsg': '(Unauthorized) not authorized on admin to execute command { shardingState: 1, lsid: { id: {4 [53 56 77 62 216 92 65 139 141 168 12 40 250 235 158 167]} }, $clusterTime: { clusterTime: {1790442921 10}, signature: { hash: {0 [229 151 11 168 161 8 176 151 95 250 53 207 19 56 95 95 203 124 140 125]}, keyId: 7632001523140001792.000000 } }, $db: \"admin\" }', 'code': 8000, 'codeName': 'AtlasError'}",
+  "listShards_error": "OperationFailure: command not found, full error: {'ok': 0, 'errmsg': 'command not found', 'code': 59, 'codeName': 'CommandNotFound'}"
+ },
+ "listDatabases": {
+  "databases": [
+   {
+    "name": "mmp_rt_src",
+    "sizeOnDisk": 6402048,
+    "empty": false
+   }
+  ],
+  "totalSize": 6402048,
+  "totalSizeMb": 6,
+  "ok": 1.0,
+  "$clusterTime": {
+   "clusterTime": {
+    "$timestamp": {
+     "t": 1790442921,
+     "i": 13
+    }
+   },
+   "signature": {
+    "hash": {
+     "$binary": {
+      "base64": "5ZcLqKEIsJdf+jXPEzhfX8t8jH0=",
+      "subType": "00"
+     }
+    },
+    "keyId": 7632001523140001798
+   }
+  },
+  "operationTime": {
+   "$timestamp": {
+    "t": 1790442921,
+    "i": 13
+   }
+  }
+ },
+ "connectionStatus": {
+  "authInfo": {
+   "authenticatedUsers": [
+    {
+     "user": "mmp_rt_source",
+     "db": "admin"
+    }
+   ],
+   "authenticatedUserRoles": [
+    {
+     "role": "read",
+     "db": "mmp_rt_src"
+    }
+   ],
+   "authenticatedUserPrivileges": [
+    {
+     "resource": {
+      "db": "mmp_rt_src",
+      "collection": ""
+     },
+     "actions": [
+      "changeStream",
+      "collStats",
+      "dbHash",
+      "dbStats",
+      "find",
+      "killCursors",
+      "listCollections",
+      "listIndexes",
+      "listSearchIndexes",
+      "planCacheRead"
+     ]
+    },
+    {
+     "resource": {
+      "db": "mmp_rt_src",
+      "collection": "system.js"
+     },
+     "actions": [
+      "changeStream",
+      "collStats",
+      "dbHash",
+      "dbStats",
+      "find",
+      "killCursors",
+      "listCollections",
+      "listIndexes",
+      "listSearchIndexes",
+      "planCacheRead"
+     ]
+    }
+   ]
+  },
+  "ok": 1
+ },
+ "collectionInfos": [
+  {
+   "name": "audit_events",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "E89XsagwRs6V7ZAPFBziAQ==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  },
+  {
+   "name": "folders",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "INafocGsTSmMGBD97mn4ew==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  },
+  {
+   "name": "users",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "Q0CxWYjCQee0WYR2rjLSdQ==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  },
+  {
+   "name": "documents",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "boHc4/6iS/Oi7NjLlH6YXw==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  },
+  {
+   "name": "comments",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "dAneqhQURfOuIEwlunUeiw==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  },
+  {
+   "name": "shares",
+   "type": "collection",
+   "options": {},
+   "info": {
+    "readOnly": false,
+    "uuid": {
+     "$binary": {
+      "base64": "hgU75DVKQ7iAPMYLi4Rebg==",
+      "subType": "04"
+     }
+    }
+   },
+   "idIndex": {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  }
+ ],
+ "collections": [
+  "audit_events",
+  "comments",
+  "documents",
+  "folders",
+  "shares",
+  "users"
+ ],
+ "coll_stats": {
+  "audit_events": {
+   "count": 20000,
+   "size": 3383710,
+   "storageSize": 2060288,
+   "nindexes": 2,
+   "totalIndexSize": 1130496,
+   "capped": false,
+   "max": null,
+   "type": null
+  },
+  "comments": {
+   "count": 12000,
+   "size": 1613307,
+   "storageSize": 1019904,
+   "nindexes": 2,
+   "totalIndexSize": 577536,
+   "capped": false,
+   "max": null,
+   "type": null
+  },
+  "documents": {
+   "count": 5000,
+   "size": 1213681,
+   "storageSize": 839680,
+   "nindexes": 2,
+   "totalIndexSize": 266240,
+   "capped": false,
+   "max": null,
+   "type": null
+  },
+  "folders": {
+   "count": 300,
+   "size": 41688,
+   "storageSize": 53248,
+   "nindexes": 1,
+   "totalIndexSize": 24576,
+   "capped": false,
+   "max": null,
+   "type": null
+  },
+  "shares": {
+   "count": 3000,
+   "size": 313332,
+   "storageSize": 200704,
+   "nindexes": 1,
+   "totalIndexSize": 102400,
+   "capped": false,
+   "max": null,
+   "type": null
+  },
+  "users": {
+   "count": 500,
+   "size": 85675,
+   "storageSize": 61440,
+   "nindexes": 2,
+   "totalIndexSize": 65536,
+   "capped": false,
+   "max": null,
+   "type": null
+  }
+ },
+ "coll_indexes": {
+  "audit_events": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   },
+   {
+    "v": 2,
+    "key": {
+     "ts": 1
+    },
+    "name": "ts_1"
+   }
+  ],
+  "comments": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   },
+   {
+    "v": 2,
+    "key": {
+     "documentId": 1
+    },
+    "name": "documentId_1"
+   }
+  ],
+  "documents": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   },
+   {
+    "v": 2,
+    "key": {
+     "ownerId": 1,
+     "updatedAt": -1
+    },
+    "name": "ownerId_1_updatedAt_-1"
+   }
+  ],
+  "folders": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  ],
+  "shares": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   }
+  ],
+  "users": [
+   {
+    "v": 2,
+    "key": {
+     "_id": 1
+    },
+    "name": "_id_"
+   },
+   {
+    "v": 2,
+    "key": {
+     "email": 1
+    },
+    "name": "email_1"
+   }
+  ]
+ },
+ "type_census": {
+  "audit_events": [
+   {
+    "field": "targetId",
+    "type": "objectId",
+    "n": 10000
+   },
+   {
+    "field": "meta",
+    "type": "object",
+    "n": 10000
+   },
+   {
+    "field": "actorId",
+    "type": "objectId",
+    "n": 10000
+   },
+   {
+    "field": "action",
+    "type": "string",
+    "n": 10000
+   },
+   {
+    "field": "ts",
+    "type": "string",
+    "n": 7
+   },
+   {
+    "field": "ts",
+    "type": "date",
+    "n": 9993
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 10000
+   },
+   {
+    "field": "targetType",
+    "type": "string",
+    "n": 10000
+   }
+  ],
+  "comments": [
+   {
+    "field": "documentId",
+    "type": "objectId",
+    "n": 10000
+   },
+   {
+    "field": "createdAt",
+    "type": "date",
+    "n": 10000
+   },
+   {
+    "field": "body",
+    "type": "string",
+    "n": 10000
+   },
+   {
+    "field": "editedAt",
+    "type": "date",
+    "n": 2541
+   },
+   {
+    "field": "authorId",
+    "type": "objectId",
+    "n": 10000
+   },
+   {
+    "field": "editedAt",
+    "type": "null",
+    "n": 7459
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 10000
+   }
+  ],
+  "documents": [
+   {
+    "field": "folderId",
+    "type": "null",
+    "n": 5
+   },
+   {
+    "field": "title",
+    "type": "string",
+    "n": 5000
+   },
+   {
+    "field": "ownerId",
+    "type": "objectId",
+    "n": 5000
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 5000
+   },
+   {
+    "field": "tags",
+    "type": "array",
+    "n": 5000
+   },
+   {
+    "field": "version",
+    "type": "int",
+    "n": 5000
+   },
+   {
+    "field": "status",
+    "type": "string",
+    "n": 5000
+   },
+   {
+    "field": "folderId",
+    "type": "objectId",
+    "n": 4995
+   },
+   {
+    "field": "createdAt",
+    "type": "date",
+    "n": 5000
+   },
+   {
+    "field": "sizeBytes",
+    "type": "int",
+    "n": 5000
+   },
+   {
+    "field": "updatedAt",
+    "type": "date",
+    "n": 5000
+   },
+   {
+    "field": "price",
+    "type": "decimal",
+    "n": 5000
+   }
+  ],
+  "folders": [
+   {
+    "field": "path",
+    "type": "string",
+    "n": 300
+   },
+   {
+    "field": "parentId",
+    "type": "null",
+    "n": 119
+   },
+   {
+    "field": "parentId",
+    "type": "objectId",
+    "n": 181
+   },
+   {
+    "field": "createdAt",
+    "type": "date",
+    "n": 300
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 300
+   },
+   {
+    "field": "ownerId",
+    "type": "objectId",
+    "n": 300
+   },
+   {
+    "field": "name",
+    "type": "string",
+    "n": 300
+   }
+  ],
+  "shares": [
+   {
+    "field": "expiresAt",
+    "type": "date",
+    "n": 1170
+   },
+   {
+    "field": "expiresAt",
+    "type": "null",
+    "n": 1830
+   },
+   {
+    "field": "documentId",
+    "type": "objectId",
+    "n": 3000
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 3000
+   },
+   {
+    "field": "granteeId",
+    "type": "objectId",
+    "n": 3000
+   },
+   {
+    "field": "permission",
+    "type": "string",
+    "n": 3000
+   }
+  ],
+  "users": [
+   {
+    "field": "createdAt",
+    "type": "date",
+    "n": 500
+   },
+   {
+    "field": "role",
+    "type": "string",
+    "n": 500
+   },
+   {
+    "field": "settings",
+    "type": "object",
+    "n": 500
+   },
+   {
+    "field": "email",
+    "type": "string",
+    "n": 500
+   },
+   {
+    "field": "_id",
+    "type": "objectId",
+    "n": 500
+   },
+   {
+    "field": "displayName",
+    "type": "string",
+    "n": 500
+   }
+  ]
+ },
+ "special": {
+  "ttl": [],
+  "unique": [],
+  "partial": [],
+  "validators": {},
+  "capped": [],
+  "timeseries": [],
+  "views": []
+ },
+ "doc_sizes": {
+  "audit_events": [
+   {
+    "_id": null,
+    "max": 193,
+    "avg": 169.1855
+   }
+  ],
+  "comments": [
+   {
+    "_id": null,
+    "max": 142,
+    "avg": 134.44225
+   }
+  ],
+  "documents": [
+   {
+    "_id": null,
+    "max": 274,
+    "avg": 242.7362
+   }
+  ],
+  "folders": [
+   {
+    "_id": null,
+    "max": 189,
+    "avg": 138.96
+   }
+  ],
+  "shares": [
+   {
+    "_id": null,
+    "max": 110,
+    "avg": 104.444
+   }
+  ],
+  "users": [
+   {
+    "_id": null,
+    "max": 173,
+    "avg": 171.35
+   }
+  ]
+ },
+ "dq": {
+  "count_users": 500,
+  "count_folders": 300,
+  "count_documents": 5000,
+  "count_comments": 12000,
+  "count_shares": 3000,
+  "count_audit_events": 20000,
+  "comments_orphan_documentId": [
+   {
+    "n": 15
+   }
+  ],
+  "comments_author_field": "authorId",
+  "comments_orphan_author": [],
+  "docs_folderId_null": 5,
+  "docs_folderId_missing": 0,
+  "docs_folderId_orphan": [],
+  "folders_has_parentId": true,
+  "folders_parentId_null": 119,
+  "folders_parentId_missing": 0,
+  "folders_parentId_orphan": [],
+  "users_email_field": "email",
+  "users_distinct_raw_emails": 500,
+  "users_distinct_lower_emails": [
+   {
+    "n": 497
+   }
+  ],
+  "users_lower_email_dup_groups": [
+   {
+    "n": 3
+   }
+  ],
+  "users_docs_in_dup_groups": [
+   {
+    "_id": null,
+    "total": 6
+   }
+  ],
+  "audit_ts_fields": [
+   "ts"
+  ],
+  "audit_ts_by_type": [
+   {
+    "_id": "date",
+    "n": 19980
+   },
+   {
+    "_id": "string",
+    "n": 20
+   }
+  ],
+  "audit_ts_datefromstring": [
+   {
+    "_id": "parsed",
+    "n": 20
+   }
+  ],
+  "shares_fields": [
+   "_id",
+   "documentId",
+   "expiresAt",
+   "granteeId",
+   "permission"
+  ],
+  "shares_orphan_documentId": [],
+  "shares_null_documentId": 0,
+  "shares_missing_documentId": 0,
+  "shares_orphan_granteeId": [],
+  "shares_null_granteeId": 0,
+  "shares_missing_granteeId": 0
+ }
+}
