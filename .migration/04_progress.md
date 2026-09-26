@@ -1,6 +1,6 @@
 # 04 Progress ledger
 
-Phase: 2 inventory and model complete; STOP B posted (wave-1 plan: 5 batches, width 3)
+Phase: 3 waves (STOP B approved D-004); wave-1 launching
 
 | Unit | Wave | Status | Parity | Quarantine rate | Unverified paths | Cost | PR |
 |---|---|---|---|---|---|---|---|
