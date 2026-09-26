@@ -1,0 +1,23 @@
+{
+ "unit": "u-01-tenancy",
+ "collections": {
+  "tenants": {
+   "source_rows": 70,
+   "loaded": 70
+  },
+  "plans": {
+   "source_rows": 3,
+   "loaded": 3
+  },
+  "subscriptions": {
+   "source_rows": 70,
+   "loaded": 70
+  },
+  "subscriptionsHist": {
+   "source_rows": 0,
+   "loaded": 0
+  }
+ },
+ "quarantined": 0,
+ "quarantine_by_reason": {}
+}

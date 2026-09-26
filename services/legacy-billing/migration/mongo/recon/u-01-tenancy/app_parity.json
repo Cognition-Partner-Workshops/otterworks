@@ -1,0 +1,13 @@
+{
+ "kind": "app-parity",
+ "unit": "u-01-tenancy",
+ "operations": 282,
+ "tenants": 70,
+ "mismatches": 0,
+ "verdict": "PASS",
+ "codes_collection_present": false,
+ "unverified": [
+  "tenant_profile.status (codes lookup)"
+ ],
+ "mismatch_ops": []
+}
