@@ -1,0 +1,83 @@
+{
+ "version": "map-v1-w1-b04",
+ "_notes": [
+  "mongodb-atlas family: identity lift of mmp_rt_src -> mmp_rt_billing_n. Collection names, _id values, field names and BSON types are preserved (profile: BSON identity).",
+  "Every graded field is listed; the harness grades only declared fields. Sub-documents (settings, meta) and arrays (tags) are graded whole with identity.",
+  "Per-batch scoping: each batch owns whole collections, so no ${param} placeholders are needed; root_where/target_where are intentionally absent.",
+  "Data-quality decisions M1-M4 are in 09_compat_report.md and the STOP B row in 05_decisions.md. Only M4 (audit_events.ts string -> date) changes a value; it is graded by the spec alias audit_ts_string_to_date.",
+  "Fixture mode uses the mechanical copy migration/mmp_rt/fixture_mapping_spec.json (root_table prefixed fx_src_); nothing else differs."
+ ],
+ "canonicalization": {
+  "rules": [
+   {
+    "name": "audit_ts_string_to_date",
+    "rule": "date_string_to_date",
+    "applies_to": "audit_events.ts",
+    "params": {
+     "format": "%Y-%m-%dT%H:%M:%S%z",
+     "unparseable": "keep"
+    }
+   },
+   {
+    "name": "datetime_utc_truncate_ms",
+    "rule": "datetime_utc_truncate_ms",
+    "applies_to": "*",
+    "params": {}
+   },
+   {
+    "name": "null_missing_equiv",
+    "rule": "null_missing_equiv",
+    "applies_to": "*",
+    "params": {}
+   }
+  ]
+ },
+ "collections": [
+  {
+   "collection": "shares",
+   "root_table": "shares",
+   "key": {
+    "source": [
+     "_id"
+    ],
+    "target": "_id"
+   },
+   "fields": [
+    {
+     "source": "documentId",
+     "target": "documentId",
+     "bson_type": "objectId",
+     "rules": [
+      "identity"
+     ]
+    },
+    {
+     "source": "granteeId",
+     "target": "granteeId",
+     "bson_type": "objectId",
+     "rules": [
+      "identity"
+     ]
+    },
+    {
+     "source": "permission",
+     "target": "permission",
+     "bson_type": "string",
+     "rules": [
+      "identity"
+     ]
+    },
+    {
+     "source": "expiresAt",
+     "target": "expiresAt",
+     "bson_type": "date",
+     "rules": [
+      "null_missing_equiv",
+      "datetime_utc_truncate_ms"
+     ]
+    }
+   ],
+   "embeds": []
+  }
+ ]
+}

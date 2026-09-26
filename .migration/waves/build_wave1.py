@@ -45,15 +45,15 @@ def brief(bid, units, extra_targets, notes):
         "--target-uri-secret MONGODB_MMP_RT_TARGET_N_URI --target-db mmp_rt_billing_n "
         "--target-class migration_cluster --source-concurrency 2 --seed 1 "
         "--out migration/mmp_rt/{bid}/recon/{mode}/")
-    fixture_cmd = recon_cmd.format(bid=bid, mapping="migration/mmp_rt/fixture_mapping_spec.json", mode="fixture",
+    fixture_cmd = recon_cmd.format(bid=bid, mapping=f".migration/mappings/{bid}.fixture.json", mode="fixture",
                                    src_secret="MONGODB_MMP_RT_TARGET_N_URI", src_db="mmp_rt_billing_n")
-    live_cmd = recon_cmd.format(bid=bid, mapping=".migration/03_mapping_spec.json", mode="live",
+    live_cmd = recon_cmd.format(bid=bid, mapping=f".migration/mappings/{bid}.json", mode="live",
                                 src_secret="MONGODB_MMP_RT_SOURCE_URI", src_db="mmp_rt_src")
     return f"""BATCH {bid} - engagement mmp_rt_src -> mmp_rt_billing_n (MongoDB Atlas, same cluster otterworks-demo, project otterworks-demos). Playbook: !mongo_unit_migration. Source family mongodb-atlas.
 
 UNITS: {", ".join(units)} (source counts: {counts}). Each unit = copy one collection from database mmp_rt_src to database mmp_rt_billing_n with the same collection name, same _id values, same field names and BSON types (identity lift), recreate the non-_id indexes with identical keys/options, prove parity with the recon harness. There is NO application code to rewrite: the repo has no MongoDB driver usage (see .migration/census/app_code_census.md).
 
-BRANCHES (binding): clone github.com/Cognition-Partner-Workshops/otterworks; base your work on branch {BRANCH} and open exactly one PR INTO that branch from a branch named {BRANCH}--{bid}. Never merge into tech-partnerships or main. Do not read, fetch, check out, diff, or search any other branch or PR of this repo (including tech-partnerships-solutions and any closed PR); only {BRANCH} and your own branch exist for you. Never merge your own PR.
+BRANCHES (binding): clone github.com/Cognition-Partner-Workshops/otterworks; base your work on branch {BRANCH} and open exactly one PR INTO that branch from a branch named {BRANCH}--{bid}. Never merge into tech-partnerships or main. Do not read, fetch, check out, diff, or search any other branch or PR of this repo (including tech-partnerships-solutions and any closed PR); only {BRANCH} and your own branch exist for you. Never merge your own PR. If a branch {BRANCH}--{bid} (and possibly an open PR from it) already exists from an earlier attempt at this batch, continue on that branch and that PR (fetch it, keep its loader if it is correct, add commits) instead of creating a second one.
 
 ENVIRONMENT FIX (run once, first thing, verbatim):
   {ENV_FIX}
@@ -67,8 +67,7 @@ SECRETS (env var NAMES only; never print, log, commit or paste their values):
 WRITE TARGETS you own, and the only places you may write: {targets}. Drop and recreate each of them at the start of every load run (idempotent). Never touch any other collection (in particular never fx_src_* fixtures, never other units' collections). Never edit files under .migration/. Do not create users, roles, databases or grants. Target is a shared M0 free tier: insert in batches of <= 1000 with insert_many(ordered=False); no parallel writers.
 
 CONTRACT FILES (read, never modify): .migration/03_mapping_spec.json (map-v1), .migration/02_tolerances.json (tol-v1, exact: aggregate_rel_tol 0, numeric_abs_tol 0, sample 1000, source concurrency 2), .migration/canonicalization.json (profile rules), .migration/09_compat_report.md (data-quality decisions M1-M5), .migration/01_conventions.md.
-Mapping rows for your units are the entries with "collection" in {json.dumps(units)} in 03_mapping_spec.json.
-Fixture-mode mapping copy: migration/mmp_rt/fixture_mapping_spec.json (identical, root_table prefixed fx_src_).
+BATCH-SCOPED MAPPING (use these, not the whole spec): .migration/mappings/{bid}.json is the mechanical subset of 03_mapping_spec.json holding only the collections {json.dumps(units)} (same rules, same fields); .migration/mappings/{bid}.fixture.json is the same subset with root_table prefixed fx_src_. The harness grades every collection in the mapping it is given and has no collection filter, so grading the whole spec would make your verdict depend on sibling batches - never do that.
 {("UNIT NOTES: " + notes) if notes else ""}
 INDEX PARITY (create on the target after load, exact same key spec and options; paste both sides' getIndexes() in the PR):
 {idx}
@@ -86,11 +85,27 @@ STEP ORDER:
 {live_cmd}
     Live PASS with result.json merge_eligible=true is the merge evidence. If it fails, you may fix the loader and re-run live only within the cap of 3 total harness runs in live mode; report honestly.
  4. run `load.py --mode live` a second time and show counts unchanged (idempotency proof).
- 5. run `make tp-smoke`; it must be green, except that if it fails solely because a toolchain is absent on your VM (known: `go: command not found` in services/api-gateway) list that under Unverified paths in the PR and rely on the PR's tp-golden-smoke CI check, which must pass. Run the checklist in .agents/skills/tp-pre-pr-self-check/SKILL.md (items about ow_tp prefixes / catalogs do not apply to this Mongo engagement; say so explicitly rather than ticking them).
+ 5. run `mise trust` in the repo checkout, then `make tp-smoke`; it must be green, except that if it fails solely because a toolchain is absent on your VM (known: `go: command not found` in services/api-gateway) list that under Unverified paths in the PR and rely on the PR's CI smoke jobs (api-gateway, legacy-billing, client-app, collab-service, estate-targets, search-service), which must all pass. Run the checklist in .agents/skills/tp-pre-pr-self-check/SKILL.md (items about ow_tp prefixes / catalogs do not apply to this Mongo engagement, and the harness writes result.json rather than *.recon.json; say so explicitly rather than ticking them). Known: pymongo insert_many with RawBSONDocument returns empty inserted_ids - count by batch length.
  6. commit in order (loader, recon evidence, fixes), push, open ONE PR into {BRANCH}. PR body < 2000 chars: Unverified paths first, then Decisions, Code, Evidence (recon.summary.md content for fixture and live, counts per collection, getIndexes() both sides, idempotency counts), then a PROFILE FEEDBACK section (every rule you had to work out yourself; write "none" if empty). No production document values in the PR.
  7. Report: status (PASS only if live recon PASS + merge_eligible=true + PR open), pr_url, branch, recon_verdict, recon_mode=live, target_class=migration_cluster, write_targets exactly {json.dumps([f"mmp_rt_billing_n.{u}" for u in units + extra_targets])}, skill_feedback, one_line_summary.
 
 NEVER: write to mmp_rt_src; write outside your write targets; edit .migration/; change the mapping spec, tolerances or canonicalization; merge your PR; put secret values or production rows anywhere; sleep-poll."""
+
+
+def write_batch_mappings(bid, units):
+    spec = json.loads((ROOT / ".migration/03_mapping_spec.json").read_text())
+    sub = dict(spec)
+    sub["version"] = f"{spec['version']}-{bid}"
+    sub["collections"] = [c for c in spec["collections"] if c["collection"] in units]
+    assert len(sub["collections"]) == len(units), (bid, units)
+    out = ROOT / ".migration/mappings"
+    out.mkdir(exist_ok=True)
+    (out / f"{bid}.json").write_text(json.dumps(sub, indent=1) + "\n")
+    fx = json.loads(json.dumps(sub))
+    fx["version"] += "-fixture"
+    for c in fx["collections"]:
+        c["root_table"] = "fx_src_" + c["root_table"]
+    (out / f"{bid}.fixture.json").write_text(json.dumps(fx, indent=1) + "\n")
 
 
 def main():
@@ -98,6 +113,7 @@ def main():
     fixtures_dir.mkdir(exist_ok=True)
     batches = []
     for bid, units, extra, notes in BATCHES:
+        write_batch_mappings(bid, units)
         manifest = {
             "batch": bid,
             "source": "synthetic generator migration/mmp_rt/fixture/generate_fixture.py, shaped from .migration/census/source_census.json (field names and BSON types only)",

@@ -1,0 +1,40 @@
+# Wave 1 close
+
+Landed: 3 of 5 batches passed their own recon.
+Independent verify: PASS, 3 PRs merged.
+Failed: w1-b02.
+Blocked on missing inputs: w1-b01.
+Held back by circuit breaker: none.
+
+Verifier findings:
+- All three batches re-ran PASS in live mode against the migration cluster with a full keyed diff and merge_eligible=true, so the children's verdicts hold independently.
+- The 20 string-typed audit_events.ts values are BSON dates on the target and each equals the UTC parse of its source string, so decision M4 is implemented exactly.
+- The 15 orphan comments are carried to the target and listed in the declared _dq_comments_orphans work-list, so decision M1 is implemented exactly.
+- mmp_rt_billing_n.users and folders hold only the fixture-sized 50 and 30 documents against 500 and 300 on the source, so every authorId, granteeId and actorId reference from these three batches is dangling on the target until batch w1-b01 lands its live load.
+- No unit needed a drift re-run, no tolerance, mapping or canonicalization file was touched, and nothing was merged.
+- The branch recon/wave-1 is shared by concurrent engagements in this repo; a concurrent Oracle run's verifier report was pushed to it minutes earlier and is preserved on recon/wave-1-rt-live-20260926T164927Z, so consumers should read this report at commit b47fff24 rather than by branch tip.
+
+Skill feedback to fold in before the next wave:
+- CI on the PR shows the smoke jobs individually (api-gateway, legacy-billing, client-app, collab-service, estate-targets, search-service), not a check literally named tp-golden-smoke; all 6 passed.
+- Derived: pymongo insert_many with RawBSONDocument returns empty inserted_ids, so count inserted docs by batch length rather than len(inserted_ids).
+- Diagnostic only (not merge evidence, not committed): fixture recon with a scratch mapping limited to the users/folders rows PASSed Tiers 1-3 (2/9/80 checks), so the loader is correct for this batch.
+- Harness grades every collection in the mapping spec and has no --collection filter; the brief's verbatim command with the shared 6-collection spec T1-FAILed on other units' in-flight targets (documents/comments/shares). Used per-unit filtered copies (audit_events rows only, identical) under migration/mmp_rt/w1-b05/. Orchestrator should ship per-unit spec files or the harness should gain a collection filter.
+- Harness has no per-unit/collection filter; a shared whole-spec mapping makes a child's binding verdict depend on sibling batches' load timing (users 500 vs 50, folders 300 vs 30, audit_events 20000 vs 0 while documents passed all tiers).
+- Harness runs used: 2 fixture (1 exact brief command FAIL, 1 scoped diagnostic PASS), 0 live. No live load, no PR opened (playbook forbids a PR without live/snapshot recon). make tp-smoke not run.
+- Plan gap: fixture and live loads write the same target collections (mmp_rt_billing_n.<collection>), so an unscoped fixture recon in one child also fails whenever another child has already done its live load (500 vs 5000 documents, etc.).
+- Plan gap: the brief's recon command passes the whole 03_mapping_spec.json / fixture_mapping_spec.json (all 6 collections). The harness has no collection filter and the mapping has no per-batch scoping, so Tier 1 grades other batches' collections (shares, audit_events: target docs=0, owned by w1-b04/w1-b05 and not yet loaded). A batch child cannot PASS without depending on and certifying other batches. Fix at orchestrator level: a per-batch mapping subset (e.g. migration/mmp_rt/<batch>/mapping.json and fixture copy) or a harness --collection filter.
+- RECON_REDACT_SALT unset: live output redacted unsalted (accepted per STOP A P4).
+- Whole-spec fixture PASS is unreachable once any sibling has loaded live data into the shared target DB.
+- make tp-smoke fails on a fresh VM until `mise trust` is run in the repo (mise.toml not trusted); not a toolchain absence.
+- make tp-smoke fails until `mise trust` is run in the repo on a fresh VM.
+- make tp-smoke on a fresh VM needs `mise trust` on the repo checkout before the collab-service step (blueprint suggestion sent).
+- recon harness grades every collection in the mapping and has no per-collection filter; with a shared multi-batch spec the brief's exact command fails Tier 1 on sibling batches' in-flight collections. Worked around with verbatim unit-scoped mapping copies (scope_mapping.py). Harness needs --collections or the fan-out brief should hand each child a unit-scoped mapping.
+- recon harness grades every collection in the mapping spec and has no per-unit/--collection filter; the brief's whole-spec recon command fails on sibling batches' unloaded collections. Used a mechanical unit-scoped copy of the spec (comments rows only) under migration/mmp_rt/w1-b03/; fan-out briefs should ship a per-unit spec or the harness a filter flag.
+- tp-pre-pr-self-check ow_tp prefix/catalog items do not apply to Mongo engagements; harness writes result.json not *.recon.json; tp-golden-smoke check does not trigger for migration/-only PRs.
+
+Per batch:
+- w1-b01: BLOCKED. BLOCKED: users/folders loader works (fixture load 50/30, index email_1 recreated; scoped diagnostic recon PASS), but the brief's recon command grades all 6 collections in the mapping spec and fails Tier 1 on shares/audit_events, which belong to w1-b04/w1-b05, so no live run and no PR. Needs a per-batch mapping or collection filter; branch is pushed with loader and fixture evidence.
+- w1-b02: FAIL. documents 5000/5000 loaded live + idempotent, indexes match, unit-scoped live recon PASS; binding whole-spec live recon FAILs only on sibling units' collections (users/folders/audit_events not yet live) - PR #1717 open, CI green, 1 live run left unspent. https://github.com/Cognition-Partner-Workshops/otterworks/pull/1717
+- w1-b03: PASS. w1-b03 comments landed: 12,000 docs identity-lifted to mmp_rt_billing_n, documentId_1 index recreated, 15 M1 orphans written to _dq_comments_orphans, live recon PASS merge_eligible=true (fixture 2/3 runs, live 1/3), PR #1713 open into the fanout branch with all 6 CI checks green; recon used a unit-scoped copy of the mapping spec because the harness has no per-unit filter. https://github.com/Cognition-Partner-Workshops/otterworks/pull/1713
+- w1-b04: PASS. shares (3000 docs) lifted to mmp_rt_billing_n.shares, live recon PASS merge_eligible=true, idempotent, CI green, PR #1715 open into wave branch. https://github.com/Cognition-Partner-Workshops/otterworks/pull/1715
+- w1-b05: PASS. audit_events (20,000 docs) landed in mmp_rt_billing_n with M4 string->date ts fix and ts_1 index; fixture PASS, live PASS merge_eligible=true, idempotent rerun proven, PR #1719 open into the run branch with tp-golden-smoke CI green. https://github.com/Cognition-Partner-Workshops/otterworks/pull/1719
