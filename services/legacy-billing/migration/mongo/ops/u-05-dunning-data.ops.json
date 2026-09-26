@@ -1,0 +1,13 @@
+[
+  {
+    "name": "admin_dunning_read_path",
+    "collection": "dunningAttempts",
+    "source_sql": "SELECT d.id, d.tenant_id, d.invoice_id, d.attempt_no, d.scheduled_for, d.status_cd FROM dunning_attempts d WHERE d.scheduled_for <= DATE '2026-12-31' ORDER BY d.scheduled_for DESC, d.id DESC",
+    "target_pipeline": [
+      {"$match": {"scheduledFor": {"$lte": {"$date": "2026-12-31T00:00:00Z"}}}},
+      {"$sort": {"scheduledFor": -1, "_id": -1}},
+      {"$project": {"_id": 0, "ID": "$_id", "TENANT_ID": "$tenantId", "INVOICE_ID": "$invoiceId", "ATTEMPT_NO": "$attemptNo", "SCHEDULED_FOR": "$scheduledFor", "STATUS_CD": "$statusCd"}}
+    ],
+    "rules": ["datetime_utc_truncate_ms"]
+  }
+]
