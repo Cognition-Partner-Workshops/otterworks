@@ -1,0 +1,55 @@
+{
+  "unit": "w1-b02",
+  "mode": "fixture",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-v1-fixture",
+  "tolerance_version": "tol-v1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-26T17:28:30.467239+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": false,
+      "checks_run": 6,
+      "stats": {
+        "source_counts": {
+          "users": 50,
+          "folders": 30,
+          "documents": 500,
+          "comments": 1200,
+          "shares": 300,
+          "audit_events": 2000
+        }
+      },
+      "findings": [
+        {
+          "collection": "shares",
+          "check": "root_count",
+          "detail": "rows(fx_src_shares)=300 vs docs=0",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "audit_events",
+          "check": "root_count",
+          "detail": "rows(fx_src_audit_events)=2000 vs docs=0",
+          "source_value": "null",
+          "target_value": "null",
+          "rules_applied": [],
+          "rules_configured": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "merge_eligible": false,
+  "error": null
+}
