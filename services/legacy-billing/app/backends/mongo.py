@@ -23,10 +23,7 @@ def _db():
 
 def _json_value(value):
     if isinstance(value, Decimal128):
-        decimal = value.to_decimal()
-        if decimal == decimal.to_integral_value():
-            return str(decimal.to_integral_value())
-        return str(decimal)
+        return format(value.to_decimal().normalize(), "f")
     if isinstance(value, Int64):
         return str(int(value))
     if isinstance(value, datetime):
