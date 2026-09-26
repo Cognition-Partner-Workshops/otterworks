@@ -1,0 +1,23 @@
+{
+ "scenario": "DUNNING-004",
+ "entrypoint": "billing.sp_suspend_overdue",
+ "mongo_entrypoint": "dunning_service.suspend_overdue",
+ "inputs": {
+  "as_of": "2026-02-28"
+ },
+ "business_fields": {
+  "status": "suspended",
+  "suspended_on": "2026-02-28"
+ },
+ "probes": {
+  "suspension_notifications": [
+   {
+    "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+    "tenant_id": "00000000-0000-0000-0000-000000000005",
+    "kind": "suspension",
+    "sent_at": "2026-02-28T00:00:00Z"
+   }
+  ]
+ },
+ "parity": "PASS"
+}

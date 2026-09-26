@@ -1,0 +1,20 @@
+{
+ "scenario": "DUNNING-001",
+ "entrypoint": "billing.fn_overdue_accounts",
+ "mongo_entrypoint": "dunning_service.overdue_accounts",
+ "inputs": {
+  "as_of": "2026-02-28"
+ },
+ "business_fields": {
+  "days_overdue": [
+   27,
+   15
+  ],
+  "tenant_ids": [
+   "00000000-0000-0000-0000-000000000002",
+   "00000000-0000-0000-0000-000000000005"
+  ]
+ },
+ "probes": {},
+ "parity": "PASS"
+}

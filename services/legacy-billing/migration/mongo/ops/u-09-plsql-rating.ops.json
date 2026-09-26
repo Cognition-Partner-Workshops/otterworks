@@ -1,0 +1,37 @@
+[
+ {
+  "name": "rating_periods_rows",
+  "collection": "ratingPeriods",
+  "source_sql": "SELECT ID, TENANT_ID, PERIOD_START, PERIOD_END FROM RATING_PERIODS",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "TENANT_ID": {"$ifNull": ["$tenantId", null]},
+     "PERIOD_START": {"$ifNull": ["$periodStart", null]},
+     "PERIOD_END": {"$ifNull": ["$periodEnd", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ },
+ {
+  "name": "rating_results_rows",
+  "collection": "ratingResults",
+  "source_sql": "SELECT ID, PERIOD_ID, SUBSCRIPTION_ID, USED_UNITS, QUOTA_UNITS, ROLLOVER_UNITS, BILLABLE_UNITS, OVERAGE_AMOUNT, CREATED_AT FROM RATING_RESULTS",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "PERIOD_ID": {"$ifNull": ["$periodId", null]},
+     "SUBSCRIPTION_ID": {"$ifNull": ["$subscriptionId", null]},
+     "USED_UNITS": {"$ifNull": ["$usedUnits", null]},
+     "QUOTA_UNITS": {"$ifNull": ["$quotaUnits", null]},
+     "ROLLOVER_UNITS": {"$ifNull": ["$rolloverUnits", null]},
+     "BILLABLE_UNITS": {"$ifNull": ["$billableUnits", null]},
+     "OVERAGE_AMOUNT": {"$ifNull": ["$overageAmount", null]},
+     "CREATED_AT": {"$ifNull": ["$createdAt", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ }
+]

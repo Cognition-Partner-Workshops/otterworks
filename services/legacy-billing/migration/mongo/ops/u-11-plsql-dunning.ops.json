@@ -1,0 +1,56 @@
+[
+ {
+  "name": "dunning_attempts_rows",
+  "collection": "dunningAttempts",
+  "source_sql": "SELECT ID, TENANT_ID, INVOICE_ID, ATTEMPT_NO, SCHEDULED_FOR, STATUS_CD FROM DUNNING_ATTEMPTS",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "TENANT_ID": {"$ifNull": ["$tenantId", null]},
+     "INVOICE_ID": {"$ifNull": ["$invoiceId", null]},
+     "ATTEMPT_NO": {"$ifNull": ["$attemptNo", null]},
+     "SCHEDULED_FOR": {"$ifNull": ["$scheduledFor", null]},
+     "STATUS_CD": {"$ifNull": ["$statusCd", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ },
+ {
+  "name": "notifications_rows",
+  "collection": "notifications",
+  "source_sql": "SELECT ID, TENANT_ID, KIND_CD, SENT_AT FROM NOTIFICATIONS",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "TENANT_ID": {"$ifNull": ["$tenantId", null]},
+     "KIND_CD": {"$ifNull": ["$kindCd", null]},
+     "SENT_AT": {"$ifNull": ["$sentAt", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ },
+ {
+  "name": "tenant_suspendable_row",
+  "collection": "tenants",
+  "source_sql": "SELECT ID, NAME, TAX_EXEMPT_YN, STATUS_CD FROM TENANTS WHERE ID = '00000000-0000-0000-0000-000000000005'",
+  "target_pipeline": [
+   {"$match": {"_id": "00000000-0000-0000-0000-000000000005"}},
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "NAME": "$name",
+     "TAX_EXEMPT_YN": {
+      "$cond": [
+       {"$eq": ["$taxExempt", null]},
+       null,
+       {"$cond": ["$taxExempt", "Y", "N"]}
+      ]
+     },
+     "STATUS_CD": "$statusCd"
+   }}
+  ],
+  "rules": ["null_missing_equiv"]
+ }
+]

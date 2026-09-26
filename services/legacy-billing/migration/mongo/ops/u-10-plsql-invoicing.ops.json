@@ -1,0 +1,54 @@
+[
+ {
+  "name": "invoice_rows",
+  "collection": "invoices",
+  "source_sql": "SELECT ID, TENANT_ID, PERIOD_ID, ISSUED_AT, SUBTOTAL, TAX, TOTAL, STATUS_CD FROM INVOICES",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "TENANT_ID": {"$ifNull": ["$tenantId", null]},
+     "PERIOD_ID": {"$ifNull": ["$periodId", null]},
+     "ISSUED_AT": {"$ifNull": ["$issuedAt", null]},
+     "SUBTOTAL": {"$ifNull": ["$subtotal", null]},
+     "TAX": {"$ifNull": ["$tax", null]},
+     "TOTAL": {"$ifNull": ["$total", null]},
+     "STATUS_CD": {"$ifNull": ["$statusCd", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ },
+ {
+  "name": "invoice_lines_embedded",
+  "collection": "invoices",
+  "source_sql": "SELECT INVOICE_ID, LINE_NO, LINE_TYPE, DESCRIPTION, AMOUNT FROM INVOICE_LINES",
+  "target_pipeline": [
+   {"$unwind": "$lines"},
+   {"$project": {
+     "_id": 0,
+     "INVOICE_ID": "$_id",
+     "LINE_NO": {"$ifNull": ["$lines.lineNo", null]},
+     "LINE_TYPE": {"$ifNull": ["$lines.lineType", null]},
+     "DESCRIPTION": {"$ifNull": ["$lines.description", null]},
+     "AMOUNT": {"$ifNull": ["$lines.amount", null]}
+   }}
+  ],
+  "rules": ["null_missing_equiv"]
+ },
+ {
+  "name": "credit_notes_rows",
+  "collection": "creditNotes",
+  "source_sql": "SELECT ID, TENANT_ID, ISSUED_ON, AMOUNT, REMAINING_AMOUNT FROM CREDIT_NOTES",
+  "target_pipeline": [
+   {"$project": {
+     "_id": 0,
+     "ID": "$_id",
+     "TENANT_ID": {"$ifNull": ["$tenantId", null]},
+     "ISSUED_ON": {"$ifNull": ["$issuedOn", null]},
+     "AMOUNT": {"$ifNull": ["$amount", null]},
+     "REMAINING_AMOUNT": {"$ifNull": ["$remainingAmount", null]}
+   }}
+  ],
+  "rules": ["datetime_utc_truncate_ms", "null_missing_equiv"]
+ }
+]

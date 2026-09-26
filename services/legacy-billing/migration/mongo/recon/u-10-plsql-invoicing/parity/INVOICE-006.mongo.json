@@ -1,0 +1,20 @@
+{
+ "scenario": "INVOICE-006",
+ "entrypoint": "billing.fn_invoice_lines",
+ "mongo_entrypoint": "invoicing_service.invoice_lines",
+ "inputs": {
+  "invoice_id": "60000000-0000-0000-0000-000000000001"
+ },
+ "business_fields": {
+  "amounts": [
+   "149.00",
+   "12.29"
+  ],
+  "line_types": [
+   "plan",
+   "usage"
+  ]
+ },
+ "probes": {},
+ "parity": "PASS"
+}

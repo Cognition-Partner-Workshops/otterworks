@@ -1,0 +1,26 @@
+{
+ "scenario": "INVOICE-005",
+ "entrypoint": "billing.sp_issue_invoice",
+ "mongo_entrypoint": "invoicing_service.issue_invoice",
+ "inputs": {
+  "period_end": "2026-02-28",
+  "period_start": "2026-02-01",
+  "tenant_id": "00000000-0000-0000-0000-000000000006"
+ },
+ "business_fields": {
+  "status": "issued",
+  "tax": "4.50",
+  "total": "59.06"
+ },
+ "probes": {
+  "invoice_state": [
+   {
+    "status": "issued",
+    "subtotal": "54.56",
+    "tax": "4.50",
+    "total": "59.06"
+   }
+  ]
+ },
+ "parity": "PASS"
+}

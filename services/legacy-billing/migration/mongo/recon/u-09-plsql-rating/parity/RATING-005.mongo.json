@@ -1,0 +1,16 @@
+{
+ "scenario": "RATING-005",
+ "entrypoint": "billing.fn_usage_rating",
+ "mongo_entrypoint": "rating_service.usage_rating",
+ "inputs": {
+  "period_end": "2026-02-28",
+  "period_start": "2026-02-01",
+  "tenant_id": "00000000-0000-0000-0000-000000000008"
+ },
+ "business_fields": {
+  "first_tier_units": 101,
+  "second_tier_units": 1
+ },
+ "probes": {},
+ "parity": "PASS"
+}

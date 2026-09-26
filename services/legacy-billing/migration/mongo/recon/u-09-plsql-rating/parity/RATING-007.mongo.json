@@ -1,0 +1,22 @@
+{
+ "scenario": "RATING-007",
+ "entrypoint": "billing.fn_usage_summary",
+ "mongo_entrypoint": "rating_service.usage_summary",
+ "inputs": {
+  "period_end": "2026-02-28",
+  "period_start": "2026-02-01",
+  "tenant_id": "00000000-0000-0000-0000-000000000004"
+ },
+ "business_fields": {
+  "kinds": [
+   "api",
+   "storage"
+  ],
+  "units": [
+   20,
+   30
+  ]
+ },
+ "probes": {},
+ "parity": "PASS"
+}

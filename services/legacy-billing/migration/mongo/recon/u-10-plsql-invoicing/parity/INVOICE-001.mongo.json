@@ -1,0 +1,35 @@
+{
+ "scenario": "INVOICE-001",
+ "entrypoint": "billing.fn_invoice_preview",
+ "mongo_entrypoint": "invoicing_service.invoice_preview",
+ "inputs": {
+  "period_end": "2026-02-28",
+  "period_start": "2026-02-01",
+  "tenant_id": "00000000-0000-0000-0000-000000000006"
+ },
+ "business_fields": {
+  "amounts": [
+   "49.00",
+   "5.56",
+   "2.25",
+   "2.25",
+   "0.00"
+  ],
+  "line_numbers": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "totals": [
+   "49.00",
+   "5.56",
+   "2.25",
+   "2.25",
+   "0.00"
+  ]
+ },
+ "probes": {},
+ "parity": "PASS"
+}
