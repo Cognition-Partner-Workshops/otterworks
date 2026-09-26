@@ -1,0 +1,29 @@
+{
+  "unit": "u-02-customers",
+  "collections": {
+    "customerMaster": {
+      "source_rows": 25001,
+      "docs_written": 25001
+    },
+    "customerMasterHist": {
+      "source_rows": 0,
+      "docs_written": 0
+    }
+  },
+  "embedded": {
+    "attributes": {
+      "rows": 8337,
+      "embedded": 8337
+    }
+  },
+  "quarantine": {
+    "bad_date": 50,
+    "malformed_csv": 13,
+    "eav_orphan": 0
+  },
+  "quarantine_by_field": {
+    "customerMaster.signupDt.bad_date": 50,
+    "customerMaster.relatedAcctIds.malformed_csv": 13
+  },
+  "run_at": "2026-09-26T17:31:07.723175+00:00"
+}
