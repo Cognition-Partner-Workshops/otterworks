@@ -3,10 +3,9 @@ import re
 from datetime import date, datetime, timezone
 
 import oracledb
+from backends import backend_name, oracle
 from flask import Blueprint, jsonify, request
-
-from backends import backend_name
-from backends import oracle
+from pymongo.errors import PyMongoError
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
 internal = Blueprint("internal", __name__)
@@ -51,6 +50,14 @@ def _ensure(tenant_id):
 
 def _oracle_only():
     return backend_name() == "oracle"
+
+
+def _reads():
+    if backend_name() != "mongo":
+        return None
+    from backends import mongo
+
+    return mongo
 
 
 def _parse_date(value, name):
@@ -232,6 +239,12 @@ def invoices():
     tenant_id, error = _identity()
     if error:
         return error
+    mongo = _reads()
+    if mongo is not None:
+        try:
+            return jsonify(mongo.invoices(tenant_id))
+        except PyMongoError:
+            return jsonify(UNAVAILABLE), 503
     if not _oracle_only():
         return _not_available()
     try:
@@ -259,6 +272,14 @@ def invoice_lines(invoice_id):
     tenant_id, error = _identity()
     if error:
         return error
+    mongo = _reads()
+    if mongo is not None:
+        try:
+            if not mongo.invoice_owned(invoice_id, tenant_id):
+                return jsonify(error="invoice not found"), 404
+            return jsonify(mongo.invoice_lines(invoice_id))
+        except PyMongoError:
+            return jsonify(UNAVAILABLE), 503
     if not _oracle_only():
         return _not_available()
     try:
