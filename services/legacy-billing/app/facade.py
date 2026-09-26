@@ -328,14 +328,14 @@ def admin_overdue():
 def admin_dunning():
     if not _admin():
         return jsonify(error="forbidden"), 403
-    if os.getenv("BILLING_DUNNING_READ", "").lower() == "mongo":
-        as_of = date.today()
-        return jsonify(mongo_dunning.admin_dunning(as_of))
-    if not _oracle_only():
+    mongo_read = os.getenv("BILLING_DUNNING_READ", "").lower() == "mongo"
+    if not mongo_read and not _oracle_only():
         return _not_available()
     as_of, date_error = _parse_date(request.args.get("as_of"), "as_of")
     if date_error:
         return date_error
+    if mongo_read:
+        return jsonify(mongo_dunning.admin_dunning(as_of))
     try:
         return jsonify(
             oracle.query(

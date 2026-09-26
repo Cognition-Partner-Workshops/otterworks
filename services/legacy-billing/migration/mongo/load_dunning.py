@@ -13,6 +13,8 @@ from datetime import date, datetime, time, timezone
 from decimal import Decimal
 from pathlib import Path
 
+from bson.int64 import Int64
+
 UNIT = "u-05-dunning-data"
 TARGET_DB = "ow_billing_migration"
 WRITE_TARGETS = {
@@ -34,9 +36,9 @@ def _to_long(value):
     if isinstance(value, bool):
         raise TypeError("not an integer value")
     if isinstance(value, int):
-        return value
+        return Int64(value)
     if isinstance(value, Decimal) and value == value.to_integral_value():
-        return int(value)
+        return Int64(int(value))
     raise TypeError("not an integer value")
 
 

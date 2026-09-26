@@ -7,8 +7,8 @@
   },
   "mapping_version": "map-draft-2",
   "tolerance_version": "tol-1",
-  "started": "2026-09-26T17:55:07.435630+00:00",
-  "finished": "2026-09-26T17:55:07.633400+00:00",
+  "started": "2026-09-26T17:56:18.642397+00:00",
+  "finished": "2026-09-26T17:56:18.795654+00:00",
   "collections": {
     "dunningAttempts": {
       "source_rows": 1,
