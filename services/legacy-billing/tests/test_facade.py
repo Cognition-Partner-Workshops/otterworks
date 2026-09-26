@@ -426,3 +426,26 @@ def test_plan_change_rejects_unknown_plan(monkeypatch):
     )
     assert response.status_code == 400
     assert response.get_json()["error"] == "invalid plan change"
+
+
+def test_mongo_customer_keys_round_trip_to_oracle_columns():
+    import json
+
+    from backends import mongo_customers
+
+    spec = json.loads(
+        (
+            Path(__file__).resolve().parents[1]
+            / "migration/mongo/specs/u-02-customers.mapping.json"
+        ).read_text()
+    )
+    customer = next(
+        c for c in spec["collections"] if c["collection"] == "customerMaster"
+    )
+    fields = list(customer["fields"]) + customer["embeds"][0]["child_fields"]
+    mismatches = {
+        f["target"]: mongo_customers._snake(f["target"])
+        for f in fields
+        if mongo_customers._snake(f["target"]) != f["source"].lower()
+    }
+    assert mismatches == {}

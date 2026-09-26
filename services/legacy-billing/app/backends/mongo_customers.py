@@ -20,10 +20,14 @@ _client = None
 _CAMEL = re.compile(r"([A-Z])")
 _DIGIT_SUFFIX = re.compile(r"([a-zA-Z])(\d+)$")
 
-# Spec targets that drop the *_YN / *_CSV suffix the Oracle column names carry;
-# everything else maps back with the regexes above (verified against the spec's
-# source column names).
+# Spec targets whose Oracle column name is not the regex round-trip: the
+# *_YN / *_CSV suffixes are dropped, and ZIP4 / PHONE1..4 carry no underscore.
 _LEGACY_KEY = {
+    "zip4": "zip4",
+    "phone1": "phone1",
+    "phone2": "phone2",
+    "phone3": "phone3",
+    "phone4": "phone4",
     "taxExempt": "tax_exempt_yn",
     "creditHold": "credit_hold_yn",
     "dunningExempt": "dunning_exempt_yn",
