@@ -2,63 +2,79 @@
   "unit": "w1-b02",
   "mode": "live",
   "target_class": "migration_cluster",
-  "mapping_version": "map-v1",
+  "mapping_version": "map-v1-w1-b02",
   "tolerance_version": "tol-v1",
   "seed": 1,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-09-26T17:35:30.259582+00:00",
+  "generated_at": "2026-09-26T17:55:53.857429+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
     {
       "tier": 1,
       "name": "counts_through_mapping",
-      "passed": false,
-      "checks_run": 6,
+      "passed": true,
+      "checks_run": 1,
       "stats": {
         "source_counts": {
-          "users": 500,
-          "folders": 300,
-          "documents": 5000,
-          "comments": 12000,
-          "shares": 3000,
-          "audit_events": 20000
+          "documents": 5000
         }
       },
-      "findings": [
-        {
-          "collection": "users",
-          "check": "root_count",
-          "detail": "rows(users)=500 vs docs=50",
-          "source_value": "null",
-          "target_value": "null",
-          "rules_applied": [],
-          "rules_configured": []
-        },
-        {
-          "collection": "folders",
-          "check": "root_count",
-          "detail": "rows(folders)=300 vs docs=30",
-          "source_value": "null",
-          "target_value": "null",
-          "rules_applied": [],
-          "rules_configured": []
-        },
-        {
-          "collection": "audit_events",
-          "check": "root_count",
-          "detail": "rows(audit_events)=20000 vs docs=0",
-          "source_value": "null",
-          "target_value": "null",
-          "rules_applied": [],
-          "rules_configured": []
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 9,
+      "stats": {
+        "deferred_to_tier3": [
+          "documents.title",
+          "documents.folderId",
+          "documents.status",
+          "documents.createdAt",
+          "documents.updatedAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "documents.title",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "documents.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 5000,
+      "stats": {
+        "documents": {
+          "mode": "full_diff",
+          "population": 5000,
+          "duplicate_source_key_count": 0
         }
-      ]
+      },
+      "findings": []
     }
   ],
   "warnings": [],
-  "verdict": "FAIL",
-  "merge_eligible": false,
+  "verdict": "PASS",
+  "merge_eligible": true,
   "error": null
 }

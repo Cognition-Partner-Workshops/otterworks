@@ -28,9 +28,10 @@ Recon commands are the ones in the batch brief (fixture, then live once); output
   their millisecond precision, `tags` arrays and `_id` values are unchanged.
 - Index parity: indexes are copied from the source collection's `list_indexes()`
   (`ownerId_1_updatedAt_-1`), not hard-coded, so the loader cannot drift from the source.
-- The recon harness grades every collection in the mapping spec and has no per-unit filter.
-  The binding runs (`recon/fixture/`, `recon/live/`) therefore also depend on the sibling
-  batches (w1-b01, b03, b04, b05) having loaded their collections into the same target
-  database. `recon/fixture-unit-scoped/` is a diagnostic run over a mechanical filter of the
-  unmodified spec to this unit's rows (`recon/unit_scoped_*_mapping.json`); it is not merge
-  evidence.
+- The recon harness grades every collection in the mapping it is given and has no per-unit
+  filter, so the runs use the batch-scoped mappings `.migration/mappings/w1-b02.json`
+  (live) and `.migration/mappings/w1-b02.fixture.json` (fixture) that the wave plan
+  provides: the `documents` subset of `03_mapping_spec.json`, same rules and fields.
+- Loader output of each run is kept next to the recon output: `recon/fixture_load.json`,
+  `recon/live_load_1.json`, `recon/live_load_2_idempotency.json` (counts and
+  `getIndexes()` of both sides; no document values).

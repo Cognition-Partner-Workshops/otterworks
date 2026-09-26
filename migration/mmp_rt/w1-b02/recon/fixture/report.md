@@ -1,31 +1,69 @@
 # Recon report: unit `w1-b02`
 
-- **Verdict: FAIL** (values redacted)
+- **Verdict: PASS** (values redacted)
 - Mode: `fixture` (fixture data: NOT a merge verdict, run live once before merging)
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping version: `map-v1-fixture`
+- Mapping version: `map-v1-w1-b02-fixture`
 - Tolerance version: `tol-v1`
 - Seed: `1`
-- Generated: 2026-09-26T17:28:30.467239+00:00
+- Generated: 2026-09-26T17:55:20.554914+00:00
+- 5 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
+- 2 string fields: min/max/distinct deferred to Tier 3
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
-| 1 | counts_through_mapping | 6 | FAIL (2 findings) |
+| 1 | counts_through_mapping | 1 | PASS |
+| 2 | per_field_aggregates | 9 | PASS |
+| 3 | keyed_diffs | 500 | PASS |
 
 ## Tier 1 coverage
 ```json
 {
   "source_counts": {
-    "users": 50,
-    "folders": 30,
-    "documents": 500,
-    "comments": 1200,
-    "shares": 300,
-    "audit_events": 2000
+    "documents": 500
   }
 }
 ```
 
-## Tier 1 findings (2)
-- `shares` root_count: rows(fx_src_shares)=300 vs docs=0
-- `audit_events` root_count: rows(fx_src_audit_events)=2000 vs docs=0
+## Tier 2 coverage
+```json
+{
+  "deferred_to_tier3": [
+    "documents.title",
+    "documents.folderId",
+    "documents.status",
+    "documents.createdAt",
+    "documents.updatedAt"
+  ],
+  "string_aggregates_deferred_to_tier3": [
+    {
+      "field": "documents.title",
+      "stats": [
+        "min",
+        "max",
+        "distinct_count"
+      ]
+    },
+    {
+      "field": "documents.status",
+      "stats": [
+        "min",
+        "max",
+        "distinct_count"
+      ]
+    }
+  ],
+  "fields_fully_deferred": 1
+}
+```
+
+## Tier 3 coverage
+```json
+{
+  "documents": {
+    "mode": "full_diff",
+    "population": 500,
+    "duplicate_source_key_count": 0
+  }
+}
+```
