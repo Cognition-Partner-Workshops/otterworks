@@ -1,0 +1,20 @@
+{
+  "unit": "u-03-invoicing-core",
+  "run_at": "2026-09-26T17:22:26.180668+00:00",
+  "target_db": "ow_billing_migration",
+  "loaded": {
+    "invoices": 4,
+    "creditNotes": 5,
+    "ratingPeriods": 3,
+    "ratingResults": 3
+  },
+  "source_counts": {
+    "INVOICE_LINES": 4,
+    "INVOICES": 4,
+    "CREDIT_NOTES": 5,
+    "RATING_PERIODS": 3,
+    "RATING_RESULTS": 3
+  },
+  "quarantine": [],
+  "quarantine_by_reason": {}
+}
