@@ -1,0 +1,35 @@
+{
+  "kind": "recon-report",
+  "unit": "u-04-usage-audit",
+  "batch": "w2-b01",
+  "mode": "fixture",
+  "target_class": "local",
+  "merge_eligible": false,
+  "harness_verdict": "PASS",
+  "harness_result": "result.json",
+  "parity_result": "parity.json",
+  "idempotency": {"run1": "load.run1.json", "run2": "load.run2.json", "byte_identical": true},
+  "quarantine": {"usageEvents": 0, "billingAuditLog": 0},
+  "mapping_version": "map-draft-2",
+  "tolerance_version": "tol-1",
+  "recon_runs_used": 1,
+  "pre_pr_self_check": {
+    "null_missing_cannot_fail_open": "verified: loader quarantines null keys/timestamps with reason codes; writer rejects invalid payloads with 400/422",
+    "namespace_scoped": "gap: brief mandates database ow_billing_migration (allowed_targets.json), not the ow_tp prefix; only usageEvents and billingAuditLog are touched",
+    "no_shared_ddl": "verified: only the two owned collections are dropped/recreated; Oracle is read-only",
+    "rerun_safe": "verified: drop+recreate own collections per run; two runs produced byte-identical summaries",
+    "cleanup_retains_evidence": "verified: evidence committed under recon/u-04-usage-audit/",
+    "no_secrets": "verified: credentials read by env-var name only; grep of evidence and diff clean",
+    "tolerance_from_contract": "verified: tol-1 exact, unchanged",
+    "idempotency_by_rerun": "verified",
+    "recon_recomputed_from_target": "verified: harness read localhost Mongo and Oracle fixture live at 2026-09-26T17:58Z",
+    "unverified_paths": [
+      "live/snapshot recon: not possible (offline, source_access=ddl_only, target_access=local)",
+      "billingAuditLog has 0 fixture rows: audit mapping, TTL index and quarantine reasons are covered by unit tests only",
+      "TTL index (--enable-audit-ttl) not enabled in the loaded namespace, per decision D3 (customer sign-off pending)",
+      "make tp-smoke Go/Node stages not run locally; relying on CI"
+    ],
+    "capability_preflight": "recon selftest PASS (9 rules)",
+    "tp_smoke": "not run locally (CI)"
+  }
+}
