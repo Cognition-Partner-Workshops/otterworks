@@ -1,0 +1,18 @@
+{
+ "unit": "u-04-usage-audit",
+ "tier": 4,
+ "name": "app_parity_usage_reads",
+ "mode": "fixture",
+ "target_class": "local",
+ "range": [
+  "2026-02-01",
+  "2026-02-28"
+ ],
+ "tenants": 70,
+ "checks_run": 140,
+ "source_event_rows_compared": 817,
+ "mismatches": 0,
+ "mismatch_detail": [],
+ "passed": true,
+ "non_merge_evidence": true
+}

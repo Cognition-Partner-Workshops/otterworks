@@ -1,0 +1,25 @@
+{
+  "unit": "u-04-usage-audit",
+  "collections": {
+    "usageEvents": {
+      "source": "USAGE_EVENTS",
+      "target": "usageEvents",
+      "loaded": 817,
+      "quarantined": 0,
+      "quarantine_reasons": {}
+    },
+    "billingAuditLog": {
+      "source": "BILLING_AUDIT_LOG",
+      "target": "billingAuditLog",
+      "loaded": 0,
+      "quarantined": 0,
+      "quarantine_reasons": {}
+    }
+  },
+  "indexes_created": [
+    "usageEvents:tenantId_1_occurredAt_-1",
+    "billingAuditLog:loggedAt_1"
+  ],
+  "audit_ttl_enabled": false,
+  "quarantine_rows": []
+}
