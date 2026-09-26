@@ -1,0 +1,80 @@
+{
+  "unit": "w1-b02",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-v1-w1-b02-scoped",
+  "tolerance_version": "tol-v1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-26T17:32:54.513238+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "documents": 5000
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 9,
+      "stats": {
+        "deferred_to_tier3": [
+          "documents.title",
+          "documents.folderId",
+          "documents.status",
+          "documents.createdAt",
+          "documents.updatedAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "documents.title",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "documents.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 5000,
+      "stats": {
+        "documents": {
+          "mode": "full_diff",
+          "population": 5000,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}

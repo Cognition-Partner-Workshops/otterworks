@@ -1,0 +1,43 @@
+{
+  "batch": "w1-b02",
+  "mode": "live",
+  "collections": {
+    "documents": {
+      "source": "mmp_rt_src.documents",
+      "source_count": 5000,
+      "target": "mmp_rt_billing_n.documents",
+      "target_count": 5000,
+      "inserted": 5000,
+      "source_indexes": [
+        {
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "key": {
+            "ownerId": 1,
+            "updatedAt": -1
+          },
+          "name": "ownerId_1_updatedAt_-1"
+        }
+      ],
+      "target_indexes": [
+        {
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "key": {
+            "ownerId": 1,
+            "updatedAt": -1
+          },
+          "name": "ownerId_1_updatedAt_-1"
+        }
+      ]
+    }
+  }
+}
