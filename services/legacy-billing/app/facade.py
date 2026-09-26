@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 
 import oracledb
 from flask import Blueprint, jsonify, request
+from pymongo.errors import PyMongoError
 
 from backends import backend_name
 from backends import oracle
@@ -53,6 +54,21 @@ def _oracle_only():
     return backend_name() == "oracle"
 
 
+def _tenancy():
+    """Read backend for plans/entitlement/tenant lookups (unit u-01-tenancy).
+
+    TENANCY_BACKEND=mongo serves them from ow_billing_migration; writes stay on Oracle.
+    """
+    if os.getenv("TENANCY_BACKEND", "oracle").lower() == "mongo":
+        from backends import mongo
+
+        return mongo
+    return oracle
+
+
+ESTATE_ERRORS = (oracledb.Error, PyMongoError)
+
+
 def _parse_date(value, name):
     if value is None:
         value = date.today().isoformat()
@@ -87,10 +103,10 @@ def plans():
                     "included_units": row.get("included_units"),
                     "overage_rate": row.get("overage_rate"),
                 }
-                for row in oracle.list_plans()
+                for row in _tenancy().list_plans()
             ]
         )
-    except oracledb.Error:
+    except ESTATE_ERRORS:
         return jsonify(UNAVAILABLE), 503
 
 
@@ -106,17 +122,9 @@ def me():
         return date_error
     try:
         _ensure(tenant_id)
-        entitlement = oracle.entitlement(tenant_id, on)
-        tenant_rows = oracle.query(
-            """SELECT t.id AS tenant_id, t.name,
-                      ts.code_desc AS status, t.tax_exempt_yn AS tax_exempt
-                 FROM tenants t
-                 LEFT JOIN codes ts
-                   ON ts.code_type = 'TENANT_STATUS'
-                  AND ts.code_val = t.status_cd
-                WHERE t.id = :1""",
-            (tenant_id,),
-        )
+        tenancy = _tenancy()
+        entitlement = tenancy.entitlement(tenant_id, on)
+        tenant_rows = tenancy.tenant_profile(tenant_id)
         customer = oracle.query(
             """SELECT cust_no, cust_name, cur_bal_amt, past_due_amt,
                       credit_hold_yn
@@ -130,7 +138,7 @@ def me():
         body["entitlement"] = entitlement
         body["customer"] = customer[0] if customer else None
         return jsonify(body)
-    except oracledb.Error:
+    except ESTATE_ERRORS:
         return jsonify(UNAVAILABLE), 503
 
 
@@ -146,8 +154,8 @@ def entitlement():
         return date_error
     try:
         _ensure(tenant_id)
-        return jsonify(oracle.entitlement(tenant_id, on))
-    except oracledb.Error:
+        return jsonify(_tenancy().entitlement(tenant_id, on))
+    except ESTATE_ERRORS:
         return jsonify(UNAVAILABLE), 503
 
 
@@ -174,7 +182,7 @@ def plan_change():
     if effective_date < datetime.now(timezone.utc).date():
         return jsonify(error="invalid plan change", detail="effective_on must be today or later"), 400
     try:
-        if plan_id not in {row.get("plan_id") for row in oracle.list_plans()}:
+        if plan_id not in {row.get("plan_id") for row in _tenancy().list_plans()}:
             return jsonify(error="invalid plan change", detail="plan_id is not a known billing plan"), 400
         _ensure(tenant_id)
         oracle.change_plan(
@@ -189,7 +197,7 @@ def plan_change():
                 effective_on,
             ),
         )
-    except oracledb.Error:
+    except ESTATE_ERRORS:
         return jsonify(UNAVAILABLE), 503
 
 

@@ -61,6 +61,19 @@ def entitlement(tenant_id, on):
     return _function("pkg_plans.fn_entitlement", (tenant_id, _as_date(on)))
 
 
+def tenant_profile(tenant_id):
+    return query(
+        """SELECT t.id AS tenant_id, t.name,
+                  ts.code_desc AS status, t.tax_exempt_yn AS tax_exempt
+             FROM tenants t
+             LEFT JOIN codes ts
+               ON ts.code_type = 'TENANT_STATUS'
+              AND ts.code_val = t.status_cd
+            WHERE t.id = :1""",
+        (tenant_id,),
+    )
+
+
 def change_plan(tenant_id, plan_id, effective_on):
     effective_date = _as_date(effective_on)
     with oracle_connect() as connection, connection.cursor() as cursor:
