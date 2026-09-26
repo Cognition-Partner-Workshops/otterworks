@@ -3,10 +3,8 @@ import re
 from datetime import date, datetime, timezone
 
 import oracledb
+from backends import backend_name, mongo, oracle
 from flask import Blueprint, jsonify, request
-
-from backends import backend_name
-from backends import oracle
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
 internal = Blueprint("internal", __name__)
@@ -198,6 +196,20 @@ def usage():
     tenant_id, error = _identity()
     if error:
         return error
+    if backend_name() == "mongo":
+        start, end, date_error = _usage_range()
+        if date_error:
+            return date_error
+        try:
+            return jsonify(
+                summary=mongo.usage_summary(tenant_id, start, end),
+                rating=[],
+                events=mongo.usage_events(tenant_id, start, end),
+            )
+        except Exception as exc:
+            if mongo.is_unavailable(exc):
+                return jsonify(UNAVAILABLE), 503
+            raise
     if not _oracle_only():
         return _not_available()
     start, end, date_error = _usage_range()
@@ -359,8 +371,6 @@ def usage_event():
         return jsonify(error="internal usage ingest not configured"), 503
     if request.headers.get("X-Internal-Token") != expected_token:
         return jsonify(error="unauthorized"), 401
-    if not _oracle_only():
-        return _not_available()
     raw_body = request.get_data(cache=True)
     if len(raw_body) > 16 * 1024:
         return jsonify(error="invalid usage event", detail="request body exceeds 16 KB"), 400
@@ -386,6 +396,22 @@ def usage_event():
         datetime.fromisoformat(occurred_at.replace("Z", "+00:00"))
     except ValueError:
         return jsonify(error="invalid usage event", detail="occurred_at must be an ISO-8601 timestamp"), 400
+    if backend_name() == "mongo":
+        try:
+            result = mongo.record_usage_event(
+                event_id, tenant_id, occurred_at, units, kind
+            )
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 422
+        except Exception as exc:
+            if mongo.is_unavailable(exc):
+                return jsonify(UNAVAILABLE), 503
+            raise
+        if result == "duplicate":
+            return jsonify(status="duplicate")
+        return jsonify(status="recorded"), 201
+    if not _oracle_only():
+        return _not_available()
     try:
         with oracle.oracle_connect() as connection:
             oracle.ensure_tenant(connection, tenant_id, payload.get("email"))
