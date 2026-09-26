@@ -4,9 +4,9 @@
 - Mode: `fixture` (fixture data: NOT a merge verdict, run live once before merging) | Target: `local` (local target: NOT a merge verdict)
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Mapping version: `map-draft-2`
-- Tolerance version: `tol-1`
+- Tolerance version: `tol-2`
 - Seed: `1`
-- Generated: 2026-09-26T17:31:32.054025+00:00
+- Generated: 2026-09-26T18:16:00.109017+00:00
 - **WARNING: embed customerMaster.attributes: scoped by a where-predicate; extra target elements not checked**
 - 311 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 220 string fields: min/max/distinct deferred to Tier 3

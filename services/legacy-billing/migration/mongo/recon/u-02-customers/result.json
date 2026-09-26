@@ -3,11 +3,11 @@
   "mode": "fixture",
   "target_class": "local",
   "mapping_version": "map-draft-2",
-  "tolerance_version": "tol-1",
+  "tolerance_version": "tol-2",
   "seed": 1,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-09-26T17:31:32.054025+00:00",
+  "generated_at": "2026-09-26T18:16:00.109017+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
