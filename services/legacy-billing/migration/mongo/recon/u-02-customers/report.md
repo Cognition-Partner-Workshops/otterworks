@@ -6,7 +6,7 @@
 - Mapping version: `map-draft-2`
 - Tolerance version: `tol-2`
 - Seed: `1`
-- Generated: 2026-09-26T18:16:00.109017+00:00
+- Generated: 2026-09-26T18:27:47.375838+00:00
 - **WARNING: embed customerMaster.attributes: scoped by a where-predicate; extra target elements not checked**
 - 311 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 220 string fields: min/max/distinct deferred to Tier 3
@@ -15,7 +15,7 @@
 |---|---|---|---|
 | 1 | counts_through_mapping | 3 | PASS |
 | 2 | per_field_aggregates | 30 | PASS |
-| 3 | keyed_diffs | 33338 | FAIL (63 findings) |
+| 3 | keyed_diffs | 33338 | FAIL (13 findings) |
 
 ## Tier 1 coverage
 ```json
@@ -2131,55 +2131,17 @@
 }
 ```
 
-## Tier 3 findings (63)
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:d557c1a68d55 | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:38f32a47f070 | source=str:90fecf3946e8 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:8a13998e6893 | source=str:7a064df7c74e target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3520d8e318e8 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:44d669717b34 | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:1ed04c98695d | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:0e6b15bdcca9 | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:e45cd81615ac | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
+## Tier 3 findings (13)
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:0e55541bb6dc | source=str:cc316ecab2ec target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:075bb65fdd3d | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:aaeba2f0f894 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:91c037911ca3 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:4e14db9a0e35 | source=str:7a064df7c74e target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:b231b176069f | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:65f1b7e2e144 | source=str:7a064df7c74e target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3f0b1528168b | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:5f4cb4fbffbe | source=str:90fecf3946e8 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:627473c9c57e | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:3976d0c98700 | source=str:cc316ecab2ec target=missing | rules=['csv_to_array', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:7e1f1398fb17 | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ea2bcbffde39 | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:984f119695ac | source=str:f6ee158f3e4f target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:775399c26c56 | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:9e49ce4539da | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:1d5ec181fd06 | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:546f3a031a56 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:a82ff5e57ce2 | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:1afb86ed2988 | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:64b85e43d621 | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:fdba07f1b3d7 | source=str:7a064df7c74e target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:882a0b1f30b8 | source=str:adbdd7a248ba target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:f7d0a4dffa71 | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:47c3f1e38f30 | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:69ad5f56156e | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:46ea9c204dbb | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:1d760732a96a | source=str:f6ee158f3e4f target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:6172d8531081 | source=str:f6ee158f3e4f target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:62c33909732d | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:962eb1709d5a | source=str:7cd8821d8d3d target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:7a3a2f08d097 | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:0676b6a32f36 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:2015d44e1ef3 | source=str:adbdd7a248ba target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:4518ceb91fdb | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:c314151ecdd8 | source=str:f6ee158f3e4f target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:15d90fcee79f | source=str:dc4e267ca091 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:2c4b35e77bdd | source=str:f6ee158f3e4f target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:f69befd81483 | source=str:f9f018ac29e0 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
 - `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:cc35dfda6e9f | source=str:cc316ecab2ec target=missing | rules=['csv_to_array', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:85d7a1cffdb7 | source=str:ee9886933675 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:c2f8b30bc911 | source=str:90fecf3946e8 target=missing | rules=['date_string_to_date:dby-b3d57e!unconverted', 'null_missing_equiv']
-- ... 13 more in result.json
+- `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:d0900af6fabf | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
+- `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:8c28f67143a0 | source=str:cc316ecab2ec target=missing | rules=['csv_to_array', 'null_missing_equiv']
+- `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:aa9f715dbf4d | source=str:cc316ecab2ec target=missing | rules=['csv_to_array', 'null_missing_equiv']
+- `customerMaster` field_diff: field RELATED_ACCT_IDS->relatedAcctIds key=tuple:07aacc2e67c6 | source=str:5c651bbdbcdf target=missing | rules=['csv_to_array', 'null_missing_equiv']
