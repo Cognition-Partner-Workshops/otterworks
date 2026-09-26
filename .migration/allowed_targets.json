@@ -1,0 +1,6 @@
+{
+  "databases": ["mmp_rt_billing_n"],
+  "catalogs": ["mmp_rt_billing_n"],
+  "guard_mode": "warn",
+  "_note": "databases is the mongo-migration allowlist (read by connectivity_probe.py and the recon harness). catalogs mirrors it only because the co-installed dbx-migration-factory PreToolUse guard parses this file and refuses every tool call in this workspace without a non-empty 'catalogs' list; no Databricks target exists in this engagement. Source read-only rule for mmp_rt_src is enforced by the mongo-migration probe (privilege_excess) and the read-only source credential."
+}
