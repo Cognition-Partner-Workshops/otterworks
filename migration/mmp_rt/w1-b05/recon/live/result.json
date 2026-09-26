@@ -1,0 +1,77 @@
+{
+  "unit": "w1-b05",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-v1",
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-09-26T17:38:07.401591+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "audit_events": 20000
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 6,
+      "stats": {
+        "deferred_to_tier3": [
+          "audit_events.action",
+          "audit_events.targetType",
+          "audit_events.ts"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "audit_events.action",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "audit_events.targetType",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 20000,
+      "stats": {
+        "audit_events": {
+          "mode": "full_diff",
+          "population": 20000,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}
