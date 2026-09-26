@@ -1,0 +1,4 @@
+mode=live source=mmp_rt_src.comments source_count=12000
+inserted=12000 target_count=12000
+source_documents=5000 orphans=15
+target_indexes=['_id_', 'documentId_1']
