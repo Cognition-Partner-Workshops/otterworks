@@ -101,7 +101,7 @@ def month_end_status_rows(db, batch_no):
     ]
     rows = [
         (
-            _status_label(doc["_id"]["cd"], doc["_id"]["desc"]),
+            _status_label(doc["_id"].get("cd"), doc["_id"].get("desc")),
             int(doc["invoice_count"]),
             _money(doc["header_total_amt"]),
         )
@@ -154,8 +154,8 @@ def month_end_line_rows(db, batch_no):
     ]
     rows = [
         (
-            _status_label(doc["_id"]["cd"], doc["_id"]["desc"]),
-            _line_type_label(doc["_id"]["lt"]),
+            _status_label(doc["_id"].get("cd"), doc["_id"].get("desc")),
+            _line_type_label(doc["_id"].get("lt")),
             int(doc["line_count"]),
             _money(doc["line_amount"]),
             _money(doc["line_tax"]),

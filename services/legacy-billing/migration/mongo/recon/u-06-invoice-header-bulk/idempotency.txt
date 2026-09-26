@@ -1,0 +1,11 @@
+u-06-invoice-header-bulk load idempotency
+=========================================
+Method: sha256 over bson.encode(doc) for each invoiceHeader document in _id order.
+
+run 1 (initial load):  count=18750 sha256=036d4bf8e9077420e60709edb377814ff991c72e3bd7361ce7544ef6943d71a1
+run 2 (full reload,    count=18750 sha256=036d4bf8e9077420e60709edb377814ff991c72e3bd7361ce7544ef6943d71a1
+       drop+insert):
+
+Hashes identical: the reload converged byte-for-byte (natural _id keys,
+deterministic lines[] ordering by (lineNo, lineId), drop_collection before
+insert).

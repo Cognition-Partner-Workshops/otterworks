@@ -1,0 +1,204 @@
+{
+  "unit": "u-06-invoice-header-bulk",
+  "source": "invoice_header + invoice_line (Oracle)",
+  "target": "ow_billing_migration.invoiceHeader",
+  "loaded_headers": 18750,
+  "embedded_lines": 149963,
+  "quarantined": 37,
+  "quarantine_reasons": {
+    "orphan_line": 37
+  },
+  "quarantine_rows": [
+    {
+      "reason": "orphan_line",
+      "line_id": "78572c4c-b635-7daa-183e-5490237ab052",
+      "invoice_id": "0b4bcca1-e49e-d12c-94c0-9156218a6a5f"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "57f7b9b0-9e76-4439-48b9-3b71025322a4",
+      "invoice_id": "15f97fdf-21a5-21ce-057d-e7fe9c0d329a"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "4b34c0f1-8476-f678-add0-b3f921a7cd5f",
+      "invoice_id": "1fa280ee-1f5a-afee-1a6b-50f70c3fdfec"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "c1008e17-8f78-a845-2ba2-bccd154a0b9c",
+      "invoice_id": "227479c5-9ecc-7f3c-c794-54cf33844f95"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "c4a55285-efd8-3c27-d21e-ab29cdf11eae",
+      "invoice_id": "2b5a56b7-07ef-6320-65bb-b6432ace3fcf"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "b0479162-4897-2f54-82d5-c08044b3a1a7",
+      "invoice_id": "3102c632-a2a7-009e-acfd-d45cd3057b26"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "da96e215-3481-a34b-2d84-c4a8f67ee7e3",
+      "invoice_id": "34ae08ff-c0ff-399b-5f2e-53826a387b73"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "8c95dd3d-97ed-420d-1965-cf320c34fb84",
+      "invoice_id": "3917dde8-e0e3-5022-5143-2907c389c943"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "e77fefbf-059b-62cb-f889-1c7296f933b5",
+      "invoice_id": "3be8d384-f25a-6bf1-a0aa-b049cb718a94"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "cfb214f7-cf89-751a-ed4c-8ef1bfa2665d",
+      "invoice_id": "3e7a1f88-97f8-6cd4-8bea-b3aa1e9c14d6"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "aef7cf16-4fdc-e2bc-7de5-ddbc1782c43a",
+      "invoice_id": "4693ffca-770f-93b1-fd15-53dea8f96514"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "c8ee4242-005d-bf23-d5a0-d8c906ef6f3f",
+      "invoice_id": "50242b74-cc87-5433-b344-3ab031368e28"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "c08e04e0-0a1c-27fc-12a4-802a2421036c",
+      "invoice_id": "64d5ab87-522f-24e4-10ab-6aca81a4f768"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "bddd1f4a-cad4-50cb-a066-9ee465981778",
+      "invoice_id": "66e49dad-f229-f865-602e-f4a5119211fb"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "f032b198-0c91-8ccd-a23d-3804994faacd",
+      "invoice_id": "6c8daa53-f025-cf26-d0b8-54cf07327d64"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "670cd75f-cf78-0b95-5426-a95484ef2a0e",
+      "invoice_id": "6f4cf14a-243c-b3bc-c58e-c7eb78c2c123"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "4c826f11-c733-eac0-9318-29ae919beec4",
+      "invoice_id": "72707e74-5fc9-67ff-b100-713f577fe063"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "97f42ec8-39e7-19f2-9a76-84414644efc3",
+      "invoice_id": "7b2f44c8-8256-53e1-37e5-8ddbdf6d4705"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "7242b80f-45f6-4bbf-3153-bb2ce0c6441e",
+      "invoice_id": "86bf978d-9d57-91a7-b877-c30b84f0f800"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "90ddc15d-a71e-ea73-9392-338da7255605",
+      "invoice_id": "9b94b0ab-8455-3453-a3e3-629f00a97040"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "0fe3f0d5-2e0d-87dc-0933-f84887549f80",
+      "invoice_id": "a087ab39-88c0-5e0d-19e3-ee9f9515ae1d"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "f2053077-7f8a-ea53-b9ed-7c5e2b9fce88",
+      "invoice_id": "a75ef128-b6fc-e80a-30eb-92538f670fb3"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "b259311b-5098-d0f9-a658-585d6eff8f81",
+      "invoice_id": "a87d09e3-8772-9071-ac83-ed73c79ac45b"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "50526783-22bf-ae7c-f6ba-4f8aa111b611",
+      "invoice_id": "a961af58-f536-e8f6-ece5-73498cecf4f5"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "9dd7ea2b-091d-c45f-abd6-2a2fb2e43891",
+      "invoice_id": "a9b1f407-bc28-6ef2-7b39-4048f77cf01d"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "0e7a3dc2-d003-464a-9c2b-14125c79cbe9",
+      "invoice_id": "b73e6da9-a875-066f-bc70-ce7b67a78f78"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "78f6a5bb-18f3-bf6e-2aa3-92f241f6c5b1",
+      "invoice_id": "bab6f802-7fdb-72a3-8215-f43dc900c98a"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "9f1600ed-b570-0274-d42e-c1dab91038c4",
+      "invoice_id": "c58a51b7-5ed0-c49f-2c16-cabe502c70f2"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "8c12956a-e778-88e6-67d5-ad44d3b540c3",
+      "invoice_id": "c596beeb-fcba-2e4b-e2d2-6ce00627a132"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "1c435cb0-171d-69c3-f600-a5f4bc7e90fe",
+      "invoice_id": "c88972ef-3117-3cfc-39a0-9b14135636d2"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "95d5043f-e481-1de8-cd92-bd76bc09dc19",
+      "invoice_id": "d3fceb54-e51d-d48a-2c81-ecfa847b077e"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "21367220-1d41-e396-0f3b-dbf2ae5d91e9",
+      "invoice_id": "dca8aea8-95d4-e773-9016-c8a86c7381aa"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "982209a3-c282-e02f-83ec-ee9d0b474d7f",
+      "invoice_id": "de1c1fce-9389-e3a5-f84b-34fad5ddace0"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "0fbd756a-1d5f-bdfb-4cb9-81d2cbb4fee4",
+      "invoice_id": "e56a27b8-9d69-797f-3900-036730ccdfe9"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "a53ea126-8621-3e3c-a8be-88435d7ca266",
+      "invoice_id": "eb6ed01e-3939-0456-7d5a-93fa3bb73a39"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "8e85a5db-53c9-a05b-3049-752bb6632003",
+      "invoice_id": "f66d92af-39ca-05f3-f75b-25ec557c5fbc"
+    },
+    {
+      "reason": "orphan_line",
+      "line_id": "d032629f-368d-fc21-534c-13866e7dd45a",
+      "invoice_id": "fe77a64b-7e71-0211-85d6-e539cd5d5f60"
+    }
+  ],
+  "indexes": [
+    "batchNo",
+    "tenantId",
+    "lines.lineId"
+  ],
+  "elapsed_s": 8.545
+}
