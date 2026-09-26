@@ -14,12 +14,17 @@ Indexes: `users.email_1` (`{email: 1}`, not unique, decision M3); `folders` has 
 Secrets by name: `MONGODB_MMP_RT_TARGET_N_URI` (target and fixture), `MONGODB_MMP_RT_SOURCE_URI` (live source).
 Prints per-collection source/inserted/target counts and `getIndexes()` for both sides; exits 1 on a count mismatch.
 
-## Status: BLOCKED before the live run
-The brief's fixture recon command (`recon/fixture/`) FAILs in Tier 1 on `shares` and
-`audit_events`: the command passes the whole mapping spec (all six collections), and those two
-collections belong to w1-b04/w1-b05 and were not yet loaded. `users`/`folders` passed Tier 1.
-The harness has no collection filter and the mapping has no per-batch scoping, so this batch
-cannot reach PASS without depending on (and certifying) other batches' collections.
-A diagnostic fixture run with a scratch mapping restricted to the users/folders rows (not
-committed, not merge evidence) PASSed Tiers 1-3 (2 / 9 / 80 checks).
-No live load or live recon was run.
+## Recon
+Graded with the batch-scoped mappings `.migration/mappings/w1-b01.fixture.json` (fixture) and
+`.migration/mappings/w1-b01.json` (live); the harness has no collection filter, so grading the
+whole spec would make the verdict depend on sibling batches.
+```
+~/.venvs/recon/bin/recon run --unit w1-b01 --family mongodb-atlas --mapping .migration/mappings/w1-b01.json \
+  --tolerances .migration/02_tolerances.json --canonicalization .migration/canonicalization.json --mode live \
+  --source-dsn-secret MONGODB_MMP_RT_SOURCE_URI --source-db mmp_rt_src \
+  --target-uri-secret MONGODB_MMP_RT_TARGET_N_URI --target-db mmp_rt_billing_n \
+  --target-class migration_cluster --source-concurrency 2 --seed 1 --out migration/mmp_rt/w1-b01/recon/live/
+```
+Evidence: `recon/fixture/` (PASS, 2/9/80 checks, not merge evidence) and `recon/live/` (PASS,
+2/9/800 checks, `merge_eligible=true`). Live source read exactly once by the loader plus one recon run;
+a second `--mode live` load reproduced users=500, folders=300 (idempotent).
