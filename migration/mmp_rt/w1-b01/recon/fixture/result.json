@@ -2,54 +2,112 @@
   "unit": "w1-b01",
   "mode": "fixture",
   "target_class": "migration_cluster",
-  "mapping_version": "map-v1-fixture",
+  "mapping_version": "map-v1-w1-b01-fixture",
   "tolerance_version": "tol-v1",
   "seed": 1,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-09-26T17:28:32.712782+00:00",
+  "generated_at": "2026-09-26T17:55:13.115240+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
     {
       "tier": 1,
       "name": "counts_through_mapping",
-      "passed": false,
-      "checks_run": 6,
+      "passed": true,
+      "checks_run": 2,
       "stats": {
         "source_counts": {
           "users": 50,
-          "folders": 30,
-          "documents": 500,
-          "comments": 1200,
-          "shares": 300,
-          "audit_events": 2000
+          "folders": 30
         }
       },
-      "findings": [
-        {
-          "collection": "shares",
-          "check": "root_count",
-          "detail": "rows(fx_src_shares)=300 vs docs=0",
-          "source_value": "null",
-          "target_value": "null",
-          "rules_applied": [],
-          "rules_configured": []
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 9,
+      "stats": {
+        "deferred_to_tier3": [
+          "users.email",
+          "users.displayName",
+          "users.role",
+          "users.createdAt",
+          "folders.name",
+          "folders.path",
+          "folders.parentId",
+          "folders.createdAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "users.email",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "users.displayName",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "users.role",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "folders.name",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "folders.path",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 80,
+      "stats": {
+        "users": {
+          "mode": "full_diff",
+          "population": 50,
+          "duplicate_source_key_count": 0
         },
-        {
-          "collection": "audit_events",
-          "check": "root_count",
-          "detail": "rows(fx_src_audit_events)=2000 vs docs=0",
-          "source_value": "null",
-          "target_value": "null",
-          "rules_applied": [],
-          "rules_configured": []
+        "folders": {
+          "mode": "full_diff",
+          "population": 30,
+          "duplicate_source_key_count": 0
         }
-      ]
+      },
+      "findings": []
     }
   ],
   "warnings": [],
-  "verdict": "FAIL",
+  "verdict": "PASS",
   "merge_eligible": false,
   "error": null
 }
