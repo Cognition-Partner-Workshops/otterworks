@@ -6,6 +6,7 @@ import oracledb
 from flask import Blueprint, jsonify, request
 
 from backends import backend_name
+from backends import mongo_dunning
 from backends import oracle
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
@@ -327,6 +328,9 @@ def admin_overdue():
 def admin_dunning():
     if not _admin():
         return jsonify(error="forbidden"), 403
+    if os.getenv("BILLING_DUNNING_READ", "").lower() == "mongo":
+        as_of = date.today()
+        return jsonify(mongo_dunning.admin_dunning(as_of))
     if not _oracle_only():
         return _not_available()
     as_of, date_error = _parse_date(request.args.get("as_of"), "as_of")

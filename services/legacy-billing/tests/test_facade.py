@@ -335,6 +335,30 @@ def test_plan_change_rejects_past_date(monkeypatch):
     assert response.get_json()["error"] == "invalid plan change"
 
 
+def test_admin_dunning_mongo_read_path(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    monkeypatch.setenv("BILLING_DUNNING_READ", "mongo")
+    canned = [
+        {
+            "id": "80000000-0000-0000-0000-000000000001",
+            "tenant_id": "00000000-0000-0000-0000-000000000005",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "attempt_no": "1",
+            "scheduled_for": "2026-02-16",
+            "status": "sent",
+        }
+    ]
+    monkeypatch.setattr(
+        facade_module.mongo_dunning, "admin_dunning", lambda as_of, limit=200: canned
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/admin/dunning",
+        headers={"X-User-ID": "tenant", "X-User-Roles": "ADMIN"},
+    )
+    assert response.status_code == 200
+    assert response.get_json() == canned
+
+
 def test_plan_change_rejects_unknown_plan(monkeypatch):
     monkeypatch.setenv("BILLING_BACKEND", "oracle")
     monkeypatch.setattr(facade_module.oracle, "list_plans", lambda: [{"plan_id": "p2"}])
