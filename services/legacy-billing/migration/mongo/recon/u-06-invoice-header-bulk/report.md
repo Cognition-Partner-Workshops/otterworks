@@ -3,10 +3,10 @@
 - **Verdict: FAIL** (values redacted)
 - Mode: `fixture` (fixture data: NOT a merge verdict, run live once before merging) | Target: `local` (local target: NOT a merge verdict)
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping version: `map-draft-2`
-- Tolerance version: `tol-1`
+- Mapping version: `map-draft-3`
+- Tolerance version: `tol-2`
 - Seed: `1`
-- Generated: 2026-09-26T18:07:10.184064+00:00
+- Generated: 2026-09-26T18:39:47.145133+00:00
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
@@ -22,4 +22,4 @@
 ```
 
 ## Tier 1 findings (1)
-- `invoiceHeader` embed_cardinality: rows(INVOICE_LINE)=150000 vs sum(len(lines))=149963
+- `invoiceHeader` embed_cardinality: rows(INVOICE_LINE)=149963 vs sum(len(lines))=0
