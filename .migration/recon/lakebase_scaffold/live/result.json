@@ -17,9 +17,9 @@
     "source_rows_fetched": 918,
     "target_statements": 38,
     "target_rows_fetched": 918,
-    "elapsed_s": 13.78
+    "elapsed_s": 8.882
   },
-  "generated_at": "2026-09-27T18:50:35.988578+00:00",
+  "generated_at": "2026-09-27T19:10:21.083041+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -515,8 +515,8 @@
     ],
     "source_digest": "eb2a38cc08ab5cc1f5581754d390bd7a7256f8912f66bc8611ac114644d22b93",
     "evidence": {
-      "fresh": "mig-20260927b-w0: DROP TABLE billing.usage_events, plans, tenants, codes; apply.sh current; shape -> rerun/fresh_shape.json (read_at 2026-09-27T18:43:30.365507+00:00)",
-      "evolved": "mig-20260927b-w0: apply.sh prior (00_scaffold.prior.sql) -> pre_shape read 2026-09-27T18:42:09.760825+00:00; apply.sh current; shape -> rerun/evolved_shape.json (read_at 2026-09-27T18:43:12.968844+00:00)"
+      "fresh": "mig-20260927b-w0: DROP TABLE billing.usage_events, plans, tenants, codes; apply.sh current; shape -> rerun/fresh_shape.json (read_at 2026-09-27T19:07:44.663105+00:00)",
+      "evolved": "mig-20260927b-w0: apply.sh prior (00_scaffold.prior.sql) -> pre_shape read 2026-09-27T19:07:20.991614+00:00; apply.sh current; shape -> rerun/evolved_shape.json (read_at 2026-09-27T19:07:30.438931+00:00)"
     },
     "shape": {
       "tables": {

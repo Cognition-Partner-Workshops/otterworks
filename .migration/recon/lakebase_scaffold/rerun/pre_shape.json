@@ -2,8 +2,7 @@
   "target_kind": "lakebase",
   "catalog": "ow_tp",
   "schema": "billing",
-  "read_at": "2026-09-27T18:42:09.760825+00:00",
-  "source": "databricks/mig_20260927b/lakebase/00_scaffold.prior.sql applied by apply.sh prior",
+  "read_at": "2026-09-27T19:07:20.991614+00:00",
   "tables": {
     "codes": [
       {
@@ -108,5 +107,6 @@
         "nullable": false
       }
     ]
-  }
+  },
+  "source": "databricks/mig_20260927b/lakebase/00_scaffold.prior.sql applied by apply.sh prior"
 }

@@ -1,13 +1,12 @@
 {
   "run": "evolved",
   "status": "pass",
-  "evidence": "mig-20260927b-w0: apply.sh prior (00_scaffold.prior.sql) -> pre_shape read 2026-09-27T18:42:09.760825+00:00; apply.sh current; shape -> rerun/evolved_shape.json (read_at 2026-09-27T18:43:12.968844+00:00)",
+  "evidence": "mig-20260927b-w0: apply.sh prior (00_scaffold.prior.sql) -> pre_shape read 2026-09-27T19:07:20.991614+00:00; apply.sh current; shape -> rerun/evolved_shape.json (read_at 2026-09-27T19:07:30.438931+00:00)",
   "pre_shape": {
     "target_kind": "lakebase",
     "catalog": "ow_tp",
     "schema": "billing",
-    "read_at": "2026-09-27T18:42:09.760825+00:00",
-    "source": "databricks/mig_20260927b/lakebase/00_scaffold.prior.sql applied by apply.sh prior",
+    "read_at": "2026-09-27T19:07:20.991614+00:00",
     "tables": {
       "codes": [
         {
@@ -112,13 +111,14 @@
           "nullable": false
         }
       ]
-    }
+    },
+    "source": "databricks/mig_20260927b/lakebase/00_scaffold.prior.sql applied by apply.sh prior"
   },
   "shape": {
     "target_kind": "lakebase",
     "catalog": "ow_tp",
     "schema": "billing",
-    "read_at": "2026-09-27T18:43:12.968844+00:00",
+    "read_at": "2026-09-27T19:07:30.438931+00:00",
     "tables": {
       "codes": [
         {
