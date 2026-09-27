@@ -1,0 +1,133 @@
+{
+  "unit": "lakebase_scaffold",
+  "sources": [
+    "databricks/mig_20260927b/lakebase/00_scaffold.sql",
+    "databricks/mig_20260927b/lakebase/apply.sh"
+  ],
+  "prior_from": ".migration/recon/lakebase_scaffold/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "codes",
+    "plans",
+    "tenants",
+    "usage_events"
+  ],
+  "source_digest": "eb2a38cc08ab5cc1f5581754d390bd7a7256f8912f66bc8611ac114644d22b93",
+  "evidence": {
+    "fresh": "mig-20260927b-w0: DROP TABLE billing.usage_events, plans, tenants, codes; apply.sh current; shape -> rerun/fresh_shape.json (read_at 2026-09-27T18:43:30.365507+00:00)",
+    "evolved": "mig-20260927b-w0: apply.sh prior (00_scaffold.prior.sql) -> pre_shape read 2026-09-27T18:42:09.760825+00:00; apply.sh current; shape -> rerun/evolved_shape.json (read_at 2026-09-27T18:43:12.968844+00:00)"
+  },
+  "shape": {
+    "tables": {
+      "codes": [
+        {
+          "name": "code_type",
+          "type": "varchar(30)",
+          "nullable": false
+        },
+        {
+          "name": "code_val",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "code_desc",
+          "type": "varchar(80)",
+          "nullable": false
+        }
+      ],
+      "plans": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "varchar(50)",
+          "nullable": false
+        },
+        {
+          "name": "tier_cd",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "monthly_fee",
+          "type": "decimal(12,2)",
+          "nullable": false
+        },
+        {
+          "name": "included_units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "overage_rate",
+          "type": "decimal(12,6)",
+          "nullable": false
+        },
+        {
+          "name": "active_yn",
+          "type": "char(1)",
+          "nullable": false
+        }
+      ],
+      "tenants": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(200)",
+          "nullable": false
+        },
+        {
+          "name": "tax_exempt_yn",
+          "type": "char(1)",
+          "nullable": false
+        },
+        {
+          "name": "status_cd",
+          "type": "bigint",
+          "nullable": false
+        }
+      ],
+      "usage_events": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "tenant_id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp(6)",
+          "nullable": false
+        },
+        {
+          "name": "units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "kind_cd",
+          "type": "bigint",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "shape_digest": "978c3ee2a8f4352396877237653a588b10c6f0d3873c4143db292598c78dca18",
+  "prior_digest": "94278e119b59c28110b20ad817f67ad4ed301d2515c98492d7e8a64c2bbe580a"
+}

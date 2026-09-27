@@ -1,0 +1,5 @@
+{
+  "unit": "lakebase_scaffold",
+  "note": "reference load only: this unit converts no PL/SQL routine; the loader (extract_reference.py | load_reference.py) writes the four tables directly. The Oracle trigger trg_usage_events_check on USAGE_EVENTS is a routine owned by wave 1 (routines track), not converted here.",
+  "routines": []
+}
