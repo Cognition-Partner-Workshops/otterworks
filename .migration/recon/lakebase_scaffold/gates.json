@@ -1,0 +1,56 @@
+{
+  "unit": "lakebase_scaffold",
+  "run_id": "20260927b",
+  "wave": 0,
+  "recon": {
+    "mode": "live",
+    "depth": "full",
+    "verdict": "FAIL",
+    "merge_eligible": false,
+    "merge_authority": {"kind": "harness", "decision_id": null},
+    "attempts_full": 1,
+    "tier0_finding_kinds": ["grant_extra"],
+    "tiers": {"structural_parity": false, "counts_through_mapping": true, "per_field_aggregates": true, "keyed_diffs": true},
+    "result": ".migration/recon/lakebase_scaffold/live/result.json"
+  },
+  "gates": [
+    {
+      "id": "w0-structural",
+      "kind": "structural",
+      "status": "failed",
+      "evidence": ".migration/recon/lakebase_scaffold/live/result.json",
+      "note": "schema billing and the four tables exist with the declared types, PKs, uq_plans_code, uq_tenants_name and fk_usage_tenant (tier 0 stats carry no constraint/index/identity finding; shape in rerun/fresh_shape.json). Tier 0 FAILs only on grant_extra for dhrov.subramanian@cognition.ai: a grant inherited one hop through the Lakebase platform role databricks_superuser (relacl databricks_superuser=a*r*w*d*D*x*t*m*, written by the platform event trigger on_create_table_or_view at CREATE TABLE). The brief declares platform-inherited grants surfacing as grant_extra under dbx-recon >= 0.4.2 a real FAIL; it is not fixable in converted code without revoking the platform's own grant."
+    },
+    {
+      "id": "w0-reference-parity",
+      "kind": "row_parity",
+      "status": "passed",
+      "evidence": ".migration/recon/lakebase_scaffold/live/result.json",
+      "note": "tiers 1-3 PASS at depth full, 918 keyed rows: codes 32, plans 3, tenants 69, usage_events 814; ns:: demo tenants included"
+    },
+    {
+      "id": "w0-fixture-shape",
+      "kind": "custom",
+      "status": "passed",
+      "evidence": ".migration/recon/lakebase_scaffold/fixture_shape/fixture_shape.json",
+      "note": "fixture-shape exit 0, 0 findings, 24/40 source statements"
+    }
+  ],
+  "plugin_freshness": {
+    "dbx_migration_plugin": "0.4.2",
+    "test_grants_inherited_through_a_platform_role_are_not_the_units": "skills/data-reconciliation/harness/tests/test_live_postgres.py:83"
+  },
+  "fixture_note": "fixture/ is the run against the fixture-loaded target (tiers 1-3 PASS, 922 rows). Its extra finding usage_events trigger_missing (trg_usage_events_check) is visible only to the fixture owner principal; OW_BILLING_RO sees no triggers live (DEP-020) and the live run has none. The trigger is a wave-1 routine, not converted here.",
+  "pre_pr_self_check": {
+    "make_tp_smoke": "green",
+    "ruff_check_lakebase_dir": "All checks passed",
+    "idempotency": "current DDL applied three times (rerun fresh and evolved legs, live reload); loader re-run after drop/recreate",
+    "recon_recomputed_from_target": true,
+    "shared_tables_altered": "none: only billing.codes, billing.plans, billing.tenants, billing.usage_events plus CREATE SCHEMA IF NOT EXISTS billing",
+    "secrets": "by name only (OW_BILLING_RO_DSN, LAKEBASE_MIGRATION_DSN via ~/.pgpass)",
+    "unverified": [
+      "grant parity: not satisfiable in converted code (platform grant)",
+      "no *.recon.json artifact of the machine-readable schema; the harness result.json is the report"
+    ]
+  }
+}
