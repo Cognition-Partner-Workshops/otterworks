@@ -469,8 +469,10 @@ jobs:
               - 'migration/manifest.yaml'
               - 'migration/manifests/**'
               - 'migration/source/copybooks/**'
-              - 'migration/source/seed/fixtures/**'
+              - 'migration/source/oracle/**'
+              - 'migration/source/seed/**'
               - 'infrastructure/helm/migration-job/**'
+              - 'infrastructure/helm/oracle-archive/**'
       - if: steps.changes.outputs.ldm == 'true'
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
@@ -490,6 +492,9 @@ jobs:
         run: python -m pytest -q
         working-directory: migration/job
       - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pytest -q test_oracle_seed.py
+        working-directory: migration/source/seed
+      - if: steps.changes.outputs.ldm == 'true'
         uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
       - if: steps.changes.outputs.ldm == 'true'
         run: >
@@ -498,3 +503,16 @@ jobs:
           --set image.tag=ci --set expires=2026-01-01T00:00:00Z
           --set-file manifest.base=migration/manifest.yaml
           --set-file manifest.overlay=migration/manifests/d24-after.yaml
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/migration-job --strict
+          --set namespaceToken=ci1-after --set stage=extract --set runId=ci
+          --set image.tag=ci --set expires=2026-01-01T00:00:00Z
+          --set-file manifest.base=migration/manifest.yaml
+          --set-file manifest.overlay=migration/manifests/o27-after.yaml
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/oracle-archive --strict
+          --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
+          --set pv.volumeName=pv-ci
+          --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci
