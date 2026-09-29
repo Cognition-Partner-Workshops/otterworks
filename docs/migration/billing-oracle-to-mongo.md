@@ -61,9 +61,9 @@ tier 2 = per-field aggregates, tier 3 = keyed row diffs. Every unit's idempotenc
 |---|---|---|---|---|---|---|
 | U0-reference | 0 | codes 32, tenants 69, plans 3, 5 sequences | 3/3 | 6/6 | 104/104 | PASS, merge-eligible |
 | U1-customers | 1 | 25,000 customers, 8,333 attribute elements | 2/2 | 15/15 | 33,333/33,333 | PASS, merge-eligible |
-| U2-invoices | 2 | 18,750 invoices, 149,963 embedded lines, 37 quarantined | pass | pass | 168,750 rows, 0 diffs | PASS, not merge-eligible (see note) |
+| U2-invoices | 2 | 18,750 invoices, 149,963 embedded lines, 37 quarantined | 3/3 | 5/5 | 168,750/168,750 | PASS, not merge-eligible (see note) |
 | U3-billing-core | 2 | 10 collections | 11/11 | 28/28 | 901/901 | PASS, merge-eligible |
-| U4-app-backend | 2 | app parity | live app queries 6/6, post-wave 7/7 | | | PASS, merge-eligible |
+| U4-app-backend | 2 | app backend; tier 4 app parity 6/6 live, 7/7 post-wave | 3/3 | 6/6 | 104/104 | PASS, merge-eligible |
 
 U2 note: the harness scopes the embedded-lines check, which makes it structurally not
 merge-eligible. A full probe matched every invoice's line count and 149,963 + 37 = 150,000. The
