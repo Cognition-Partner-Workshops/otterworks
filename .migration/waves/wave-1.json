@@ -1,0 +1,53 @@
+{
+  "wave": 1,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_macro": "!mongo_unit_migration",
+  "verify_macro": "!mongo_reconciliation",
+  "breaker_threshold": 3,
+  "auto_merge": false,
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "stop_mode": "hard",
+  "decision": "D-015",
+  "base_branch": "tp-run/mongodb-20260929T160602Z",
+  "workspace_branch": "migrate/billing/0-setup",
+  "mapping": ".migration/03_mapping_spec.json",
+  "tolerances": ".migration/02_tolerances.json",
+  "source": {
+    "family": "oracle",
+    "live_dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "fixture_dsn_env": "OW_TP_ORACLE_FIXTURE_DSN",
+    "source_concurrency": 1
+  },
+  "target": {
+    "db": "ow_tp_mmp_live",
+    "live_uri_secret": "OW_TP_MMP_TARGET_URI",
+    "fixture_uri_env": "OW_TP_MMP_FIXTURE_URI",
+    "target_class": "migration_cluster"
+  },
+  "execution": "in-session (calibration)",
+  "width": 1,
+  "verify": "one fresh session (!mongo_reconciliation), report on recon/billing-wave-1; wave 2 waits for it",
+  "batches": [
+    {
+      "id": "w1-b01",
+      "units": [
+        "U1-customers"
+      ],
+      "branch": "migrate/billing/1-U1-customers",
+      "loader": ".migration/units/U1-customers/load.py",
+      "sources": [
+        "OW_BILLING.CUSTOMER_MASTER",
+        "OW_BILLING.ENTITY_ATTR_VALUE"
+      ],
+      "write_targets": [
+        "ow_tp_mmp_live.customers"
+      ],
+      "recon_collections": [
+        "customers"
+      ],
+      "fixture_manifest": ".migration/fixtures/oracle-mmpfix.manifest.json",
+      "brief": "Calibration unit (D-015). customers: one doc per CUSTOMER_MASTER row, 155 columns, attributes array keeping duplicate EAV rows ordered by eav_id. Live load + idempotent rerun and live recon (PASS, merge_eligible) already done under D-011 with the current spec (D-013/D-014); carried unchanged. One PR into tp-run/mongodb-20260929T160602Z, then fresh-session reconciliation before wave 2."
+    }
+  ]
+}
