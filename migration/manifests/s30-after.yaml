@@ -1,0 +1,43 @@
+# AFTER deployment for the demo-s30 engineering flow: Oracle source estate (with the ARCHIVE.RETENTION_PKG
+# legacy PL/SQL, views, hold trigger and DBMS_SCHEDULER job) -> Snowflake archive store as a split target.
+# The tenant's PostgreSQL database stays the transactional control plane (mig.* ledger, key ranges, rejects,
+# purge audit, checkpoints - the base manifest's connection_env); STG/ARCH rows and a mirror of the
+# run/ledger/verdicts land in Snowflake database OTTERWORKS_LDM_S30_AFTER (bootstrap/tenant.sql), loaded from
+# Parquet with COPY INTO and validated with in-warehouse hashes. Same selection, same MIG-01..07.
+namespace: s30-after
+run_token: s30
+extends: ../manifest.yaml
+migrate: true
+azure: false
+purge: true
+source:
+  driver: oracle
+  connection_env:
+    host: ORACLE_HOST
+    port: ORACLE_PORT
+    database: ORACLE_SERVICE                  # PDB service name (FREEPDB1)
+    user: ORACLE_USER
+    password: ORACLE_PASSWORD
+  unload_command: []
+target:
+  provider: snowflake
+  typemap: migration/job/typemaps/db2-to-snowflake.yaml
+  archive:
+    provider: snowflake
+    connection_env:
+      account: SNOWFLAKE_ACCOUNT              # ORG-ACCOUNT identifier
+      user: SNOWFLAKE_USER
+      token: SNOWFLAKE_PAT                    # programmatic access token (Secret ldm-snowflake)
+      role: SNOWFLAKE_ROLE                    # LDM_JOB_S30_AFTER
+      warehouse: SNOWFLAKE_WAREHOUSE          # LDM_WH (XSMALL, auto-suspend 60s)
+      database: SNOWFLAKE_DATABASE            # OTTERWORKS_LDM_S30_AFTER
+      stage: SNOWFLAKE_STAGE                  # internal stage the Parquet batches are PUT to
+    ddl_dir: migration/target/snowflake
+execution:
+  run_job_in_azure: false
+  load_engine: spark
+  spark:
+    master: "local[*]"
+    driver_memory: 1g
+    shuffle_partitions: 4
+    records_per_slice: 5000
