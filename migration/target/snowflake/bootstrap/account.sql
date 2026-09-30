@@ -11,6 +11,9 @@ CREATE ROLE IF NOT EXISTS LDM_ADMIN
 GRANT ROLE LDM_ADMIN TO ROLE SYSADMIN;
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE LDM_ADMIN;
 GRANT CREATE ROLE ON ACCOUNT TO ROLE LDM_ADMIN;
+-- The per-tenant S3 storage integration (LDM_S3_INT) behind the external load stage is Terraform-managed as
+-- LDM_ADMIN (infrastructure/terraform/snowflake).
+GRANT CREATE INTEGRATION ON ACCOUNT TO ROLE LDM_ADMIN;
 
 -- One warehouse for every tenant: XSMALL, suspends after 60 s idle, resumes on the first COPY/SELECT of a run.
 -- INITIALLY_SUSPENDED so the bootstrap itself bills nothing.

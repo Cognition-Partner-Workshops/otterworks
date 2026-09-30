@@ -104,7 +104,7 @@ class TargetConnectionEnv(_Strict):
 class ArchiveConnectionEnv(_Strict):
     """Names of the environment variables holding the Snowflake connection: account identifier (ORG-ACCOUNT), the
     service user, its programmatic access token, role, warehouse and the tenant database. `stage` optionally names
-    the variable holding the internal stage Parquet files are PUT to (default STG.LDM_STAGE)."""
+    the variable holding the stage Parquet batches are loaded from (default STG.LDM_STAGE)."""
 
     account: str
     user: str
@@ -117,11 +117,15 @@ class ArchiveConnectionEnv(_Strict):
 
 class ArchiveStoreConfig(_Strict):
     """The bulk archive store of a split target: stg.*/arch.* plus mirrored mig.* verdicts live here, loaded from
-    Parquet with COPY INTO; the control plane (ledger, rejects, purge audit) stays in target.connection_env."""
+    Parquet with COPY INTO; the control plane (ledger, rejects, purge audit) stays in target.connection_env.
+    `external_stage: true` means the stage is an external S3 stage on the tenant's staging prefix (storage
+    integration, infrastructure/terraform/snowflake): batches are written to S3 and COPY reads them from there
+    instead of being PUT to an internal stage (the default)."""
 
     provider: Literal["snowflake"]
     connection_env: ArchiveConnectionEnv
     ddl_dir: str
+    external_stage: bool = False
 
 
 class TargetConfig(_Strict):
