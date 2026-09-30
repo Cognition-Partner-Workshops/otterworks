@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -75,6 +76,7 @@ public class ArchiveStoreOptionsTests
     [InlineData("AzureSQL", ArchiveStoreType.AzureSql)]
     [InlineData("PostgreSQL", ArchiveStoreType.PostgreSql)]
     [InlineData("postgres", ArchiveStoreType.PostgreSql)]
+    [InlineData("Snowflake", ArchiveStoreType.Snowflake)]
     [InlineData("oracle", ArchiveStoreType.Invalid)]
     public void StoreType_IsCaseInsensitive(string value, ArchiveStoreType expected)
     {
@@ -259,5 +261,118 @@ public class ArchiveControllerTests
         Assert.Contains("EVENT_TS_NANOS_TAIL", AzureSqlArchiveEventStore.Sql);
         Assert.Contains("\"EVENT_TS_NANOS_TAIL\"", PostgresArchiveEventStore.Sql);
         Assert.Equal("postgresql", new PostgresArchiveEventStore("Host=x").StoreName);
+    }
+}
+
+public class SnowflakeArchiveEventStoreTests
+{
+    private static ArchiveStoreOptions Opts(params (string, string)[] env)
+    {
+        var map = env.ToDictionary(e => e.Item1, e => e.Item2);
+        return ArchiveStoreOptions.FromEnvironment(k => map.TryGetValue(k, out var v) ? v : null);
+    }
+
+    private static ArchiveStoreOptions Complete() => Opts(
+        ("ARCHIVE_STORE", "snowflake"), ("LDM_NAMESPACE", "s30-after"), ("SNOWFLAKE_ACCOUNT", "TOJGONB-SF03144"),
+        ("SNOWFLAKE_USER", "svc_reader"), ("SNOWFLAKE_PAT", "pat-value"), ("SNOWFLAKE_ROLE", "LDM_JOB_X1_AFTER"),
+        ("SNOWFLAKE_WAREHOUSE", "LDM_WH"), ("SNOWFLAKE_DATABASE", "OTTERWORKS_LDM_X1_AFTER"));
+
+    [Fact]
+    public void Options_BindSnowflakeEnvironmentAndUseProgrammaticAccessToken()
+    {
+        var o = Complete();
+        Assert.Equal(ArchiveStoreType.Snowflake, o.StoreType);
+        Assert.True(o.SnowflakeComplete);
+        Assert.Equal(
+            "account=TOJGONB-SF03144;user=svc_reader;authenticator=programmatic_access_token;token=pat-value;"
+            + "db=OTTERWORKS_LDM_X1_AFTER;role=LDM_JOB_X1_AFTER;warehouse=LDM_WH;",
+            o.SnowflakeConnectionString);
+        Assert.DoesNotContain("password", o.SnowflakeConnectionString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Options_FullHostNameIsKept()
+    {
+        var o = Complete();
+        o.SnowflakeAccount = "tojgonb-sf03144.privatelink.snowflakecomputing.com";
+        Assert.StartsWith("host=tojgonb-sf03144.privatelink.snowflakecomputing.com;account=tojgonb-sf03144;",
+            o.SnowflakeConnectionString);
+    }
+
+    [Fact]
+    public void Registry_WithoutTokenIsUnavailableAndNeverEchoesSecrets()
+    {
+        var o = Complete();
+        o.SnowflakeToken = string.Empty;
+        Assert.False(o.SnowflakeComplete);
+        var registry = new ArchiveStoreRegistry(o, Mock.Of<ILogger<ArchiveStoreRegistry>>());
+        Assert.Contains("SNOWFLAKE_PAT", registry.ConfigurationError);
+        Assert.Throws<ArchiveStoreUnavailableException>(() => registry.Store);
+    }
+
+    [Fact]
+    public void Registry_BuildsTheSnowflakeStoreScopedToTheNamespaceWithoutConnecting()
+    {
+        var registry = new ArchiveStoreRegistry(Complete(), Mock.Of<ILogger<ArchiveStoreRegistry>>());
+        Assert.Null(registry.ConfigurationError);
+        var store = Assert.IsType<SnowflakeArchiveEventStore>(registry.Store);
+        Assert.Equal("snowflake", store.StoreName);
+        Assert.Equal("s30-after", store.Namespace);
+    }
+
+    [Fact]
+    public void Sql_ReadsFileaudTrailOfEveryVersionByDocIdOrArchKey()
+    {
+        Assert.Contains("FROM ARCH.DOCARCH D LEFT JOIN ARCH.FILEAUD F ON F.NAMESPACE = D.NAMESPACE AND F.ARCH_KEY = D.ARCH_KEY",
+            SnowflakeArchiveEventStore.Sql);
+        Assert.Contains("K.ARCH_KEY = RTRIM(?) OR RTRIM(K.DOC_ID) = RTRIM(?)", SnowflakeArchiveEventStore.Sql);
+        Assert.Contains("ORDER BY F.EVENT_TS, F.EVENT_TS_NANOS_TAIL, F.AUDIT_KEY", SnowflakeArchiveEventStore.Sql);
+        Assert.DoesNotContain("RTRIM(F.", SnowflakeArchiveEventStore.Sql);
+        Assert.Contains("FROM ARCH.DOCARCH D WHERE D.NAMESPACE = ?", SnowflakeArchiveEventStore.VersionsSqlText);
+        Assert.Equal(4, SnowflakeArchiveEventStore.Sql.Count(c => c == '?'));
+        Assert.Equal(4, SnowflakeArchiveEventStore.VersionsSqlText.Count(c => c == '?'));
+    }
+
+    [Fact]
+    public void BindValues_ScopeToNamespaceThenMatchTheRequestedKey()
+    {
+        var store = new SnowflakeArchiveEventStore("account=x;", " s30-after ");
+        Assert.Equal(
+            new[] { ("1", "s30-after"), ("2", "s30-after"), ("3", "DA00000000000042"), ("4", "DA00000000000042") },
+            store.BindValues("DA00000000000042"));
+    }
+
+    [Fact]
+    public void MapEvent_RebuildsTimestamp12FromNumberColumns()
+    {
+        var table = new DataTable();
+        foreach (var column in new[] { "AUDIT_KEY", "ARCH_KEY", "EVENT_TYPE", "ACTOR_ID", "RETENTION_CLASS", "DISPOSITION_CODE", "CLIENT_IP", "DETAIL_TEXT" })
+        {
+            table.Columns.Add(column, typeof(string));
+        }
+
+        table.Columns.Add("EVENT_TS", typeof(DateTime));
+        table.Columns.Add("EVENT_TS_NANOS_TAIL", typeof(long));
+        var row = table.NewRow();
+        row["AUDIT_KEY"] = "FA000000000000000001";
+        row["ARCH_KEY"] = "DA00000000000042";
+        row["EVENT_TYPE"] = "READ";
+        row["ACTOR_ID"] = "USR000000001";
+        row["RETENTION_CLASS"] = "FIN7";
+        row["DISPOSITION_CODE"] = "RT";
+        row["CLIENT_IP"] = "10.0.0.1";
+        row["DETAIL_TEXT"] = "viewed";
+        row["EVENT_TS"] = new DateTime(2016, 3, 1, 10, 15, 30).AddTicks(1234560);
+        row["EVENT_TS_NANOS_TAIL"] = 789012L;
+        table.Rows.Add(row);
+        using var reader = table.CreateDataReader();
+        Assert.True(reader.Read());
+
+        var mapped = SnowflakeArchiveEventStore.MapEvent(reader);
+
+        Assert.Equal("2016-03-01-10.15.30.123456789012", mapped.EventTs);
+        Assert.Equal("DA00000000000042", mapped.ArchKey);
+        Assert.Equal("FA000000000000000001", mapped.Raw.AuditKey);
+        Assert.Equal("READ", mapped.EventType);
     }
 }

@@ -95,6 +95,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Snowflake split target (ARCHIVE_STORE=snowflake): PAT authentication, Java 8 bytecode -->
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+            <version>3.28.0</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- LEGACY: SpringFox Swagger 2 (dead project, last release 2020) -->
         <dependency>
             <groupId>io.springfox</groupId>

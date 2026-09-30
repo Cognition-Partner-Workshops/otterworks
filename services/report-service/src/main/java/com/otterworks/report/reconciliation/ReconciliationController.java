@@ -24,8 +24,9 @@ import java.util.Optional;
 
 /**
  * Reconciliation report endpoints (CONTRACTS §10.1), served under both {@code /api/reports} and
- * {@code /api/v1/reports}. Only meaningful when {@code ARCHIVE_STORE=postgresql} (or azuresql); on the BEFORE
- * deployment they answer 404 {@code {"error":"no migration in this namespace"}}.
+ * {@code /api/v1/reports}. Only meaningful when {@code ARCHIVE_STORE} is postgresql, azuresql or snowflake; on the
+ * BEFORE deployment they answer 404 {@code {"error":"no migration in this namespace"}}. {@code latest} on a ledger
+ * with no runs yet answers 404 with the namespace, source and target so the dashboard can show an empty state.
  */
 @RestController
 @RequestMapping({"/api/reports/reconciliation", "/api/v1/reports/reconciliation"})
@@ -64,7 +65,7 @@ public class ReconciliationController {
         }
         Optional<ReconciliationReport> report = load(runId);
         if (!report.isPresent()) {
-            return runNotFound();
+            return LATEST.equals(runId) ? noRuns() : runNotFound();
         }
         return ResponseEntity.ok((Object) report.get());
     }
@@ -140,6 +141,16 @@ public class ReconciliationController {
         }
         repository.listRuns();
         return null;
+    }
+
+    private ResponseEntity<Object> noRuns() {
+        Map<String, Object> body = new LinkedHashMap<String, Object>();
+        body.put("error", "no migration runs recorded yet");
+        body.put("namespace", repository.namespace());
+        body.put("source", repository.sourceProvider());
+        body.put("target", repository.targetProvider());
+        body.put("runs", 0);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body((Object) body);
     }
 
     private static ResponseEntity<Object> runNotFound() {
