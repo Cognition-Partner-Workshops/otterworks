@@ -1,0 +1,1148 @@
+{
+  "database": "Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free",
+  "service": "FREEPDB1",
+  "owners": [
+    "ARCHIVE",
+    "MIGAUDIT"
+  ],
+  "dba_objects_by_type": {
+    "ARCHIVE": {
+      "INDEX": 7,
+      "INDEX PARTITION": 36,
+      "JOB": 1,
+      "PACKAGE": 1,
+      "PACKAGE BODY": 1,
+      "SEQUENCE": 1,
+      "TABLE": 4,
+      "TABLE PARTITION": 18,
+      "TRIGGER": 1,
+      "VIEW": 4
+    },
+    "MIGAUDIT": {
+      "INDEX": 2,
+      "SEQUENCE": 1,
+      "TABLE": 2
+    }
+  },
+  "catalogued_by_type": {
+    "INDEX": 9,
+    "JOB": 1,
+    "PACKAGE": 1,
+    "PACKAGE BODY": 1,
+    "SEQUENCE": 1,
+    "TABLE": 6,
+    "TRIGGER": 1,
+    "USER": 2,
+    "VIEW": 4
+  },
+  "table_rows": {
+    "ARCHIVE.CLASS_TOTAL_SNAP": 0,
+    "ARCHIVE.DOCARCH": 1200000,
+    "ARCHIVE.FILEAUD": 4100000,
+    "ARCHIVE.RETNPLCY": 40,
+    "MIGAUDIT.PURGE_AUDIT": 0,
+    "MIGAUDIT.PURGE_LOG": 0
+  },
+  "plsql_source_lines": [
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE",
+      "line_count": 70
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "line_count": 217
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "TRG_DOCARCH_HOLD_AUDIT",
+      "type": "TRIGGER",
+      "line_count": 22
+    }
+  ],
+  "dependencies": [
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "CLASS_TOTAL_SNAP",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "DOCARCH",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "FILEAUD",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETENTION_PKG",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETNPLCY",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "V_POLICY_LINEAGE",
+      "referenced_type": "VIEW"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "MIGAUDIT",
+      "referenced_name": "PURGE_AUDIT",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "MIGAUDIT",
+      "referenced_name": "PURGE_LOG",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "PUBLIC",
+      "referenced_name": "UTL_RAW",
+      "referenced_type": "SYNONYM"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "SYS",
+      "referenced_name": "DBMS_STANDARD",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "RETENTION_PKG",
+      "type": "PACKAGE BODY",
+      "referenced_owner": "SYS",
+      "referenced_name": "PLITBLM",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "TRG_DOCARCH_HOLD_AUDIT",
+      "type": "TRIGGER",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "DOCARCH",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "TRG_DOCARCH_HOLD_AUDIT",
+      "type": "TRIGGER",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "FILEAUD",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "TRG_DOCARCH_HOLD_AUDIT",
+      "type": "TRIGGER",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETENTION_PKG",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "TRG_DOCARCH_HOLD_AUDIT",
+      "type": "TRIGGER",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "SEQ_FILEAUD_TRG",
+      "referenced_type": "SEQUENCE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_CLASS_TOTALS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "DOCARCH",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_CLASS_TOTALS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETENTION_PKG",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_CLASS_TOTALS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "V_POLICY_LINEAGE",
+      "referenced_type": "VIEW"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_ELIGIBLE_DOCS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "DOCARCH",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_ELIGIBLE_DOCS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETENTION_PKG",
+      "referenced_type": "PACKAGE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_LEGAL_HOLDS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "DOCARCH",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_LEGAL_HOLDS",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "FILEAUD",
+      "referenced_type": "TABLE"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_LEGAL_HOLDS",
+      "type": "VIEW",
+      "referenced_owner": "PUBLIC",
+      "referenced_name": "UTL_RAW",
+      "referenced_type": "SYNONYM"
+    },
+    {
+      "owner": "ARCHIVE",
+      "name": "V_POLICY_LINEAGE",
+      "type": "VIEW",
+      "referenced_owner": "ARCHIVE",
+      "referenced_name": "RETNPLCY",
+      "referenced_type": "TABLE"
+    }
+  ],
+  "triggers": [
+    {
+      "owner": "ARCHIVE",
+      "trigger_name": "TRG_DOCARCH_HOLD_AUDIT",
+      "trigger_type": "AFTER EACH ROW",
+      "triggering_event": "UPDATE",
+      "table_owner": "ARCHIVE",
+      "table_name": "DOCARCH",
+      "column_name": null,
+      "when_clause": "NEW.LEGAL_HOLD_FLAG <> OLD.LEGAL_HOLD_FLAG",
+      "status": "ENABLED"
+    }
+  ],
+  "scheduler_jobs": [
+    {
+      "owner": "ARCHIVE",
+      "job_name": "NIGHTLY_DISPOSITION",
+      "job_type": "PLSQL_BLOCK",
+      "job_action": "BEGIN ARCHIVE.RETENTION_PKG.SNAPSHOT_CLASS_TOTALS(TRUNC(SYSDATE)); END;",
+      "repeat_interval": "FREQ=DAILY; BYHOUR=2; BYMINUTE=0; BYSECOND=0",
+      "enabled": "FALSE",
+      "state": "DISABLED",
+      "max_failures": 3,
+      "restartable": "TRUE",
+      "auto_drop": "FALSE",
+      "comments": "Legacy nightly class-totals snapshot (prod: enabled, 02:00 site time)."
+    }
+  ],
+  "objects": [
+    {
+      "owner": "ARCHIVE",
+      "object_type": "USER",
+      "object_name": "ARCHIVE",
+      "status": null,
+      "catalogued": true,
+      "file": "ARCHIVE.USER.ARCHIVE.sql",
+      "sha256": "4b12cbd0ea422a23416df2dcb5d6407c146d1c3a95bad0e5044ded65ff604a1a",
+      "lines": 4
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "USER",
+      "object_name": "MIGAUDIT",
+      "status": null,
+      "catalogued": true,
+      "file": "MIGAUDIT.USER.MIGAUDIT.sql",
+      "sha256": "38a6cb0dac9a34eff4b334196b6f5cfe96f9efd6243bc0fb356be96bfda02569",
+      "lines": 4
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "IX_DOCARCH_SELECT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.IX_DOCARCH_SELECT.sql",
+      "sha256": "da47fd88084b432012336be821d345f9dd9069e3a4f9894dccc61f254bced0e9",
+      "lines": 7
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.IX_FILEAUD_PARENT.sql",
+      "sha256": "45c65821d2ddde6b3be95329bd23b534f7bddda7b44bca9ed4a1f6f93b95ba1e",
+      "lines": 11
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.IX_FILEAUD_SELECT.sql",
+      "sha256": "42cb61ee9790444455f3f80fa201c299d28768e713def3ff04fe575c1c49ab1e",
+      "lines": 11
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "PK_CLASS_TOTAL_SNAP",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.PK_CLASS_TOTAL_SNAP.sql",
+      "sha256": "a42287dbc77296f21b77ead3d278661e5ff6b2188de0c000a611e699ddb6cbec",
+      "lines": 4
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "PK_DOCARCH",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.PK_DOCARCH.sql",
+      "sha256": "5a1f60182c2e64836177b53cd5c7fdc9f6801473a6b6298644283e639b524ff6",
+      "lines": 7
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "PK_FILEAUD",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.PK_FILEAUD.sql",
+      "sha256": "30b422b1412710fd096c02b8cc44328ef9345725f13fcdde2984a5026192a3d4",
+      "lines": 7
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX",
+      "object_name": "PK_RETNPLCY",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.INDEX.PK_RETNPLCY.sql",
+      "sha256": "72d6bd7c0cfe980b5e100fb45b7e7638c69060b5739b49f8af0582e9ac029080",
+      "lines": 7
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "P_PRE2010",
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P679",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P680",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P681",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P682",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P683",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P684",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P685",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P686",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P687",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P688",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P689",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P690",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P691",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P692",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P693",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P694",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_PARENT",
+      "subobject_name": "SYS_P695",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "P_PRE2010",
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P679",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P680",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P681",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P682",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P683",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P684",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P685",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P686",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P687",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P688",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P689",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P690",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P691",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P692",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P693",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P694",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "INDEX PARTITION",
+      "object_name": "IX_FILEAUD_SELECT",
+      "subobject_name": "SYS_P695",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "index partition of index (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "JOB",
+      "object_name": "NIGHTLY_DISPOSITION",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.JOB.NIGHTLY_DISPOSITION.sql",
+      "sha256": "73221970fd621e77e570d86bbcdd409fdbe780e0487334c57708dd9d12c256af",
+      "lines": 20
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "PACKAGE",
+      "object_name": "RETENTION_PKG",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.PACKAGE.RETENTION_PKG.sql",
+      "sha256": "5326ead8da065cb4414dc73f1c3ae31c044cb162de0b051f9cec685d9473a6ba",
+      "lines": 71
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "PACKAGE BODY",
+      "object_name": "RETENTION_PKG",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.PACKAGE_BODY.RETENTION_PKG.sql",
+      "sha256": "ddccc1f1154a411f8cb37a15a3ad24e93b0959e1a5a653e00c73cd9ad59fcbe8",
+      "lines": 218
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "SEQUENCE",
+      "object_name": "SEQ_FILEAUD_TRG",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.SEQUENCE.SEQ_FILEAUD_TRG.sql",
+      "sha256": "56aa7c8de5bf4e9ae0051c8fa0782a7658b93dddd0802ae5f46710a7bded6ebd",
+      "lines": 2
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE",
+      "object_name": "CLASS_TOTAL_SNAP",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.TABLE.CLASS_TOTAL_SNAP.sql",
+      "sha256": "c8c199e8a8dcd0601a2279841ca45f26a57a20b568160fb3366d5a818eba5ddb",
+      "lines": 14
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE",
+      "object_name": "DOCARCH",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.TABLE.DOCARCH.sql",
+      "sha256": "c1486594e451987924a0a57ad403943d1111704dcb09d3654cef5aeccc6b9c55",
+      "lines": 32
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE",
+      "object_name": "FILEAUD",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.TABLE.FILEAUD.sql",
+      "sha256": "75e36c577621a848b37a7f3d256dc177ca5b56b4819df717dea1c050248f3f3c",
+      "lines": 31
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE",
+      "object_name": "RETNPLCY",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.TABLE.RETNPLCY.sql",
+      "sha256": "4def88999607a7f50dd9864c32a84553411c8fbc9bd0d84a934cc6cc39991caf",
+      "lines": 24
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "P_PRE2010",
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P679",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P680",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P681",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P682",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P683",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P684",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P685",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P686",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P687",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P688",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P689",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P690",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P691",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P692",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P693",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P694",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TABLE PARTITION",
+      "object_name": "FILEAUD",
+      "subobject_name": "SYS_P695",
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "table partition of table (in the parent's DDL)"
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "TRIGGER",
+      "object_name": "TRG_DOCARCH_HOLD_AUDIT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.TRIGGER.TRG_DOCARCH_HOLD_AUDIT.sql",
+      "sha256": "65efe58f56e53372f1018ab2139cb01329555bbf585477df0d402365a680741f",
+      "lines": 23
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "VIEW",
+      "object_name": "V_CLASS_TOTALS",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.VIEW.V_CLASS_TOTALS.sql",
+      "sha256": "f18c7ca106333780ee3a13066677cfcf9af488c874c10692e330d4e55d99abdc",
+      "lines": 13
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "VIEW",
+      "object_name": "V_ELIGIBLE_DOCS",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.VIEW.V_ELIGIBLE_DOCS.sql",
+      "sha256": "62472ac939f78bec9bb154e06ab7f540d795daf42dbf566707767ae108e1e690",
+      "lines": 17
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "VIEW",
+      "object_name": "V_LEGAL_HOLDS",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.VIEW.V_LEGAL_HOLDS.sql",
+      "sha256": "479b3923754c5056afbc20de467f363317a06ce877045a35721c80587f148b56",
+      "lines": 13
+    },
+    {
+      "owner": "ARCHIVE",
+      "object_type": "VIEW",
+      "object_name": "V_POLICY_LINEAGE",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "ARCHIVE.VIEW.V_POLICY_LINEAGE.sql",
+      "sha256": "f21095b529f70ef31b2a0058923fb678b890068291afb392fa78958bab761d81",
+      "lines": 12
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "INDEX",
+      "object_name": "PK_PURGE_AUDIT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "MIGAUDIT.INDEX.PK_PURGE_AUDIT.sql",
+      "sha256": "d4fc03babfcbd45719461a5735a78f921c5ed9f660d16fc8943e077d217b6b4e",
+      "lines": 4
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "INDEX",
+      "object_name": "PK_PURGE_LOG",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "MIGAUDIT.INDEX.PK_PURGE_LOG.sql",
+      "sha256": "856f3d4803632daf1b0801dd3348cc2924096b77e885b581d83a39ab30850c42",
+      "lines": 4
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "SEQUENCE",
+      "object_name": "ISEQ$$_73359",
+      "subobject_name": null,
+      "generated": "Y",
+      "status": "VALID",
+      "catalogued": false,
+      "reason": "system-generated (identity column sequence, in the owning table's DDL)"
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "TABLE",
+      "object_name": "PURGE_AUDIT",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "MIGAUDIT.TABLE.PURGE_AUDIT.sql",
+      "sha256": "cf0c4b96f00ebc2b4124d198cd3d6feca8535247c2469362f29f883f6fe0996a",
+      "lines": 13
+    },
+    {
+      "owner": "MIGAUDIT",
+      "object_type": "TABLE",
+      "object_name": "PURGE_LOG",
+      "subobject_name": null,
+      "generated": "N",
+      "status": "VALID",
+      "catalogued": true,
+      "file": "MIGAUDIT.TABLE.PURGE_LOG.sql",
+      "sha256": "ae84a8104993f408385da95d45f35961092179db0ba18ffdab6ba3da41151f18",
+      "lines": 15
+    }
+  ]
+}
