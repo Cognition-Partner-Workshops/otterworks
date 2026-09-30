@@ -330,7 +330,7 @@ def test_snowflake_hash_expression_shape(tmp_path: Path) -> None:
     assert "COALESCE(TO_VARCHAR(\"VERSION_NO\"), '')" in sql
     assert "COALESCE(TO_VARCHAR(\"STORAGE_CHARGE\"::NUMBER(38,8)), '')" in sql
     assert "TO_VARCHAR(\"LAST_ACCESS_TS\", 'YYYY-MM-DD-HH24.MI.SS.FF6')" in sql
-    assert "LPAD(TO_VARCHAR(\"LAST_ACCESS_TS_NANOS_TAIL\"), 6, '0')" in sql
+    assert "|| TO_VARCHAR(\"LAST_ACCESS_TS_NANOS_TAIL\"), '')" in sql
     assert "TO_VARCHAR(\"DISPOSITION_DT\", 'YYYYMMDD')" in sql
     assert sql.count("|| '|' ||") == len(ts.config.hash_columns) - 1
     assert "CASE" not in sql
