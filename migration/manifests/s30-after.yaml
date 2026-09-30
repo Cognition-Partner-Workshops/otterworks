@@ -31,8 +31,11 @@ target:
       role: SNOWFLAKE_ROLE                    # LDM_JOB_S30_AFTER
       warehouse: SNOWFLAKE_WAREHOUSE          # LDM_WH (XSMALL, auto-suspend 60s)
       database: SNOWFLAKE_DATABASE            # OTTERWORKS_LDM_S30_AFTER
-      stage: SNOWFLAKE_STAGE                  # internal stage the Parquet batches are PUT to
+      stage: SNOWFLAKE_STAGE                  # STG.LDM_STAGE
     ddl_dir: migration/target/snowflake
+    # STG.LDM_STAGE is the external stage on s3://<bucket>/s30-after/ (storage integration LDM_S3_INT,
+    # infrastructure/terraform/snowflake): batches are written once to the staging prefix and COPY reads them there.
+    external_stage: true
 execution:
   run_job_in_azure: false
   load_engine: spark
