@@ -1,7 +1,9 @@
 {{/*
 Archive read-path env (migration/CONTRACTS.md §10.4). Rendered only when archive.store is
 set, so tenants without ARCHIVE_STORE keep the golden behaviour (feature off, 404 + hint).
-Credentials come from the Secret named by archive.credentialsSecret, never from values.
+Credentials come from the Secret named by archive.credentialsSecret, never from values;
+store=snowflake takes only SNOWFLAKE_PAT from archive.snowflake.tokenSecret (ldm-snowflake) and keeps
+the tenant's PostgreSQL control plane (PG_*) when archive.postgresql.host is set.
 */}}
 {{- define "archive.env" }}
 {{- with .Values.archive -}}
@@ -30,7 +32,11 @@ Credentials come from the Secret named by archive.credentialsSecret, never from 
       name: {{ .credentialsSecret }}
       key: DB2_PASSWORD
 {{- end }}
-{{- if eq .store "postgresql" }}
+{{- if .sourceProvider }}
+- name: LDM_SOURCE_PROVIDER
+  value: {{ .sourceProvider | quote }}
+{{- end }}
+{{- if or (eq .store "postgresql") (and (eq .store "snowflake") .postgresql.host) }}
 - name: PG_HOST
   value: {{ .postgresql.host | quote }}
 - name: PG_PORT
@@ -49,6 +55,23 @@ Credentials come from the Secret named by archive.credentialsSecret, never from 
     secretKeyRef:
       name: {{ .credentialsSecret }}
       key: PG_PASSWORD
+{{- end }}
+{{- if eq .store "snowflake" }}
+- name: SNOWFLAKE_ACCOUNT
+  value: {{ required "archive.snowflake.account is required for store=snowflake" .snowflake.account | quote }}
+- name: SNOWFLAKE_USER
+  value: {{ required "archive.snowflake.user is required for store=snowflake" .snowflake.user | quote }}
+- name: SNOWFLAKE_ROLE
+  value: {{ .snowflake.role | quote }}
+- name: SNOWFLAKE_WAREHOUSE
+  value: {{ .snowflake.warehouse | quote }}
+- name: SNOWFLAKE_DATABASE
+  value: {{ required "archive.snowflake.database is required for store=snowflake" .snowflake.database | quote }}
+- name: SNOWFLAKE_PAT
+  valueFrom:
+    secretKeyRef:
+      name: {{ .snowflake.tokenSecret }}
+      key: SNOWFLAKE_PAT
 {{- end }}
 {{- if eq .store "azuresql" }}
 - name: AZSQL_SERVER

@@ -24,6 +24,8 @@
     <PackageReference Include="Net.IBM.Data.Db2-lnx" Version="8.0.0.400" />
     <PackageReference Include="Npgsql" Version="8.0.5" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <!-- Snowflake split target (ARCHIVE_STORE=snowflake), programmatic access token auth -->
+    <PackageReference Include="Snowflake.Data" Version="4.8.0" />
   </ItemGroup>
 
 </Project>

@@ -6,12 +6,13 @@ public enum ArchiveStoreType
     Db2,
     PostgreSql,
     AzureSql,
+    Snowflake,
     Invalid,
 }
 
 /// <summary>
 /// Archive read-path settings, bound from the same environment variables as report-service
-/// (ARCHIVE_STORE, DB2_*, PG_*, AZSQL_*, AZURE_CLIENT_ID). Unset ARCHIVE_STORE means feature off.
+/// (ARCHIVE_STORE, DB2_*, PG_*, AZSQL_*, AZURE_CLIENT_ID, SNOWFLAKE_*). Unset ARCHIVE_STORE means feature off.
 /// </summary>
 public sealed class ArchiveStoreOptions
 {
@@ -38,6 +39,13 @@ public sealed class ArchiveStoreOptions
     public string AzsqlPassword { get; set; } = string.Empty;
     public string AzureClientId { get; set; } = string.Empty;
 
+    public string SnowflakeAccount { get; set; } = string.Empty;
+    public string SnowflakeUser { get; set; } = string.Empty;
+    public string SnowflakeToken { get; set; } = string.Empty;
+    public string SnowflakeRole { get; set; } = string.Empty;
+    public string SnowflakeWarehouse { get; set; } = string.Empty;
+    public string SnowflakeDatabase { get; set; } = string.Empty;
+
     public static ArchiveStoreOptions FromEnvironment(Func<string, string?> getEnv) => new()
     {
         Store = getEnv("ARCHIVE_STORE") ?? string.Empty,
@@ -59,6 +67,12 @@ public sealed class ArchiveStoreOptions
         AzsqlUser = getEnv("AZSQL_USER") ?? string.Empty,
         AzsqlPassword = getEnv("AZSQL_PASSWORD") ?? string.Empty,
         AzureClientId = getEnv("AZURE_CLIENT_ID") ?? string.Empty,
+        SnowflakeAccount = getEnv("SNOWFLAKE_ACCOUNT") ?? string.Empty,
+        SnowflakeUser = getEnv("SNOWFLAKE_USER") ?? string.Empty,
+        SnowflakeToken = getEnv("SNOWFLAKE_PAT") ?? string.Empty,
+        SnowflakeRole = getEnv("SNOWFLAKE_ROLE") ?? string.Empty,
+        SnowflakeWarehouse = getEnv("SNOWFLAKE_WAREHOUSE") ?? string.Empty,
+        SnowflakeDatabase = getEnv("SNOWFLAKE_DATABASE") ?? string.Empty,
     };
 
     public ArchiveStoreType StoreType => Store.Trim().ToLowerInvariant() switch
@@ -67,6 +81,7 @@ public sealed class ArchiveStoreOptions
         "db2" => ArchiveStoreType.Db2,
         "postgresql" or "postgres" => ArchiveStoreType.PostgreSql,
         "azuresql" => ArchiveStoreType.AzureSql,
+        "snowflake" => ArchiveStoreType.Snowflake,
         _ => ArchiveStoreType.Invalid,
     };
 
@@ -85,6 +100,10 @@ public sealed class ArchiveStoreOptions
     public bool AzsqlComplete =>
         !string.IsNullOrWhiteSpace(AzsqlServer) && !string.IsNullOrWhiteSpace(AzsqlDatabase)
         && (IsManagedIdentity || (!string.IsNullOrWhiteSpace(AzsqlUser) && !string.IsNullOrWhiteSpace(AzsqlPassword)));
+
+    public bool SnowflakeComplete =>
+        !string.IsNullOrWhiteSpace(SnowflakeAccount) && !string.IsNullOrWhiteSpace(SnowflakeUser)
+        && !string.IsNullOrWhiteSpace(SnowflakeToken) && !string.IsNullOrWhiteSpace(SnowflakeDatabase);
 
     public string Db2ConnectionString =>
         $"Server={Db2Host}:{Db2Port};Database={Db2Database};UID={Db2User};PWD={Db2Password};";
@@ -110,6 +129,34 @@ public sealed class ArchiveStoreOptions
             else
             {
                 cs += $"User Id={AzsqlUser};Password={AzsqlPassword};";
+            }
+
+            return cs;
+        }
+    }
+
+    /// <summary>
+    /// Snowflake.Data connection string authenticating with the programmatic access token (SNOWFLAKE_PAT).
+    /// SNOWFLAKE_ACCOUNT is the org-account identifier (ORG-ACCOUNT); a full host name is used as is.
+    /// </summary>
+    public string SnowflakeConnectionString
+    {
+        get
+        {
+            var account = SnowflakeAccount.Trim();
+            var cs = account.Contains('.')
+                ? $"host={account};account={account.Split('.')[0]};"
+                : $"account={account};";
+            cs += $"user={SnowflakeUser.Trim()};authenticator=programmatic_access_token;token={SnowflakeToken.Trim()};"
+                + $"db={SnowflakeDatabase.Trim()};";
+            if (!string.IsNullOrWhiteSpace(SnowflakeRole))
+            {
+                cs += $"role={SnowflakeRole.Trim()};";
+            }
+
+            if (!string.IsNullOrWhiteSpace(SnowflakeWarehouse))
+            {
+                cs += $"warehouse={SnowflakeWarehouse.Trim()};";
             }
 
             return cs;
