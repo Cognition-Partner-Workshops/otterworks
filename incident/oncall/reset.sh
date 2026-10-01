@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Return both on-call tenants and both branches to the before state:
-#   1. truncate the seeded data, drop the fix index if a proof created it, and
-#      stamp alembic back to the last baseline revision when needed. This runs
-#      first: document-service runs alembic upgrade head on start, so a pod of
-#      the baseline image crash-loops while the database is at 005, and the
-#      disarm rollout would fail.
+#   1. stop k6 and scale document-service to zero (no writer races the
+#      TRUNCATE), truncate the seeded data, drop the fix index if a proof
+#      created it, and stamp alembic back to the last baseline revision when
+#      needed. This runs first: document-service runs alembic upgrade head on
+#      start, so a pod of the baseline image crash-loops while the database is
+#      at 005, and the disarm rollout would fail.
 #   2. disarm both (stop k6, worker off through a helm upgrade)
 #   3. force demo-oncall-before / demo-oncall-after back to origin/main, only
 #      when they differ (CD then redeploys the golden build)
@@ -24,6 +25,7 @@ ensure_kubeconfig
 # the integration baseline while it has not merged (ONCALL_RESET_REF).
 git -C "${REPO}" fetch -q origin main
 reset_ref="${ONCALL_RESET_REF:-origin/main}"
+declare -A doc_replicas=()
 baseline_head="$(branch_alembic_head "${reset_ref}")"
 [ -n "${baseline_head}" ] || die "no document-service migrations found on ${reset_ref}"
 for tenant in "${BEFORE_TENANT}" "${AFTER_TENANT}"; do
@@ -33,6 +35,11 @@ for tenant in "${BEFORE_TENANT}" "${AFTER_TENANT}"; do
     continue
   fi
   wake_postgres "${tenant}"
+  doc_replicas["${tenant}"]="$(kubectl -n "${ns}" get deploy document-service -o jsonpath='{.spec.replicas}')"
+  kubectl -n "${ns}" delete job "${K6_JOB}" --ignore-not-found --wait=true >/dev/null
+  kubectl -n "${ns}" scale deploy/document-service --replicas=0 >/dev/null
+  kubectl -n "${ns}" wait --for=delete pod -l app.kubernetes.io/name=document-service --timeout=3m >/dev/null ||
+    die "document-service pods in ${ns} did not stop"
   log "Truncating seeded data in ${ns}"
   pg "${tenant}" -v fix_index="${FIX_INDEX}" -v baseline="${baseline_head}" -f - <<'SQL'
 SET statement_timeout = 0;
@@ -56,6 +63,15 @@ done
 
 # ---------- 2. disarm ----------
 "${ONCALL_DIR}/disarm.sh" "${BEFORE_TENANT}" "${AFTER_TENANT}"
+for tenant in "${!doc_replicas[@]}"; do
+  ns="$(tenant_ns "${tenant}")"
+  want="${doc_replicas[${tenant}]:-0}"
+  if [ "${want}" -gt 0 ] &&
+     [ "$(kubectl -n "${ns}" get deploy document-service -o jsonpath='{.spec.replicas}')" = 0 ]; then
+    kubectl -n "${ns}" scale deploy/document-service --replicas="${want}" >/dev/null
+    wait_ready "${tenant}" document-service
+  fi
+done
 
 # ---------- 3. branches ----------
 main_sha="$(git -C "${REPO}" rev-parse "${reset_ref}")"
