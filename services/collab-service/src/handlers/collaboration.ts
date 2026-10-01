@@ -7,18 +7,9 @@ import { extractUserFromSocket } from '../middleware/auth';
 import { MetricsCollector } from '../metrics';
 import { PresenceHandler } from './presence';
 import { DocRegistry } from '../services/doc-registry';
+import { CommentHandler } from './comments';
 
-export interface CommentAnnotation {
-  id: string;
-  documentId: string;
-  threadId: string;
-  content: string;
-  author: { userId: string; displayName: string };
-  rangeStart: number;
-  rangeEnd: number;
-  createdAt: string;
-  parentId?: string;
-}
+export type { CommentAnnotation } from './comments';
 
 export interface CollaborationDeps {
   io: SocketIOServer;
@@ -33,6 +24,7 @@ export interface CollaborationDeps {
 
 export class CollaborationManager {
   private registry: DocRegistry;
+  private comments: CommentHandler;
   private cleaningUp: Set<string> = new Set();
   private deps: CollaborationDeps;
   private persistTimer: NodeJS.Timeout | null = null;
@@ -44,6 +36,7 @@ export class CollaborationManager {
       documentStore: deps.documentStore,
       metrics: deps.metrics,
     });
+    this.comments = new CommentHandler({ metrics: deps.metrics });
   }
 
   getDocument(documentId: string): Y.Doc | undefined {
@@ -98,9 +91,9 @@ export class CollaborationManager {
     socket.on('document-update', (data) => this.handleDocumentUpdate(socket, data));
     socket.on('cursor-update', (data) => this.handleCursorUpdate(socket, data));
     socket.on('typing-indicator', (data) => this.handleTypingIndicator(socket, data));
-    socket.on('comment-add', (data) => this.handleCommentAdd(socket, data));
-    socket.on('comment-update', (data) => this.handleCommentUpdate(socket, data));
-    socket.on('comment-delete', (data) => this.handleCommentDelete(socket, data));
+    socket.on('comment-add', (data) => this.comments.handleAdd(socket, data));
+    socket.on('comment-update', (data) => this.comments.handleUpdate(socket, data));
+    socket.on('comment-delete', (data) => this.comments.handleDelete(socket, data));
     socket.on('request-snapshot', (data) => this.handleRequestSnapshot(socket, data));
     socket.on('request-history', (data) => this.handleRequestHistory(socket, data));
   }
@@ -318,70 +311,6 @@ export class CollaborationManager {
         isTyping: data.isTyping,
       });
     }
-  }
-
-  private handleCommentAdd(
-    socket: Socket,
-    data: {
-      documentId: string;
-      comment: Omit<CommentAnnotation, 'author' | 'createdAt'>;
-    },
-  ): void {
-    const { metrics } = this.deps;
-    const user = extractUserFromSocket(socket);
-    const room = `doc:${data.documentId}`;
-
-    const fullComment: CommentAnnotation = {
-      ...data.comment,
-      documentId: data.documentId,
-      author: { userId: user.userId, displayName: user.displayName },
-      createdAt: new Date().toISOString(),
-    };
-
-    socket.to(room).emit('comment-added', fullComment);
-    socket.emit('comment-added', fullComment);
-    metrics.commentAnnotationsTotal.inc({ action: 'add' });
-    metrics.messagesTotal.inc({ type: 'comment-add' });
-  }
-
-  private handleCommentUpdate(
-    socket: Socket,
-    data: {
-      documentId: string;
-      commentId: string;
-      content: string;
-    },
-  ): void {
-    const { metrics } = this.deps;
-    const user = extractUserFromSocket(socket);
-    const room = `doc:${data.documentId}`;
-
-    const payload = {
-      commentId: data.commentId,
-      content: data.content,
-      updatedBy: { userId: user.userId, displayName: user.displayName },
-      updatedAt: new Date().toISOString(),
-    };
-
-    socket.to(room).emit('comment-updated', payload);
-    metrics.commentAnnotationsTotal.inc({ action: 'update' });
-    metrics.messagesTotal.inc({ type: 'comment-update' });
-  }
-
-  private handleCommentDelete(
-    socket: Socket,
-    data: { documentId: string; commentId: string },
-  ): void {
-    const { metrics } = this.deps;
-    const user = extractUserFromSocket(socket);
-    const room = `doc:${data.documentId}`;
-
-    socket.to(room).emit('comment-deleted', {
-      commentId: data.commentId,
-      deletedBy: user.userId,
-    });
-    metrics.commentAnnotationsTotal.inc({ action: 'delete' });
-    metrics.messagesTotal.inc({ type: 'comment-delete' });
   }
 
   private async handleRequestSnapshot(
