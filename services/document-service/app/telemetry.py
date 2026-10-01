@@ -8,12 +8,15 @@ import time
 from collections.abc import Awaitable, Callable
 
 import structlog
+from asyncpg.exceptions import QueryCanceledError
 from fastapi import FastAPI, Request, Response
 from prometheus_client import Counter, Gauge, Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import event
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, ExceptionContext
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.pool import QueuePool
 
 from app.config import settings
 
@@ -95,6 +98,44 @@ PROCESS_MEMORY_LIMIT_BYTES = Gauge(
     ["service"],
 )
 
+FOLDER_DIGEST_QUEUE_DEPTH = Gauge(
+    "otterworks_folder_digest_queue_depth",
+    "Folder-digest jobs waiting in the in-process queue.",
+)
+FOLDER_DIGEST_OLDEST_JOB_AGE = Gauge(
+    "otterworks_folder_digest_oldest_job_age_seconds",
+    "Seconds the oldest queued folder-digest job has been waiting.",
+)
+FOLDER_DIGEST_JOBS_TOTAL = Counter(
+    "otterworks_folder_digest_jobs_total",
+    "Folder-digest jobs finished, by outcome.",
+    ["outcome"],
+)
+FOLDER_DIGEST_JOB_SECONDS = Histogram(
+    "otterworks_folder_digest_job_duration_seconds",
+    "Wall time of one folder-digest job.",
+    buckets=LATENCY_BUCKETS,
+)
+DB_POOL_CHECKED_OUT = Gauge(
+    "otterworks_db_pool_checked_out",
+    "Connections currently checked out of the shared SQLAlchemy pool.",
+)
+DB_POOL_CAPACITY = Gauge(
+    "otterworks_db_pool_capacity",
+    "Connections the shared SQLAlchemy pool can hand out (pool_size + max_overflow).",
+)
+DB_STATEMENT_TIMEOUTS_TOTAL = Counter(
+    "otterworks_db_statement_timeouts_total",
+    "SQL statements cancelled by the PostgreSQL statement_timeout.",
+    ["source"],
+)
+
+STATEMENT_PREFIX_CHARS = 120
+
+# Which caller issued the SQL running in this task: "api" unless a background
+# job marks itself (the folder-digest worker sets "worker").
+db_source: contextvars.ContextVar[str] = contextvars.ContextVar("db_source", default="api")
+
 # The counter lives in a list so the endpoint task, which runs in a copy of the
 # middleware's context, increments the same object the middleware reads.
 _request_queries: contextvars.ContextVar[list[int] | None] = contextvars.ContextVar(
@@ -140,6 +181,45 @@ def instrument_sql() -> None:
         counter = _request_queries.get()
         if counter is not None:
             counter[0] += 1
+
+
+def is_statement_timeout(exc: BaseException | None) -> bool:
+    """Whether `exc` is, or wraps, a PostgreSQL statement cancellation (SQLSTATE 57014)."""
+    seen: set[int] = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, QueryCanceledError):
+            return True
+        if isinstance(exc, DBAPIError) and is_statement_timeout(exc.orig):
+            return True
+        exc = exc.__cause__ or exc.__context__
+    return False
+
+
+def record_statement_timeout(statement: str | None) -> None:
+    source = db_source.get()
+    DB_STATEMENT_TIMEOUTS_TOTAL.labels(source).inc()
+    prefix = " ".join((statement or "").split())[:STATEMENT_PREFIX_CHARS]
+    logger.warning("db_statement_timeout", source=source, statement=prefix)
+
+
+def _on_db_error(context: ExceptionContext) -> None:
+    if is_statement_timeout(context.original_exception):
+        record_statement_timeout(context.statement)
+
+
+def instrument_statement_timeouts() -> None:
+    """Count and log every statement the server cancels on statement_timeout."""
+    if not event.contains(Engine, "handle_error", _on_db_error):
+        event.listen(Engine, "handle_error", _on_db_error)
+
+
+def instrument_pool(engine: AsyncEngine, pool_size: int, max_overflow: int) -> None:
+    """Export checked-out connections and capacity of the pool shared by API and jobs."""
+    DB_POOL_CAPACITY.set(pool_size + max(max_overflow, 0))
+    pool = engine.sync_engine.pool
+    if isinstance(pool, QueuePool):
+        DB_POOL_CHECKED_OUT.set_function(pool.checkedout)
 
 
 def _handler_label(request: Request) -> str:

@@ -82,6 +82,23 @@ tracing:
   endpoint: http://otel-collector.monitoring.svc.cluster.local:4318
   extraEnv: []
 
+# Folder-digest worker (app/jobs/folder_digest.py). Rendered as explicit
+# DOC_SVC_FOLDER_DIGEST_* env so a `helm upgrade --reuse-values` can flip it.
+folderDigest:
+  enabled: false
+  intervalSeconds: 15
+  concurrency: 4
+
+# Database connection tuning, rendered as explicit env (wins over envFrom).
+# statementTimeoutMs: 0 leaves statement_timeout unset; null pool values keep
+# the app defaults. urlSecret {name, key} sources DOC_SVC_DATABASE_URL from that
+# Secret instead of the tenant secret.
+database:
+  statementTimeoutMs: 0
+  poolSize: null
+  maxOverflow: null
+  urlSecret: {}
+
 networkPolicy:
   enabled: true
   ingressNamespace: ingress-nginx

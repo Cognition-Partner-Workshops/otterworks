@@ -1,5 +1,7 @@
 """OtterWorks Document Service - FastAPI application."""
 
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -12,7 +14,7 @@ from app.api import comments, documents, health, templates
 from app.config import settings
 from app.db.migrate import upgrade_to_head
 from app.db.session import async_session, engine
-from app.jobs import stats_rollup
+from app.jobs import folder_digest, stats_rollup
 from app.middleware import request_log
 
 logger = structlog.get_logger()
@@ -36,12 +38,17 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger.info("document_service_starting")
     await upgrade_to_head(engine)
     rollup_task = stats_rollup.start(async_session)
+    digest_task = folder_digest.start(async_session)
 
     logger.info("document_service_started")
     yield
     logger.info("document_service_shutting_down")
     if rollup_task is not None:
         rollup_task.cancel()
+    if digest_task is not None:
+        digest_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await digest_task
     await engine.dispose()
 
 
@@ -55,6 +62,8 @@ app = FastAPI(
 )
 
 telemetry.instrument_sql()
+telemetry.instrument_statement_timeouts()
+telemetry.instrument_pool(engine, settings.db_pool_size, settings.db_max_overflow)
 telemetry.instrument_app(app)
 telemetry.setup_tracing(app, engine)
 request_log.install(app)

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     )
     db_pool_size: int = 10
     db_max_overflow: int = 20
+    db_statement_timeout_ms: int = 0
 
     sns_topic_arn: str = ""
     aws_endpoint_url: str = ""
@@ -26,6 +27,10 @@ class Settings(BaseSettings):
 
     rollup_enabled: bool = True
     rollup_interval_seconds: int = 60
+
+    folder_digest_enabled: bool = False
+    folder_digest_interval_seconds: int = 15
+    folder_digest_concurrency: int = 4
 
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:4200"]
 

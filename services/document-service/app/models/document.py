@@ -3,7 +3,16 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -135,4 +144,17 @@ class Template(Base):
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow
+    )
+
+
+class FolderDigest(Base):
+    """Per-folder document count and freshness kept by the folder-digest worker."""
+
+    __tablename__ = "folder_digests"
+
+    folder_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    documents_total: Mapped[int] = mapped_column(Integer, nullable=False)
+    last_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    computed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now()
     )

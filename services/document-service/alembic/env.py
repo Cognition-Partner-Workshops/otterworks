@@ -14,6 +14,7 @@ from app.models.document import (  # noqa: F401
     Document,
     DocumentStatsRollup,
     DocumentVersion,
+    FolderDigest,
     Template,
 )
 
