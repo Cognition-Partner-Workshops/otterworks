@@ -1,0 +1,582 @@
+{
+  "description": "Ordered HTTP request corpus replayed against the Java (legacy-portal) and .NET (legacy-portal-dotnet) builds. Cases are stateful and run in order per context against fresh databases.",
+  "cases": [
+    {
+      "id": "common-01",
+      "context": "common",
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "id": "common-02",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health"
+    },
+    {
+      "id": "common-03",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health/liveness"
+    },
+    {
+      "id": "common-04",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health/readiness"
+    },
+    {
+      "id": "common-05",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/info"
+    },
+    {
+      "id": "common-06",
+      "context": "common",
+      "method": "GET",
+      "path": "/does-not-exist",
+      "note": "unmapped route -> Spring default error body"
+    },
+    {
+      "id": "ann-01",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "note": "empty, publishedOnly defaults to true"
+    },
+    {
+      "id": "ann-02",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false"
+    },
+    {
+      "id": "ann-03",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Release\", \"body\": \"v1 is out\", \"published\": true}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-04",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Draft\", \"body\": \"coming soon\"}",
+      "contentType": "application/json",
+      "note": "published omitted -> false"
+    },
+    {
+      "id": "ann-05",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Second\", \"body\": \"another\", \"published\": true}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-06",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "note": "published only, newest first"
+    },
+    {
+      "id": "ann-07",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false"
+    },
+    {
+      "id": "ann-08",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/2"
+    },
+    {
+      "id": "ann-09",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/999",
+      "note": "NoSuchElementException -> 404 {error,message}"
+    },
+    {
+      "id": "ann-10",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/abc",
+      "note": "path type mismatch -> 400 default error"
+    },
+    {
+      "id": "ann-11",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements/2/publish"
+    },
+    {
+      "id": "ann-12",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements/999/publish"
+    },
+    {
+      "id": "ann-13",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "note": "findAll() order after an UPDATE"
+    },
+    {
+      "id": "ann-14",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements"
+    },
+    {
+      "id": "ann-15",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"body\": \"no title\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-16",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"   \", \"body\": \"blank title\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-17",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"body\": \"title too long\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-18",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"long body\", \"body\": \"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-19",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\":",
+      "contentType": "application/json",
+      "note": "malformed JSON"
+    },
+    {
+      "id": "ann-20",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "",
+      "contentType": "application/json",
+      "note": "empty body"
+    },
+    {
+      "id": "ann-21",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "title=x",
+      "contentType": "text/plain",
+      "note": "unsupported media type"
+    },
+    {
+      "id": "ann-22",
+      "context": "announcements",
+      "method": "DELETE",
+      "path": "/api/announcements/1",
+      "note": "method not allowed"
+    },
+    {
+      "id": "ann-23",
+      "context": "announcements",
+      "method": "PUT",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"x\", \"body\": \"y\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-24",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=abc",
+      "note": "bad boolean -> 400"
+    },
+    {
+      "id": "ann-25",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=FALSE"
+    },
+    {
+      "id": "ann-26",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":\"true\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion"
+    },
+    {
+      "id": "ann-27",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Extra\", \"body\": \"unknown field ignored\", \"published\": false, \"author\": \"otter\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-28",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"Title\": \"Case\", \"body\": \"property names are case-sensitive\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "ann-29",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/",
+      "note": "trailing slash"
+    },
+    {
+      "id": "ann-30",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/99999999999999999999",
+      "note": "id overflows long"
+    },
+    {
+      "id": "ann-31",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false"
+    },
+    {
+      "id": "pref-01",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/newuser",
+      "note": "defaults, not persisted"
+    },
+    {
+      "id": "pref-02",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"dark\", \"locale\": \"fr-FR\", \"emailNotifications\": false}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "pref-03",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u1"
+    },
+    {
+      "id": "pref-04",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"light\", \"locale\": \"en-US\"}",
+      "contentType": "application/json",
+      "note": "emailNotifications omitted -> false"
+    },
+    {
+      "id": "pref-05",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u1"
+    },
+    {
+      "id": "pref-06",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"locale\": \"en-GB\", \"emailNotifications\": true}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "pref-07",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\": \"ttttttttttttttttttttt\", \"locale\": \"en-GB\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "pref-08",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\": \"dark\", \"locale\": \"  \"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "pref-09",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{not json",
+      "contentType": "application/json",
+      "note": "malformed JSON"
+    },
+    {
+      "id": "pref-10",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "theme=dark",
+      "contentType": "text/plain"
+    },
+    {
+      "id": "pref-11",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\":\"dark\",\"locale\":\"de-DE\",\"emailNotifications\":\"true\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion"
+    },
+    {
+      "id": "pref-12",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u2"
+    },
+    {
+      "id": "pref-13",
+      "context": "preferences",
+      "method": "POST",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"dark\", \"locale\": \"en-US\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "pref-14",
+      "context": "preferences",
+      "method": "DELETE",
+      "path": "/api/preferences/u1"
+    },
+    {
+      "id": "pref-15",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/",
+      "note": "no userId segment"
+    },
+    {
+      "id": "pref-16",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/user%20with%20space"
+    },
+    {
+      "id": "pref-17",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/newuser",
+      "note": "still defaults"
+    },
+    {
+      "id": "fb-01",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "note": "no feedback -> 0.0"
+    },
+    {
+      "id": "fb-02",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u1"
+    },
+    {
+      "id": "fb-03",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 5, \"message\": \"great\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-04",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 3, \"message\": \"ok\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-05",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u2\", \"rating\": 1, \"message\": \"bad\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-06",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u1",
+      "note": "newest first"
+    },
+    {
+      "id": "fb-07",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u2"
+    },
+    {
+      "id": "fb-08",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating"
+    },
+    {
+      "id": "fb-09",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 9, \"message\": \"bad rating\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-10",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 0, \"message\": \"zero\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-11",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"message\": \"rating omitted\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-12",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": null, \"message\": \"rating null\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-13",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 4, \"message\": \"\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-14",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu\", \"rating\": 4, \"message\": \"userId too long\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-15",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback",
+      "note": "missing required userId param -> 400"
+    },
+    {
+      "id": "fb-16",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=",
+      "note": "empty userId is allowed"
+    },
+    {
+      "id": "fb-17",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\":\"u3\",\"rating\":\"4\",\"message\":\"string rating\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion"
+    },
+    {
+      "id": "fb-18",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u3\", \"rating\": 2, \"message\": \"meh\"}",
+      "contentType": "application/json"
+    },
+    {
+      "id": "fb-19",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u3\", \"rating\": 4.7, \"message\": \"float rating\"}",
+      "contentType": "application/json",
+      "note": "Jackson truncates float to int"
+    },
+    {
+      "id": "fb-20",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "note": "non-integral average"
+    },
+    {
+      "id": "fb-21",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u3"
+    },
+    {
+      "id": "fb-22",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\":",
+      "contentType": "application/json",
+      "note": "malformed JSON"
+    },
+    {
+      "id": "fb-23",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "rating=5",
+      "contentType": "text/plain"
+    },
+    {
+      "id": "fb-24",
+      "context": "feedback",
+      "method": "DELETE",
+      "path": "/api/feedback"
+    },
+    {
+      "id": "fb-25",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating?extra=1"
+    }
+  ]
+}

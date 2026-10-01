@@ -1,0 +1,977 @@
+{
+  "base": "http://localhost:18095",
+  "cases": [
+    {
+      "id": "common-01",
+      "context": "common",
+      "method": "GET",
+      "path": "/health",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"status\":\"UP\",\"service\":\"legacy-portal\",\"banner\":\"OtterWorks Portal (on-prem) - contact portal-support@otterworks.example\"}"
+      }
+    },
+    {
+      "id": "common-02",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"status\":\"UP\",\"groups\":[\"liveness\",\"readiness\"]}"
+      }
+    },
+    {
+      "id": "common-03",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health/liveness",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"status\":\"UP\"}"
+      }
+    },
+    {
+      "id": "common-04",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/health/readiness",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"status\":\"UP\"}"
+      }
+    },
+    {
+      "id": "common-05",
+      "context": "common",
+      "method": "GET",
+      "path": "/actuator/info",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{}"
+      }
+    },
+    {
+      "id": "common-06",
+      "context": "common",
+      "method": "GET",
+      "path": "/does-not-exist",
+      "note": "unmapped route -> Spring default error body",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:12.990+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/does-not-exist\"}"
+      }
+    },
+    {
+      "id": "ann-01",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "note": "empty, publishedOnly defaults to true",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[]"
+      }
+    },
+    {
+      "id": "ann-02",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[]"
+      }
+    },
+    {
+      "id": "ann-03",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Release\", \"body\": \"v1 is out\", \"published\": true}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}"
+      }
+    },
+    {
+      "id": "ann-04",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Draft\", \"body\": \"coming soon\"}",
+      "contentType": "application/json",
+      "note": "published omitted -> false",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+      }
+    },
+    {
+      "id": "ann-05",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Second\", \"body\": \"another\", \"published\": true}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"}"
+      }
+    },
+    {
+      "id": "ann-06",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "note": "published only, newest first",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+      }
+    },
+    {
+      "id": "ann-07",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"}]"
+      }
+    },
+    {
+      "id": "ann-08",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/2",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+      }
+    },
+    {
+      "id": "ann-09",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/999",
+      "note": "NoSuchElementException -> 404 {error,message}",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"error\":\"Not Found\",\"message\":\"announcement 999 not found\"}"
+      }
+    },
+    {
+      "id": "ann-10",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/abc",
+      "note": "path type mismatch -> 400 default error",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"error\":\"Bad Request\",\"message\":\"For input string: \\\"abc\\\"\"}"
+      }
+    },
+    {
+      "id": "ann-11",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements/2/publish",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+      }
+    },
+    {
+      "id": "ann-12",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements/999/publish",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"error\":\"Not Found\",\"message\":\"announcement 999 not found\"}"
+      }
+    },
+    {
+      "id": "ann-13",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "note": "findAll() order after an UPDATE",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}]"
+      }
+    },
+    {
+      "id": "ann-14",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+      }
+    },
+    {
+      "id": "ann-15",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"body\": \"no title\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.319+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-16",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"   \", \"body\": \"blank title\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.326+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-17",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"body\": \"title too long\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.330+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-18",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"long body\", \"body\": \"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.335+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-19",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\":",
+      "contentType": "application/json",
+      "note": "malformed JSON",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.338+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-20",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "",
+      "contentType": "application/json",
+      "note": "empty body",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.341+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-21",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "title=x",
+      "contentType": "text/plain",
+      "note": "unsupported media type",
+      "response": {
+        "status": 415,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.344+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-22",
+      "context": "announcements",
+      "method": "DELETE",
+      "path": "/api/announcements/1",
+      "note": "method not allowed",
+      "response": {
+        "status": 405,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.347+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements/1\"}"
+      }
+    },
+    {
+      "id": "ann-23",
+      "context": "announcements",
+      "method": "PUT",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"x\", \"body\": \"y\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 405,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.350+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-24",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=abc",
+      "note": "bad boolean -> 400",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"error\":\"Bad Request\",\"message\":\"Invalid boolean value [abc]\"}"
+      }
+    },
+    {
+      "id": "ann-25",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=FALSE",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}]"
+      }
+    },
+    {
+      "id": "ann-26",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":\"true\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"}"
+      }
+    },
+    {
+      "id": "ann-27",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"title\": \"Extra\", \"body\": \"unknown field ignored\", \"published\": false, \"author\": \"otter\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.364305Z\"}"
+      }
+    },
+    {
+      "id": "ann-28",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "body": "{\"Title\": \"Case\", \"body\": \"property names are case-sensitive\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.369+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+      }
+    },
+    {
+      "id": "ann-29",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/",
+      "note": "trailing slash",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+      }
+    },
+    {
+      "id": "ann-30",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements/99999999999999999999",
+      "note": "id overflows long",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"error\":\"Bad Request\",\"message\":\"For input string: \\\"99999999999999999999\\\"\"}"
+      }
+    },
+    {
+      "id": "ann-31",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"},{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.364305Z\"}]"
+      }
+    },
+    {
+      "id": "pref-01",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/newuser",
+      "note": "defaults, not persisted",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"newuser\",\"theme\":\"light\",\"locale\":\"en-US\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "pref-02",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"dark\", \"locale\": \"fr-FR\", \"emailNotifications\": false}",
+      "contentType": "application/json",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u1\",\"theme\":\"dark\",\"locale\":\"fr-FR\",\"emailNotifications\":false}"
+      }
+    },
+    {
+      "id": "pref-03",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u1",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u1\",\"theme\":\"dark\",\"locale\":\"fr-FR\",\"emailNotifications\":false}"
+      }
+    },
+    {
+      "id": "pref-04",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"light\", \"locale\": \"en-US\"}",
+      "contentType": "application/json",
+      "note": "emailNotifications omitted -> false",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u1\",\"theme\":\"light\",\"locale\":\"en-US\",\"emailNotifications\":false}"
+      }
+    },
+    {
+      "id": "pref-05",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u1",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u1\",\"theme\":\"light\",\"locale\":\"en-US\",\"emailNotifications\":false}"
+      }
+    },
+    {
+      "id": "pref-06",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"locale\": \"en-GB\", \"emailNotifications\": true}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.429+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+      }
+    },
+    {
+      "id": "pref-07",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\": \"ttttttttttttttttttttt\", \"locale\": \"en-GB\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.431+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+      }
+    },
+    {
+      "id": "pref-08",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\": \"dark\", \"locale\": \"  \"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.434+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+      }
+    },
+    {
+      "id": "pref-09",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{not json",
+      "contentType": "application/json",
+      "note": "malformed JSON",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.436+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+      }
+    },
+    {
+      "id": "pref-10",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "theme=dark",
+      "contentType": "text/plain",
+      "response": {
+        "status": 415,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.439+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/preferences/u2\"}"
+      }
+    },
+    {
+      "id": "pref-11",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/u2",
+      "body": "{\"theme\":\"dark\",\"locale\":\"de-DE\",\"emailNotifications\":\"true\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u2\",\"theme\":\"dark\",\"locale\":\"de-DE\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "pref-12",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/u2",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"u2\",\"theme\":\"dark\",\"locale\":\"de-DE\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "pref-13",
+      "context": "preferences",
+      "method": "POST",
+      "path": "/api/preferences/u1",
+      "body": "{\"theme\": \"dark\", \"locale\": \"en-US\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 405,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.452+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
+      }
+    },
+    {
+      "id": "pref-14",
+      "context": "preferences",
+      "method": "DELETE",
+      "path": "/api/preferences/u1",
+      "response": {
+        "status": 405,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.454+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
+      }
+    },
+    {
+      "id": "pref-15",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/",
+      "note": "no userId segment",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.457+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/preferences/\"}"
+      }
+    },
+    {
+      "id": "pref-16",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/user%20with%20space",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"user with space\",\"theme\":\"light\",\"locale\":\"en-US\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "pref-17",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/newuser",
+      "note": "still defaults",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"newuser\",\"theme\":\"light\",\"locale\":\"en-US\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "fb-01",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "note": "no feedback -> 0.0",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"averageRating\":0.0}"
+      }
+    },
+    {
+      "id": "fb-02",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u1",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[]"
+      }
+    },
+    {
+      "id": "fb-03",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 5, \"message\": \"great\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:05:13.497472Z\"}"
+      }
+    },
+    {
+      "id": "fb-04",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 3, \"message\": \"ok\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:05:13.507258Z\"}"
+      }
+    },
+    {
+      "id": "fb-05",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u2\", \"rating\": 1, \"message\": \"bad\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:05:13.510576Z\"}"
+      }
+    },
+    {
+      "id": "fb-06",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u1",
+      "note": "newest first",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:05:13.507258Z\"},{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:05:13.497472Z\"}]"
+      }
+    },
+    {
+      "id": "fb-07",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u2",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:05:13.510576Z\"}]"
+      }
+    },
+    {
+      "id": "fb-08",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"averageRating\":3.0}"
+      }
+    },
+    {
+      "id": "fb-09",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 9, \"message\": \"bad rating\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.529+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-10",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 0, \"message\": \"zero\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.533+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-11",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"message\": \"rating omitted\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.538+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-12",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": null, \"message\": \"rating null\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.541+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-13",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u1\", \"rating\": 4, \"message\": \"\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.544+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-14",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu\", \"rating\": 4, \"message\": \"userId too long\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.547+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-15",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback",
+      "note": "missing required userId param -> 400",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.550+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-16",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=",
+      "note": "empty userId is allowed",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[]"
+      }
+    },
+    {
+      "id": "fb-17",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\":\"u3\",\"rating\":\"4\",\"message\":\"string rating\"}",
+      "contentType": "application/json",
+      "note": "Jackson scalar coercion",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:05:13.557738Z\"}"
+      }
+    },
+    {
+      "id": "fb-18",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u3\", \"rating\": 2, \"message\": \"meh\"}",
+      "contentType": "application/json",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:05:13.561474Z\"}"
+      }
+    },
+    {
+      "id": "fb-19",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\": \"u3\", \"rating\": 4.7, \"message\": \"float rating\"}",
+      "contentType": "application/json",
+      "note": "Jackson truncates float to int",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:05:13.564602Z\"}"
+      }
+    },
+    {
+      "id": "fb-20",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "note": "non-integral average",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"averageRating\":3.1666666666666665}"
+      }
+    },
+    {
+      "id": "fb-21",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=u3",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:05:13.564602Z\"},{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:05:13.561474Z\"},{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:05:13.557738Z\"}]"
+      }
+    },
+    {
+      "id": "fb-22",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "{\"userId\":",
+      "contentType": "application/json",
+      "note": "malformed JSON",
+      "response": {
+        "status": 400,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.576+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-23",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "body": "rating=5",
+      "contentType": "text/plain",
+      "response": {
+        "status": 415,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.579+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-24",
+      "context": "feedback",
+      "method": "DELETE",
+      "path": "/api/feedback",
+      "response": {
+        "status": 405,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:05:13.581+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/feedback\"}"
+      }
+    },
+    {
+      "id": "fb-25",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/average-rating?extra=1",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"averageRating\":3.1666666666666665}"
+      }
+    }
+  ]
+}
