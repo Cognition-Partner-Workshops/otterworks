@@ -1,10 +1,14 @@
 """Tests for DocumentService business logic."""
 
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import Document, DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -12,7 +16,22 @@ from app.schemas.document import (
     DocumentUpdate,
     TemplateCreate,
 )
-from app.services.document_service import DocumentService
+from app.services.document_service import RECENT_VERSIONS_LIMIT, DocumentService
+
+
+@contextmanager
+def count_statements(session: AsyncSession) -> Iterator[list[str]]:
+    statements: list[str] = []
+    sync_engine = session.bind.sync_engine
+
+    def _record(conn, cursor, statement, parameters, context, executemany):  # noqa: ANN001
+        statements.append(statement)
+
+    event.listen(sync_engine, "before_cursor_execute", _record)
+    try:
+        yield statements
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", _record)
 
 
 @pytest.mark.asyncio
@@ -237,3 +256,63 @@ async def test_paginate_helper():
     assert DocumentService.paginate(11, 1, 5) == 3
     assert DocumentService.paginate(0, 1, 5) == 1
     assert DocumentService.paginate(10, 1, 0) == 1
+
+
+async def _seed_documents_with_history(
+    db: AsyncSession, owner_id: uuid.UUID, documents: int, versions: int
+) -> None:
+    for i in range(documents):
+        doc = Document(title=f"Doc {i}", content="body", owner_id=owner_id, version=versions)
+        db.add(doc)
+        await db.flush()
+        for n in range(1, versions + 1):
+            db.add(
+                DocumentVersion(
+                    document_id=doc.id,
+                    version_number=n,
+                    title=doc.title,
+                    content=f"v{n}",
+                    created_by=owner_id,
+                )
+            )
+    await db.commit()
+    db.expunge_all()
+
+
+# count + page + selectin(versions) + selectin(comments) + batched recent versions
+LIST_DOCUMENTS_STATEMENTS = 5
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("size", [1, 10, 25])
+async def test_list_documents_statement_count_is_constant(
+    db_session: AsyncSession, owner_id: uuid.UUID, size: int
+):
+    await _seed_documents_with_history(db_session, owner_id, documents=25, versions=8)
+    service = DocumentService(db_session)
+
+    with count_statements(db_session) as statements:
+        items, total = await service.list_documents(owner_id=owner_id, size=size)
+
+    assert total == 25
+    assert len(items) == size
+    assert len(statements) == LIST_DOCUMENTS_STATEMENTS, statements
+
+
+@pytest.mark.asyncio
+async def test_list_documents_attaches_newest_versions(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    await _seed_documents_with_history(db_session, owner_id, documents=3, versions=8)
+    db_session.add(Document(title="No history", content="", owner_id=owner_id))
+    await db_session.commit()
+    service = DocumentService(db_session)
+
+    items, _ = await service.list_documents(owner_id=owner_id)
+
+    by_title = {doc.title: doc for doc in items}
+    assert by_title["No history"].recent_versions == []
+    for i in range(3):
+        recent = by_title[f"Doc {i}"].recent_versions
+        assert [v.version_number for v in recent] == list(range(8, 8 - RECENT_VERSIONS_LIMIT, -1))
+        assert {v.document_id for v in recent} == {by_title[f"Doc {i}"].id}
