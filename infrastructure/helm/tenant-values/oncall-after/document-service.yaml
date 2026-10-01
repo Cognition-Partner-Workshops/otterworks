@@ -1,6 +1,6 @@
 # On-call alert storm tenant (incident/oncall/, docs/oncall-storm/).
 # document-service runs on the tenant's own oncall-postgres (1 CPU) with a
-# small pool and a 3 s statement timeout. The folder digest worker is off here;
+# a wide pool so parallel scans saturate 1 CPU under a 3 s statement timeout. The folder digest worker is off here;
 # make oncall-arm turns it on with helm upgrade --reuse-values.
 monitoring:
   enabled: true
@@ -29,7 +29,7 @@ database:
     name: oncall-postgres
     key: url
   statementTimeoutMs: 3000
-  poolSize: 5
+  poolSize: 20
   maxOverflow: 0
 folderDigest:
   enabled: false

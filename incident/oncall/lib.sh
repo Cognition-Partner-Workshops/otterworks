@@ -212,6 +212,9 @@ digest_deploy() {
     --set "folderDigest.enabled=${enabled}" \
     --set "folderDigest.intervalSeconds=${DIGEST_INTERVAL_SECONDS}" \
     --set "folderDigest.concurrency=${DIGEST_CONCURRENCY}" \
+    --set "database.statementTimeoutMs=${STATEMENT_TIMEOUT_MS}" \
+    --set "database.poolSize=${DB_POOL_SIZE}" \
+    --set "database.maxOverflow=${DB_MAX_OVERFLOW}" \
     --wait --timeout 6m >/dev/null
   kubectl -n "${ns}" rollout status deploy/document-service --timeout=5m >/dev/null
 }

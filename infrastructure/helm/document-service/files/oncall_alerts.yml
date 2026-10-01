@@ -68,7 +68,7 @@ groups:
       - alert: DbPoolSaturated
         expr: |
           max by (namespace) (otterworks_db_pool_checked_out{})
-          / max by (namespace) (otterworks_db_pool_capacity{}) >= 0.9
+          / max by (namespace) (otterworks_db_pool_capacity{}) >= 0.55
         for: 2m
         labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: warning}
         annotations:
