@@ -1,0 +1,69 @@
+# Two Ingress objects on one host:
+#   incident-channel      everything (page, /api/state, /reply) behind nginx basic auth
+#   incident-channel-api  the two bearer-token routes, no basic auth (the app checks CHANNEL_TOKEN)
+# /alertmanager is not routed separately. Through the ingress it needs basic auth and the
+# bearer token, so in practice only in-cluster Alertmanager posts to it via the Service.
+# cert-manager issues incident-channel-tls from the first object only; the second reuses it.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: incident-channel
+  labels:
+    app.kubernetes.io/name: incident-channel
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: incident-channel-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: OtterWorks incident channel
+    nginx.ingress.kubernetes.io/proxy-body-size: 1m
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - incident.demo.otterworks.app
+      secretName: incident-channel-tls
+  rules:
+    - host: incident.demo.otterworks.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: incident-channel
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: incident-channel-api
+  labels:
+    app.kubernetes.io/name: incident-channel
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1m
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - incident.demo.otterworks.app
+      secretName: incident-channel-tls
+  rules:
+    - host: incident.demo.otterworks.app
+      http:
+        paths:
+          - path: /api/threads/[^/]+/messages$
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: incident-channel
+                port:
+                  name: http
+          - path: /api/reset$
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: incident-channel
+                port:
+                  name: http

@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incident-channel
+  labels:
+    app.kubernetes.io/name: incident-channel
+spec:
+  replicas: 1
+  # One pod owns the snapshot on its emptyDir; never run two side by side.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: incident-channel
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: incident-channel
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: channel
+          image: python:3.12-slim
+          command: ["python3", "-u", "/app/channel.py"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: STATE_FILE
+              value: /data/state.json
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: CHANNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: incident-channel-secrets
+                  key: CHANNEL_TOKEN
+            - name: DEVIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: incident-channel-secrets
+                  key: DEVIN_API_KEY
+            - name: DEVIN_API_BASE
+              value: https://partner-workshops.devinenterprise.com/api
+            - name: PERSONA_SRE_NAME
+              value: SRE (on call)
+            - name: PERSONA_SRE_USER_ID
+              value: ""
+            - name: PERSONA_IM_NAME
+              value: Incident manager
+            - name: PERSONA_IM_USER_ID
+              value: ""
+            - name: GRAFANA_URL
+              value: https://grafana.otterworks.app
+            - name: GRAFANA_DASHBOARD_UID
+              value: oncall-storm
+            - name: ALERTMANAGER_URL
+              value: https://alertmanager.otterworks.app
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: script
+              mountPath: /app
+              readOnly: true
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: script
+          configMap:
+            name: incident-channel-script
+        - name: data
+          emptyDir:
+            sizeLimit: 64Mi
