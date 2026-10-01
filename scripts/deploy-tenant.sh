@@ -150,6 +150,11 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
 fi
+if [ -z "${SHARE_LINK_SECRET:-}" ]; then
+  SHARE_LINK_SECRET="$(existing_tenant_secret document-service-secrets SHARE_LINK_SECRET)" ||
+    { err "Refusing to rotate SHARE_LINK_SECRET; set it explicitly or retry"; exit 1; }
+  [ -n "${SHARE_LINK_SECRET}" ] || SHARE_LINK_SECRET="$(openssl rand -hex 32)"
+fi
 
 # ---------- Namespace + isolation guardrails ----------
 log "Creating namespace ${NS} with quota / limits / network policy..."
