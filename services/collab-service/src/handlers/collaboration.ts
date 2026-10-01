@@ -9,6 +9,7 @@ import { PresenceHandler } from './presence';
 import { DocRegistry } from '../services/doc-registry';
 import { PersistenceScheduler } from '../services/persistence-scheduler';
 import { CommentHandler } from './comments';
+import { SnapshotHandler } from './snapshots';
 
 export type { CommentAnnotation } from './comments';
 
@@ -24,10 +25,11 @@ export interface CollaborationDeps {
 }
 
 export class CollaborationManager {
-  private registry: DocRegistry;
-  private comments: CommentHandler;
   private deps: CollaborationDeps;
+  private registry: DocRegistry;
   private persistence: PersistenceScheduler;
+  private comments: CommentHandler;
+  private snapshots: SnapshotHandler;
 
   constructor(deps: CollaborationDeps) {
     this.deps = deps;
@@ -35,7 +37,6 @@ export class CollaborationManager {
       documentStore: deps.documentStore,
       metrics: deps.metrics,
     });
-    this.comments = new CommentHandler({ metrics: deps.metrics });
     this.persistence = new PersistenceScheduler({
       registry: this.registry,
       documentStore: deps.documentStore,
@@ -44,6 +45,12 @@ export class CollaborationManager {
       persistIntervalMs: deps.persistIntervalMs,
       snapshotIntervalMs: deps.snapshotIntervalMs,
       hasActiveUsers: (documentId) => deps.awareness.getDocumentUserCount(documentId) > 0,
+    });
+    this.comments = new CommentHandler({ metrics: deps.metrics });
+    this.snapshots = new SnapshotHandler({
+      registry: this.registry,
+      documentStore: deps.documentStore,
+      logger: deps.logger,
     });
   }
 
@@ -87,8 +94,12 @@ export class CollaborationManager {
     socket.on('comment-add', (data) => this.comments.handleAdd(socket, data));
     socket.on('comment-update', (data) => this.comments.handleUpdate(socket, data));
     socket.on('comment-delete', (data) => this.comments.handleDelete(socket, data));
-    socket.on('request-snapshot', (data) => this.handleRequestSnapshot(socket, data));
-    socket.on('request-history', (data) => this.handleRequestHistory(socket, data));
+    socket.on('request-snapshot', (data) =>
+      this.snapshots.handleRequestSnapshot(socket, data),
+    );
+    socket.on('request-history', (data) =>
+      this.snapshots.handleRequestHistory(socket, data),
+    );
   }
 
   private async handleJoinDocument(
@@ -280,63 +291,6 @@ export class CollaborationManager {
         userId: updated.userId,
         displayName: updated.displayName,
         isTyping: data.isTyping,
-      });
-    }
-  }
-
-  private async handleRequestSnapshot(
-    socket: Socket,
-    data: { documentId: string; label?: string },
-  ): Promise<void> {
-    const { documentStore, logger } = this.deps;
-    const user = extractUserFromSocket(socket);
-    const { documentId, label } = data;
-
-    const doc = this.registry.get(documentId);
-    if (!doc) {
-      socket.emit('snapshot-error', {
-        documentId,
-        error: 'Document not found',
-      });
-      return;
-    }
-
-    try {
-      const state = Y.encodeStateAsUpdate(doc);
-      const snapshot = await documentStore.createSnapshot(
-        documentId,
-        Buffer.from(state),
-        user.userId,
-        label,
-      );
-      socket.emit('snapshot-created', snapshot);
-
-      const room = `doc:${documentId}`;
-      socket.to(room).emit('snapshot-created', snapshot);
-    } catch (err) {
-      logger.error({ err, documentId }, 'create_snapshot_failed');
-      socket.emit('snapshot-error', {
-        documentId,
-        error: 'Failed to create snapshot',
-      });
-    }
-  }
-
-  private async handleRequestHistory(
-    socket: Socket,
-    data: { documentId: string; limit?: number },
-  ): Promise<void> {
-    const { documentStore, logger } = this.deps;
-    const { documentId, limit } = data;
-
-    try {
-      const snapshots = await documentStore.getSnapshots(documentId, limit || 20);
-      socket.emit('document-history', { documentId, snapshots });
-    } catch (err) {
-      logger.error({ err, documentId }, 'get_history_failed');
-      socket.emit('history-error', {
-        documentId,
-        error: 'Failed to retrieve history',
       });
     }
   }
