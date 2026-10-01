@@ -1,0 +1,88 @@
+# legacy-portal Java vs .NET response parity
+
+Java: `http://localhost:18095`  
+.NET: `http://localhost:18098`
+
+**79/79 requests identical** (status, media type, JSON body incl. key order and number formatting; timestamps compared by format only).
+
+| Case | Request | Java status | .NET status | Result |
+|---|---|---|---|---|
+| common-01 | `GET /health` | 200 | 200 | identical |
+| common-02 | `GET /actuator/health` | 200 | 200 | identical |
+| common-03 | `GET /actuator/health/liveness` | 200 | 200 | identical |
+| common-04 | `GET /actuator/health/readiness` | 200 | 200 | identical |
+| common-05 | `GET /actuator/info` | 200 | 200 | identical |
+| common-06 | `GET /does-not-exist` | 404 | 404 | identical |
+| ann-01 | `GET /api/announcements` | 200 | 200 | identical |
+| ann-02 | `GET /api/announcements?publishedOnly=false` | 200 | 200 | identical |
+| ann-03 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-04 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-05 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-06 | `GET /api/announcements` | 200 | 200 | identical |
+| ann-07 | `GET /api/announcements?publishedOnly=false` | 200 | 200 | identical |
+| ann-08 | `GET /api/announcements/2` | 200 | 200 | identical |
+| ann-09 | `GET /api/announcements/999` | 404 | 404 | identical |
+| ann-10 | `GET /api/announcements/abc` | 400 | 400 | identical |
+| ann-11 | `POST /api/announcements/2/publish` | 200 | 200 | identical |
+| ann-12 | `POST /api/announcements/999/publish` | 404 | 404 | identical |
+| ann-13 | `GET /api/announcements?publishedOnly=false` | 200 | 200 | identical |
+| ann-14 | `GET /api/announcements` | 200 | 200 | identical |
+| ann-15 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-16 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-17 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-18 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-19 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-20 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-21 | `POST /api/announcements` | 415 | 415 | identical |
+| ann-22 | `DELETE /api/announcements/1` | 405 | 405 | identical |
+| ann-23 | `PUT /api/announcements` | 405 | 405 | identical |
+| ann-24 | `GET /api/announcements?publishedOnly=abc` | 400 | 400 | identical |
+| ann-25 | `GET /api/announcements?publishedOnly=FALSE` | 200 | 200 | identical |
+| ann-26 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-27 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-28 | `POST /api/announcements` | 400 | 400 | identical |
+| ann-29 | `GET /api/announcements/` | 200 | 200 | identical |
+| ann-30 | `GET /api/announcements/99999999999999999999` | 400 | 400 | identical |
+| ann-31 | `GET /api/announcements?publishedOnly=false` | 200 | 200 | identical |
+| pref-01 | `GET /api/preferences/newuser` | 200 | 200 | identical |
+| pref-02 | `PUT /api/preferences/u1` | 200 | 200 | identical |
+| pref-03 | `GET /api/preferences/u1` | 200 | 200 | identical |
+| pref-04 | `PUT /api/preferences/u1` | 200 | 200 | identical |
+| pref-05 | `GET /api/preferences/u1` | 200 | 200 | identical |
+| pref-06 | `PUT /api/preferences/u2` | 400 | 400 | identical |
+| pref-07 | `PUT /api/preferences/u2` | 400 | 400 | identical |
+| pref-08 | `PUT /api/preferences/u2` | 400 | 400 | identical |
+| pref-09 | `PUT /api/preferences/u2` | 400 | 400 | identical |
+| pref-10 | `PUT /api/preferences/u2` | 415 | 415 | identical |
+| pref-11 | `PUT /api/preferences/u2` | 200 | 200 | identical |
+| pref-12 | `GET /api/preferences/u2` | 200 | 200 | identical |
+| pref-13 | `POST /api/preferences/u1` | 405 | 405 | identical |
+| pref-14 | `DELETE /api/preferences/u1` | 405 | 405 | identical |
+| pref-15 | `GET /api/preferences/` | 404 | 404 | identical |
+| pref-16 | `GET /api/preferences/user%20with%20space` | 200 | 200 | identical |
+| pref-17 | `GET /api/preferences/newuser` | 200 | 200 | identical |
+| fb-01 | `GET /api/feedback/average-rating` | 200 | 200 | identical |
+| fb-02 | `GET /api/feedback?userId=u1` | 200 | 200 | identical |
+| fb-03 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-04 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-05 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-06 | `GET /api/feedback?userId=u1` | 200 | 200 | identical |
+| fb-07 | `GET /api/feedback?userId=u2` | 200 | 200 | identical |
+| fb-08 | `GET /api/feedback/average-rating` | 200 | 200 | identical |
+| fb-09 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-10 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-11 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-12 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-13 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-14 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-15 | `GET /api/feedback` | 400 | 400 | identical |
+| fb-16 | `GET /api/feedback?userId=` | 200 | 200 | identical |
+| fb-17 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-18 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-19 | `POST /api/feedback` | 201 | 201 | identical |
+| fb-20 | `GET /api/feedback/average-rating` | 200 | 200 | identical |
+| fb-21 | `GET /api/feedback?userId=u3` | 200 | 200 | identical |
+| fb-22 | `POST /api/feedback` | 400 | 400 | identical |
+| fb-23 | `POST /api/feedback` | 415 | 415 | identical |
+| fb-24 | `DELETE /api/feedback` | 405 | 405 | identical |
+| fb-25 | `GET /api/feedback/average-rating?extra=1` | 200 | 200 | identical |

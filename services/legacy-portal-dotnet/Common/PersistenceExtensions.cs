@@ -5,13 +5,18 @@ namespace OtterWorks.LegacyPortal.Common;
 
 public static class PersistenceExtensions
 {
-    /// <summary>Registers a bounded context's DbContext against the shared datasource.</summary>
+    /// <summary>
+    /// Registers a bounded context's DbContext against the shared datasource. Settings are read from the
+    /// container's final <see cref="IConfiguration"/> when the context is first configured, so host-level
+    /// overrides added after module registration (e.g. by WebApplicationFactory) still apply.
+    /// </summary>
     public static IServiceCollection AddPortalDbContext<TContext>(this IServiceCollection services, IConfiguration configuration)
         where TContext : DbContext
     {
-        var settings = DatabaseSettings.FromConfiguration(configuration);
-        services.AddDbContext<TContext>(options =>
+        ArgumentNullException.ThrowIfNull(configuration);
+        services.AddDbContext<TContext>((provider, options) =>
         {
+            var settings = DatabaseSettings.FromConfiguration(provider.GetService<IConfiguration>() ?? configuration);
             if (settings.UsesInMemory)
             {
                 options.UseInMemoryDatabase($"{settings.InMemoryName}-{typeof(TContext).Name}");

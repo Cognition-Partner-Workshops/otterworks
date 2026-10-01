@@ -38,6 +38,7 @@ jobs:
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
+      legacy-portal-dotnet: ${{ steps.changes.outputs.legacy-portal-dotnet }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -78,6 +79,8 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            legacy-portal-dotnet:
+              - 'services/legacy-portal-dotnet/**'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
@@ -359,6 +362,28 @@ jobs:
           java-version: '11'
           cache: maven
       - run: ./mvnw test -B
+
+  # C# - Legacy Portal (ASP.NET 9 port of legacy-portal)
+  legacy-portal-dotnet:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.legacy-portal-dotnet == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/legacy-portal-dotnet
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '9.0.x'
+      - run: dotnet restore LegacyPortal.csproj
+      - run: dotnet build LegacyPortal.csproj --no-restore
+      - run: dotnet restore Tests/LegacyPortal.Tests.csproj
+      - run: dotnet build Tests/LegacyPortal.Tests.csproj --no-restore
+      - name: Unit tests
+        run: dotnet test Tests/LegacyPortal.Tests.csproj --no-build --filter "FullyQualifiedName~Unit"
+      - name: E2E tests (Testcontainers PostgreSQL 15)
+        run: dotnet test Tests/LegacyPortal.Tests.csproj --no-build --filter "FullyQualifiedName~E2E"
 
   # Terraform validation
   infrastructure:

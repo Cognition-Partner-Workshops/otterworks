@@ -9,6 +9,7 @@ public static partial class PortalModules
 {
     public static IServiceCollection AddPortalModules(this IServiceCollection services, IConfiguration configuration)
     {
+        AddCommon(services, configuration);
         AddAnnouncements(services, configuration);
         AddUserPreferences(services, configuration);
         AddFeedback(services, configuration);
