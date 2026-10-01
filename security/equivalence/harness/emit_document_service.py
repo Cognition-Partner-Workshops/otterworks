@@ -21,6 +21,7 @@ import hashlib
 import inspect
 import json
 import os
+import secrets
 import sys
 import tempfile
 from datetime import datetime
@@ -62,6 +63,7 @@ def store_uuids_as_postgres_renders_them() -> None:
 # raw path would make every rerun differ, so the fixture root is redacted to a
 # stable token - the *shape* of the error is the contract, not the tmpdir name.
 REDACTIONS: list[tuple[str, str]] = []
+
 
 
 def redact(text: str) -> str:
@@ -215,9 +217,12 @@ async def http_case(fixture: Fixture, case: dict[str, Any]) -> Any:
 
 async def share_link_http_roundtrip(fixture: Fixture, args: dict[str, Any]) -> dict[str, Any]:
     """Mint a share link over HTTP and read the document back through it."""
+    import jwt
+
     document_id = args["document_id"]
     owner_id = args["owner_id"]
-    headers = {"Authorization": "Bearer fixture", "X-User-ID": owner_id}
+    token = jwt.encode({"sub": owner_id}, os.environ["JWT_SECRET"], algorithm="HS256")
+    headers = {"Authorization": f"Bearer {token}"}
     async with AppClient(fixture) as client:
         minted = await client.post(
             f"/api/v1/documents/{document_id}/share", headers=headers
@@ -331,6 +336,9 @@ async def main() -> int:
 
     for key, value in spec.get("env", {}).items():
         os.environ[key] = value
+    # The service authenticates only via a JWT verified against JWT_SECRET; the
+    # fixture signs its own tokens with a per-run secret (never observed).
+    os.environ["JWT_SECRET"] = secrets.token_hex(32)
 
     with tempfile.TemporaryDirectory(prefix="ow-equivalence-") as tmp:
         fixture = Fixture(seed, Path(tmp))

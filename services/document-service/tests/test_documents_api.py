@@ -272,6 +272,44 @@ async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_x_user_id_header_not_trusted_when_jwt_secret_unset(
+    client: AsyncClient, owner_id: uuid.UUID, monkeypatch: pytest.MonkeyPatch
+):
+    """With JWT_SECRET unset the service must not fall back to the X-User-ID header."""
+    created = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Victim Doc", "content": "secret", "owner_id": str(owner_id)},
+    )
+    doc_id = created.json()["id"]
+
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    resp = await client.post(
+        f"/api/v1/documents/{doc_id}/share",
+        headers={"Authorization": "Bearer anything", "X-User-ID": str(owner_id)},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_x_user_id_header_not_trusted_alongside_invalid_jwt(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    """A forged token plus a spoofed X-User-ID never yields the spoofed identity."""
+    created = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Victim Doc", "content": "secret", "owner_id": str(owner_id)},
+    )
+    doc_id = created.json()["id"]
+
+    forged = jwt.encode({"sub": str(owner_id)}, "wrong-secret", algorithm="HS256")
+    resp = await client.post(
+        f"/api/v1/documents/{doc_id}/share",
+        headers={"Authorization": f"Bearer {forged}", "X-User-ID": str(owner_id)},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_create_document_no_auth_returns_401(client: AsyncClient):
     """Creating a document without owner_id and without auth returns 401."""
     resp = await client.post(
