@@ -5,13 +5,15 @@ python3.12 -m unittest seed.test_oracle_seed -v
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 import unittest
 from collections import Counter
 from decimal import Decimal
+from pathlib import Path
 
 from seed import generate, oracle, tables
-from seed.spec import CUTOFF_TEXT, Sizes
+from seed.spec import CUTOFF_TEXT, SET_ACTIVE, Sizes
 
 SCALE = 0.002  # 2,400 DOCARCH + 8,200 FILEAUD generated rows: seconds, not minutes
 _TABLE_RE = re.compile(r"INTO ARCHIVE\.(\w+) ")
@@ -260,6 +262,65 @@ class SeedRun(unittest.TestCase):
         self.assertEqual(db.executemany_calls, 6)
         self.assertEqual(db.commits, 6)
         self.assertEqual(len(db.tables["RETNPLCY"]), 40)
+
+
+class OracleDdlTests(unittest.TestCase):
+    """First-start DDL for the Exadata stand-in: applied in name order by gvenzl/oracle-free."""
+
+    DDL = Path(__file__).resolve().parent.parent / "oracle" / "ddl"
+
+    def test_ddl_is_ordered_tables_then_legacy_logic_then_grants(self):
+        names = sorted(p.name for p in self.DDL.iterdir())
+        self.assertEqual(
+            names,
+            [
+                "010_schemas.sql",
+                "020_archive_retnplcy.sql",
+                "030_archive_docarch.sql",
+                "040_archive_fileaud.sql",
+                "050_migaudit_purge_audit.sql",
+                "060_migaudit_purge_log.sql",
+                "070_archive_retention_pkg.sql",
+                "080_archive_views.sql",
+                "090_archive_trigger.sql",
+                "100_archive_scheduler.sql",
+                "110_grants.sh",
+            ],
+        )
+
+    def test_retention_pkg_carries_the_oracle_isms_to_be_ported(self):
+        pkg = (self.DDL / "070_archive_retention_pkg.sql").read_text()
+        for oracleism in (
+            "CONNECT BY",
+            "SYS_REFCURSOR",
+            "PRAGMA AUTONOMOUS_TRANSACTION",
+            "RAISE_APPLICATION_ERROR",
+            "ROWNUM",
+            "ADD_MONTHS",
+            "UTL_RAW.CONVERT",
+            "WE8EBCDIC37",
+            "NVL(",
+        ):
+            self.assertIn(oracleism, pkg)
+        self.assertIn("DECODE(", (self.DDL / "090_archive_trigger.sql").read_text())
+        self.assertIn("DBMS_SCHEDULER.CREATE_JOB", (self.DDL / "100_archive_scheduler.sql").read_text())
+
+    def test_pkg_predicates_match_the_seed_spec(self):
+        pkg = (self.DDL / "070_archive_retention_pkg.sql").read_text()
+        as_of = dt.date.fromisoformat(re.search(r"c_default_as_of\s+CONSTANT DATE\s+:= DATE '([\d-]+)'", pkg).group(1))
+        months = int(re.search(r"ADD_MONTHS\(TRUNC\(p_as_of, 'YYYY'\), -(\d+)\)", pkg).group(1))
+        self.assertEqual(
+            as_of.replace(month=1, day=1).replace(year=as_of.year - months // 12).isoformat(), CUTOFF_TEXT[:10]
+        )
+        self.assertEqual(set(re.findall(r"g_closed_schedule\('(\w+)'\) := 1;", pkg)), set(SET_ACTIVE))
+
+    def test_grants_expose_logic_read_only_and_keep_purge_authority_narrow(self):
+        grants = (self.DDL / "110_grants.sh").read_text()
+        self.assertIn("EXECUTE ON ARCHIVE.RETENTION_PKG", grants)
+        self.assertIn("SELECT_CATALOG_ROLE", grants)
+        self.assertIn("UPDATE (LEGAL_HOLD_FLAG) ON ARCHIVE.DOCARCH", grants)
+        self.assertNotRegex(grants, r"GRANT [^\n]*\bUPDATE\b[^\n]*(RETNPLCY|FILEAUD|PURGE_AUDIT)")
+        self.assertNotRegex(grants, r"GRANT [^\n]*\b(DELETE|INSERT|UPDATE)\b[^\n]*PURGE_LOG")
 
 
 if __name__ == "__main__":
