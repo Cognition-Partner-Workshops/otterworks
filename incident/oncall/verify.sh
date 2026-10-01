@@ -104,23 +104,25 @@ if [ "${expect}" = before ]; then
     else
       # Alertmanager runs without --enable-feature=receiver-name-in-metrics, so
       # its counters cannot tell receivers apart. Infer the page instead: arm.sh
-      # reloaded Alertmanager before the deploy, so the group holding this arm's
-      # alerts was opened after the reload and flushes once group_wait passes.
+      # reloaded Alertmanager before the deploy whenever an older group could
+      # still be held, so the group holding this arm's alerts is new and
+      # flushes once group_wait passes.
       sent_q='sum(alertmanager_notifications_total{integration="webhook"})'
       sent_now="$(prom_scalar_at "${sent_q}" "${now_epoch}")"
       sent_then="$(prom_scalar_at "${sent_q}" "${deploy_epoch}")"
       sent_since="$(awk -v a="${sent_now:-0}" -v b="${sent_then:-0}" 'BEGIN { printf "%d", a - b }')"
       reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
-      group_wait="$(am_group_wait_seconds "${receiver}")"
+      group_wait="$(am_route_seconds "${receiver}" group_wait)"
       due=""
       if [ -n "${first_start}" ] && [ -n "${group_wait}" ]; then
         due=$(( $(date -u -d "${first_start}" +%s) + group_wait ))
       fi
-      if [ -n "${reloaded_at}" ] && [ -n "${due}" ] && [ "${n_run}" -ge 1 ] &&
+      lingered="$(state_get "${tenant}" .steps.deploy.previous_group_may_linger)"
+      if { [ -n "${reloaded_at}" ] || [ "${lingered}" = false ]; } && [ -n "${due}" ] && [ "${n_run}" -ge 1 ] &&
          [ $(( now_epoch - due )) -ge 60 ] && [ "${sent_since}" -ge 1 ]; then
         page_ok=true
       fi
-      page_msg="${receiver} page for this arm (inferred: Alertmanager reloaded ${reloaded_at:-never}, group_wait ${group_wait:-?}s"
+      page_msg="${receiver} page for this arm (inferred: Alertmanager reloaded ${reloaded_at:-no, no earlier group}, group_wait ${group_wait:-?}s"
       page_msg+=" due $( [ -n "${due}" ] && date -u -d "@${due}" +%H:%M:%SZ || echo never), webhook notifications since deploy ${sent_since})"
     fi
   fi

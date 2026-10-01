@@ -28,7 +28,7 @@ for tenant in "${targets[@]}"; do
     continue
   fi
   ready="$(kubectl -n "${ns}" get deploy -o json |
-    jq -r '[.items[] | select((.status.readyReplicas // 0) >= 1)] | length as $r | "\($r)/\(.items | length)"')"
+    jq -r '(.items | length) as $n | [.items[] | select((.status.readyReplicas // 0) >= 1)] | "\(length)/\($n)"')"
   echo "   deployments ready: ${ready}"
   echo "   document-service: rev $(helm_revision "${tenant}" || true), folderDigest.enabled=$(digest_enabled "${tenant}" || true)"
   if kubectl -n "${ns}" get deploy "${PG_DEPLOY}" >/dev/null 2>&1; then

@@ -232,38 +232,53 @@ digest_deploy() {
 
 # ---------- Alertmanager ----------
 # am_reload: rebuilds the dispatcher, which drops every aggregation group held
-# in memory. The notification log survives, so groups whose alerts did not
-# change are not notified again. Without this, a storm armed within
-# group_interval (6h) of the previous page joins that group and waits for its
-# next flush instead of paging after group_wait.
+# in memory. The notification log survives, so a group whose firing alerts did
+# not change since its last page is not notified again; a group that gained
+# alerts since then is, so only reload when this tenant needs it
+# (oncall_group_may_linger).
 am_reload() {
   pf_alertmanager
   curl -fsS --max-time 20 -X POST -o /dev/null "http://localhost:${AM_PORT}/-/reload" ||
     die "Alertmanager did not accept POST /-/reload"
 }
 
-# am_group_wait_seconds <receiver>: group_wait of that receiver's route in the
-# live Alertmanager config, in seconds; empty when the route is absent.
-am_group_wait_seconds() {
+# am_route_seconds <receiver> <group_wait|group_interval>: that timer of the
+# receiver's route in the live Alertmanager config, in seconds; empty when the
+# route is absent.
+am_route_seconds() {
   curl -fsS --max-time 20 "http://localhost:${AM_PORT}/api/v2/status" | jq -r '.config.original' |
     python3 -c 'import re, sys, yaml
-receiver = sys.argv[1]
+receiver, key = sys.argv[1], sys.argv[2]
+defaults = {"group_wait": "30s", "group_interval": "5m"}
 units = {"ms": 0.001, "s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800, "y": 31536000}
 def seconds(text):
     parts = re.findall(r"(\d+)(ms|[smhdwy])", str(text))
     return int(sum(int(n) * units[u] for n, u in parts))
 def walk(route, inherited):
     for child in route.get("routes") or []:
-        wait = child.get("group_wait", inherited)
+        value = child.get(key, inherited)
         if child.get("receiver") == receiver:
-            return wait
-        found = walk(child, wait)
+            return value
+        found = walk(child, value)
         if found is not None:
             return found
     return None
 root = yaml.safe_load(sys.stdin).get("route") or {}
-wait = walk(root, root.get("group_wait", "30s"))
-print("" if wait is None else seconds(wait))' "$1"
+value = walk(root, root.get(key, defaults[key]))
+print("" if value is None else seconds(value))' "$1" "$2"
+}
+
+# oncall_group_may_linger <namespace>: true when a page="oncall" alert fired in
+# the namespace within the oncall-devin group_interval. Alertmanager keeps that
+# group, resolved alerts included, until its next flush, and a new storm would
+# join it and wait for that flush instead of paging after group_wait. The
+# groups API hides resolved alerts, so ask Prometheus. Needs both port-forwards.
+oncall_group_may_linger() {
+  local ns="$1" interval n
+  interval="$(am_route_seconds oncall-devin group_interval)"
+  [ -n "${interval}" ] || return 1
+  n="$(prom_scalar_at "count(last_over_time(ALERTS{namespace=\"${ns}\",page=\"oncall\",alertstate=\"firing\"}[${interval}s]))" "$(date +%s)")"
+  [ "${n:-0}" -ge 1 ]
 }
 
 # grafana_annotate <tenant> <text>: sets ANNOTATION_ID (empty when Grafana

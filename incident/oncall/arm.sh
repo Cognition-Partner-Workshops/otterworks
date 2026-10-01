@@ -27,6 +27,15 @@ active="$(kubectl -n "${ns}" get job "${K6_JOB}" -o jsonpath='{.status.active}' 
 [ -z "${active}" ] || [ "${active}" = 0 ] ||
   die "${tenant} is already armed (Job ${K6_JOB} is running); run make oncall-disarm TENANT=${tenant} first"
 
+# CD finishes a push from a Job in the platform namespace after its workflow
+# run ends, and that Job's helm upgrade would replace this arm's revision.
+for job in $(kubectl -n "${PLATFORM_NS}" get jobs -o json |
+  jq -r --arg p "deploy-${tenant}-" '.items[] | select((.metadata.name | startswith($p)) and (.status.active // 0) > 0) | .metadata.name'); do
+  log "Waiting for the CD deploy Job ${PLATFORM_NS}/${job} to finish"
+  kubectl -n "${PLATFORM_NS}" wait --for=condition=complete "job/${job}" --timeout=20m >/dev/null ||
+    die "CD deploy Job ${PLATFORM_NS}/${job} did not complete; arm once it has"
+done
+
 # The storm only reproduces on the dedicated Postgres: fail closed if
 # document-service still points at the shared RDS database.
 db_secret="$(kubectl -n "${ns}" get deploy document-service -o json |
@@ -49,9 +58,17 @@ owner="$(state_get "${tenant}" .owner_id)"
 log "Step 2/3: config deploy (folderDigest.enabled=true)"
 previous="$(helm_revision "${tenant}")"
 oncall_run="$(date +%s)"
-am_reload
-reloaded_at="$(now_iso)"
-log "Alertmanager reloaded; storm alerts from this arm carry oncall_run=${oncall_run}"
+reloaded_at=""
+lingered=false
+pf_prometheus
+pf_alertmanager
+if oncall_group_may_linger "${ns}"; then
+  lingered=true
+  am_reload
+  reloaded_at="$(now_iso)"
+  log "Alertmanager reloaded to drop the previous storm's oncall-devin group for ${ns}"
+fi
+log "Storm alerts from this arm carry oncall_run=${oncall_run}"
 digest_deploy "${tenant}" true "${oncall_run}"
 revision="$(helm_revision "${tenant}")"
 if [ -z "${revision}" ] || [ "${revision}" = "${previous}" ]; then
@@ -68,9 +85,10 @@ state_update "${tenant}" \
   '.steps.deploy = {at: $at, release: "document-service", previous_revision: $prev, revision: $rev,
                     set: {"folderDigest.enabled": true, "folderDigest.intervalSeconds": $iv, "folderDigest.concurrency": $cc,
                           "monitoring.rules.extraLabels.oncall_run": $run},
-                    oncall_run: $run, alertmanager_reloaded_at: $reload, annotation_id: $ann}' \
+                    oncall_run: $run, previous_group_may_linger: $linger, alertmanager_reloaded_at: $reload,
+                    annotation_id: $ann}' \
   --arg at "${deployed_at}" --argjson prev "${previous:-0}" --argjson rev "${revision}" \
-  --arg run "${oncall_run}" --arg reload "${reloaded_at}" \
+  --arg run "${oncall_run}" --arg reload "${reloaded_at}" --argjson linger "${lingered}" \
   --argjson iv "${DIGEST_INTERVAL_SECONDS}" --argjson cc "${DIGEST_CONCURRENCY}" \
   --arg ann "${ANNOTATION_ID}"
 
