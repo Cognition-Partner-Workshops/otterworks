@@ -25,6 +25,8 @@ ensure_kubeconfig
 # the integration baseline while it has not merged (ONCALL_RESET_REF).
 git -C "${REPO}" fetch -q origin main
 reset_ref="${ONCALL_RESET_REF:-origin/main}"
+git -C "${REPO}" cat-file -e "${reset_ref}:incident/oncall/reset.sh" 2>/dev/null ||
+  die "${reset_ref} has no on-call harness yet; set ONCALL_RESET_REF to the integration branch (forcing the demo branches there would strip the harness)"
 declare -A doc_replicas=()
 baseline_head="$(branch_alembic_head "${reset_ref}")"
 [ -n "${baseline_head}" ] || die "no document-service migrations found on ${reset_ref}"
