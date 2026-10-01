@@ -2,10 +2,10 @@ package com.otterworks.report.archive;
 
 import com.otterworks.report.archive.ArchiveDocument.ArchiveEvent;
 import com.otterworks.report.archive.ArchiveDocument.ArchiveVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class BusinessHashTest {
 
