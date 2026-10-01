@@ -26,6 +26,8 @@ spec:
       containers:
         - name: k6
           image: grafana/k6:0.54.0
+          securityContext:
+            allowPrivilegeEscalation: false
           args: [run, --quiet, --no-color, /scripts/folders.js]
           env:
             - name: API_BASE_URL

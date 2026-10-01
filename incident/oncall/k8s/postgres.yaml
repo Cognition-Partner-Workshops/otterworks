@@ -38,9 +38,16 @@ spec:
         app.kubernetes.io/part-of: oncall-storm
     spec:
       terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
         - name: postgres
           image: postgres:15
+          securityContext:
+            allowPrivilegeEscalation: false
           args:
             - -c
             - shared_buffers=128MB
@@ -94,6 +101,8 @@ spec:
               readOnly: true
         - name: postgres-exporter
           image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+          securityContext:
+            allowPrivilegeEscalation: false
           args:
             - --collector.stat_statements
           env:
