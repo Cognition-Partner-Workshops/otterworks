@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus,
   LayoutGrid,
   List,
   FileText,
   Search,
+  ArrowUpDown,
+  ChevronDown,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { DocumentCard } from "@/components/documents/document-card";
@@ -15,6 +17,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
 import { useUIStore } from "@/stores/ui-store";
+import {
+  DOCUMENT_SORT_OPTIONS,
+  parseDocumentSort,
+  sortDocuments,
+  type DocumentSortOption,
+} from "@/lib/document-sort";
 import { cn } from "@/lib/utils";
 import type { Document, PaginatedResponse, ViewMode } from "@/types";
 
@@ -33,6 +41,19 @@ function DocumentsContent() {
   const queryClient = useQueryClient();
   const { viewMode, setViewMode } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sortOption = parseDocumentSort(searchParams.get("sort"));
+
+  const handleSortChange = (nextSort: DocumentSortOption) => {
+    setSearchParams(
+      (params) => {
+        const nextParams = new URLSearchParams(params);
+        nextParams.set("sort", nextSort);
+        return nextParams;
+      },
+      { replace: true }
+    );
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["documents", "list"],
@@ -63,6 +84,7 @@ function DocumentsContent() {
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : documents;
+  const sorted = sortDocuments(filtered, sortOption);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -95,25 +117,49 @@ function DocumentsContent() {
         </div>
       </div>
 
-      {/* Search/filter */}
-      <div className="relative max-w-md">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter documents..."
-          className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
-        />
+      {/* Search/filter and sort */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[12rem] max-w-md">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter documents..."
+            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
+          />
+        </div>
+        <div className="relative">
+          <ArrowUpDown
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+          <select
+            aria-label="Sort documents"
+            value={sortOption}
+            onChange={(e) => handleSortChange(parseDocumentSort(e.target.value))}
+            className="appearance-none pl-9 pr-9 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
+          >
+            {DOCUMENT_SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        </div>
       </div>
 
       {/* Document listing */}
       <DocumentListing
         isLoading={isLoading}
-        documents={filtered}
+        documents={sorted}
         searchQuery={searchQuery}
         viewMode={viewMode}
         onCreate={() => createMutation.mutate("Untitled document")}
