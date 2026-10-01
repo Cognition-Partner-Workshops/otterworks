@@ -1,0 +1,129 @@
+groups:
+  - name: oncall.folder-storm
+    interval: 15s
+    rules:
+      - alert: EdgeErrorRatioHigh
+        expr: |
+          sum by (exported_namespace) (rate(nginx_ingress_controller_requests{status=~"5.."}[2m]))
+          / sum by (exported_namespace) (rate(nginx_ingress_controller_requests{}[2m])) > 0.05
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: web-edge, severity: critical}
+        annotations:
+          summary: "Ingress 5xx ratio exceeds 5%"
+          description: "Requests to the tenant's hosts are failing at the ingress. Compare gateway and database signals."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#edgeerrorratiohigh"
+      - alert: EdgeLatencyP95High
+        expr: |
+          histogram_quantile(0.95, sum by (exported_namespace, le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{}[2m]))) > 0.5
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: web-edge, severity: warning}
+        annotations:
+          summary: "Ingress p95 exceeds 0.5 seconds"
+          description: "Users are waiting at the edge. Check upstream request latency and the document-service pool."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#edgelatencyp95high"
+      - alert: GatewayErrorRatioHigh
+        expr: |
+          sum by (namespace) (rate(api_gateway_http_requests_total{path="/api/v1/documents",status=~"5.."}[2m]))
+          / sum by (namespace) (rate(api_gateway_http_requests_total{path="/api/v1/documents"}[2m])) > 0.05
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: api-gateway, severity: critical}
+        annotations:
+          summary: "Gateway document requests exceed 5% errors"
+          description: "The gateway is returning 5xx responses for document requests. Check upstream timeouts."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#gatewayerrorratiohigh"
+      - alert: GatewayLatencyP95High
+        expr: |
+          histogram_quantile(0.95, sum by (namespace, le) (rate(api_gateway_http_request_duration_seconds_bucket{path="/api/v1/documents"}[2m]))) > 0.5
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: api-gateway, severity: warning}
+        annotations:
+          summary: "Gateway document p95 exceeds 0.5 seconds"
+          description: "Document requests are slow through the gateway. Compare folder list latency with pool occupancy."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#gatewaylatencyp95high"
+      - alert: FolderListLatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum by (namespace, le) (rate(http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="GET"}[2m]))) > 0.5
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: critical}
+        annotations:
+          summary: "Folder list p95 exceeds 0.5 seconds"
+          description: "Folder browsing is slow inside document-service. Inspect database spans and the documents query plan."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#folderlistlatencyhigh"
+      - alert: DocumentServiceErrorRateHigh
+        expr: |
+          sum by (namespace) (rate(http_requests_total{job="document-service",status=~"5.."}[2m]))
+          / sum by (namespace) (rate(http_requests_total{job="document-service"}[2m])) > 0.05
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: critical}
+        annotations:
+          summary: "Document-service 5xx ratio exceeds 5%"
+          description: "Document-service requests are failing. Look for statement timeouts in the logs."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#documentserviceerrorratehigh"
+      - alert: DbPoolSaturated
+        expr: |
+          max by (namespace) (otterworks_db_pool_checked_out{})
+          / max by (namespace) (otterworks_db_pool_capacity{}) >= 0.9
+        for: 2m
+        labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: warning}
+        annotations:
+          summary: "Database pool occupancy is at least 90%"
+          description: "API requests and digest jobs share a saturated pool. Check query duration before raising pool capacity."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#dbpoolsaturated"
+      - alert: DbStatementTimeouts
+        expr: sum by (namespace) (rate(otterworks_db_statement_timeouts_total{}[2m])) > 0
+        for: 2m
+        labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: warning}
+        annotations:
+          summary: "Database statements keep timing out"
+          description: "Statements exceed the tenant's timeout. Compare API and worker timeout counters and examine sequential scans."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#dbstatementtimeouts"
+      - alert: FolderDigestBacklogGrowing
+        expr: |
+          max by (namespace) (otterworks_folder_digest_queue_depth{}) > 200
+          or max by (namespace) (otterworks_folder_digest_oldest_job_age_seconds{}) > 60
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: document-service, severity: warning}
+        annotations:
+          summary: "Folder digest work is backing up"
+          description: "More than 200 jobs are queued or the oldest job is over 60 seconds old. Inspect folder digest SQL spans."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#folderdigestbackloggrowing"
+      - alert: PostgresCPUThrottled
+        expr: |
+          sum by (namespace) (rate(container_cpu_cfs_throttled_periods_total{container="postgres",pod=~"oncall-postgres-.*"}[2m]))
+          / sum by (namespace) (rate(container_cpu_cfs_periods_total{container="postgres",pod=~"oncall-postgres-.*"}[2m])) > 0.25
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: postgres, severity: warning}
+        annotations:
+          summary: "Postgres CPU throttling exceeds 25% of periods"
+          description: "The tenant database is hitting the CPU limit. Check documents sequential scans and digest query plans."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgrescputhrottled"
+      - alert: PostgresActiveConnectionsHigh
+        expr: |
+          sum by (namespace) (pg_stat_activity_count{datname="otterworks",state="active"})
+          >= 0.8 * max by (namespace) (otterworks_db_pool_capacity{})
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: postgres, severity: warning}
+        annotations:
+          summary: "Active Postgres connections reach 80% of pool capacity"
+          description: "Database connections are busy with concurrent queries. Check statement durations and pool wait time."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgresactiveconnectionshigh"
+      - alert: PostgresLongRunningQueries
+        expr: max by (namespace) (pg_stat_activity_max_tx_duration{datname="otterworks"}) > 2
+        for: 1m
+        labels: {page: oncall, oncall_group: folder-storm, service: postgres, severity: warning}
+        annotations:
+          summary: "Postgres transactions exceed 2 seconds"
+          description: "Long database transactions are occupying the shared pool. Inspect pg_stat_activity and the folder query plan."
+          dashboard_url: "http://localhost:3001/d/oncall-storm"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgreslongrunningqueries"

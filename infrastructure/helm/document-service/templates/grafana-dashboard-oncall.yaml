@@ -1,0 +1,29 @@
+{{- if and .Values.monitoring.oncall.enabled .Values.monitoring.oncall.dashboard.enabled -}}
+{{- $d := .Files.Get "files/oncall-storm.json" | fromJson -}}
+{{- $ds := dict "type" "prometheus" "uid" .Values.monitoring.oncall.dashboard.datasourceUid -}}
+{{- range $v := $d.templating.list -}}
+{{- $_ := set $v "datasource" $ds -}}
+{{- end -}}
+{{- range $p := $d.panels -}}
+{{- if and $p.datasource (eq $p.datasource.type "prometheus") -}}
+{{- $_ := set $p "datasource" $ds -}}
+{{- range $t := $p.targets -}}
+{{- $_ := set $t "datasource" $ds -}}
+{{- end -}}
+{{- end -}}
+{{- if and $.Values.monitoring.links.jaeger $p.options (hasKey $p.options "content") -}}
+{{- $_ := set $p.options "content" (replace "http://localhost:16686" (trimSuffix "/" $.Values.monitoring.links.jaeger) $p.options.content) -}}
+{{- end -}}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-oncall-dashboard
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    grafana_dashboard: "1"
+data:
+  oncall-storm.json: |-
+    {{- toPrettyJson $d | nindent 4 }}
+{{- end }}

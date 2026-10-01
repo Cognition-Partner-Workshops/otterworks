@@ -12,6 +12,8 @@ CHART_FILES="${REPO_ROOT}/infrastructure/helm/document-service/files"
 PAIRS=(
   "observability/prometheus/incident_alerts.yml:incident_alerts.yml"
   "observability/grafana/dashboards/incident-responder.json:incident-responder.json"
+  "observability/prometheus/oncall_alerts.yml:oncall_alerts.yml"
+  "observability/grafana/dashboards/oncall-storm.json:oncall-storm.json"
 )
 
 check=false
