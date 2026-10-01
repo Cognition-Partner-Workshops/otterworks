@@ -47,7 +47,7 @@ Rails.application.routes.draw do
         # Bulk Operations
         post 'bulk/users', to: 'bulk#users'
 
-        # Chaos injection (demo/workshop use — protected by X-Chaos-Secret header)
+        # Chaos injection (demo/workshop use — requires an admin JWT or X-Chaos-Secret header)
         post  'chaos', to: 'chaos#trigger'
         delete 'chaos', to: 'chaos#reset'
 
@@ -55,7 +55,7 @@ Rails.application.routes.draw do
         get 'settings/auto_investigate', to: 'settings#auto_investigate'
         put 'settings/auto_investigate', to: 'settings#update_auto_investigate'
 
-        # Grafana alert webhook (no JWT — protected by X-Alert-Secret header)
+        # Grafana alert webhook (no JWT — requires ALERT_WEBHOOK_SECRET via X-Alert-Secret / Bearer)
         post 'alerts/ingest', to: 'alerts#ingest'
       end
     end

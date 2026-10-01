@@ -11,7 +11,7 @@ module Api
           'document-service'     => 'slow_queries',
         }.freeze
 
-        before_action :verify_chaos_secret
+        before_action :authorize_chaos_request
 
         # POST /api/v1/admin/chaos
         # Body: { service: "search-service", scenario: "suggest_500" }
@@ -76,12 +76,15 @@ module Api
           end
         end
 
-        def verify_chaos_secret
-          expected = ENV.fetch('CHAOS_SECRET', nil)
-          return if expected.nil? || expected.empty? # secret not configured → allow (dev mode)
+        # Chaos is reachable two ways: an authenticated admin (JWT validated by
+        # JwtAuthenticator) or an automation caller presenting X-Chaos-Secret.
+        # The secret path fails closed when CHAOS_SECRET is not configured.
+        def authorize_chaos_request
+          return if current_user_id.present?
 
-          provided = request.headers['X-Chaos-Secret']
-          return if ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected)
+          expected = ENV.fetch('CHAOS_SECRET', nil)
+          provided = request.headers['X-Chaos-Secret'].to_s
+          return if expected.present? && ActiveSupport::SecurityUtils.secure_compare(provided, expected)
 
           render json: { error: 'Unauthorized' }, status: :unauthorized
         end
