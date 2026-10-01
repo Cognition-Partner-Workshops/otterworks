@@ -528,7 +528,7 @@ incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audite
 
 # ---- On-call alert storm (incident/oncall/, docs/oncall-storm/) ----
 ONCALL = incident/oncall
-.PHONY: oncall-up oncall-arm oncall-load oncall-disarm oncall-status oncall-verify oncall-reset oncall-teardown oncall-simulate oncall-platform-up
+.PHONY: oncall-up oncall-arm oncall-load oncall-disarm oncall-quiet oncall-status oncall-verify oncall-reset oncall-teardown oncall-simulate oncall-platform-up
 
 oncall-up: ## Create/redeploy both on-call tenants, their Postgres, the incident channel and platform pieces
 	$(ONCALL)/up.sh
@@ -547,6 +547,9 @@ endif
 
 oncall-disarm: ## Stop k6 and turn the digest worker off (TENANT=<id>, default both)
 	$(ONCALL)/disarm.sh $(TENANT)
+
+oncall-quiet: ## Silence page=oncall on one tenant while it is torn down (TENANT=<id> MINUTES=15)
+	$(ONCALL)/quiet.sh $(TENANT) $(or $(MINUTES),15)
 
 oncall-status: ## Revision, worker flag, seed counts, k6 and firing storm alerts (TENANT=<id>, default both)
 	$(ONCALL)/status.sh $(TENANT)

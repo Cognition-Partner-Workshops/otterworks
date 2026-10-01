@@ -50,7 +50,8 @@ holds the storm as data (alerts, gates, fix). Run from the repository root.
 | `make oncall-load TENANT=oncall-after` | Expires the arm's silence on the namespace, then replaces Job `oncall-k6` with a fresh 25-minute run. Restarts no pod. |
 | `make oncall-verify TENANT=oncall-before EXPECT=before` | Green when at least 10 of the 12 storm alerts fire across all 4 services and Alertmanager holds exactly one `oncall-devin` group for the namespace. |
 | `make oncall-verify TENANT=oncall-after EXPECT=after` | Green when k6 has run at least 300 s, the worker is on, no storm alert fires, Alertmanager holds no `oncall-devin` group and no harness silence for the namespace, folder-list p95 over 5m is at or under 0.5 s, and the request rate is at least 0.5/s. |
-| `make oncall-disarm TENANT=oncall-after` | Deletes the k6 Job and turns the worker off with a Helm upgrade. Refuses while the database is at 005. |
+| `make oncall-quiet TENANT=oncall-after MINUTES=15` | Silences `page=oncall` on the namespace so the teardown after the close does not page again. Disarm expires it. |
+| `make oncall-disarm TENANT=oncall-after` | Deletes the k6 Job, turns the worker off with a Helm upgrade, then expires harness silences. Refuses while the database is at 005. |
 | `make oncall-simulate` | Replays the recorded page to the channel. Presenter fallback. |
 
 `make oncall-up`, `make oncall-platform-up`, `make oncall-reset` and
@@ -154,7 +155,9 @@ cd ../..
 ```
 
 Use `alembic downgrade 004` the same way to rebuild the index after a change to
-the migration, and once more before `make oncall-disarm`. `make oncall-reset`
+the migration, and once more before `make oncall-disarm`. Run
+`make oncall-quiet TENANT=oncall-after` before that last downgrade: dropping
+the index while the worker is still on throttles Postgres again and pages. `make oncall-reset`
 drops the index and stamps Alembic back before it disarms, so the proof leaves
 nothing behind even when a session stopped at 005.
 

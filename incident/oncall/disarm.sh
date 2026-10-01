@@ -25,9 +25,6 @@ for tenant in "${targets[@]}"; do
   log "Disarming ${tenant}"
   kubectl -n "${ns}" delete job "${K6_JOB}" --ignore-not-found --wait=true >/dev/null
   kubectl -n "${ns}" delete configmap "${K6_CONFIGMAP}" --ignore-not-found >/dev/null
-  pf_alertmanager
-  n="$(am_silence_expire "${ns}")"
-  [ "${n}" = 0 ] || log "Expired ${n} harness silence(s) on ${ns}"
   revision=""
   if [ "$(digest_enabled "${tenant}")" = true ]; then
     wake_tenant "${tenant}" "${PG_DEPLOY}" document-service api-gateway
@@ -38,6 +35,9 @@ for tenant in "${targets[@]}"; do
   else
     log "folder digest worker already off in ${ns}"
   fi
+  pf_alertmanager
+  n="$(am_silence_expire "${ns}")"
+  [ "${n}" = 0 ] || log "Expired ${n} harness silence(s) on ${ns}"
   if [ -f "$(state_file "${tenant}")" ]; then
     state_update "${tenant}" '.disarmed_at = $at | .steps.disarm = {at: $at, revision: $rev}' \
       --arg at "$(now_iso)" --arg rev "${revision}"

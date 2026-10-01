@@ -193,9 +193,10 @@ copy of the command with the token expanded.
 16. Close through the incident manager. When the incident manager says the
     incident is closed, post a final line with the issue and PR links and the
     final after-verify result, add the closing note to the issue and close it.
-    Then run `alembic downgrade 004` from your branch against `oncall-after`,
-    so the baseline image can start again, and run
-    `make oncall-disarm TENANT=oncall-after`. Leave `oncall-before` armed for
+    Then run `make oncall-quiet TENANT=oncall-after`, `alembic downgrade 004`
+    from your branch against `oncall-after` so the baseline image can start
+    again, and `make oncall-disarm TENANT=oncall-after`. Without the quiet
+    step, dropping the index while the worker is on pages a second time. Leave `oncall-before` armed for
     the presenter and leave the PR open.
 
 ## Specifications (postconditions)
