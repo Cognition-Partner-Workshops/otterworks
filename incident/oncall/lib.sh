@@ -467,10 +467,10 @@ am_silence_arm() {
   local ns="$1" minutes="$2" body
   pf_alertmanager
   body="$(jq -nc --arg ns "${ns}" --arg by "${SILENCE_CREATOR}" \
-    --arg start "$(now_iso)" --arg end "$(date -u -d "+${minutes} minutes" +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg start "$(now_iso)" --arg until "$(date -u -d "+${minutes} minutes" +%Y-%m-%dT%H:%M:%SZ)" \
     '{matchers: [{name: "namespace", value: $ns, isRegex: false, isEqual: true},
                  {name: "page", value: "oncall", isRegex: false, isEqual: true}],
-      startsAt: $start, endsAt: $end, createdBy: $by,
+      startsAt: $start, endsAt: $until, createdBy: $by,
       comment: "oncall arm: fix proof window before load starts"}')"
   curl -fsS --max-time 20 -H 'Content-Type: application/json' --data "${body}" \
     "http://localhost:${AM_PORT}/api/v2/silences" | jq -r '.silenceID // empty'
