@@ -1,0 +1,132 @@
+{
+  "columns": [
+    {
+      "digest": 45662290214861677669980326550877182000,
+      "distinct": 27002,
+      "max": "1199963",
+      "min": "3",
+      "name": "return_id",
+      "non_null": 27002,
+      "scale": 0,
+      "sum": "16198289006",
+      "type": "bigint"
+    },
+    {
+      "digest": 88478106436028933772967761083273450803,
+      "distinct": 27002,
+      "max": "399988",
+      "min": "1",
+      "name": "order_id",
+      "non_null": 27002,
+      "scale": 0,
+      "sum": "5399438668",
+      "type": "bigint"
+    },
+    {
+      "digest": 113524173157872941418975923649208361963,
+      "distinct": 27002,
+      "max": "1199963",
+      "min": "3",
+      "name": "order_item_id",
+      "non_null": 27002,
+      "scale": 0,
+      "sum": "16198289006",
+      "type": "bigint"
+    },
+    {
+      "digest": 317972813692570525117251231730090569992,
+      "distinct": 8000,
+      "max": "8000",
+      "min": "1",
+      "name": "product_id",
+      "non_null": 27002,
+      "scale": 0,
+      "sum": "108012408",
+      "type": "bigint"
+    },
+    {
+      "digest": 123534070172898107374631776399295117908,
+      "distinct": 6,
+      "max": "Outdoors",
+      "min": "Apparel",
+      "name": "category",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 189570681717449966558110492704709726308,
+      "distinct": 27002,
+      "max": "2026-01-30 21:43:06",
+      "min": "2023-01-02 18:50:09",
+      "name": "return_ts",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    },
+    {
+      "digest": 184606219332146826981210777128296648753,
+      "distinct": 1125,
+      "max": "2026-01-30",
+      "min": "2023-01-02",
+      "name": "return_date",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "date"
+    },
+    {
+      "digest": 184153460265873736968772731097581230913,
+      "distinct": 5,
+      "max": "WRONG_SIZE",
+      "min": "CHANGED_MIND",
+      "name": "reason_code",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 284763187116925752642693986629153473670,
+      "distinct": 22748,
+      "max": "1774.15",
+      "min": "6.59",
+      "name": "refund_amount",
+      "non_null": 27002,
+      "scale": 2,
+      "sum": "14107686.39",
+      "type": "numeric"
+    },
+    {
+      "digest": 198589536236363777029634344177604067697,
+      "distinct": 4,
+      "max": "USD",
+      "min": "CAD",
+      "name": "currency_code",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "character"
+    },
+    {
+      "digest": 185664071762930571421182267292745887450,
+      "distinct": 1,
+      "max": "2026-01-01 03:45:00",
+      "min": "2026-01-01 03:45:00",
+      "name": "load_ts",
+      "non_null": 27002,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    }
+  ],
+  "engine": "postgres",
+  "fingerprint": "5c2c325d6f1854c46673fa40e83dce1c484888bdf55602d604af4b9d92a01747",
+  "manifest_format": 4,
+  "ordered": null,
+  "row_count": 27002,
+  "row_digest": 268774712848528092472191511518863842508,
+  "table": "core.fct_returns"
+}
