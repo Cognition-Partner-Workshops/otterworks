@@ -28,6 +28,7 @@ open http://localhost:4200        # Admin Dashboard (Angular)
 Or without Make:
 
 ```bash
+cp .env.example .env   # make does this for you on first run
 docker compose -f docker-compose.infra.yml up -d
 docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
 ```
