@@ -9,9 +9,10 @@ from asyncpg.exceptions import QueryCanceledError
 from prometheus_client import REGISTRY
 from sqlalchemy import select
 from sqlalchemy.exc import DBAPIError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import Settings
+from app.db.base import Base
 from app.jobs import folder_digest
 from app.models.document import Document, FolderDigest
 from tests.conftest import TestingSessionLocal
@@ -108,10 +109,21 @@ async def test_job_upserts_count_and_newest_update(db_session: AsyncSession) -> 
 
 
 @pytest.mark.asyncio
-async def test_drain_empties_the_queue(db_session: AsyncSession) -> None:
+async def test_drain_empties_the_queue(tmp_path) -> None:
+    # TestingSessionLocal's in-memory engine is one shared connection, so
+    # concurrent sessions interleave a single transaction and a closing
+    # session's rollback can drop another's pending insert. A file-backed
+    # database gives each session its own connection, like production.
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path}/drain.db")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
     folders = [uuid.uuid4() for _ in range(5)]
-    await _seed(db_session, dict.fromkeys(folders, 2))
-    worker = _worker(concurrency=3)
+    async with factory() as db:
+        await _seed(db, dict.fromkeys(folders, 2))
+
+    worker = folder_digest.FolderDigestWorker(factory, 60, 3)
     await worker.run_cycle()
 
     drains = [asyncio.create_task(worker.drain()) for _ in range(worker.concurrency)]
@@ -122,9 +134,10 @@ async def test_drain_empties_the_queue(db_session: AsyncSession) -> None:
 
     assert worker.queue.qsize() == 0
     assert worker.oldest_job_age() == 0.0
-    db_session.expire_all()
-    rows = (await db_session.execute(select(FolderDigest))).scalars().all()
+    async with factory() as db:
+        rows = (await db.execute(select(FolderDigest))).scalars().all()
     assert {row.folder_id for row in rows} == set(folders)
+    await engine.dispose()
 
 
 @pytest.mark.asyncio

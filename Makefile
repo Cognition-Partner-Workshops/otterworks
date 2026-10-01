@@ -551,7 +551,7 @@ ifndef TENANT
 endif
 	$(ONCALL)/verify.sh $(TENANT) $(or $(EXPECT),before)
 
-oncall-reset: ## Disarm both tenants, truncate the seed, force both demo-oncall-* branches back to origin/main
+oncall-reset: ## Disarm both tenants, truncate the seed, force both demo-oncall-* branches back to the baseline (origin/main, or ONCALL_RESET_REF)
 	$(ONCALL)/reset.sh
 
 oncall-teardown: ## Tear down both on-call tenants, the incident channel and the platform pieces

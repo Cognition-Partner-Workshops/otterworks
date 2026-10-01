@@ -20,8 +20,11 @@ ensure_kubeconfig
 "${ONCALL_DIR}/disarm.sh" "${BEFORE_TENANT}" "${AFTER_TENANT}"
 
 # ---------- 2. data ----------
+# The between-runs baseline is origin/main once it carries the on-call work, or
+# the integration baseline while it has not merged (ONCALL_RESET_REF).
 git -C "${REPO}" fetch -q origin main
-baseline_head="$(git -C "${REPO}" ls-tree --name-only origin/main services/document-service/alembic/versions/ |
+reset_ref="${ONCALL_RESET_REF:-origin/main}"
+baseline_head="$(git -C "${REPO}" ls-tree --name-only "${reset_ref}" services/document-service/alembic/versions/ |
   sed -nE 's#.*/([0-9]{3})_[^/]*\.py$#\1#p' | sort | tail -n 1)"
 for tenant in "${BEFORE_TENANT}" "${AFTER_TENANT}"; do
   ns="$(tenant_ns "${tenant}")"
@@ -51,16 +54,16 @@ SQL
 done
 
 # ---------- 3. branches ----------
-main_sha="$(git -C "${REPO}" rev-parse origin/main)"
+main_sha="$(git -C "${REPO}" rev-parse "${reset_ref}")"
 for tenant in "${BEFORE_TENANT}" "${AFTER_TENANT}"; do
   branch="$(tenant_branch "${tenant}")"
   remote_sha="$(git -C "${REPO}" ls-remote --heads origin "${branch}" | awk '{print $1}')"
   if [ -z "${remote_sha}" ]; then
     warn "${branch} does not exist; make oncall-up creates it"
   elif [ "${remote_sha}" = "${main_sha}" ]; then
-    log "${branch} already equals origin/main"
+    log "${branch} already equals ${reset_ref}"
   else
-    log "Forcing ${branch} ${remote_sha:0:12} -> origin/main ${main_sha:0:12}"
+    log "Forcing ${branch} ${remote_sha:0:12} -> ${reset_ref} ${main_sha:0:12}"
     git -C "${REPO}" push -q --force-with-lease="refs/heads/${branch}:${remote_sha}" \
       origin "${main_sha}:refs/heads/${branch}"
   fi
@@ -79,4 +82,4 @@ else
   warn "CHANNEL_TOKEN not readable; incident channel threads left as they are"
 fi
 rm -rf "${STATE_DIR}"
-log "Reset done. Both tenants are on origin/main with no seed, no load and the worker off."
+log "Reset done. Both tenants are on ${reset_ref} with no seed, no load and the worker off."
