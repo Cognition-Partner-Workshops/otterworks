@@ -1,0 +1,24 @@
+global:
+  resolve_timeout: 5m
+route:
+  receiver: existing-default
+  group_by: [alertname]
+  routes:
+    - receiver: existing-devin
+      matchers: ['page="devin"']
+      group_wait: 10s
+receivers:
+  - name: existing-default
+    webhook_configs:
+      - url: https://example.invalid/FAKE_OLD_DEFAULT_SECRET
+  - name: existing-devin
+    webhook_configs:
+      - url: https://example.invalid/FAKE_OLD_DEVIN_SECRET
+        http_config:
+          http_headers:
+            X-Webhook-Secret:
+              values: [FAKE_EXISTING_HEADER_SECRET]
+inhibit_rules:
+  - source_matchers: ['severity="critical"']
+    target_matchers: ['severity="warning"']
+    equal: [namespace, alertname]
