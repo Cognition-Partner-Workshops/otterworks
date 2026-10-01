@@ -1,0 +1,42 @@
+# On-call alert storm tenant (incident/oncall/, docs/oncall-storm/).
+# document-service runs on the tenant's own oncall-postgres (1 CPU) with a
+# small pool and a 3 s statement timeout. The folder digest worker is off here;
+# make oncall-arm turns it on with helm upgrade --reuse-values.
+monitoring:
+  enabled: true
+  # The incident-responder rules page "devin" on this same latency; keep them
+  # off so only the on-call storm rules page.
+  rules:
+    enabled: false
+    extraLabels:
+      branch: demo-oncall-before
+      fix_branch: demo-oncall-after
+  dashboard:
+    enabled: false
+  oncall:
+    enabled: true
+    dashboard:
+      # One copy of uid oncall-storm, on oncall-before; its namespace variable
+      # switches to otterworks-oncall-after.
+      enabled: true
+  links:
+    grafana: https://grafana.otterworks.app
+    jaeger: https://jaeger.otterworks.app
+tracing:
+  enabled: true
+database:
+  urlSecret:
+    name: oncall-postgres
+    key: url
+  statementTimeoutMs: 3000
+  poolSize: 5
+  maxOverflow: 0
+folderDigest:
+  enabled: false
+  intervalSeconds: 15
+  concurrency: 4
+strategy:
+  type: Recreate
+resources:
+  limits:
+    memory: 512Mi

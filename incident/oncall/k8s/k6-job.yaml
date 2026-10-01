@@ -1,0 +1,68 @@
+# The oncall-k6 Job. Rendered by incident/oncall/arm.sh (envsubst on the named
+# variables only) and applied into otterworks-<tenant>. The script comes from
+# ConfigMap oncall-k6-script; JWT_SECRET comes from the tenant's own Secret.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oncall-k6
+  labels:
+    app: oncall-k6
+    app.kubernetes.io/part-of: oncall-storm
+    oncall-storm/run-id: "${RUN_ID}"
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: ${K6_DEADLINE_SECONDS}
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: oncall-k6
+        app.kubernetes.io/part-of: oncall-storm
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 12345
+      containers:
+        - name: k6
+          image: grafana/k6:0.54.0
+          args: [run, --quiet, --no-color, /scripts/folders.js]
+          env:
+            - name: API_BASE_URL
+              value: "https://${API_HOST}"
+            - name: TENANT
+              value: "${TENANT}"
+            - name: RUN_ID
+              value: "${RUN_ID}"
+            - name: OWNER_ID
+              value: "${OWNER_ID}"
+            - name: DEMO_USER_EMAIL
+              value: "${DEMO_USER_EMAIL}"
+            - name: SEED_FOLDERS
+              value: "${SEED_FOLDERS}"
+            - name: LOAD_VUS
+              value: "${LOAD_VUS}"
+            - name: LOAD_MINUTES
+              value: "${LOAD_MINUTES}"
+            - name: P95_SLO_SECONDS
+              value: "${P95_SLO_SECONDS}"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-gateway-secrets
+                  key: JWT_SECRET
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: oncall-k6-script
