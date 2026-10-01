@@ -2,6 +2,7 @@
 
 import asyncio
 import importlib.util
+import io
 import json
 import os
 import uuid
@@ -60,13 +61,44 @@ def test_upgrade_then_downgrade() -> None:
         sa.Column("folder_id", sa.String(36)),
         sa.Column("updated_at", sa.DateTime(timezone=True)),
     )
-    with engine.begin() as conn:
+    with engine.connect() as conn:
         metadata.create_all(conn)
+        conn.commit()
         _run(conn, "upgrade")
         assert INDEX_NAME in _index_names(conn)
+        conn.commit()
 
         _run(conn, "downgrade")
         assert INDEX_NAME not in _index_names(conn)
+
+
+def _postgres_offline_sql(fn_name: str) -> str:
+    buf = io.StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql",
+        opts={"as_sql": True, "output_buffer": buf, "transactional_ddl": True},
+    )
+    migration = _load_005()
+    with Operations.context(context):
+        context.impl.emit_begin()
+        getattr(migration, fn_name)()
+        context.impl.emit_commit()
+    return " ".join(buf.getvalue().split())
+
+
+def test_upgrade_builds_index_concurrently_outside_transaction() -> None:
+    sql = _postgres_offline_sql("upgrade")
+    assert (
+        "BEGIN; COMMIT; CREATE INDEX CONCURRENTLY ix_documents_folder_id_updated_at "
+        "ON documents (folder_id, updated_at DESC); BEGIN; COMMIT;"
+    ) in sql
+
+
+def test_downgrade_drops_index_concurrently_outside_transaction() -> None:
+    sql = _postgres_offline_sql("downgrade")
+    assert (
+        "BEGIN; COMMIT; DROP INDEX CONCURRENTLY ix_documents_folder_id_updated_at; BEGIN; COMMIT;"
+    ) in sql
 
 
 def _plan_index_names(plan: dict) -> set[str]:

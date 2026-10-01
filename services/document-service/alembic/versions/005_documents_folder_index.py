@@ -21,8 +21,15 @@ INDEX_NAME = "ix_documents_folder_id_updated_at"
 
 
 def upgrade() -> None:
-    op.create_index(INDEX_NAME, "documents", ["folder_id", sa.text("updated_at DESC")])
+    with op.get_context().autocommit_block():
+        op.create_index(
+            INDEX_NAME,
+            "documents",
+            ["folder_id", sa.text("updated_at DESC")],
+            postgresql_concurrently=True,
+        )
 
 
 def downgrade() -> None:
-    op.drop_index(INDEX_NAME, table_name="documents")
+    with op.get_context().autocommit_block():
+        op.drop_index(INDEX_NAME, table_name="documents", postgresql_concurrently=True)
