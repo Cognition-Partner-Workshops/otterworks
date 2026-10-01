@@ -1,4 +1,7 @@
 class ApplicationController < ActionController::API
+  # admin-service `super_admin` and auth-service `OWNER` are the same tier
+  ROLE_MANAGER_ROLES = %w[super_admin owner].freeze
+
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -30,6 +33,18 @@ class ApplicationController < ActionController::API
 
   def current_user_role
     request.env['jwt.user_role']
+  end
+
+  def current_user_roles
+    (Array(request.env['jwt.user_roles']) + [current_user_role]).compact.map { |r| r.to_s.downcase }
+  end
+
+  def role_manager?
+    current_user_roles.intersect?(ROLE_MANAGER_ROLES)
+  end
+
+  def render_forbidden(message = 'Forbidden')
+    render json: { error: message }, status: :forbidden
   end
 
   def set_request_metadata
