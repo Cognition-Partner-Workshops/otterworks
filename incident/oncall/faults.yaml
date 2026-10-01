@@ -1,0 +1,90 @@
+# The on-call alert storm as data. verify.sh, status.sh and the docs read this
+# file; vars.env holds the knobs that scripts pass to Kubernetes and k6.
+scenario: folder-storm
+oncall_group: folder-storm
+tenants:
+  before: oncall-before
+  after: oncall-after
+fix_branch: demo-oncall-after
+
+seed:
+  sql: incident/oncall/seed.sql
+  documents: 200000
+  folders: 400
+  versions_per_document: 2
+  owner: one demo user registered through auth-service (DEMO_USER_EMAIL)
+  ids: md5('oncall-doc-<n>'), md5('oncall-folder-<n>'), md5('oncall-ver-<n>-<v>') cast to uuid
+
+config_deploy:
+  release: document-service
+  command: helm upgrade --reuse-values --set folderDigest.enabled=true
+  values:
+    folderDigest.enabled: true
+    folderDigest.intervalSeconds: 15
+    folderDigest.concurrency: 4
+  annotation: "document-service rev {revision}: folder digest worker enabled"
+  effect: >-
+    every 15 s the worker runs one count(*), max(updated_at) per folder on the
+    API's own pool; documents.folder_id has no index, so each one is a
+    sequential scan of 200k rows on a 1 CPU Postgres
+
+database:
+  deployment: oncall-postgres
+  cpu_limit: 1
+  shared_buffers: 128MB
+  max_connections: 60
+  statement_timeout_ms: 3000
+  pool_size: 5
+  max_overflow: 0
+
+load:
+  tool: k6
+  script: incident/oncall/k6/folders.js
+  job: oncall-k6
+  vus: 6
+  minutes: 25
+  request: GET /api/v1/documents/?folder_id=<f>&page=1&size=50
+  think_time_seconds: [1, 3]
+  host: https://api-t-<tenant>.demo.otterworks.app
+
+expected:
+  # First storm alert firing, measured from the config deploy.
+  alerts_within_seconds: 360
+  # Alertmanager waits 3 m (group_wait) before the one Devin notification.
+  page_within_seconds: 600
+  receiver: oncall-devin
+  services: [web-edge, api-gateway, document-service, postgres]
+  alerts:
+    - {name: EdgeErrorRatioHigh, service: web-edge, severity: critical}
+    - {name: EdgeLatencyP95High, service: web-edge, severity: warning}
+    - {name: GatewayErrorRatioHigh, service: api-gateway, severity: critical}
+    - {name: GatewayLatencyP95High, service: api-gateway, severity: warning}
+    - {name: FolderListLatencyHigh, service: document-service, severity: critical}
+    - {name: DocumentServiceErrorRateHigh, service: document-service, severity: critical}
+    - {name: DbPoolSaturated, service: document-service, severity: warning}
+    - {name: DbStatementTimeouts, service: document-service, severity: warning}
+    - {name: FolderDigestBacklogGrowing, service: document-service, severity: warning}
+    - {name: PostgresCPUThrottled, service: postgres, severity: warning}
+    - {name: PostgresActiveConnectionsHigh, service: postgres, severity: warning}
+    - {name: PostgresLongRunningQueries, service: postgres, severity: warning}
+
+gates:
+  before:
+    min_firing: 10
+    services: 4
+    devin_groups: 1
+  after:
+    max_firing: 0
+    p95_seconds_max: 0.5
+    # Folder listings per second at document-service; proves the load is on.
+    min_request_rate: 0.5
+    window: 5m
+    # The load must have run this long before the after gate counts.
+    soak_seconds: 300
+    handler: /api/v1/documents/
+
+fix:
+  migration: services/document-service/alembic/versions/005_*.py
+  index: ix_documents_folder_id_updated_at
+  definition: documents (folder_id, updated_at DESC)
+  note: never part of the baseline; the paged session writes it

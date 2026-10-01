@@ -1,0 +1,3 @@
+# Runtime state and gate reports written by the on-call storm harness.
+.state/
+reports/

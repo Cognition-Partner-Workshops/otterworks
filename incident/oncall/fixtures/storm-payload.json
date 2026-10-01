@@ -1,0 +1,313 @@
+{
+  "receiver": "oncall-devin",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PostgresCPUThrottled",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "postgres",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "oncall-postgres throttled in 71% of CPU periods",
+        "description": "The postgres container of oncall-postgres is CPU throttled in 71% of CFS periods over 5m (threshold 25%). It is at its 1 CPU limit.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgrescputhrottled"
+      },
+      "startsAt": "2026-10-01T12:02:41.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=container_cpu_cfs_throttled_periods_total%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "939bcaed850a194d"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "FolderDigestBacklogGrowing",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "document-service",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Folder digest queue at 1180 jobs, oldest 214s",
+        "description": "The folder digest queue holds 1180 jobs and the oldest has waited 214s (thresholds 200 jobs or 60s). Cycles start faster than they finish.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#folderdigestbackloggrowing"
+      },
+      "startsAt": "2026-10-01T12:02:56.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=otterworks_folder_digest_queue_depth%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "b1e08a3bd2087cc8"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PostgresActiveConnectionsHigh",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "postgres",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "5 active connections on oncall-postgres (pool capacity 5)",
+        "description": "pg_stat_activity shows 5 active connections, at or above 80% of document-service pool capacity, for 2m.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgresactiveconnectionshigh"
+      },
+      "startsAt": "2026-10-01T12:03:11.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=pg_stat_activity_count%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "91b75e37cb44ede1"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DbStatementTimeouts",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "document-service",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Statements hitting the 3s statement_timeout (0.42/s)",
+        "description": "Queries from document-service are cancelled by the 3000ms statement_timeout at 0.42/s for 2m, from both the API and the folder digest worker.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#dbstatementtimeouts"
+      },
+      "startsAt": "2026-10-01T12:03:26.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=otterworks_db_statement_timeouts_total%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "f651447344e636fc"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DbPoolSaturated",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "document-service",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "DB pool 5 of 5 connections checked out",
+        "description": "document-service has 5 of 5 pooled connections checked out for 2m (threshold 90%). New requests queue for a connection.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#dbpoolsaturated"
+      },
+      "startsAt": "2026-10-01T12:03:41.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=otterworks_db_pool_checked_out%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "644b98df09f71e36"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PostgresLongRunningQueries",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "postgres",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Longest transaction on oncall-postgres is 2.9s",
+        "description": "The longest open transaction on oncall-postgres has run 2.9s (threshold 2s).",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#postgreslongrunningqueries"
+      },
+      "startsAt": "2026-10-01T12:03:41.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=pg_stat_activity_max_tx_duration%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "a0eeab20ecf8eedf"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "FolderListLatencyHigh",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "document-service",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "Folder listing p95 is 3.0s at document-service (SLO 0.5s)",
+        "description": "p95 of GET /api/v1/documents/ at document-service is 3.0s over 5m, against a 0.5s SLO. Requests are waiting on the database.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#folderlistlatencyhigh"
+      },
+      "startsAt": "2026-10-01T12:03:56.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=http_request_duration_seconds_bucket%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "7a57bee4c4cdea1a"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DocumentServiceErrorRateHigh",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "document-service",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "document-service returns 5xx for 10.6% of requests",
+        "description": "document-service answers 10.6% of requests with 5xx over 5m (threshold 5%).",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#documentserviceerrorratehigh"
+      },
+      "startsAt": "2026-10-01T12:04:26.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=http_requests_total%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "73ed9cf79c195a89"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "EdgeErrorRatioHigh",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "web-edge",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "12.4% of requests to t-oncall-before / api-t-oncall-before return 5xx at the ingress",
+        "description": "The shared ingress reports 12.4% 5xx for this tenant's hosts over 5m (threshold 5%). Users browsing folders see errors.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#edgeerrorratiohigh"
+      },
+      "startsAt": "2026-10-01T12:04:41.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=nginx_ingress_controller_requests%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "bcbc00ef5e9cde9a"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "EdgeLatencyP95High",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "web-edge",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Ingress p95 for the tenant is 3.1s (SLO 0.5s)",
+        "description": "p95 request time at the shared ingress for this tenant's hosts is 3.1s over 5m, against a 0.5s SLO.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#edgelatencyp95high"
+      },
+      "startsAt": "2026-10-01T12:04:56.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=nginx_ingress_controller_request_duration_seconds_bucket%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "c292680ee8783675"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "GatewayErrorRatioHigh",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "api-gateway",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "9.8% of /api/v1/documents requests return 5xx at api-gateway",
+        "description": "api-gateway returns 5xx for 9.8% of /api/v1/documents requests over 5m (threshold 5%). The errors come from the upstream document-service.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#gatewayerrorratiohigh"
+      },
+      "startsAt": "2026-10-01T12:05:11.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=api_gateway_http_requests_total%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "893df552fb488b79"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "GatewayLatencyP95High",
+        "branch": "demo-oncall-before",
+        "fix_branch": "demo-oncall-after",
+        "namespace": "otterworks-oncall-before",
+        "oncall_group": "folder-storm",
+        "page": "oncall",
+        "prometheus": "monitoring/prometheus-prometheus",
+        "service": "api-gateway",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "api-gateway p95 for /api/v1/documents is 3.0s (SLO 0.5s)",
+        "description": "p95 for /api/v1/documents at api-gateway is 3.0s over 5m, against a 0.5s SLO.",
+        "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before",
+        "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/oncall-storm/runbook.md#gatewaylatencyp95high"
+      },
+      "startsAt": "2026-10-01T12:05:26.512Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.otterworks.app/graph?g0.expr=api_gateway_http_request_duration_seconds_bucket%7Bnamespace%3D%22otterworks-oncall-before%22%7D&g0.tab=1",
+      "fingerprint": "6cb628743c7066f4"
+    }
+  ],
+  "groupLabels": {
+    "namespace": "otterworks-oncall-before",
+    "oncall_group": "folder-storm"
+  },
+  "commonLabels": {
+    "branch": "demo-oncall-before",
+    "fix_branch": "demo-oncall-after",
+    "namespace": "otterworks-oncall-before",
+    "oncall_group": "folder-storm",
+    "page": "oncall",
+    "prometheus": "monitoring/prometheus-prometheus"
+  },
+  "commonAnnotations": {
+    "dashboard_url": "https://grafana.otterworks.app/d/oncall-storm/oncall-storm?var-namespace=otterworks-oncall-before"
+  },
+  "externalURL": "https://alertmanager.otterworks.app",
+  "version": "4",
+  "groupKey": "{}/{page=\"oncall\"}:{namespace=\"otterworks-oncall-before\", oncall_group=\"folder-storm\"}",
+  "truncatedAlerts": 0
+}

@@ -525,3 +525,40 @@ incident-fingerprint: ## Compare fixture/source fingerprints with incident/expec
 incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audited)
 	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make incident-record REASON="baseline before n-plus-one fix"' >&2; exit 2)
 	$(INCIDENT) record --reason "$(REASON)"
+
+# ---- On-call alert storm (incident/oncall/, docs/oncall-storm/) ----
+ONCALL = incident/oncall
+.PHONY: oncall-up oncall-arm oncall-disarm oncall-status oncall-verify oncall-reset oncall-teardown oncall-simulate oncall-platform-up
+
+oncall-up: ## Create/redeploy both on-call tenants, their Postgres, the incident channel and platform pieces
+	$(ONCALL)/up.sh
+
+oncall-arm: ## Seed, ship the folder-digest config deploy and start k6 on one tenant (TENANT=oncall-before|oncall-after)
+ifndef TENANT
+	$(error TENANT is required, e.g. make oncall-arm TENANT=oncall-before)
+endif
+	$(ONCALL)/arm.sh $(TENANT)
+
+oncall-disarm: ## Stop k6 and turn the digest worker off (TENANT=<id>, default both)
+	$(ONCALL)/disarm.sh $(TENANT)
+
+oncall-status: ## Revision, worker flag, seed counts, k6 and firing storm alerts (TENANT=<id>, default both)
+	$(ONCALL)/status.sh $(TENANT)
+
+oncall-verify: ## Fail-closed storm gate (TENANT=<id> EXPECT=before|after)
+ifndef TENANT
+	$(error TENANT is required, e.g. make oncall-verify TENANT=oncall-before EXPECT=before)
+endif
+	$(ONCALL)/verify.sh $(TENANT) $(or $(EXPECT),before)
+
+oncall-reset: ## Disarm both tenants, truncate the seed, force both demo-oncall-* branches back to origin/main
+	$(ONCALL)/reset.sh
+
+oncall-teardown: ## Tear down both on-call tenants, the incident channel and the platform pieces
+	$(ONCALL)/teardown.sh
+
+oncall-simulate: ## POST the recorded storm page to the incident channel (and ONCALL_DEVIN_WEBHOOK_URL when set)
+	$(ONCALL)/simulate.sh
+
+oncall-platform-up: ## Install or refresh Loki, Alloy, Tempo, datasources and the oncall Alertmanager routes
+	$(ONCALL)/platform-up.sh
