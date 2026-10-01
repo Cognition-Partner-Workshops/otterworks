@@ -6,6 +6,7 @@ import { AwarenessService, type CursorPosition } from '../services/awareness';
 import { extractUserFromSocket } from '../middleware/auth';
 import { MetricsCollector } from '../metrics';
 import { PresenceHandler } from './presence';
+import { DocRegistry } from '../services/doc-registry';
 
 export interface CommentAnnotation {
   id: string;
@@ -31,8 +32,7 @@ export interface CollaborationDeps {
 }
 
 export class CollaborationManager {
-  private documents: Map<string, Y.Doc> = new Map();
-  private documentInitPromises: Map<string, Promise<Y.Doc>> = new Map();
+  private registry: DocRegistry;
   private cleaningUp: Set<string> = new Set();
   private deps: CollaborationDeps;
   private persistTimer: NodeJS.Timeout | null = null;
@@ -40,14 +40,18 @@ export class CollaborationManager {
 
   constructor(deps: CollaborationDeps) {
     this.deps = deps;
+    this.registry = new DocRegistry({
+      documentStore: deps.documentStore,
+      metrics: deps.metrics,
+    });
   }
 
   getDocument(documentId: string): Y.Doc | undefined {
-    return this.documents.get(documentId);
+    return this.registry.get(documentId);
   }
 
   getDocumentCount(): number {
-    return this.documents.size;
+    return this.registry.size;
   }
 
   start(): void {
@@ -75,7 +79,7 @@ export class CollaborationManager {
 
     // Final persistence pass: flush all in-memory documents to Redis before shutdown
     const { documentStore, logger } = this.deps;
-    for (const [documentId, doc] of this.documents) {
+    for (const [documentId, doc] of this.registry.entries()) {
       try {
         const state = Y.encodeStateAsUpdate(doc);
         await documentStore.saveDocumentState(documentId, Buffer.from(state));
@@ -139,7 +143,7 @@ export class CollaborationManager {
       );
 
       // Get or create Yjs document (safe against concurrent joins)
-      const doc = await this.getOrCreateDoc(documentId);
+      const doc = await this.registry.getOrCreate(documentId);
 
       // Register awareness
       const userAwareness = awareness.addUser(
@@ -214,7 +218,7 @@ export class CollaborationManager {
     const room = `doc:${documentId}`;
     const user = extractUserFromSocket(socket);
 
-    const doc = this.documents.get(documentId);
+    const doc = this.registry.get(documentId);
     if (!doc) {
       logger.warn({ documentId, socketId: socket.id }, 'document_update_for_unknown_doc');
       return;
@@ -388,7 +392,7 @@ export class CollaborationManager {
     const user = extractUserFromSocket(socket);
     const { documentId, label } = data;
 
-    const doc = this.documents.get(documentId);
+    const doc = this.registry.get(documentId);
     if (!doc) {
       socket.emit('snapshot-error', {
         documentId,
@@ -465,8 +469,8 @@ export class CollaborationManager {
     if (this.cleaningUp.has(documentId)) return;
     this.cleaningUp.add(documentId);
 
-    const { documentStore, metrics, logger } = this.deps;
-    const doc = this.documents.get(documentId);
+    const { documentStore, logger } = this.deps;
+    const doc = this.registry.get(documentId);
     if (!doc) {
       this.cleaningUp.delete(documentId);
       return;
@@ -478,8 +482,7 @@ export class CollaborationManager {
       logger.info({ documentId }, 'document_persisted_on_cleanup');
       // Re-check if users have re-joined during the async persistence
       if (this.deps.awareness.getDocumentUserCount(documentId) === 0) {
-        this.documents.delete(documentId);
-        metrics.activeRooms.dec();
+        this.registry.remove(documentId);
         logger.debug({ documentId }, 'document_removed_from_memory');
       }
     } catch (err) {
@@ -490,38 +493,11 @@ export class CollaborationManager {
     }
   }
 
-  private async getOrCreateDoc(documentId: string): Promise<Y.Doc> {
-    const existing = this.documents.get(documentId);
-    if (existing) return existing;
-
-    const pending = this.documentInitPromises.get(documentId);
-    if (pending) return pending;
-
-    const { documentStore, metrics } = this.deps;
-    const initPromise = (async () => {
-      try {
-        const doc = new Y.Doc();
-        const savedState = await documentStore.getDocumentState(documentId);
-        if (savedState) {
-          Y.applyUpdate(doc, savedState);
-        }
-        this.documents.set(documentId, doc);
-        metrics.activeRooms.inc();
-        return doc;
-      } finally {
-        this.documentInitPromises.delete(documentId);
-      }
-    })();
-
-    this.documentInitPromises.set(documentId, initPromise);
-    return initPromise;
-  }
-
   private startPersistenceLoop(): void {
     const { documentStore, metrics, logger } = this.deps;
 
     this.persistTimer = setInterval(async () => {
-      for (const [documentId, doc] of this.documents) {
+      for (const [documentId, doc] of this.registry.entries()) {
         try {
           const state = Y.encodeStateAsUpdate(doc);
           const start = Date.now();
@@ -549,7 +525,7 @@ export class CollaborationManager {
     const { documentStore, logger } = this.deps;
 
     this.snapshotTimer = setInterval(async () => {
-      for (const [documentId, doc] of this.documents) {
+      for (const [documentId, doc] of this.registry.entries()) {
         try {
           const state = Y.encodeStateAsUpdate(doc);
           await documentStore.createSnapshot(
