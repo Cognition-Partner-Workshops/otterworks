@@ -255,6 +255,45 @@ require_db_shipped() {
   fi
 }
 
+# resolve_ref <branch or ref>: the commit to read migrations from. A branch on
+# origin is fetched first, so a pushed fix branch wins over a stale local one.
+resolve_ref() {
+  local ref="$1"
+  if git -C "${REPO}" fetch -q origin "+refs/heads/${ref}:refs/remotes/origin/${ref}" 2>/dev/null; then
+    git -C "${REPO}" rev-parse --verify -q "refs/remotes/origin/${ref}^{commit}"
+  else
+    git -C "${REPO}" rev-parse --verify -q "${ref}^{commit}"
+  fi
+}
+
+# migrate_from_ref <tenant> <commit> <revision>: alembic upgrade <revision> with
+# that commit's migrations, run inside the live document-service pod, which
+# already has the service's Python environment and its database URL. The
+# scripts go to a temporary directory, never /app, so a pod that restarts
+# still runs its own image's migrations.
+migrate_from_ref() {
+  local t="$1" commit="$2" rev="$3" ns pod
+  ns="$(tenant_ns "${t}")"
+  pod="$(kubectl -n "${ns}" get pods -l app.kubernetes.io/name=document-service -o json |
+    jq -r '[.items[] | select(.metadata.deletionTimestamp == null and .status.phase == "Running"
+             and any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+            | .metadata.name] | first // empty')"
+  [ -n "${pod}" ] || die "no ready document-service pod in ${ns} to run the migration from"
+  # shellcheck disable=SC2016 # expanded by the pod's shell
+  git -C "${REPO}" archive --format=tar "${commit}" \
+    services/document-service/alembic services/document-service/alembic.ini |
+    kubectl -n "${ns}" exec -i "${pod}" -c document-service -- sh -c '
+      set -e
+      d="$(mktemp -d)"
+      trap "rm -rf \"$d\"" EXIT
+      tar -x -C "$d" --strip-components=2
+      cd "$d"
+      PYTHONPATH=/app alembic -c alembic.ini upgrade "$1"' sh "${rev}" ||
+    die "alembic upgrade ${rev} from ${commit:0:12} failed in ${ns}"
+  [ "$(db_alembic_revision "${t}")" = "${rev}" ] ||
+    die "${ns} Postgres is not at alembic revision ${rev} after the upgrade"
+}
+
 # ---------- document-service release ----------
 helm_revision() {
   helm -n "$(tenant_ns "$1")" history document-service -o json 2>/dev/null | jq -r 'last.revision // empty'
@@ -417,6 +456,45 @@ am_reloaded_between() {
   ts="${ts%.*}"
   [ "${ts}" -ge "${from}" ] || return 0
   date -u -d "@${ts}" +%Y-%m-%dT%H:%M:%SZ
+}
+
+# am_silence_arm <namespace> <minutes>: silences page="oncall" alerts of the
+# namespace for that long and prints the silence id. Pending alerts never reach
+# Alertmanager, so this only matters if one fires anyway. Start
+# pf_alertmanager in the calling shell first.
+SILENCE_CREATOR="oncall-harness"
+am_silence_arm() {
+  local ns="$1" minutes="$2" body
+  pf_alertmanager
+  body="$(jq -nc --arg ns "${ns}" --arg by "${SILENCE_CREATOR}" \
+    --arg start "$(now_iso)" --arg end "$(date -u -d "+${minutes} minutes" +%Y-%m-%dT%H:%M:%SZ)" \
+    '{matchers: [{name: "namespace", value: $ns, isRegex: false, isEqual: true},
+                 {name: "page", value: "oncall", isRegex: false, isEqual: true}],
+      startsAt: $start, endsAt: $end, createdBy: $by,
+      comment: "oncall arm: fix proof window before load starts"}')"
+  curl -fsS --max-time 20 -H 'Content-Type: application/json' --data "${body}" \
+    "http://localhost:${AM_PORT}/api/v2/silences" | jq -r '.silenceID // empty'
+}
+
+# am_silences_active <namespace>: JSON array of the harness's silences on the
+# namespace that are active or pending. Needs the Alertmanager port-forward.
+am_silences_active() {
+  curl -fsS --max-time 20 -G "http://localhost:${AM_PORT}/api/v2/silences" \
+    --data-urlencode "filter=namespace=\"$1\"" |
+    jq -c --arg by "${SILENCE_CREATOR}" '[.[] | select(.status.state != "expired" and .createdBy == $by)]'
+}
+
+# am_silence_expire <namespace>: expires every active harness silence of the
+# namespace; prints how many. Start pf_alertmanager in the calling shell first.
+am_silence_expire() {
+  local ns="$1" id n=0
+  pf_alertmanager
+  for id in $(am_silences_active "${ns}" | jq -r '.[].id'); do
+    curl -fsS --max-time 20 -X DELETE -o /dev/null "http://localhost:${AM_PORT}/api/v2/silence/${id}" ||
+      die "Alertmanager did not expire silence ${id}"
+    n=$((n + 1))
+  done
+  echo "${n}"
 }
 
 # grafana_annotate <tenant> <text>: sets ANNOTATION_ID (empty when Grafana

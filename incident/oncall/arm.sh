@@ -7,11 +7,18 @@
 #      with folderDigest.enabled=true and a fresh oncall_run alert label, plus a
 #      Grafana annotation naming the revision (Alertmanager is reloaded first
 #      so the storm opens a new oncall-devin group and pages once)
-#   3. the oncall-k6 Job browsing folders through the public API host, skipped
+#   3. oncall-after only, with ONCALL_MIGRATE_REF=<fix branch>: alembic upgrade
+#      to that branch's newest migration as soon as the rollout is ready, well
+#      inside the storm alerts' for: windows, so the fixed tenant never pages
+#   4. the oncall-k6 Job browsing folders through the public API host, skipped
 #      with --no-load (start it later with load.sh)
+# On oncall-after, a run with --no-load or ONCALL_MIGRATE_REF also silences the
+# namespace's page="oncall" alerts from just before the deploy until k6 starts
+# (ARM_SILENCE_MINUTES at most), so nothing in that window pages Devin or the
+# incident channel a second time.
 # Each step is recorded in incident/oncall/.state/<tenant>.json.
 #
-# Usage: incident/oncall/arm.sh <oncall-before|oncall-after> [--no-load]
+# Usage: [ONCALL_MIGRATE_REF=<ref>] incident/oncall/arm.sh <oncall-before|oncall-after> [--no-load]
 set -euo pipefail
 
 # shellcheck source=incident/oncall/lib.sh
@@ -54,18 +61,43 @@ db_secret="$(kubectl -n "${ns}" get deploy document-service -o json |
 [ "${db_secret}" = oncall-postgres ] ||
   die "document-service in ${ns} does not read DOC_SVC_DATABASE_URL from Secret oncall-postgres; run make oncall-up"
 
+# Resolve the fix and its revision before anything changes, so a bad ref fails
+# while the worker is still off.
+migrate_ref="${ONCALL_MIGRATE_REF:-}"
+migrate_commit=""
+migrate_rev=""
+if [ -n "${migrate_ref}" ]; then
+  [ "${tenant}" = "${AFTER_TENANT}" ] ||
+    die "ONCALL_MIGRATE_REF applies the fix, and only ${AFTER_TENANT} takes it; ${tenant} must stay unfixed"
+  migrate_commit="$(resolve_ref "${migrate_ref}")" || migrate_commit=""
+  [ -n "${migrate_commit}" ] || die "ONCALL_MIGRATE_REF=${migrate_ref} is neither a branch on origin nor a local ref"
+  migrate_rev="$(branch_alembic_head "${migrate_commit}")"
+  branch="$(tenant_branch "${tenant}")"
+  git -C "${REPO}" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" ||
+    die "could not fetch ${branch}"
+  shipped="$(branch_alembic_head "origin/${branch}")"
+  if [ -z "${migrate_rev}" ] || ! [[ "${migrate_rev}" > "${shipped}" ]]; then
+    die "${migrate_ref} ships no migration newer than ${branch} (${shipped:-none}); nothing to apply"
+  fi
+  log "The fix: alembic ${migrate_rev} from ${migrate_ref} (${migrate_commit:0:12}), applied right after the rollout"
+fi
+silence=false
+if [ "${tenant}" = "${AFTER_TENANT}" ] && { [ "${load}" = false ] || [ -n "${migrate_ref}" ]; }; then
+  silence=true
+fi
+
 state_init "${tenant}"
 state_update "${tenant}" '.run_id = $run | .armed_at = $at | .steps = {} | del(.disarmed_at)' \
   --arg run "${RUN_ID}" --arg at "$(now_iso)"
 
 # ---------- 1. seed ----------
-log "Step 1/3: seed"
+log "Step 1/4: seed"
 "${ONCALL_DIR}/seed.sh" "${tenant}"
 owner="$(state_get "${tenant}" .owner_id)"
 [ -n "${owner}" ] || die "seed.sh did not record the demo owner id"
 
 # ---------- 2. config deploy ----------
-log "Step 2/3: config deploy (folderDigest.enabled=true)"
+log "Step 2/4: config deploy (folderDigest.enabled=true)"
 previous="$(helm_revision "${tenant}")"
 oncall_run="$(date +%s)"
 reloaded_at=""
@@ -79,6 +111,14 @@ if oncall_group_may_linger "${ns}"; then
   log "Alertmanager reloaded to drop the previous storm's oncall-devin group for ${ns}"
 fi
 log "Storm alerts from this arm carry oncall_run=${oncall_run}"
+silence_id=""
+if [ "${silence}" = true ]; then
+  silence_id="$(am_silence_arm "${ns}" "${ARM_SILENCE_MINUTES}")"
+  [ -n "${silence_id}" ] || die "Alertmanager did not create the silence for ${ns}"
+  log "page=\"oncall\" alerts in ${ns} silenced for up to ${ARM_SILENCE_MINUTES} min (until k6 starts): ${silence_id}"
+  state_update "${tenant}" '.steps.silence = {at: $at, id: $id, minutes: $min}' \
+    --arg at "$(now_iso)" --arg id "${silence_id}" --argjson min "${ARM_SILENCE_MINUTES}"
+fi
 digest_deploy "${tenant}" true "${oncall_run}"
 revision="$(helm_revision "${tenant}")"
 if [ -z "${revision}" ] || [ "${revision}" = "${previous}" ]; then
@@ -102,15 +142,39 @@ state_update "${tenant}" \
   --argjson iv "${DIGEST_INTERVAL_SECONDS}" --argjson cc "${DIGEST_CONCURRENCY}" \
   --arg ann "${ANNOTATION_ID}"
 
-# ---------- 3. load ----------
+# ---------- 3. the fix ----------
+if [ -n "${migrate_ref}" ]; then
+  log "Step 3/4: alembic upgrade ${migrate_rev} from ${migrate_ref}"
+  migrate_from_ref "${tenant}" "${migrate_commit}" "${migrate_rev}"
+  migrated_at="$(now_iso)"
+  index="$(pg "${tenant}" -At -c "SELECT to_regclass('public.${FIX_INDEX}') IS NOT NULL")"
+  [ "${index}" = t ] || warn "${ns} has no ${FIX_INDEX} after migration ${migrate_rev}"
+  log "${ns} Postgres at alembic ${migrate_rev} $(( $(date -u -d "${migrated_at}" +%s) - $(date -u -d "${deployed_at}" +%s) ))s after the rollout"
+  state_update "${tenant}" '.steps.migrate = {at: $at, ref: $ref, commit: $commit, revision: $rev, index: $idx}' \
+    --arg at "${migrated_at}" --arg ref "${migrate_ref}" --arg commit "${migrate_commit}" \
+    --arg rev "${migrate_rev}" --argjson idx "$([ "${index}" = t ] && echo true || echo false)"
+else
+  log "Step 3/4: no fix to apply (ONCALL_MIGRATE_REF unset)"
+fi
+
+# ---------- 4. load ----------
 if [ "${load}" = true ]; then
-  log "Step 3/3: k6 load (${LOAD_VUS} VUs, ${LOAD_MINUTES} min) against https://$(api_host "${tenant}")"
+  if [ "${silence}" = true ]; then
+    n="$(am_silence_expire "${ns}")"
+    log "Expired ${n} harness silence(s) on ${ns}; pages count again from here"
+  fi
+  log "Step 4/4: k6 load (${LOAD_VUS} VUs, ${LOAD_MINUTES} min) against https://$(api_host "${tenant}")"
   start_load "${tenant}"
 else
-  log "Step 3/3: skipped (--no-load); start it with make oncall-load TENANT=${tenant}"
+  log "Step 4/4: skipped (--no-load); start it with make oncall-load TENANT=${tenant}"
   exit 0
 fi
 
+if [ -n "${migrate_ref}" ]; then
+  log "Armed ${tenant} with the fix. No storm alert should fire; gate after 5 minutes of load:"
+  log "make oncall-verify TENANT=${tenant} EXPECT=after"
+  exit 0
+fi
 log "Armed ${tenant}. The first storm alerts fire within about 6 minutes of the deploy;"
 log "the single page to Devin follows Alertmanager's 3 minute group_wait."
 log "Watch: make oncall-status TENANT=${tenant}   Gate: make oncall-verify TENANT=${tenant} EXPECT=before"

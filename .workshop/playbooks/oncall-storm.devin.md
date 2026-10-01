@@ -142,20 +142,26 @@ copy of the command with the token expanded.
 12. Prove the fix under the same load. `oncall-after` runs the
     `demo-oncall-after` image, which has no revision 005 while your PR is open,
     and document-service runs `alembic upgrade head` on every start. A pod
-    that starts while the database is at 005 crash-loops, so apply 005 only
-    after the arm rollout and roll nothing until the database is back at 004.
-    Wake the tenant first, since idle-suspend scales the whole namespace to
-    zero after an hour without ingress traffic:
+    that starts while the database is at 005 crash-loops, so 005 goes in
+    only after the arm rollout, and nothing rolls until the database is back
+    at 004. Wake the tenant first, since idle-suspend scales the whole
+    namespace to zero after an hour without ingress traffic:
     `scripts/tenant-scale.sh oncall-after up`, then
     `kubectl -n otterworks-oncall-after rollout status deploy/oncall-postgres deploy/document-service deploy/api-gateway --timeout=5m`.
-    Run `make oncall-arm TENANT=oncall-after LOAD=0` next. It seeds the same
-    200,000 documents, ships the same config deploy that turned the worker on
-    and waits for the rollout. Apply migration 005 from your branch to the `oncall-after` tenant
-    Postgres (skill command, through a port-forward, with the database URL read
-    from Secret `oncall-postgres` into an environment variable). Then run
-    `make oncall-load TENANT=oncall-after` to start the same 6-VU k6 Job, so
-    the whole k6 run has the index. After at least 5 minutes of load, run
-    `make oncall-verify TENANT=oncall-after EXPECT=after` until it is green, and
+    Make sure your branch is pushed, then run
+    `ONCALL_MIGRATE_REF=<your branch> make oncall-arm TENANT=oncall-after LOAD=0`.
+    It seeds the same 200,000 documents, ships the same config deploy that
+    turned the worker on, waits for the rollout and applies 005 from your
+    branch straight away, before the worker's alerts can fire. Until k6
+    starts it also silences `page="oncall"` alerts in
+    `otterworks-oncall-after`, so the proof cannot page Devin or open a
+    second channel thread. Never apply 005 by hand between a plain arm and
+    the load. Then run `make oncall-load TENANT=oncall-after`, which expires
+    that silence and starts the same 6-VU k6 Job, so the whole k6 run has the
+    index. After at least 5 minutes of load, run
+    `make oncall-verify TENANT=oncall-after EXPECT=after` until it is green
+    (it also fails if Alertmanager holds an `oncall-devin` group for the
+    namespace), and
     run `make oncall-verify TENANT=oncall-before EXPECT=before` for the
     side-by-side. Run `EXPLAIN (ANALYZE, BUFFERS)` again on `oncall-after` and
     record the index scan and its execution time.

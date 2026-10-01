@@ -46,10 +46,10 @@ holds the storm as data (alerts, gates, fix). Run from the repository root.
 | Command | What it does |
 |---|---|
 | `make oncall-status` | Helm revision, worker flag, seed counts, k6 Job, firing storm alerts, Alertmanager groups. Read-only. |
-| `make oncall-arm TENANT=oncall-after` | Wakes the tenant if idle-suspend scaled it to zero, seeds 200,000 documents in 400 folders, runs `helm upgrade --reuse-values --set folderDigest.enabled=true` on document-service, annotates Grafana, starts Job `oncall-k6` (6 VUs, 25 minutes). `LOAD=0` stops before k6. |
-| `make oncall-load TENANT=oncall-after` | Replaces Job `oncall-k6` with a fresh 25-minute run. Restarts no pod. |
+| `make oncall-arm TENANT=oncall-after` | Wakes the tenant if idle-suspend scaled it to zero, seeds 200,000 documents in 400 folders, runs `helm upgrade --reuse-values --set folderDigest.enabled=true` on document-service, annotates Grafana, starts Job `oncall-k6` (6 VUs, 25 minutes). `LOAD=0` stops before k6. On `oncall-after` only, `ONCALL_MIGRATE_REF=<your fix branch>` runs `alembic upgrade` to that branch's newest revision right after the rollout. With `LOAD=0` or a migrate ref, arm silences `page="oncall"` alerts in `otterworks-oncall-after` until k6 starts, for 15 minutes at most. |
+| `make oncall-load TENANT=oncall-after` | Expires the arm's silence on the namespace, then replaces Job `oncall-k6` with a fresh 25-minute run. Restarts no pod. |
 | `make oncall-verify TENANT=oncall-before EXPECT=before` | Green when at least 10 of the 12 storm alerts fire across all 4 services and Alertmanager holds exactly one `oncall-devin` group for the namespace. |
-| `make oncall-verify TENANT=oncall-after EXPECT=after` | Green when k6 has run at least 300 s, the worker is on, no storm alert fires, folder-list p95 over 5m is at or under 0.5 s, and the request rate is at least 0.5/s. |
+| `make oncall-verify TENANT=oncall-after EXPECT=after` | Green when k6 has run at least 300 s, the worker is on, no storm alert fires, Alertmanager holds no `oncall-devin` group and no harness silence for the namespace, folder-list p95 over 5m is at or under 0.5 s, and the request rate is at least 0.5/s. |
 | `make oncall-disarm TENANT=oncall-after` | Deletes the k6 Job and turns the worker off with a Helm upgrade. Refuses while the database is at 005. |
 | `make oncall-simulate` | Replays the recorded page to the channel. Presenter fallback. |
 
@@ -115,24 +115,42 @@ psql_t -c "EXPLAIN (ANALYZE, BUFFERS) SELECT count(*), max(updated_at) FROM docu
 psql_t -c "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM documents WHERE folder_id = '$F' AND is_deleted = false ORDER BY updated_at DESC LIMIT 50"
 ```
 
-Apply a migration from your fix branch to `oncall-after` only after the arm
-rollout. `demo-oncall-after` ships no revision 005 while the PR is open, and
-document-service runs `alembic upgrade head` on start, so a document-service
-pod that starts while the database is at 005 crash-loops. Arm and disarm both
-roll document-service and refuse to run in that state. Wake the tenant first,
-since idle-suspend scales the whole namespace, `oncall-postgres` included, to
-zero after an hour without ingress traffic:
+Let the arm apply the fix on `oncall-after`. `demo-oncall-after` ships no
+revision 005 while the PR is open, and document-service runs
+`alembic upgrade head` on start, so a document-service pod that starts while
+the database is at 005 crash-loops. The migration therefore has to follow the
+arm rollout. But the arm turns the worker on against the unindexed table, and
+the worker alone fires `page="oncall"` alerts within about three minutes,
+which would page Devin and open a channel thread for the fixed tenant. Push
+your fix branch first. Then
+`ONCALL_MIGRATE_REF=<branch> make oncall-arm TENANT=oncall-after LOAD=0`
+waits for the rollout and runs `alembic upgrade 005` from that branch inside a
+ready document-service pod right away, well inside the alerts' `for:` windows.
+The arm also silences the namespace's `page="oncall"` alerts from just before the
+deploy until `make oncall-load` starts k6, so nothing in that gap can page.
+Arm and disarm both roll document-service and refuse to run once the database
+is at 005. Wake the tenant first, since idle-suspend scales the whole
+namespace, `oncall-postgres` included, to zero after an hour without ingress
+traffic:
 
 ```bash
 scripts/tenant-scale.sh oncall-after up
 kubectl -n otterworks-oncall-after rollout status deploy/oncall-postgres deploy/document-service deploy/api-gateway --timeout=5m
-make oncall-arm TENANT=oncall-after LOAD=0
+git push origin HEAD
+ONCALL_MIGRATE_REF="$(git branch --show-current)" make oncall-arm TENANT=oncall-after LOAD=0
+make oncall-load TENANT=oncall-after
+```
+
+To run Alembic from your branch by hand (a downgrade, or an upgrade after a
+change to the migration), go through a port-forward, with the database URL
+read from Secret `oncall-postgres`:
+
+```bash
 kubectl -n otterworks-oncall-after port-forward svc/oncall-postgres 15432:5432 >/dev/null 2>&1 &
 cd services/document-service
 DOC_SVC_DATABASE_URL="$(kubectl -n otterworks-oncall-after get secret oncall-postgres -o jsonpath='{.data.url}' | base64 -d | sed 's#@oncall-postgres:5432/#@localhost:15432/#')" \
   alembic upgrade 005
 cd ../..
-make oncall-load TENANT=oncall-after
 ```
 
 Use `alembic downgrade 004` the same way to rebuild the index after a change to

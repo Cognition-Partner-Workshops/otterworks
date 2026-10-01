@@ -40,6 +40,52 @@ check() { # check <ok:true|false> <message>
 firing="$(prom_query "ALERTS{alertstate=\"firing\",page=\"oncall\",namespace=\"${ns}\"}")"
 firing_names="$(jq -c '[.[].metric.alertname] | unique' <<<"${firing}")"
 measures='{}'
+receiver="${ONCALL_VERIFY_RECEIVER:-$(f .expected.receiver)}"
+
+# Silenced alerts included: a silenced group still holds the namespace's
+# oncall-devin group key until its group_interval flush.
+groups="$(curl -fsS --max-time 20 -G "http://localhost:${AM_PORT}/api/v2/alerts/groups" \
+  --data-urlencode "filter=namespace=\"${ns}\"" --data-urlencode 'filter=page="oncall"' \
+  --data-urlencode "receiver=${receiver}")"
+n_groups="$(jq --arg r "${receiver}" --arg ns "${ns}" \
+  '[.[] | select(.receiver.name == $r and .labels.namespace == $ns)] | length' <<<"${groups}")"
+
+# This arm's config deploy: .state when this checkout armed the tenant and its
+# oncall_run is still the live one, otherwise Helm (a paged session's fresh
+# clone). The Helm record is cached back into .state.
+live_run="$(helm -n "${ns}" get values document-service -o json 2>/dev/null |
+  jq -r '.monitoring.rules.extraLabels.oncall_run // empty')"
+deployed_at="$(state_get "${tenant}" .steps.deploy.at)"
+run="$(state_get "${tenant}" .steps.deploy.oncall_run)"
+reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
+lingered="$(state_get "${tenant}" .steps.deploy.previous_group_may_linger)"
+deploy_source=.state
+if [ -z "${deployed_at}" ] || [ -z "${run}" ] || [ "${run}" != "${live_run}" ]; then
+  deployed_at=""
+  run=""
+  reloaded_at=""
+  lingered=""
+  deploy_source=none
+  record="$(cluster_deploy_record "${tenant}")"
+  if [ -n "${record}" ]; then
+    deploy_source=helm
+    deployed_at="$(jq -r .at <<<"${record}")"
+    run="$(jq -r .oncall_run <<<"${record}")"
+    deploy_epoch="$(date -u -d "${deployed_at}" +%s)"
+    # arm.sh takes oncall_run from the clock right before it checks for a
+    # lingering group and reloads Alertmanager, then runs helm upgrade.
+    if [[ "${run}" =~ ^[0-9]+$ ]]; then
+      reloaded_at="$(am_reloaded_between "${run}" "${deploy_epoch}")"
+      if oncall_group_may_linger "${ns}" "${run}"; then lingered=true; else lingered=false; fi
+    fi
+    state_update "${tenant}" \
+      '.steps.deploy = {at: $at, release: "document-service", revision: $rev, oncall_run: $run,
+                        previous_group_may_linger: $linger, alertmanager_reloaded_at: $reload, source: "helm"}' \
+      --arg at "${deployed_at}" --argjson rev "$(jq .revision <<<"${record}")" --arg run "${run}" \
+      --argjson linger "${lingered:-null}" --arg reload "${reloaded_at}"
+  fi
+fi
+echo "INFO config deploy from ${deploy_source}: at ${deployed_at:-unknown}, oncall_run ${run:-unset}"
 
 if [ "${expect}" = before ]; then
   expected_names="$(f '[.expected.alerts[].name]' | jq -c .)"
@@ -56,52 +102,10 @@ if [ "${expect}" = before ]; then
   check "$([ "${n_services}" -ge "${want_services}" ] && echo true || echo false)" \
     "services paging: ${n_services} of ${want_services} ($(jq -r 'join(", ")' <<<"${services}"))"
 
-  receiver="${ONCALL_VERIFY_RECEIVER:-$(f .expected.receiver)}"
-  groups="$(curl -fsS --max-time 20 -G "http://localhost:${AM_PORT}/api/v2/alerts/groups" \
-    --data-urlencode "filter=namespace=\"${ns}\"" --data-urlencode 'filter=page="oncall"' \
-    --data-urlencode "receiver=${receiver}")"
-  n_groups="$(jq --arg r "${receiver}" --arg ns "${ns}" \
-    '[.[] | select(.receiver.name == $r and .labels.namespace == $ns)] | length' <<<"${groups}")"
   want_groups="$(f .gates.before.devin_groups)"
   check "$([ "${n_groups}" -eq "${want_groups}" ] && echo true || echo false)" \
     "Alertmanager groups for ${receiver} in ${ns}: ${n_groups} (need exactly ${want_groups})"
 
-  # This arm's config deploy: .state when this checkout armed the tenant and its
-  # oncall_run is still the live one, otherwise Helm (a paged session's fresh
-  # clone). The Helm record is cached back into .state.
-  live_run="$(helm -n "${ns}" get values document-service -o json 2>/dev/null |
-    jq -r '.monitoring.rules.extraLabels.oncall_run // empty')"
-  deployed_at="$(state_get "${tenant}" .steps.deploy.at)"
-  run="$(state_get "${tenant}" .steps.deploy.oncall_run)"
-  reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
-  lingered="$(state_get "${tenant}" .steps.deploy.previous_group_may_linger)"
-  deploy_source=.state
-  if [ -z "${deployed_at}" ] || [ -z "${run}" ] || [ "${run}" != "${live_run}" ]; then
-    deployed_at=""
-    run=""
-    reloaded_at=""
-    lingered=""
-    deploy_source=none
-    record="$(cluster_deploy_record "${tenant}")"
-    if [ -n "${record}" ]; then
-      deploy_source=helm
-      deployed_at="$(jq -r .at <<<"${record}")"
-      run="$(jq -r .oncall_run <<<"${record}")"
-      deploy_epoch="$(date -u -d "${deployed_at}" +%s)"
-      # arm.sh takes oncall_run from the clock right before it checks for a
-      # lingering group and reloads Alertmanager, then runs helm upgrade.
-      if [[ "${run}" =~ ^[0-9]+$ ]]; then
-        reloaded_at="$(am_reloaded_between "${run}" "${deploy_epoch}")"
-        if oncall_group_may_linger "${ns}" "${run}"; then lingered=true; else lingered=false; fi
-      fi
-      state_update "${tenant}" \
-        '.steps.deploy = {at: $at, release: "document-service", revision: $rev, oncall_run: $run,
-                          previous_group_may_linger: $linger, alertmanager_reloaded_at: $reload, source: "helm"}' \
-        --arg at "${deployed_at}" --argjson rev "$(jq .revision <<<"${record}")" --arg run "${run}" \
-        --argjson linger "${lingered:-null}" --arg reload "${reloaded_at}"
-    fi
-  fi
-  echo "INFO config deploy from ${deploy_source}: at ${deployed_at:-unknown}, oncall_run ${run:-unset}"
   first_start="$(jq -r --arg r "${receiver}" --arg ns "${ns}" \
     '[.[] | select(.receiver.name == $r and .labels.namespace == $ns) | .alerts[].startsAt] | sort | first // empty' <<<"${groups}")"
   if [ -n "${deployed_at}" ] && [ -n "${first_start}" ]; then
@@ -183,6 +187,15 @@ else
   check "$([ "${n_firing}" -le "${max_firing}" ] && echo true || echo false)" \
     "storm alerts firing in ${ns}: ${n_firing} $(jq -r 'if length > 0 then "(" + join(", ") + ")" else "" end' <<<"${firing_names}")"
 
+  # The fixed tenant must not have opened its own page: no oncall-devin group
+  # for its namespace (silenced or not), and no harness silence left to hide one.
+  want_groups="$(f .gates.after.devin_groups)"
+  check "$([ "${n_groups}" -le "${want_groups}" ] && echo true || echo false)" \
+    "Alertmanager groups for ${receiver} in ${ns}: ${n_groups} (need ${want_groups})"
+  n_silences="$(am_silences_active "${ns}" | jq length)"
+  check "$([ "${n_silences}" -eq 0 ] && echo true || echo false)" \
+    "harness silences still active on ${ns}: ${n_silences} (need 0; make oncall-load expires them)"
+
   p95="$(prom_query "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{${sel}}[${window}])))" |
     jq -r '.[0].value[1] // "NaN"')"
   slo="$(f .gates.after.p95_seconds_max)"
@@ -195,7 +208,8 @@ else
   check "$(awk -v v="${rate}" -v s="${min_rate}" 'BEGIN { print (v + 0 >= s + 0) ? "true" : "false" }')" \
     "folder list rate ${rate}/s at document-service (need >= ${min_rate}/s)"
   measures="$(jq -c --arg p "${p95}" --arg r "${rate}" --argjson n "${firing_names}" \
-    '.p95_seconds = $p | .request_rate = $r | .firing = $n' <<<"${measures}")"
+    --argjson g "${n_groups}" --argjson sil "${n_silences}" \
+    '.p95_seconds = $p | .request_rate = $r | .firing = $n | .devin_groups = $g | .harness_silences = $sil' <<<"${measures}")"
 fi
 
 ok="$(jq 'all(.ok)' <<<"${checks}")"

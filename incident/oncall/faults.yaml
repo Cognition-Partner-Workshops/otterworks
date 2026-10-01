@@ -75,6 +75,8 @@ gates:
     devin_groups: 1
   after:
     max_firing: 0
+    # The fixed tenant opens no oncall-devin group of its own.
+    devin_groups: 0
     p95_seconds_max: 0.5
     # Folder listings per second at document-service; proves the load is on.
     min_request_rate: 0.5

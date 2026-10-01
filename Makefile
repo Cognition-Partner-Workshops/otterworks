@@ -533,7 +533,7 @@ ONCALL = incident/oncall
 oncall-up: ## Create/redeploy both on-call tenants, their Postgres, the incident channel and platform pieces
 	$(ONCALL)/up.sh
 
-oncall-arm: ## Wake, seed, ship the folder-digest config deploy and start k6 on one tenant (TENANT=oncall-before|oncall-after, LOAD=0 skips k6)
+oncall-arm: ## Wake, seed, ship the folder-digest config deploy and start k6 on one tenant (TENANT=oncall-before|oncall-after, LOAD=0 skips k6, ONCALL_MIGRATE_REF=<fix branch> applies the fix on oncall-after right after the rollout)
 ifndef TENANT
 	$(error TENANT is required, e.g. make oncall-arm TENANT=oncall-before)
 endif
