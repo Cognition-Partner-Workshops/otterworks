@@ -497,7 +497,7 @@ jobs:
         run: python -m pytest -q
         working-directory: migration/job
       - if: steps.changes.outputs.ldm == 'true'
-        run: python -m pytest -q test_oracle_seed.py
+        run: python -m pytest -q test_oracle_seed.py test_oracle_catalog.py
         working-directory: migration/source/seed
       - if: steps.changes.outputs.ldm == 'true'
         uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4

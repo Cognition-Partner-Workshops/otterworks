@@ -1,0 +1,12 @@
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "ARCHIVE"."V_POLICY_LINEAGE" ("POLICY_CODE", "SOR_CODE", "HOPS", "LINEAGE", "IN_CLOSED_SCHEDULE") AS 
+  SELECT CONNECT_BY_ROOT POLICY_CODE                                  AS POLICY_CODE,
+       POLICY_CODE                                                  AS SOR_CODE,
+       LEVEL - 1                                                    AS HOPS,
+       LTRIM(SYS_CONNECT_BY_PATH(RTRIM(POLICY_CODE), '>'), '>')     AS LINEAGE,
+       CASE WHEN RTRIM(POLICY_CODE) IN ('FIN7', 'LGL7', 'HRS7', 'TAX7', 'AUD7') THEN 1 ELSE 0 END
+                                                                    AS IN_CLOSED_SCHEDULE
+  FROM ARCHIVE.RETNPLCY
+ WHERE CONNECT_BY_ISLEAF = 1
+ START WITH POLICY_CODE IS NOT NULL
+ CONNECT BY NOCYCLE PRIOR SUCCESSOR_CODE = POLICY_CODE
