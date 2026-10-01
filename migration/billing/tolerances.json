@@ -1,0 +1,54 @@
+{
+  "kind": "recon-tolerances",
+  "version": 1,
+  "plan_step": "s1.4-tolerances",
+  "description": "Single source of recon tolerances for the OtterWorks billing Oracle (OW_BILLING) to MongoDB Atlas migration. migration/billing/recon/recon.py reads this file and nothing else sets tolerances. Changes only through a new plan decision.",
+  "decisions": {
+    "d-tolerances": "Exact match on all fields, row-diff threshold 0",
+    "d-source-mode": "Live",
+    "d-source-concurrency": "1 (serial)"
+  },
+  "row_diff_threshold": 0,
+  "match_mode": "exact",
+  "numeric_tolerances": {
+    "default": {"absolute": "0", "relative": "0"},
+    "money": {
+      "absolute": "0",
+      "relative": "0",
+      "compare_as": "decimal",
+      "source_type": "Oracle NUMBER(p,s) read as decimal.Decimal",
+      "target_type": "Decimal128 read as decimal.Decimal",
+      "float_comparison_allowed": false,
+      "columns": {
+        "plans": ["monthly_fee", "overage_rate"],
+        "rating_results": ["overage_amount"],
+        "invoices": ["subtotal", "tax", "total"],
+        "invoice_lines": ["amount"],
+        "credit_notes": ["amount", "remaining_amount"],
+        "customer_master": ["cur_bal_amt", "past_due_amt", "ytd_billed_amt", "ltd_billed_amt", "ytd_paid_amt", "credit_limit_amt", "udf_amt_01", "udf_amt_02", "udf_amt_03", "udf_amt_04", "udf_amt_05", "udf_amt_06", "udf_amt_07", "udf_amt_08", "udf_amt_09", "udf_amt_10"],
+        "customer_master_hist": ["cur_bal_amt", "past_due_amt", "ytd_billed_amt", "ltd_billed_amt", "ytd_paid_amt", "credit_limit_amt", "udf_amt_01", "udf_amt_02", "udf_amt_03", "udf_amt_04", "udf_amt_05", "udf_amt_06", "udf_amt_07", "udf_amt_08", "udf_amt_09", "udf_amt_10"],
+        "invoice_line": ["qty", "unit_price", "amount", "tax_amt"],
+        "invoice_header": ["total_amt"]
+      }
+    },
+    "integer": {"absolute": "0", "relative": "0"},
+    "timestamp": {"absolute_seconds": "0"},
+    "string": {"trim": false, "case_insensitive": false},
+    "null": {"null_equals_empty_string": false}
+  },
+  "planted_anomalies": {"compare_as": "set", "quarantined_rows_must_match": "exact"},
+  "source": {
+    "system": "oracle",
+    "schema": "OW_BILLING",
+    "mode": "live",
+    "concurrency": 1,
+    "read_only": true,
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "notes": "No grants, alters or writes on the source, and none are planned."
+  },
+  "target": {
+    "system": "mongodb-atlas",
+    "uri_secret": "MONGODB_ATLAS_URI",
+    "writes_limited_to": "migration database"
+  }
+}
