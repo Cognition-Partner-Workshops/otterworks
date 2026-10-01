@@ -46,10 +46,11 @@ holds the storm as data (alerts, gates, fix). Run from the repository root.
 | Command | What it does |
 |---|---|
 | `make oncall-status` | Helm revision, worker flag, seed counts, k6 Job, firing storm alerts, Alertmanager groups. Read-only. |
-| `make oncall-arm TENANT=oncall-after` | Seeds 200,000 documents in 400 folders, runs `helm upgrade --reuse-values --set folderDigest.enabled=true` on document-service, annotates Grafana, starts Job `oncall-k6` (6 VUs, 25 minutes). |
+| `make oncall-arm TENANT=oncall-after` | Wakes the tenant if idle-suspend scaled it to zero, seeds 200,000 documents in 400 folders, runs `helm upgrade --reuse-values --set folderDigest.enabled=true` on document-service, annotates Grafana, starts Job `oncall-k6` (6 VUs, 25 minutes). `LOAD=0` stops before k6. |
+| `make oncall-load TENANT=oncall-after` | Replaces Job `oncall-k6` with a fresh 25-minute run. Restarts no pod. |
 | `make oncall-verify TENANT=oncall-before EXPECT=before` | Green when at least 10 of the 12 storm alerts fire across all 4 services and Alertmanager holds exactly one `oncall-devin` group for the namespace. |
 | `make oncall-verify TENANT=oncall-after EXPECT=after` | Green when k6 has run at least 300 s, the worker is on, no storm alert fires, folder-list p95 over 5m is at or under 0.5 s, and the request rate is at least 0.5/s. |
-| `make oncall-disarm TENANT=oncall-after` | Deletes the k6 Job and turns the worker off with a Helm upgrade. |
+| `make oncall-disarm TENANT=oncall-after` | Deletes the k6 Job and turns the worker off with a Helm upgrade. Refuses while the database is at 005. |
 | `make oncall-simulate` | Replays the recorded page to the channel. Presenter fallback. |
 
 `make oncall-up`, `make oncall-platform-up`, `make oncall-reset` and
@@ -114,19 +115,30 @@ psql_t -c "EXPLAIN (ANALYZE, BUFFERS) SELECT count(*), max(updated_at) FROM docu
 psql_t -c "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM documents WHERE folder_id = '$F' AND is_deleted = false ORDER BY updated_at DESC LIMIT 50"
 ```
 
-Apply a migration from your fix branch to `oncall-after` (the URL stays in an
-environment variable and is never echoed):
+Apply a migration from your fix branch to `oncall-after` only after the arm
+rollout. `demo-oncall-after` ships no revision 005 while the PR is open, and
+document-service runs `alembic upgrade head` on start, so a document-service
+pod that starts while the database is at 005 crash-loops. Arm and disarm both
+roll document-service and refuse to run in that state. Wake the tenant first,
+since idle-suspend scales the whole namespace, `oncall-postgres` included, to
+zero after an hour without ingress traffic:
 
 ```bash
+scripts/tenant-scale.sh oncall-after up
+kubectl -n otterworks-oncall-after rollout status deploy/oncall-postgres deploy/document-service deploy/api-gateway --timeout=5m
+make oncall-arm TENANT=oncall-after LOAD=0
 kubectl -n otterworks-oncall-after port-forward svc/oncall-postgres 15432:5432 >/dev/null 2>&1 &
 cd services/document-service
 DOC_SVC_DATABASE_URL="$(kubectl -n otterworks-oncall-after get secret oncall-postgres -o jsonpath='{.data.url}' | base64 -d | sed 's#@oncall-postgres:5432/#@localhost:15432/#')" \
   alembic upgrade 005
+cd ../..
+make oncall-load TENANT=oncall-after
 ```
 
 Use `alembic downgrade 004` the same way to rebuild the index after a change to
-the migration. `make oncall-reset` drops the index and stamps Alembic back for
-the next run, so the proof leaves nothing behind.
+the migration, and once more before `make oncall-disarm`. `make oncall-reset`
+drops the index and stamps Alembic back before it disarms, so the proof leaves
+nothing behind even when a session stopped at 005.
 
 ## Deploy history
 
@@ -138,7 +150,11 @@ kubectl -n "$NS" get deploy document-service -o jsonpath='{.spec.template.spec.c
 
 The arm step records the revision it created in `.state/<tenant>.json` under
 `.steps.deploy.revision` and posts the Grafana annotation
-`document-service rev N: folder digest worker enabled`.
+`document-service rev N: folder digest worker enabled`. A checkout that did not
+arm the tenant has no `.state`, so `make oncall-verify` reads the live
+`monitoring.rules.extraLabels.oncall_run` from `helm get values` and the deploy
+time from `helm history` (the oldest revision in the run carrying that label),
+then caches both in `.state`.
 
 ## Incident channel
 

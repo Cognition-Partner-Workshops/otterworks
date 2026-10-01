@@ -66,7 +66,42 @@ if [ "${expect}" = before ]; then
   check "$([ "${n_groups}" -eq "${want_groups}" ] && echo true || echo false)" \
     "Alertmanager groups for ${receiver} in ${ns}: ${n_groups} (need exactly ${want_groups})"
 
+  # This arm's config deploy: .state when this checkout armed the tenant and its
+  # oncall_run is still the live one, otherwise Helm (a paged session's fresh
+  # clone). The Helm record is cached back into .state.
+  live_run="$(helm -n "${ns}" get values document-service -o json 2>/dev/null |
+    jq -r '.monitoring.rules.extraLabels.oncall_run // empty')"
   deployed_at="$(state_get "${tenant}" .steps.deploy.at)"
+  run="$(state_get "${tenant}" .steps.deploy.oncall_run)"
+  reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
+  lingered="$(state_get "${tenant}" .steps.deploy.previous_group_may_linger)"
+  deploy_source=.state
+  if [ -z "${deployed_at}" ] || [ -z "${run}" ] || [ "${run}" != "${live_run}" ]; then
+    deployed_at=""
+    run=""
+    reloaded_at=""
+    lingered=""
+    deploy_source=none
+    record="$(cluster_deploy_record "${tenant}")"
+    if [ -n "${record}" ]; then
+      deploy_source=helm
+      deployed_at="$(jq -r .at <<<"${record}")"
+      run="$(jq -r .oncall_run <<<"${record}")"
+      deploy_epoch="$(date -u -d "${deployed_at}" +%s)"
+      # arm.sh takes oncall_run from the clock right before it checks for a
+      # lingering group and reloads Alertmanager, then runs helm upgrade.
+      if [[ "${run}" =~ ^[0-9]+$ ]]; then
+        reloaded_at="$(am_reloaded_between "${run}" "${deploy_epoch}")"
+        if oncall_group_may_linger "${ns}" "${run}"; then lingered=true; else lingered=false; fi
+      fi
+      state_update "${tenant}" \
+        '.steps.deploy = {at: $at, release: "document-service", revision: $rev, oncall_run: $run,
+                          previous_group_may_linger: $linger, alertmanager_reloaded_at: $reload, source: "helm"}' \
+        --arg at "${deployed_at}" --argjson rev "$(jq .revision <<<"${record}")" --arg run "${run}" \
+        --argjson linger "${lingered:-null}" --arg reload "${reloaded_at}"
+    fi
+  fi
+  echo "INFO config deploy from ${deploy_source}: at ${deployed_at:-unknown}, oncall_run ${run:-unset}"
   first_start="$(jq -r --arg r "${receiver}" --arg ns "${ns}" \
     '[.[] | select(.receiver.name == $r and .labels.namespace == $ns) | .alerts[].startsAt] | sort | first // empty' <<<"${groups}")"
   if [ -n "${deployed_at}" ] && [ -n "${first_start}" ]; then
@@ -76,20 +111,19 @@ if [ "${expect}" = before ]; then
       "first storm alert ${lag}s after the config deploy (need <= ${within}s)"
     measures="$(jq -c --argjson lag "${lag}" '.seconds_deploy_to_first_alert = $lag' <<<"${measures}")"
   else
-    echo "INFO no deploy time in .state or no alert yet; time-to-page not measured"
+    echo "INFO no deploy record (.state or Helm) or no alert yet; time-to-page not measured"
   fi
 
   # A page delivered after this arm's deploy, not just a group that exists:
   # Alertmanager's notification log suppresses a storm whose alerts it already
   # paged, and that suppressed group still shows up above.
-  run="$(state_get "${tenant}" .steps.deploy.oncall_run)"
   n_run="$(jq --arg r "${receiver}" --arg ns "${ns}" --arg run "${run}" \
     '[.[] | select(.receiver.name == $r and .labels.namespace == $ns) | .alerts[]
       | select($run != "" and .labels.oncall_run == $run)] | length' <<<"${groups}")"
   check "$([ -n "${run}" ] && [ "${n_run}" -ge 1 ] && echo true || echo false)" \
     "alerts from this arm (oncall_run=${run:-unset}) in the ${receiver} group: ${n_run}"
   page_ok=false
-  page_msg="no deploy time in .state; cannot tell whether ${receiver} paged for this arm"
+  page_msg="no deploy record in .state or Helm; cannot tell whether ${receiver} paged for this arm"
   sent_since=""
   if [ -n "${deployed_at}" ]; then
     deploy_epoch="$(date -u -d "${deployed_at}" +%s)"
@@ -111,13 +145,11 @@ if [ "${expect}" = before ]; then
       sent_now="$(prom_scalar_at "${sent_q}" "${now_epoch}")"
       sent_then="$(prom_scalar_at "${sent_q}" "${deploy_epoch}")"
       sent_since="$(awk -v a="${sent_now:-0}" -v b="${sent_then:-0}" 'BEGIN { printf "%d", a - b }')"
-      reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
       group_wait="$(am_route_seconds "${receiver}" group_wait)"
       due=""
       if [ -n "${first_start}" ] && [ -n "${group_wait}" ]; then
         due=$(( $(date -u -d "${first_start}" +%s) + group_wait ))
       fi
-      lingered="$(state_get "${tenant}" .steps.deploy.previous_group_may_linger)"
       if { [ -n "${reloaded_at}" ] || [ "${lingered}" = false ]; } && [ -n "${due}" ] && [ "${n_run}" -ge 1 ] &&
          [ $(( now_epoch - due )) -ge 60 ] && [ "${sent_since}" -ge 1 ]; then
         page_ok=true
@@ -128,9 +160,9 @@ if [ "${expect}" = before ]; then
   fi
   check "${page_ok}" "${page_msg}"
   measures="$(jq -c --argjson n "${firing_names}" --argjson g "${n_groups}" --arg run "${run}" \
-    --arg sent "${sent_since}" --argjson page "${page_ok}" \
+    --arg sent "${sent_since}" --argjson page "${page_ok}" --arg src "${deploy_source}" \
     '.firing = $n | .devin_groups = $g | .oncall_run = $run | .devin_paged = $page
-     | .webhook_notifications_since_deploy = $sent' <<<"${measures}")"
+     | .webhook_notifications_since_deploy = $sent | .deploy_record_source = $src' <<<"${measures}")"
 else
   window="$(f .gates.after.window)"
   handler="$(f .gates.after.handler)"

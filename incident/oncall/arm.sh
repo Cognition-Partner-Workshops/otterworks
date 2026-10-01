@@ -1,26 +1,36 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016 # jq filters are single-quoted on purpose
 # Arm the on-call storm on one tenant, in the order the story needs:
+#   0. wake the tenant if idle-suspend scaled it to zero
 #   1. seed 200k synthetic documents into the tenant Postgres (seed.sh)
 #   2. a real config deploy: helm upgrade --reuse-values document-service
 #      with folderDigest.enabled=true and a fresh oncall_run alert label, plus a
 #      Grafana annotation naming the revision (Alertmanager is reloaded first
 #      so the storm opens a new oncall-devin group and pages once)
-#   3. the oncall-k6 Job browsing folders through the public API host
+#   3. the oncall-k6 Job browsing folders through the public API host, skipped
+#      with --no-load (start it later with load.sh)
 # Each step is recorded in incident/oncall/.state/<tenant>.json.
 #
-# Usage: incident/oncall/arm.sh <oncall-before|oncall-after>
+# Usage: incident/oncall/arm.sh <oncall-before|oncall-after> [--no-load]
 set -euo pipefail
 
 # shellcheck source=incident/oncall/lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 tenant="${1:-}"
+load=true
+case "${2:-}" in
+  "") ;;
+  --no-load) load=false ;;
+  *) die "usage: $0 <tenant> [--no-load]" ;;
+esac
 require_tenant "${tenant}"
-require_bins kubectl helm jq curl envsubst
+require_bins git kubectl helm jq curl envsubst
 ensure_kubeconfig
 ns="$(tenant_ns "${tenant}")"
 require_ns "${ns}"
+log "Waking ${ns} (a no-op unless idle-suspend scaled it to zero)"
+wake_tenant "${tenant}" "${PG_DEPLOY}" document-service api-gateway
 require_chart_keys
 
 active="$(kubectl -n "${ns}" get job "${K6_JOB}" -o jsonpath='{.status.active}' 2>/dev/null || true)"
@@ -93,23 +103,13 @@ state_update "${tenant}" \
   --arg ann "${ANNOTATION_ID}"
 
 # ---------- 3. load ----------
-log "Step 3/3: k6 load (${LOAD_VUS} VUs, ${LOAD_MINUTES} min) against https://$(api_host "${tenant}")"
-kubectl -n "${ns}" create configmap "${K6_CONFIGMAP}" \
-  --from-file=folders.js="${ONCALL_DIR}/k6/folders.js" --dry-run=client -o yaml |
-  kubectl -n "${ns}" apply -f - >/dev/null
-kubectl -n "${ns}" delete job "${K6_JOB}" --ignore-not-found --wait=true >/dev/null
-K6_DEADLINE_SECONDS="$(awk -v m="${LOAD_MINUTES}" 'BEGIN { printf "%d", m * 60 + 600 }')"
-TENANT="${tenant}" API_HOST="$(api_host "${tenant}")" OWNER_ID="${owner}" \
-  K6_DEADLINE_SECONDS="${K6_DEADLINE_SECONDS}" \
-  render "${ONCALL_DIR}/k8s/k6-job.yaml" RUN_ID K6_DEADLINE_SECONDS API_HOST TENANT OWNER_ID \
-    DEMO_USER_EMAIL SEED_FOLDERS LOAD_VUS LOAD_MINUTES P95_SLO_SECONDS |
-  kubectl -n "${ns}" apply -f - >/dev/null
-kubectl -n "${ns}" wait --for=condition=Ready pod -l app=oncall-k6 --timeout=3m >/dev/null ||
-  die "the ${K6_JOB} pod did not start in ${ns}; kubectl -n ${ns} describe job ${K6_JOB}"
-state_update "${tenant}" \
-  '.steps.load = {at: $at, job: $job, vus: $vus, minutes: $min, url: $url}' \
-  --arg at "$(now_iso)" --arg job "${K6_JOB}" --arg url "https://$(api_host "${tenant}")" \
-  --argjson vus "${LOAD_VUS}" --argjson min "${LOAD_MINUTES}"
+if [ "${load}" = true ]; then
+  log "Step 3/3: k6 load (${LOAD_VUS} VUs, ${LOAD_MINUTES} min) against https://$(api_host "${tenant}")"
+  start_load "${tenant}"
+else
+  log "Step 3/3: skipped (--no-load); start it with make oncall-load TENANT=${tenant}"
+  exit 0
+fi
 
 log "Armed ${tenant}. The first storm alerts fire within about 6 minutes of the deploy;"
 log "the single page to Devin follows Alertmanager's 3 minute group_wait."

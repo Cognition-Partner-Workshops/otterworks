@@ -528,16 +528,22 @@ incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audite
 
 # ---- On-call alert storm (incident/oncall/, docs/oncall-storm/) ----
 ONCALL = incident/oncall
-.PHONY: oncall-up oncall-arm oncall-disarm oncall-status oncall-verify oncall-reset oncall-teardown oncall-simulate oncall-platform-up
+.PHONY: oncall-up oncall-arm oncall-load oncall-disarm oncall-status oncall-verify oncall-reset oncall-teardown oncall-simulate oncall-platform-up
 
 oncall-up: ## Create/redeploy both on-call tenants, their Postgres, the incident channel and platform pieces
 	$(ONCALL)/up.sh
 
-oncall-arm: ## Seed, ship the folder-digest config deploy and start k6 on one tenant (TENANT=oncall-before|oncall-after)
+oncall-arm: ## Wake, seed, ship the folder-digest config deploy and start k6 on one tenant (TENANT=oncall-before|oncall-after, LOAD=0 skips k6)
 ifndef TENANT
 	$(error TENANT is required, e.g. make oncall-arm TENANT=oncall-before)
 endif
-	$(ONCALL)/arm.sh $(TENANT)
+	$(ONCALL)/arm.sh $(TENANT) $(if $(filter 0 false no,$(LOAD)),--no-load)
+
+oncall-load: ## (Re)start the k6 Job on an armed tenant (TENANT=oncall-before|oncall-after)
+ifndef TENANT
+	$(error TENANT is required, e.g. make oncall-load TENANT=oncall-after)
+endif
+	$(ONCALL)/load.sh $(TENANT)
 
 oncall-disarm: ## Stop k6 and turn the digest worker off (TENANT=<id>, default both)
 	$(ONCALL)/disarm.sh $(TENANT)
@@ -551,7 +557,7 @@ ifndef TENANT
 endif
 	$(ONCALL)/verify.sh $(TENANT) $(or $(EXPECT),before)
 
-oncall-reset: ## Disarm both tenants, truncate the seed, force both demo-oncall-* branches back to the baseline (origin/main, or ONCALL_RESET_REF)
+oncall-reset: ## Truncate the seed and undo migration 005, disarm both tenants, force both demo-oncall-* branches back to the baseline (origin/main, or ONCALL_RESET_REF)
 	$(ONCALL)/reset.sh
 
 oncall-teardown: ## Tear down both on-call tenants, the incident channel and the platform pieces

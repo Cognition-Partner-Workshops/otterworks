@@ -543,7 +543,7 @@ jobs:
       - if: steps.changes.outputs.oncall == 'true'
         run: python -m pip install pytest pyyaml ruff==0.9.10
       - if: steps.changes.outputs.oncall == 'true'
-        run: python -m pytest -q incident/oncall/channel/test_channel.py incident/oncall/platform/test_platform.py
+        run: python -m pytest -q incident/oncall/channel/test_channel.py incident/oncall/platform/test_platform.py incident/oncall/test_verify.py
       - if: steps.changes.outputs.oncall == 'true'
         run: ruff check --config incident/ruff.toml incident/oncall/ && ruff format --check --config incident/ruff.toml incident/oncall/
       - if: steps.changes.outputs.oncall == 'true'

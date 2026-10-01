@@ -139,12 +139,22 @@ copy of the command with the token expanded.
     with the RCA, the before numbers from steps 5 and 6, the link to the issue,
     and a line saying a human reviewer merges it. Leave merge and auto-merge to
     that reviewer, and keep `main` out of it. Post the PR link to the channel.
-12. Prove the fix under the same load. Apply migration 005 from your branch
-    to the `oncall-after` tenant Postgres (skill command, through a port-forward,
-    with the database URL read from Secret `oncall-postgres` into an environment
-    variable). Then run `make oncall-arm TENANT=oncall-after`, which seeds the
-    same 200,000 documents, ships the same config deploy that turned the worker
-    on, and starts the same 6-VU k6 Job. After at least 5 minutes of load, run
+12. Prove the fix under the same load. `oncall-after` runs the
+    `demo-oncall-after` image, which has no revision 005 while your PR is open,
+    and document-service runs `alembic upgrade head` on every start. A pod
+    that starts while the database is at 005 crash-loops, so apply 005 only
+    after the arm rollout and roll nothing until the database is back at 004.
+    Wake the tenant first, since idle-suspend scales the whole namespace to
+    zero after an hour without ingress traffic:
+    `scripts/tenant-scale.sh oncall-after up`, then
+    `kubectl -n otterworks-oncall-after rollout status deploy/oncall-postgres deploy/document-service deploy/api-gateway --timeout=5m`.
+    Run `make oncall-arm TENANT=oncall-after LOAD=0` next. It seeds the same
+    200,000 documents, ships the same config deploy that turned the worker on
+    and waits for the rollout. Apply migration 005 from your branch to the `oncall-after` tenant
+    Postgres (skill command, through a port-forward, with the database URL read
+    from Secret `oncall-postgres` into an environment variable). Then run
+    `make oncall-load TENANT=oncall-after` to start the same 6-VU k6 Job, so
+    the whole k6 run has the index. After at least 5 minutes of load, run
     `make oncall-verify TENANT=oncall-after EXPECT=after` until it is green, and
     run `make oncall-verify TENANT=oncall-before EXPECT=before` for the
     side-by-side. Run `EXPLAIN (ANALYZE, BUFFERS)` again on `oncall-after` and
@@ -167,15 +177,20 @@ copy of the command with the token expanded.
     changed. The expected SRE reply asks for the index to be built
     `CONCURRENTLY` because `documents` is hot: change migration 005 to run in
     `op.get_context().autocommit_block()` with `postgresql_concurrently=True`
-    on create and drop, cover it in the test, push to the same PR, downgrade
-    `oncall-after` to `004` and upgrade it again while the k6 load runs, and
-    re-run the after verify. Post the result, including that listings kept
-    serving during the build.
+    on create and drop, cover it in the test, and push to the same PR. While
+    the k6 load runs, run `alembic downgrade 004` and then `alembic upgrade 005`
+    from your branch against `oncall-after` (skill command), then re-run the
+    after verify. Neither command restarts a pod, and no `make oncall-*`
+    command other than `oncall-status`, `oncall-load` and `oncall-verify` runs
+    while the database is at 005. Post the result, including that listings
+    kept serving during the build.
 16. Close through the incident manager. When the incident manager says the
     incident is closed, post a final line with the issue and PR links and the
-    final after-verify result, add the closing note to the issue and close it,
-    then run `make oncall-disarm TENANT=oncall-after`. Leave `oncall-before`
-    armed for the presenter and leave the PR open.
+    final after-verify result, add the closing note to the issue and close it.
+    Then run `alembic downgrade 004` from your branch against `oncall-after`,
+    so the baseline image can start again, and run
+    `make oncall-disarm TENANT=oncall-after`. Leave `oncall-before` armed for
+    the presenter and leave the PR open.
 
 ## Specifications (postconditions)
 

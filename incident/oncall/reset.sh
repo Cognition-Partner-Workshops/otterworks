@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Return both on-call tenants and both branches to the before state:
-#   1. disarm both (stop k6, worker off through a helm upgrade)
-#   2. truncate the seeded data, drop the fix index if a proof created it, and
-#      stamp alembic back to the last baseline revision when needed
+#   1. truncate the seeded data, drop the fix index if a proof created it, and
+#      stamp alembic back to the last baseline revision when needed. This runs
+#      first: document-service runs alembic upgrade head on start, so a pod of
+#      the baseline image crash-loops while the database is at 005, and the
+#      disarm rollout would fail.
+#   2. disarm both (stop k6, worker off through a helm upgrade)
 #   3. force demo-oncall-before / demo-oncall-after back to origin/main, only
 #      when they differ (CD then redeploys the golden build)
 #   4. clear the incident channel threads and incident/oncall/.state
@@ -16,22 +19,20 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 require_bins git kubectl helm jq curl
 ensure_kubeconfig
 
-# ---------- 1. disarm ----------
-"${ONCALL_DIR}/disarm.sh" "${BEFORE_TENANT}" "${AFTER_TENANT}"
-
-# ---------- 2. data ----------
+# ---------- 1. data ----------
 # The between-runs baseline is origin/main once it carries the on-call work, or
 # the integration baseline while it has not merged (ONCALL_RESET_REF).
 git -C "${REPO}" fetch -q origin main
 reset_ref="${ONCALL_RESET_REF:-origin/main}"
-baseline_head="$(git -C "${REPO}" ls-tree --name-only "${reset_ref}" services/document-service/alembic/versions/ |
-  sed -nE 's#.*/([0-9]{3})_[^/]*\.py$#\1#p' | sort | tail -n 1)"
+baseline_head="$(branch_alembic_head "${reset_ref}")"
+[ -n "${baseline_head}" ] || die "no document-service migrations found on ${reset_ref}"
 for tenant in "${BEFORE_TENANT}" "${AFTER_TENANT}"; do
   ns="$(tenant_ns "${tenant}")"
   if ! kubectl -n "${ns}" get deploy "${PG_DEPLOY}" >/dev/null 2>&1; then
     warn "no ${PG_DEPLOY} in ${ns}; nothing to truncate"
     continue
   fi
+  wake_postgres "${tenant}"
   log "Truncating seeded data in ${ns}"
   pg "${tenant}" -v fix_index="${FIX_INDEX}" -v baseline="${baseline_head}" -f - <<'SQL'
 SET statement_timeout = 0;
@@ -52,6 +53,9 @@ UPDATE alembic_version SET version_num = :'baseline' WHERE version_num > :'basel
 \endif
 SQL
 done
+
+# ---------- 2. disarm ----------
+"${ONCALL_DIR}/disarm.sh" "${BEFORE_TENANT}" "${AFTER_TENANT}"
 
 # ---------- 3. branches ----------
 main_sha="$(git -C "${REPO}" rev-parse "${reset_ref}")"

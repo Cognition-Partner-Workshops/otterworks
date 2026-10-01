@@ -51,7 +51,7 @@ When the live page fails (automation disabled, webhook rejected), `make oncall-s
 make oncall-reset
 ```
 
-Reset disarms both tenants with a Helm upgrade that turns the worker off, truncates the seeded rows, drops the fix index if a proof created it, stamps Alembic back to the last revision on `main`, force-pushes `demo-oncall-before` and `demo-oncall-after` to `origin/main` only when a branch differs, clears the channel threads and deletes `incident/oncall/.state`. CD redeploys a tenant whose branch moved, which takes about 8 minutes. Close Devin's pull request and issue by hand, since reset leaves GitHub history alone.
+Reset first truncates the seeded rows, drops the fix index if a proof created it and stamps Alembic back to the last revision on `main`, so a baseline pod can start again. After the data repair, reset disarms both tenants with a Helm upgrade that turns the worker off, force-pushes `demo-oncall-before` and `demo-oncall-after` to `origin/main` only when a branch differs, clears the channel threads and deletes `incident/oncall/.state`. CD redeploys a tenant whose branch moved, which takes about 8 minutes. Close Devin's pull request and issue by hand, since reset leaves GitHub history alone.
 
 `make oncall-teardown` removes both tenants (through `scripts/teardown-tenant.sh`), the channel and the platform pieces. Use it after the event, since `make oncall-up` from nothing takes about 20 minutes.
 
@@ -61,7 +61,7 @@ Reset disarms both tenants with a Helm upgrade that turns the worker off, trunca
 |---|---|
 | `incident/oncall/vars.env` | every knob, overridable from the environment |
 | `incident/oncall/faults.yaml` | the storm as data: seed, deploy, load, alerts, gates |
-| `incident/oncall/*.sh` | up, seed, arm, disarm, status, verify, simulate, reset, teardown |
+| `incident/oncall/*.sh` | up, seed, arm, load, disarm, status, verify, simulate, reset, teardown |
 | `incident/oncall/k8s/` | tenant Postgres with postgres-exporter, the k6 Job |
 | `incident/oncall/k6/folders.js` | the folder browsing load |
 | `infrastructure/helm/tenant-values/oncall-*/` | document-service overlays for each tenant |

@@ -6,8 +6,8 @@
 
 ONCALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "${ONCALL_DIR}/../.." && pwd)"
-STATE_DIR="${ONCALL_DIR}/.state"
-REPORT_DIR="${ONCALL_DIR}/reports"
+STATE_DIR="${ONCALL_STATE_DIR:-${ONCALL_DIR}/.state}"
+REPORT_DIR="${ONCALL_REPORT_DIR:-${ONCALL_DIR}/reports}"
 CHART_DIR="${REPO}/infrastructure/helm/document-service"
 export ONCALL_DIR REPO STATE_DIR REPORT_DIR CHART_DIR
 
@@ -90,6 +90,40 @@ ensure_kubeconfig() {
 
 require_ns() {
   kubectl get ns "$1" >/dev/null 2>&1 || die "namespace $1 not found; run make oncall-up first"
+}
+
+# wait_ready <tenant> <deployment...>
+wait_ready() {
+  local t="$1" ns d
+  ns="$(tenant_ns "${t}")"
+  shift
+  for d in "$@"; do
+    kubectl -n "${ns}" rollout status "deploy/${d}" --timeout=5m >/dev/null ||
+      die "deploy/${d} did not become ready in ${ns}; kubectl -n ${ns} describe deploy/${d}"
+  done
+}
+
+# wake_tenant <tenant> <deployment...>: idle-suspend scales a tenant without
+# ingress traffic for an hour to zero, oncall-postgres included. Scale the whole
+# tenant back up and wait for the named Deployments.
+wake_tenant() {
+  local t="$1"
+  shift
+  "${REPO}/scripts/tenant-scale.sh" "${t}" up >/dev/null ||
+    die "scripts/tenant-scale.sh ${t} up failed"
+  wait_ready "${t}" "$@"
+}
+
+# wake_postgres <tenant>: only the tenant Postgres, for the steps that need SQL
+# and nothing else (disarm, reset).
+wake_postgres() {
+  local ns
+  ns="$(tenant_ns "$1")"
+  if [ "$(kubectl -n "${ns}" get deploy "${PG_DEPLOY}" -o jsonpath='{.spec.replicas}')" = 0 ]; then
+    log "${ns}/${PG_DEPLOY} is scaled to zero (idle suspend); scaling it up"
+    kubectl -n "${ns}" scale "deploy/${PG_DEPLOY}" --replicas=1 >/dev/null
+  fi
+  wait_ready "$1" "${PG_DEPLOY}"
 }
 
 # ---------- state: incident/oncall/.state/<tenant>.json ----------
@@ -189,6 +223,38 @@ pg() {
     psql -U otterworks -d otterworks -v ON_ERROR_STOP=1 -X -q "$@"
 }
 
+# ---------- alembic ----------
+# branch_alembic_head <git ref>: newest document-service migration on that ref.
+branch_alembic_head() {
+  git -C "${REPO}" ls-tree --name-only "$1" services/document-service/alembic/versions/ |
+    sed -nE 's#.*/([0-9]{3})_[^/]*\.py$#\1#p' | sort | tail -n 1
+}
+
+# db_alembic_revision <tenant>: the revision stamped in the tenant Postgres,
+# empty before document-service first migrated it.
+db_alembic_revision() {
+  [ "$(pg "$1" -At -c "SELECT to_regclass('public.alembic_version') IS NOT NULL")" = t ] || return 0
+  pg "$1" -At -c 'SELECT version_num FROM alembic_version LIMIT 1'
+}
+
+# require_db_shipped <tenant>: document-service runs `alembic upgrade head` on
+# start, so a pod of the tenant branch's image crash-loops when the database is
+# stamped with a revision that branch does not ship (migration 005 applied from
+# an unmerged fix branch). Refuse any rollout in that state.
+require_db_shipped() {
+  local t="$1" branch head current
+  branch="$(tenant_branch "${t}")"
+  if ! git -C "${REPO}" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null; then
+    warn "could not fetch ${branch}; skipping the alembic revision check"
+    return 0
+  fi
+  head="$(branch_alembic_head "origin/${branch}")"
+  current="$(db_alembic_revision "${t}")"
+  if [ -n "${head}" ] && [ -n "${current}" ] && [[ "${current}" > "${head}" ]]; then
+    die "$(tenant_ns "${t}") Postgres is at alembic revision ${current}, but ${branch} ships up to ${head}; a document-service rollout would crash-loop. Run alembic downgrade ${head} from the fix branch first (.agents/skills/oncall-storm/SKILL.md)"
+  fi
+}
+
 # ---------- document-service release ----------
 helm_revision() {
   helm -n "$(tenant_ns "$1")" history document-service -o json 2>/dev/null | jq -r 'last.revision // empty'
@@ -197,6 +263,60 @@ helm_revision() {
 digest_enabled() {
   helm -n "$(tenant_ns "$1")" get values document-service -o json 2>/dev/null |
     jq -r '.folderDigest.enabled // false'
+}
+
+# cluster_deploy_record <tenant>: the arm's config deploy as Helm recorded it,
+# for a checkout that did not run arm.sh. Prints {at, oncall_run, revision} for
+# the oldest revision in the unbroken run of revisions, ending at the deployed
+# one, whose values carry the live oncall_run; at is that revision's Helm
+# update time. Prints nothing when the worker is off or no oncall_run is set.
+cluster_deploy_record() {
+  local ns values run history current first r updated
+  ns="$(tenant_ns "$1")"
+  values="$(helm -n "${ns}" get values document-service -o json 2>/dev/null)" || return 0
+  run="$(jq -r '.monitoring.rules.extraLabels.oncall_run // empty' <<<"${values}")"
+  [ -n "${run}" ] || return 0
+  [ "$(jq -r '.folderDigest.enabled // false' <<<"${values}")" = true ] || return 0
+  history="$(helm -n "${ns}" history document-service --max 50 -o json 2>/dev/null)" || return 0
+  current="$(jq -r '[.[] | select(.status == "deployed")] | last.revision // empty' <<<"${history}")"
+  [ -n "${current}" ] || return 0
+  first="${current}"
+  for r in $(jq -r --argjson c "${current}" '[.[] | select(.revision < $c) | .revision] | reverse | .[]' <<<"${history}"); do
+    [ "$(helm -n "${ns}" get values document-service --revision "${r}" -o json 2>/dev/null |
+      jq -r '.monitoring.rules.extraLabels.oncall_run // empty')" = "${run}" ] || break
+    first="${r}"
+  done
+  updated="$(jq -r --argjson r "${first}" '.[] | select(.revision == $r) | .updated' <<<"${history}")"
+  [ -n "${updated}" ] || return 0
+  jq -nc --arg at "$(date -u -d "${updated}" +%Y-%m-%dT%H:%M:%SZ)" --arg run "${run}" --argjson rev "${first}" \
+    '{at: $at, oncall_run: $run, revision: $rev}'
+}
+
+# start_load <tenant>: (re)start the oncall-k6 Job against the seeded owner and
+# record it in .state. A running Job is replaced, so the run starts now.
+start_load() {
+  local t="$1" ns owner
+  ns="$(tenant_ns "${t}")"
+  owner="$(state_get "${t}" .owner_id)"
+  [ -n "${owner}" ] || owner="$(pg "${t}" -At -c "SELECT owner_id FROM documents LIMIT 1")"
+  [ -n "${owner}" ] || die "no seeded documents in ${ns}; run make oncall-arm TENANT=${t} first"
+  kubectl -n "${ns}" create configmap "${K6_CONFIGMAP}" \
+    --from-file=folders.js="${ONCALL_DIR}/k6/folders.js" --dry-run=client -o yaml |
+    kubectl -n "${ns}" apply -f - >/dev/null
+  kubectl -n "${ns}" delete job "${K6_JOB}" --ignore-not-found --wait=true >/dev/null
+  K6_DEADLINE_SECONDS="$(awk -v m="${LOAD_MINUTES}" 'BEGIN { printf "%d", m * 60 + 600 }')"
+  TENANT="${t}" API_HOST="$(api_host "${t}")" OWNER_ID="${owner}" \
+    K6_DEADLINE_SECONDS="${K6_DEADLINE_SECONDS}" \
+    render "${ONCALL_DIR}/k8s/k6-job.yaml" RUN_ID K6_DEADLINE_SECONDS API_HOST TENANT OWNER_ID \
+      DEMO_USER_EMAIL SEED_FOLDERS LOAD_VUS LOAD_MINUTES P95_SLO_SECONDS |
+    kubectl -n "${ns}" apply -f - >/dev/null
+  kubectl -n "${ns}" wait --for=condition=Ready pod -l app=oncall-k6 --timeout=3m >/dev/null ||
+    die "the ${K6_JOB} pod did not start in ${ns}; kubectl -n ${ns} describe job ${K6_JOB}"
+  # shellcheck disable=SC2016 # jq filter
+  state_update "${t}" \
+    '.steps.load = {at: $at, job: $job, vus: $vus, minutes: $min, url: $url}' \
+    --arg at "$(now_iso)" --arg job "${K6_JOB}" --arg url "https://$(api_host "${t}")" \
+    --argjson vus "${LOAD_VUS}" --argjson min "${LOAD_MINUTES}"
 }
 
 # The harness turns chart keys on and off; it never adds them. Refuse to run
@@ -218,6 +338,7 @@ digest_deploy() {
   local t="$1" enabled="$2" run="${3:-}" ns
   ns="$(tenant_ns "${t}")"
   require_chart_keys
+  require_db_shipped "${t}"
   helm -n "${ns}" upgrade document-service "${CHART_DIR}" --reuse-values \
     --set "folderDigest.enabled=${enabled}" \
     --set-string "monitoring.rules.extraLabels.oncall_run=${run}" \
@@ -268,17 +389,34 @@ value = walk(root, root.get(key, defaults[key]))
 print("" if value is None else seconds(value))' "$1" "$2"
 }
 
-# oncall_group_may_linger <namespace>: true when a page="oncall" alert fired in
-# the namespace within the oncall-devin group_interval. Alertmanager keeps that
-# group, resolved alerts included, until its next flush, and a new storm would
-# join it and wait for that flush instead of paging after group_wait. The
-# groups API hides resolved alerts, so ask Prometheus. Needs both port-forwards.
+# oncall_group_may_linger <namespace> [unix seconds]: true when a page="oncall"
+# alert fired in the namespace within the oncall-devin group_interval before
+# that instant (default now). Alertmanager keeps that group, resolved alerts
+# included, until its next flush, and a new storm would join it and wait for
+# that flush instead of paging after group_wait. The groups API hides resolved
+# alerts, so ask Prometheus. Needs both port-forwards.
 oncall_group_may_linger() {
-  local ns="$1" interval n
+  local ns="$1" at="${2:-$(date +%s)}" interval n
   interval="$(am_route_seconds oncall-devin group_interval)"
   [ -n "${interval}" ] || return 1
-  n="$(prom_scalar_at "count(last_over_time(ALERTS{namespace=\"${ns}\",page=\"oncall\",alertstate=\"firing\"}[${interval}s]))" "$(date +%s)")"
+  n="$(prom_scalar_at "count(last_over_time(ALERTS{namespace=\"${ns}\",page=\"oncall\",alertstate=\"firing\"}[${interval}s]))" "${at}")"
   [ "${n:-0}" -ge 1 ]
+}
+
+# am_reloaded_between <from> <to>: the latest Alertmanager config reload in
+# [from, to] (unix seconds) as ISO time, empty when there was none. Looks up to
+# 5 minutes past <to> so a reload just before a deploy is seen even though
+# Prometheus scraped it later. Needs the Prometheus port-forward.
+am_reloaded_between() {
+  local from="$1" to="$2" at window ts
+  at=$(( to + 300 ))
+  [ "${at}" -le "$(date +%s)" ] || at="$(date +%s)"
+  window=$(( at - from + 60 ))
+  ts="$(prom_scalar_at "max(max_over_time((alertmanager_config_last_reload_success_timestamp_seconds <= ${to})[${window}s:15s]))" "${at}")"
+  [ -n "${ts}" ] || return 0
+  ts="${ts%.*}"
+  [ "${ts}" -ge "${from}" ] || return 0
+  date -u -d "@${ts}" +%Y-%m-%dT%H:%M:%SZ
 }
 
 # grafana_annotate <tenant> <text>: sets ANNOTATION_ID (empty when Grafana
