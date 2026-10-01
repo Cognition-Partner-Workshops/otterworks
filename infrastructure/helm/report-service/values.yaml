@@ -82,8 +82,9 @@ secrets: {}
 # AZSQL_USER, AZSQL_PASSWORD, AZURE_CLIENT_ID), created by the deploy
 # script - never put them in values files.
 archive:
-  store: ""            # "" | db2 | postgresql | azuresql
+  store: ""            # "" | db2 | postgresql | azuresql | snowflake
   namespace: ""        # LDM_NAMESPACE, e.g. d24-after
+  sourceProvider: ""   # LDM_SOURCE_PROVIDER: db2 | oracle (source estate the archive was migrated from)
   credentialsSecret: archive-store-credentials
   db2:
     host: db2-archive
@@ -94,6 +95,15 @@ archive:
     port: "5432"
     database: ""       # otterworks_<tenant>
     sslmode: require
+  # store=snowflake (manifest target.provider snowflake): archive + MIG.V_* report views in Snowflake,
+  # postgresql.* above stays the control plane. Only SNOWFLAKE_PAT is secret (tokenSecret, never values).
+  snowflake:
+    account: ""        # ORG-ACCOUNT identifier, e.g. TOJGONB-SF03144
+    user: ""
+    role: ""           # LDM_JOB_<TOKEN>
+    warehouse: LDM_WH
+    database: ""       # OTTERWORKS_LDM_<TOKEN>
+    tokenSecret: ldm-snowflake
   azuresql:
     server: ""         # <server>.database.windows.net
     database: ""

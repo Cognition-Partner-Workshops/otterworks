@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Template for the two JDBC-backed stores: the document assembly (versions, then the events
+ * Template for the JDBC-backed stores: the document assembly (versions, then the events
  * of those versions, then the policy of each version) is shared; the dialect-specific SQL and
  * row mapping live in the subclasses.
  */
@@ -45,28 +45,43 @@ public abstract class JdbcArchiveStore implements ArchiveStore {
         return docId;
     }
 
+    /** Bind values for one lookup key; stores whose tables hold several namespaces prepend the namespace. */
+    protected Object[] args(Object key) {
+        return new Object[] {key};
+    }
+
+    /** Bind values for {@link #versionsSql()}. */
+    protected Object[] versionsArgs(String docId) {
+        return args(docIdParameter(docId));
+    }
+
+    /** The {@code doc_id} reported for a lookup that found {@code versions}. */
+    protected String documentId(String requested, List<ArchiveVersion> versions) {
+        return Db2Text.rtrim(requested);
+    }
+
     @Override
     public Optional<ArchiveDocument> findDocument(String docId) {
         try {
-            List<ArchiveVersion> versions = jdbc.query(versionsSql(), versionMapper(), docIdParameter(docId));
+            List<ArchiveVersion> versions = jdbc.query(versionsSql(), versionMapper(), versionsArgs(docId));
             if (versions.isEmpty()) {
                 return Optional.empty();
             }
             Map<String, RetentionPolicy> policies = new HashMap<String, RetentionPolicy>();
             for (ArchiveVersion version : versions) {
-                List<ArchiveEvent> events = jdbc.query(eventsSql(), eventMapper(), version.raw.archKey);
+                List<ArchiveEvent> events = jdbc.query(eventsSql(), eventMapper(), args(version.raw.archKey));
                 for (ArchiveEvent event : events) {
                     event.archKey = null;
                 }
                 version.events = events;
                 String policyCode = version.retentionClass;
                 if (!policies.containsKey(policyCode)) {
-                    List<RetentionPolicy> found = jdbc.query(policySql(), policyMapper(), policyCode);
+                    List<RetentionPolicy> found = jdbc.query(policySql(), policyMapper(), args(policyCode));
                     policies.put(policyCode, found.isEmpty() ? null : found.get(0));
                 }
                 version.policy = policies.get(policyCode);
             }
-            return Optional.of(new ArchiveDocument(Db2Text.rtrim(docId), storeName(), versions));
+            return Optional.of(new ArchiveDocument(documentId(docId, versions), storeName(), versions));
         } catch (DataAccessException e) {
             throw new ArchiveStoreUnavailableException(storeName() + " archive store query failed", e);
         }
@@ -83,6 +98,6 @@ public abstract class JdbcArchiveStore implements ArchiveStore {
 
     /** All FILEAUD events of one DOCARCH key (used by the hash endpoint's event section). */
     protected List<ArchiveEvent> eventsOf(String archKey) {
-        return new ArrayList<ArchiveEvent>(jdbc.query(eventsSql(), eventMapper(), archKey));
+        return new ArrayList<ArchiveEvent>(jdbc.query(eventsSql(), eventMapper(), args(archKey)));
     }
 }

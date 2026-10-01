@@ -36,6 +36,8 @@ ORACLE_CREDENTIALS_SECRET="oracle-archive-credentials"
 ARCHIVE_STORE_SECRET="archive-store-credentials"
 LDM_AZURE_SECRET="ldm-azure"
 LDM_POSTGRES_SECRET="ldm-postgres"
+# key SNOWFLAKE_PAT only (programmatic access token of SNOWFLAKE_USER); target.provider snowflake
+LDM_SNOWFLAKE_SECRET="ldm-snowflake"
 DB2_RELEASE="db2-archive"
 ORACLE_RELEASE="oracle-archive"
 ORACLE_PORT=1521
@@ -51,6 +53,8 @@ MANIFEST_DIR="${REPO_ROOT}/migration"
 DEMO_DIR="${DEMO_DIR:-${REPO_ROOT}/.demo}"
 # Services that read ARCHIVE_STORE / the archive connection (CONTRACTS §10.4).
 ARCHIVE_SERVICES=(report-service audit-service admin-dashboard)
+# Services that read the Snowflake archive (ARCHIVE_STORE=snowflake) and so get SNOWFLAKE_PAT.
+SNOWFLAKE_ARCHIVE_SERVICES=(report-service audit-service)
 
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -750,6 +754,50 @@ ldm_target_values() {
   [ -n "${region}" ] && printf 'env.AWS_REGION=%s\n' "${region}"
   [ -n "${role}" ]   && printf 'serviceAccount.roleArn=%s\n' "${role}"
   ldm_azure_values "${ns}"
+  ldm_snowflake_values "${ns}"
+}
+
+# Non-secret Snowflake coordinates deploy-demo.sh stored in the archive-store Secret for a
+# target.provider snowflake overlay; the PAT stays in ${LDM_SNOWFLAKE_SECRET} (mounted by the chart).
+ldm_snowflake_values() {
+  local ns="$1" store key val
+  [ "${DRY_RUN}" = "1" ] && return 0
+  store="$(secret_value "${ns}" "${ARCHIVE_STORE_SECRET}" ARCHIVE_STORE)"
+  [ "${store}" = "snowflake" ] || return 0
+  printf 'targetProvider=snowflake\n'
+  for key in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE SNOWFLAKE_DATABASE SNOWFLAKE_STAGE; do
+    val="$(secret_value "${ns}" "${ARCHIVE_STORE_SECRET}" "${key}")"
+    [ -n "${val}" ] && printf 'env.%s=%s\n' "${key}" "${val}"
+  done
+  return 0
+}
+
+# Snowflake coordinates of a token (migration/target/snowflake/bootstrap/tenant.sql naming):
+# database OTTERWORKS_LDM_<TOKEN>, role LDM_JOB_<TOKEN>; account/user/warehouse from the environment.
+snowflake_token_id() { printf '%s' "$1" | tr '[:lower:]-' '[:upper:]_'; }
+snowflake_database() { printf '%s' "${SNOWFLAKE_DATABASE:-OTTERWORKS_LDM_$(snowflake_token_id "$1")}"; }
+snowflake_role() { printf '%s' "${SNOWFLAKE_ROLE:-LDM_JOB_$(snowflake_token_id "$1")}"; }
+
+# The PAT Secret: kept when it exists (created by ops), else created from SNOWFLAKE_PAT in the
+# environment. The token never reaches argv or the transcript.
+ensure_snowflake_secret() {
+  local ns="$1" token="$2"
+  if [ "${DRY_RUN}" = "1" ]; then dlog "[dry-run] ensure Secret ${ns}/${LDM_SNOWFLAKE_SECRET} (key SNOWFLAKE_PAT)"; return 0; fi
+  if [ -n "$(secret_value "${ns}" "${LDM_SNOWFLAKE_SECRET}" SNOWFLAKE_PAT)" ]; then return 0; fi
+  [ -n "${SNOWFLAKE_PAT:-}" ] || die "Secret ${ns}/${LDM_SNOWFLAKE_SECRET} is missing and SNOWFLAKE_PAT is not set"
+  printf 'SNOWFLAKE_PAT=%s\n' "${SNOWFLAKE_PAT}" | apply_secret_from_stdin "${ns}" "${LDM_SNOWFLAKE_SECRET}" "${token}"
+}
+
+# ARCHIVE_STORE=snowflake: report-service/audit-service take SNOWFLAKE_PAT (only that key) from
+# ${LDM_SNOWFLAKE_SECRET}; everything else arrives with wire_archive_store from ${ARCHIVE_STORE_SECRET}.
+wire_snowflake_token() {
+  local ns="$1" svc
+  for svc in "${SNOWFLAKE_ARCHIVE_SERVICES[@]}"; do
+    if [ "${DRY_RUN}" != "1" ] && ! kubectl -n "${ns}" get deployment "${svc}" >/dev/null 2>&1; then
+      dwarn "deployment ${svc} not found in ${ns}; not wiring ${LDM_SNOWFLAKE_SECRET}"; continue
+    fi
+    run kubectl -n "${ns}" set env "deployment/${svc}" --from="secret/${LDM_SNOWFLAKE_SECRET}" --keys=SNOWFLAKE_PAT
+  done
 }
 
 ldm_azure_values() {

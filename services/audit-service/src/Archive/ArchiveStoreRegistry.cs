@@ -33,8 +33,11 @@ public sealed class ArchiveStoreRegistry
             case ArchiveStoreType.AzureSql when !options.AzsqlComplete:
                 ConfigurationError = "ARCHIVE_STORE=azuresql but AZSQL_SERVER/AZSQL_DATABASE/AZSQL_USER/AZSQL_PASSWORD are incomplete";
                 break;
+            case ArchiveStoreType.Snowflake when !options.SnowflakeComplete:
+                ConfigurationError = "ARCHIVE_STORE=snowflake but SNOWFLAKE_ACCOUNT/SNOWFLAKE_USER/SNOWFLAKE_PAT/SNOWFLAKE_DATABASE are incomplete";
+                break;
             case ArchiveStoreType.Invalid:
-                ConfigurationError = $"ARCHIVE_STORE has an unsupported value '{options.Store}' (expected db2, postgresql or azuresql)";
+                ConfigurationError = $"ARCHIVE_STORE has an unsupported value '{options.Store}' (expected db2, postgresql, azuresql or snowflake)";
                 break;
             default:
                 _store = factory(options);
@@ -63,6 +66,7 @@ public sealed class ArchiveStoreRegistry
         ArchiveStoreType.Db2 => new Db2ArchiveEventStore(options.Db2ConnectionString),
         ArchiveStoreType.PostgreSql => new PostgresArchiveEventStore(options.PgConnectionString),
         ArchiveStoreType.AzureSql => new AzureSqlArchiveEventStore(options.AzsqlConnectionString),
+        ArchiveStoreType.Snowflake => new SnowflakeArchiveEventStore(options.SnowflakeConnectionString, options.Namespace),
         _ => throw new InvalidOperationException("no store for " + options.StoreType),
     };
 }
