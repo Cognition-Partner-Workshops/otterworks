@@ -1,0 +1,223 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oncall-loki
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: oncall-loki}
+  template:
+    metadata:
+      labels: {app: oncall-loki, app.kubernetes.io/part-of: oncall-storm}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001}
+      containers:
+        - name: loki
+          image: grafana/loki:3.4.2
+          args: ["-config.file=/etc/loki/loki.yaml"]
+          ports:
+            - {name: http, containerPort: 3100}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /ready, port: http}
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet: {path: /ready, port: http}
+            initialDelaySeconds: 60
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: config, mountPath: /etc/loki, readOnly: true}
+            - {name: data, mountPath: /var/loki}
+            - {name: tmp, mountPath: /tmp}
+
+      volumes:
+        - name: config
+          configMap: {name: oncall-loki}
+        - name: data
+          emptyDir: {sizeLimit: 5Gi}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oncall-loki
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  type: ClusterIP
+  selector: {app: oncall-loki}
+  ports:
+    - {name: http, port: 3100, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oncall-tempo
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: oncall-tempo}
+  template:
+    metadata:
+      labels: {app: oncall-tempo, app.kubernetes.io/part-of: oncall-storm}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001}
+      containers:
+        - name: tempo
+          image: grafana/tempo:2.7.2
+          args: ["-config.file=/etc/tempo/tempo.yaml"]
+          ports:
+            - {name: http, containerPort: 3200}
+            - {name: otlp-grpc, containerPort: 4317}
+            - {name: otlp-http, containerPort: 4318}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: 500m, memory: 1Gi}
+          readinessProbe:
+            httpGet: {path: /ready, port: http}
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet: {path: /ready, port: http}
+            initialDelaySeconds: 60
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: config, mountPath: /etc/tempo, readOnly: true}
+            - {name: data, mountPath: /var/tempo}
+            - {name: tmp, mountPath: /tmp}
+
+      volumes:
+        - name: config
+          configMap: {name: oncall-tempo}
+        - name: data
+          emptyDir: {sizeLimit: 5Gi}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oncall-tempo
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  type: ClusterIP
+  selector: {app: oncall-tempo}
+  ports:
+    - {name: http, port: 3200, targetPort: http}
+    - {name: otlp-grpc, port: 4317, targetPort: otlp-grpc}
+    - {name: otlp-http, port: 4318, targetPort: otlp-http}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oncall-alloy
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oncall-alloy
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+rules:
+  - apiGroups: [""]
+    resources: [pods, namespaces]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: oncall-alloy
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: oncall-alloy
+subjects:
+  - {kind: ServiceAccount, name: oncall-alloy, namespace: monitoring}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: oncall-alloy
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  selector:
+    matchLabels: {app: oncall-alloy}
+  template:
+    metadata:
+      labels: {app: oncall-alloy, app.kubernetes.io/part-of: oncall-storm}
+    spec:
+      serviceAccountName: oncall-alloy
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001}
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.7.5
+          args: [run, /etc/alloy/config.alloy, --server.http.listen-addr=0.0.0.0:12345, --storage.path=/var/alloy]
+          env:
+            - name: NODE_NAME
+              valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+          ports:
+            - {name: http, containerPort: 12345}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 256Mi}
+          readinessProbe:
+            httpGet: {path: /-/ready, port: http}
+          livenessProbe:
+            httpGet: {path: /-/healthy, port: http}
+            initialDelaySeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: config, mountPath: /etc/alloy, readOnly: true}
+            - {name: data, mountPath: /var/alloy}
+      volumes:
+        - name: config
+          configMap: {name: oncall-alloy}
+        - name: data
+          emptyDir: {sizeLimit: 256Mi}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oncall-telemetry
+  namespace: monitoring
+  labels: {app.kubernetes.io/part-of: oncall-storm}
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/part-of: oncall-storm}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: monitoring}
+      ports:
+        - {protocol: TCP, port: 3100}
+        - {protocol: TCP, port: 3200}
+        - {protocol: TCP, port: 4317}
+        - {protocol: TCP, port: 4318}
+        - {protocol: TCP, port: 12345}

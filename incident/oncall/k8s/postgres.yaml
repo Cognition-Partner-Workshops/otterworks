@@ -1,0 +1,189 @@
+# Tenant-local Postgres for the on-call storm. Applied by incident/oncall/up.sh
+# into otterworks-<tenant> after rendering ${POSTGRES_CPU_LIMIT}. The password
+# lives in Secret oncall-postgres (keys password, url), which up.sh creates once
+# and never prints. Data is on an emptyDir: no PVC, no EBS volume. The exporter
+# is scraped on port "metrics" by PodMonitor monitoring/oncall-postgres from
+# incident/oncall/platform/.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oncall-postgres-init
+  labels:
+    app.kubernetes.io/name: oncall-postgres
+    app.kubernetes.io/part-of: oncall-storm
+data:
+  00-extensions.sql: |
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oncall-postgres
+  labels:
+    app: oncall-postgres
+    app.kubernetes.io/name: oncall-postgres
+    app.kubernetes.io/part-of: oncall-storm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: oncall-postgres
+  template:
+    metadata:
+      labels:
+        app: oncall-postgres
+        app.kubernetes.io/name: oncall-postgres
+        app.kubernetes.io/part-of: oncall-storm
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: postgres:15
+          securityContext:
+            allowPrivilegeEscalation: false
+          args:
+            - -c
+            - shared_buffers=128MB
+            - -c
+            - max_connections=60
+            - -c
+            - shared_preload_libraries=pg_stat_statements
+            - -c
+            - pg_stat_statements.track=all
+            - -c
+            - track_io_timing=on
+          env:
+            - name: POSTGRES_USER
+              value: otterworks
+            - name: POSTGRES_DB
+              value: otterworks
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oncall-postgres
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - name: postgres
+              containerPort: 5432
+          readinessProbe:
+            exec:
+              command: [pg_isready, -U, otterworks, -d, otterworks, -h, 127.0.0.1]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: [pg_isready, -U, otterworks, -d, otterworks, -h, 127.0.0.1]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 384Mi
+            limits:
+              cpu: "${POSTGRES_CPU_LIMIT}"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+          securityContext:
+            allowPrivilegeEscalation: false
+          args:
+            - --collector.stat_statements
+          env:
+            - name: DATA_SOURCE_URI
+              value: localhost:5432/otterworks?sslmode=disable
+            - name: DATA_SOURCE_USER
+              value: otterworks
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: oncall-postgres
+                  key: password
+          ports:
+            - name: metrics
+              containerPort: 9187
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 25m
+              memory: 48Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 4Gi
+        - name: init
+          configMap:
+            name: oncall-postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oncall-postgres
+  labels:
+    app: oncall-postgres
+    app.kubernetes.io/name: oncall-postgres
+    app.kubernetes.io/part-of: oncall-storm
+spec:
+  type: ClusterIP
+  selector:
+    app: oncall-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+    - name: metrics
+      port: 9187
+      targetPort: metrics
+---
+# Additive to the namespace's tenant-isolation policy: Postgres takes clients
+# from this namespace only, the exporter takes scrapes from monitoring.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oncall-postgres
+  labels:
+    app.kubernetes.io/name: oncall-postgres
+    app.kubernetes.io/part-of: oncall-storm
+spec:
+  podSelector:
+    matchLabels:
+      app: oncall-postgres
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - port: 5432
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9187
+          protocol: TCP

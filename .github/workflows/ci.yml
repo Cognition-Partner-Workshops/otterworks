@@ -516,3 +516,39 @@ jobs:
           --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
           --set pv.volumeName=pv-ci
           --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci
+
+  # On-call storm harness (incident/oncall/): the incident channel server and its
+  # pytest suite, the Alertmanager route-merger unit tests, ruff and shellcheck
+  # over the harness, and the chart/rules/dashboard contract check (helm
+  # template + promtool in Docker). Self-contained path filter, same pattern as
+  # migration-job. The chart-file sync itself is incident-chart-sync above.
+  oncall-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            oncall:
+              - 'incident/oncall/**'
+              - 'observability/prometheus/oncall_alerts.yml'
+              - 'observability/grafana/dashboards/oncall-storm.json'
+              - 'infrastructure/helm/document-service/**'
+              - 'infrastructure/helm/tenant-values/oncall-*/**'
+      - if: steps.changes.outputs.oncall == 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.oncall == 'true'
+        run: python -m pip install pytest pyyaml ruff==0.9.10
+      - if: steps.changes.outputs.oncall == 'true'
+        run: python -m pytest -q incident/oncall/channel/test_channel.py incident/oncall/platform/test_platform.py incident/oncall/test_verify.py
+      - if: steps.changes.outputs.oncall == 'true'
+        run: ruff check --config incident/ruff.toml incident/oncall/ && ruff format --check --config incident/ruff.toml incident/oncall/
+      - if: steps.changes.outputs.oncall == 'true'
+        run: shellcheck -x incident/oncall/*.sh
+      - if: steps.changes.outputs.oncall == 'true'
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - if: steps.changes.outputs.oncall == 'true'
+        run: python incident/oncall/platform/check-contract.py

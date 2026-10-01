@@ -1,0 +1,29 @@
+routes:
+  - receiver: oncall-devin
+    matchers: ['page="oncall"']
+    group_by: [namespace, oncall_group]
+    group_wait: 3m
+    group_interval: 6h
+    repeat_interval: 12h
+    continue: true
+  - receiver: oncall-channel
+    matchers: ['page="oncall"']
+    group_by: [namespace, oncall_group]
+    group_wait: 10s
+    group_interval: 30s
+    repeat_interval: 1h
+    continue: true
+receivers:
+  - name: oncall-devin
+    webhook_configs:
+      - url: "${ONCALL_DEVIN_WEBHOOK_URL}"
+        send_resolved: false
+        max_alerts: 0
+        http_config:
+          http_headers:
+            X-Webhook-Secret:
+              values: ["${ONCALL_DEVIN_WEBHOOK_SECRET}"]
+  - name: oncall-channel
+    webhook_configs:
+      - url: http://incident-channel.otterworks-platform.svc.cluster.local:8080/alertmanager
+        send_resolved: true

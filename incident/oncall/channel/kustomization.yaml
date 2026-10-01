@@ -1,0 +1,21 @@
+# kubectl apply -k incident/oncall/channel
+# Lives next to channel.py because kustomize only loads files at or below its root.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: otterworks-platform
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/part-of: otterworks-oncall-demo
+      app.kubernetes.io/managed-by: kustomize
+      platform/environment: dev
+      platform/team: otterworks
+resources:
+  - k8s/deployment.yaml
+  - k8s/service.yaml
+  - k8s/ingress.yaml
+  - k8s/networkpolicy.yaml
+configMapGenerator:
+  - name: incident-channel-script
+    files:
+      - channel.py

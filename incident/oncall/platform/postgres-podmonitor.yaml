@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: oncall-postgres
+  namespace: monitoring
+  labels:
+    release: prometheus
+    app.kubernetes.io/part-of: oncall-storm
+spec:
+  namespaceSelector:
+    matchNames: [otterworks-oncall-before, otterworks-oncall-after]
+  selector:
+    matchLabels:
+      app: oncall-postgres
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

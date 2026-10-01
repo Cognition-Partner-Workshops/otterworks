@@ -51,8 +51,38 @@ spec:
             failureThreshold: 6
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.tracing.enabled }}
+          {{- $digest := .Values.folderDigest | default dict }}
           env:
+            - name: DOC_SVC_FOLDER_DIGEST_ENABLED
+              value: {{ $digest.enabled | default false | toString | quote }}
+            - name: DOC_SVC_FOLDER_DIGEST_INTERVAL_SECONDS
+              value: {{ $digest.intervalSeconds | default 15 | int | toString | quote }}
+            - name: DOC_SVC_FOLDER_DIGEST_CONCURRENCY
+              value: {{ $digest.concurrency | default 4 | int | toString | quote }}
+            {{- with .Values.database }}
+            {{- if gt (.statementTimeoutMs | default 0 | int) 0 }}
+            - name: DOC_SVC_DB_STATEMENT_TIMEOUT_MS
+              value: {{ .statementTimeoutMs | int | toString | quote }}
+            {{- end }}
+            {{- if not (kindIs "invalid" .poolSize) }}
+            - name: DOC_SVC_DB_POOL_SIZE
+              value: {{ .poolSize | int | toString | quote }}
+            {{- end }}
+            {{- if not (kindIs "invalid" .maxOverflow) }}
+            - name: DOC_SVC_DB_MAX_OVERFLOW
+              value: {{ .maxOverflow | int | toString | quote }}
+            {{- end }}
+            {{- with .urlSecret }}
+            {{- if .name }}
+            - name: DOC_SVC_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key | default "url" }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.tracing.enabled }}
             - name: DOC_SVC_OTEL_ENABLED
               value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -60,7 +90,7 @@ spec:
             {{- with .Values.tracing.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- end }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-config
