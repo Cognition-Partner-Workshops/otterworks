@@ -86,9 +86,10 @@ DDL that Hibernate `ddl-auto=update` produces for the Java entities.
 | `common.PortalBrandingSettings` + `portal-settings.properties` (Commons Text `StringSubstitutor`) | `Configuration/PortalSettings.cs` + `Configuration/PropertiesFormat.cs` + `portal-settings.properties` |
 | `common.GlobalExceptionHandler` | `Common/PortalExceptions.cs` + `Common/PortalErrorMiddleware.cs` |
 | Spring Boot default error body / Jackson | `Common/ErrorResponses.cs`, `Common/SpringJson.cs`, `Common/JsonConverters.cs` |
+| Spring MVC request handling (case-sensitive paths, 406 on non-JSON `Accept`, any declared charset, trailing tokens ignored) | `Common/CaseSensitiveRoutingMiddleware.cs`, `Common/SpringJsonInputFormatter.cs`, `ReturnHttpNotAcceptable` in `Program.cs` |
 | `Instant.now()` persisted to PostgreSQL | `Common/PortalClock.cs` |
 | `announcements.Announcement` (JPA entity) | `Announcements/Models/Announcement.cs` (entity) + `Announcements/Models/AnnouncementResponse.cs` (DTO) + `Announcements/Data/AnnouncementsDbContext.cs` (mapping) + `Announcements/Data/AnnouncementsSchemaInitializer.cs` (DDL) |
-| `announcements.AnnouncementController` (incl. `CreateAnnouncementRequest`) | `Announcements/Controllers/AnnouncementsController.cs` + `Announcements/Models/CreateAnnouncementRequest.cs` + `Announcements/Validation/CreateAnnouncementRequestValidator.cs`; Spring binding semantics in `Announcements/Binding/{SpringRequestBoolean,SpringPathLong,JavaText}.cs` and `Announcements/Controllers/{CaseSensitiveRouteAttribute,MissingBodyWithoutContentTypeAttribute}.cs` |
+| `announcements.AnnouncementController` (incl. `CreateAnnouncementRequest`) | `Announcements/Controllers/AnnouncementsController.cs` + `Announcements/Models/CreateAnnouncementRequest.cs` + `Announcements/Validation/CreateAnnouncementRequestValidator.cs`; Spring binding semantics in `Announcements/Binding/{SpringRequestBoolean,SpringPathLong,JavaText}.cs` and `Announcements/Controllers/MissingBodyWithoutContentTypeAttribute.cs` |
 | `announcements.AnnouncementService` | `Announcements/Services/IAnnouncementService.cs` + `AnnouncementService.cs` |
 | `announcements.AnnouncementRepository` | `Announcements/Data/IAnnouncementRepository.cs` + `AnnouncementRepository.cs` |
 | `userpreferences.UserPreference` (entity) | `UserPreferences/Models/UserPreference.cs` + `UserPreferences/Data/UserPreferencesDbContext.cs` + `UserPreferences/Data/UserPreferencesSchemaInitializer.cs` |
@@ -111,7 +112,7 @@ DDL that Hibernate `ddl-auto=update` produces for the Java entities.
 
 ## Parity harness
 
-`parity/requests.json` is an ordered corpus of 79 HTTP requests. `parity/run_parity.py` sends it to both
+`parity/requests.json` is an ordered corpus of 95 HTTP requests. `parity/run_parity.py` sends it to both
 services and compares status, media type and JSON body, including key order and number formatting. Timestamps
 are compared by format only. The run writes `parity/REPORT.md`.
 

@@ -577,6 +577,132 @@
       "context": "feedback",
       "method": "GET",
       "path": "/api/feedback/average-rating?extra=1"
+    },
+    {
+      "id": "common-07",
+      "context": "common",
+      "method": "GET",
+      "path": "/HEALTH",
+      "note": "Spring path matching is case-sensitive -> 404"
+    },
+    {
+      "id": "common-08",
+      "context": "common",
+      "method": "GET",
+      "path": "/Actuator/health",
+      "note": "case-sensitive -> 404"
+    },
+    {
+      "id": "common-09",
+      "context": "common",
+      "method": "GET",
+      "path": "/health",
+      "accept": "application/xml",
+      "note": "no XML converter -> 406, empty body"
+    },
+    {
+      "id": "common-10",
+      "context": "common",
+      "method": "GET",
+      "path": "/health",
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "note": "browser Accept with */* still gets JSON"
+    },
+    {
+      "id": "ann-32",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "contentType": "application/json;charset=ISO-8859-1",
+      "bodyEncoding": "latin-1",
+      "body": "{\"title\": \"café\", \"body\": \"latin-1 body\", \"published\": true}",
+      "note": "ISO-8859-1 request body decoded"
+    },
+    {
+      "id": "ann-33",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "contentType": "application/json",
+      "body": "{\"title\": \"Trailing\", \"body\": \"tokens\"} xyz",
+      "note": "Jackson ignores trailing tokens"
+    },
+    {
+      "id": "ann-34",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "accept": "application/xml",
+      "note": "406, empty body"
+    },
+    {
+      "id": "ann-35",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "note": "state after ann-32/33"
+    },
+    {
+      "id": "ann-36",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/API/announcements",
+      "note": "case-sensitive -> 404"
+    },
+    {
+      "id": "pref-18",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/API/preferences/alice",
+      "note": "case-sensitive -> 404"
+    },
+    {
+      "id": "pref-19",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/trailing",
+      "contentType": "application/json",
+      "body": "{\"theme\": \"dark\", \"locale\": \"de-DE\", \"emailNotifications\": true}{\"theme\": \"ignored\"}",
+      "note": "second JSON value ignored"
+    },
+    {
+      "id": "pref-20",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/trailing",
+      "accept": "text/plain",
+      "note": "406, empty body"
+    },
+    {
+      "id": "fb-26",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/Feedback?userId=alice",
+      "note": "case-sensitive -> 404"
+    },
+    {
+      "id": "fb-27",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/Average-Rating",
+      "note": "case-sensitive -> 404"
+    },
+    {
+      "id": "fb-28",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "accept": "application/xml",
+      "contentType": "application/json",
+      "body": "{\"userId\": \"xml-client\", \"rating\": 5, \"message\": \"saved before 406\"}",
+      "note": "406 is decided after the handler ran, so the row is saved"
+    },
+    {
+      "id": "fb-29",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=xml-client",
+      "note": "proves fb-28 persisted on both"
     }
   ]
 }

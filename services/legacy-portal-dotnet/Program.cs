@@ -1,5 +1,8 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Options;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OtterWorks.LegacyPortal.Common;
@@ -30,6 +33,9 @@ builder.Services
     .AddControllers(options =>
     {
         options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+
+        // Spring answers 406 when the Accept header names no JSON type (browser */* headers are still ignored).
+        options.ReturnHttpNotAcceptable = true;
     })
     .AddJsonOptions(options => SpringJson.Configure(options.JsonSerializerOptions))
     .ConfigureApiBehaviorOptions(options =>
@@ -45,6 +51,13 @@ builder.Services
                 StatusCode = StatusCodes.Status400BadRequest,
             };
         };
+    });
+
+builder.Services.AddOptions<MvcOptions>()
+    .PostConfigure<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>((mvc, json) =>
+    {
+        var index = mvc.InputFormatters.ToList().FindIndex(f => f is SystemTextJsonInputFormatter);
+        mvc.InputFormatters[index] = new SpringJsonInputFormatter(json.Value.JsonSerializerOptions);
     });
 
 // 6. OpenAPI
@@ -80,7 +93,11 @@ var app = builder.Build();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<PortalErrorMiddleware>();
-app.UseStatusCodePages(context => ErrorResponses.WriteSpringErrorAsync(context.HttpContext, context.HttpContext.Response.StatusCode));
+app.UseStatusCodePages(context => context.HttpContext.Response.StatusCode == StatusCodes.Status406NotAcceptable
+    ? Task.CompletedTask
+    : ErrorResponses.WriteSpringErrorAsync(context.HttpContext, context.HttpContext.Response.StatusCode));
+app.UseRouting();
+app.UseMiddleware<CaseSensitiveRoutingMiddleware>();
 
 // 8. Metrics
 app.UseHttpMetrics();

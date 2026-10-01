@@ -8,7 +8,6 @@ namespace OtterWorks.LegacyPortal.Announcements.Controllers;
 
 [ApiController]
 [Route("api/announcements")]
-[CaseSensitiveRoute("/api/announcements")]
 [Produces("application/json")]
 public sealed class AnnouncementsController : ControllerBase
 {

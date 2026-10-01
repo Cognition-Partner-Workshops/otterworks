@@ -14,11 +14,11 @@ Either side can be a live base URL or a capture file written by a previous run (
   python3 run_parity.py --java http://localhost:18095 --capture java-reference.json
 """
 import argparse
+import http.client
 import json
 import re
 import sys
-import urllib.error
-import urllib.request
+import urllib.parse
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -43,18 +43,25 @@ def normalize(value):
 
 
 def send(base, case):
+    url = urllib.parse.urlsplit(base)
+    if url.scheme not in ("http", "https") or not url.hostname:
+        raise SystemExit(f"base URL must be http(s)://host[:port], got {base!r}")
+    conn_cls = http.client.HTTPSConnection if url.scheme == "https" else http.client.HTTPConnection
+    conn = conn_cls(url.hostname, url.port, timeout=30)
+    headers = {"Accept": case.get("accept", "application/json")}
     data = case.get("body")
-    req = urllib.request.Request(base.rstrip("/") + case["path"], method=case["method"])
-    req.add_header("Accept", "application/json")
+    payload = None
     if data is not None:
-        req.data = data.encode("utf-8")
-        req.add_header("Content-Type", case.get("contentType", "application/json"))
+        payload = data.encode(case.get("bodyEncoding", "utf-8"))
+        headers["Content-Type"] = case.get("contentType", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            status, headers, raw = resp.status, resp.headers, resp.read()
-    except urllib.error.HTTPError as err:
-        status, headers, raw = err.code, err.headers, err.read()
-    media = (headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        conn.request(case["method"], url.path.rstrip("/") + case["path"], body=payload, headers=headers)
+        resp = conn.getresponse()
+        status, raw = resp.status, resp.read()
+        content_type = resp.getheader("Content-Type") or ""
+    finally:
+        conn.close()
+    media = content_type.split(";")[0].strip().lower()
     text = raw.decode("utf-8", errors="replace")
     return {"status": status, "mediaType": media, "body": text}
 

@@ -65,7 +65,7 @@
       "response": {
         "status": 404,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:12.990+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/does-not-exist\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.074+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/does-not-exist\"}"
       }
     },
     {
@@ -101,7 +101,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}"
+        "body": "{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"}"
       }
     },
     {
@@ -115,7 +115,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"}"
       }
     },
     {
@@ -128,7 +128,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"}"
+        "body": "{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"}"
       }
     },
     {
@@ -140,7 +140,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"}]"
       }
     },
     {
@@ -151,7 +151,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"}]"
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"}]"
       }
     },
     {
@@ -162,7 +162,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"}"
       }
     },
     {
@@ -197,7 +197,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}"
+        "body": "{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"}"
       }
     },
     {
@@ -220,7 +220,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}]"
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"}]"
       }
     },
     {
@@ -231,7 +231,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+        "body": "[{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"}]"
       }
     },
     {
@@ -244,7 +244,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.319+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.352+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -257,7 +257,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.326+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.359+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -270,7 +270,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.330+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.365+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -283,7 +283,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.335+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.369+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -297,7 +297,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.338+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.372+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -311,7 +311,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.341+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.374+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -325,7 +325,7 @@
       "response": {
         "status": 415,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.344+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.377+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -337,7 +337,7 @@
       "response": {
         "status": 405,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.347+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements/1\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.380+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements/1\"}"
       }
     },
     {
@@ -350,7 +350,7 @@
       "response": {
         "status": 405,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.350+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.382+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -373,7 +373,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"}]"
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"}]"
       }
     },
     {
@@ -387,7 +387,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"}"
+        "body": "{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.391350Z\"}"
       }
     },
     {
@@ -400,7 +400,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.364305Z\"}"
+        "body": "{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.395314Z\"}"
       }
     },
     {
@@ -413,7 +413,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.369+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.400+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/announcements\"}"
       }
     },
     {
@@ -425,7 +425,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"}]"
+        "body": "[{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.391350Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"},{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"}]"
       }
     },
     {
@@ -448,7 +448,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.186989Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.223781Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.218952Z\"},{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:05:13.360548Z\"},{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:05:13.364305Z\"}]"
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"},{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.391350Z\"},{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.395314Z\"}]"
       }
     },
     {
@@ -522,7 +522,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.429+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.450+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
       }
     },
     {
@@ -535,7 +535,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.431+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.453+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
       }
     },
     {
@@ -548,7 +548,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.434+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.455+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
       }
     },
     {
@@ -562,7 +562,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.436+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.457+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/preferences/u2\"}"
       }
     },
     {
@@ -575,7 +575,7 @@
       "response": {
         "status": 415,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.439+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/preferences/u2\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.460+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/preferences/u2\"}"
       }
     },
     {
@@ -613,7 +613,7 @@
       "response": {
         "status": 405,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.452+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.468+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
       }
     },
     {
@@ -624,7 +624,7 @@
       "response": {
         "status": 405,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.454+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.470+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/preferences/u1\"}"
       }
     },
     {
@@ -636,7 +636,7 @@
       "response": {
         "status": 404,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.457+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/preferences/\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.472+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/preferences/\"}"
       }
     },
     {
@@ -695,7 +695,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:05:13.497472Z\"}"
+        "body": "{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:24:37.503054Z\"}"
       }
     },
     {
@@ -708,7 +708,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:05:13.507258Z\"}"
+        "body": "{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:24:37.516493Z\"}"
       }
     },
     {
@@ -721,7 +721,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:05:13.510576Z\"}"
+        "body": "{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:24:37.519799Z\"}"
       }
     },
     {
@@ -733,7 +733,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:05:13.507258Z\"},{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:05:13.497472Z\"}]"
+        "body": "[{\"id\":2,\"userId\":\"u1\",\"rating\":3,\"message\":\"ok\",\"createdAt\":\"2026-10-01T13:24:37.516493Z\"},{\"id\":1,\"userId\":\"u1\",\"rating\":5,\"message\":\"great\",\"createdAt\":\"2026-10-01T13:24:37.503054Z\"}]"
       }
     },
     {
@@ -744,7 +744,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:05:13.510576Z\"}]"
+        "body": "[{\"id\":3,\"userId\":\"u2\",\"rating\":1,\"message\":\"bad\",\"createdAt\":\"2026-10-01T13:24:37.519799Z\"}]"
       }
     },
     {
@@ -768,7 +768,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.529+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.536+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -781,7 +781,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.533+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.538+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -794,7 +794,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.538+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.541+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -807,7 +807,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.541+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.543+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -820,7 +820,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.544+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.546+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -833,7 +833,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.547+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.548+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -845,7 +845,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.550+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.550+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -871,7 +871,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:05:13.557738Z\"}"
+        "body": "{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:24:37.554646Z\"}"
       }
     },
     {
@@ -884,7 +884,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:05:13.561474Z\"}"
+        "body": "{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:24:37.557964Z\"}"
       }
     },
     {
@@ -898,7 +898,7 @@
       "response": {
         "status": 201,
         "mediaType": "application/json",
-        "body": "{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:05:13.564602Z\"}"
+        "body": "{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:24:37.561145Z\"}"
       }
     },
     {
@@ -921,7 +921,7 @@
       "response": {
         "status": 200,
         "mediaType": "application/json",
-        "body": "[{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:05:13.564602Z\"},{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:05:13.561474Z\"},{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:05:13.557738Z\"}]"
+        "body": "[{\"id\":6,\"userId\":\"u3\",\"rating\":4,\"message\":\"float rating\",\"createdAt\":\"2026-10-01T13:24:37.561145Z\"},{\"id\":5,\"userId\":\"u3\",\"rating\":2,\"message\":\"meh\",\"createdAt\":\"2026-10-01T13:24:37.557964Z\"},{\"id\":4,\"userId\":\"u3\",\"rating\":4,\"message\":\"string rating\",\"createdAt\":\"2026-10-01T13:24:37.554646Z\"}]"
       }
     },
     {
@@ -935,7 +935,7 @@
       "response": {
         "status": 400,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.576+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.570+00:00\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -948,7 +948,7 @@
       "response": {
         "status": 415,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.579+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.572+00:00\",\"status\":415,\"error\":\"Unsupported Media Type\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -959,7 +959,7 @@
       "response": {
         "status": 405,
         "mediaType": "application/json",
-        "body": "{\"timestamp\":\"2026-10-01T13:05:13.581+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/feedback\"}"
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.574+00:00\",\"status\":405,\"error\":\"Method Not Allowed\",\"path\":\"/api/feedback\"}"
       }
     },
     {
@@ -971,6 +971,212 @@
         "status": 200,
         "mediaType": "application/json",
         "body": "{\"averageRating\":3.1666666666666665}"
+      }
+    },
+    {
+      "id": "common-07",
+      "context": "common",
+      "method": "GET",
+      "path": "/HEALTH",
+      "note": "Spring path matching is case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.579+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/HEALTH\"}"
+      }
+    },
+    {
+      "id": "common-08",
+      "context": "common",
+      "method": "GET",
+      "path": "/Actuator/health",
+      "note": "case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.581+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/Actuator/health\"}"
+      }
+    },
+    {
+      "id": "common-09",
+      "context": "common",
+      "method": "GET",
+      "path": "/health",
+      "accept": "application/xml",
+      "note": "no XML converter -> 406, empty body",
+      "response": {
+        "status": 406,
+        "mediaType": "",
+        "body": ""
+      }
+    },
+    {
+      "id": "common-10",
+      "context": "common",
+      "method": "GET",
+      "path": "/health",
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "note": "browser Accept with */* still gets JSON",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"status\":\"UP\",\"service\":\"legacy-portal\",\"banner\":\"OtterWorks Portal (on-prem) - contact portal-support@otterworks.example\"}"
+      }
+    },
+    {
+      "id": "ann-32",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "contentType": "application/json;charset=ISO-8859-1",
+      "bodyEncoding": "latin-1",
+      "body": "{\"title\": \"caf\u00e9\", \"body\": \"latin-1 body\", \"published\": true}",
+      "note": "ISO-8859-1 request body decoded",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":6,\"title\":\"caf\u00e9\",\"body\":\"latin-1 body\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.588125Z\"}"
+      }
+    },
+    {
+      "id": "ann-33",
+      "context": "announcements",
+      "method": "POST",
+      "path": "/api/announcements",
+      "contentType": "application/json",
+      "body": "{\"title\": \"Trailing\", \"body\": \"tokens\"} xyz",
+      "note": "Jackson ignores trailing tokens",
+      "response": {
+        "status": 201,
+        "mediaType": "application/json",
+        "body": "{\"id\":7,\"title\":\"Trailing\",\"body\":\"tokens\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.591322Z\"}"
+      }
+    },
+    {
+      "id": "ann-34",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements",
+      "accept": "application/xml",
+      "note": "406, empty body",
+      "response": {
+        "status": 406,
+        "mediaType": "",
+        "body": ""
+      }
+    },
+    {
+      "id": "ann-35",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/api/announcements?publishedOnly=false",
+      "note": "state after ann-32/33",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":1,\"title\":\"Release\",\"body\":\"v1 is out\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.245219Z\"},{\"id\":3,\"title\":\"Second\",\"body\":\"another\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.278730Z\"},{\"id\":2,\"title\":\"Draft\",\"body\":\"coming soon\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.274612Z\"},{\"id\":4,\"title\":\"Coerced\",\"body\":\"string bool\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.391350Z\"},{\"id\":5,\"title\":\"Extra\",\"body\":\"unknown field ignored\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.395314Z\"},{\"id\":6,\"title\":\"caf\u00e9\",\"body\":\"latin-1 body\",\"published\":true,\"createdAt\":\"2026-10-01T13:24:37.588125Z\"},{\"id\":7,\"title\":\"Trailing\",\"body\":\"tokens\",\"published\":false,\"createdAt\":\"2026-10-01T13:24:37.591322Z\"}]"
+      }
+    },
+    {
+      "id": "ann-36",
+      "context": "announcements",
+      "method": "GET",
+      "path": "/API/announcements",
+      "note": "case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.601+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/API/announcements\"}"
+      }
+    },
+    {
+      "id": "pref-18",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/API/preferences/alice",
+      "note": "case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.604+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/API/preferences/alice\"}"
+      }
+    },
+    {
+      "id": "pref-19",
+      "context": "preferences",
+      "method": "PUT",
+      "path": "/api/preferences/trailing",
+      "contentType": "application/json",
+      "body": "{\"theme\": \"dark\", \"locale\": \"de-DE\", \"emailNotifications\": true}{\"theme\": \"ignored\"}",
+      "note": "second JSON value ignored",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "{\"userId\":\"trailing\",\"theme\":\"dark\",\"locale\":\"de-DE\",\"emailNotifications\":true}"
+      }
+    },
+    {
+      "id": "pref-20",
+      "context": "preferences",
+      "method": "GET",
+      "path": "/api/preferences/trailing",
+      "accept": "text/plain",
+      "note": "406, empty body",
+      "response": {
+        "status": 406,
+        "mediaType": "",
+        "body": ""
+      }
+    },
+    {
+      "id": "fb-26",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/Feedback?userId=alice",
+      "note": "case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.612+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/Feedback\"}"
+      }
+    },
+    {
+      "id": "fb-27",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback/Average-Rating",
+      "note": "case-sensitive -> 404",
+      "response": {
+        "status": 404,
+        "mediaType": "application/json",
+        "body": "{\"timestamp\":\"2026-10-01T13:24:37.614+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/feedback/Average-Rating\"}"
+      }
+    },
+    {
+      "id": "fb-28",
+      "context": "feedback",
+      "method": "POST",
+      "path": "/api/feedback",
+      "accept": "application/xml",
+      "contentType": "application/json",
+      "body": "{\"userId\": \"xml-client\", \"rating\": 5, \"message\": \"saved before 406\"}",
+      "note": "406 is decided after the handler ran, so the row is saved",
+      "response": {
+        "status": 406,
+        "mediaType": "",
+        "body": ""
+      }
+    },
+    {
+      "id": "fb-29",
+      "context": "feedback",
+      "method": "GET",
+      "path": "/api/feedback?userId=xml-client",
+      "note": "proves fb-28 persisted on both",
+      "response": {
+        "status": 200,
+        "mediaType": "application/json",
+        "body": "[{\"id\":7,\"userId\":\"xml-client\",\"rating\":5,\"message\":\"saved before 406\",\"createdAt\":\"2026-10-01T13:24:37.616616Z\"}]"
       }
     }
   ]

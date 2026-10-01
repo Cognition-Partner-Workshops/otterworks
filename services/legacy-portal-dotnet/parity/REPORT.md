@@ -3,7 +3,7 @@
 Java: `http://localhost:18095`  
 .NET: `http://localhost:18098`
 
-**79/79 requests identical** (status, media type, JSON body incl. key order and number formatting; timestamps compared by format only).
+**95/95 requests identical** (status, media type, JSON body incl. key order and number formatting; timestamps compared by format only).
 
 | Case | Request | Java status | .NET status | Result |
 |---|---|---|---|---|
@@ -86,3 +86,19 @@ Java: `http://localhost:18095`
 | fb-23 | `POST /api/feedback` | 415 | 415 | identical |
 | fb-24 | `DELETE /api/feedback` | 405 | 405 | identical |
 | fb-25 | `GET /api/feedback/average-rating?extra=1` | 200 | 200 | identical |
+| common-07 | `GET /HEALTH` | 404 | 404 | identical |
+| common-08 | `GET /Actuator/health` | 404 | 404 | identical |
+| common-09 | `GET /health` | 406 | 406 | identical |
+| common-10 | `GET /health` | 200 | 200 | identical |
+| ann-32 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-33 | `POST /api/announcements` | 201 | 201 | identical |
+| ann-34 | `GET /api/announcements` | 406 | 406 | identical |
+| ann-35 | `GET /api/announcements?publishedOnly=false` | 200 | 200 | identical |
+| ann-36 | `GET /API/announcements` | 404 | 404 | identical |
+| pref-18 | `GET /API/preferences/alice` | 404 | 404 | identical |
+| pref-19 | `PUT /api/preferences/trailing` | 200 | 200 | identical |
+| pref-20 | `GET /api/preferences/trailing` | 406 | 406 | identical |
+| fb-26 | `GET /api/Feedback?userId=alice` | 404 | 404 | identical |
+| fb-27 | `GET /api/feedback/Average-Rating` | 404 | 404 | identical |
+| fb-28 | `POST /api/feedback` | 406 | 406 | identical |
+| fb-29 | `GET /api/feedback?userId=xml-client` | 200 | 200 | identical |
