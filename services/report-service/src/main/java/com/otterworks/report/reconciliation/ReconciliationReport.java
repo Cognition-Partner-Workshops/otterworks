@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** JSON shape of one reconciliation run (CONTRACTS §10.2). */
-@JsonPropertyOrder({"run_id", "namespace", "generated_at", "status", "started_at", "finished_at",
+@JsonPropertyOrder({"run_id", "namespace", "source", "target", "generated_at", "status", "started_at", "finished_at",
     "tables", "failures", "class_totals", "sessions", "closes"})
 public class ReconciliationReport {
 
@@ -16,6 +16,12 @@ public class ReconciliationReport {
     public String runId;
     @JsonProperty("namespace")
     public String namespace;
+    /** Source estate driver ({@code db2} | {@code oracle}). */
+    @JsonProperty("source")
+    public String source;
+    /** Target store the run was read from ({@code postgresql} | {@code azuresql} | {@code snowflake}). */
+    @JsonProperty("target")
+    public String target;
     @JsonProperty("generated_at")
     public String generatedAt;
     @JsonProperty("status")
@@ -125,10 +131,14 @@ public class ReconciliationReport {
     }
 
     /** One entry of the run listing ({@code GET /api/reports/reconciliation}). */
-    @JsonPropertyOrder({"run_id", "status", "started_at", "finished_at", "closes"})
+    @JsonPropertyOrder({"run_id", "source", "target", "status", "started_at", "finished_at", "closes"})
     public static class RunSummary {
         @JsonProperty("run_id")
         public String runId;
+        @JsonProperty("source")
+        public String source;
+        @JsonProperty("target")
+        public String target;
         @JsonProperty("status")
         public String status;
         @JsonProperty("started_at")

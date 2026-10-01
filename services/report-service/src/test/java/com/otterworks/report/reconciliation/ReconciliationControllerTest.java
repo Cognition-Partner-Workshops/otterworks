@@ -41,8 +41,11 @@ public class ReconciliationControllerTest {
     private static ReconciliationRepository repositoryFor(ArchiveStoreType type) {
         ReconciliationRepository repository = mock(ReconciliationRepository.class);
         when(repository.storeType()).thenReturn(type);
-        when(repository.isAvailable()).thenReturn(type == ArchiveStoreType.AZURESQL);
+        when(repository.isAvailable()).thenReturn(type == ArchiveStoreType.AZURESQL
+                || type == ArchiveStoreType.SNOWFLAKE);
         when(repository.namespace()).thenReturn("d24-after");
+        when(repository.sourceProvider()).thenReturn("oracle");
+        when(repository.targetProvider()).thenReturn(type.wireName());
         return repository;
     }
 
@@ -110,6 +113,35 @@ public class ReconciliationControllerTest {
                 .andExpect(jsonPath("$.sessions[0].url").value("https://example.invalid/s/1"))
                 .andExpect(jsonPath("$.closes").value(true))
                 .andExpect(content().string(startsWith("{\"run_id\":\"r20260924150000\",\"namespace\":")));
+    }
+
+    @Test
+    public void emptySnowflakeLedgerAnswersLatestWithEmptyStateMetadata() throws Exception {
+        ReconciliationRepository repository = repositoryFor(ArchiveStoreType.SNOWFLAKE);
+        when(repository.listRuns()).thenReturn(Collections.<RunSummary>emptyList());
+        MockMvc mvc = mvcFor(repository);
+        mvc.perform(get("/api/v1/reports/reconciliation"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+        mvc.perform(get("/api/v1/reports/reconciliation/latest"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("no migration runs recorded yet"))
+                .andExpect(jsonPath("$.source").value("oracle"))
+                .andExpect(jsonPath("$.target").value("snowflake"))
+                .andExpect(jsonPath("$.runs").value(0));
+    }
+
+    @Test
+    public void snowflakeReportCarriesSourceAndTarget() throws Exception {
+        ReconciliationRepository repository = repositoryFor(ArchiveStoreType.SNOWFLAKE);
+        ReconciliationReport report = sample();
+        report.source = "oracle";
+        report.target = "snowflake";
+        when(repository.findRun("r1")).thenReturn(Optional.of(report));
+        mvcFor(repository).perform(get("/api/v1/reports/reconciliation/r1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.source").value("oracle"))
+                .andExpect(jsonPath("$.target").value("snowflake"));
     }
 
     @Test

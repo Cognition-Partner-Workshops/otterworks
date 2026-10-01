@@ -44,6 +44,10 @@ export interface SessionLink {
 export interface ReconciliationReport {
   run_id: string;
   namespace: string;
+  /** Source estate driver (db2 | oracle). */
+  source?: string;
+  /** Store the ledger and archive are read from (postgresql | azuresql | snowflake). */
+  target?: string;
   generated_at: string;
   status: string;
   started_at: string | null;
@@ -57,6 +61,8 @@ export interface ReconciliationReport {
 
 export interface RunSummary {
   run_id: string;
+  source?: string;
+  target?: string;
   status: string;
   started_at: string | null;
   finished_at: string | null;
@@ -120,6 +126,15 @@ export interface PeerConfig {
   peer_app_url: string;
   /** Same-origin path nginx proxies to the peer (e.g. /peer); empty when there is no peer. */
   peer_proxy_url?: string;
+}
+
+/** 404 body of /reconciliation/latest when the namespace has a ledger but no run yet. */
+export interface EmptyLedgerBody {
+  error: string;
+  namespace: string;
+  source: string;
+  target: string;
+  runs: 0;
 }
 
 export const MIG_ISSUES: readonly string[] = [

@@ -247,6 +247,7 @@ def make_manifest_tree(
     before: bool = False,
     azure_target: bool = False,
     snowflake_target: bool = False,
+    external_stage: bool = False,
     load_engine: str = "serial",
 ) -> Path:
     """Copy the repo manifest into <tmp>/<token>/migration with run_token=<token> and before/after overlays.
@@ -265,7 +266,8 @@ def make_manifest_tree(
         f"azure: {'true' if azure_target else 'false'}\npurge: {'true' if purge else 'false'}\n"
         f"execution:\n  load_engine: {load_engine}\n"
         + (AZURE_TARGET_OVERLAY if azure_target else "")
-        + (SNOWFLAKE_TARGET_OVERLAY if snowflake_target else ""),
+        + (SNOWFLAKE_TARGET_OVERLAY if snowflake_target else "")
+        + ("    external_stage: true\n" if snowflake_target and external_stage else ""),
         encoding="utf-8",
     )
     (d / "manifests" / f"{token}-before.yaml").write_text(

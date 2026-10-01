@@ -13,6 +13,7 @@ public enum ArchiveStoreType {
     DB2("db2"),
     POSTGRESQL("postgresql"),
     AZURESQL("azuresql"),
+    SNOWFLAKE("snowflake"),
     INVALID("invalid");
 
     private final String wireName;
@@ -25,9 +26,12 @@ public enum ArchiveStoreType {
         return wireName;
     }
 
-    /** Stores that carry the {@code mig.*} migration ledger alongside {@code arch.*}. */
+    /**
+     * Stores that carry the {@code mig.*} migration ledger alongside {@code arch.*}; for snowflake that is the
+     * {@code MIG.*} mirror and its {@code MIG.V_*} reporting views.
+     */
     public boolean hasMigrationLedger() {
-        return this == POSTGRESQL || this == AZURESQL;
+        return this == POSTGRESQL || this == AZURESQL || this == SNOWFLAKE;
     }
 
     public static ArchiveStoreType parse(String raw) {
@@ -43,6 +47,9 @@ public enum ArchiveStoreType {
         }
         if ("azuresql".equals(value)) {
             return AZURESQL;
+        }
+        if ("snowflake".equals(value)) {
+            return SNOWFLAKE;
         }
         if ("off".equals(value) || "none".equals(value)) {
             return OFF;

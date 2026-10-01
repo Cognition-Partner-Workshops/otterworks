@@ -103,8 +103,9 @@ def snowflake_hash_expression(hash_columns: Sequence[str], specs: list[ColumnSpe
     """Snowflake expression producing the same BINARY(32) as `business_hash` for one STG row.
 
     Snowflake CHAR(n) is VARCHAR(n) (no padding), so a CHAR key is RPADded to its declared width; NUMBER renders
-    with its full scale after the cast to NUMBER(38,8) (0.5 -> '0.50000000'), TIMESTAMP_NTZ(6) gets the
-    <col>_NANOS_TAIL NUMBER(6,0) appended, and HEX_ENCODE yields upper-case hex. SHA2_BINARY hashes the UTF-8 bytes.
+    with its full scale after the cast to NUMBER(38,8) (0.5 -> '0.50000000'), TIMESTAMP_NTZ(6) gets the six
+    <col>_NANOS_TAIL digits appended (LPAD: TO_VARCHAR of an INTEGER has no leading zeros), and HEX_ENCODE yields
+    upper-case hex. SHA2_BINARY hashes the UTF-8 bytes.
     """
     by_name = {s.name: s for s in specs}
     parts: list[str] = []
@@ -123,7 +124,10 @@ def snowflake_hash_expression(hash_columns: Sequence[str], specs: list[ColumnSpe
         elif spec.kind == "decimal":
             expr = f"COALESCE(TO_VARCHAR({col}::NUMBER(38,8)), '')"
         elif spec.kind == "timestamp12":
-            expr = f"COALESCE(TO_VARCHAR({col}, 'YYYY-MM-DD-HH24.MI.SS.FF6') || TO_VARCHAR(\"{name}_NANOS_TAIL\"), '')"
+            expr = (
+                f"COALESCE(TO_VARCHAR({col}, 'YYYY-MM-DD-HH24.MI.SS.FF6') || "
+                f"LPAD(TO_VARCHAR(\"{name}_NANOS_TAIL\"), 6, '0'), '')"
+            )
         elif spec.kind == "date8":
             expr = f"COALESCE(TO_VARCHAR({col}, 'YYYYMMDD'), '')"
         else:

@@ -5,7 +5,10 @@ control table (mig.runs, run_ledger, key_ranges, rejects, validation, class_tota
 Snowflake holds the bulk data: STG.<table> (this run's converted rows), ARCH.<table> (served archive) and a mirror
 of the verdicts (MIG.VALIDATION, MIG.RUNS, MIG.RUN_LEDGER) so promotion and the reporting views are set-based inside
 Snowflake. Staged rows travel as Parquet: one file per insert_staging batch is PUT to an internal stage and loaded
-with COPY INTO (FORCE so a restarted range reloads, PURGE so the stage never accumulates).
+with COPY INTO (FORCE so a restarted range reloads, PURGE so the stage never accumulates). With
+target.archive.external_stage the stage is an external S3 stage on the tenant's staging prefix (storage integration,
+infrastructure/terraform/snowflake): the batch is written once, straight to s3://<stage url><run_id>/<table>/, and
+Snowflake reads it from there through the integration's IAM role; nothing is PUT through the Snowflake client.
 
 Duplicate source keys (MIG-06) are a real constraint on PostgreSQL but not on Snowflake, so after each COPY the
 batch is checked against rows of the same namespace loaded by another run; the losers are removed again and
@@ -15,6 +18,7 @@ for PostgreSQL. Every Snowflake error surfaces as TargetError(sqlstate, errno, t
 
 from __future__ import annotations
 
+import json
 import re
 import time
 import uuid
@@ -95,6 +99,8 @@ class SnowflakeArchive:
         database: str,
         *,
         stage: str = DEFAULT_STAGE,
+        external_stage: bool = False,
+        s3_region: str | None = None,
         connect_timeout: int = 60,
     ):
         self.account, self.user, self.token = account, user, token
@@ -102,9 +108,13 @@ class SnowflakeArchive:
         self.database = _ident(database)
         schema, _, name = stage.rpartition(".")
         self.stage = f"{_ident(schema or 'STG')}.{_ident(name)}"
+        self.external_stage = external_stage
+        self.s3_region = s3_region
         self.connect_timeout = connect_timeout
         self._sf: ModuleType | None = None
         self._conn: object | None = None
+        self._s3: object | None = None
+        self._stage_location: tuple[str, str] | None = None
         self.shapes: dict[str, _Shape] = {}
 
     # --- connection -------------------------------------------------------------------------------------------------
@@ -346,6 +356,51 @@ class SnowflakeArchive:
             "AUTO_COMPRESS=FALSE OVERWRITE=TRUE PARALLEL=4"
         )
 
+    @property
+    def s3(self) -> object:
+        if self._s3 is None:
+            try:
+                import boto3
+            except ImportError as e:  # pragma: no cover - exercised only without the s3 extra
+                raise ConfigError("external_stage needs boto3; pip install 'ldm[s3]'") from e
+            self._s3 = boto3.client("s3", region_name=self.s3_region or None)
+        return self._s3
+
+    def external_location(self) -> tuple[str, str]:
+        """(bucket, key prefix) behind the external stage, from DESC STAGE's STAGE_LOCATION.URL (read once). The stage
+        definition is the single source of truth for where batches go, so the job and the integration cannot drift."""
+        if self._stage_location is None:
+            url = ""
+            for r in self._rows(f"DESC STAGE {self.database}.{self.stage}"):
+                if str(r[0]).upper() == "STAGE_LOCATION" and str(r[1]).upper() == "URL":
+                    raw = str(r[3] or "")
+                    urls = json.loads(raw) if raw.startswith("[") else [raw]
+                    url = str(urls[0]) if urls else ""
+            if not url.startswith("s3://"):
+                raise ConfigError(
+                    f"target.archive.external_stage is set but {self.database}.{self.stage} is not an external S3 "
+                    f"stage (url {url!r}); apply infrastructure/terraform/snowflake first"
+                )
+            bucket, _, prefix = url.removeprefix("s3://").partition("/")
+            if prefix and not prefix.endswith("/"):
+                prefix += "/"
+            self._stage_location = (bucket, prefix)
+        return self._stage_location
+
+    def _stage_file(self, local: Path, stage_dir: str, file_name: str) -> None:
+        if not self.external_stage:
+            self._put(local, stage_dir)
+            return
+        bucket, prefix = self.external_location()
+        self.s3.upload_file(str(local), bucket, f"{prefix}{stage_dir}/{file_name}")  # type: ignore[attr-defined]
+
+    def _discard_file(self, stage_dir: str, file_name: str) -> None:
+        """A rejected batch is not purged by COPY INTO; drop it so bisection leaves no stray batches in S3."""
+        if not self.external_stage:
+            return
+        bucket, prefix = self.external_location()
+        self.s3.delete_object(Bucket=bucket, Key=f"{prefix}{stage_dir}/{file_name}")  # type: ignore[attr-defined]
+
     def _copy(self, schema: str, table: str, stage_dir: str, file_name: str) -> int:
         rows = self._rows(
             f"COPY INTO {self._q(schema, table)} FROM '@{self.database}.{self.stage}/{stage_dir}/' "
@@ -361,15 +416,20 @@ class SnowflakeArchive:
         return loaded
 
     def _copy_rows(self, run_id: str, namespace: str, table: str, shape: _Shape, rows: Sequence[StagedRow]) -> int:
-        """Parquet -> PUT -> COPY INTO STG.<table> for one batch. Returns the BATCH_ID stamped on the rows."""
+        """Parquet -> PUT (internal stage) or S3 upload (external stage) -> COPY INTO STG.<table> for one batch, from
+        @<stage>/<run_id>/<table>/. Returns the BATCH_ID stamped on the rows."""
         batch_id = int(time.time_ns() // 1000) ^ (uuid.uuid4().int & 0xFFFF)
         stage_dir = f"{run_id}/{table}"
         file_name = f"{namespace}-{batch_id}.parquet"
         with TemporaryDirectory(prefix="ldm-sf-") as tmp:
             local = Path(tmp) / file_name
             self._write_parquet(local, run_id, namespace, shape, rows, batch_id)
-            self._put(local, stage_dir)
-        loaded = self._copy("STG", table, stage_dir, file_name)
+            self._stage_file(local, stage_dir, file_name)
+        try:
+            loaded = self._copy("STG", table, stage_dir, file_name)
+        except TargetError:
+            self._discard_file(stage_dir, file_name)
+            raise
         if loaded != len(rows):
             raise TargetError(None, None, f"COPY INTO STG.{table} loaded {loaded} of {len(rows)} rows")
         return batch_id

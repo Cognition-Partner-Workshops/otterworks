@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from decimal import Decimal
 from pathlib import Path
 
@@ -13,6 +15,7 @@ from ldm.config import load_manifest, validate_run_id, validate_token
 from ldm.context import build_table_specs
 from ldm.convert import Timestamp12, convert_record, encode_record
 from ldm.copybook import parse_copybook
+from ldm.drivers.postgresql import split_timestamp12
 from ldm.errors import ConfigError
 from ldm.hashing import (
     business_hash,
@@ -330,7 +333,7 @@ def test_snowflake_hash_expression_shape(tmp_path: Path) -> None:
     assert "COALESCE(TO_VARCHAR(\"VERSION_NO\"), '')" in sql
     assert "COALESCE(TO_VARCHAR(\"STORAGE_CHARGE\"::NUMBER(38,8)), '')" in sql
     assert "TO_VARCHAR(\"LAST_ACCESS_TS\", 'YYYY-MM-DD-HH24.MI.SS.FF6')" in sql
-    assert "|| TO_VARCHAR(\"LAST_ACCESS_TS_NANOS_TAIL\"), '')" in sql
+    assert "LPAD(TO_VARCHAR(\"LAST_ACCESS_TS_NANOS_TAIL\"), 6, '0')" in sql
     assert "TO_VARCHAR(\"DISPOSITION_DT\", 'YYYYMMDD')" in sql
     assert sql.count("|| '|' ||") == len(ts.config.hash_columns) - 1
     assert "CASE" not in sql
@@ -351,6 +354,84 @@ def test_snowflake_hash_expression_repads_char_keys_and_matches_postgresql_shape
     )
     pg = pg_hash_expression(ts.config.hash_columns, ts.columns)
     assert pg.count("|| '|' ||") == sql.count("|| '|' ||") == len(ts.config.hash_columns) - 1
+
+
+_SF_TOKEN = re.compile(r"\s*(\"[^\"]*\"|'[^']*'|\|\||\d+|[A-Z0-9_]+|[(),])")
+
+
+def _eval_snowflake(sql: str, row: dict[str, object]) -> object:
+    """Evaluates the function subset `snowflake_hash_expression` emits with Snowflake's documented semantics
+    (TO_VARCHAR(<NUMBER>) has no fixed width: TO_VARCHAR(78000::NUMBER(6,0)) = '78000')."""
+    toks = _SF_TOKEN.findall(sql)
+    pos = 0
+
+    def take(expected: str | None = None) -> str:
+        nonlocal pos
+        tok = toks[pos]
+        assert expected is None or tok == expected, (tok, expected, sql)
+        pos += 1
+        return tok
+
+    def term() -> object:
+        tok = take()
+        if tok.startswith('"'):
+            return row[tok[1:-1]]
+        if tok.startswith("'"):
+            return tok[1:-1]
+        if tok.isdigit():
+            return int(tok)
+        take("(")
+        args = [concat()]
+        while toks[pos] == ",":
+            take(",")
+            args.append(concat())
+        take(")")
+        if tok == "SHA2_BINARY":
+            assert args[1] == 256
+            return hashlib.sha256(str(args[0]).encode("utf-8")).digest()
+        if tok == "COALESCE":
+            return next(a for a in args if a is not None)
+        if tok == "LPAD":
+            return str(args[0]).rjust(int(args[1]), str(args[2]))
+        if tok == "TO_VARCHAR" and len(args) == 1:
+            return None if args[0] is None else str(args[0])
+        if tok == "TO_VARCHAR" and args[1] == "YYYY-MM-DD-HH24.MI.SS.FF6":
+            return None if args[0] is None else args[0].strftime("%Y-%m-%d-%H.%M.%S.%f")  # type: ignore[attr-defined]
+        raise AssertionError(f"evaluator does not model {tok}{tuple(args)}")
+
+    def concat() -> object:
+        out = term()
+        while pos < len(toks) and toks[pos] == "||":
+            take("||")
+            right = term()
+            out = None if out is None or right is None else f"{out}{right}"
+        return out
+
+    result = concat()
+    assert pos == len(toks), sql
+    return result
+
+
+@pytest.mark.parametrize(
+    "ts_text",
+    [
+        "2016-03-01-10.15.30.123456789000",  # Oracle TIMESTAMP(9): tail 789000
+        "2016-03-01-10.15.30.123456078000",  # tail 078000: fraction digit 7 is zero (one row in ten)
+        "2010-01-01-00.00.00.000000000000",  # tail 000000 (RETNPLCY.EFFECTIVE_TS, planted MIG-04/05/07 rows)
+        "2016-03-01-10.15.30.123456000012",
+    ],
+)
+def test_snowflake_hash_of_timestamp_matches_source_hash_for_every_nanos_tail(tmp_path: Path, ts_text: str) -> None:
+    """TIMESTAMP_NTZ(6) + the INTEGER <col>_NANOS_TAIL as STG stores them, hashed by the Snowflake expression, must
+    equal the source hash of the TIMESTAMP(12) text: the tail is fraction digits 7-12, always six characters."""
+    base = make_manifest_tree(tmp_path, "zz8", snowflake_target=True)
+    ts = build_table_specs(load_manifest(base, "zz8-after"))["DOCARCH"]
+    cols = ["ARCH_KEY", "LAST_ACCESS_TS"]
+    value = Timestamp12.parse(ts_text)
+    dt, tail = split_timestamp12(value)
+    stg_row = {"ARCH_KEY": "DA00000000000001", "LAST_ACCESS_TS": dt, "LAST_ACCESS_TS_NANOS_TAIL": tail}
+    expected = source_hash({"ARCH_KEY": "DA00000000000001", "LAST_ACCESS_TS": value}, cols, ts.columns)
+    assert _eval_snowflake(snowflake_hash_expression(cols, ts.columns), stg_row) == expected
 
 
 # --- CLI ------------------------------------------------------------------------------------------------------------

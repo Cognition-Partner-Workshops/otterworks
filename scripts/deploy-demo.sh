@@ -19,6 +19,9 @@
 #   5. wiring                  - the tenant's existing RDS database + the token's
 #                                S3 prefix -> Secrets, ARCHIVE_STORE=postgresql,
 #                                PEER_APP_URL=<before host>, `ldm init` Job.
+#      With target.provider snowflake (s29-after, s30-after) the same PostgreSQL database stays the
+#      control plane and the archive is Snowflake: ARCHIVE_STORE=snowflake + SNOWFLAKE_* coordinates,
+#      Secret ldm-snowflake (SNOWFLAKE_PAT) for the Job and report-service/audit-service.
 # When the overlay says azure: true (optional rehearsal, r2-after):
 #   5. azure Terraform         - per-namespace state key, generated var file
 #   6. wiring                  - Azure outputs -> Secrets, ARCHIVE_STORE=azuresql, ...
@@ -43,7 +46,9 @@ Usage: $0 [up] <token> [--ttl 72h] [--image-tag TAG] [--host-suffix ${DEMO_HOST_
   --profile     deploy-tenant.sh profile (default full)
   --dry-run     print mutating commands, touch nothing (same as DRY_RUN=1)
 Env: DB_PASSWORD (RDS master, for deploy-tenant.sh and the PostgreSQL target), AWS creds; only for
-     azure: true overlays also AZURE_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID and TFSTATE_AZ_*.
+     azure: true overlays also AZURE_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID and TFSTATE_AZ_*;
+     target.provider snowflake overlays SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER (+ SNOWFLAKE_PAT when
+     Secret ldm-snowflake does not exist yet; SNOWFLAKE_ROLE/DATABASE/WAREHOUSE override the defaults).
 EOF
 }
 
@@ -93,6 +98,12 @@ if [ "${WANT_AZURE}" = "true" ]; then
     [ "${DRY_RUN}" = "1" ] || die "AZURE_CLIENT_ID/AZURE_CLIENT_SECRET/AZURE_TENANT_ID/AZURE_SUBSCRIPTION_ID must be set for an azure-enabled token" 2
     dwarn "Azure credentials not set (continuing: dry-run)"
   fi
+fi
+if [ "${WANT_MIGRATE}" = "true" ] && [ "$(token_target_provider "${TOKEN}")" = "snowflake" ] &&
+   { [ -z "${SNOWFLAKE_ACCOUNT:-}" ] || [ -z "${SNOWFLAKE_USER:-}" ]; }; then
+  [ "${DRY_RUN}" = "1" ] || die "SNOWFLAKE_ACCOUNT/SNOWFLAKE_USER must be set for a target.provider snowflake token" 2
+  dwarn "Snowflake account/user not set (continuing: dry-run)"
+  SNOWFLAKE_ACCOUNT="${SNOWFLAKE_ACCOUNT:-<snowflake account>}"; SNOWFLAKE_USER="${SNOWFLAKE_USER:-<snowflake user>}"
 fi
 if [ "${DRY_RUN}" != "1" ]; then
   ensure_db_password
@@ -271,8 +282,11 @@ stage_end "${wiring_rc}"
 # otterworks_<token> database that deploy-tenant.sh already provisioned on the shared RDS
 # instance. Staging is the token's prefix of the demo bucket; the Job reaches it through
 # the IRSA role from demo-aws. Nothing here touches Azure.
+TARGET_PROVIDER="$(token_target_provider "${TOKEN}")"
+APP_ARCHIVE_STORE=postgresql
+[ "${TARGET_PROVIDER}" = "snowflake" ] && APP_ARCHIVE_STORE=snowflake
 if [ "${WANT_MIGRATE}" = "true" ] && [ "${WANT_AZURE}" != "true" ]; then
-  stage_begin "wiring (postgresql + s3)"
+  stage_begin "wiring (postgresql + s3, archive ${APP_ARCHIVE_STORE})"
   load_infra_outputs
   PG_DATABASE="$(tenant_db_name "${TOKEN}")"
   if [ "${DRY_RUN}" = "1" ]; then
@@ -283,9 +297,15 @@ if [ "${WANT_MIGRATE}" = "true" ] && [ "${WANT_AZURE}" != "true" ]; then
   ensure_ldm_job_image "${TOKEN}"
   JOB_IMAGE="$(ldm_job_image "${TOKEN}")"
   {
-    printf 'ARCHIVE_STORE=postgresql\nLDM_NAMESPACE=%s\nLDM_RUN_TOKEN=%s\nLDM_HOST=eks\n' "${TOKEN}" "${RUN}"
+    printf 'ARCHIVE_STORE=%s\nLDM_NAMESPACE=%s\nLDM_RUN_TOKEN=%s\nLDM_HOST=eks\nLDM_SOURCE_PROVIDER=%s\n' \
+      "${APP_ARCHIVE_STORE}" "${TOKEN}" "${RUN}" "${SOURCE_DRIVER}"
     printf '%s\n' "${SOURCE_ENV}"
     printf 'LDM_S3_BUCKET=%s\nLDM_S3_PREFIX=%s/\n' "${DEMO_BUCKET}" "${TOKEN}"
+    if [ "${APP_ARCHIVE_STORE}" = "snowflake" ]; then
+      printf 'SNOWFLAKE_ACCOUNT=%s\nSNOWFLAKE_USER=%s\nSNOWFLAKE_ROLE=%s\nSNOWFLAKE_WAREHOUSE=%s\nSNOWFLAKE_DATABASE=%s\nSNOWFLAKE_STAGE=%s\n' \
+        "${SNOWFLAKE_ACCOUNT}" "${SNOWFLAKE_USER}" "$(snowflake_role "${TOKEN}")" "${SNOWFLAKE_WAREHOUSE:-LDM_WH}" \
+        "$(snowflake_database "${TOKEN}")" "${SNOWFLAKE_STAGE:-STG.LDM_STAGE}"
+    fi
     printf 'PG_HOST=%s\nPG_PORT=%s\nPG_DATABASE=%s\nPG_USER=%s\nPG_PASSWORD=%s\nPG_SSLMODE=require\n' \
       "${RDS_HOST}" "${RDS_PORT}" "${PG_DATABASE}" "${DB_USER}" "${DB_PASSWORD}"
     printf 'S3_STAGING_BUCKET=%s\nAWS_REGION=%s\nLDM_JOB_ROLE_ARN=%s\n' "${DEMO_BUCKET}" "${AWS_REGION}" "${JOB_ROLE_ARN}"
@@ -294,6 +314,10 @@ if [ "${WANT_MIGRATE}" = "true" ] && [ "${WANT_AZURE}" != "true" ]; then
   # Secret `ldm-postgres` consumed by the migration-job chart (§13.2).
   printf 'PG_USER=%s\nPG_PASSWORD=%s\n' "${DB_USER}" "${DB_PASSWORD}" \
     | apply_secret_from_stdin "${NS}" "${LDM_POSTGRES_SECRET}" "${TOKEN}"
+  if [ "${APP_ARCHIVE_STORE}" = "snowflake" ]; then
+    ensure_snowflake_secret "${NS}" "${TOKEN}"
+    wire_snowflake_token "${NS}" || wiring_rc=$?
+  fi
   wire_archive_store "${NS}" || wiring_rc=$?
   trust_peer_tokens "${TOKEN}" || wiring_rc=$?
   export LDM_JOB_IMAGE="${JOB_IMAGE}"
@@ -396,14 +420,15 @@ dlog "namespace   : ${NS}   (expires ${EXPIRES})"
 dlog "web         : https://${WEB_HOST}"
 dlog "api         : https://${API_HOST}"
 ARCHIVE_STORE_KIND="${APP_SOURCE_STORE}"
-[ "${WANT_MIGRATE}" = "true" ] && ARCHIVE_STORE_KIND=postgresql
+[ "${WANT_MIGRATE}" = "true" ] && ARCHIVE_STORE_KIND="${APP_ARCHIVE_STORE}"
 [ "${WANT_AZURE}" = "true" ] && ARCHIVE_STORE_KIND=azuresql
 if [ "${SOURCE_DRIVER}" = "oracle" ]; then
   dlog "oracle      : ${ORACLE_RELEASE}.${NS}.svc.cluster.local:${ORACLE_PORT}/${ORACLE_SERVICE}  (ARCHIVE_STORE=${ARCHIVE_STORE_KIND})"
 else
   dlog "db2         : ${DB2_RELEASE}.${NS}.svc.cluster.local:50000/${DB2_DB}  (ARCHIVE_STORE=${ARCHIVE_STORE_KIND})"
 fi
-[ "${ARCHIVE_STORE_KIND}" = "postgresql" ] && dlog "postgresql  : ${RDS_HOST:-?}:${RDS_PORT:-5432}/${PG_DATABASE:-?}  s3://${DEMO_BUCKET}/${TOKEN}/  (Spark local[*] in the Job)"
+[ "${ARCHIVE_STORE_KIND}" = "snowflake" ] && dlog "snowflake   : ${SNOWFLAKE_ACCOUNT:-?}/$(snowflake_database "${TOKEN}") role $(snowflake_role "${TOKEN}")  (control plane below)"
+case "${ARCHIVE_STORE_KIND}" in postgresql|snowflake) dlog "postgresql  : ${RDS_HOST:-?}:${RDS_PORT:-5432}/${PG_DATABASE:-?}  s3://${DEMO_BUCKET}/${TOKEN}/  (Spark local[*] in the Job)" ;; esac
 [ "${WANT_AZURE}" = "true" ] && dlog "azure       : $(azure_rg "${TOKEN}") / ${AZSQL_SERVER:-?} / ${AZSQL_DATABASE:-?}   peer=https://${BEFORE_HOST}"
 [ "${WANT_AZURE}" = "true" ] && dlog "next        : make demo-migrate NS=${TOKEN} RUN_ID=$(default_run_id)"
 print_timing_table

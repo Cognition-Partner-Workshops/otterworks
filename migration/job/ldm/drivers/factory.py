@@ -71,6 +71,7 @@ def target_spec(loaded: LoadedManifest, env: Mapping[str, str]) -> TargetSpec:
             dict(env), [ae.account, ae.user, ae.token, ae.role, ae.warehouse, ae.database], "target snowflake archive"
         )
         stage = env.get(ae.stage) if ae.stage else None
+        region_var = loaded.manifest.staging.connection_env.region
         return TargetSpec(
             "snowflake",
             {
@@ -83,6 +84,8 @@ def target_spec(loaded: LoadedManifest, env: Mapping[str, str]) -> TargetSpec:
                     "warehouse": env[ae.warehouse],
                     "database": env[ae.database],
                     "stage": stage or "STG.LDM_STAGE",
+                    "external_stage": tgt.archive.external_stage,
+                    "s3_region": (env.get(region_var) if region_var else None) or env.get("AWS_REGION") or None,
                 },
             },
         )

@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+import java.util.Locale;
 
 /**
  * Resolves the {@link ArchiveStore} selected by {@code ARCHIVE_STORE} at startup.
@@ -23,6 +24,8 @@ public class ArchiveStoreRegistry {
     private final String namespace;
     private final ArchiveStore store;
     private final JdbcTemplate migrationJdbc;
+    private final JdbcTemplate controlPlaneJdbc;
+    private final String sourceProvider;
     private final String configurationError;
 
     public ArchiveStoreRegistry(ArchiveProperties properties) {
@@ -32,8 +35,11 @@ public class ArchiveStoreRegistry {
     ArchiveStoreRegistry(ArchiveProperties properties, DataSourceFactory dataSources) {
         this.type = properties.storeType();
         this.namespace = properties.getNamespace();
+        this.sourceProvider = ArchiveProperties.isBlank(properties.getSourceProvider())
+                ? "db2" : properties.getSourceProvider().trim().toLowerCase(Locale.ROOT);
         ArchiveStore resolved = null;
         JdbcTemplate ledger = null;
+        JdbcTemplate control = null;
         String error = null;
         switch (type) {
             case OFF:
@@ -48,6 +54,7 @@ public class ArchiveStoreRegistry {
             case POSTGRESQL:
                 if (properties.getPg().isComplete()) {
                     ledger = new JdbcTemplate(dataSources.pg(properties.getPg()));
+                    control = ledger;
                     resolved = new PostgresArchiveStore(ledger);
                 } else {
                     error = "ARCHIVE_STORE=postgresql but PG_HOST/PG_DATABASE/PG_USER/PG_PASSWORD are incomplete";
@@ -56,19 +63,33 @@ public class ArchiveStoreRegistry {
             case AZURESQL:
                 if (properties.getAzsql().isComplete()) {
                     ledger = new JdbcTemplate(dataSources.azsql(properties.getAzsql()));
+                    control = ledger;
                     resolved = new AzureSqlArchiveStore(ledger);
                 } else {
                     error = "ARCHIVE_STORE=azuresql but AZSQL_SERVER/AZSQL_DATABASE/AZSQL_USER/AZSQL_PASSWORD "
                             + "are incomplete";
                 }
                 break;
+            case SNOWFLAKE:
+                if (properties.getSnowflake().isComplete()) {
+                    ledger = new JdbcTemplate(dataSources.snowflake(properties.getSnowflake()));
+                    resolved = new SnowflakeArchiveStore(ledger, namespace);
+                    if (properties.getPg().isComplete()) {
+                        control = new JdbcTemplate(dataSources.pg(properties.getPg()));
+                    }
+                } else {
+                    error = "ARCHIVE_STORE=snowflake but SNOWFLAKE_ACCOUNT/SNOWFLAKE_USER/SNOWFLAKE_PAT/"
+                            + "SNOWFLAKE_DATABASE are incomplete";
+                }
+                break;
             default:
                 error = "ARCHIVE_STORE has an unsupported value '" + properties.getStore()
-                        + "' (expected db2, postgresql or azuresql)";
+                        + "' (expected db2, postgresql, azuresql or snowflake)";
                 break;
         }
         this.store = resolved;
         this.migrationJdbc = ledger;
+        this.controlPlaneJdbc = control;
         this.configurationError = error;
         if (error != null) {
             logger.error("archive store misconfigured: {}", error);
@@ -85,6 +106,11 @@ public class ArchiveStoreRegistry {
         return namespace;
     }
 
+    /** Source estate driver of the migrated namespace ({@code LDM_SOURCE_PROVIDER}, default db2). */
+    public String sourceProvider() {
+        return sourceProvider;
+    }
+
     public boolean isEnabled() {
         return type != ArchiveStoreType.OFF;
     }
@@ -97,9 +123,17 @@ public class ArchiveStoreRegistry {
         return configurationError;
     }
 
-    /** JDBC access to the {@code mig.*} ledger; present when the store is postgresql or azuresql. */
+    /** JDBC access to the {@code mig.*} ledger; present when the store is postgresql, azuresql or snowflake. */
     public JdbcTemplate migrationJdbc() {
         return migrationJdbc;
+    }
+
+    /**
+     * JDBC access to the transactional control plane ({@code mig.class_totals}, {@code mig.run_sessions}): the
+     * ledger store itself, or for snowflake the tenant's PostgreSQL database when {@code PG_*} is set.
+     */
+    public JdbcTemplate controlPlaneJdbc() {
+        return controlPlaneJdbc;
     }
 
     /** The selected store, or the exception that the endpoints translate into 404 / 503. */
@@ -142,6 +176,14 @@ public class ArchiveStoreRegistry {
                 ds.setUsername(azsql.getUser());
                 ds.setPassword(azsql.getPassword());
             }
+            return ds;
+        }
+
+        public DataSource snowflake(ArchiveProperties.Snowflake snowflake) {
+            DriverManagerDataSource ds = new DriverManagerDataSource();
+            ds.setDriverClassName("net.snowflake.client.jdbc.SnowflakeDriver");
+            ds.setUrl(snowflake.jdbcUrl());
+            ds.setConnectionProperties(snowflake.connectionProperties());
             return ds;
         }
     }

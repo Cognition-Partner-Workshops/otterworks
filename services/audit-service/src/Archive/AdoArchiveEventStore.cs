@@ -32,11 +32,7 @@ public abstract class AdoArchiveEventStore : IArchiveEventStore
             await connection.OpenAsync(cancellationToken);
             await using var command = connection.CreateCommand();
             command.CommandText = EventsSql; // nosemgrep: csharp.lang.security.sqli.csharp-sqli.csharp-sqli -- constant SQL, docId bound as @docId
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = "@docId";
-            parameter.DbType = DbType.String;
-            parameter.Value = docId;
-            command.Parameters.Add(parameter);
+            BindDocId(command, docId);
 
             var rows = new List<ArchiveEventRow>();
             var anyVersion = false;
@@ -108,16 +104,24 @@ public abstract class AdoArchiveEventStore : IArchiveEventStore
         }
     }
 
-    private static DbCommand CreateDocCommand(DbConnection connection, string sql, string docId)
+    private DbCommand CreateDocCommand(DbConnection connection, string sql, string docId)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql; // nosemgrep: csharp.lang.security.sqli.csharp-sqli.csharp-sqli -- callers pass const SQL, docId bound as @docId
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = "@docId";
-        parameter.DbType = DbType.String;
-        parameter.Value = docId;
-        command.Parameters.Add(parameter);
+        BindDocId(command, docId);
         return command;
+    }
+
+    /// <summary>Binds the requested document to <see cref="EventsSql"/> / <see cref="VersionsSql"/> (one @docId).</summary>
+    protected virtual void BindDocId(DbCommand command, string docId) => AddParameter(command, "@docId", docId);
+
+    protected static void AddParameter(DbCommand command, string name, string value)
+    {
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = name;
+        parameter.DbType = DbType.String;
+        parameter.Value = value;
+        command.Parameters.Add(parameter);
     }
 
     public async Task PingAsync(CancellationToken cancellationToken)

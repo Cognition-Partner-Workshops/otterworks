@@ -113,4 +113,61 @@ public class ArchiveStoreRegistryTest {
         assertEquals("db2", registry.store().storeName());
         assertEquals("jdbc:db2://db2-0.db2:50000/D24BEF", props.getDb2().jdbcUrl());
     }
+
+    private static ArchiveProperties snowflakeProps() {
+        ArchiveProperties props = new ArchiveProperties();
+        props.setStore("snowflake");
+        props.setNamespace("x1-after");
+        props.setSourceProvider("Oracle");
+        props.getSnowflake().setAccount("TOJGONB-SF03144");
+        props.getSnowflake().setUser("svc_reader");
+        props.getSnowflake().setToken("pat-value");
+        props.getSnowflake().setRole("LDM_JOB_X1_AFTER");
+        props.getSnowflake().setWarehouse("LDM_WH");
+        props.getSnowflake().setDatabase("OTTERWORKS_LDM_X1_AFTER");
+        return props;
+    }
+
+    @Test
+    public void completeSnowflakeSettingsBuildTheStoreAndLedgerWithoutConnecting() {
+        ArchiveStoreRegistry registry = new ArchiveStoreRegistry(snowflakeProps());
+        assertEquals(ArchiveStoreType.SNOWFLAKE, registry.type());
+        assertTrue(registry.isConfigured());
+        assertEquals("snowflake", registry.store().storeName());
+        assertTrue(registry.migrationJdbc() != null);
+        assertNull(registry.controlPlaneJdbc());
+        assertEquals("oracle", registry.sourceProvider());
+        assertTrue(ArchiveStoreType.SNOWFLAKE.hasMigrationLedger());
+        assertEquals(ArchiveStoreType.SNOWFLAKE, ArchiveStoreType.parse(" Snowflake "));
+    }
+
+    @Test
+    public void snowflakeReadsTheControlPlaneFromPostgresWhenConfigured() {
+        ArchiveProperties props = snowflakeProps();
+        props.getPg().setHost("otterworks-dev.cluster.us-east-1.rds.amazonaws.com");
+        props.getPg().setDatabase("otterworks_x1");
+        props.getPg().setUser("ldm");
+        props.getPg().setPassword("secret");
+        ArchiveStoreRegistry registry = new ArchiveStoreRegistry(props);
+        assertEquals("snowflake", registry.store().storeName());
+        assertTrue(registry.controlPlaneJdbc() != null);
+        assertTrue(registry.controlPlaneJdbc() != registry.migrationJdbc());
+    }
+
+    @Test
+    public void snowflakeWithoutTokenIsUnavailable() {
+        ArchiveProperties props = snowflakeProps();
+        props.getSnowflake().setToken("");
+        ArchiveStoreRegistry registry = new ArchiveStoreRegistry(props);
+        assertEquals(ArchiveStoreType.SNOWFLAKE, registry.type());
+        assertFalse(registry.isConfigured());
+        assertTrue(registry.configurationError().contains("SNOWFLAKE_PAT"));
+        assertFalse(registry.configurationError().contains("pat-value"));
+        assertNull(registry.migrationJdbc());
+    }
+
+    @Test
+    public void sourceProviderDefaultsToDb2() {
+        assertEquals("db2", new ArchiveStoreRegistry(new ArchiveProperties()).sourceProvider());
+    }
 }

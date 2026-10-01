@@ -121,6 +121,48 @@ describe('MigrationComponent', () => {
     expect(component.errorHint).toContain('ARCHIVE_STORE');
   });
 
+  it('renders source and target from the report metadata', async () => {
+    await setup({});
+    http.expectOne('/api/v1/reports/reconciliation/latest').flush({ ...REPORT, source: 'oracle', target: 'snowflake' });
+    flushCommon();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.page-subtitle')?.textContent).toContain('Oracle → Snowflake selective migration');
+    expect(el.querySelector('.page-subtitle')?.textContent).not.toContain('Azure SQL');
+    expect(el.querySelector('.status-row')?.textContent).toContain('read from Snowflake');
+  });
+
+  it('shows a Snowflake-backed empty state rather than an error when no run exists yet', async () => {
+    await setup({});
+    http.expectOne('/api/v1/reports/reconciliation/latest').flush(
+      { error: 'no migration runs recorded yet', namespace: 's30-after', source: 'oracle', target: 'snowflake', runs: 0 },
+      { status: 404, statusText: 'Not Found' },
+    );
+    http.expectOne('/api/v1/reports/reconciliation').flush([]);
+    http.match('/config/peer.json').forEach(r => r.flush({ peer_app_url: '' }));
+    fixture.detectChanges();
+
+    expect(component.error).toBeNull();
+    expect(component.report).toBeNull();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.page-subtitle')?.textContent).toContain('Oracle → Snowflake');
+    const empty = el.querySelector('.empty-run');
+    expect(empty?.textContent).toContain('No migration runs recorded yet');
+    expect(empty?.textContent).toContain('Snowflake ledger for namespace');
+    expect(empty?.textContent).toContain('s30-after');
+    expect(empty?.querySelector('mat-icon')?.textContent).toBe('inbox');
+  });
+
+  it('falls back to a neutral subtitle without run metadata', async () => {
+    await setup({});
+    http.expectOne('/api/v1/reports/reconciliation/latest').flush(REPORT);
+    flushCommon();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.page-subtitle')?.textContent.trim())
+      .toBe('Selective migration: row-level reconciliation and before/after archive comparison');
+  });
+
   it('passes the archive docId route param to the compare panel', async () => {
     await setup({ docId: 'DOC-42' });
     http.expectOne('/api/v1/reports/reconciliation/latest').flush(REPORT);

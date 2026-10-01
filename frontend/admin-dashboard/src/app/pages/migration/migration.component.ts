@@ -20,6 +20,24 @@ import { ArchiveCompareComponent } from './archive-compare.component';
 
 export const LATEST_RUN = 'latest';
 
+const STORE_LABELS: Record<string, string> = {
+  db2: 'Db2',
+  oracle: 'Oracle',
+  postgresql: 'PostgreSQL',
+  azuresql: 'Azure SQL',
+  snowflake: 'Snowflake',
+};
+
+interface MigrationPipeline {
+  source: string;
+  target: string;
+}
+
+interface EmptyLedger {
+  namespace: string;
+  target: string;
+}
+
 @Component({
   selector: 'app-migration',
   standalone: true,
@@ -33,7 +51,7 @@ export const LATEST_RUN = 'latest';
       <div class="page-header">
         <div>
           <h1 class="page-title">Migration</h1>
-          <p class="page-subtitle">Db2 → Azure SQL selective migration: row-level reconciliation and before/after archive comparison</p>
+          <p class="page-subtitle">{{ subtitle }}</p>
         </div>
         <div class="header-actions" *ngIf="report">
           <button mat-stroked-button type="button" (click)="openFile('html')" [disabled]="downloading">
@@ -70,6 +88,17 @@ export const LATEST_RUN = 'latest';
 
       <div class="loading" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner></div>
 
+      <mat-card class="notice empty-run" *ngIf="emptyLedger && !loading">
+        <mat-icon>inbox</mat-icon>
+        <div>
+          <strong>No migration runs recorded yet</strong>
+          <div class="hint">
+            {{ storeLabel(emptyLedger.target) }} ledger for namespace <code>{{ emptyLedger.namespace }}</code> is empty:
+            the reconciliation summary appears here once the {{ pipelineLabel }} run has been promoted.
+          </div>
+        </div>
+      </mat-card>
+
       <mat-card class="notice" *ngIf="error && !loading">
         <mat-icon>{{ errorStatus === 404 ? 'info' : 'error' }}</mat-icon>
         <div>
@@ -85,6 +114,7 @@ export const LATEST_RUN = 'latest';
           </span>
           <span class="meta">run <code>{{ report.run_id }}</code></span>
           <span class="meta">namespace <code>{{ report.namespace }}</code></span>
+          <span class="meta" *ngIf="report.target">read from {{ storeLabel(report.target) }}</span>
           <span class="meta">status {{ report.status }}</span>
           <span class="meta" *ngIf="report.started_at">started {{ report.started_at }}</span>
           <span class="meta" *ngIf="report.finished_at">finished {{ report.finished_at }}</span>
@@ -266,6 +296,8 @@ export class MigrationComponent implements OnInit, OnDestroy {
   error: string | null = null;
   errorHint: string | null = null;
   errorStatus = 0;
+  pipeline: MigrationPipeline | null = null;
+  emptyLedger: EmptyLedger | null = null;
 
   ruleFilter = '';
   issueFilter = '';
@@ -307,13 +339,31 @@ export class MigrationComponent implements OnInit, OnDestroy {
       this.runRequests.next(runId || LATEST_RUN);
     }));
     this.sub.add(this.api.listRuns().subscribe({
-      next: runs => (this.runs = runs),
+      next: runs => {
+        this.runs = runs;
+        if (!this.pipeline && runs.length && runs[0].source && runs[0].target) {
+          this.pipeline = { source: runs[0].source, target: runs[0].target };
+        }
+      },
       error: () => (this.runs = []),
     }));
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+  }
+
+  get pipelineLabel(): string {
+    return this.pipeline ? `${this.storeLabel(this.pipeline.source)} → ${this.storeLabel(this.pipeline.target)}` : '';
+  }
+
+  get subtitle(): string {
+    const purpose = 'row-level reconciliation and before/after archive comparison';
+    return this.pipeline ? `${this.pipelineLabel} selective migration: ${purpose}` : `Selective migration: ${purpose}`;
+  }
+
+  storeLabel(provider: string): string {
+    return STORE_LABELS[provider.toLowerCase()] ?? provider;
   }
 
   loadRun(): void {
@@ -365,12 +415,16 @@ export class MigrationComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
     this.errorHint = null;
+    this.emptyLedger = null;
     this.report = null;
   }
 
   private onReport(report: ReconciliationReport): void {
     this.report = report;
     this.loading = false;
+    if (report.source && report.target) {
+      this.pipeline = { source: report.source, target: report.target };
+    }
     this.runIdInput = report.run_id;
     this.indexFailures(report);
     this.applyFilter();
@@ -380,6 +434,13 @@ export class MigrationComponent implements OnInit, OnDestroy {
     this.loading = false;
     this.errorStatus = err.status;
     const body = err.error;
+    if (body && typeof body === 'object' && typeof body.source === 'string' && typeof body.target === 'string') {
+      this.pipeline = { source: body.source, target: body.target };
+    }
+    if (err.status === 404 && body && typeof body === 'object' && body.runs === 0 && this.pipeline) {
+      this.emptyLedger = { namespace: String(body.namespace ?? ''), target: this.pipeline.target };
+      return;
+    }
     if (body && typeof body === 'object' && 'error' in body) {
       this.error = String(body.error);
       this.errorHint = 'hint' in body && body.hint ? String(body.hint) : null;
