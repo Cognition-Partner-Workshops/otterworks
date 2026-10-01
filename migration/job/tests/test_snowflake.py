@@ -4,6 +4,11 @@ Skipped unless LDM_TEST_PG_HOST *and* LDM_TEST_SNOWFLAKE_ACCOUNT are set. Snowfl
 programmatic access token, never echoed), LDM_TEST_SNOWFLAKE_USER, LDM_TEST_SNOWFLAKE_ROLE (LDM_JOB_<TOKEN>,
 bootstrap/tenant.sql), LDM_TEST_SNOWFLAKE_WAREHOUSE (LDM_WH) and LDM_TEST_SNOWFLAKE_DATABASE (the bootstrapped
 tenant database). Every test uses a fresh namespace inside that database and drops it afterwards.
+
+The lifecycle test also runs once through an external S3 stage (target.archive.external_stage) when
+LDM_TEST_SNOWFLAKE_EXTERNAL_STAGE names one in that database (e.g. STG.LDM_EXT_STAGE, see
+infrastructure/terraform/snowflake/README.md "CI scratch stage"); the batches are written with the ambient AWS
+credentials to the stage's S3 location and must all be purged again by the end of the run.
 """
 
 from __future__ import annotations
@@ -34,6 +39,7 @@ SF_ENV = {
     "SNOWFLAKE_WAREHOUSE": os.environ.get("LDM_TEST_SNOWFLAKE_WAREHOUSE", "LDM_WH"),
     "SNOWFLAKE_DATABASE": os.environ.get("LDM_TEST_SNOWFLAKE_DATABASE", "OTTERWORKS_LDM_LDM_CI"),
 }
+EXTERNAL_STAGE = os.environ.get("LDM_TEST_SNOWFLAKE_EXTERNAL_STAGE", "")
 
 pytestmark = pytest.mark.skipif(
     not (PG_ENV["PG_HOST"] and SF_ENV["SNOWFLAKE_ACCOUNT"] and SF_ENV["SNOWFLAKE_PAT"]),
@@ -43,22 +49,23 @@ pytestmark = pytest.mark.skipif(
 FIXTURES = Path(__file__).resolve().parents[2] / "source" / "seed" / "fixtures"
 
 
-def _env(tmp_path: Path) -> dict[str, str]:
+def _env(tmp_path: Path, stage: str = "") -> dict[str, str]:
     return {
         **PG_ENV,
         **SF_ENV,
+        **({"SNOWFLAKE_STAGE": stage} if stage else {}),
         "LOCAL_STAGING_DIR": str(tmp_path / "staging"),
         "LDM_UNLOAD_MODE": "builtin",
         "LDM_HOST": "local",
     }
 
 
-def _ctx(tmp_path: Path, manifest: Path, token: str, seed: Seed, run_id: str):
+def _ctx(tmp_path: Path, manifest: Path, token: str, seed: Seed, run_id: str, stage: str = ""):
     return build_context(
         manifest,
         f"{token}-after",
         run_id,
-        env=_env(tmp_path),
+        env=_env(tmp_path, stage),
         source=seed.source,
         blobs=DirectoryBlobStore(tmp_path / "blobs"),
         log=Log(),
@@ -165,13 +172,25 @@ def test_init_applies_both_ddl_sets_idempotently(tmp_path: Path, token: str, cle
         ctx.target.close()
 
 
-def test_full_run_on_split_target(tmp_path: Path, token: str, cleanup) -> None:
+@pytest.mark.parametrize(
+    "external",
+    [
+        pytest.param(False, id="internal-stage"),
+        pytest.param(
+            True,
+            id="external-stage",
+            marks=pytest.mark.skipif(not EXTERNAL_STAGE, reason="LDM_TEST_SNOWFLAKE_EXTERNAL_STAGE not set"),
+        ),
+    ],
+)
+def test_full_run_on_split_target(tmp_path: Path, token: str, cleanup, external: bool) -> None:
     """extract -> Parquet COPY INTO STG -> validate (Snowflake hashes vs source) -> promote to ARCH -> purge ->
     reconcile, with the ledger, rejects and verdicts in PostgreSQL and the rows + MIG mirror in Snowflake."""
     seed = seed_source()
-    manifest = make_manifest_tree(tmp_path, token, snowflake_target=True)
-    ctx = _ctx(tmp_path, manifest, token, seed, "run-split")
+    manifest = make_manifest_tree(tmp_path, token, snowflake_target=True, external_stage=external)
+    ctx = _ctx(tmp_path, manifest, token, seed, "run-split", EXTERNAL_STAGE if external else "")
     assert isinstance(ctx.target, SnowflakeTarget)
+    assert ctx.target.archive.external_stage is external
     cleanup.append((ctx.target, ctx.namespace))
     code, tables = execute(ctx, "all")
     assert code == 0, tables
@@ -230,6 +249,11 @@ def test_full_run_on_split_target(tmp_path: Path, token: str, cleanup) -> None:
         assert summary["DOCARCH"] == (d["validated"], d["purged"], d["rejected"] + d["validate_failed"], "CLOSED")
         # tenant isolation: another namespace inside the same database sees none of it
         assert _arch_counts(ctx.target, ns + "-x") == {}
+        if external:
+            # every batch was read from S3 (never PUT) and is gone again: loaded ones purged, rejected ones deleted
+            bucket, prefix = ctx.target.archive.external_location()
+            left = ctx.target.archive.s3.list_objects_v2(Bucket=bucket, Prefix=f"{prefix}{run}/")  # type: ignore[attr-defined]
+            assert left.get("KeyCount", 0) == 0, [o["Key"] for o in left.get("Contents", [])]
     finally:
         ctx.target.close()
 
