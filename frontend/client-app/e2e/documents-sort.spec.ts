@@ -113,6 +113,27 @@ test.describe("Documents sort dropdown", () => {
     expect(await documentTitles(page)).toEqual(byName);
   });
 
+  test("requests the selected order from the documents API", async ({ page }) => {
+    const requests: URLSearchParams[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (url.pathname === "/api/v1/documents") requests.push(url.searchParams);
+    });
+
+    await page.goto("/documents?sort=name");
+    await expect.poll(() => requests.length).toBeGreaterThan(0);
+    const nameRequest = requests[requests.length - 1];
+    expect(nameRequest.get("sort")).toBe("title");
+    expect(nameRequest.get("direction")).toBe("asc");
+    expect(nameRequest.get("size")).toBe("50");
+
+    await page.getByLabel("Sort documents").selectOption({ label: "Date created" });
+    await expect
+      .poll(() => requests[requests.length - 1].get("sort"))
+      .toBe("created_at");
+    expect(requests[requests.length - 1].get("direction")).toBe("desc");
+  });
+
   test("falls back to Last edited for an unknown ?sort= value", async ({ page }) => {
     await page.goto("/documents?sort=bogus");
     await expect(page.getByLabel("Sort documents")).toHaveValue("updated");

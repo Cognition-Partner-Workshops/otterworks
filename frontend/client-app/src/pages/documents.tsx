@@ -18,6 +18,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
 import { useUIStore } from "@/stores/ui-store";
 import {
+  DOCUMENT_SORT_API_ORDER,
   DOCUMENT_SORT_OPTIONS,
   parseDocumentSort,
   sortDocuments,
@@ -56,8 +57,8 @@ function DocumentsContent() {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ["documents", "list"],
-    queryFn: () => documentsApi.list(),
+    queryKey: ["documents", "list", sortOption],
+    queryFn: () => documentsApi.list(1, 50, DOCUMENT_SORT_API_ORDER[sortOption]),
   });
 
   const createMutation = useMutation({

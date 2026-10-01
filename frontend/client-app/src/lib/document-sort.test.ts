@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { Document } from "@/types";
 import {
   DEFAULT_DOCUMENT_SORT,
+  DOCUMENT_SORT_API_ORDER,
   DOCUMENT_SORT_OPTIONS,
   parseDocumentSort,
   sortDocuments,
@@ -76,6 +77,16 @@ describe("parseDocumentSort", () => {
     expect(parseDocumentSort("")).toBe("updated");
     expect(parseDocumentSort("size")).toBe("updated");
     expect(parseDocumentSort("NAME")).toBe("updated");
+  });
+});
+
+describe("DOCUMENT_SORT_API_ORDER", () => {
+  it("maps each option to the document-service sort column and direction", () => {
+    expect(DOCUMENT_SORT_API_ORDER).toEqual({
+      updated: { sort: "updated_at", direction: "desc" },
+      name: { sort: "title", direction: "asc" },
+      created: { sort: "created_at", direction: "desc" },
+    });
   });
 });
 

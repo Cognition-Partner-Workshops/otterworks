@@ -10,6 +10,17 @@ export type DocumentSortOption = (typeof DOCUMENT_SORT_OPTIONS)[number]["value"]
 
 export const DEFAULT_DOCUMENT_SORT: DocumentSortOption = "updated";
 
+export interface DocumentListOrder {
+  sort: "updated_at" | "title" | "created_at";
+  direction: "asc" | "desc";
+}
+
+export const DOCUMENT_SORT_API_ORDER: Record<DocumentSortOption, DocumentListOrder> = {
+  updated: { sort: "updated_at", direction: "desc" },
+  name: { sort: "title", direction: "asc" },
+  created: { sort: "created_at", direction: "desc" },
+};
+
 export function parseDocumentSort(value: string | null | undefined): DocumentSortOption {
   const match = DOCUMENT_SORT_OPTIONS.find((option) => option.value === value);
   return match ? match.value : DEFAULT_DOCUMENT_SORT;
