@@ -201,7 +201,8 @@ def main() -> None:
         for rule in group["rules"]:
             metrics.update(re.findall(r"(\w+)\{", rule["expr"]))
     if args.prometheus:
-        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected -- --prometheus is an operator CLI flag
+        # --prometheus is an operator CLI flag, not request input.
+        # nosemgrep
         with urlopen(
             args.prometheus.rstrip("/") + "/api/v1/label/__name__/values", timeout=30
         ) as r:

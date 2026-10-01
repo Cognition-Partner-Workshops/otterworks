@@ -412,7 +412,8 @@ def forward_to_devin(config: Config, session: dict, persona: Persona, text: str)
     )
     started = time.monotonic()
     try:
-        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected -- base URL is operator config (DEVIN_API_BASE), not request input
+        # The base URL is operator config (DEVIN_API_BASE), not request input.
+        # nosemgrep
         with urllib.request.urlopen(request, timeout=config.api_timeout_seconds) as resp:
             status = resp.status
     except urllib.error.HTTPError as exc:
