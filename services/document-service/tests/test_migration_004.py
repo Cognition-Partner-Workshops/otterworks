@@ -7,13 +7,13 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
 from sqlalchemy import Connection, create_engine, inspect
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import command
-from alembic.config import Config
-from alembic.migration import MigrationContext
-from alembic.operations import Operations
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_URL = os.environ.get("DOC_SVC_TEST_POSTGRES_URL")
