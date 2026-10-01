@@ -7,10 +7,11 @@ The server is one file on the Python 3.12 standard library, so the Deployment mo
 ## Run it locally
 
 ```bash
-CHANNEL_TOKEN=dev-token STATE_FILE=/tmp/channel-state.json python3 incident/oncall/channel/channel.py
+export CHANNEL_TOKEN=dev-token
+STATE_FILE=/tmp/channel-state.json python3 incident/oncall/channel/channel.py
 curl -s -XPOST localhost:8080/alertmanager -H 'Content-Type: application/json' -d @payload.json
 curl -s -XPOST localhost:8080/api/threads/latest/messages \
-  -H 'Authorization: Bearer dev-token' -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $CHANNEL_TOKEN" -H 'Content-Type: application/json' \
   -d '{"author": "Devin", "text": "Picked up the page.", "session_id": "devin-123", "org_id": "org-123"}'
 ```
 

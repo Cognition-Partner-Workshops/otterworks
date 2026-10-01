@@ -4,3 +4,6 @@
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:60
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:143
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:171
+# The incident channel README's local-run example once sent the literal dev token "dev-token"
+# to a localhost server; it now reads $CHANNEL_TOKEN. The fingerprint covers the older commit.
+89b141d311c54eb7c11fb2ae4656702762077fc6:incident/oncall/channel/README.md:curl-auth-header:11
