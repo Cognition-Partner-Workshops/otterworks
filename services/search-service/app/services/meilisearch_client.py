@@ -28,6 +28,14 @@ _search_analytics: dict[str, Any] = {
 MAX_ANALYTICS_ENTRIES = 10000
 
 
+def _ranking_score(hit: dict[str, Any]) -> float:
+    """Return the MeiliSearch ranking score of a hit, or 0.0 if absent/invalid."""
+    score = hit.get("_rankingScore")
+    if isinstance(score, (int, float)) and not isinstance(score, bool):
+        return float(score)
+    return 0.0
+
+
 def record_search_analytics(query: str, result_count: int) -> None:
     """Record a search query for analytics purposes."""
     with _analytics_lock:
@@ -248,27 +256,43 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+        """Autocomplete suggestions using MeiliSearch prefix matching.
 
-        for index_name in [self.documents_index_name, self.files_index_name]:
+        Hits from both indexes are merged and ordered by MeiliSearch's
+        ``_rankingScore`` (requested via ``showRankingScore``). Hits without a
+        score fall back to 0.0 so a missing field never breaks suggestions.
+        A failing index is skipped so the other index's results still return;
+        the error is only raised if every index fails.
+        """
+        scored: dict[str, float] = {}
+        index_names = [self.documents_index_name, self.files_index_name]
+        errors: list[meilisearch.errors.MeilisearchError] = []
+
+        for index_name in index_names:
             index = self.client.index(index_name)
-            result = index.search(prefix, {
-                "limit": size,
-                "attributesToRetrieve": ["title", "name"],
-            })
-            for hit in result["hits"]:
+            try:
+                result = index.search(prefix, {
+                    "limit": size,
+                    "attributesToRetrieve": ["title", "name"],
+                    "showRankingScore": True,
+                })
+            except meilisearch.errors.MeilisearchError as exc:
+                logger.warning("suggest_index_failed", index=index_name, error=str(exc))
+                errors.append(exc)
+                continue
+            for hit in result.get("hits", []):
                 text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                if not text:
+                    continue
+                score = _ranking_score(hit)
+                if text not in scored or score > scored[text]:
+                    scored[text] = score
 
-        return suggestions
+        if errors and len(errors) == len(index_names):
+            raise errors[0]
+
+        ranked = sorted(scored.items(), key=lambda item: item[1], reverse=True)
+        return [text for text, _ in ranked[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
