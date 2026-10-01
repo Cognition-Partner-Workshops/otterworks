@@ -1,0 +1,28 @@
+# NetworkPolicy works on ports, not URL paths. Alertmanager in monitoring may call the
+# Service directly (POST /alertmanager); everything else arrives through ingress-nginx.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: incident-channel
+  labels:
+    app.kubernetes.io/name: incident-channel
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: incident-channel
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alertmanager
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+          protocol: TCP
