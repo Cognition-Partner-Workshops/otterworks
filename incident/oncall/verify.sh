@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016 # jq filters are single-quoted on purpose
 # Fail-closed gate for the on-call storm, driven by faults.yaml.
-#   before: at least 10 of the 12 storm alerts firing across all 4 services, and
-#           Alertmanager holding exactly one oncall-devin group for the namespace
+#   before: at least 10 of the 12 storm alerts firing across all 4 services,
+#           Alertmanager holding exactly one oncall-devin group for the namespace,
+#           and that group paged after this arm's deploy
 #   after:  the same load running, the worker on, no storm alert firing, and the
 #           folder-list p95 under the SLO
 # Writes incident/oncall/reports/<tenant>-<expect>-<utc>.json. Exit 0 = green.
@@ -77,8 +78,57 @@ if [ "${expect}" = before ]; then
   else
     echo "INFO no deploy time in .state or no alert yet; time-to-page not measured"
   fi
-  measures="$(jq -c --argjson n "${firing_names}" --argjson g "${n_groups}" \
-    '.firing = $n | .devin_groups = $g' <<<"${measures}")"
+
+  # A page delivered after this arm's deploy, not just a group that exists:
+  # Alertmanager's notification log suppresses a storm whose alerts it already
+  # paged, and that suppressed group still shows up above.
+  run="$(state_get "${tenant}" .steps.deploy.oncall_run)"
+  n_run="$(jq --arg r "${receiver}" --arg ns "${ns}" --arg run "${run}" \
+    '[.[] | select(.receiver.name == $r and .labels.namespace == $ns) | .alerts[]
+      | select($run != "" and .labels.oncall_run == $run)] | length' <<<"${groups}")"
+  check "$([ -n "${run}" ] && [ "${n_run}" -ge 1 ] && echo true || echo false)" \
+    "alerts from this arm (oncall_run=${run:-unset}) in the ${receiver} group: ${n_run}"
+  page_ok=false
+  page_msg="no deploy time in .state; cannot tell whether ${receiver} paged for this arm"
+  sent_since=""
+  if [ -n "${deployed_at}" ]; then
+    deploy_epoch="$(date -u -d "${deployed_at}" +%s)"
+    now_epoch="$(date +%s)"
+    sent_q="sum(alertmanager_notifications_total{integration=\"webhook\",receiver=\"${receiver}\"})"
+    sent_now="$(prom_scalar_at "${sent_q}" "${now_epoch}")"
+    if [ -n "${sent_now}" ]; then
+      sent_then="$(prom_scalar_at "${sent_q}" "${deploy_epoch}")"
+      sent_since="$(awk -v a="${sent_now}" -v b="${sent_then:-0}" 'BEGIN { printf "%d", a - b }')"
+      [ "${sent_since}" -ge 1 ] && page_ok=true
+      page_msg="${receiver} webhook notifications since the deploy at ${deployed_at}: ${sent_since} (need >= 1)"
+    else
+      # Alertmanager runs without --enable-feature=receiver-name-in-metrics, so
+      # its counters cannot tell receivers apart. Infer the page instead: arm.sh
+      # reloaded Alertmanager before the deploy, so the group holding this arm's
+      # alerts was opened after the reload and flushes once group_wait passes.
+      sent_q='sum(alertmanager_notifications_total{integration="webhook"})'
+      sent_now="$(prom_scalar_at "${sent_q}" "${now_epoch}")"
+      sent_then="$(prom_scalar_at "${sent_q}" "${deploy_epoch}")"
+      sent_since="$(awk -v a="${sent_now:-0}" -v b="${sent_then:-0}" 'BEGIN { printf "%d", a - b }')"
+      reloaded_at="$(state_get "${tenant}" .steps.deploy.alertmanager_reloaded_at)"
+      group_wait="$(am_group_wait_seconds "${receiver}")"
+      due=""
+      if [ -n "${first_start}" ] && [ -n "${group_wait}" ]; then
+        due=$(( $(date -u -d "${first_start}" +%s) + group_wait ))
+      fi
+      if [ -n "${reloaded_at}" ] && [ -n "${due}" ] && [ "${n_run}" -ge 1 ] &&
+         [ $(( now_epoch - due )) -ge 60 ] && [ "${sent_since}" -ge 1 ]; then
+        page_ok=true
+      fi
+      page_msg="${receiver} page for this arm (inferred: Alertmanager reloaded ${reloaded_at:-never}, group_wait ${group_wait:-?}s"
+      page_msg+=" due $( [ -n "${due}" ] && date -u -d "@${due}" +%H:%M:%SZ || echo never), webhook notifications since deploy ${sent_since})"
+    fi
+  fi
+  check "${page_ok}" "${page_msg}"
+  measures="$(jq -c --argjson n "${firing_names}" --argjson g "${n_groups}" --arg run "${run}" \
+    --arg sent "${sent_since}" --argjson page "${page_ok}" \
+    '.firing = $n | .devin_groups = $g | .oncall_run = $run | .devin_paged = $page
+     | .webhook_notifications_since_deploy = $sent' <<<"${measures}")"
 else
   window="$(f .gates.after.window)"
   handler="$(f .gates.after.handler)"

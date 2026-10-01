@@ -162,6 +162,13 @@ prom_query() {
     --data-urlencode "query=$1" | jq -c '.data.result'
 }
 
+# prom_scalar_at <promql> <unix seconds>: first sample value at that instant,
+# empty when the query returns nothing.
+prom_scalar_at() {
+  curl -fsS --max-time 20 "http://localhost:${PROM_PORT}/api/v1/query" \
+    --data-urlencode "query=$1" --data-urlencode "time=$2" | jq -r '.data.result[0].value[1] // empty'
+}
+
 # ---------- secrets (values stay in variables, never echoed) ----------
 # secret_value <namespace> <secret> <key>; empty output when absent.
 secret_value() {
@@ -203,13 +210,17 @@ require_chart_keys() {
     die "document-service chart has no database values; this checkout predates the on-call chart changes"
 }
 
-# digest_deploy <tenant> true|false: one Helm revision that flips the worker.
+# digest_deploy <tenant> true|false [oncall_run]: one Helm revision that flips
+# the worker. oncall_run is stamped on every storm alert, so each arm gets new
+# alert fingerprints under the same Alertmanager group key; an empty value
+# removes the label.
 digest_deploy() {
-  local t="$1" enabled="$2" ns
+  local t="$1" enabled="$2" run="${3:-}" ns
   ns="$(tenant_ns "${t}")"
   require_chart_keys
   helm -n "${ns}" upgrade document-service "${CHART_DIR}" --reuse-values \
     --set "folderDigest.enabled=${enabled}" \
+    --set-string "monitoring.rules.extraLabels.oncall_run=${run}" \
     --set "folderDigest.intervalSeconds=${DIGEST_INTERVAL_SECONDS}" \
     --set "folderDigest.concurrency=${DIGEST_CONCURRENCY}" \
     --set "database.statementTimeoutMs=${STATEMENT_TIMEOUT_MS}" \
@@ -217,6 +228,42 @@ digest_deploy() {
     --set "database.maxOverflow=${DB_MAX_OVERFLOW}" \
     --wait --timeout 6m >/dev/null
   kubectl -n "${ns}" rollout status deploy/document-service --timeout=5m >/dev/null
+}
+
+# ---------- Alertmanager ----------
+# am_reload: rebuilds the dispatcher, which drops every aggregation group held
+# in memory. The notification log survives, so groups whose alerts did not
+# change are not notified again. Without this, a storm armed within
+# group_interval (6h) of the previous page joins that group and waits for its
+# next flush instead of paging after group_wait.
+am_reload() {
+  pf_alertmanager
+  curl -fsS --max-time 20 -X POST -o /dev/null "http://localhost:${AM_PORT}/-/reload" ||
+    die "Alertmanager did not accept POST /-/reload"
+}
+
+# am_group_wait_seconds <receiver>: group_wait of that receiver's route in the
+# live Alertmanager config, in seconds; empty when the route is absent.
+am_group_wait_seconds() {
+  curl -fsS --max-time 20 "http://localhost:${AM_PORT}/api/v2/status" | jq -r '.config.original' |
+    python3 -c 'import re, sys, yaml
+receiver = sys.argv[1]
+units = {"ms": 0.001, "s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800, "y": 31536000}
+def seconds(text):
+    parts = re.findall(r"(\d+)(ms|[smhdwy])", str(text))
+    return int(sum(int(n) * units[u] for n, u in parts))
+def walk(route, inherited):
+    for child in route.get("routes") or []:
+        wait = child.get("group_wait", inherited)
+        if child.get("receiver") == receiver:
+            return wait
+        found = walk(child, wait)
+        if found is not None:
+            return found
+    return None
+root = yaml.safe_load(sys.stdin).get("route") or {}
+wait = walk(root, root.get("group_wait", "30s"))
+print("" if wait is None else seconds(wait))' "$1"
 }
 
 # grafana_annotate <tenant> <text>: sets ANNOTATION_ID (empty when Grafana

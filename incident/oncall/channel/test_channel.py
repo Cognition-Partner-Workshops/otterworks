@@ -301,6 +301,22 @@ def test_bearer_auth_on_messages_and_reset(app: Running) -> None:
     assert state["data"] == []
 
 
+def test_reset_accepts_an_empty_body(app: Running) -> None:
+    app.json("POST", "/alertmanager", payload(storm(2)))
+    status, _, _ = app.request("POST", "/api/reset", None)
+    assert status == 401
+    _, state = app.json("GET", "/api/state")
+    assert len(state["data"]) == 1
+
+    status, body = app.json("POST", "/api/reset", headers=bearer())
+    assert status == 200 and body["cleared"] == 1
+    _, state = app.json("GET", "/api/state")
+    assert state["data"] == []
+
+    status, _, _ = app.request("POST", "/api/reset", [], headers=bearer())
+    assert status == 400
+
+
 def test_token_endpoints_fail_closed_without_a_configured_token(
     config: channel.Config,
 ) -> None:

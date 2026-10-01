@@ -3,8 +3,9 @@
 # Arm the on-call storm on one tenant, in the order the story needs:
 #   1. seed 200k synthetic documents into the tenant Postgres (seed.sh)
 #   2. a real config deploy: helm upgrade --reuse-values document-service
-#      with folderDigest.enabled=true, plus a Grafana annotation naming the
-#      revision
+#      with folderDigest.enabled=true and a fresh oncall_run alert label, plus a
+#      Grafana annotation naming the revision (Alertmanager is reloaded first
+#      so the storm opens a new oncall-devin group and pages once)
 #   3. the oncall-k6 Job browsing folders through the public API host
 # Each step is recorded in incident/oncall/.state/<tenant>.json.
 #
@@ -47,7 +48,11 @@ owner="$(state_get "${tenant}" .owner_id)"
 # ---------- 2. config deploy ----------
 log "Step 2/3: config deploy (folderDigest.enabled=true)"
 previous="$(helm_revision "${tenant}")"
-digest_deploy "${tenant}" true
+oncall_run="$(date +%s)"
+am_reload
+reloaded_at="$(now_iso)"
+log "Alertmanager reloaded; storm alerts from this arm carry oncall_run=${oncall_run}"
+digest_deploy "${tenant}" true "${oncall_run}"
 revision="$(helm_revision "${tenant}")"
 if [ -z "${revision}" ] || [ "${revision}" = "${previous}" ]; then
   die "helm did not record a new document-service revision in ${ns}"
@@ -61,9 +66,11 @@ grafana_annotate "${tenant}" "document-service rev ${revision}: folder digest wo
 log "document-service rev ${revision} (was ${previous}) is live; annotation ${ANNOTATION_ID:-none}"
 state_update "${tenant}" \
   '.steps.deploy = {at: $at, release: "document-service", previous_revision: $prev, revision: $rev,
-                    set: {"folderDigest.enabled": true, "folderDigest.intervalSeconds": $iv, "folderDigest.concurrency": $cc},
-                    annotation_id: $ann}' \
+                    set: {"folderDigest.enabled": true, "folderDigest.intervalSeconds": $iv, "folderDigest.concurrency": $cc,
+                          "monitoring.rules.extraLabels.oncall_run": $run},
+                    oncall_run: $run, alertmanager_reloaded_at: $reload, annotation_id: $ann}' \
   --arg at "${deployed_at}" --argjson prev "${previous:-0}" --argjson rev "${revision}" \
+  --arg run "${oncall_run}" --arg reload "${reloaded_at}" \
   --argjson iv "${DIGEST_INTERVAL_SECONDS}" --argjson cc "${DIGEST_CONCURRENCY}" \
   --arg ann "${ANNOTATION_ID}"
 

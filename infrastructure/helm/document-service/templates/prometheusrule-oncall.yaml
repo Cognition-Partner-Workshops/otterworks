@@ -1,5 +1,9 @@
 {{- if and .Values.monitoring.oncall.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
 {{- $ns := .Release.Namespace -}}
+{{- $extra := dict -}}
+{{- range $k, $v := (.Values.monitoring.rules.extraLabels | default dict) -}}
+{{- if $v }}{{ $_ := set $extra $k $v }}{{ end -}}
+{{- end -}}
 {{- $src := .Files.Get "files/oncall_alerts.yml" | fromYaml -}}
 {{- $groups := list -}}
 {{- range $group := $src.groups -}}
@@ -11,7 +15,7 @@
 {{- $expr = replace ", }" "}" $expr -}}
 {{- $expr = replace "> 0.5" (printf "> %v" $.Values.monitoring.oncall.p95SloSeconds) $expr -}}
 {{- $_ := set $r "expr" $expr -}}
-{{- $labels := mergeOverwrite (deepCopy $rule.labels) ($.Values.monitoring.rules.extraLabels | default dict) (dict "namespace" $ns "page" "oncall" "oncall_group" "folder-storm" "service" $rule.labels.service "severity" $rule.labels.severity) -}}
+{{- $labels := mergeOverwrite (deepCopy $rule.labels) $extra (dict "namespace" $ns "page" "oncall" "oncall_group" "folder-storm" "service" $rule.labels.service "severity" $rule.labels.severity) -}}
 {{- $_ := set $r "labels" $labels -}}
 {{- $ann := deepCopy $rule.annotations -}}
 {{- $base := $.Values.monitoring.links.grafana | default "http://localhost:3001" -}}

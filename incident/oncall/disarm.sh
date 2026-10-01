@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016 # jq filters are single-quoted on purpose
 # Disarm one or both on-call tenants: stop the k6 Job and, when the worker is
-# on, ship the reverse config deploy (folderDigest.enabled=false). Safe to run
-# on a tenant that is not armed.
+# on, ship the reverse config deploy (folderDigest.enabled=false, oncall_run
+# label removed). Safe to run on a tenant that is not armed.
 #
 # Usage: incident/oncall/disarm.sh [oncall-before|oncall-after ...]
 set -euo pipefail
@@ -25,7 +25,7 @@ for tenant in "${targets[@]}"; do
   kubectl -n "${ns}" delete configmap "${K6_CONFIGMAP}" --ignore-not-found >/dev/null
   revision=""
   if [ "$(digest_enabled "${tenant}")" = true ]; then
-    digest_deploy "${tenant}" false
+    digest_deploy "${tenant}" false ""
     revision="$(helm_revision "${tenant}")"
     grafana_annotate "${tenant}" "document-service rev ${revision}: folder digest worker disabled"
     log "document-service rev ${revision}: folder digest worker disabled"

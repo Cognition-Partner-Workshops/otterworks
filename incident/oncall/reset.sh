@@ -71,15 +71,11 @@ done
 
 # ---------- 4. channel and state ----------
 token="$(secret_value "${PLATFORM_NS}" incident-channel-secrets CHANNEL_TOKEN)"
-if [ -n "${token}" ]; then
-  if printf 'header = "Authorization: Bearer %s"\n' "${token}" |
-     curl -fsS --max-time 15 --config - -X POST -o /dev/null "https://${CHANNEL_HOST}/api/reset"; then
-    log "Incident channel threads cleared"
-  else
-    warn "incident channel reset failed; clear it from the page or retry"
-  fi
-else
-  warn "CHANNEL_TOKEN not readable; incident channel threads left as they are"
-fi
+[ -n "${token}" ] ||
+  die "CHANNEL_TOKEN not readable from ${PLATFORM_NS}/incident-channel-secrets; the incident channel still holds the old threads"
+printf 'header = "Authorization: Bearer %s"\n' "${token}" |
+  curl -fsS --max-time 15 --retry 2 --config - -X POST -o /dev/null "https://${CHANNEL_HOST}/api/reset" ||
+  die "incident channel reset failed at https://${CHANNEL_HOST}/api/reset; rerun make oncall-reset"
+log "Incident channel threads cleared"
 rm -rf "${STATE_DIR}"
 log "Reset done. Both tenants are on ${reset_ref} with no seed, no load and the worker off."

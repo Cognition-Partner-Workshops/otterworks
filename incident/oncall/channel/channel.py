@@ -1125,10 +1125,15 @@ class Handler(BaseHTTPRequestHandler):
             self.post_alertmanager()
             return
         if path == "/api/reset":
-            if self.bearer_ok() and self.read_json() is not None:
-                cleared = self.app.channel.reset()
-                log("reset", threads=cleared)
-                self.send_json(HTTPStatus.OK, {"cleared": cleared})
+            if not self.bearer_ok():
+                return
+            # The body is optional; when one is sent it must be a JSON object.
+            has_body = (self.headers.get("Content-Length") or "0").strip() != "0"
+            if has_body and self.read_json() is None:
+                return
+            cleared = self.app.channel.reset()
+            log("reset", threads=cleared)
+            self.send_json(HTTPStatus.OK, {"cleared": cleared})
             return
         route = self.thread_route(path)
         if route and route[1] == "messages":

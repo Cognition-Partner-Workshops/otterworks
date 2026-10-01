@@ -29,7 +29,7 @@ database:
     name: oncall-postgres
     key: url
   statementTimeoutMs: 3000
-  poolSize: 20
+  poolSize: 5
   maxOverflow: 0
 folderDigest:
   enabled: false
