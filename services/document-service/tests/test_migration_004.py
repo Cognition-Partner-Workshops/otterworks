@@ -85,10 +85,11 @@ def test_postgres_upgrade_downgrade(monkeypatch: pytest.MonkeyPatch) -> None:
     cfg.set_main_option("script_location", str(SERVICE_ROOT / "alembic"))
 
     command.upgrade(cfg, "head")
+    command.downgrade(cfg, "004")
     try:
         tables, indexes = _pg_tables_and_document_indexes(POSTGRES_URL)
         assert "folder_digests" in tables
-        assert ("folder_id",) not in indexes
+        assert not any(columns and columns[0] == "folder_id" for columns in indexes)
         command.downgrade(cfg, "003")
         tables, _ = _pg_tables_and_document_indexes(POSTGRES_URL)
         assert "folder_digests" not in tables
