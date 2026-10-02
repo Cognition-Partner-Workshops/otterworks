@@ -10,7 +10,7 @@ the rating periods/results and usage events this module writes) and the Mongo fi
 reloaded from it with migration/billing/loaders/oracle_to_mongo.py, so both backends start
 from the same rows. A second section records the /api/v1/billing/usage facade and the
 /internal/usage/events ingestion (the bridge's only write path) on both backends and requires
-them to be identical; the non-U3 routes must still answer 501 on mongo.
+them to be identical; the routes no wave-2 batch has ported yet (invoices, dunning) must still answer 501 on mongo.
 
 Fixture only: requires `make oracle-billing-up` and `make mongo-billing-up`; never Atlas.
 
@@ -158,8 +158,8 @@ def facade_snapshot(client):
 
 
 def non_u3_status(client):
-    headers = {"X-User-ID": TENANT}
-    return {path: client.get(f"/api/v1/billing/{path}", headers=headers).status_code for path in ("invoices", "customer")}
+    headers = {"X-User-ID": TENANT, "X-User-Roles": "admin"}
+    return {path: client.get(f"/api/v1/billing/{path}", headers=headers).status_code for path in ("invoices", "admin/dunning")}
 
 
 def main(argv=None):

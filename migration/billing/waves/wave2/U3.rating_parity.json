@@ -3,7 +3,7 @@
   "unit": "U3",
   "run_mode": "fixture",
   "merge_evidence": false,
-  "generated_at": "2026-10-02T18:21:10Z",
+  "generated_at": "2026-10-02T19:07:48Z",
   "source": {
     "oracle": "local fixture localhost",
     "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
@@ -445,7 +445,7 @@
     },
     "oracle_non_u3_routes": {
       "invoices": 200,
-      "customer": 404
+      "admin/dunning": 200
     },
     "mongo": {
       "GET /api/v1/billing/usage?period_start=2026-02-01&period_end=2026-02-28": {
@@ -553,7 +553,7 @@
     },
     "mongo_non_u3_routes": {
       "invoices": 501,
-      "customer": 501
+      "admin/dunning": 501
     },
     "identical": true,
     "non_u3_routes_501_on_mongo": true

@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T17:56:51Z",
+  "generated_at": "2026-10-02T19:08:11Z",
   "run_mode": "fixture",
   "verdict": "pass",
   "merge_evidence": false,
@@ -16,12 +16,8 @@
   },
   "target": {
     "system": "mongodb",
-    "database": "ow_recon_fixture_u3",
-    "uri_secret": null,
-    "hosts": [
-      "127.0.0.1"
-    ],
-    "statements": "find only"
+    "mode": "fixture",
+    "driver": "in-memory"
   },
   "inputs": {
     "mapping_spec": {
@@ -41,8 +37,8 @@
     "oracle_sessions": 1
   },
   "timings": {
-    "source_fetch_s": 0.0,
-    "target_fetch_s": 0.004
+    "source_fetch_s": 0.004,
+    "target_fetch_s": 0.0
   },
   "summary": {
     "checks": 20,
