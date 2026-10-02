@@ -38,6 +38,7 @@ Devin works as the AWS engineer on the OtterWorks team: asked about the account,
 | `make cw-verify EXPECT=before` | Passes while the fault is live. |
 | `make cw-apply` | Restores the tenant's eventing config from git. |
 | `make cw-verify EXPECT=after` | Passes once the service has recovered. |
+| `make cw-simulate` | Publishes test `file_shared` events to the topic. |
 | `make cw-trail` | Lists the last 2 hours of CloudTrail calls by the Devin roles. |
 | `make cw-quiet MINUTES=10` | Holds the alarm actions off while you rehearse. |
 | `make cw-disarm` | Stops a run and restores the baseline. |
