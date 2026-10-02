@@ -1,6 +1,6 @@
 # Cloud worker harness
 
-The scripts in this directory set up, run and reset the `aws-cloud-worker` demo on the shared cluster. A file share goes from file-service to the SNS topic `otterworks-cw-events`. The queue `otterworks-cw-notifications` feeds notification-service, which writes to the DynamoDB table `otterworks-cw-notifications`. When the consumer fails three times, the message moves to `otterworks-cw-notifications-dlq`. The alarm `otterworks-cw-notifications-dlq-depth` then goes to ALARM and EventBridge posts the Devin webhook.
+The scripts in this directory set up, run and reset the `aws-cloud-worker` demo on the shared cluster. A file share goes from file-service to the SNS topic `otterworks-cw-events`. The queue `otterworks-cw-notifications` feeds notification-service. The service reads each recipient's preferences from `otterworks-cw-notification-preferences` and writes to `otterworks-cw-notifications`. When the consumer fails three times, the message moves to `otterworks-cw-notifications-dlq`. The alarm `otterworks-cw-notifications-dlq-depth` then goes to ALARM and EventBridge posts the Devin webhook.
 
 The fault, the drift, the thresholds and both gates are in `scenario.yaml`. The git source of truth for the tenant's eventing config is `infrastructure/helm/tenant-values/cloud-worker/eventing.env`.
 
@@ -21,9 +21,9 @@ Each verb is `cloudworker/cw.sh <verb>` and also `make cw-<verb>`.
 | Verb | Make target | Who runs it | What it does |
 |---|---|---|---|
 | `up` | `make cw-up` | operator | Applies the Terraform, maps the Devin roles, applies the RBAC, plants the retention drift, wires the tenant if it exists, sends one event and watches the DLQ for two minutes |
-| `apply` | `make cw-apply` | operator or builder | Sets the eventing keys and IRSA roles from `eventing.env` on notification-service and file-service, then restarts both |
+| `apply` | `make cw-apply` | operator or builder | Sets the eventing keys, including the preferences table, and IRSA roles from `eventing.env` on notification-service and file-service, then restarts both |
 | `credentials` | `make cw-credentials` | operator | Replaces the `devin-cw-reader` access key and writes `.state/devin-cw-reader.json` with mode 600 |
-| `arm` | `make cw-arm` | operator | Points notification-service at `otterworks-cw-notifications-v2` and sends six events |
+| `arm` | `make cw-arm` | operator | Points notification-service at `otterworks-cw-notifications-v2`, sends six events and clears any quiet window |
 | `status` | `make cw-status` | anyone | Pods, live and git table, queue depths, alarm, helm history, armed and quiet times. `JSON=1` prints JSON |
 | `verify` | `make cw-verify EXPECT=before` | anyone | Prints PASS or FAIL per check with the measured value and exits 1 on any FAIL |
 | `simulate` | `make cw-simulate COUNT=3` | operator | Publishes `file_shared` events from a seeded owner to a seeded recipient |

@@ -113,6 +113,7 @@ fi
 log "Loading shared application-infra Terraform outputs..."
 load_infra_outputs
 
+export DDB_NOTIF_PREFS=""
 EVENTING_ENV="${REPO_ROOT}/infrastructure/helm/tenant-values/$(sanitize_id "${ATTENDEE_ID}")/eventing.env"
 if [ -f "${EVENTING_ENV}" ]; then
   log "Wiring tenant eventing from ${EVENTING_ENV#"${REPO_ROOT}/"}"

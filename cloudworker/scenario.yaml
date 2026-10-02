@@ -14,6 +14,7 @@ path:
   dlq: otterworks-cw-notifications-dlq
   consumer: notification-service
   table: otterworks-cw-notifications
+  preferences_table: otterworks-cw-notification-preferences
   alarm: otterworks-cw-notifications-dlq-depth
   dashboard: otterworks-cloud-worker
   eventbridge_rule: otterworks-cw-dlq-alarm-to-devin
@@ -34,7 +35,8 @@ fault:
   live_value: otterworks-cw-notifications-v2
   mechanism: helm upgrade --reuse-values, then rollout restart
   events_published: 6
-  symptom: ResourceNotFoundException on PutItem; the consumer leaves the message for redelivery
+  symptom: ResourceNotFoundException on PutItem to otterworks-cw-notifications-v2; the preferences GetItem before it succeeds, processEvent throws, and the consumer leaves the message for redelivery
+  requires: otterworks-cw-notification-preferences exists and the notification-service IRSA role can GetItem on it; otherwise every message fails before the fault
   fix: cw.sh apply, then aws sqs start-message-move-task to redrive the DLQ
 
 drift:

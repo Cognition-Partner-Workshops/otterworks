@@ -193,6 +193,11 @@ live_table() {
     -o jsonpath='{.data.DYNAMODB_TABLE_NOTIFICATIONS}' 2>/dev/null || true
 }
 
+live_preferences_table() {
+  read_cmd kubectl -n "${NS}" get configmap notification-service-config \
+    -o jsonpath='{.data.DYNAMODB_TABLE_PREFERENCES}' 2>/dev/null || true
+}
+
 git_table() { eventing_value DDB_NOTIF; }
 
 namespace_exists() {
@@ -262,16 +267,19 @@ delete_reader_keys() {
 
 cmd_apply() {
   ensure_account
-  local sns sqs ddb irsa_notif irsa_file
+  local sns sqs ddb prefs irsa_notif irsa_file
   sns="$(eventing_value SNS_TOPIC)"
   sqs="$(eventing_value SQS_NOTIF)"
   ddb="$(eventing_value DDB_NOTIF)"
+  prefs="$(eventing_value DDB_NOTIF_PREFS)"
+  [ -n "${prefs}" ] || die "eventing.env has no DDB_NOTIF_PREFS"
   irsa_notif="$(eventing_value IRSA_notification_service)"
   irsa_file="$(eventing_value IRSA_file_service)"
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
     --set-string "config.SNS_TOPIC_ARN=${sns}" \
     --set-string "config.SQS_QUEUE_URL=${sqs}" \
     --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${ddb}" \
+    --set-string "config.DYNAMODB_TABLE_PREFERENCES=${prefs}" \
     --set-string "serviceAccount.roleArn=${irsa_notif}"
   run helm upgrade file-service "${REPO}/infrastructure/helm/file-service" -n "${NS}" --reuse-values \
     --set-string "config.SNS_TOPIC_ARN=${sns}" \
@@ -343,9 +351,11 @@ TIMELINE
 }
 
 status_json() {
-  local live git qd dd alarm pods_json helm_json armed quiet
+  local live git prefs_live prefs_git qd dd alarm pods_json helm_json armed quiet
   live="$(live_table)"
   git="$(git_table)"
+  prefs_live="$(live_preferences_table)"
+  prefs_git="$(eventing_value DDB_NOTIF_PREFS)"
   qd="$(queue_depth "$(out sqs_queue_url)")"
   dd="$(queue_depth "$(out sqs_dlq_url)")"
   alarm="$(alarm_state)"
@@ -355,6 +365,7 @@ status_json() {
   quiet="$(state_get quiet_until)"
   jq -n \
     --arg ns "${NS}" --arg live "${live}" --arg git "${git}" \
+    --arg prefs_live "${prefs_live}" --arg prefs_git "${prefs_git}" \
     --arg qd "${qd}" --arg dd "${dd}" --arg alarm "${alarm}" \
     --arg pods "${pods_json}" --arg helm "${helm_json}" \
     --arg armed "${armed}" --arg quiet "${quiet}" '
@@ -368,6 +379,7 @@ status_json() {
         ready: ([.status.containerStatuses[]?.ready] | length > 0 and all),
         restarts: ([.status.containerStatuses[]?.restartCount] | add // 0)}] end),
       table: {live: ($live | nz), git: ($git | nz), drift: ($live != "" and $live != $git)},
+      preferences_table: {live: ($prefs_live | nz), git: ($prefs_git | nz), drift: ($prefs_live != "" and $prefs_live != $prefs_git)},
       queue: ($qd | split("\t") | {visible: (.[0] | num), in_flight: (.[1] | num)}),
       dlq: ($dd | split("\t") | {visible: (.[0] | num), in_flight: (.[1] | num)}),
       alarm: ($alarm | split("\t") | {state: (.[0] | nz), actions_enabled: (if .[1] == null then null else (.[1] == "True") end)}),
@@ -387,6 +399,8 @@ cmd_status() {
     "pods           \(if .pods == null then "unknown" else ([.pods[] | "\(.name) \(if .ready then "ready" else .phase end)"] | join(", ")) end)",
     "table live     \(.table.live | v)",
     "table git      \(.table.git | v)\(if .table.drift then "  (drift)" else "" end)",
+    "prefs live     \(.preferences_table.live | v)",
+    "prefs git      \(.preferences_table.git | v)\(if .preferences_table.drift then "  (drift)" else "" end)",
     "queue          \(.queue.visible | v) visible, \(.queue.in_flight | v) in flight",
     "dlq            \(.dlq.visible | v) visible, \(.dlq.in_flight | v) in flight",
     "alarm          \(.alarm.state | v), actions \(if .alarm.actions_enabled == true then "enabled" elif .alarm.actions_enabled == false then "disabled" else "unknown" end)",
@@ -418,14 +432,20 @@ resource_not_found_count() {
 }
 
 deploys_ready() {
-  read_cmd kubectl -n "${NS}" get deploy notification-service file-service -o json 2>/dev/null \
-    | jq -r '[.items[] | "\(.metadata.name) \(.status.readyReplicas // 0)/\(.spec.replicas // 1)"] | join(", ")' 2>/dev/null || true
+  local json
+  json="$(read_cmd kubectl -n "${NS}" get deploy -o json 2>/dev/null || true)"
+  [ -n "${json}" ] || return 0
+  jq -r '(.items | map({key: .metadata.name, value: .}) | from_entries) as $d
+    | ["notification-service", "file-service"]
+    | map(if $d[.] then "\(.) \($d[.].status.readyReplicas // 0)/\($d[.].spec.replicas // 1)" else "\(.) missing" end)
+    | join(", ")' <<<"${json}" 2>/dev/null || true
 }
 
 all_ready() {
   local s=$1
   [ -n "${s}" ] || return 1
-  awk -v RS=', ' '{split($2, r, "/"); if (r[1] < r[2] || r[2] == 0) bad = 1} END {exit bad}' <<<"${s}"
+  case "${s}" in *missing*) return 1 ;; esac
+  awk -v RS=', ' 'NF {count++; split($2, r, "/"); if (r[1] + 0 < r[2] + 0 || r[2] + 0 == 0) bad = 1} END {exit (bad || count != 2)}' <<<"${s}"
 }
 
 landing_check() {
@@ -507,13 +527,17 @@ cmd_simulate() {
   simulate "${count}"
 }
 
+utc_minutes_from_now() {
+  date -u -d "$1 minutes" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v"$1"M +%Y-%m-%dT%H:%M:%SZ
+}
+
 cmd_quiet() {
   require_operator
   local minutes=${1:-${MINUTES:-10}}
   minutes="${minutes#MINUTES=}"
   [[ "${minutes}" =~ ^[0-9]+$ ]] || die "usage: cw.sh quiet [MINUTES]"
   run aws cloudwatch disable-alarm-actions --alarm-names "$(out alarm_name)"
-  local until; until="$(date -u -d "+${minutes} minutes" +%Y-%m-%dT%H:%M:%SZ)"
+  local until; until="$(utc_minutes_from_now "+${minutes}")"
   state_set quiet_until "${until}"
   log "alarm actions disabled until ${until}"
 }
@@ -543,8 +567,8 @@ cmd_reset() {
       --jq '.[] | select(.headRefName | startswith("demo-cw-")) | .number' || true)"
     for n in ${prs}; do run gh pr close "${n}" --repo "${GH_REPO}" --comment "Closed by cloudworker reset."; done
   else
-    log "gh not found; close any open PRs from these branches by hand:"
-    for b in ${branches}; do log "  ${b}"; done
+    log "gh not found; close the open PRs at these links by hand:"
+    for b in ${branches}; do log "  https://github.com/${GH_REPO}/pulls?q=is%3Apr+is%3Aopen+head%3A${b}"; done
   fi
   for b in ${branches}; do run git -C "${REPO}" push origin --delete "${b}"; done
   local nss ns
@@ -582,11 +606,15 @@ cmd_teardown() {
 }
 
 cmd_trail() {
-  local start; start="$(date -u -d '-2 hours' +%Y-%m-%dT%H:%M:%SZ)"
+  local start; start="$(utc_minutes_from_now -120)"
   local events
-  events="$(read_cmd aws cloudtrail lookup-events --region "${AWS_REGION}" --start-time "${start}" \
-    --max-items "${CW_TRAIL_MAX:-5000}" --output json)"
+  local -a args=(aws cloudtrail lookup-events --region "${AWS_REGION}" --start-time "${start}" --output json)
+  if [ -n "${CW_TRAIL_MAX:-}" ]; then args+=(--max-items "${CW_TRAIL_MAX}"); fi
+  events="$(read_cmd "${args[@]}")"
   [ -n "${events}" ] || return 0
+  if [ -n "${CW_TRAIL_MAX:-}" ] && jq -e '.NextToken != null' >/dev/null 2>&1 <<<"${events}"; then
+    log "warning: CloudTrail results are truncated at CW_TRAIL_MAX=${CW_TRAIL_MAX} events"
+  fi
   {
     printf 'TIME\tUSER\tEVENT\tSOURCE\n'
     jq -r '.Events[] | (.CloudTrailEvent | fromjson) as $e
