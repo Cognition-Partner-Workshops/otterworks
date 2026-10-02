@@ -1,0 +1,161 @@
+{
+  "kind": "connectivity-probe",
+  "checkedAt": "2026-10-02T15:28:26.016804+00:00",
+  "policy": "auto",
+  "runMode": "live",
+  "migrationDb": "ow_tp_billing_20261001T233613Z",
+  "preflight": {
+    "command": "make tp-preflight PLATFORM=atlas",
+    "manifest": ".tp-preflight/atlas-capabilities.json",
+    "checkedAt": "2026-10-02T15:25:08.034629+00:00",
+    "probes": {
+      "project-read": {
+        "result": "verified",
+        "detail": "HTTP 200"
+      },
+      "cluster-read": {
+        "result": "verified",
+        "detail": "HTTP 200"
+      },
+      "db-user-read": {
+        "result": "verified",
+        "detail": "HTTP 200"
+      },
+      "access-list-read": {
+        "result": "verified",
+        "detail": "6 entries across 1 page(s)"
+      },
+      "access-list-post": {
+        "result": "verified",
+        "detail": "HTTP 201"
+      },
+      "vm-ip-listed": {
+        "result": "skipped",
+        "detail": "MONGODB_ATLAS_URI is not set"
+      },
+      "db-user-write": {
+        "result": "skipped",
+        "detail": "MONGODB_ATLAS_URI is not set"
+      },
+      "access-list-delete": {
+        "result": "verified",
+        "detail": "HTTP 204: 203.0.113.254"
+      }
+    },
+    "note": "run with MONGODB_ATLAS_URI unset so the repo preflight's db-user-write probe (which targets the ow_tp_preflight database) is skipped; the wire-protocol write capability is proven below against the migration database only"
+  },
+  "oracle": {
+    "source": "live",
+    "secretEnv": "OW_TP_ORACLE_RO_DSN",
+    "thinMode": true,
+    "principal": "OW_BILLING_RO",
+    "serverVersion": "23.26.3.0.0",
+    "read": {
+      "statement": "SELECT COUNT(*) FROM OW_BILLING.TENANTS",
+      "tenantsCount": 69,
+      "result": "ok"
+    },
+    "sessionPrivileges": [
+      "CREATE SESSION",
+      "SELECT ANY DICTIONARY",
+      "SELECT ANY TABLE"
+    ],
+    "owBillingObjectPrivileges": {},
+    "insert": {
+      "statement": "INSERT INTO OW_BILLING.TENANTS SELECT * FROM OW_BILLING.TENANTS WHERE 1 = 0",
+      "transaction": "SET TRANSACTION READ ONLY",
+      "rowsAffected": 0,
+      "error": {
+        "code": 41900,
+        "message": "ORA-41900: missing INSERT privilege on \"OW_BILLING\".\"TENANTS\""
+      },
+      "result": "refused",
+      "refusedBy": "missing-privilege",
+      "rolledBack": true
+    },
+    "dmlPrivileges": [],
+    "readOnlyPrincipal": true,
+    "runMode": "live"
+  },
+  "atlas": {
+    "source": "live",
+    "secretEnv": "MONGODB_ATLAS_URI",
+    "ping": 1,
+    "host": "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net:27017",
+    "migrationDb": "ow_tp_billing_20261001T233613Z",
+    "principal": {
+      "user": "otterworks-app",
+      "authDb": "admin",
+      "roles": [
+        {
+          "role": "readWriteAnyDatabase",
+          "db": "admin"
+        },
+        {
+          "role": "dbAdminAnyDatabase",
+          "db": "admin"
+        }
+      ],
+      "privilegeResources": [
+        "{\"cluster\": true}",
+        "{\"collection\": \"\", \"db\": \"\"}",
+        "{\"collection\": \"system.js\", \"db\": \"\"}",
+        "{\"collection\": \"system.profile\", \"db\": \"\"}"
+      ]
+    },
+    "scopeEnforcement": "convention",
+    "scopeNote": "principal holds *AnyDatabase roles; the write boundary to the migration database is enforced by convention (migration/billing/README.md, UNT-3); no cross-database probe was run",
+    "read": {
+      "collections": [],
+      "result": "ok"
+    },
+    "write": {
+      "database": "ow_tp_billing_20261001T233613Z",
+      "collection": "_connectivity_probe",
+      "inserted": 1,
+      "deleted": 1,
+      "remaining": 0,
+      "collectionDropped": true,
+      "result": "accepted"
+    },
+    "runMode": "live"
+  },
+  "accessList": {
+    "api": "https://cloud.mongodb.com/api/atlas/v2/groups/<project>/accessList",
+    "method": "GET",
+    "callingIp": "140.232.64.3",
+    "entries": 6,
+    "coveringEntries": [
+      "140.232.64.3/32"
+    ],
+    "result": "covered"
+  },
+  "fallback": {
+    "policy": "auto: live when the named secret is set and reachable, local fixture otherwise",
+    "mongo": {
+      "image": "mongo:7",
+      "imagePresent": true,
+      "container": "ow-billing-mongo",
+      "port": 27117,
+      "containerStatus": "not running",
+      "exercised": false
+    },
+    "oracle": {
+      "image": "container-registry.oracle.com/database/free:latest",
+      "imagePresent": true,
+      "fixture": "make oracle-billing-up && make oracle-billing-seed NS=demo",
+      "port": 52521,
+      "fixtureHealthy": false,
+      "exercised": false
+    }
+  },
+  "checks": {
+    "oracleRead": true,
+    "oracleInsertRefusedByPrivilege": true,
+    "oracleReadOnlyPrincipal": true,
+    "atlasRead": true,
+    "atlasWriteMigrationDb": true,
+    "accessListCoversCallingIp": true
+  },
+  "verdict": "PASS"
+}
