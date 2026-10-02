@@ -1,0 +1,4893 @@
+{
+  "kind": "mapping-spec",
+  "version": 1,
+  "plan_step": "s3.1-mapping-spec",
+  "run_branch": "tp-run/mongodb-20261001T233613Z",
+  "generator": "migration/billing/mapping/build_mapping_spec.py (run with --check to verify this file and its invariants)",
+  "inputs": {
+    "census": {
+      "path": "migration/billing/census.json",
+      "captured_at": "2026-10-02T01:03:11Z",
+      "pr": 1772
+    },
+    "buckets": {
+      "path": "migration/billing/census/buckets.json",
+      "migrate_tables": 19
+    },
+    "access_patterns": {
+      "path": "migration/billing/access_patterns/access_patterns.json",
+      "md": "migration/billing/access_patterns.md",
+      "entrypoints": 12,
+      "pr": 1774
+    },
+    "tolerances": {
+      "path": "migration/billing/tolerances.json",
+      "money_columns": 46
+    },
+    "fixture": {
+      "path": "migration/billing/fixtures/demo.json",
+      "pr": 1773
+    },
+    "cardinality": {
+      "path": "migration/billing/mapping/cardinality.json",
+      "captured_at": "2026-10-02T01:25:06Z",
+      "source": {
+        "system": "oracle",
+        "schema": "OW_BILLING",
+        "mode": "live",
+        "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+        "principal": "OW_BILLING_RO",
+        "container": "FREEPDB1",
+        "transaction": "SET TRANSACTION READ ONLY"
+      },
+      "note": "read-only live measurement; observed bounds, not limits"
+    }
+  },
+  "decisions": {
+    "applied": {
+      "d-embed-invoice-lines": "Embed lines in the invoice -> invoices.lines",
+      "d-customer-eav": "One customer doc, EAV embedded and typed -> customers.attributes[] with value (verbatim) + typed",
+      "d-history-tables": "Separate history collections -> subscriptions_hist, customers_hist",
+      "d-migration-db": "Fresh database ow_tp_billing_<run> per run (UNT-3) -> ow_tp_billing_20261001T233613Z"
+    },
+    "made_here": {
+      "d-embed-rating-result": "RATING_RESULTS is a 1:1 child written with its period (md5(period_id) id, same transaction) and never read alone -> rating_periods.result sub-document",
+      "d-reference-usage-events": "USAGE_EVENTS append-heavy and unbounded -> own collection, {tenantId, occurredAt} index",
+      "d-feed-embed-lines": "INVOICE_LINE embedded under INVOICE_HEADER (1-23 live, read only via the header join); orphans to invoice_feed_quarantine",
+      "d-flat-customer-columns": "all 155 CUSTOMER_MASTER columns carried flat (camelCase) for SELECT * parity; regrouping deferred to the service refactor",
+      "d-null-absent": "an Oracle NULL is an absent field; '' is the string '' (tolerances.null.null_equals_empty_string = false)"
+    }
+  },
+  "target": {
+    "system": "mongodb-atlas",
+    "uri_secret": "MONGODB_ATLAS_URI",
+    "database": "ow_tp_billing_20261001T233613Z",
+    "cluster_tier_note": "M0 (512 MB): SCALE=demo data only; Atlas recommends keeping collections + indexes small on shared tiers - this spec declares 16 collections and 22 secondary indexes (1 deferred)",
+    "writes_limited_to": "ow_tp_billing_20261001T233613Z",
+    "collection_prefix": "none (the database name scopes the run; collection names are the plain nouns)"
+  },
+  "guidance": {
+    "embed_vs_reference": "https://www.mongodb.com/docs/manual/data-modeling/best-practices/",
+    "map_relationships": "https://www.mongodb.com/docs/manual/data-modeling/schema-design-process/map-relationships/",
+    "unbounded_arrays": "https://www.mongodb.com/docs/manual/data-modeling/design-antipatterns/unbounded-arrays/",
+    "bson_limit": "https://www.mongodb.com/docs/manual/reference/limits/#bson-documents",
+    "monetary_data": "https://www.mongodb.com/docs/manual/tutorial/model-monetary-data/",
+    "unique_indexes": "https://www.mongodb.com/docs/manual/core/index-unique/",
+    "ttl_indexes": "https://www.mongodb.com/docs/manual/core/index-ttl/",
+    "esr_rule": "https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/"
+  },
+  "conventions": {
+    "field_names": "camelCase of the Oracle column (CUST_SEQ_NO -> custSeqNo, ADDR_LINE_1 -> addrLine1); the FK column that names the parent of an embedded child is not repeated inside the child",
+    "null": "Oracle NULL -> field absent; recon treats absent as NULL and '' as ''",
+    "strings": "VARCHAR2/CHAR verbatim, no trim, no case folding (tolerances.string)",
+    "yn_flags": "CHAR(1) Y/N kept as the string 'Y'/'N' (absent when NULL); no boolean coercion, so recon is exact",
+    "codes": "*_CD columns stay int codes; decoding goes through the codes collection exactly as Oracle joins CODES",
+    "dates": {
+      "DATE": "BSON date (UTC)",
+      "TIMESTAMP(6)": "BSON date (ms); sub-ms digits dropped, recon at whole seconds (tolerances.timestamp.absolute_seconds = 0)",
+      "VARCHAR2 *_DT": "verbatim text + typed *Date sibling (absent when invalid) - see legacy_representations.dd_mon_yy_string_dates in the fixture"
+    },
+    "csv_lists": "verbatim text + *List sibling (absent when malformed)",
+    "money": {
+      "bson": "Decimal128",
+      "source": "Oracle NUMBER(p,s>0) read as decimal.Decimal, written as bson.Decimal128; float/double never used in the loader, the app or the recon",
+      "columns": {
+        "credit_notes": [
+          "amount",
+          "remaining_amount"
+        ],
+        "customer_master": [
+          "cur_bal_amt",
+          "past_due_amt",
+          "ytd_billed_amt",
+          "ltd_billed_amt",
+          "ytd_paid_amt",
+          "credit_limit_amt",
+          "udf_amt_01",
+          "udf_amt_02",
+          "udf_amt_03",
+          "udf_amt_04",
+          "udf_amt_05",
+          "udf_amt_06",
+          "udf_amt_07",
+          "udf_amt_08",
+          "udf_amt_09",
+          "udf_amt_10"
+        ],
+        "customer_master_hist": [
+          "cur_bal_amt",
+          "past_due_amt",
+          "ytd_billed_amt",
+          "ltd_billed_amt",
+          "ytd_paid_amt",
+          "credit_limit_amt",
+          "udf_amt_01",
+          "udf_amt_02",
+          "udf_amt_03",
+          "udf_amt_04",
+          "udf_amt_05",
+          "udf_amt_06",
+          "udf_amt_07",
+          "udf_amt_08",
+          "udf_amt_09",
+          "udf_amt_10"
+        ],
+        "invoice_header": [
+          "total_amt"
+        ],
+        "invoice_line": [
+          "qty",
+          "unit_price",
+          "amount",
+          "tax_amt"
+        ],
+        "invoice_lines": [
+          "amount"
+        ],
+        "invoices": [
+          "subtotal",
+          "tax",
+          "total"
+        ],
+        "plans": [
+          "monthly_fee",
+          "overage_rate"
+        ],
+        "rating_results": [
+          "overage_amount"
+        ]
+      }
+    },
+    "integers": "NUMBER(p,0): int for p <= 9, long otherwise (BSON int32/int64)"
+  },
+  "key_strategy": {
+    "rule": "Oracle primary key kept as _id, verbatim, for every collection; compound PK (CODES) as an embedded-document _id with fixed key order",
+    "sequence_ids": {
+      "carried": "sequence-generated ids (SEQ_* via TRG_*_SEQ / TRG_BILLING_AUDIT_LOG_ID) are copied as BSON long _id / field values",
+      "post_cutover": "new ids are issued by the application, not by the database: one 'counters' document per sequence is NOT used; the app seeds its allocator from max(_id)+1 at startup for each history/audit collection (write-only, single writer) and from max(custSeqNo)+1 for customers; uuid-keyed collections keep their existing generators (bridge event id, f_md5_uuid-derived ids)",
+      "sequences": {
+        "SEQ_BILLING_AUDIT_LOG": {
+          "last_number": 1,
+          "lands_in": "billing_audit_log._id"
+        },
+        "SEQ_CUSTOMER_MASTER": {
+          "last_number": 125000,
+          "lands_in": "customers.custSeqNo"
+        },
+        "SEQ_CUSTOMER_MASTER_HIST": {
+          "last_number": 1,
+          "lands_in": "customers_hist._id"
+        },
+        "SEQ_ENTITY_ATTR_VALUE": {
+          "last_number": 11001,
+          "lands_in": "customers.attributes[].eavId"
+        },
+        "SEQ_SUBSCRIPTIONS_HIST": {
+          "last_number": 1,
+          "lands_in": "subscriptions_hist._id"
+        }
+      }
+    },
+    "embedded_children": "keep their Oracle PK as an element field (lines[].id, lines[].lineId, attributes[].eavId, result.id) and the PK is enforced across documents by a partial unique multikey index",
+    "no_objectid": "ObjectId is not used anywhere; every _id is the Oracle key"
+  },
+  "size_guard": {
+    "bson_limit_bytes": 16777216,
+    "policy": "an array is embedded only when (a) the access patterns never read the child alone, (b) the child is written with the parent, and (c) the live child-per-parent maximum is bounded by the writing logic; every embedded array declares max_elements (validator maxItems), a projected worst-case document size from live row-byte proxies, and the writer's 12 MiB pre-check",
+    "embedded_arrays": [
+      {
+        "collection": "invoices",
+        "path": "lines",
+        "observed_max": 2,
+        "max_elements": 50,
+        "projected_max_doc_bytes": 9627,
+        "pct_of_limit": 0.057
+      },
+      {
+        "collection": "customers",
+        "path": "attributes",
+        "observed_max": 5,
+        "max_elements": 64,
+        "projected_max_doc_bytes": 12419,
+        "pct_of_limit": 0.074
+      },
+      {
+        "collection": "invoice_feed",
+        "path": "lines",
+        "observed_max": 23,
+        "max_elements": 200,
+        "projected_max_doc_bytes": 116552,
+        "pct_of_limit": 0.695
+      }
+    ],
+    "not_embedded_because_unbounded": [
+      {
+        "child": "USAGE_EVENTS",
+        "parent": "TENANTS",
+        "observed_max": 25,
+        "reason": "append-only ingest, no product bound"
+      },
+      {
+        "child": "CUSTOMER_MASTER",
+        "parent": "TENANTS",
+        "observed_max": 8575,
+        "reason": "8,575 x 387 bytes already 3.3 MB for one tenant_id; grows with conversion batches"
+      },
+      {
+        "child": "INVOICES",
+        "parent": "TENANTS",
+        "observed_max": 1,
+        "reason": "one per period forever; read by status across tenants"
+      },
+      {
+        "child": "SUBSCRIPTIONS_HIST",
+        "parent": "SUBSCRIPTIONS",
+        "observed_max": null,
+        "reason": "write-only history (d-history-tables)"
+      },
+      {
+        "child": "CUSTOMER_MASTER_HIST",
+        "parent": "CUSTOMER_MASTER",
+        "observed_max": null,
+        "reason": "write-only history (d-history-tables)"
+      },
+      {
+        "child": "DUNNING_ATTEMPTS",
+        "parent": "INVOICES",
+        "observed_max": 1,
+        "reason": "read across tenants by scheduledFor (GET /admin/dunning)"
+      }
+    ]
+  },
+  "collections": [
+    {
+      "name": "codes",
+      "source_tables": [
+        "CODES"
+      ],
+      "kind": "reference",
+      "why": "static lookup decoding every *_CD column (9 read sites, 0 writes); read by exact (code_type, code_val) and listed per code_type. Kept as its own collection, not denormalised into every document, so historical codes keep decoding and the recon stays a row-for-row set compare.",
+      "_id": {
+        "from": [
+          "CODES.CODE_TYPE",
+          "CODES.CODE_VAL"
+        ],
+        "shape": {
+          "codeType": "string",
+          "codeVal": "int"
+        },
+        "rule": "compound Oracle PK as an embedded-document _id with keys in exactly this order (BSON compares documents field-by-field in order)"
+      },
+      "fields": [
+        {
+          "field": "codeType",
+          "source": "CODES.CODE_TYPE",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "codeVal",
+          "source": "CODES.CODE_VAL",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "codeDesc",
+          "source": "CODES.CODE_DESC",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        }
+      ],
+      "embedded": [],
+      "indexes": [],
+      "writes": {
+        "post_cutover": "none (static reference data, loaded once per run)"
+      },
+      "notes": [
+        "_id already covers lookup by (code_type, code_val) and the per-type listing (prefix scan on _id.codeType) that every *_CD decode needs; no secondary index."
+      ]
+    },
+    {
+      "name": "tenants",
+      "source_tables": [
+        "TENANTS"
+      ],
+      "kind": "entity",
+      "why": "parent of every tenant-scoped collection; 69 rows, read by _id in entitlement/preview/issue and updated per tenant by suspend_overdue. Children (subscriptions, usage_events, invoices, customers) are referenced by tenantId, never embedded: usage_events is append-heavy, customers per tenant_id reach 8,575 live (unbounded), and each child is queried independently.",
+      "_id": {
+        "from": [
+          "TENANTS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 uuid kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "name",
+          "source": "TENANTS.NAME",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "taxExemptYn",
+          "source": "TENANTS.TAX_EXEMPT_YN",
+          "bson": "string",
+          "nullable": false,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "statusCd",
+          "source": "TENANTS.STATUS_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "uq_tenants_name",
+          "keys": {
+            "name": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "serves": [
+            "ensure_tenant (bootstrap)"
+          ],
+          "query": "UQ_TENANTS_NAME carried; ensure_tenant inserts by id and the unique name prevents a second tenant doc for one name"
+        }
+      ],
+      "writes": {
+        "post_cutover": "ensure_tenant inserts; suspend_overdue sets statusCd"
+      },
+      "notes": []
+    },
+    {
+      "name": "plans",
+      "source_tables": [
+        "PLANS"
+      ],
+      "kind": "reference",
+      "why": "static rate card (6 read sites, 0 writes) read by _id and listed ORDER BY monthly_fee, id.",
+      "_id": {
+        "from": [
+          "PLANS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "code",
+          "source": "PLANS.CODE",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "tierCd",
+          "source": "PLANS.TIER_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "monthlyFee",
+          "source": "PLANS.MONTHLY_FEE",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        },
+        {
+          "field": "includedUnits",
+          "source": "PLANS.INCLUDED_UNITS",
+          "bson": "long",
+          "nullable": false,
+          "note": "NUMBER(10,0)"
+        },
+        {
+          "field": "overageRate",
+          "source": "PLANS.OVERAGE_RATE",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,6); never double"
+        },
+        {
+          "field": "activeYn",
+          "source": "PLANS.ACTIVE_YN",
+          "bson": "string",
+          "nullable": false,
+          "note": "CHAR Y/N kept as the 1-char string"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "uq_plans_code",
+          "keys": {
+            "code": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "serves": [
+            "list_plans"
+          ],
+          "query": "UQ_PLANS_CODE carried"
+        }
+      ],
+      "writes": {
+        "post_cutover": "none"
+      },
+      "notes": [
+        "fn_list_plans sorts 3 rows by monthlyFee, _id: an in-memory sort, no index."
+      ]
+    },
+    {
+      "name": "subscriptions",
+      "source_tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "kind": "entity",
+      "why": "1 per tenant live but open-ended (change_plan closes one and opens another), read on its own by entitlement/usage_rating/issue_invoice ('latest covering subscription for a date') and updated independently of the tenant by change_plan and suspend_overdue -> referenced from tenants, not embedded.",
+      "_id": {
+        "from": [
+          "SUBSCRIPTIONS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "SUBSCRIPTIONS.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "planId",
+          "source": "SUBSCRIPTIONS.PLAN_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "startsOn",
+          "source": "SUBSCRIPTIONS.STARTS_ON",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "endsOn",
+          "source": "SUBSCRIPTIONS.ENDS_ON",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "statusCd",
+          "source": "SUBSCRIPTIONS.STATUS_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "suspendedOn",
+          "source": "SUBSCRIPTIONS.SUSPENDED_ON",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_subscriptions_tenant_starts",
+          "keys": {
+            "tenantId": 1,
+            "startsOn": -1
+          },
+          "options": {},
+          "serves": [
+            "entitlement",
+            "usage_rating",
+            "finalize_rating",
+            "invoice_preview",
+            "issue_invoice",
+            "change_plan",
+            "suspend_overdue"
+          ],
+          "query": "{tenantId: t, startsOn: {$lte: d}, $or: [{endsOn: null}, {endsOn: {$gte: d}}]} sort startsOn desc limit 1 (covering subscription); change_plan/suspend_overdue update all docs with tenantId = t"
+        }
+      ],
+      "writes": {
+        "post_cutover": "change_plan (close + insert, with subscriptions_hist copies, in one transaction); suspend_overdue (statusCd/suspendedOn)"
+      },
+      "notes": []
+    },
+    {
+      "name": "subscriptions_hist",
+      "source_tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "kind": "history",
+      "decision": "d-history-tables",
+      "why": "full-row copies written by TRG_SUBSCRIPTIONS_HIST on every update/delete; never read by the app, grows with every plan change -> separate collection (d-history-tables), not an array on the subscription (unbounded, write-only).",
+      "_id": {
+        "from": [
+          "SUBSCRIPTIONS_HIST.HIST_ID"
+        ],
+        "shape": "long",
+        "rule": "SEQ_SUBSCRIPTIONS_HIST value kept for carried rows; after cutover the app issues the next value (see key_strategy.sequences)"
+      },
+      "fields": [
+        {
+          "field": "histDt",
+          "source": "SUBSCRIPTIONS_HIST.HIST_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "histDate",
+          "source": "SUBSCRIPTIONS_HIST.HIST_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "histOp",
+          "source": "SUBSCRIPTIONS_HIST.HIST_OP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "subscriptionId",
+          "source": "SUBSCRIPTIONS_HIST.ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "tenantId",
+          "source": "SUBSCRIPTIONS_HIST.TENANT_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "planId",
+          "source": "SUBSCRIPTIONS_HIST.PLAN_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "startsOn",
+          "source": "SUBSCRIPTIONS_HIST.STARTS_ON",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "endsOn",
+          "source": "SUBSCRIPTIONS_HIST.ENDS_ON",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "statusCd",
+          "source": "SUBSCRIPTIONS_HIST.STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "suspendedOn",
+          "source": "SUBSCRIPTIONS_HIST.SUSPENDED_ON",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_subscriptions_hist_subscription",
+          "keys": {
+            "subscriptionId": 1,
+            "_id": 1
+          },
+          "options": {},
+          "serves": [
+            "recon",
+            "change_plan (write side)"
+          ],
+          "query": "history of one subscription in write order; no app read path, kept for recon/audit"
+        }
+      ],
+      "writes": {
+        "post_cutover": "change_plan and suspend_overdue copy the pre-image of each updated subscription (migrate-as-logic replacement for the trigger) in the same transaction"
+      },
+      "notes": [
+        "histDt is VARCHAR2 in Oracle and is kept verbatim with a typed histDate sibling."
+      ]
+    },
+    {
+      "name": "usage_events",
+      "source_tables": [
+        "USAGE_EVENTS"
+      ],
+      "kind": "event",
+      "why": "the only append-heavy table (814 rows / 69 tenants live, max 25 per tenant today but unbounded by design: bridge ingest appends forever). Always read per tenant: compute_rating scans every event of a tenant and filters the period in PL/SQL; GET /usage reads a tenant's events in a date window newest-first. Referenced from tenants by tenantId; embedding would be the textbook unbounded-array anti-pattern.",
+      "_id": {
+        "from": [
+          "USAGE_EVENTS.ID"
+        ],
+        "shape": "string",
+        "rule": "deterministic event id from the bridge kept verbatim; the duplicate-insert ORA-00001 contract becomes a duplicate-key error on _id"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "USAGE_EVENTS.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "occurredAt",
+          "source": "USAGE_EVENTS.OCCURRED_AT",
+          "bson": "date",
+          "nullable": false,
+          "note": "TIMESTAMP(6) -> BSON UTC datetime (ms precision; recon compares whole seconds, tolerances.timestamp.absolute_seconds=0)"
+        },
+        {
+          "field": "units",
+          "source": "USAGE_EVENTS.UNITS",
+          "bson": "long",
+          "nullable": false,
+          "note": "NUMBER(10,0)"
+        },
+        {
+          "field": "kindCd",
+          "source": "USAGE_EVENTS.KIND_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_usage_events_tenant_occurred",
+          "keys": {
+            "tenantId": 1,
+            "occurredAt": -1,
+            "_id": -1
+          },
+          "options": {},
+          "serves": [
+            "usage_rating",
+            "usage_summary",
+            "finalize_rating",
+            "invoice_preview",
+            "issue_invoice",
+            "GET /usage (facade)",
+            "POST /internal/usage/events"
+          ],
+          "query": "{tenantId: t, occurredAt: {$gte: start, $lt: end+1d}} sort occurredAt desc, _id desc (ESR: equality tenantId, sort occurredAt/_id, range occurredAt); compute_rating's whole-tenant scan is the same prefix without the range"
+        }
+      ],
+      "writes": {
+        "post_cutover": "POST /internal/usage/events inserts one document per event after ensure_tenant"
+      },
+      "notes": [
+        "Not a time-series collection: the ingest contract needs a caller-supplied unique _id and duplicate detection, which time-series collections do not provide."
+      ]
+    },
+    {
+      "name": "rating_periods",
+      "source_tables": [
+        "RATING_PERIODS",
+        "RATING_RESULTS"
+      ],
+      "kind": "entity",
+      "decision": "d-embed-rating-result (this spec): one-to-one, embed",
+      "why": "rating_results is never read without its period (access_patterns \u00a76) and is exactly one per period: sp_finalize_rating derives the result id as md5(period_id) and upserts it, and both rows are written in the same transaction. MongoDB guidance for a 1:1 written-together pair is to embed; the join GET /invoices needs is then a single $lookup on rating_periods._id.",
+      "_id": {
+        "from": [
+          "RATING_PERIODS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "RATING_PERIODS.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "periodStart",
+          "source": "RATING_PERIODS.PERIOD_START",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "periodEnd",
+          "source": "RATING_PERIODS.PERIOD_END",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        }
+      ],
+      "embedded": [
+        {
+          "path": "result",
+          "source_table": "RATING_RESULTS",
+          "relationship": "one-to-one",
+          "shape": "sub-document (not an array)",
+          "observed": {
+            "edge": "RATING_PERIODS->RATING_RESULTS",
+            "children_per_parent": {
+              "min": 1,
+              "max": 1,
+              "avg": 1.0,
+              "p99": 1
+            },
+            "child_rows": 3,
+            "captured_at": "2026-10-02T01:25:06Z",
+            "mode": "live"
+          },
+          "identity": "result.id keeps RATING_RESULTS.ID (= md5(period id)); RATING_RESULTS.PERIOD_ID is the parent _id and is not repeated",
+          "fields": [
+            {
+              "field": "id",
+              "source": "RATING_RESULTS.ID",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "subscriptionId",
+              "source": "RATING_RESULTS.SUBSCRIPTION_ID",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "usedUnits",
+              "source": "RATING_RESULTS.USED_UNITS",
+              "bson": "long",
+              "nullable": false,
+              "note": "NUMBER(10,0)"
+            },
+            {
+              "field": "quotaUnits",
+              "source": "RATING_RESULTS.QUOTA_UNITS",
+              "bson": "long",
+              "nullable": false,
+              "note": "NUMBER(10,0)"
+            },
+            {
+              "field": "rolloverUnits",
+              "source": "RATING_RESULTS.ROLLOVER_UNITS",
+              "bson": "long",
+              "nullable": false,
+              "note": "NUMBER(10,0)"
+            },
+            {
+              "field": "billableUnits",
+              "source": "RATING_RESULTS.BILLABLE_UNITS",
+              "bson": "long",
+              "nullable": false,
+              "note": "NUMBER(10,0)"
+            },
+            {
+              "field": "overageAmount",
+              "source": "RATING_RESULTS.OVERAGE_AMOUNT",
+              "bson": "decimal",
+              "nullable": false,
+              "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+            },
+            {
+              "field": "createdAt",
+              "source": "RATING_RESULTS.CREATED_AT",
+              "bson": "date",
+              "nullable": false,
+              "note": "TIMESTAMP(6) -> BSON UTC datetime (ms precision; recon compares whole seconds, tolerances.timestamp.absolute_seconds=0)"
+            }
+          ],
+          "bound": {
+            "max_elements": 1,
+            "basis": "sp_finalize_rating upserts a single result keyed by md5(period_id)"
+          },
+          "size_guard": {
+            "limit_bytes": 16777216,
+            "projected_max_doc_bytes": 444,
+            "projection": "one fixed sub-document; no array"
+          },
+          "absent_when": "the period exists but has not been finalised (preview-only periods)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "uq_rating_periods_tenant_start",
+          "keys": {
+            "tenantId": 1,
+            "periodStart": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "serves": [
+            "usage_rating",
+            "finalize_rating",
+            "invoice_preview",
+            "issue_invoice",
+            "GET /invoices (facade, via $lookup on _id)"
+          ],
+          "query": "tenant + period: {tenantId: t, periodStart: s} point lookup/upsert (UQ_RATING_PERIODS carried) and the rollover window {tenantId: t, periodStart: {$gte: s-3mo, $lt: s}} reading result.rolloverUnits"
+        }
+      ],
+      "writes": {
+        "post_cutover": "finalize_rating / issue_invoice upsert the period and set result in one document write"
+      },
+      "notes": [
+        "Recon reconciles RATING_RESULTS against the unwound result sub-document (row count = documents with result present)."
+      ]
+    },
+    {
+      "name": "invoices",
+      "source_tables": [
+        "INVOICES",
+        "INVOICE_LINES"
+      ],
+      "kind": "entity",
+      "decision": "d-embed-invoice-lines",
+      "why": "lines are written with the header in sp_issue_invoice's single transaction, cascade-deleted with it, and are never read without it (fn_invoice_lines first checks the header by (id, tenant_id)). Line count is bounded by the issuing logic (one line per charge kind: fee, overage, credit) - live max 2 per invoice. GET /invoices is header-only and projects lines away.",
+      "_id": {
+        "from": [
+          "INVOICES.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "INVOICES.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "periodId",
+          "source": "INVOICES.PERIOD_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "issuedAt",
+          "source": "INVOICES.ISSUED_AT",
+          "bson": "date",
+          "nullable": false,
+          "note": "TIMESTAMP(6) -> BSON UTC datetime (ms precision; recon compares whole seconds, tolerances.timestamp.absolute_seconds=0)"
+        },
+        {
+          "field": "subtotal",
+          "source": "INVOICES.SUBTOTAL",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        },
+        {
+          "field": "tax",
+          "source": "INVOICES.TAX",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        },
+        {
+          "field": "total",
+          "source": "INVOICES.TOTAL",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        },
+        {
+          "field": "statusCd",
+          "source": "INVOICES.STATUS_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        }
+      ],
+      "embedded": [
+        {
+          "path": "lines",
+          "source_table": "INVOICE_LINES",
+          "relationship": "one-to-few",
+          "observed": {
+            "edge": "INVOICES->INVOICE_LINES",
+            "children_per_parent": {
+              "min": 2,
+              "max": 2,
+              "avg": 2.0,
+              "p99": 2
+            },
+            "child_rows": 2,
+            "parents_with_children": 1,
+            "child_max_row_bytes": 95,
+            "captured_at": "2026-10-02T01:25:06Z",
+            "mode": "live"
+          },
+          "order": "lineNo ascending (fn_invoice_lines ORDER BY line_no)",
+          "identity": "lines[].id keeps INVOICE_LINES.ID; (invoice _id, lines[].lineNo) is unique within the document (UQ_INVOICE_LINES); INVOICE_LINES.INVOICE_ID is the parent _id and is not repeated",
+          "bound": {
+            "max_elements": 50,
+            "basis": "sp_issue_invoice emits at most one line per charge kind (live max 2, p99 2); 50 is the validator ceiling with headroom for new charge kinds"
+          },
+          "size_guard": {
+            "limit_bytes": 16777216,
+            "projected_max_doc_bytes": 9627,
+            "projection": "parent max row bytes + max_elements x child max row bytes x 2 (BSON key/overhead factor); Oracle VSIZE is a proxy, not a guarantee",
+            "writer_rule": "before $push/replace the writer computes the document's BSON size (bsonsize()/$bsonSize) and refuses the write above 12 MiB (75% of the limit) instead of letting Atlas reject it at 16 MiB; the refusal is a recon anomaly, never a silent drop",
+            "validator_rule": "$jsonSchema maxItems on 'lines' = bound.max_elements"
+          },
+          "fields": [
+            {
+              "field": "id",
+              "source": "INVOICE_LINES.ID",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "lineNo",
+              "source": "INVOICE_LINES.LINE_NO",
+              "bson": "int",
+              "nullable": false,
+              "note": "NUMBER(6,0)"
+            },
+            {
+              "field": "lineType",
+              "source": "INVOICE_LINES.LINE_TYPE",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "description",
+              "source": "INVOICE_LINES.DESCRIPTION",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "amount",
+              "source": "INVOICE_LINES.AMOUNT",
+              "bson": "decimal",
+              "nullable": false,
+              "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+            }
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_invoices_tenant_issued",
+          "keys": {
+            "tenantId": 1,
+            "issuedAt": -1,
+            "_id": -1
+          },
+          "options": {},
+          "serves": [
+            "GET /invoices (facade)",
+            "invoice_lines (ownership check {_id, tenantId})"
+          ],
+          "query": "{tenantId: t} sort issuedAt desc, _id desc; projection excludes lines"
+        },
+        {
+          "name": "ix_invoices_status_issued",
+          "keys": {
+            "statusCd": 1,
+            "issuedAt": 1,
+            "_id": 1
+          },
+          "options": {},
+          "serves": [
+            "overdue",
+            "schedule_dunning",
+            "suspend_overdue",
+            "GET /admin/overdue (facade)"
+          ],
+          "query": "overdue by date: {statusCd: 40, issuedAt: {$lt: asOf}} sort issuedAt, _id (fn_overdue_accounts compares issued_at as YYYYMMDD; the core estate has no due date column - the only due date is INVOICE_HEADER.DUE_DT in the report feed, indexed there)"
+        },
+        {
+          "name": "uq_invoices_lines_id",
+          "keys": {
+            "lines.id": 1
+          },
+          "options": {
+            "unique": true,
+            "partialFilterExpression": {
+              "lines.id": {
+                "$exists": true
+              }
+            }
+          },
+          "serves": [
+            "recon",
+            "issue_invoice"
+          ],
+          "query": "PK_INVOICE_LINES carried across documents as a unique multikey index (partial so invoices without lines do not collide on a missing key)"
+        }
+      ],
+      "writes": {
+        "post_cutover": "sp_issue_invoice replacement inserts header+lines as one document inside the issue_invoice transaction; statusCd 40/30 is still set outside the app (access_patterns \u00a72.10)"
+      },
+      "notes": [
+        "invoice by tenant/status (ticket) = ix_invoices_tenant_issued prefix + statusCd filter in memory per tenant (<= tens of invoices per tenant); overdue by status across tenants = ix_invoices_status_issued.",
+        "Uniqueness of (invoice, lineNo) inside one document cannot be expressed as a MongoDB unique index (multikey indexes do not compare entries of the same document); the writer and the $jsonSchema validator enforce it."
+      ]
+    },
+    {
+      "name": "credit_notes",
+      "source_tables": [
+        "CREDIT_NOTES"
+      ],
+      "kind": "entity",
+      "why": "read per tenant (preview sums remainingAmount; issue_invoice burns balances oldest-first FOR UPDATE) and mutated independently of invoices and tenants (max 2 per tenant live, open-ended) -> referenced by tenantId.",
+      "_id": {
+        "from": [
+          "CREDIT_NOTES.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "CREDIT_NOTES.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "issuedOn",
+          "source": "CREDIT_NOTES.ISSUED_ON",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "amount",
+          "source": "CREDIT_NOTES.AMOUNT",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        },
+        {
+          "field": "remainingAmount",
+          "source": "CREDIT_NOTES.REMAINING_AMOUNT",
+          "bson": "decimal",
+          "nullable": false,
+          "note": "Decimal128 from Oracle NUMBER(12,2); never double"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_credit_notes_tenant_issued",
+          "keys": {
+            "tenantId": 1,
+            "issuedOn": 1,
+            "_id": 1
+          },
+          "options": {},
+          "serves": [
+            "invoice_preview",
+            "issue_invoice"
+          ],
+          "query": "{tenantId: t, remainingAmount: {$gt: 0}} sort issuedOn, _id (oldest first burn-down)"
+        }
+      ],
+      "writes": {
+        "post_cutover": "issue_invoice decrements remainingAmount inside the issue_invoice transaction"
+      },
+      "notes": []
+    },
+    {
+      "name": "dunning_attempts",
+      "source_tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "kind": "entity",
+      "why": "read across tenants by scheduledFor (GET /admin/dunning, newest 200) and per invoice by attemptNo (schedule_dunning) - a cross-tenant query shape an embedded array on invoices cannot serve.",
+      "_id": {
+        "from": [
+          "DUNNING_ATTEMPTS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "DUNNING_ATTEMPTS.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "invoiceId",
+          "source": "DUNNING_ATTEMPTS.INVOICE_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "attemptNo",
+          "source": "DUNNING_ATTEMPTS.ATTEMPT_NO",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "scheduledFor",
+          "source": "DUNNING_ATTEMPTS.SCHEDULED_FOR",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "statusCd",
+          "source": "DUNNING_ATTEMPTS.STATUS_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "uq_dunning_attempts_invoice_attempt",
+          "keys": {
+            "invoiceId": 1,
+            "attemptNo": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "serves": [
+            "schedule_dunning"
+          ],
+          "query": "UQ_DUNNING_ATTEMPTS carried: next attemptNo per invoice = max(attemptNo)+1 with the unique key refusing a race"
+        },
+        {
+          "name": "ix_dunning_attempts_scheduled",
+          "keys": {
+            "scheduledFor": -1,
+            "_id": -1
+          },
+          "options": {},
+          "serves": [
+            "GET /admin/dunning (facade)"
+          ],
+          "query": "{scheduledFor: {$lte: asOf}} sort scheduledFor desc, _id desc limit 200"
+        }
+      ],
+      "writes": {
+        "post_cutover": "schedule_dunning inserts one attempt per overdue invoice (own transaction)"
+      },
+      "notes": []
+    },
+    {
+      "name": "notifications",
+      "source_tables": [
+        "NOTIFICATIONS"
+      ],
+      "kind": "entity",
+      "why": "written per tenant by suspend_overdue inside the suspend transaction; the Oracle unique key (tenant, kind, sent_at) is the idempotency guard and is carried as the only index.",
+      "_id": {
+        "from": [
+          "NOTIFICATIONS.ID"
+        ],
+        "shape": "string",
+        "rule": "Oracle PK VARCHAR2 kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "tenantId",
+          "source": "NOTIFICATIONS.TENANT_ID",
+          "bson": "string",
+          "nullable": false,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "kindCd",
+          "source": "NOTIFICATIONS.KIND_CD",
+          "bson": "int",
+          "nullable": false,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "sentAt",
+          "source": "NOTIFICATIONS.SENT_AT",
+          "bson": "date",
+          "nullable": false,
+          "note": "TIMESTAMP(6) -> BSON UTC datetime (ms precision; recon compares whole seconds, tolerances.timestamp.absolute_seconds=0)"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "uq_notifications_tenant_kind_sent",
+          "keys": {
+            "tenantId": 1,
+            "kindCd": 1,
+            "sentAt": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "serves": [
+            "suspend_overdue"
+          ],
+          "query": "UQ_NOTIFICATIONS carried; also serves any per-tenant listing"
+        }
+      ],
+      "writes": {
+        "post_cutover": "suspend_overdue inserts"
+      },
+      "notes": []
+    },
+    {
+      "name": "billing_audit_log",
+      "source_tables": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "kind": "log",
+      "why": "written by pkg_ow_util.log_msg under PRAGMA AUTONOMOUS_TRANSACTION from 8 call sites including read-only entrypoints (list_plans, usage_rating, invoice_preview); never read. It is outside every business transaction and must stay so: an insert that commits even when the enclosing transaction aborts cannot live inside any other document.",
+      "_id": {
+        "from": [
+          "BILLING_AUDIT_LOG.LOG_ID"
+        ],
+        "shape": "long",
+        "rule": "SEQ_BILLING_AUDIT_LOG value (TRG_BILLING_AUDIT_LOG_ID) kept for carried rows; new rows get the app-issued next value"
+      },
+      "fields": [
+        {
+          "field": "loggedAt",
+          "source": "BILLING_AUDIT_LOG.LOGGED_AT",
+          "bson": "date",
+          "nullable": false,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "module",
+          "source": "BILLING_AUDIT_LOG.MODULE",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "message",
+          "source": "BILLING_AUDIT_LOG.MESSAGE",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ttl_billing_audit_log_logged_at",
+          "keys": {
+            "loggedAt": 1
+          },
+          "options": {
+            "expireAfterSeconds": 7776000
+          },
+          "serves": [
+            "JOB_PURGE_AUDIT_LOG (retired)"
+          ],
+          "query": "TTL replaces the 03:30 daily DELETE of rows older than 90 days (census bucket note)"
+        }
+      ],
+      "writes": {
+        "post_cutover": "log_msg replacement: a single-document insert issued OUTSIDE any session/transaction (its own connection or no session), errors swallowed as in the PL/SQL; never part of an atomic unit",
+        "autonomous": true
+      },
+      "notes": [
+        "TTL deletion is intended retention (census: JOB_PURGE_AUDIT_LOG retire -> TTL); recon excludes rows older than 90 days at capture time."
+      ]
+    },
+    {
+      "name": "customers",
+      "source_tables": [
+        "CUSTOMER_MASTER",
+        "ENTITY_ATTR_VALUE"
+      ],
+      "kind": "entity",
+      "decision": "d-customer-eav",
+      "why": "GET /customer reads one customer_master row per tenant then its EAV rows; nothing reads EAV rows independently and ENTITY_TYPE is 'CUSTOMER' for every live row. Attributes are 1-5 per customer (p99 3) with 16-char values: a bounded one-to-few array, embedded and typed (d-customer-eav). All 155 columns are carried flat under their camelCase names so SELECT * parity and exact recon hold; regrouping the repeating address/phone/flag/udf groups is a service-side refactor outside this spec.",
+      "_id": {
+        "from": [
+          "CUSTOMER_MASTER.CUST_ID"
+        ],
+        "shape": "string",
+        "rule": "CUST_ID kept verbatim; CUST_SEQ_NO (SEQ_CUSTOMER_MASTER via TRG_CUSTOMER_MASTER_SEQ) is carried as custSeqNo and issued by the app after cutover"
+      },
+      "fields": [
+        {
+          "field": "custSeqNo",
+          "source": "CUSTOMER_MASTER.CUST_SEQ_NO",
+          "bson": "long",
+          "nullable": true,
+          "note": "NUMBER(12,0)"
+        },
+        {
+          "field": "tenantId",
+          "source": "CUSTOMER_MASTER.TENANT_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custNo",
+          "source": "CUSTOMER_MASTER.CUST_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custName",
+          "source": "CUSTOMER_MASTER.CUST_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custNameUpper",
+          "source": "CUSTOMER_MASTER.CUST_NAME_UPPER",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "legalName",
+          "source": "CUSTOMER_MASTER.LEGAL_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "dbaName",
+          "source": "CUSTOMER_MASTER.DBA_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine1",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine2",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine3",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine4",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine5",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_5",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine6",
+          "source": "CUSTOMER_MASTER.ADDR_LINE_6",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "city",
+          "source": "CUSTOMER_MASTER.CITY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "stateCd",
+          "source": "CUSTOMER_MASTER.STATE_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "zip",
+          "source": "CUSTOMER_MASTER.ZIP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "zip4",
+          "source": "CUSTOMER_MASTER.ZIP4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "countryCd",
+          "source": "CUSTOMER_MASTER.COUNTRY_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine1",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine2",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine3",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine4",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine5",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_5",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine6",
+          "source": "CUSTOMER_MASTER.MAIL_ADDR_LINE_6",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailCity",
+          "source": "CUSTOMER_MASTER.MAIL_CITY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailStateCd",
+          "source": "CUSTOMER_MASTER.MAIL_STATE_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailZip",
+          "source": "CUSTOMER_MASTER.MAIL_ZIP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone1",
+          "source": "CUSTOMER_MASTER.PHONE1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone2",
+          "source": "CUSTOMER_MASTER.PHONE2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone3",
+          "source": "CUSTOMER_MASTER.PHONE3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone4",
+          "source": "CUSTOMER_MASTER.PHONE4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone1TypeCd",
+          "source": "CUSTOMER_MASTER.PHONE1_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone2TypeCd",
+          "source": "CUSTOMER_MASTER.PHONE2_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone3TypeCd",
+          "source": "CUSTOMER_MASTER.PHONE3_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone4TypeCd",
+          "source": "CUSTOMER_MASTER.PHONE4_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "fax",
+          "source": "CUSTOMER_MASTER.FAX",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email1",
+          "source": "CUSTOMER_MASTER.EMAIL_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email2",
+          "source": "CUSTOMER_MASTER.EMAIL_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email3",
+          "source": "CUSTOMER_MASTER.EMAIL_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "signupDt",
+          "source": "CUSTOMER_MASTER.SIGNUP_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "signupDate",
+          "source": "CUSTOMER_MASTER.SIGNUP_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastActivityDt",
+          "source": "CUSTOMER_MASTER.LAST_ACTIVITY_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastActivityDate",
+          "source": "CUSTOMER_MASTER.LAST_ACTIVITY_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastInvoiceDt",
+          "source": "CUSTOMER_MASTER.LAST_INVOICE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastInvoiceDate",
+          "source": "CUSTOMER_MASTER.LAST_INVOICE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastPaymentDt",
+          "source": "CUSTOMER_MASTER.LAST_PAYMENT_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastPaymentDate",
+          "source": "CUSTOMER_MASTER.LAST_PAYMENT_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "terminateDt",
+          "source": "CUSTOMER_MASTER.TERMINATE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "terminateDate",
+          "source": "CUSTOMER_MASTER.TERMINATE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "statusCd",
+          "source": "CUSTOMER_MASTER.STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "subStatusCd",
+          "source": "CUSTOMER_MASTER.SUB_STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "custTypeCd",
+          "source": "CUSTOMER_MASTER.CUST_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "segmentCd",
+          "source": "CUSTOMER_MASTER.SEGMENT_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "regionCd",
+          "source": "CUSTOMER_MASTER.REGION_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "territoryCd",
+          "source": "CUSTOMER_MASTER.TERRITORY_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "channelCd",
+          "source": "CUSTOMER_MASTER.CHANNEL_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "rateClassCd",
+          "source": "CUSTOMER_MASTER.RATE_CLASS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "taxExemptYn",
+          "source": "CUSTOMER_MASTER.TAX_EXEMPT_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "creditHoldYn",
+          "source": "CUSTOMER_MASTER.CREDIT_HOLD_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "dunningExemptYn",
+          "source": "CUSTOMER_MASTER.DUNNING_EXEMPT_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "vipYn",
+          "source": "CUSTOMER_MASTER.VIP_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "curBalAmt",
+          "source": "CUSTOMER_MASTER.CUR_BAL_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "pastDueAmt",
+          "source": "CUSTOMER_MASTER.PAST_DUE_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ytdBilledAmt",
+          "source": "CUSTOMER_MASTER.YTD_BILLED_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ltdBilledAmt",
+          "source": "CUSTOMER_MASTER.LTD_BILLED_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ytdPaidAmt",
+          "source": "CUSTOMER_MASTER.YTD_PAID_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "creditLimitAmt",
+          "source": "CUSTOMER_MASTER.CREDIT_LIMIT_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "relatedAcctIds",
+          "source": "CUSTOMER_MASTER.RELATED_ACCT_IDS",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "relatedAcctIdsList",
+          "source": "CUSTOMER_MASTER.RELATED_ACCT_IDS (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^\\d{5}(,\\d{5}){0,3}$"
+        },
+        {
+          "field": "childAcctIds",
+          "source": "CUSTOMER_MASTER.CHILD_ACCT_IDS",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "childAcctIdsList",
+          "source": "CUSTOMER_MASTER.CHILD_ACCT_IDS (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^\\d{5}(,\\d{5}){0,3}$"
+        },
+        {
+          "field": "promoCodesCsv",
+          "source": "CUSTOMER_MASTER.PROMO_CODES_CSV",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "promoCodesCsvList",
+          "source": "CUSTOMER_MASTER.PROMO_CODES_CSV (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^[A-Z0-9]+(,[A-Z0-9]+)*$"
+        },
+        {
+          "field": "contactNotes",
+          "source": "CUSTOMER_MASTER.CONTACT_NOTES",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "legacySysKey",
+          "source": "CUSTOMER_MASTER.LEGACY_SYS_KEY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mainframeAcctNo",
+          "source": "CUSTOMER_MASTER.MAINFRAME_ACCT_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "conversionBatchNo",
+          "source": "CUSTOMER_MASTER.CONVERSION_BATCH_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        },
+        {
+          "field": "flag01",
+          "source": "CUSTOMER_MASTER.FLAG_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag02",
+          "source": "CUSTOMER_MASTER.FLAG_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag03",
+          "source": "CUSTOMER_MASTER.FLAG_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag04",
+          "source": "CUSTOMER_MASTER.FLAG_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag05",
+          "source": "CUSTOMER_MASTER.FLAG_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag06",
+          "source": "CUSTOMER_MASTER.FLAG_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag07",
+          "source": "CUSTOMER_MASTER.FLAG_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag08",
+          "source": "CUSTOMER_MASTER.FLAG_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag09",
+          "source": "CUSTOMER_MASTER.FLAG_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag10",
+          "source": "CUSTOMER_MASTER.FLAG_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag11",
+          "source": "CUSTOMER_MASTER.FLAG_11",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag12",
+          "source": "CUSTOMER_MASTER.FLAG_12",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag13",
+          "source": "CUSTOMER_MASTER.FLAG_13",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag14",
+          "source": "CUSTOMER_MASTER.FLAG_14",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag15",
+          "source": "CUSTOMER_MASTER.FLAG_15",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag16",
+          "source": "CUSTOMER_MASTER.FLAG_16",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag17",
+          "source": "CUSTOMER_MASTER.FLAG_17",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag18",
+          "source": "CUSTOMER_MASTER.FLAG_18",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag19",
+          "source": "CUSTOMER_MASTER.FLAG_19",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag20",
+          "source": "CUSTOMER_MASTER.FLAG_20",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "udf01",
+          "source": "CUSTOMER_MASTER.UDF_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf02",
+          "source": "CUSTOMER_MASTER.UDF_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf03",
+          "source": "CUSTOMER_MASTER.UDF_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf04",
+          "source": "CUSTOMER_MASTER.UDF_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf05",
+          "source": "CUSTOMER_MASTER.UDF_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf06",
+          "source": "CUSTOMER_MASTER.UDF_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf07",
+          "source": "CUSTOMER_MASTER.UDF_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf08",
+          "source": "CUSTOMER_MASTER.UDF_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf09",
+          "source": "CUSTOMER_MASTER.UDF_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf10",
+          "source": "CUSTOMER_MASTER.UDF_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf11",
+          "source": "CUSTOMER_MASTER.UDF_11",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf12",
+          "source": "CUSTOMER_MASTER.UDF_12",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf13",
+          "source": "CUSTOMER_MASTER.UDF_13",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf14",
+          "source": "CUSTOMER_MASTER.UDF_14",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf15",
+          "source": "CUSTOMER_MASTER.UDF_15",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf16",
+          "source": "CUSTOMER_MASTER.UDF_16",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf17",
+          "source": "CUSTOMER_MASTER.UDF_17",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf18",
+          "source": "CUSTOMER_MASTER.UDF_18",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf19",
+          "source": "CUSTOMER_MASTER.UDF_19",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf20",
+          "source": "CUSTOMER_MASTER.UDF_20",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf21",
+          "source": "CUSTOMER_MASTER.UDF_21",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf22",
+          "source": "CUSTOMER_MASTER.UDF_22",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf23",
+          "source": "CUSTOMER_MASTER.UDF_23",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf24",
+          "source": "CUSTOMER_MASTER.UDF_24",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf25",
+          "source": "CUSTOMER_MASTER.UDF_25",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf26",
+          "source": "CUSTOMER_MASTER.UDF_26",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf27",
+          "source": "CUSTOMER_MASTER.UDF_27",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf28",
+          "source": "CUSTOMER_MASTER.UDF_28",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf29",
+          "source": "CUSTOMER_MASTER.UDF_29",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf30",
+          "source": "CUSTOMER_MASTER.UDF_30",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf31",
+          "source": "CUSTOMER_MASTER.UDF_31",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf32",
+          "source": "CUSTOMER_MASTER.UDF_32",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf33",
+          "source": "CUSTOMER_MASTER.UDF_33",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf34",
+          "source": "CUSTOMER_MASTER.UDF_34",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf35",
+          "source": "CUSTOMER_MASTER.UDF_35",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf36",
+          "source": "CUSTOMER_MASTER.UDF_36",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf37",
+          "source": "CUSTOMER_MASTER.UDF_37",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf38",
+          "source": "CUSTOMER_MASTER.UDF_38",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf39",
+          "source": "CUSTOMER_MASTER.UDF_39",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf40",
+          "source": "CUSTOMER_MASTER.UDF_40",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfAmt01",
+          "source": "CUSTOMER_MASTER.UDF_AMT_01",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt02",
+          "source": "CUSTOMER_MASTER.UDF_AMT_02",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt03",
+          "source": "CUSTOMER_MASTER.UDF_AMT_03",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt04",
+          "source": "CUSTOMER_MASTER.UDF_AMT_04",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt05",
+          "source": "CUSTOMER_MASTER.UDF_AMT_05",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt06",
+          "source": "CUSTOMER_MASTER.UDF_AMT_06",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt07",
+          "source": "CUSTOMER_MASTER.UDF_AMT_07",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt08",
+          "source": "CUSTOMER_MASTER.UDF_AMT_08",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt09",
+          "source": "CUSTOMER_MASTER.UDF_AMT_09",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt10",
+          "source": "CUSTOMER_MASTER.UDF_AMT_10",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfDt01",
+          "source": "CUSTOMER_MASTER.UDF_DT_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt02",
+          "source": "CUSTOMER_MASTER.UDF_DT_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt03",
+          "source": "CUSTOMER_MASTER.UDF_DT_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt04",
+          "source": "CUSTOMER_MASTER.UDF_DT_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt05",
+          "source": "CUSTOMER_MASTER.UDF_DT_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt06",
+          "source": "CUSTOMER_MASTER.UDF_DT_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt07",
+          "source": "CUSTOMER_MASTER.UDF_DT_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt08",
+          "source": "CUSTOMER_MASTER.UDF_DT_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt09",
+          "source": "CUSTOMER_MASTER.UDF_DT_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt10",
+          "source": "CUSTOMER_MASTER.UDF_DT_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "createdBy",
+          "source": "CUSTOMER_MASTER.CREATED_BY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "createdDt",
+          "source": "CUSTOMER_MASTER.CREATED_DT",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "updatedBy",
+          "source": "CUSTOMER_MASTER.UPDATED_BY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "updatedDt",
+          "source": "CUSTOMER_MASTER.UPDATED_DT",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "rowVersionNo",
+          "source": "CUSTOMER_MASTER.ROW_VERSION_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        }
+      ],
+      "embedded": [
+        {
+          "path": "attributes",
+          "source_table": "ENTITY_ATTR_VALUE",
+          "relationship": "one-to-few",
+          "observed": {
+            "edge": "CUSTOMER_MASTER->ENTITY_ATTR_VALUE",
+            "children_per_parent": {
+              "min": 1,
+              "max": 5,
+              "avg": 1.178,
+              "p99": 3
+            },
+            "child_rows": 8333,
+            "parents_with_children": 7075,
+            "child_max_row_bytes": 94,
+            "captured_at": "2026-10-02T01:25:06Z",
+            "mode": "live"
+          },
+          "order": "eavId ascending (facade ORDER BY eav_id)",
+          "identity": "attributes[].eavId keeps ENTITY_ATTR_VALUE.EAV_ID (SEQ_ENTITY_ATTR_VALUE); ENTITY_TYPE ('CUSTOMER') and ENTITY_ID (= parent _id) are not repeated; a non-CUSTOMER entity_type row fails the load (0 live)",
+          "bound": {
+            "max_elements": 64,
+            "basis": "live max 5, p99 3; 7 distinct attribute names; 64 is the validator ceiling"
+          },
+          "size_guard": {
+            "limit_bytes": 16777216,
+            "projected_max_doc_bytes": 12419,
+            "projection": "parent max row bytes + max_elements x child max row bytes x 2 (BSON key/overhead factor); Oracle VSIZE is a proxy, not a guarantee",
+            "writer_rule": "before $push/replace the writer computes the document's BSON size (bsonsize()/$bsonSize) and refuses the write above 12 MiB (75% of the limit) instead of letting Atlas reject it at 16 MiB; the refusal is a recon anomaly, never a silent drop",
+            "validator_rule": "$jsonSchema maxItems on 'attributes' = bound.max_elements"
+          },
+          "fields": [
+            {
+              "field": "eavId",
+              "source": "ENTITY_ATTR_VALUE.EAV_ID",
+              "bson": "long",
+              "nullable": false,
+              "note": "NUMBER(14,0)"
+            },
+            {
+              "field": "name",
+              "source": "ENTITY_ATTR_VALUE.ATTR_NAME",
+              "bson": "string",
+              "nullable": false,
+              "note": "verbatim"
+            },
+            {
+              "field": "value",
+              "source": "ENTITY_ATTR_VALUE.ATTR_VALUE",
+              "bson": "string",
+              "nullable": true,
+              "note": "verbatim free text; this is the recon value (fixture anomaly eav_boolean_spellings compares the (name, value) vocabulary)"
+            },
+            {
+              "field": "type",
+              "source": "ENTITY_ATTR_VALUE.ATTR_TYPE",
+              "bson": "string",
+              "nullable": true,
+              "note": "verbatim ('STR' for every live row)"
+            },
+            {
+              "field": "createdDt",
+              "source": "ENTITY_ATTR_VALUE.CREATED_DT",
+              "bson": "string",
+              "nullable": true,
+              "note": "DD-MON-YY text kept verbatim"
+            },
+            {
+              "field": "createdDate",
+              "source": "ENTITY_ATTR_VALUE.CREATED_DT (derived)",
+              "bson": "date",
+              "nullable": true,
+              "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+            },
+            {
+              "field": "typed",
+              "source": "ENTITY_ATTR_VALUE.ATTR_VALUE (derived)",
+              "bson": "bool | decimal | string",
+              "nullable": true,
+              "note": "typed reading of value: bool when value (trimmed, upper-cased) is in {Y,TRUE,1} -> true or {N,FALSE,0} -> false; decimal (Decimal128) when it parses as a plain decimal number; otherwise the string itself. Derived only; never used by recon"
+            }
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_customers_tenant_seq",
+          "keys": {
+            "tenantId": 1,
+            "custSeqNo": 1
+          },
+          "options": {},
+          "serves": [
+            "GET /customer (facade)"
+          ],
+          "query": "{tenantId: t} sort custSeqNo limit 1 (facade FETCH FIRST 1 ROWS ONLY ORDER BY cust_seq_no); 48-8,575 customers per tenant_id live, so the index does the ordering"
+        },
+        {
+          "name": "ix_customers_conversion_batch",
+          "keys": {
+            "conversionBatchNo": 1
+          },
+          "options": {},
+          "serves": [
+            "reports.py BALANCES_SQL"
+          ],
+          "query": "$group by conversionBatchNo summing curBalAmt/pastDueAmt (reports bypass the backend switch, U4)"
+        },
+        {
+          "name": "uq_customers_attributes_eav_id",
+          "keys": {
+            "attributes.eavId": 1
+          },
+          "options": {
+            "unique": true,
+            "partialFilterExpression": {
+              "attributes.eavId": {
+                "$exists": true
+              }
+            }
+          },
+          "serves": [
+            "recon"
+          ],
+          "query": "PK_ENTITY_ATTR_VALUE carried across documents as a unique multikey index (partial: 71.7% of customers have no attributes)"
+        }
+      ],
+      "writes": {
+        "post_cutover": "no app write path exists today (customer_master: 3 reads, 0 writes); loads are bulk"
+      },
+      "notes": [
+        "Live TENANTS->CUSTOMER_MASTER join: 0 of 25,000 customer tenant_id values match a TENANTS row (50 distinct tenant_ids, 48-8,575 customers each). tenantId is therefore a plain string, not a validated reference, exactly as in Oracle (no FK).",
+        "DD-MON-YY VARCHAR2 dates (signupDt, lastActivityDt, lastInvoiceDt, lastPaymentDt, terminateDt, udfDt01..10) keep the verbatim text plus a typed *Date sibling that is absent for the 50 dirty_dates rows.",
+        "relatedAcctIds / childAcctIds / promoCodesCsv keep the verbatim CSV plus a *List sibling that is absent for the 31 malformed_csv_lists rows."
+      ]
+    },
+    {
+      "name": "customers_hist",
+      "source_tables": [
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "kind": "history",
+      "decision": "d-history-tables",
+      "why": "full-row copies from TRG_CUSTOMER_MASTER_HIST (0 live rows, SEQ_CUSTOMER_MASTER_HIST at 1); write-only, unbounded over time -> separate collection.",
+      "_id": {
+        "from": [
+          "CUSTOMER_MASTER_HIST.HIST_ID"
+        ],
+        "shape": "long",
+        "rule": "SEQ_CUSTOMER_MASTER_HIST value kept; app-issued after cutover"
+      },
+      "fields": [
+        {
+          "field": "histDt",
+          "source": "CUSTOMER_MASTER_HIST.HIST_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "histDate",
+          "source": "CUSTOMER_MASTER_HIST.HIST_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "histOp",
+          "source": "CUSTOMER_MASTER_HIST.HIST_OP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custId",
+          "source": "CUSTOMER_MASTER_HIST.CUST_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custSeqNo",
+          "source": "CUSTOMER_MASTER_HIST.CUST_SEQ_NO",
+          "bson": "long",
+          "nullable": true,
+          "note": "NUMBER(12,0)"
+        },
+        {
+          "field": "tenantId",
+          "source": "CUSTOMER_MASTER_HIST.TENANT_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custNo",
+          "source": "CUSTOMER_MASTER_HIST.CUST_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custName",
+          "source": "CUSTOMER_MASTER_HIST.CUST_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custNameUpper",
+          "source": "CUSTOMER_MASTER_HIST.CUST_NAME_UPPER",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "legalName",
+          "source": "CUSTOMER_MASTER_HIST.LEGAL_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "dbaName",
+          "source": "CUSTOMER_MASTER_HIST.DBA_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine1",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine2",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine3",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine4",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine5",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_5",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "addrLine6",
+          "source": "CUSTOMER_MASTER_HIST.ADDR_LINE_6",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "city",
+          "source": "CUSTOMER_MASTER_HIST.CITY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "stateCd",
+          "source": "CUSTOMER_MASTER_HIST.STATE_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "zip",
+          "source": "CUSTOMER_MASTER_HIST.ZIP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "zip4",
+          "source": "CUSTOMER_MASTER_HIST.ZIP4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "countryCd",
+          "source": "CUSTOMER_MASTER_HIST.COUNTRY_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine1",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine2",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine3",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine4",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine5",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_5",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailAddrLine6",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_6",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailCity",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_CITY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailStateCd",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_STATE_CD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mailZip",
+          "source": "CUSTOMER_MASTER_HIST.MAIL_ZIP",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone1",
+          "source": "CUSTOMER_MASTER_HIST.PHONE1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone2",
+          "source": "CUSTOMER_MASTER_HIST.PHONE2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone3",
+          "source": "CUSTOMER_MASTER_HIST.PHONE3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone4",
+          "source": "CUSTOMER_MASTER_HIST.PHONE4",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "phone1TypeCd",
+          "source": "CUSTOMER_MASTER_HIST.PHONE1_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone2TypeCd",
+          "source": "CUSTOMER_MASTER_HIST.PHONE2_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone3TypeCd",
+          "source": "CUSTOMER_MASTER_HIST.PHONE3_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "phone4TypeCd",
+          "source": "CUSTOMER_MASTER_HIST.PHONE4_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "fax",
+          "source": "CUSTOMER_MASTER_HIST.FAX",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email1",
+          "source": "CUSTOMER_MASTER_HIST.EMAIL_1",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email2",
+          "source": "CUSTOMER_MASTER_HIST.EMAIL_2",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "email3",
+          "source": "CUSTOMER_MASTER_HIST.EMAIL_3",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "signupDt",
+          "source": "CUSTOMER_MASTER_HIST.SIGNUP_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "signupDate",
+          "source": "CUSTOMER_MASTER_HIST.SIGNUP_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastActivityDt",
+          "source": "CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastActivityDate",
+          "source": "CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastInvoiceDt",
+          "source": "CUSTOMER_MASTER_HIST.LAST_INVOICE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastInvoiceDate",
+          "source": "CUSTOMER_MASTER_HIST.LAST_INVOICE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "lastPaymentDt",
+          "source": "CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "lastPaymentDate",
+          "source": "CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "terminateDt",
+          "source": "CUSTOMER_MASTER_HIST.TERMINATE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "terminateDate",
+          "source": "CUSTOMER_MASTER_HIST.TERMINATE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "statusCd",
+          "source": "CUSTOMER_MASTER_HIST.STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "subStatusCd",
+          "source": "CUSTOMER_MASTER_HIST.SUB_STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "custTypeCd",
+          "source": "CUSTOMER_MASTER_HIST.CUST_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "segmentCd",
+          "source": "CUSTOMER_MASTER_HIST.SEGMENT_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "regionCd",
+          "source": "CUSTOMER_MASTER_HIST.REGION_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "territoryCd",
+          "source": "CUSTOMER_MASTER_HIST.TERRITORY_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "channelCd",
+          "source": "CUSTOMER_MASTER_HIST.CHANNEL_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "rateClassCd",
+          "source": "CUSTOMER_MASTER_HIST.RATE_CLASS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "taxExemptYn",
+          "source": "CUSTOMER_MASTER_HIST.TAX_EXEMPT_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "creditHoldYn",
+          "source": "CUSTOMER_MASTER_HIST.CREDIT_HOLD_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "dunningExemptYn",
+          "source": "CUSTOMER_MASTER_HIST.DUNNING_EXEMPT_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "vipYn",
+          "source": "CUSTOMER_MASTER_HIST.VIP_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "curBalAmt",
+          "source": "CUSTOMER_MASTER_HIST.CUR_BAL_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "pastDueAmt",
+          "source": "CUSTOMER_MASTER_HIST.PAST_DUE_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ytdBilledAmt",
+          "source": "CUSTOMER_MASTER_HIST.YTD_BILLED_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ltdBilledAmt",
+          "source": "CUSTOMER_MASTER_HIST.LTD_BILLED_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "ytdPaidAmt",
+          "source": "CUSTOMER_MASTER_HIST.YTD_PAID_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "creditLimitAmt",
+          "source": "CUSTOMER_MASTER_HIST.CREDIT_LIMIT_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "relatedAcctIds",
+          "source": "CUSTOMER_MASTER_HIST.RELATED_ACCT_IDS",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "relatedAcctIdsList",
+          "source": "CUSTOMER_MASTER_HIST.RELATED_ACCT_IDS (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^\\d{5}(,\\d{5}){0,3}$"
+        },
+        {
+          "field": "childAcctIds",
+          "source": "CUSTOMER_MASTER_HIST.CHILD_ACCT_IDS",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "childAcctIdsList",
+          "source": "CUSTOMER_MASTER_HIST.CHILD_ACCT_IDS (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^\\d{5}(,\\d{5}){0,3}$"
+        },
+        {
+          "field": "promoCodesCsv",
+          "source": "CUSTOMER_MASTER_HIST.PROMO_CODES_CSV",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "promoCodesCsvList",
+          "source": "CUSTOMER_MASTER_HIST.PROMO_CODES_CSV (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^[A-Z0-9]+(,[A-Z0-9]+)*$"
+        },
+        {
+          "field": "contactNotes",
+          "source": "CUSTOMER_MASTER_HIST.CONTACT_NOTES",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "legacySysKey",
+          "source": "CUSTOMER_MASTER_HIST.LEGACY_SYS_KEY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "mainframeAcctNo",
+          "source": "CUSTOMER_MASTER_HIST.MAINFRAME_ACCT_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "conversionBatchNo",
+          "source": "CUSTOMER_MASTER_HIST.CONVERSION_BATCH_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        },
+        {
+          "field": "flag01",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag02",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag03",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag04",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag05",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag06",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag07",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag08",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag09",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag10",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag11",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_11",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag12",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_12",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag13",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_13",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag14",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_14",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag15",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_15",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag16",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_16",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag17",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_17",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag18",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_18",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag19",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_19",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "flag20",
+          "source": "CUSTOMER_MASTER_HIST.FLAG_20",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR"
+        },
+        {
+          "field": "udf01",
+          "source": "CUSTOMER_MASTER_HIST.UDF_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf02",
+          "source": "CUSTOMER_MASTER_HIST.UDF_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf03",
+          "source": "CUSTOMER_MASTER_HIST.UDF_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf04",
+          "source": "CUSTOMER_MASTER_HIST.UDF_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf05",
+          "source": "CUSTOMER_MASTER_HIST.UDF_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf06",
+          "source": "CUSTOMER_MASTER_HIST.UDF_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf07",
+          "source": "CUSTOMER_MASTER_HIST.UDF_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf08",
+          "source": "CUSTOMER_MASTER_HIST.UDF_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf09",
+          "source": "CUSTOMER_MASTER_HIST.UDF_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf10",
+          "source": "CUSTOMER_MASTER_HIST.UDF_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf11",
+          "source": "CUSTOMER_MASTER_HIST.UDF_11",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf12",
+          "source": "CUSTOMER_MASTER_HIST.UDF_12",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf13",
+          "source": "CUSTOMER_MASTER_HIST.UDF_13",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf14",
+          "source": "CUSTOMER_MASTER_HIST.UDF_14",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf15",
+          "source": "CUSTOMER_MASTER_HIST.UDF_15",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf16",
+          "source": "CUSTOMER_MASTER_HIST.UDF_16",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf17",
+          "source": "CUSTOMER_MASTER_HIST.UDF_17",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf18",
+          "source": "CUSTOMER_MASTER_HIST.UDF_18",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf19",
+          "source": "CUSTOMER_MASTER_HIST.UDF_19",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf20",
+          "source": "CUSTOMER_MASTER_HIST.UDF_20",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf21",
+          "source": "CUSTOMER_MASTER_HIST.UDF_21",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf22",
+          "source": "CUSTOMER_MASTER_HIST.UDF_22",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf23",
+          "source": "CUSTOMER_MASTER_HIST.UDF_23",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf24",
+          "source": "CUSTOMER_MASTER_HIST.UDF_24",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf25",
+          "source": "CUSTOMER_MASTER_HIST.UDF_25",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf26",
+          "source": "CUSTOMER_MASTER_HIST.UDF_26",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf27",
+          "source": "CUSTOMER_MASTER_HIST.UDF_27",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf28",
+          "source": "CUSTOMER_MASTER_HIST.UDF_28",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf29",
+          "source": "CUSTOMER_MASTER_HIST.UDF_29",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf30",
+          "source": "CUSTOMER_MASTER_HIST.UDF_30",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf31",
+          "source": "CUSTOMER_MASTER_HIST.UDF_31",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf32",
+          "source": "CUSTOMER_MASTER_HIST.UDF_32",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf33",
+          "source": "CUSTOMER_MASTER_HIST.UDF_33",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf34",
+          "source": "CUSTOMER_MASTER_HIST.UDF_34",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf35",
+          "source": "CUSTOMER_MASTER_HIST.UDF_35",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf36",
+          "source": "CUSTOMER_MASTER_HIST.UDF_36",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf37",
+          "source": "CUSTOMER_MASTER_HIST.UDF_37",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf38",
+          "source": "CUSTOMER_MASTER_HIST.UDF_38",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf39",
+          "source": "CUSTOMER_MASTER_HIST.UDF_39",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udf40",
+          "source": "CUSTOMER_MASTER_HIST.UDF_40",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfAmt01",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_01",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt02",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_02",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt03",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_03",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt04",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_04",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt05",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_05",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt06",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_06",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt07",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_07",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt08",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_08",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt09",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_09",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfAmt10",
+          "source": "CUSTOMER_MASTER_HIST.UDF_AMT_10",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "udfDt01",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_01",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt02",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_02",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt03",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_03",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt04",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_04",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt05",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_05",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt06",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_06",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt07",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_07",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt08",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_08",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt09",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_09",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "udfDt10",
+          "source": "CUSTOMER_MASTER_HIST.UDF_DT_10",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "createdBy",
+          "source": "CUSTOMER_MASTER_HIST.CREATED_BY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "createdDt",
+          "source": "CUSTOMER_MASTER_HIST.CREATED_DT",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "updatedBy",
+          "source": "CUSTOMER_MASTER_HIST.UPDATED_BY",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "updatedDt",
+          "source": "CUSTOMER_MASTER_HIST.UPDATED_DT",
+          "bson": "date",
+          "nullable": true,
+          "note": "Oracle DATE (second precision) -> BSON UTC datetime"
+        },
+        {
+          "field": "rowVersionNo",
+          "source": "CUSTOMER_MASTER_HIST.ROW_VERSION_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_customers_hist_cust",
+          "keys": {
+            "custId": 1,
+            "_id": 1
+          },
+          "options": {},
+          "serves": [
+            "recon"
+          ],
+          "query": "history of one customer in write order; no app read path"
+        }
+      ],
+      "writes": {
+        "post_cutover": "any future customer update copies the pre-image here in the same transaction (migrate-as-logic replacement for the trigger)"
+      },
+      "notes": [
+        "Same flat column carry and DD-MON-YY/CSV sibling rules as customers; attributes are not versioned (Oracle has no EAV history)."
+      ]
+    },
+    {
+      "name": "invoice_feed",
+      "source_tables": [
+        "INVOICE_HEADER",
+        "INVOICE_LINE"
+      ],
+      "kind": "report-feed",
+      "decision": "d-feed-embed-lines (this spec): one-to-few, embed matched lines; orphans quarantined",
+      "why": "the mainframe bulk feed read only by services/legacy-billing/app/reports.py (STATUS_SQL groups headers by batch_no; LINE_SQL joins lines to headers by invoice_id and groups by status and line type). Lines are 1-23 per header live (p99 15), 291 bytes max, never read without the header join, and never written by the app -> embed under the header so LINE_SQL is a single $unwind. Kept apart from 'invoices': different key space (INVOICE_ID vs INVOICES.ID), different columns, a different owner (mainframe conversion) and no entrypoint reads both.",
+      "_id": {
+        "from": [
+          "INVOICE_HEADER.INVOICE_ID"
+        ],
+        "shape": "string",
+        "rule": "INVOICE_HEADER PK kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "invoiceNo",
+          "source": "INVOICE_HEADER.INVOICE_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custId",
+          "source": "INVOICE_HEADER.CUST_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "tenantId",
+          "source": "INVOICE_HEADER.TENANT_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "invoiceDt",
+          "source": "INVOICE_HEADER.INVOICE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "invoiceDate",
+          "source": "INVOICE_HEADER.INVOICE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "dueDt",
+          "source": "INVOICE_HEADER.DUE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "dueDate",
+          "source": "INVOICE_HEADER.DUE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "statusCd",
+          "source": "INVOICE_HEADER.STATUS_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "totalAmt",
+          "source": "INVOICE_HEADER.TOTAL_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "batchNo",
+          "source": "INVOICE_HEADER.BATCH_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        }
+      ],
+      "embedded": [
+        {
+          "path": "lines",
+          "source_table": "INVOICE_LINE",
+          "relationship": "one-to-few",
+          "observed": {
+            "edge": "INVOICE_HEADER->INVOICE_LINE",
+            "children_per_parent": {
+              "min": 1,
+              "max": 23,
+              "avg": 7.986,
+              "p99": 15
+            },
+            "child_rows": 150000,
+            "parents_with_children": 18782,
+            "child_max_row_bytes": 291,
+            "captured_at": "2026-10-02T01:25:06Z",
+            "mode": "live"
+          },
+          "order": "lineNo ascending, then lineId (lineNo is NOT unique: 19,512 duplicate (invoice_id, line_no) groups live)",
+          "identity": "lines[].lineId keeps INVOICE_LINE.LINE_ID (the only key); lineNo is data, not identity; the feed's denormalised invoiceNo/custId/custNo/custName/tenantId/invoiceDt/batchNo stay on each line verbatim because they can disagree with the header and recon compares them",
+          "bound": {
+            "max_elements": 200,
+            "basis": "live max 23, p99 15; 200 is the validator ceiling (projected 200 x 291 x 2 + 152 bytes ~ 117 KB, 0.7% of the limit)"
+          },
+          "size_guard": {
+            "limit_bytes": 16777216,
+            "projected_max_doc_bytes": 116552,
+            "projection": "parent max row bytes + max_elements x child max row bytes x 2 (BSON key/overhead factor); Oracle VSIZE is a proxy, not a guarantee",
+            "writer_rule": "before $push/replace the writer computes the document's BSON size (bsonsize()/$bsonSize) and refuses the write above 12 MiB (75% of the limit) instead of letting Atlas reject it at 16 MiB; the refusal is a recon anomaly, never a silent drop",
+            "validator_rule": "$jsonSchema maxItems on 'lines' = bound.max_elements"
+          },
+          "fields": [
+            {
+              "field": "lineId",
+              "source": "INVOICE_LINE.LINE_ID",
+              "bson": "string",
+              "nullable": false,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "invoiceNo",
+              "source": "INVOICE_LINE.INVOICE_NO",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "custId",
+              "source": "INVOICE_LINE.CUST_ID",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "custNo",
+              "source": "INVOICE_LINE.CUST_NO",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "custName",
+              "source": "INVOICE_LINE.CUST_NAME",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "tenantId",
+              "source": "INVOICE_LINE.TENANT_ID",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "lineNo",
+              "source": "INVOICE_LINE.LINE_NO",
+              "bson": "int",
+              "nullable": true,
+              "note": "NUMBER(6,0)"
+            },
+            {
+              "field": "lineTypeCd",
+              "source": "INVOICE_LINE.LINE_TYPE_CD",
+              "bson": "int",
+              "nullable": true,
+              "note": "NUMBER(4,0)"
+            },
+            {
+              "field": "itemDesc",
+              "source": "INVOICE_LINE.ITEM_DESC",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "qty",
+              "source": "INVOICE_LINE.QTY",
+              "bson": "decimal",
+              "nullable": true,
+              "note": "Decimal128 from Oracle NUMBER(12,3); never double"
+            },
+            {
+              "field": "unitPrice",
+              "source": "INVOICE_LINE.UNIT_PRICE",
+              "bson": "decimal",
+              "nullable": true,
+              "note": "Decimal128 from Oracle NUMBER(14,4); never double"
+            },
+            {
+              "field": "amount",
+              "source": "INVOICE_LINE.AMOUNT",
+              "bson": "decimal",
+              "nullable": true,
+              "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+            },
+            {
+              "field": "taxAmt",
+              "source": "INVOICE_LINE.TAX_AMT",
+              "bson": "decimal",
+              "nullable": true,
+              "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+            },
+            {
+              "field": "invoiceDt",
+              "source": "INVOICE_LINE.INVOICE_DT",
+              "bson": "string",
+              "nullable": true,
+              "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+            },
+            {
+              "field": "invoiceDate",
+              "source": "INVOICE_LINE.INVOICE_DT (derived)",
+              "bson": "date",
+              "nullable": true,
+              "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+            },
+            {
+              "field": "servicePeriod",
+              "source": "INVOICE_LINE.SERVICE_PERIOD",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "postedYn",
+              "source": "INVOICE_LINE.POSTED_YN",
+              "bson": "string",
+              "nullable": true,
+              "note": "CHAR Y/N kept as the 1-char string"
+            },
+            {
+              "field": "glAcctCsv",
+              "source": "INVOICE_LINE.GL_ACCT_CSV",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            },
+            {
+              "field": "glAcctCsvList",
+              "source": "INVOICE_LINE.GL_ACCT_CSV (derived)",
+              "bson": "array<string>",
+              "nullable": true,
+              "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+              "clean_form": "^\\d+(,\\d+)*$"
+            },
+            {
+              "field": "batchNo",
+              "source": "INVOICE_LINE.BATCH_NO",
+              "bson": "int",
+              "nullable": true,
+              "note": "NUMBER(8,0)"
+            },
+            {
+              "field": "srcSystem",
+              "source": "INVOICE_LINE.SRC_SYSTEM",
+              "bson": "string",
+              "nullable": true,
+              "note": "VARCHAR2"
+            }
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_invoice_feed_batch",
+          "keys": {
+            "batchNo": 1
+          },
+          "options": {},
+          "serves": [
+            "reports.py STATUS_SQL",
+            "reports.py LINE_SQL"
+          ],
+          "query": "$group by batchNo (+ statusCd decoded via codes) over headers; LINE_SQL $unwind lines then $group by statusCd, lines.lineTypeCd"
+        },
+        {
+          "name": "ix_invoice_feed_status_due",
+          "keys": {
+            "statusCd": 1,
+            "dueDate": 1
+          },
+          "options": {
+            "build": "deferred"
+          },
+          "serves": [
+            "overdue by due date (ticket s3.1)"
+          ],
+          "query": "{statusCd: s, dueDate: {$lt: asOf}}: the only due date in the estate; no current reader (reports.py groups, the facade's overdue uses invoices.issuedAt). Declared so the typed dueDate sibling is queryable; build is deferred until a reader exists"
+        },
+        {
+          "name": "uq_invoice_feed_lines_line_id",
+          "keys": {
+            "lines.lineId": 1
+          },
+          "options": {
+            "unique": true,
+            "partialFilterExpression": {
+              "lines.lineId": {
+                "$exists": true
+              }
+            }
+          },
+          "serves": [
+            "recon"
+          ],
+          "query": "PK_INVOICE_LINE carried across documents as a unique multikey index"
+        }
+      ],
+      "writes": {
+        "post_cutover": "none from the app; feed loads are bulk and idempotent on _id / lines.lineId"
+      },
+      "notes": [
+        "INVOICE_HEADER count 18,750 but 18,782 distinct INVOICE_ID values among lines: the 32 extra ids (37 rows) are the orphans below."
+      ]
+    },
+    {
+      "name": "invoice_feed_quarantine",
+      "source_tables": [
+        "INVOICE_LINE"
+      ],
+      "kind": "quarantine",
+      "why": "the 37 live INVOICE_LINE rows whose INVOICE_ID has no INVOICE_HEADER (fixture anomaly orphaned_rows, INVOICE_NO '<NS>-GHOST-<n>') have no parent document to embed into. They are carried one document per row so the row-diff stays 0 (tolerances.planted_anomalies: quarantined_rows_must_match exact) and LINE_SQL's inner join still excludes them.",
+      "_id": {
+        "from": [
+          "INVOICE_LINE.LINE_ID"
+        ],
+        "shape": "string",
+        "rule": "INVOICE_LINE PK kept verbatim"
+      },
+      "fields": [
+        {
+          "field": "invoiceNo",
+          "source": "INVOICE_LINE.INVOICE_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "invoiceId",
+          "source": "INVOICE_LINE.INVOICE_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custId",
+          "source": "INVOICE_LINE.CUST_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custNo",
+          "source": "INVOICE_LINE.CUST_NO",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "custName",
+          "source": "INVOICE_LINE.CUST_NAME",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "tenantId",
+          "source": "INVOICE_LINE.TENANT_ID",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "lineNo",
+          "source": "INVOICE_LINE.LINE_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(6,0)"
+        },
+        {
+          "field": "lineTypeCd",
+          "source": "INVOICE_LINE.LINE_TYPE_CD",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(4,0)"
+        },
+        {
+          "field": "itemDesc",
+          "source": "INVOICE_LINE.ITEM_DESC",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "qty",
+          "source": "INVOICE_LINE.QTY",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(12,3); never double"
+        },
+        {
+          "field": "unitPrice",
+          "source": "INVOICE_LINE.UNIT_PRICE",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,4); never double"
+        },
+        {
+          "field": "amount",
+          "source": "INVOICE_LINE.AMOUNT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "taxAmt",
+          "source": "INVOICE_LINE.TAX_AMT",
+          "bson": "decimal",
+          "nullable": true,
+          "note": "Decimal128 from Oracle NUMBER(14,2); never double"
+        },
+        {
+          "field": "invoiceDt",
+          "source": "INVOICE_LINE.INVOICE_DT",
+          "bson": "string",
+          "nullable": true,
+          "note": "DD-MON-YY text kept verbatim; typed sibling see field rules"
+        },
+        {
+          "field": "invoiceDate",
+          "source": "INVOICE_LINE.INVOICE_DT (derived)",
+          "bson": "date",
+          "nullable": true,
+          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+        },
+        {
+          "field": "servicePeriod",
+          "source": "INVOICE_LINE.SERVICE_PERIOD",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "postedYn",
+          "source": "INVOICE_LINE.POSTED_YN",
+          "bson": "string",
+          "nullable": true,
+          "note": "CHAR Y/N kept as the 1-char string"
+        },
+        {
+          "field": "glAcctCsv",
+          "source": "INVOICE_LINE.GL_ACCT_CSV",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "glAcctCsvList",
+          "source": "INVOICE_LINE.GL_ACCT_CSV (derived)",
+          "bson": "array<string>",
+          "nullable": true,
+          "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value",
+          "clean_form": "^\\d+(,\\d+)*$"
+        },
+        {
+          "field": "batchNo",
+          "source": "INVOICE_LINE.BATCH_NO",
+          "bson": "int",
+          "nullable": true,
+          "note": "NUMBER(8,0)"
+        },
+        {
+          "field": "srcSystem",
+          "source": "INVOICE_LINE.SRC_SYSTEM",
+          "bson": "string",
+          "nullable": true,
+          "note": "VARCHAR2"
+        },
+        {
+          "field": "quarantine",
+          "source": "(derived)",
+          "bson": "object",
+          "nullable": false,
+          "note": "{reason: 'orphaned_rows', rule: 'INVOICE_ID not in invoice_feed._id', capturedAt: date}"
+        }
+      ],
+      "embedded": [],
+      "indexes": [
+        {
+          "name": "ix_invoice_feed_quarantine_invoice",
+          "keys": {
+            "invoiceId": 1
+          },
+          "options": {},
+          "serves": [
+            "recon",
+            "reconciliation of late-arriving headers"
+          ],
+          "query": "{invoiceId: id}: if a header arrives later the loader moves the rows into invoice_feed.lines in one transaction"
+        }
+      ],
+      "writes": {
+        "post_cutover": "loader only"
+      },
+      "notes": [
+        "A line is quarantined by parent absence only; duplicate (invoice_id, line_no) groups are NOT an anomaly in the source (no unique key exists) and are embedded as-is."
+      ]
+    }
+  ],
+  "tables": {
+    "BILLING_AUDIT_LOG": {
+      "bucket": "migrate",
+      "rows_live": 0,
+      "collection": "billing_audit_log",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "CODES": {
+      "bucket": "migrate",
+      "rows_live": 32,
+      "collection": "codes",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "CREDIT_NOTES": {
+      "bucket": "migrate",
+      "rows_live": 5,
+      "collection": "credit_notes",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "CUSTOMER_MASTER": {
+      "bucket": "migrate",
+      "rows_live": 25000,
+      "collection": "customers",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "CUSTOMER_MASTER_HIST": {
+      "bucket": "migrate",
+      "rows_live": 0,
+      "collection": "customers_hist",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "DUNNING_ATTEMPTS": {
+      "bucket": "migrate",
+      "rows_live": 1,
+      "collection": "dunning_attempts",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "ENTITY_ATTR_VALUE": {
+      "bucket": "migrate",
+      "rows_live": 8333,
+      "collection": "customers",
+      "mode": "embedded",
+      "path": "attributes",
+      "quarantine": null
+    },
+    "INVOICES": {
+      "bucket": "migrate",
+      "rows_live": 3,
+      "collection": "invoices",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "INVOICE_HEADER": {
+      "bucket": "migrate",
+      "rows_live": 18750,
+      "collection": "invoice_feed",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "INVOICE_LINE": {
+      "bucket": "migrate",
+      "rows_live": 150000,
+      "collection": "invoice_feed",
+      "mode": "embedded",
+      "path": "lines",
+      "quarantine": [
+        "invoice_feed_quarantine"
+      ]
+    },
+    "INVOICE_LINES": {
+      "bucket": "migrate",
+      "rows_live": 2,
+      "collection": "invoices",
+      "mode": "embedded",
+      "path": "lines",
+      "quarantine": null
+    },
+    "NOTIFICATIONS": {
+      "bucket": "migrate",
+      "rows_live": 1,
+      "collection": "notifications",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "PLANS": {
+      "bucket": "migrate",
+      "rows_live": 3,
+      "collection": "plans",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "RATING_PERIODS": {
+      "bucket": "migrate",
+      "rows_live": 3,
+      "collection": "rating_periods",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "RATING_RESULTS": {
+      "bucket": "migrate",
+      "rows_live": 3,
+      "collection": "rating_periods",
+      "mode": "embedded",
+      "path": "result",
+      "quarantine": null
+    },
+    "SUBSCRIPTIONS": {
+      "bucket": "migrate",
+      "rows_live": 69,
+      "collection": "subscriptions",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "SUBSCRIPTIONS_HIST": {
+      "bucket": "migrate",
+      "rows_live": 0,
+      "collection": "subscriptions_hist",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "TENANTS": {
+      "bucket": "migrate",
+      "rows_live": 69,
+      "collection": "tenants",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    },
+    "USAGE_EVENTS": {
+      "bucket": "migrate",
+      "rows_live": 814,
+      "collection": "usage_events",
+      "mode": "collection",
+      "path": null,
+      "quarantine": null
+    }
+  },
+  "access_pattern_coverage": {
+    "list_plans": {
+      "plsql": "pkg_plans.fn_list_plans",
+      "tables": [
+        "plans"
+      ],
+      "collections": [
+        "plans"
+      ],
+      "indexes": [
+        "uq_plans_code"
+      ],
+      "audit_write": true,
+      "atomic_unit": null
+    },
+    "entitlement": {
+      "plsql": "pkg_plans.fn_entitlement",
+      "tables": [
+        "plans",
+        "subscriptions",
+        "tenants"
+      ],
+      "collections": [
+        "plans",
+        "subscriptions",
+        "tenants"
+      ],
+      "indexes": [
+        "ix_subscriptions_tenant_starts"
+      ],
+      "audit_write": false,
+      "atomic_unit": null
+    },
+    "change_plan": {
+      "plsql": "pkg_plans.sp_change_plan",
+      "tables": [
+        "subscriptions",
+        "subscriptions_hist"
+      ],
+      "collections": [
+        "subscriptions",
+        "subscriptions_hist"
+      ],
+      "indexes": [
+        "ix_subscriptions_hist_subscription",
+        "ix_subscriptions_tenant_starts"
+      ],
+      "audit_write": true,
+      "atomic_unit": [
+        "subscriptions",
+        "subscriptions_hist"
+      ]
+    },
+    "usage_rating": {
+      "plsql": "pkg_rating.fn_usage_rating",
+      "tables": [
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "usage_events"
+      ],
+      "collections": [
+        "plans",
+        "rating_periods",
+        "subscriptions",
+        "usage_events"
+      ],
+      "indexes": [
+        "ix_subscriptions_tenant_starts",
+        "ix_usage_events_tenant_occurred",
+        "uq_rating_periods_tenant_start"
+      ],
+      "audit_write": true,
+      "atomic_unit": null
+    },
+    "usage_summary": {
+      "plsql": "pkg_rating.fn_usage_summary",
+      "tables": [
+        "usage_events"
+      ],
+      "collections": [
+        "usage_events"
+      ],
+      "indexes": [
+        "ix_usage_events_tenant_occurred"
+      ],
+      "audit_write": false,
+      "atomic_unit": null
+    },
+    "finalize_rating": {
+      "plsql": "pkg_rating.sp_finalize_rating",
+      "tables": [
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "usage_events"
+      ],
+      "collections": [
+        "plans",
+        "rating_periods",
+        "subscriptions",
+        "usage_events"
+      ],
+      "indexes": [
+        "ix_subscriptions_tenant_starts",
+        "ix_usage_events_tenant_occurred",
+        "uq_rating_periods_tenant_start"
+      ],
+      "audit_write": true,
+      "atomic_unit": [
+        "rating_periods",
+        "rating_results"
+      ]
+    },
+    "invoice_preview": {
+      "plsql": "pkg_invoicing.fn_invoice_preview",
+      "tables": [
+        "credit_notes",
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "tenants",
+        "usage_events"
+      ],
+      "collections": [
+        "credit_notes",
+        "plans",
+        "rating_periods",
+        "subscriptions",
+        "tenants",
+        "usage_events"
+      ],
+      "indexes": [
+        "ix_credit_notes_tenant_issued",
+        "ix_subscriptions_tenant_starts",
+        "ix_usage_events_tenant_occurred",
+        "uq_rating_periods_tenant_start"
+      ],
+      "audit_write": true,
+      "atomic_unit": null
+    },
+    "issue_invoice": {
+      "plsql": "pkg_invoicing.sp_issue_invoice",
+      "tables": [
+        "credit_notes",
+        "invoice_lines",
+        "invoices",
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "tenants",
+        "usage_events"
+      ],
+      "collections": [
+        "credit_notes",
+        "invoices",
+        "plans",
+        "rating_periods",
+        "subscriptions",
+        "tenants",
+        "usage_events"
+      ],
+      "indexes": [
+        "ix_credit_notes_tenant_issued",
+        "ix_subscriptions_tenant_starts",
+        "ix_usage_events_tenant_occurred",
+        "uq_invoices_lines_id",
+        "uq_rating_periods_tenant_start"
+      ],
+      "audit_write": true,
+      "atomic_unit": [
+        "rating_periods",
+        "rating_results",
+        "invoices",
+        "invoice_lines",
+        "credit_notes"
+      ]
+    },
+    "invoice_lines": {
+      "plsql": "pkg_invoicing.fn_invoice_lines",
+      "tables": [
+        "invoice_lines"
+      ],
+      "collections": [
+        "invoices"
+      ],
+      "indexes": [
+        "ix_invoices_tenant_issued"
+      ],
+      "audit_write": false,
+      "atomic_unit": null
+    },
+    "overdue": {
+      "plsql": "pkg_dunning.fn_overdue_accounts",
+      "tables": [
+        "invoices",
+        "tenants"
+      ],
+      "collections": [
+        "invoices",
+        "tenants"
+      ],
+      "indexes": [
+        "ix_invoices_status_issued"
+      ],
+      "audit_write": false,
+      "atomic_unit": null
+    },
+    "schedule_dunning": {
+      "plsql": "pkg_dunning.sp_schedule_dunning",
+      "tables": [
+        "dunning_attempts",
+        "invoices"
+      ],
+      "collections": [
+        "dunning_attempts",
+        "invoices"
+      ],
+      "indexes": [
+        "ix_invoices_status_issued",
+        "uq_dunning_attempts_invoice_attempt"
+      ],
+      "audit_write": true,
+      "atomic_unit": [
+        "dunning_attempts"
+      ]
+    },
+    "suspend_overdue": {
+      "plsql": "pkg_dunning.sp_suspend_overdue",
+      "tables": [
+        "invoices",
+        "notifications",
+        "subscriptions",
+        "subscriptions_hist",
+        "tenants"
+      ],
+      "collections": [
+        "invoices",
+        "notifications",
+        "subscriptions",
+        "subscriptions_hist",
+        "tenants"
+      ],
+      "indexes": [
+        "ix_invoices_status_issued",
+        "ix_subscriptions_tenant_starts",
+        "uq_notifications_tenant_kind_sent"
+      ],
+      "audit_write": true,
+      "atomic_unit": [
+        "tenants",
+        "subscriptions",
+        "subscriptions_hist",
+        "notifications"
+      ]
+    }
+  },
+  "facade_dominant_queries": {
+    "tenant + period": "rating_periods.uq_rating_periods_tenant_start {tenantId, periodStart}; usage window usage_events.ix_usage_events_tenant_occurred {tenantId, occurredAt}",
+    "invoice by tenant/status": "invoices.ix_invoices_tenant_issued {tenantId, issuedAt, _id} (status filtered in the per-tenant result set; status across tenants -> ix_invoices_status_issued)",
+    "overdue by due date": "invoices.ix_invoices_status_issued {statusCd, issuedAt, _id} (fn_overdue_accounts: status 40 + issued_at as YYYYMMDD; INVOICES has no due date); invoice_feed.ix_invoice_feed_status_due {statusCd, dueDate} declared for the feed's DUE_DT, build deferred (no reader)"
+  },
+  "atomic_units": [
+    {
+      "name": "issue_invoice",
+      "collections": [
+        "rating_periods",
+        "invoices",
+        "credit_notes"
+      ],
+      "documents": "1 rating_periods (header + result) + 1 invoices (header + lines) + N credit_notes",
+      "mechanism": "multi-document transaction (3 collections, single replica set); audit insert outside it",
+      "oracle": "sp_issue_invoice: one transaction, FOR UPDATE on credit_notes"
+    },
+    {
+      "name": "change_plan",
+      "collections": [
+        "subscriptions",
+        "subscriptions_hist"
+      ],
+      "documents": "close-outs + 1 insert + pre-image copies",
+      "mechanism": "multi-document transaction",
+      "oracle": "sp_change_plan: FOR UPDATE row locks to commit; trigger copies"
+    },
+    {
+      "name": "suspend_overdue (per tenant)",
+      "collections": [
+        "tenants",
+        "subscriptions",
+        "subscriptions_hist",
+        "notifications"
+      ],
+      "documents": "1 tenant + its subscriptions (+ copies) + 1 notification",
+      "mechanism": "multi-document transaction per tenant",
+      "oracle": "sp_suspend_overdue: one transaction for all tenants; the Mongo unit is per tenant, the unique notification key makes a rerun idempotent"
+    },
+    {
+      "name": "ensure_tenant",
+      "collections": [
+        "tenants",
+        "subscriptions"
+      ],
+      "documents": "1 + 1",
+      "mechanism": "multi-document transaction",
+      "oracle": "facade bootstrap commit before the event insert"
+    },
+    {
+      "name": "finalize_rating",
+      "collections": [
+        "rating_periods"
+      ],
+      "documents": "1 (period + embedded result)",
+      "mechanism": "single-document write (atomic by construction)",
+      "oracle": "sp_finalize_rating: period upsert + result upsert in one transaction"
+    },
+    {
+      "name": "schedule_dunning",
+      "collections": [
+        "dunning_attempts"
+      ],
+      "documents": "1 per overdue invoice",
+      "mechanism": "single-document inserts; uq_dunning_attempts_invoice_attempt rejects duplicates",
+      "oracle": "sp_schedule_dunning: one transaction"
+    },
+    {
+      "name": "usage ingest",
+      "collections": [
+        "usage_events"
+      ],
+      "documents": "1",
+      "mechanism": "single-document insert; duplicate _id -> 'duplicate'",
+      "oracle": "POST /internal/usage/events: second transaction after ensure_tenant"
+    },
+    {
+      "name": "log_msg (audit)",
+      "collections": [
+        "billing_audit_log"
+      ],
+      "documents": "1",
+      "mechanism": "single-document insert outside any transaction/session; failure swallowed",
+      "oracle": "PRAGMA AUTONOMOUS_TRANSACTION"
+    }
+  ],
+  "anomaly_handling": {
+    "orphaned_rows": {
+      "count": 37,
+      "handling": "invoice_feed_quarantine (one document per orphan line)"
+    },
+    "dirty_dates": {
+      "count": 50,
+      "handling": "customers: verbatim *Dt string + absent typed *Date sibling"
+    },
+    "malformed_csv_lists": {
+      "count": 31,
+      "handling": "customers: verbatim CSV string + absent *List sibling"
+    },
+    "eav_boolean_spellings": {
+      "count": null,
+      "handling": "customers.attributes[].value verbatim; attributes[].typed is derived only"
+    }
+  },
+  "out_of_scope": [
+    "FIXTURE_META (not in the migrate bucket; census coverage only)",
+    "collection creation, validators and index builds (s3.4 recon/load scripts consume this spec)",
+    "the Oracle-specific construct dispositions (s3.2-known-incompatibilities): TIMESTAMP(6) sub-ms precision, package-global g_* state, autonomous audit, YYYYMMDD string date compares are flagged above as inputs to it"
+  ],
+  "stats": {
+    "collections": 16,
+    "secondary_indexes": 22,
+    "deferred_indexes": 1,
+    "embedded_arrays": 3,
+    "embedded_subdocuments": 1,
+    "migrate_tables": 19,
+    "fields": 458
+  }
+}

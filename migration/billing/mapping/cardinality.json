@@ -1,0 +1,408 @@
+{
+  "kind": "mapping-cardinality",
+  "version": 1,
+  "plan_step": "s3.1-mapping-spec",
+  "captured_at": "2026-10-02T01:25:06Z",
+  "source": {
+    "system": "oracle",
+    "schema": "OW_BILLING",
+    "mode": "live",
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "principal": "OW_BILLING_RO",
+    "container": "FREEPDB1",
+    "transaction": "SET TRANSACTION READ ONLY"
+  },
+  "fanout": {
+    "TENANTS->SUBSCRIPTIONS": {
+      "parent": "TENANTS",
+      "child": "SUBSCRIPTIONS",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 69,
+      "child_rows_with_parent": 69,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 69,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "TENANTS->USAGE_EVENTS": {
+      "parent": "TENANTS",
+      "child": "USAGE_EVENTS",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 814,
+      "child_rows_with_parent": 814,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 69,
+      "children_per_parent": {
+        "min": 1,
+        "max": 25,
+        "avg": 11.797,
+        "p99": 25
+      }
+    },
+    "TENANTS->RATING_PERIODS": {
+      "parent": "TENANTS",
+      "child": "RATING_PERIODS",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 3,
+      "child_rows_with_parent": 3,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 1,
+      "children_per_parent": {
+        "min": 3,
+        "max": 3,
+        "avg": 3.0,
+        "p99": 3
+      }
+    },
+    "TENANTS->INVOICES": {
+      "parent": "TENANTS",
+      "child": "INVOICES",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 3,
+      "child_rows_with_parent": 3,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 3,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "TENANTS->CREDIT_NOTES": {
+      "parent": "TENANTS",
+      "child": "CREDIT_NOTES",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 5,
+      "child_rows_with_parent": 5,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 3,
+      "children_per_parent": {
+        "min": 1,
+        "max": 2,
+        "avg": 1.667,
+        "p99": 2
+      }
+    },
+    "TENANTS->DUNNING_ATTEMPTS": {
+      "parent": "TENANTS",
+      "child": "DUNNING_ATTEMPTS",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 1,
+      "child_rows_with_parent": 1,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 1,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "TENANTS->NOTIFICATIONS": {
+      "parent": "TENANTS",
+      "child": "NOTIFICATIONS",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 1,
+      "child_rows_with_parent": 1,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 1,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "TENANTS->CUSTOMER_MASTER": {
+      "parent": "TENANTS",
+      "child": "CUSTOMER_MASTER",
+      "child_fk": "TENANT_ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 25000,
+      "child_rows_with_parent": 0,
+      "child_rows_without_parent": 25000,
+      "parents_with_children": 50,
+      "children_per_parent": {
+        "min": 48,
+        "max": 8575,
+        "avg": 500.0,
+        "p99": 6082.37
+      }
+    },
+    "RATING_PERIODS->RATING_RESULTS": {
+      "parent": "RATING_PERIODS",
+      "child": "RATING_RESULTS",
+      "child_fk": "PERIOD_ID",
+      "parent_key": "ID",
+      "parent_rows": 3,
+      "child_rows": 3,
+      "child_rows_with_parent": 3,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 3,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "INVOICES->INVOICE_LINES": {
+      "parent": "INVOICES",
+      "child": "INVOICE_LINES",
+      "child_fk": "INVOICE_ID",
+      "parent_key": "ID",
+      "parent_rows": 3,
+      "child_rows": 2,
+      "child_rows_with_parent": 2,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 1,
+      "children_per_parent": {
+        "min": 2,
+        "max": 2,
+        "avg": 2.0,
+        "p99": 2
+      }
+    },
+    "INVOICES->DUNNING_ATTEMPTS": {
+      "parent": "INVOICES",
+      "child": "DUNNING_ATTEMPTS",
+      "child_fk": "INVOICE_ID",
+      "parent_key": "ID",
+      "parent_rows": 3,
+      "child_rows": 1,
+      "child_rows_with_parent": 1,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 1,
+      "children_per_parent": {
+        "min": 1,
+        "max": 1,
+        "avg": 1.0,
+        "p99": 1
+      }
+    },
+    "SUBSCRIPTIONS->SUBSCRIPTIONS_HIST": {
+      "parent": "SUBSCRIPTIONS",
+      "child": "SUBSCRIPTIONS_HIST",
+      "child_fk": "ID",
+      "parent_key": "ID",
+      "parent_rows": 69,
+      "child_rows": 0,
+      "child_rows_with_parent": 0,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 0,
+      "children_per_parent": {
+        "min": null,
+        "max": null,
+        "avg": null,
+        "p99": null
+      }
+    },
+    "CUSTOMER_MASTER->ENTITY_ATTR_VALUE": {
+      "parent": "CUSTOMER_MASTER",
+      "child": "ENTITY_ATTR_VALUE",
+      "child_fk": "ENTITY_ID",
+      "parent_key": "CUST_ID",
+      "parent_rows": 25000,
+      "child_rows": 8333,
+      "child_rows_with_parent": 8333,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 7075,
+      "children_per_parent": {
+        "min": 1,
+        "max": 5,
+        "avg": 1.178,
+        "p99": 3
+      }
+    },
+    "CUSTOMER_MASTER->CUSTOMER_MASTER_HIST": {
+      "parent": "CUSTOMER_MASTER",
+      "child": "CUSTOMER_MASTER_HIST",
+      "child_fk": "CUST_ID",
+      "parent_key": "CUST_ID",
+      "parent_rows": 25000,
+      "child_rows": 0,
+      "child_rows_with_parent": 0,
+      "child_rows_without_parent": 0,
+      "parents_with_children": 0,
+      "children_per_parent": {
+        "min": null,
+        "max": null,
+        "avg": null,
+        "p99": null
+      }
+    },
+    "INVOICE_HEADER->INVOICE_LINE": {
+      "parent": "INVOICE_HEADER",
+      "child": "INVOICE_LINE",
+      "child_fk": "INVOICE_ID",
+      "parent_key": "INVOICE_ID",
+      "parent_rows": 18750,
+      "child_rows": 150000,
+      "child_rows_with_parent": 149963,
+      "child_rows_without_parent": 37,
+      "parents_with_children": 18782,
+      "children_per_parent": {
+        "min": 1,
+        "max": 23,
+        "avg": 7.986,
+        "p99": 15
+      }
+    }
+  },
+  "row_length": {
+    "SUBSCRIPTIONS": {
+      "rows": 69,
+      "columns": 7,
+      "max_row_bytes": 124,
+      "avg_row_bytes": 117.1,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "USAGE_EVENTS": {
+      "rows": 814,
+      "columns": 5,
+      "max_row_bytes": 84,
+      "avg_row_bytes": 83.9,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "RATING_RESULTS": {
+      "rows": 3,
+      "columns": 9,
+      "max_row_bytes": 122,
+      "avg_row_bytes": 122.0,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "INVOICE_LINES": {
+      "rows": 2,
+      "columns": 6,
+      "max_row_bytes": 95,
+      "avg_row_bytes": 91.0,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "DUNNING_ATTEMPTS": {
+      "rows": 1,
+      "columns": 6,
+      "max_row_bytes": 119,
+      "avg_row_bytes": 119.0,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "ENTITY_ATTR_VALUE": {
+      "rows": 8333,
+      "columns": 7,
+      "max_row_bytes": 94,
+      "avg_row_bytes": 76.6,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "INVOICE_LINE": {
+      "rows": 150000,
+      "columns": 20,
+      "max_row_bytes": 291,
+      "avg_row_bytes": 265.5,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "CUSTOMER_MASTER": {
+      "rows": 25000,
+      "columns": 155,
+      "max_row_bytes": 387,
+      "avg_row_bytes": 332.9,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "INVOICE_HEADER": {
+      "rows": 18750,
+      "columns": 9,
+      "max_row_bytes": 152,
+      "avg_row_bytes": 151.5,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "INVOICES": {
+      "rows": 3,
+      "columns": 8,
+      "max_row_bytes": 127,
+      "avg_row_bytes": 126.3,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "RATING_PERIODS": {
+      "rows": 3,
+      "columns": 4,
+      "max_row_bytes": 86,
+      "avg_row_bytes": 86.0,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    },
+    "BILLING_AUDIT_LOG": {
+      "rows": 0,
+      "columns": 4,
+      "max_row_bytes": null,
+      "avg_row_bytes": null,
+      "method": "SUM(NVL(VSIZE(col),0)) over every column; Oracle stored bytes, a proxy for BSON size"
+    }
+  },
+  "vocabulary": {
+    "ENTITY_ATTR_VALUE.ENTITY_TYPE": {
+      "CUSTOMER": 8333
+    },
+    "ENTITY_ATTR_VALUE.ATTR_TYPE": {
+      "STR": 8333
+    },
+    "ENTITY_ATTR_VALUE.ATTR_NAME": {
+      "COLLECTIONS_NOTE": 1230,
+      "FAX_OPTOUT": 1153,
+      "LEGACY_TIER": 1197,
+      "PORTAL_THEME": 1171,
+      "SAP_EXPORT_FLAG": 1202,
+      "TAX_REGION_OVERRIDE": 1227,
+      "Y2K_VERIFIED": 1153
+    },
+    "INVOICE_LINE.LINE_TYPE_CD": {
+      "1": 75132,
+      "2": 24974,
+      "3": 24840,
+      "9": 25054
+    },
+    "INVOICE_HEADER.STATUS_CD": {
+      "20": 5504,
+      "30": 10498,
+      "40": 2748
+    },
+    "INVOICES.STATUS_CD": {
+      "20": 1,
+      "40": 2
+    },
+    "INVOICE_LINES.LINE_TYPE": {
+      "plan": 1,
+      "usage": 1
+    },
+    "BILLING_AUDIT_LOG.ID_TYPE": {}
+  },
+  "orphans": {
+    "INVOICE_LINE_without_INVOICE_HEADER": 37,
+    "ENTITY_ATTR_VALUE_without_CUSTOMER_MASTER": 0,
+    "ENTITY_ATTR_VALUE_non_CUSTOMER": 0,
+    "INVOICE_LINE_duplicate_invoice_line_no": 19512
+  },
+  "string_lengths": {
+    "ENTITY_ATTR_VALUE.ATTR_VALUE.max": 16,
+    "ENTITY_ATTR_VALUE.ATTR_NAME.max": 19,
+    "CUSTOMER_MASTER.RELATED_ACCT_IDS.max": 23,
+    "CUSTOMER_MASTER.PROMO_CODES_CSV.max": 17
+  },
+  "note": "Read-only measurement of the live estate; the mapping spec's size guard uses these as observed bounds, not as limits."
+}
