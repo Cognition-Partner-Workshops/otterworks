@@ -18,7 +18,7 @@ This runbook takes the operator through the `aws-cloud-worker` demo: one AWS eng
 
 Run these on the operator machine with your AWS admin credentials, from a checkout of `demo-cloud-worker`, at least 30 minutes before the audience arrives.
 
-1. Check out tenant `cloud-worker` from the ops dashboard as a perpetual tenant with the full profile, tracking `demo-cloud-worker`. Open `https://t-cloud-worker.demo.otterworks.app` and sign in.
+1. Check out tenant `cloud-worker` from the ops dashboard as a perpetual tenant tracking `demo-cloud-worker` (`demo-platform/scripts/tenant.sh checkout cloud-worker demo-cloud-worker never`; the dashboard allows it because `perpetualTenantIds` in `demo-platform/helm/demo-platform/values.yaml` lists `cloud-worker`). Open `https://t-cloud-worker.otterworks.app` and sign in.
 2. Register the Playbook from `.workshop/playbooks/aws-cloud-worker.devin.md` and the Automation from `automation.md` in the org you are presenting from. Save the Automation's webhook URL and secret to `~/.cw-webhook.json`.
 3. Run `make cw-up`. It applies the Terraform in `infrastructure/terraform/cloud-worker/`, maps the Devin roles into the cluster, plants the retention drift for act 1, restores the tenant config and sends one test event. It ends when the DLQ stays at 0.
 4. Create the reader key with `make cw-credentials`, which writes a fresh access key for `devin-cw-reader` to `cloudworker/.state/devin-cw-reader.json`. Store the key id and secret as org secrets `CW_AWS_ACCESS_KEY_ID` and `CW_AWS_SECRET_ACCESS_KEY`, and the Terraform outputs `devin_observer_role_arn` and `devin_builder_role_arn` as `CW_OBSERVER_ROLE_ARN` and `CW_BUILDER_ROLE_ARN`.
