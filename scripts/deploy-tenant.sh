@@ -113,6 +113,18 @@ fi
 log "Loading shared application-infra Terraform outputs..."
 load_infra_outputs
 
+EVENTING_ENV="${REPO_ROOT}/infrastructure/helm/tenant-values/$(sanitize_id "${ATTENDEE_ID}")/eventing.env"
+if [ -f "${EVENTING_ENV}" ]; then
+  log "Wiring tenant eventing from ${EVENTING_ENV#"${REPO_ROOT}/"}"
+  # shellcheck source=/dev/null
+  . "${EVENTING_ENV}"
+  T_WIRE_EVENTING="true"
+  while IFS= read -r irsa_var; do
+    irsa_svc="${irsa_var#IRSA_}"
+    IRSA_JSON="$(echo "${IRSA_JSON}" | jq -c --arg s "${irsa_svc//_/-}" --arg r "${!irsa_var}" '. + {($s): $r}')"
+  done < <(sed -n 's/^[[:space:]]*\(IRSA_[A-Za-z0-9_]*\)=.*/\1/p' "${EVENTING_ENV}")
+fi
+
 # ---------- Tenant-wide signing secrets ----------
 # Every service that mints or verifies a token (auth-service, api-gateway,
 # document-service, ...) must share one JWT_SECRET. Helm only restarts the pods

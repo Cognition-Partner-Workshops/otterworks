@@ -525,3 +525,46 @@ incident-fingerprint: ## Compare fixture/source fingerprints with incident/expec
 incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audited)
 	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make incident-record REASON="baseline before n-plus-one fix"' >&2; exit 2)
 	$(INCIDENT) record --reason "$(REASON)"
+
+# --- AWS cloud worker (see cloudworker/README.md) ---
+CW = cloudworker/cw.sh
+.PHONY: cw-up cw-apply cw-credentials cw-arm cw-status cw-verify cw-simulate cw-quiet cw-disarm cw-reset cw-teardown cw-trail
+
+cw-up: ## Provision the cloud-worker infra, map the Devin roles, wire the tenant, smoke test
+	$(CW) up
+
+cw-apply: ## Re-render the cloud-worker tenant eventing config from eventing.env
+	$(CW) apply
+
+cw-credentials: ## Rotate the devin-cw-reader access key into cloudworker/.state/
+	$(CW) credentials
+
+cw-arm: ## Plant the notification table fault and publish six file_shared events
+	$(CW) arm
+
+cw-status: ## Tenant pods, live vs git table, queue depths, alarm, helm history (JSON=1 for JSON)
+	$(CW) status $(if $(JSON),--json,)
+
+cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after)
+ifndef EXPECT
+	$(error EXPECT is required, e.g. make cw-verify EXPECT=before)
+endif
+	$(CW) verify $(EXPECT)
+
+cw-simulate: ## Publish file_shared events to the cloud-worker topic (COUNT=n, default 1)
+	$(CW) simulate --count $(or $(COUNT),1)
+
+cw-quiet: ## Disable the DLQ alarm actions for a while (MINUTES=n, default 10)
+	$(CW) quiet $(or $(MINUTES),10)
+
+cw-disarm: ## Restore the config, purge both queues, reset the alarm
+	$(CW) disarm
+
+cw-reset: ## Disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant the drift
+	$(CW) reset
+
+cw-teardown: ## Reset, unmap the roles, delete RBAC and keys, destroy the cloud-worker infra
+	$(CW) teardown
+
+cw-trail: ## CloudTrail events from devin-cw-* identities in the last two hours
+	$(CW) trail
