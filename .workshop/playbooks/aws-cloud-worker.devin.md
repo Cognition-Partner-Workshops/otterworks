@@ -1,0 +1,83 @@
+---
+title: Answer a CloudWatch page as the AWS cloud worker
+macro: "!aws_cloud_worker"
+---
+
+# Playbook: Answer a CloudWatch page as the AWS cloud worker
+
+> **Facilitator / author:** this file is the source for a **Devin Playbook**.
+> Copy its contents into the Demo org (**Settings** → **Playbooks** → **Create a new
+> Playbook**) so sessions can invoke it as `!aws_cloud_worker`, and point the
+> `aws-cloud-worker-dlq-alarm` Automation's prompt at that macro. See
+> `docs/aws-cloud-worker/automation.md` for the Automation and
+> [Creating Playbooks](https://docs.devin.ai/product-guides/creating-playbooks).
+
+## Overview
+
+You are the AWS engineer on the OtterWorks team, and CloudWatch has paged you. Alarm `otterworks-cw-notifications-dlq-depth` went to `ALARM` because messages from queue `otterworks-cw-notifications` landed in DLQ `otterworks-cw-notifications-dlq`, and EventBridge rule `otterworks-cw-dlq-alarm-to-devin` posted the alarm to this session. Nobody will type a follow-up prompt. Find the cause from telemetry, restore the service from git, redrive the DLQ, prove recovery with the after gate, open one fix pull request, and report in this session.
+
+Every command you need is in the `aws-cloud-worker` skill in `Cognition-Partner-Workshops/otterworks`. Read telemetry first and code second, since the page is about a running system and the code on the branch can be correct while the cluster runs something else.
+
+## Required from user
+
+Nothing is asked of a person during the run, because the webhook payload appended to the prompt is the whole brief:
+
+```json
+{
+  "source": "cloudwatch-alarm",
+  "alarm": "otterworks-cw-notifications-dlq-depth",
+  "state": "ALARM",
+  "reason": "<CloudWatch state reason>",
+  "time": "<event time>",
+  "region": "us-east-1",
+  "account": "<account>",
+  "tenant": "cloud-worker",
+  "namespace": "otterworks-cloud-worker",
+  "branch": "demo-cloud-worker",
+  "service": "notification-service",
+  "queue": "otterworks-cw-notifications",
+  "dlq": "otterworks-cw-notifications-dlq",
+  "dashboard": "otterworks-cloud-worker"
+}
+```
+
+If a person started the session by hand, ask only for the payload.
+
+## Procedure
+
+1. Read the payload. If `state` is anything other than `ALARM`, post one line in the session naming the alarm, the state and the time, and stop. Otherwise note the alarm, the reason, the time, the namespace, the service, both queues and the dashboard.
+2. Check out the branch the payload names (`demo-cloud-worker`) in `Cognition-Partner-Workshops/otterworks`. If `branch` is missing or names `main`, report the payload and stop.
+3. Assume the observer role with your session id and write the kubeconfig, as the skill shows. Run `make cw-status` and keep the screen.
+4. Diagnose from telemetry before you open any code. Write down, with values: the alarm state and reason, the DLQ depth and the queue depth, the exception and table name in the `notification-service` logs, the Helm revision that changed the release with its time, and the live `DYNAMODB_TABLE_NOTIFICATIONS` next to the value in `infrastructure/helm/tenant-values/cloud-worker/eventing.env`. Confirm that the git table exists with `aws dynamodb describe-table`. The cause is proven when the live value differs from git and the exception names the live value.
+5. Post the cause in the session in two or three sentences, before you change anything.
+6. Assume the builder role and run `make cw-apply` to restore the config from git. Wait for it to report the pods ready.
+7. Still under the builder role, redrive the DLQ with `aws sqs start-message-move-task --source-arn <dlq arn>` and wait for `aws sqs list-message-move-tasks` to show `COMPLETED`. Switch back to the observer role.
+8. Run `make cw-verify EXPECT=after`. If it fails because the alarm is still in `ALARM`, wait one minute and run it again. If it fails for any other reason, report the failing check and stop before step 9.
+9. Open the fix pull request the skill describes: a startup check in `notification-service` that describes the configured table on boot and fails readiness with the table name in the log, with one test. Branch `demo-cw-<unix ts>-<slug>`, base `demo-cloud-worker`. Run `gradle check --no-daemon` in `services/notification-service` first.
+10. Post the report in this session. One message, in this order: the cause (live value, git value, the Helm revision and its time), what you changed (the restore, the redrive with the message count, the pull request), the pull request link, and the `make cw-verify EXPECT=after` output in a code block.
+
+## Specifications (postconditions)
+
+- The live `DYNAMODB_TABLE_NOTIFICATIONS` in `otterworks-cloud-worker` matches `eventing.env`.
+- The DLQ holds 0 messages, and the redriven messages were written to `otterworks-cw-notifications`.
+- `make cw-verify EXPECT=after` passed, and its output is in the report.
+- One pull request is open from a `demo-cw-` branch against `demo-cloud-worker`, with the startup check and its test.
+- Reads in CloudTrail show user `devin-cw-observer` and the redrive shows `devin-cw-builder`, each with session name `devin-<session id>`.
+- The report in the session carries the cause, the change, the pull request link and the verify output.
+
+## Advice and pointers
+
+- The diff between the live config and git answers this page. Find that diff in `make cw-status` and `helm history` before you read Kotlin.
+- Restore first, then redrive. Messages redriven into a consumer that still points at the wrong table go back to the DLQ after 3 receives.
+- The restore is `make cw-apply`. A hand-written `helm upgrade --set` is a second out-of-band change and repeats the cause.
+- Keep the report short. The pull request holds the detail.
+
+## Forbidden actions
+
+- Post nothing to Slack or any channel outside this session. The report goes in this session.
+- Keep the builder role for the restore and the redrive, and use no AWS credentials other than the two demo roles.
+- Leave `eventing.env`, the alarm, its threshold, the EventBridge rule, `cloudworker/` and Terraform unchanged.
+- Never purge the DLQ. The messages are user notifications, so redrive them.
+- Stay out of `t-main`, `otterworks-main`, other tenants, `main`, and the planted bugs that belong to other labs.
+- Merge nothing, and push nothing to `demo-cloud-worker`.
+- Replace the account number with `<account>` anywhere it would appear in the pull request, a commit or the report.
