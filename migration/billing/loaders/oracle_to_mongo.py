@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Oracle -> MongoDB loader for the OtterWorks billing migration (U1 and delta loads).
+"""Oracle -> MongoDB loader for the OtterWorks billing migration (U1, wave 2 and delta loads).
 
 Reads the source tables of the requested collections with python-oracledb (every session
 `SET TRANSACTION READ ONLY`, SELECT only, principal checked for write-capable privileges),
-maps each row with recon.py's reference mapping (`map_source_row`, so loader documents are
-by construction what the recon expects), and bulk-upserts on `_id` (ReplaceOne, upsert=True)
-into the migration database only. Upsert on `_id` makes a rerun a no-op (0 upserted,
+maps each row with recon.py's reference mapping (`map_source_row` for the primary row, the
+same `_map_fields` grouping as `load_documents` for embedded children such as
+`rating_periods.result`, so loader documents are by construction what the recon expects),
+and bulk-upserts on `_id` (ReplaceOne, upsert=True) into the migration database only. Upsert on `_id` makes a rerun a no-op (0 upserted,
 0 modified), which is the idempotency proof; the same command is the delta load of the
 parallel run. The secondary indexes declared in mapping_spec.json are created idempotently.
 
@@ -13,6 +14,10 @@ parallel run. The secondary indexes declared in mapping_spec.json are created id
       python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
         --collections codes,tenants,plans,subscriptions,subscriptions_hist --passes 2 \
         --report migration/billing/recon/out/U1.load.json
+    uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
+      python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
+        --collections usage_events,rating_periods --passes 2 \
+        --report migration/billing/recon/out/U3.load.json
 
 Secrets by name only: `OW_TP_ORACLE_RO_DSN` (user/password@dsn or JSON) and `MONGODB_ATLAS_URI`.
 `--mode fixture` loads the local Oracle Free fixture into a loopback mongod and refuses
@@ -25,6 +30,7 @@ import datetime as dt
 import json
 import sys
 import time
+from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -56,18 +62,50 @@ def _collection_maps(inputs: recon.Inputs, names: list[str]) -> list[recon.Colle
         raise SystemExit(f"not in mapping_spec.json#collections: {missing}")
     for n in names:
         cm = by_name[n]
-        if cm.quarantine_of is not None or cm.embedded:
-            raise SystemExit(f"{n} has embedded/quarantine children; this loader handles primary-table collections only")
+        if cm.quarantine_of is not None:
+            raise SystemExit(f"{n} is a quarantine collection; this loader handles primary-table collections "
+                             "and their embedded children only")
     return [by_name[n] for n in names]
+
+
+def build_documents(source, cm: recon.CollectionMap, now: dt.datetime) -> tuple[list[dict], dict]:
+    """One document per primary-table row, children embedded exactly as recon.load_documents does."""
+    rows = source.rows(cm.table)
+    docs = {recon.row_key(row, cm.id_columns): recon.map_source_row(cm, row, now) for row in rows}
+    stats: dict = {"table": cm.table, "source_rows": len(rows)}
+    for e in cm.embedded:
+        children = source.rows(e.table)
+        groups: dict[tuple, list[dict]] = defaultdict(list)
+        orphans = other = 0
+        for r in children:
+            if any(r.get(c) != v for c, v in e.fixed_filter.items()):
+                other += 1
+                continue
+            pk = (recon.canon_key(r.get(e.parent_fk)),)
+            if pk in docs:
+                groups[pk].append(r)
+            else:
+                orphans += 1
+        for pk, group in groups.items():
+            elems = [recon._map_fields(r, e.fields, now) for r in group]
+            if e.shape == "subdoc":
+                docs[pk][e.path] = elems[0]
+            else:
+                elems.sort(key=lambda el: tuple(recon.canon_key(el.get(f)) for f in e.order_fields) if e.order_fields else ())
+                docs[pk][e.path] = elems
+        stats.setdefault("embedded", {})[e.path] = {
+            "table": e.table, "shape": e.shape, "source_rows": len(children),
+            "embedded": sum(len(g) for g in groups.values()), "parents_with_children": len(groups),
+            "orphans": orphans, "other_entity_rows": other,
+        }
+    return list(docs.values()), stats
 
 
 def load_collection(source, db, cm: recon.CollectionMap, now: dt.datetime) -> dict:
     from pymongo import ReplaceOne
 
-    rows = source.rows(cm.table)
-    docs = [recon.map_source_row(cm, row, now) for row in rows]
-    stats = {"table": cm.table, "source_rows": len(rows), "documents": len(docs),
-             "upserted": 0, "matched": 0, "modified": 0}
+    docs, stats = build_documents(source, cm, now)
+    stats.update(documents=len(docs), upserted=0, matched=0, modified=0)
     if docs:
         ops = [ReplaceOne({"_id": d["_id"]}, d, upsert=True) for d in docs]
         res = db[cm.name].bulk_write(ops, ordered=False)

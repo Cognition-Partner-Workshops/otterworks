@@ -1,11 +1,14 @@
-"""Mongo backend (U1) against the mongo:7 fixture; skipped unless BILLING_MONGO_FIXTURE_URI is set.
+"""Mongo backend (U1, U3) against the mongo:7 fixture; skipped unless BILLING_MONGO_FIXTURE_URI is set.
 
 Seeds the static rows of db/oracle/schema/03_seed_static.sql in the migrated shape and replays
-the plans scenarios PLANS-001..005 (procs/transcripts/plans) plus the PKG_OW_UTIL helpers.
+the plans scenarios PLANS-001..005 (procs/transcripts/plans), the rating scenarios
+RATING-001..008 (procs/transcripts/rating) plus the PKG_OW_UTIL helpers.
 """
+import json
 import os
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -167,4 +170,183 @@ def test_util_helpers(mongo):
     assert mongo.f_str2dt("31-FEB-26") is None and mongo.f_str2dt("garbage") is None
     assert mongo.f_str2dt("15-JUN-99").isoformat() == "1999-06-15"
     with pytest.raises(NotImplementedError):
-        mongo.usage_rating(T[1], "2026-02-01", "2026-02-28")
+        mongo.invoice_preview(T[1], "2026-02-01", "2026-02-28")
+
+
+# -------------------------------------------------- U3: usage + rating (PKG_RATING)
+
+TRANSCRIPTS = Path(__file__).resolve().parents[3] / "procs" / "transcripts" / "rating"
+E = [f"30000000-0000-0000-0000-0000000000{n:02d}" for n in range(0, 12)]
+RP = [f"40000000-0000-0000-0000-00000000000{n}" for n in range(0, 4)]
+RR = [f"50000000-0000-0000-0000-00000000000{n}" for n in range(0, 4)]
+
+
+def stamp(text):
+    return datetime.fromisoformat(text).replace(tzinfo=timezone.utc)
+
+
+@pytest.fixture
+def rating(mongo):
+    """U3 rows of 03_seed_static.sql on top of the plans fixture (plans at their seeded rates)."""
+    from bson import Decimal128, Int64
+
+    db = mongo.db()
+    for name in ("usage_events", "rating_periods"):
+        db.drop_collection(name)
+    db.codes.insert_many([
+        {"_id": {"codeType": "USAGE_KIND", "codeVal": 1}, "codeDesc": "api"},
+        {"_id": {"codeType": "USAGE_KIND", "codeVal": 2}, "codeDesc": "storage"},
+        {"_id": {"codeType": "USAGE_KIND", "codeVal": 3}, "codeDesc": "compute"},
+    ])
+    db.plans.update_one({"_id": P[1]}, {"$set": {"overageRate": Decimal128("0.055")}})
+    db.plans.update_one({"_id": P[3]}, {"$set": {"includedUnits": 2000, "overageRate": Decimal128("0.02")}})
+    db.tenants.insert_many([{"_id": T[n], "name": f"Tenant {n}", "taxExemptYn": "N", "statusCd": 10} for n in (3, 6, 7, 8, 9)])
+    db.subscriptions.insert_many(
+        [{"_id": S[3], "tenantId": T[3], "planId": P[3], "startsOn": day("2026-01-01"), "statusCd": 10}]
+        + [{"_id": S[n], "tenantId": T[n], "planId": P[1], "startsOn": day("2026-01-01"), "statusCd": 10} for n in (6, 7, 8, 9)]
+    )
+    db.usage_events.create_index([("tenantId", 1), ("occurredAt", -1), ("_id", -1)], name="ix_usage_events_tenant_occurred")
+    db.rating_periods.create_index([("tenantId", 1), ("periodStart", 1)], unique=True, name="uq_rating_periods_tenant_start")
+    events = [
+        (E[1], T[1], "2026-02-10T10:00:00", 260, 1), (E[3], T[2], "2026-02-10T10:00:00", 700, 1),
+        (E[4], T[3], "2026-02-10T10:00:00", 2201, 3), (E[5], T[4], "2026-02-05T10:00:00", 20, 1),
+        (E[8], T[4], "2026-02-06T10:00:00", 30, 2), (E[6], T[5], "2026-02-01T10:00:00", 610, 1),
+        (E[7], T[6], "2026-02-28T10:00:00", 201, 1), (E[9], T[7], "2026-02-10T10:00:00", 260, 1),
+        (E[10], T[8], "2026-02-28T10:00:00", 202, 1), (E[11], T[9], "2026-02-10T10:00:00", 1, 1),
+    ]
+    db.usage_events.insert_many([
+        {"_id": i, "tenantId": t, "occurredAt": stamp(at), "units": Int64(units), "kindCd": kind}
+        for i, t, at, units, kind in events
+    ])
+    db.rating_periods.insert_many([
+        {"_id": RP[n], "tenantId": T[1], "periodStart": day(start), "periodEnd": day(end),
+         "result": {"id": RR[n], "subscriptionId": S[1], "usedUnits": Int64(0), "quotaUnits": Int64(100),
+                    "rolloverUnits": Int64(100), "billableUnits": Int64(0), "overageAmount": Decimal128("0"),
+                    "createdAt": day(end)}}
+        for n, start, end in ((3, "2025-11-01", "2025-11-30"), (1, "2025-12-01", "2025-12-31"), (2, "2026-01-01", "2026-01-31"))
+    ])
+    return mongo
+
+
+def transcript(scenario_id):
+    return json.loads((TRANSCRIPTS / f"{scenario_id}.json").read_text())
+
+
+def graded(row, fields):
+    """business_fields the way procs/harness grades them: integers as int, decimals at 2 places."""
+    out = {}
+    for name, value in fields.items():
+        actual = row[name]
+        out[name] = str(Decimal(actual).quantize(Decimal("0.01"))) if isinstance(value, str) else int(actual)
+    return out
+
+
+@pytest.mark.parametrize("scenario_id, tenant", [
+    ("RATING-001", 7), ("RATING-002", 1), ("RATING-003", 2), ("RATING-004", 6), ("RATING-005", 8), ("RATING-006", 3),
+])
+def test_rating_001_006_usage_rating(rating, scenario_id, tenant):
+    expected = transcript(scenario_id)["business_fields"]
+    (row,) = rating.usage_rating(T[tenant], "2026-02-01", "2026-02-28")
+    assert graded(row, expected) == expected
+    assert row["tenant_id"] == T[tenant] and (row["period_start"], row["period_end"]) == ("2026-02-01", "2026-02-28")
+    assert all(isinstance(row[k], str) for k in ("used_units", "quota_units", "billable_units", "overage_amount"))
+
+
+def test_rating_003_suspension_prorates_from_oracle_rounding(rating):
+    (row,) = rating.usage_rating(T[2], "2026-02-01", "2026-02-28")
+    assert (row["used_units"], row["quota_units"], row["billable_units"]) == ("700", "500", "100")
+    assert row["overage_amount"] == "4.37"  # 8.73 * 14/28 = 4.365 -> ROUND half up, no trailing zeros
+    (row,) = rating.usage_rating(T[1], "2026-02-01", "2026-02-28")
+    assert row["overage_amount"] == "0" and row["rollover_units"] == "200"  # min(2 * quota, 300 prior)
+
+
+def test_rating_without_covering_plan_has_no_quota(rating):
+    rows = rating.usage_rating(T[7], "2025-12-01", "2025-12-31")
+    assert rows == [{"tenant_id": T[7], "period_start": "2025-12-01", "period_end": "2025-12-31", "used_units": "0",
+                     "quota_units": None, "rollover_units": "0", "billable_units": "0", "first_tier_units": "0",
+                     "second_tier_units": "0", "overage_amount": None}]
+    with pytest.raises(ValueError):
+        rating.finalize_rating(T[7], "2025-12-01", "2025-12-31")
+    assert rating.db().rating_periods.count_documents({"tenantId": T[7]}) == 0
+
+
+def test_rating_007_usage_summary(rating):
+    expected = transcript("RATING-007")["business_fields"]
+    rows = rating.usage_summary(T[4], "2026-02-01", "2026-02-28")
+    assert [r["kind"] for r in rows] == expected["kinds"]
+    assert [int(r["units"]) for r in rows] == expected["units"]
+    assert rows == [{"kind": "api", "event_count": "1", "units": "20"}, {"kind": "storage", "event_count": "1", "units": "30"}]
+    assert rating.usage_summary(T[4], "2026-03-01", "2026-03-31") == []
+
+
+def test_rating_008_finalize_rating(rating):
+    from bson import Decimal128, Int64
+
+    expected = transcript("RATING-008")
+    period_id = rating.finalize_rating(T[1], "2026-02-01", "2026-02-28")
+    assert period_id == rating.f_md5_uuid(f"{T[1]}2026-02-01")
+    doc = rating.db().rating_periods.find_one({"_id": period_id})
+    assert (doc["tenantId"], doc["periodStart"], doc["periodEnd"]) == (T[1], day("2026-02-01"), day("2026-02-28"))
+    result = doc["result"]
+    assert result == {
+        "id": rating.f_md5_uuid(period_id), "subscriptionId": S[1], "usedUnits": 260, "quotaUnits": 100,
+        "rolloverUnits": 0, "billableUnits": 0, "overageAmount": Decimal128("0"), "createdAt": day("2026-02-28"),
+    }
+    assert all(isinstance(result[k], Int64) for k in ("usedUnits", "quotaUnits", "rolloverUnits", "billableUnits"))
+    probe = [{"used_units": int(result["usedUnits"]), "quota_units": int(result["quotaUnits"]),
+              "rollover_units": int(result["rolloverUnits"]), "billable_units": int(result["billableUnits"]),
+              "overage_amount": str(result["overageAmount"].to_decimal().quantize(Decimal("0.01")))}]
+    assert probe == expected["probes"]["rating_result"]
+    assert [a["message"] for a in rating.db().billing_audit_log.find({"module": "RATING"})][-1] == f"finalized period={period_id}"
+
+
+def test_finalize_rating_rerun_updates_in_place(rating):
+    from bson import Int64
+
+    period_id = rating.finalize_rating(T[1], "2026-02-01", "2026-02-28")
+    rating.db().usage_events.insert_one(
+        {"_id": E[0], "tenantId": T[1], "occurredAt": stamp("2026-02-20T10:00:00"), "units": Int64(100), "kindCd": 1})
+    assert rating.finalize_rating(T[1], "2026-02-01", "2026-02-27") == period_id
+    assert rating.db().rating_periods.count_documents({"tenantId": T[1], "periodStart": day("2026-02-01")}) == 1
+    doc = rating.db().rating_periods.find_one({"_id": period_id})
+    assert doc["periodEnd"] == day("2026-02-27")
+    assert (doc["result"]["usedUnits"], doc["result"]["billableUnits"]) == (360, 60)
+    assert doc["result"]["id"] == rating.f_md5_uuid(period_id) and doc["result"]["createdAt"] == day("2026-02-28")
+
+
+def test_finalize_rating_joins_callers_transaction(rating):
+    client = rating.client()
+    with client.start_session() as session:
+        session.start_transaction()
+        period_id = rating.finalize_rating(T[6], "2026-02-01", "2026-02-28", session=session)
+        assert rating.db().rating_periods.find_one({"_id": period_id}) is None  # not visible outside the txn
+        session.abort_transaction()
+    assert rating.db().rating_periods.count_documents({"tenantId": T[6]}) == 0
+    with client.start_session() as session:
+        with session.start_transaction():
+            rating.finalize_rating(T[6], "2026-02-01", "2026-02-28", session=session)
+    doc = rating.db().rating_periods.find_one({"tenantId": T[6]})
+    assert str(doc["result"]["overageAmount"]) == "5.56" and doc["result"]["billableUnits"] == 101
+
+
+def test_record_usage_event_and_listing(rating):
+    from bson import Int64
+
+    new = "30000000-0000-0000-0000-00000000ffff"
+    assert rating.record_usage_event(new, T[4], "2026-02-07T12:30:00Z", 5, "compute") == "recorded"
+    assert rating.record_usage_event(new, T[4], "2026-02-07T12:30:00Z", 5, "compute") == "duplicate"
+    stored = rating.db().usage_events.find_one({"_id": new})
+    assert stored == {"_id": new, "tenantId": T[4], "occurredAt": stamp("2026-02-07T12:30:00"), "units": 5, "kindCd": 3}
+    assert isinstance(stored["units"], Int64)
+    with pytest.raises(rating.UsageEventRejected):
+        rating.record_usage_event("30000000-0000-0000-0000-00000000fffe", T[4], "2026-02-07T12:30:00Z", 5, "bandwidth")
+    with pytest.raises(rating.UsageEventRejected):
+        rating.record_usage_event("30000000-0000-0000-0000-00000000fffe", T[4], "2026-02-07T12:30:00Z", 0, "api")
+    assert rating.usage_events(T[4], "2026-02-01", "2026-02-28") == [
+        {"id": new, "occurred_at": "2026-02-07T12:30:00", "units": "5", "kind": "compute"},
+        {"id": E[8], "occurred_at": "2026-02-06T10:00:00", "units": "30", "kind": "storage"},
+        {"id": E[5], "occurred_at": "2026-02-05T10:00:00", "units": "20", "kind": "api"},
+    ]
+    assert rating.usage_events(T[4], "2026-02-01", "2026-02-28", limit=1) == [
+        {"id": new, "occurred_at": "2026-02-07T12:30:00", "units": "5", "kind": "compute"}]
+    assert rating.usage_summary(T[4], "2026-02-01", "2026-02-28")[1] == {"kind": "compute", "event_count": "1", "units": "5"}
