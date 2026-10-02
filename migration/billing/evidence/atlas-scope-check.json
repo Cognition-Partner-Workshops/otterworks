@@ -1,0 +1,34 @@
+{
+  "kind": "atlas-scope-check",
+  "checkedAt": "2026-10-01T23:41:32.305389+00:00",
+  "uriEnv": "MONGODB_ATLAS_URI",
+  "migrationDb": "ow_tp_billing_20261001T233613Z",
+  "principal": {
+    "user": "otterworks-app",
+    "authDb": "admin",
+    "roles": [
+      {
+        "role": "readWriteAnyDatabase",
+        "db": "admin"
+      },
+      {
+        "role": "dbAdminAnyDatabase",
+        "db": "admin"
+      }
+    ]
+  },
+  "privilegeResources": [
+    "{\"cluster\": true}",
+    "{\"collection\": \"\", \"db\": \"\"}",
+    "{\"collection\": \"system.js\", \"db\": \"\"}",
+    "{\"collection\": \"system.profile\", \"db\": \"\"}"
+  ],
+  "roleViolations": [
+    "readWriteAnyDatabase@admin",
+    "dbAdminAnyDatabase@admin",
+    "missing readWrite@ow_tp_billing_20261001T233613Z"
+  ],
+  "probes": [],
+  "verdict": "FAIL",
+  "reason": "principal holds roles outside readWrite@ow_tp_billing_20261001T233613Z; negative probe skipped to avoid an out-of-scope write"
+}
