@@ -22,6 +22,10 @@ output "dynamodb_table" {
   value = aws_dynamodb_table.notifications.name
 }
 
+output "dynamodb_preferences_table" {
+  value = aws_dynamodb_table.notification_preferences.name
+}
+
 output "irsa_notification_service_role_arn" {
   value = aws_iam_role.notification_service.arn
 }

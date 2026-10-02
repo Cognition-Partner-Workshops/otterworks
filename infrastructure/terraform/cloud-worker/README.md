@@ -7,6 +7,7 @@ This Terraform root builds the AWS side of the `aws-cloud-worker` demo. It share
 - SNS topic `otterworks-cw-events`, subscribed to the queue `otterworks-cw-notifications`.
 - SQS queue `otterworks-cw-notifications`. After three receives a message moves to `otterworks-cw-notifications-dlq`.
 - DynamoDB table `otterworks-cw-notifications`, with the same keys and index as the main notifications table.
+- DynamoDB table `otterworks-cw-notification-preferences`, keyed on `userId`. The consumer reads it before it writes each notification.
 - IRSA roles `otterworks-cw-notification-service` and `otterworks-cw-file-service`. Each trusts one service account in `otterworks-cloud-worker`.
 - IAM user `devin-cw-reader`. It may assume `devin-cw-observer` for reads and `devin-cw-builder` for the restore and the redrive.
 - Alarm `otterworks-cw-notifications-dlq-depth`. It fires when the DLQ holds one message.

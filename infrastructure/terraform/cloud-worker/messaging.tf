@@ -96,3 +96,18 @@ resource "aws_dynamodb_table" "notifications" {
     projection_type = "ALL"
   }
 }
+
+resource "aws_dynamodb_table" "notification_preferences" {
+  name         = local.prefs_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "userId"
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+}

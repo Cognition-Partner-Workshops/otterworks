@@ -43,7 +43,7 @@ resource "aws_iam_role_policy" "eventbridge_invoke" {
     Statement = [{
       Effect   = "Allow"
       Action   = "events:InvokeApiDestination"
-      Resource = "${aws_cloudwatch_event_api_destination.devin_webhook.arn}*"
+      Resource = aws_cloudwatch_event_api_destination.devin_webhook.arn
     }]
   })
 }

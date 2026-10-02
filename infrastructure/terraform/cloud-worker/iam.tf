@@ -61,6 +61,14 @@ resource "aws_iam_role_policy" "notification_service" {
         ]
       },
       {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+        ]
+        Resource = [aws_dynamodb_table.notification_preferences.arn]
+      },
+      {
         Effect   = "Allow"
         Action   = ["ses:SendEmail"]
         Resource = ["*"]

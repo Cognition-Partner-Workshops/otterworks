@@ -41,6 +41,7 @@ locals {
   dlq_name        = "otterworks-cw-notifications-dlq"
   events_dlq_name = "otterworks-cw-events-dlq"
   table_name      = "otterworks-cw-notifications"
+  prefs_name      = "otterworks-cw-notification-preferences"
   alarm_name      = "otterworks-cw-notifications-dlq-depth"
   dashboard_name  = "otterworks-cloud-worker"
   rule_name       = "otterworks-cw-dlq-alarm-to-devin"
