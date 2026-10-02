@@ -1,0 +1,76 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: devin-cw-namespaces
+  labels:
+    demo: aws-cloud-worker
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: devin-cw-namespaces
+  labels:
+    demo: aws-cloud-worker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: devin-cw-namespaces
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: devin-cw-observer
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: devin-cw-builder
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devin-cw-observer
+  namespace: otterworks-cloud-worker
+  labels:
+    demo: aws-cloud-worker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: devin-cw-observer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devin-cw-observer
+  namespace: otterworks-main
+  labels:
+    demo: aws-cloud-worker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: devin-cw-observer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devin-cw-builder
+  namespace: otterworks-cloud-worker
+  labels:
+    demo: aws-cloud-worker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: devin-cw-builder
