@@ -1,0 +1,540 @@
+{
+  "kind": "plans-parity",
+  "unit": "U1",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T17:16:21Z",
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "transcripts": "procs/transcripts/plans/PLANS-001..005.json (immutable)",
+  "scenarios": [
+    {
+      "id": "PLANS-001",
+      "entrypoint": "billing.fn_list_plans",
+      "description": "Return the catalog for the active plans.",
+      "expected": {
+        "business_fields": {
+          "codes": [
+            "STARTER",
+            "GROWTH",
+            "SCALE"
+          ],
+          "fees": [
+            "49.00",
+            "149.00",
+            "499.00"
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "codes": [
+              "STARTER",
+              "GROWTH",
+              "SCALE"
+            ],
+            "fees": [
+              "49.00",
+              "149.00",
+              "499.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "codes": [
+              "STARTER",
+              "GROWTH",
+              "SCALE"
+            ],
+            "fees": [
+              "49.00",
+              "149.00",
+              "499.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "PLANS-002",
+      "entrypoint": "billing.fn_entitlement",
+      "description": "Read the entitlement for tenant 1 on 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "included_units": 100,
+          "plan_code": "STARTER",
+          "subscription_status": "active",
+          "tier": "starter"
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "plan_code": "STARTER",
+            "tier": "starter",
+            "included_units": 100,
+            "subscription_status": "active"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "plan_code": "STARTER",
+            "tier": "starter",
+            "included_units": 100,
+            "subscription_status": "active"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "PLANS-003",
+      "entrypoint": "billing.fn_entitlement",
+      "description": "Read the entitlement for tenant 2 on 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "included_units": 500,
+          "plan_code": "GROWTH",
+          "subscription_status": "suspended",
+          "tier": "growth"
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "plan_code": "GROWTH",
+            "tier": "growth",
+            "included_units": 500,
+            "subscription_status": "suspended"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "plan_code": "GROWTH",
+            "tier": "growth",
+            "included_units": 500,
+            "subscription_status": "suspended"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "PLANS-004",
+      "entrypoint": "billing.sp_change_plan",
+      "description": "Change tenant 1 to plan 2 effective 2026-03-01.",
+      "expected": {
+        "business_fields": {
+          "subscriptions": [
+            {
+              "ends_on": "2026-02-28",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "status": "active"
+            },
+            {
+              "ends_on": null,
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-03-01",
+              "status": "active"
+            }
+          ]
+        },
+        "probes": {
+          "subscription_rows": [
+            {
+              "ends_on": "2026-02-28",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "status": "active"
+            },
+            {
+              "ends_on": null,
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-03-01",
+              "status": "active"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "subscriptions": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-02-28",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000002",
+                "starts_on": "2026-03-01",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "probes": {
+            "subscription_rows": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-02-28",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000002",
+                "starts_on": "2026-03-01",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "subscriptions": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-02-28",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000002",
+                "starts_on": "2026-03-01",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "probes": {
+            "subscription_rows": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-02-28",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000002",
+                "starts_on": "2026-03-01",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "subscriptions_hist_pre_images": 1
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "PLANS-005",
+      "entrypoint": "billing.sp_change_plan",
+      "description": "Change tenant 4 to plan 3 effective 2026-03-15.",
+      "expected": {
+        "business_fields": {
+          "subscriptions": [
+            {
+              "ends_on": "2026-03-14",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "status": "active"
+            },
+            {
+              "ends_on": null,
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "starts_on": "2026-03-15",
+              "status": "active"
+            }
+          ]
+        },
+        "probes": {
+          "subscription_rows": [
+            {
+              "ends_on": "2026-03-14",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "status": "active"
+            },
+            {
+              "ends_on": null,
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "starts_on": "2026-03-15",
+              "status": "active"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "subscriptions": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-03-14",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000003",
+                "starts_on": "2026-03-15",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "probes": {
+            "subscription_rows": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-03-14",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000003",
+                "starts_on": "2026-03-15",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "subscriptions": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-03-14",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000003",
+                "starts_on": "2026-03-15",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "probes": {
+            "subscription_rows": [
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000001",
+                "starts_on": "2026-01-01",
+                "ends_on": "2026-03-14",
+                "status": "active"
+              },
+              {
+                "plan_id": "10000000-0000-0000-0000-000000000003",
+                "starts_on": "2026-03-15",
+                "ends_on": null,
+                "status": "active"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "subscriptions_hist_pre_images": 1
+        }
+      },
+      "pass": true
+    }
+  ],
+  "facade": {
+    "oracle": {
+      "GET /api/v1/billing/plans": [
+        {
+          "included_units": "100",
+          "monthly_fee": "49",
+          "overage_rate": "0.055",
+          "plan_code": "STARTER",
+          "plan_id": "10000000-0000-0000-0000-000000000001",
+          "tier": "starter"
+        },
+        {
+          "included_units": "500",
+          "monthly_fee": "149",
+          "overage_rate": "0.035",
+          "plan_code": "GROWTH",
+          "plan_id": "10000000-0000-0000-0000-000000000002",
+          "tier": "growth"
+        },
+        {
+          "included_units": "2000",
+          "monthly_fee": "499",
+          "overage_rate": "0.02",
+          "plan_code": "SCALE",
+          "plan_id": "10000000-0000-0000-0000-000000000003",
+          "tier": "scale"
+        }
+      ],
+      "GET /api/v1/billing/entitlement?on=2026-02-28": [
+        {
+          "effective_on": "2026-02-28",
+          "included_units": "100",
+          "monthly_fee": "49",
+          "plan_code": "STARTER",
+          "subscription_status": "active",
+          "tenant_id": "00000000-0000-0000-0000-000000000001",
+          "tier": "starter"
+        }
+      ],
+      "GET /api/v1/billing/me (customer excluded until U2)": {
+        "entitlement": [
+          {
+            "effective_on": "2026-02-28",
+            "included_units": "100",
+            "monthly_fee": "49",
+            "plan_code": "STARTER",
+            "subscription_status": "active",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "tier": "starter"
+          }
+        ],
+        "name": "Tenant One",
+        "status": "active",
+        "tax_exempt": "N",
+        "tenant_id": "00000000-0000-0000-0000-000000000001"
+      },
+      "POST /api/v1/billing/plan-change (plan 3, effective 2026-11-01)": {
+        "status": 200,
+        "body": {
+          "entitlement": [
+            {
+              "effective_on": "2026-11-01",
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "plan_code": "SCALE",
+              "subscription_status": "active",
+              "tenant_id": "00000000-0000-0000-0000-000000000001",
+              "tier": "scale"
+            }
+          ],
+          "status": "changed"
+        }
+      }
+    },
+    "oracle_non_u1_routes": {
+      "usage": 200,
+      "invoices": 200,
+      "customer": 404
+    },
+    "mongo": {
+      "GET /api/v1/billing/plans": [
+        {
+          "included_units": "100",
+          "monthly_fee": "49",
+          "overage_rate": "0.055",
+          "plan_code": "STARTER",
+          "plan_id": "10000000-0000-0000-0000-000000000001",
+          "tier": "starter"
+        },
+        {
+          "included_units": "500",
+          "monthly_fee": "149",
+          "overage_rate": "0.035",
+          "plan_code": "GROWTH",
+          "plan_id": "10000000-0000-0000-0000-000000000002",
+          "tier": "growth"
+        },
+        {
+          "included_units": "2000",
+          "monthly_fee": "499",
+          "overage_rate": "0.02",
+          "plan_code": "SCALE",
+          "plan_id": "10000000-0000-0000-0000-000000000003",
+          "tier": "scale"
+        }
+      ],
+      "GET /api/v1/billing/entitlement?on=2026-02-28": [
+        {
+          "effective_on": "2026-02-28",
+          "included_units": "100",
+          "monthly_fee": "49",
+          "plan_code": "STARTER",
+          "subscription_status": "active",
+          "tenant_id": "00000000-0000-0000-0000-000000000001",
+          "tier": "starter"
+        }
+      ],
+      "GET /api/v1/billing/me (customer excluded until U2)": {
+        "entitlement": [
+          {
+            "effective_on": "2026-02-28",
+            "included_units": "100",
+            "monthly_fee": "49",
+            "plan_code": "STARTER",
+            "subscription_status": "active",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "tier": "starter"
+          }
+        ],
+        "name": "Tenant One",
+        "status": "active",
+        "tax_exempt": "N",
+        "tenant_id": "00000000-0000-0000-0000-000000000001"
+      },
+      "POST /api/v1/billing/plan-change (plan 3, effective 2026-11-01)": {
+        "status": 200,
+        "body": {
+          "entitlement": [
+            {
+              "effective_on": "2026-11-01",
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "plan_code": "SCALE",
+              "subscription_status": "active",
+              "tenant_id": "00000000-0000-0000-0000-000000000001",
+              "tier": "scale"
+            }
+          ],
+          "status": "changed"
+        }
+      }
+    },
+    "mongo_non_u1_routes": {
+      "usage": 501,
+      "invoices": 501,
+      "customer": 501
+    },
+    "identical": true,
+    "non_u1_routes_501_on_mongo": true
+  },
+  "verdict": "pass"
+}
