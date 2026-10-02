@@ -26,6 +26,12 @@ A collection with embedded children is loaded from its primary table plus every 
 a quarantine collection is loaded together with the collection it quarantines (the orphan set
 is defined by the parent keys of that same read), so both names must be in --collections.
 
+    # U2: customers embeds ENTITY_ATTR_VALUE as attributes[] (one embedded child table, no quarantine)
+    uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
+      python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
+        --collections customers,customers_hist --passes 2 \
+        --report migration/billing/recon/out/U2.load.json
+
 Secrets by name only: `OW_TP_ORACLE_RO_DSN` (user/password@dsn or JSON) and `MONGODB_ATLAS_URI`.
 `--mode fixture` loads the local Oracle Free fixture into a loopback mongod and refuses
 anything that is not loopback; `--mode live` refuses loopback on either side.

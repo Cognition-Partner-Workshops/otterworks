@@ -10,7 +10,7 @@ the rating periods/results and usage events this module writes) and the Mongo fi
 reloaded from it with migration/billing/loaders/oracle_to_mongo.py, so both backends start
 from the same rows. A second section records the /api/v1/billing/usage facade and the
 /internal/usage/events ingestion (the bridge's only write path) on both backends and requires
-them to be identical; the routes of modules not yet ported must still answer 501 on mongo.
+them to be identical.
 
 Fixture only: requires `make oracle-billing-up` and `make mongo-billing-up`; never Atlas.
 
@@ -157,11 +157,6 @@ def facade_snapshot(client):
     }
 
 
-def non_u3_status(client):
-    headers = {"X-User-ID": TENANT}
-    return {path: client.get(f"/api/v1/billing/{path}", headers=headers).status_code for path in ("customer",)}
-
-
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--oracle-dsn-env", default="OW_TP_ORACLE_FIXTURE_DSN")
@@ -207,14 +202,10 @@ def main(argv=None):
         fixture.reset()
         os.environ["BILLING_BACKEND"] = backend
         report["facade"][backend] = facade_snapshot(app.test_client())
-        report["facade"][f"{backend}_non_u3_routes"] = non_u3_status(app.test_client())
     report["facade"]["identical"] = report["facade"]["oracle"] == report["facade"]["mongo"]
-    report["facade"]["non_u3_routes_501_on_mongo"] = all(
-        code == 501 for code in report["facade"]["mongo_non_u3_routes"].values())
-    if not (report["facade"]["identical"] and report["facade"]["non_u3_routes_501_on_mongo"]):
+    if not report["facade"]["identical"]:
         report["verdict"] = "fail"
-    print(f"facade U3 routes identical on both backends: {report['facade']['identical']}; "
-          f"non-U3 routes 501 on mongo: {report['facade']['non_u3_routes_501_on_mongo']}")
+    print(f"facade U3 routes identical on both backends: {report['facade']['identical']}")
     fixture.reset()
 
     out = Path(args.out)

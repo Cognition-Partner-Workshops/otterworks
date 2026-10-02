@@ -38,7 +38,8 @@ def mongo(monkeypatch):
 
     backend._client = None
     db = backend.db()
-    for name in ("codes", "tenants", "plans", "subscriptions", "subscriptions_hist", "billing_audit_log"):
+    for name in ("codes", "tenants", "plans", "subscriptions", "subscriptions_hist", "billing_audit_log",
+                 "customers", "customers_hist"):
         db.drop_collection(name)
     db.codes.insert_many([
         {"_id": {"codeType": "TENANT_STATUS", "codeVal": 10}, "codeDesc": "active"},
@@ -67,8 +68,39 @@ def mongo(monkeypatch):
         {"_id": S[4], "tenantId": T[4], "planId": P[1], "startsOn": day("2026-01-01"), "statusCd": 10},
         {"_id": S[5], "tenantId": T[5], "planId": P[3], "startsOn": day("2026-01-01"), "statusCd": 30},
     ])
+    db.customers.insert_one(_admin_customer())
     yield backend
     backend.client().drop_database("ow_tp_billing_pytest")
+
+
+ADMIN_TENANT = "a0000000-0000-0000-0000-000000000001"
+ADMIN_CUST = "40000000-0000-0000-0000-00000000a001"
+
+
+def _admin_customer():
+    """03_seed_static.sql's customer_master row and its four EAV rows in the migrated shape (U2)."""
+    from bson import Decimal128, Int64
+
+    def eav(n, name, value):
+        return {"eavId": Int64(99000000000000 + n), "name": name, "value": value, "type": "STR",
+                "createdDt": "20-FEB-26", "createdDate": day("2026-02-20"), "typed": value}
+
+    return {
+        "_id": ADMIN_CUST, "custSeqNo": Int64(100000), "tenantId": ADMIN_TENANT, "custNo": "OW-ADMIN-0001",
+        "custName": "OtterWorks Admin", "custNameUpper": "OTTERWORKS ADMIN", "legalName": "OtterWorks Admin",
+        "addrLine1": "1 OtterWorks Way", "city": "Springfield", "stateCd": "IL", "zip": "62701", "countryCd": "US",
+        "phone1": "217-555-0100", "phone1TypeCd": 1, "email1": "admin@otterworks.dev",
+        "signupDt": "01-JAN-26", "signupDate": day("2026-01-01"),
+        "lastActivityDt": "20-FEB-26", "lastActivityDate": day("2026-02-20"),
+        "statusCd": 1, "subStatusCd": 1, "custTypeCd": 1, "segmentCd": 1, "regionCd": 1,
+        "taxExemptYn": "N", "creditHoldYn": "N", "dunningExemptYn": "N", "vipYn": "Y",
+        "curBalAmt": Decimal128("149"), "pastDueAmt": Decimal128("0"), "ytdBilledAmt": Decimal128("149"),
+        "ltdBilledAmt": Decimal128("149"), "ytdPaidAmt": Decimal128("149"), "creditLimitAmt": Decimal128("5000"),
+        "createdBy": "SEED", "createdDt": day("2026-01-01"), "updatedBy": "SEED", "updatedDt": day("2026-02-20"),
+        "rowVersionNo": 1,
+        "attributes": [eav(1, "TAX_REGION_OVERRIDE", "US-IL"), eav(2, "tax_region_override", "us-il"),
+                       eav(3, "PORTAL_THEME", "dark"), eav(4, "LEGACY_TIER", "priority")],
+    }
 
 
 def test_plans_001_catalog(mongo):
@@ -158,6 +190,86 @@ def test_tenant_profile_and_customer(mongo):
     ]
     assert mongo.tenant_profile("missing") == []
     assert mongo.customer_summary(T[1]) is None
+
+
+# ------------------------------------------------------------------ U2 customers
+
+
+def test_customer_summary_renders_like_oracle(mongo):
+    assert mongo.customer_summary(ADMIN_TENANT) == {
+        "cust_no": "OW-ADMIN-0001", "cust_name": "OtterWorks Admin", "cur_bal_amt": "149",
+        "past_due_amt": "0", "credit_hold_yn": "N",
+    }
+    assert mongo.customer_summary("missing") is None
+
+
+def test_customer_is_select_star_plus_attributes(mongo):
+    body = mongo.customer(ADMIN_TENANT)
+    assert set(body) == set(mongo.CUSTOMER_COLUMNS) | {"attributes"}
+    assert len(mongo.CUSTOMER_COLUMNS) == 155
+    assert body["cust_id"] == ADMIN_CUST and body["cust_seq_no"] == "100000" and body["phone1_type_cd"] == "1"
+    assert body["signup_dt"] == "01-JAN-26" and body["created_dt"] == "2026-01-01"
+    assert body["credit_limit_amt"] == "5000" and body["addr_line_2"] is None and body["udf_amt_10"] is None
+    assert not {"signup_date", "signupDate", "related_acct_ids_list", "_id"} & set(body)
+    assert [a["eav_id"] for a in body["attributes"]] == [str(99000000000000 + n) for n in (1, 2, 3, 4)]
+    assert body["attributes"][1] == {
+        "eav_id": "99000000000002", "entity_type": "CUSTOMER", "entity_id": ADMIN_CUST,
+        "attr_name": "tax_region_override", "attr_value": "us-il", "attr_type": "STR", "created_dt": "20-FEB-26",
+    }
+    assert mongo.customer("missing") is None
+
+
+def test_customer_picks_lowest_cust_seq_no(mongo):
+    second = {**_admin_customer(), "_id": "second", "custSeqNo": 99999, "custNo": "OW-SECOND"}
+    second.pop("attributes")
+    mongo.db().customers.insert_one(second)
+    assert mongo.customer_summary(ADMIN_TENANT)["cust_no"] == "OW-SECOND"
+    assert mongo.customer(ADMIN_TENANT)["attributes"] == []
+
+
+def test_customer_columns_match_mapping_spec(mongo):
+    import json
+
+    spec_path = Path(__file__).resolve().parents[3] / "migration" / "billing" / "mapping_spec.json"
+    if not spec_path.exists():
+        pytest.skip("mapping_spec.json not checked out")
+    spec = json.loads(spec_path.read_text())
+    customers = next(c for c in spec["collections"] if c["name"] == "customers")
+    flat = {f["field"]: f["source"] for f in customers["fields"] if "(derived)" not in f["source"]}
+    assert customers["_id"]["from"] == ["CUSTOMER_MASTER.CUST_ID"]
+    assert {mongo._camel(c): f"CUSTOMER_MASTER.{c.upper()}" for c in mongo.CUSTOMER_COLUMNS if c != "cust_id"} == flat
+    eav = customers["embedded"][0]
+    assert eav["source_table"] == "ENTITY_ATTR_VALUE" and eav["path"] == "attributes"
+    assert {f["source"].split(".")[1].lower() for f in eav["fields"] if "(derived)" not in f["source"]} == {
+        "eav_id", "attr_name", "attr_value", "attr_type", "created_dt"}
+    assert set(mongo.EAV_COLUMNS) == {"eav_id", "entity_type", "entity_id", "attr_name", "attr_value",
+                                      "attr_type", "created_dt"}
+
+
+def test_update_customer_writes_pre_image_in_the_same_transaction(mongo):
+    import re
+
+    from pymongo.errors import PyMongoError
+
+    hist = mongo.db().customers_hist
+    updated = mongo.update_customer(ADMIN_CUST, {"custName": "Renamed", "creditHoldYn": "Y"})
+    assert updated["custName"] == "Renamed" and updated["creditHoldYn"] == "Y"
+    assert mongo.customer_summary(ADMIN_TENANT)["credit_hold_yn"] == "Y"
+    rows = list(hist.find())
+    assert len(rows) == 1
+    pre = rows[0]
+    assert pre["_id"] == 1 and pre["histOp"] == "UPD" and pre["custId"] == ADMIN_CUST
+    assert pre["custName"] == "OtterWorks Admin" and pre["creditHoldYn"] == "N" and "attributes" not in pre
+    assert re.fullmatch(r"\d{2}-[A-Z]{3}-\d{2} \d{2}:\d{2}:\d{2}", pre["histDt"])
+    assert pre["histDate"] == mongo._as_bson_date(mongo.f_str2dt(pre["histDt"]))
+    assert pre["histDate"].time() == datetime.min.time()
+    assert pre["signupDate"] == day("2026-01-01") and pre["curBalAmt"] == updated["curBalAmt"]
+
+    assert mongo.update_customer("missing", {"custName": "x"}) is None
+    with pytest.raises(PyMongoError):
+        mongo.update_customer(ADMIN_CUST, {"$illegal": 1})
+    assert hist.count_documents({}) == 1
+    assert mongo.db().customers.find_one({"_id": ADMIN_CUST})["custName"] == "Renamed"
 
 
 def test_util_helpers(mongo):

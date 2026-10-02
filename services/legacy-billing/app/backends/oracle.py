@@ -201,6 +201,24 @@ def customer_summary(tenant_id):
     return customers[0] if customers else None
 
 
+def customer(tenant_id):
+    """GET /customer (U2): the tenant's first customer_master row, SELECT *, with its EAV rows."""
+    customers = query(
+        "SELECT * FROM customer_master WHERE tenant_id = :1 ORDER BY cust_seq_no FETCH FIRST 1 ROWS ONLY",
+        (tenant_id,),
+    )
+    if not customers:
+        return None
+    body = customers[0]
+    body["attributes"] = query(
+        """SELECT * FROM entity_attr_value
+            WHERE entity_type = 'CUSTOMER' AND entity_id = :1
+            ORDER BY eav_id""",
+        (customers[0]["cust_id"],),
+    )
+    return body
+
+
 def _as_date(value):
     if isinstance(value, date):
         return value

@@ -376,9 +376,116 @@ def tenant_profile(tenant_id):
     ]
 
 
+# ----------------------------------------------------------- customers (U2)
+
+# CUSTOMER_MASTER columns in table order; the document field is the camelCase of the column
+# (mapping_spec.json#customers, d-flat-customer-columns) and CUST_ID is _id.
+CUSTOMER_COLUMNS = (
+    "cust_id cust_seq_no tenant_id cust_no cust_name cust_name_upper legal_name dba_name addr_line_1 "
+    "addr_line_2 addr_line_3 addr_line_4 addr_line_5 addr_line_6 city state_cd zip zip4 country_cd "
+    "mail_addr_line_1 mail_addr_line_2 mail_addr_line_3 mail_addr_line_4 mail_addr_line_5 mail_addr_line_6 "
+    "mail_city mail_state_cd mail_zip phone1 phone2 phone3 phone4 phone1_type_cd phone2_type_cd "
+    "phone3_type_cd phone4_type_cd fax email_1 email_2 email_3 signup_dt last_activity_dt last_invoice_dt "
+    "last_payment_dt terminate_dt status_cd sub_status_cd cust_type_cd segment_cd region_cd territory_cd "
+    "channel_cd rate_class_cd tax_exempt_yn credit_hold_yn dunning_exempt_yn vip_yn cur_bal_amt past_due_amt "
+    "ytd_billed_amt ltd_billed_amt ytd_paid_amt credit_limit_amt related_acct_ids child_acct_ids "
+    "promo_codes_csv contact_notes legacy_sys_key mainframe_acct_no conversion_batch_no flag_01 flag_02 "
+    "flag_03 flag_04 flag_05 flag_06 flag_07 flag_08 flag_09 flag_10 flag_11 flag_12 flag_13 flag_14 flag_15 "
+    "flag_16 flag_17 flag_18 flag_19 flag_20 udf_01 udf_02 udf_03 udf_04 udf_05 udf_06 udf_07 udf_08 udf_09 "
+    "udf_10 udf_11 udf_12 udf_13 udf_14 udf_15 udf_16 udf_17 udf_18 udf_19 udf_20 udf_21 udf_22 udf_23 "
+    "udf_24 udf_25 udf_26 udf_27 udf_28 udf_29 udf_30 udf_31 udf_32 udf_33 udf_34 udf_35 udf_36 udf_37 "
+    "udf_38 udf_39 udf_40 udf_amt_01 udf_amt_02 udf_amt_03 udf_amt_04 udf_amt_05 udf_amt_06 udf_amt_07 "
+    "udf_amt_08 udf_amt_09 udf_amt_10 udf_dt_01 udf_dt_02 udf_dt_03 udf_dt_04 udf_dt_05 udf_dt_06 udf_dt_07 "
+    "udf_dt_08 udf_dt_09 udf_dt_10 created_by created_dt updated_by updated_dt row_version_no"
+).split()
+EAV_COLUMNS = ("eav_id", "entity_type", "entity_id", "attr_name", "attr_value", "attr_type", "created_dt")
+CUSTOMER_SUMMARY_COLUMNS = ("cust_no", "cust_name", "cur_bal_amt", "past_due_amt", "credit_hold_yn")
+
+
+def _camel(column):
+    head, *rest = column.lower().split("_")
+    return head + "".join(part.capitalize() for part in rest)
+
+
+def _first_customer(tenant_id, session=None):
+    """facade: SELECT * FROM customer_master WHERE tenant_id = :1 ORDER BY cust_seq_no FETCH FIRST 1 ROWS ONLY."""
+    return db().customers.find_one({"tenantId": tenant_id}, sort=[("custSeqNo", 1)], session=session)
+
+
+def _customer_row(doc, columns):
+    """The row as the Oracle backend renders it: every column, NULL as null; the typed siblings
+    (*Date, *List, attributes[].typed, createdDate) are document-only and never surface here."""
+    return {
+        column: _json_value(doc.get("_id") if column == "cust_id" else doc.get(_camel(column)))
+        for column in columns
+    }
+
+
+def _attribute_rows(doc):
+    """SELECT * FROM entity_attr_value WHERE entity_type = 'CUSTOMER' AND entity_id = :1 ORDER BY eav_id."""
+    elements = sorted(doc.get("attributes") or [], key=lambda el: int(el["eavId"]))
+    return [
+        {
+            "eav_id": _json_value(el.get("eavId")),
+            "entity_type": "CUSTOMER",
+            "entity_id": doc["_id"],
+            "attr_name": el.get("name"),
+            "attr_value": el.get("value"),
+            "attr_type": el.get("type"),
+            "created_dt": el.get("createdDt"),
+        }
+        for el in elements
+    ]
+
+
 def customer_summary(tenant_id):
-    """customers is a U2 collection; GET /me.customer stays null on Mongo until U2."""
-    return None
+    doc = _first_customer(tenant_id)
+    return _customer_row(doc, CUSTOMER_SUMMARY_COLUMNS) if doc else None
+
+
+def customer(tenant_id):
+    """GET /customer: the tenant's first customer with its attributes, or None (404)."""
+    doc = _first_customer(tenant_id)
+    if doc is None:
+        return None
+    return {**_customer_row(doc, CUSTOMER_COLUMNS), "attributes": _attribute_rows(doc)}
+
+
+def _write_customer_pre_image(customer_doc, op, session):
+    """TRG_CUSTOMER_MASTER_HIST: copy the :OLD customer_master row (not its EAV rows) before an
+    UPDATE/DELETE; HIST_DT as the trigger writes it, DD-MON-YY HH24:MI:SS, with the parsed day."""
+    hist = db().customers_hist
+    now = _now()
+    doc = {
+        "_id": _next_id(hist, session),
+        "histDt": f"{f_dt2str(now)} {now.strftime('%H:%M:%S')}",
+        "histOp": op,
+        "custId": customer_doc["_id"],
+    }
+    doc.update({k: v for k, v in customer_doc.items() if k not in ("_id", "attributes")})
+    parsed = f_str2dt(doc["histDt"])
+    if parsed is not None:
+        doc["histDate"] = _as_bson_date(parsed)
+    hist.insert_one(doc, session=session)
+
+
+def update_customer(cust_id, changes):
+    """No app write path exists today (customer_master: 3 reads, 0 writes); when one arrives, the
+    pre-image copy and the update are one transaction. Returns the updated document or None."""
+    fields = {k: v for k, v in changes.items() if k not in ("_id", "attributes")}
+    if not fields:
+        raise ValueError("update_customer needs at least one customer field")
+
+    def work(session):
+        customers = db().customers
+        current = customers.find_one({"_id": cust_id}, session=session)
+        if current is None:
+            return None
+        _write_customer_pre_image(current, "UPD", session)
+        customers.update_one({"_id": cust_id}, {"$set": fields}, session=session)
+        return customers.find_one({"_id": cust_id}, session=session)
+
+    return _transaction(work)
 
 
 # -------------------------------------------------------------- PKG_RATING (U3)

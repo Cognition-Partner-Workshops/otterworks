@@ -59,6 +59,11 @@ def _plans_backend():
     return backend_name() in {"oracle", "mongo"}
 
 
+def _customers_backend():
+    """U2 (customer_master + EAV) is served by the Oracle estate or its Mongo port."""
+    return backend_name() in {"oracle", "mongo"}
+
+
 def _usage_backend():
     """U3 (usage + rating module) is served by the Oracle estate or its Mongo port (d-logic-home)."""
     return backend_name() in {"oracle", "mongo"}
@@ -293,26 +298,17 @@ def customer():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _customers_backend():
         return _not_available()
+    backend = get_backend()
     try:
         _ensure(tenant_id)
-        customers = oracle.query(
-            "SELECT * FROM customer_master WHERE tenant_id = :1 ORDER BY cust_seq_no FETCH FIRST 1 ROWS ONLY",
-            (tenant_id,),
-        )
-        if not customers:
+        body = backend.customer(tenant_id)
+        if body is None:
             return jsonify(error="customer not found"), 404
-        body = customers[0]
-        body["attributes"] = oracle.query(
-            """SELECT * FROM entity_attr_value
-                WHERE entity_type = 'CUSTOMER' AND entity_id = :1
-                ORDER BY eav_id""",
-            (customers[0]["cust_id"],),
-        )
         return jsonify(body)
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/admin/overdue")

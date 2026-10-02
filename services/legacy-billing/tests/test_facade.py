@@ -381,10 +381,11 @@ def test_facade_plans_served_by_mongo_backend(monkeypatch):
     assert response.get_json()[0]["plan_code"] == "GROWTH"
 
 
-def test_facade_me_on_mongo_has_null_customer_until_u2(monkeypatch):
+def test_facade_me_on_mongo_has_customer(monkeypatch):
     monkeypatch.setenv("BILLING_BACKEND", "mongo")
     mongo = backends.get_backend()
     monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: False)
+    monkeypatch.setattr(mongo, "customer_summary", lambda tenant_id: {"cust_no": "OW-1", "cust_name": "Admin"})
     monkeypatch.setattr(
         mongo,
         "entitlement",
@@ -401,7 +402,34 @@ def test_facade_me_on_mongo_has_null_customer_until_u2(monkeypatch):
     assert response.status_code == 200
     body = response.get_json()
     assert body["entitlement"][0]["plan_code"] == "STARTER"
-    assert body["customer"] is None
+    assert body["customer"] == {"cust_no": "OW-1", "cust_name": "Admin"}
+
+
+def test_facade_customer_on_mongo(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: False)
+    customers = {"t1": {"cust_id": "c1", "cust_no": "OW-1", "attributes": [{"eav_id": "1", "attr_name": "A"}]}}
+    monkeypatch.setattr(mongo, "customer", lambda tenant_id: customers.get(tenant_id))
+    client = app.test_client()
+    response = client.get("/api/v1/billing/customer", headers={"X-User-ID": "t1"})
+    assert response.status_code == 200
+    assert response.get_json() == customers["t1"]
+    response = client.get("/api/v1/billing/customer", headers={"X-User-ID": "t2"})
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "customer not found"}
+
+
+def test_facade_customer_on_oracle(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    monkeypatch.setattr(facade_module, "_ensure", lambda tenant_id: None)
+    rows = iter([[{"cust_id": "c1", "cust_no": "OW-1"}], [{"eav_id": "1", "attr_name": "A"}], []])
+    monkeypatch.setattr(facade_module.oracle, "query", lambda sql, params=(): next(rows))
+    client = app.test_client()
+    response = client.get("/api/v1/billing/customer", headers={"X-User-ID": "t1"})
+    assert response.status_code == 200
+    assert response.get_json() == {"cust_id": "c1", "cust_no": "OW-1", "attributes": [{"eav_id": "1", "attr_name": "A"}]}
+    assert client.get("/api/v1/billing/customer", headers={"X-User-ID": "t2"}).status_code == 404
 
 
 def test_facade_mongo_failure_returns_503(monkeypatch):
@@ -421,17 +449,6 @@ def test_facade_mongo_failure_returns_503(monkeypatch):
         "error": "legacy estate unavailable",
         "detail": "the MongoDB billing database is not reachable",
     }
-
-
-@pytest.mark.parametrize(
-    "path",
-    ["/api/v1/billing/customer"],
-)
-def test_facade_non_u1_routes_not_available_on_mongo(monkeypatch, path):
-    monkeypatch.setenv("BILLING_BACKEND", "mongo")
-    response = app.test_client().get(path, headers={"X-User-ID": "tenant"})
-    assert response.status_code == 501
-    assert response.get_json() == {"error": "not available on this backend"}
 
 
 def test_facade_usage_served_by_mongo_backend(monkeypatch):
