@@ -1,0 +1,190 @@
+{
+  "kind": "load-report",
+  "run_mode": "live",
+  "generated_at": "2026-10-02T17:03:40Z",
+  "source": {
+    "system": "oracle",
+    "schema": "OW_BILLING",
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "host": "52.201.36.9",
+    "transaction": "SET TRANSACTION READ ONLY",
+    "concurrency": 1,
+    "principal": "OW_BILLING_RO",
+    "statements": "SELECT only"
+  },
+  "target": {
+    "system": "mongodb",
+    "database": "ow_tp_billing_20261001T233613Z",
+    "uri_secret": "MONGODB_ATLAS_URI",
+    "hosts": [
+      "ac-zsgrgnt-shard-00-00.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-02.cgbijgv.mongodb.net"
+    ],
+    "statements": "bulk_write ReplaceOne(upsert=True) on _id; create_index"
+  },
+  "inputs": {
+    "mapping_spec": {
+      "path": "migration/billing/mapping_spec.json",
+      "sha256": "7ae5a0dc40917e9cc89f703add9a5c5385c00dd9ede874fc261fdbaacaf86a74"
+    },
+    "tolerances": {
+      "path": "migration/billing/tolerances.json",
+      "sha256": "440aeb7f7f68daac2c65563e843ca22e39f0fb5fe3604913275f02186c6590b2"
+    }
+  },
+  "collections": [
+    "codes",
+    "tenants",
+    "plans",
+    "subscriptions",
+    "subscriptions_hist"
+  ],
+  "passes": [
+    {
+      "pass": 1,
+      "seconds": 1.907,
+      "noop": false,
+      "collections": {
+        "codes": {
+          "table": "CODES",
+          "source_rows": 32,
+          "documents": 32,
+          "upserted": 32,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 32
+        },
+        "tenants": {
+          "table": "TENANTS",
+          "source_rows": 69,
+          "documents": 69,
+          "upserted": 69,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 69
+        },
+        "plans": {
+          "table": "PLANS",
+          "source_rows": 3,
+          "documents": 3,
+          "upserted": 3,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 3
+        },
+        "subscriptions": {
+          "table": "SUBSCRIPTIONS",
+          "source_rows": 69,
+          "documents": 69,
+          "upserted": 69,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 69
+        },
+        "subscriptions_hist": {
+          "table": "SUBSCRIPTIONS_HIST",
+          "source_rows": 0,
+          "documents": 0,
+          "upserted": 0,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 0
+        }
+      }
+    },
+    {
+      "pass": 2,
+      "seconds": 2.053,
+      "noop": true,
+      "collections": {
+        "codes": {
+          "table": "CODES",
+          "source_rows": 32,
+          "documents": 32,
+          "upserted": 0,
+          "matched": 32,
+          "modified": 0,
+          "target_count_after": 32
+        },
+        "tenants": {
+          "table": "TENANTS",
+          "source_rows": 69,
+          "documents": 69,
+          "upserted": 0,
+          "matched": 69,
+          "modified": 0,
+          "target_count_after": 69
+        },
+        "plans": {
+          "table": "PLANS",
+          "source_rows": 3,
+          "documents": 3,
+          "upserted": 0,
+          "matched": 3,
+          "modified": 0,
+          "target_count_after": 3
+        },
+        "subscriptions": {
+          "table": "SUBSCRIPTIONS",
+          "source_rows": 69,
+          "documents": 69,
+          "upserted": 0,
+          "matched": 69,
+          "modified": 0,
+          "target_count_after": 69
+        },
+        "subscriptions_hist": {
+          "table": "SUBSCRIPTIONS_HIST",
+          "source_rows": 0,
+          "documents": 0,
+          "upserted": 0,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 0
+        }
+      }
+    }
+  ],
+  "indexes": [
+    {
+      "collection": "tenants",
+      "name": "uq_tenants_name",
+      "keys": {
+        "name": 1
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    {
+      "collection": "plans",
+      "name": "uq_plans_code",
+      "keys": {
+        "code": 1
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    {
+      "collection": "subscriptions",
+      "name": "ix_subscriptions_tenant_starts",
+      "keys": {
+        "tenantId": 1,
+        "startsOn": -1
+      },
+      "options": {}
+    },
+    {
+      "collection": "subscriptions_hist",
+      "name": "ix_subscriptions_hist_subscription",
+      "keys": {
+        "subscriptionId": 1,
+        "_id": 1
+      },
+      "options": {}
+    }
+  ],
+  "rerun_noop": true
+}

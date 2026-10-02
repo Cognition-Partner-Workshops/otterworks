@@ -108,7 +108,10 @@ jobs:
         with:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v5
-      - run: uv run --with pytest --with boto3==1.40.35 --with requests==2.32.5 --with flask==3.1.1 --with oracledb==2.5.1 --with 'psycopg[binary]==3.2.9' python -m pytest -q
+      - name: mongo:7 billing fixture (single-node replica set, never Atlas)
+        run: make mongo-billing-up
+        working-directory: ${{ github.workspace }}
+      - run: BILLING_MONGO_FIXTURE_URI=mongodb://127.0.0.1:27117/?directConnection=true uv run --with pytest --with boto3==1.40.35 --with requests==2.32.5 --with flask==3.1.1 --with oracledb==2.5.1 --with 'psycopg[binary]==3.2.9' --with pymongo==4.10.1 python -m pytest -q
       - run: uv run --with pytest --with boto3==1.40.35 --with requests==2.32.5 python -m pytest -q bridge/tests
       - run: uv run --with pytest --with flask==3.1.1 --with oracledb==2.5.1 python -m pytest -q
         working-directory: etl/legacy-extra/tools

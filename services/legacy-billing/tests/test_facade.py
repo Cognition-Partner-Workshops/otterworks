@@ -345,3 +345,90 @@ def test_plan_change_rejects_unknown_plan(monkeypatch):
     )
     assert response.status_code == 400
     assert response.get_json()["error"] == "invalid plan change"
+
+
+def test_backend_switch_selects_mongo(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    assert backends.backend_name() == "mongo"
+    assert backends.get_backend().DATABASE == "ow_tp_billing_20261001T233613Z"
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    assert backends.backend_name() == "oracle"
+    monkeypatch.delenv("BILLING_BACKEND")
+    assert backends.backend_name() == "postgres"
+
+
+def test_facade_plans_served_by_mongo_backend(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    monkeypatch.setattr(
+        mongo,
+        "list_plans",
+        lambda: [
+            {
+                "plan_id": "p1",
+                "code": "GROWTH",
+                "tier": "growth",
+                "monthly_fee": "149.00",
+                "included_units": 500,
+                "overage_rate": "0.035000",
+            }
+        ],
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/plans", headers={"X-User-ID": "tenant"}
+    )
+    assert response.status_code == 200
+    assert response.get_json()[0]["plan_code"] == "GROWTH"
+
+
+def test_facade_me_on_mongo_has_null_customer_until_u2(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: False)
+    monkeypatch.setattr(
+        mongo,
+        "entitlement",
+        lambda tenant_id, on: [{"tenant_id": tenant_id, "plan_code": "STARTER"}],
+    )
+    monkeypatch.setattr(
+        mongo,
+        "tenant_profile",
+        lambda tenant_id: [{"tenant_id": tenant_id, "name": "t1", "status": "active", "tax_exempt": "N"}],
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/me", headers={"X-User-ID": "t1"}
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["entitlement"][0]["plan_code"] == "STARTER"
+    assert body["customer"] is None
+
+
+def test_facade_mongo_failure_returns_503(monkeypatch):
+    from pymongo.errors import ServerSelectionTimeoutError
+
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+
+    def fail():
+        raise ServerSelectionTimeoutError("no primary")
+
+    monkeypatch.setattr(backends.get_backend(), "list_plans", fail)
+    response = app.test_client().get(
+        "/api/v1/billing/plans", headers={"X-User-ID": "tenant"}
+    )
+    assert response.status_code == 503
+    assert response.get_json() == {
+        "error": "legacy estate unavailable",
+        "detail": "the MongoDB billing database is not reachable",
+    }
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["/api/v1/billing/usage", "/api/v1/billing/invoices", "/api/v1/billing/customer"],
+)
+def test_facade_non_u1_routes_not_available_on_mongo(monkeypatch, path):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    response = app.test_client().get(path, headers={"X-User-ID": "tenant"})
+    assert response.status_code == 501
+    assert response.get_json() == {"error": "not available on this backend"}
