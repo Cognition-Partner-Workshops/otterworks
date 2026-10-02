@@ -1,0 +1,562 @@
+{
+  "kind": "rating-parity",
+  "unit": "U3",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T19:14:03Z",
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "transcripts": "procs/transcripts/rating/RATING-001..008.json (immutable)",
+  "scenarios": [
+    {
+      "id": "RATING-001",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 7 without prior finalized periods for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "billable_units": 160,
+          "rollover_units": 0,
+          "used_units": 260
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "used_units": 260,
+            "rollover_units": 0,
+            "billable_units": 160
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "used_units": 260,
+            "rollover_units": 0,
+            "billable_units": 160
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-002",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 1 for 2026-02-01 through 2026-02-28 with three prior periods.",
+      "expected": {
+        "business_fields": {
+          "overage_amount": "0.00",
+          "rollover_units": 200
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "rollover_units": 200,
+            "overage_amount": "0.00"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "rollover_units": 200,
+            "overage_amount": "0.00"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-003",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 2 for 2026-02-01 through 2026-02-28 with 700 units.",
+      "expected": {
+        "business_fields": {
+          "billable_units": 100,
+          "overage_amount": "4.37"
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "billable_units": 100,
+            "overage_amount": "4.37"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "billable_units": 100,
+            "overage_amount": "4.37"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-004",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 6 at the first-tier boundary with 201 units.",
+      "expected": {
+        "business_fields": {
+          "first_tier_units": 101,
+          "overage_amount": "5.56"
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "overage_amount": "5.56",
+            "first_tier_units": 101
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "overage_amount": "5.56",
+            "first_tier_units": 101
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-005",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 8 just beyond the first-tier boundary with 202 units.",
+      "expected": {
+        "business_fields": {
+          "first_tier_units": 101,
+          "second_tier_units": 1
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "first_tier_units": 101,
+            "second_tier_units": 1
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "first_tier_units": 101,
+            "second_tier_units": 1
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-006",
+      "entrypoint": "billing.fn_usage_rating",
+      "description": "Rate tenant 3 for 2026-02-01 through 2026-02-28 with 2201 units.",
+      "expected": {
+        "business_fields": {
+          "first_tier_units": 101,
+          "overage_amount": "5.02",
+          "second_tier_units": 100
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "first_tier_units": 101,
+            "second_tier_units": 100,
+            "overage_amount": "5.02"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "first_tier_units": 101,
+            "second_tier_units": 100,
+            "overage_amount": "5.02"
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-007",
+      "entrypoint": "billing.fn_usage_summary",
+      "description": "Summarize tenant 4 usage for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "kinds": [
+            "api",
+            "storage"
+          ],
+          "units": [
+            20,
+            30
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "kinds": [
+              "api",
+              "storage"
+            ],
+            "units": [
+              20,
+              30
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "kinds": [
+              "api",
+              "storage"
+            ],
+            "units": [
+              20,
+              30
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "RATING-008",
+      "entrypoint": "billing.sp_finalize_rating",
+      "description": "Finalize tenant 1 for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "billable_units": 0,
+          "overage_amount": "0.00",
+          "quota_units": 100,
+          "rollover_units": 0,
+          "used_units": 260
+        },
+        "probes": {
+          "rating_result": [
+            {
+              "billable_units": 0,
+              "overage_amount": "0.00",
+              "quota_units": 100,
+              "rollover_units": 0,
+              "used_units": 260
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "used_units": 260,
+            "quota_units": 100,
+            "rollover_units": 0,
+            "billable_units": 0,
+            "overage_amount": "0.00"
+          },
+          "probes": {
+            "rating_result": [
+              {
+                "used_units": 260,
+                "quota_units": 100,
+                "rollover_units": 0,
+                "billable_units": 0,
+                "overage_amount": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "used_units": 260,
+            "quota_units": 100,
+            "rollover_units": 0,
+            "billable_units": 0,
+            "overage_amount": "0.00"
+          },
+          "probes": {
+            "rating_result": [
+              {
+                "used_units": 260,
+                "quota_units": 100,
+                "rollover_units": 0,
+                "billable_units": 0,
+                "overage_amount": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    }
+  ],
+  "facade": {
+    "oracle": {
+      "GET /api/v1/billing/usage?period_start=2026-02-01&period_end=2026-02-28": {
+        "events": [
+          {
+            "id": "30000000-0000-0000-0000-000000000001",
+            "kind": "api",
+            "occurred_at": "2026-02-10T10:00:00",
+            "units": "260"
+          }
+        ],
+        "rating": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "260"
+          }
+        ],
+        "summary": [
+          {
+            "event_count": "1",
+            "kind": "api",
+            "units": "260"
+          }
+        ]
+      },
+      "POST /internal/usage/events (bridge write path)": {
+        "status": 201,
+        "body": {
+          "status": "recorded"
+        }
+      },
+      "POST /internal/usage/events (same event again)": {
+        "status": 200,
+        "body": {
+          "status": "duplicate"
+        }
+      },
+      "GET /api/v1/billing/usage after the ingest": {
+        "events": [
+          {
+            "id": "30000000-0000-0000-0000-00000000feed",
+            "kind": "storage",
+            "occurred_at": "2026-02-20T12:00:00",
+            "units": "7"
+          },
+          {
+            "id": "30000000-0000-0000-0000-000000000001",
+            "kind": "api",
+            "occurred_at": "2026-02-10T10:00:00",
+            "units": "260"
+          }
+        ],
+        "rating": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "267"
+          }
+        ],
+        "summary": [
+          {
+            "event_count": "1",
+            "kind": "api",
+            "units": "260"
+          },
+          {
+            "event_count": "1",
+            "kind": "storage",
+            "units": "7"
+          }
+        ]
+      },
+      "POST /api/rating/preview": {
+        "status": 200,
+        "body": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "267"
+          }
+        ]
+      }
+    },
+    "oracle_non_u3_routes": {
+      "invoices": 200,
+      "admin/dunning": 200
+    },
+    "mongo": {
+      "GET /api/v1/billing/usage?period_start=2026-02-01&period_end=2026-02-28": {
+        "events": [
+          {
+            "id": "30000000-0000-0000-0000-000000000001",
+            "kind": "api",
+            "occurred_at": "2026-02-10T10:00:00",
+            "units": "260"
+          }
+        ],
+        "rating": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "260"
+          }
+        ],
+        "summary": [
+          {
+            "event_count": "1",
+            "kind": "api",
+            "units": "260"
+          }
+        ]
+      },
+      "POST /internal/usage/events (bridge write path)": {
+        "status": 201,
+        "body": {
+          "status": "recorded"
+        }
+      },
+      "POST /internal/usage/events (same event again)": {
+        "status": 200,
+        "body": {
+          "status": "duplicate"
+        }
+      },
+      "GET /api/v1/billing/usage after the ingest": {
+        "events": [
+          {
+            "id": "30000000-0000-0000-0000-00000000feed",
+            "kind": "storage",
+            "occurred_at": "2026-02-20T12:00:00",
+            "units": "7"
+          },
+          {
+            "id": "30000000-0000-0000-0000-000000000001",
+            "kind": "api",
+            "occurred_at": "2026-02-10T10:00:00",
+            "units": "260"
+          }
+        ],
+        "rating": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "267"
+          }
+        ],
+        "summary": [
+          {
+            "event_count": "1",
+            "kind": "api",
+            "units": "260"
+          },
+          {
+            "event_count": "1",
+            "kind": "storage",
+            "units": "7"
+          }
+        ]
+      },
+      "POST /api/rating/preview": {
+        "status": 200,
+        "body": [
+          {
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "overage_amount": "0",
+            "period_end": "2026-02-28",
+            "period_start": "2026-02-01",
+            "quota_units": "100",
+            "rollover_units": "200",
+            "second_tier_units": "0",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "used_units": "267"
+          }
+        ]
+      }
+    },
+    "mongo_non_u3_routes": {
+      "invoices": 501,
+      "admin/dunning": 501
+    },
+    "identical": true,
+    "non_u3_routes_501_on_mongo": true
+  },
+  "verdict": "pass"
+}

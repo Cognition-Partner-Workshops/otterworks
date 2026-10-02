@@ -1,0 +1,838 @@
+{
+  "kind": "u2-edge-probes",
+  "unit": "U2",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T18:42:08Z",
+  "code_under_test": {
+    "repo_root": "/home/ubuntu/wt/pr1786",
+    "head": "ad18ed0410b7b7a32de9f45467bdab9d84906d16"
+  },
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "probes": [
+    {
+      "id": "EDGE-U2-001",
+      "description": "tenant without a customer_master row and an unknown identity: /customer 404 and /me.customer null on both; neither backend bootstraps a customer (U1's _ensure bootstrap of tenant+subscription is identical)",
+      "backends": {
+        "oracle": {
+          "existing tenant, no customer_master row": {
+            "GET /api/v1/billing/customer": {
+              "status": 404,
+              "body": {
+                "error": "customer not found"
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": null
+            }
+          },
+          "customer_summary()": null,
+          "customer()": null,
+          "unknown identity (bootstrapped by _ensure)": {
+            "GET /api/v1/billing/customer": {
+              "status": 404,
+              "body": {
+                "error": "customer not found"
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": null
+            }
+          },
+          "rows_after": {
+            "customer_master": 0,
+            "subscriptions(new)": 1,
+            "subscriptions(empty)": 0
+          }
+        },
+        "mongo": {
+          "existing tenant, no customer_master row": {
+            "GET /api/v1/billing/customer": {
+              "status": 404,
+              "body": {
+                "error": "customer not found"
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": null
+            }
+          },
+          "customer_summary()": null,
+          "customer()": null,
+          "unknown identity (bootstrapped by _ensure)": {
+            "GET /api/v1/billing/customer": {
+              "status": 404,
+              "body": {
+                "error": "customer not found"
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": null
+            }
+          },
+          "rows_after": {
+            "customer_master": 0,
+            "subscriptions(new)": 1,
+            "subscriptions(empty)": 0
+          }
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-002",
+      "description": "planted dirty SIGNUP_DT and malformed RELATED_ACCT_IDS customers served through GET /customer and /me.customer: verbatim text on both backends, no typed sibling surfaces, derived sibling is null in the document",
+      "backends": {
+        "dirty_dates": {
+          "routes_identical": true,
+          "served_cust_id": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+          "signup_dt": "1/1/1900",
+          "signup_dt_parses": false,
+          "related_acct_ids": null,
+          "related_acct_ids_clean": null,
+          "typed_siblings_in_body": [],
+          "mongo_doc_siblings": {
+            "signupDate": null,
+            "relatedAcctIdsList": null
+          },
+          "mongo": {
+            "GET /api/v1/billing/customer": {
+              "status": 200,
+              "body": {
+                "addr_line_1": "9528 Main St",
+                "addr_line_2": null,
+                "addr_line_3": "ATTN: BILLING",
+                "addr_line_4": null,
+                "addr_line_5": null,
+                "addr_line_6": null,
+                "attributes": [],
+                "channel_cd": null,
+                "child_acct_ids": null,
+                "city": "Georgetown",
+                "contact_notes": null,
+                "conversion_batch_no": "85559852",
+                "country_cd": null,
+                "created_by": "CONVERSION",
+                "created_dt": "2014-03-18",
+                "credit_hold_yn": "N",
+                "credit_limit_amt": "10000",
+                "cur_bal_amt": "101.29",
+                "cust_id": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+                "cust_name": "Harper Larsen",
+                "cust_name_upper": "HARPER LARSEN",
+                "cust_no": "DEMO-00014511",
+                "cust_seq_no": "-1",
+                "cust_type_cd": "1",
+                "dba_name": null,
+                "dunning_exempt_yn": null,
+                "email_1": "user14511@demo.example.com",
+                "email_2": null,
+                "email_3": null,
+                "fax": null,
+                "flag_01": null,
+                "flag_02": null,
+                "flag_03": null,
+                "flag_04": null,
+                "flag_05": null,
+                "flag_06": null,
+                "flag_07": null,
+                "flag_08": null,
+                "flag_09": null,
+                "flag_10": null,
+                "flag_11": null,
+                "flag_12": null,
+                "flag_13": null,
+                "flag_14": null,
+                "flag_15": null,
+                "flag_16": null,
+                "flag_17": null,
+                "flag_18": null,
+                "flag_19": null,
+                "flag_20": null,
+                "last_activity_dt": "04-SEP-22",
+                "last_invoice_dt": null,
+                "last_payment_dt": null,
+                "legacy_sys_key": "SYS2-819262",
+                "legal_name": "Harper Larsen LP",
+                "ltd_billed_amt": null,
+                "mail_addr_line_1": null,
+                "mail_addr_line_2": null,
+                "mail_addr_line_3": null,
+                "mail_addr_line_4": null,
+                "mail_addr_line_5": null,
+                "mail_addr_line_6": null,
+                "mail_city": null,
+                "mail_state_cd": null,
+                "mail_zip": null,
+                "mainframe_acct_no": "594595179",
+                "past_due_amt": "3.14",
+                "phone1": "625-555-4649",
+                "phone1_type_cd": "1",
+                "phone2": "840-555-9083",
+                "phone2_type_cd": "2",
+                "phone3": null,
+                "phone3_type_cd": null,
+                "phone4": null,
+                "phone4_type_cd": null,
+                "promo_codes_csv": null,
+                "rate_class_cd": null,
+                "region_cd": "7",
+                "related_acct_ids": null,
+                "row_version_no": "1",
+                "segment_cd": "6",
+                "signup_dt": "1/1/1900",
+                "state_cd": "TX",
+                "status_cd": "1",
+                "sub_status_cd": "2",
+                "tax_exempt_yn": "N",
+                "tenant_id": "16a6c0e8-3b8e-6dc4-d9c0-bd4d5d26954a",
+                "terminate_dt": null,
+                "territory_cd": null,
+                "udf_01": null,
+                "udf_02": null,
+                "udf_03": null,
+                "udf_04": null,
+                "udf_05": null,
+                "udf_06": null,
+                "udf_07": null,
+                "udf_08": null,
+                "udf_09": null,
+                "udf_10": null,
+                "udf_11": null,
+                "udf_12": null,
+                "udf_13": null,
+                "udf_14": null,
+                "udf_15": null,
+                "udf_16": null,
+                "udf_17": null,
+                "udf_18": null,
+                "udf_19": null,
+                "udf_20": null,
+                "udf_21": null,
+                "udf_22": null,
+                "udf_23": null,
+                "udf_24": null,
+                "udf_25": null,
+                "udf_26": null,
+                "udf_27": null,
+                "udf_28": null,
+                "udf_29": null,
+                "udf_30": null,
+                "udf_31": null,
+                "udf_32": null,
+                "udf_33": null,
+                "udf_34": null,
+                "udf_35": null,
+                "udf_36": null,
+                "udf_37": null,
+                "udf_38": null,
+                "udf_39": null,
+                "udf_40": null,
+                "udf_amt_01": null,
+                "udf_amt_02": null,
+                "udf_amt_03": null,
+                "udf_amt_04": null,
+                "udf_amt_05": null,
+                "udf_amt_06": null,
+                "udf_amt_07": null,
+                "udf_amt_08": null,
+                "udf_amt_09": null,
+                "udf_amt_10": null,
+                "udf_dt_01": null,
+                "udf_dt_02": null,
+                "udf_dt_03": null,
+                "udf_dt_04": null,
+                "udf_dt_05": null,
+                "udf_dt_06": null,
+                "udf_dt_07": null,
+                "udf_dt_08": null,
+                "udf_dt_09": null,
+                "udf_dt_10": null,
+                "updated_by": "BATCH",
+                "updated_dt": "2026-08-01",
+                "vip_yn": "N",
+                "ytd_billed_amt": "328.61",
+                "ytd_paid_amt": null,
+                "zip": "78626",
+                "zip4": null
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": {
+                "credit_hold_yn": "N",
+                "cur_bal_amt": "101.29",
+                "cust_name": "Harper Larsen",
+                "cust_no": "DEMO-00014511",
+                "past_due_amt": "3.14"
+              }
+            }
+          }
+        },
+        "malformed_csv_lists": {
+          "routes_identical": true,
+          "served_cust_id": "117cdf47-d1e2-7c0a-d0be-5c1a9355d07a",
+          "signup_dt": "12-MAR-23",
+          "signup_dt_parses": true,
+          "related_acct_ids": "0000000000000000000000,",
+          "related_acct_ids_clean": false,
+          "typed_siblings_in_body": [],
+          "mongo_doc_siblings": {
+            "signupDate": "2023-03-12 00:00:00+00:00",
+            "relatedAcctIdsList": null
+          },
+          "mongo": {
+            "GET /api/v1/billing/customer": {
+              "status": 200,
+              "body": {
+                "addr_line_1": "478 Main St",
+                "addr_line_2": "Suite 75",
+                "addr_line_3": "ATTN: BILLING",
+                "addr_line_4": null,
+                "addr_line_5": null,
+                "addr_line_6": null,
+                "attributes": [],
+                "channel_cd": null,
+                "child_acct_ids": null,
+                "city": "Salem",
+                "contact_notes": null,
+                "conversion_batch_no": "85559852",
+                "country_cd": null,
+                "created_by": "CONVERSION",
+                "created_dt": "2018-12-30",
+                "credit_hold_yn": "N",
+                "credit_limit_amt": "50000",
+                "cur_bal_amt": "126.6",
+                "cust_id": "117cdf47-d1e2-7c0a-d0be-5c1a9355d07a",
+                "cust_name": "Alex Tanaka",
+                "cust_name_upper": "ALEX TANAKA",
+                "cust_no": "DEMO-00003569",
+                "cust_seq_no": "-1",
+                "cust_type_cd": "1",
+                "dba_name": null,
+                "dunning_exempt_yn": null,
+                "email_1": "user3569@demo.example.com",
+                "email_2": null,
+                "email_3": null,
+                "fax": null,
+                "flag_01": null,
+                "flag_02": null,
+                "flag_03": null,
+                "flag_04": null,
+                "flag_05": null,
+                "flag_06": null,
+                "flag_07": null,
+                "flag_08": null,
+                "flag_09": null,
+                "flag_10": null,
+                "flag_11": null,
+                "flag_12": null,
+                "flag_13": null,
+                "flag_14": null,
+                "flag_15": null,
+                "flag_16": null,
+                "flag_17": null,
+                "flag_18": null,
+                "flag_19": null,
+                "flag_20": null,
+                "last_activity_dt": "17-JUL-20",
+                "last_invoice_dt": null,
+                "last_payment_dt": null,
+                "legacy_sys_key": "SYS2-325585",
+                "legal_name": "Alex Tanaka LLC",
+                "ltd_billed_amt": null,
+                "mail_addr_line_1": null,
+                "mail_addr_line_2": null,
+                "mail_addr_line_3": null,
+                "mail_addr_line_4": null,
+                "mail_addr_line_5": null,
+                "mail_addr_line_6": null,
+                "mail_city": null,
+                "mail_state_cd": null,
+                "mail_zip": null,
+                "mainframe_acct_no": "555657650",
+                "past_due_amt": "37.96",
+                "phone1": "836-555-0255",
+                "phone1_type_cd": "1",
+                "phone2": null,
+                "phone2_type_cd": "2",
+                "phone3": null,
+                "phone3_type_cd": null,
+                "phone4": null,
+                "phone4_type_cd": null,
+                "promo_codes_csv": "SPRING24,WINBACK",
+                "rate_class_cd": null,
+                "region_cd": "7",
+                "related_acct_ids": "0000000000000000000000,",
+                "row_version_no": "1",
+                "segment_cd": "5",
+                "signup_dt": "12-MAR-23",
+                "state_cd": "OR",
+                "status_cd": "1",
+                "sub_status_cd": "2",
+                "tax_exempt_yn": "N",
+                "tenant_id": "c2391165-67a4-1ccb-824a-930c6bd011b9",
+                "terminate_dt": null,
+                "territory_cd": null,
+                "udf_01": null,
+                "udf_02": null,
+                "udf_03": null,
+                "udf_04": null,
+                "udf_05": null,
+                "udf_06": null,
+                "udf_07": null,
+                "udf_08": null,
+                "udf_09": null,
+                "udf_10": null,
+                "udf_11": null,
+                "udf_12": null,
+                "udf_13": null,
+                "udf_14": null,
+                "udf_15": null,
+                "udf_16": null,
+                "udf_17": null,
+                "udf_18": null,
+                "udf_19": null,
+                "udf_20": null,
+                "udf_21": null,
+                "udf_22": null,
+                "udf_23": null,
+                "udf_24": null,
+                "udf_25": null,
+                "udf_26": null,
+                "udf_27": null,
+                "udf_28": null,
+                "udf_29": null,
+                "udf_30": null,
+                "udf_31": null,
+                "udf_32": null,
+                "udf_33": null,
+                "udf_34": null,
+                "udf_35": null,
+                "udf_36": null,
+                "udf_37": null,
+                "udf_38": null,
+                "udf_39": null,
+                "udf_40": null,
+                "udf_amt_01": null,
+                "udf_amt_02": null,
+                "udf_amt_03": null,
+                "udf_amt_04": null,
+                "udf_amt_05": null,
+                "udf_amt_06": null,
+                "udf_amt_07": null,
+                "udf_amt_08": null,
+                "udf_amt_09": null,
+                "udf_amt_10": null,
+                "udf_dt_01": null,
+                "udf_dt_02": null,
+                "udf_dt_03": null,
+                "udf_dt_04": null,
+                "udf_dt_05": null,
+                "udf_dt_06": null,
+                "udf_dt_07": null,
+                "udf_dt_08": null,
+                "udf_dt_09": null,
+                "udf_dt_10": null,
+                "updated_by": "BATCH",
+                "updated_dt": "2026-08-01",
+                "vip_yn": "N",
+                "ytd_billed_amt": "1119.89",
+                "ytd_paid_amt": null,
+                "zip": "97301",
+                "zip4": null
+              }
+            },
+            "GET /api/v1/billing/me .customer": {
+              "status": 200,
+              "customer": {
+                "credit_hold_yn": "N",
+                "cur_bal_amt": "126.6",
+                "cust_name": "Alex Tanaka",
+                "cust_no": "DEMO-00003569",
+                "past_due_amt": "37.96"
+              }
+            }
+          }
+        }
+      },
+      "pass": true,
+      "moved": {
+        "dirty_dates": {
+          "cust_id": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+          "tenant_id": "16a6c0e8-3b8e-6dc4-d9c0-bd4d5d26954a",
+          "cust_seq_no": "114512"
+        },
+        "malformed_csv_lists": {
+          "cust_id": "117cdf47-d1e2-7c0a-d0be-5c1a9355d07a",
+          "tenant_id": "c2391165-67a4-1ccb-824a-930c6bd011b9",
+          "cust_seq_no": "103570"
+        }
+      }
+    },
+    {
+      "id": "EDGE-U2-003",
+      "description": "TRG_CUSTOMER_MASTER_HIST pre-images (UPD) written by the Oracle fixture are carried by the loader with histDate derived from the DD-MON-YY HH24:MI:SS histDt, no attributes; recon.py --mode local over customers,customers_hist passes with hist rows present (live has 0)",
+      "backends": {
+        "oracle": [
+          {
+            "hist_id": 8,
+            "hist_op": "UPD",
+            "cust_id": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+            "cust_seq_no": "114512",
+            "hist_dt_format_ok": true
+          },
+          {
+            "hist_id": 9,
+            "hist_op": "UPD",
+            "cust_id": "117cdf47-d1e2-7c0a-d0be-5c1a9355d07a",
+            "cust_seq_no": "103570",
+            "hist_dt_format_ok": true
+          }
+        ],
+        "mongo": [
+          {
+            "hist_id": 8,
+            "hist_op": "UPD",
+            "cust_id": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+            "cust_seq_no": "114512",
+            "hist_dt_format_ok": true,
+            "hist_date_derived_from_hist_dt": true,
+            "attributes_absent": true,
+            "pre_image_cust_seq_no_is_old_value": true
+          },
+          {
+            "hist_id": 9,
+            "hist_op": "UPD",
+            "cust_id": "117cdf47-d1e2-7c0a-d0be-5c1a9355d07a",
+            "cust_seq_no": "103570",
+            "hist_dt_format_ok": true,
+            "hist_date_derived_from_hist_dt": true,
+            "attributes_absent": true,
+            "pre_image_cust_seq_no_is_old_value": true
+          }
+        ],
+        "local_recon": {
+          "exit": 0,
+          "stdout": [
+            "recon fixture: verdict=pass checks=28 failed=[] -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave2/verify/U2.verify.edge_local.recon.json",
+            "merge_evidence=False (fixture/local result: never merge evidence (tolerances.json#source.mode is live))"
+          ],
+          "stderr": [],
+          "verdict": "pass",
+          "run_mode": "fixture",
+          "merge_evidence": false,
+          "failed": [],
+          "customers_hist_checks": [
+            "customers_hist.row_count",
+            "customers_hist.keyed_presence",
+            "customers_hist.keyed_values",
+            "customers_hist.money_decimal128",
+            "customers_hist.fields_outside_mapping"
+          ]
+        }
+      },
+      "pass": true,
+      "report_path": "/home/ubuntu/repos/otterworks/migration/billing/waves/wave2/verify/U2.verify.edge_local.recon.json"
+    },
+    {
+      "id": "EDGE-U2-004",
+      "description": "backends/mongo.update_customer writes the pre-image with the same key set as the loader-carried trigger pre-image of the same customer, histDate derived, _id continuing the Oracle hist sequence; attributes are not versioned (as Oracle)",
+      "backends": {
+        "mongo": {
+          "trigger_pre_image_keys_minus_mongo": [],
+          "mongo_pre_image_keys_minus_trigger": [],
+          "written": {
+            "_id": 10,
+            "histOp": "UPD",
+            "custId": "0931e05f-7a53-91fb-39f3-f10317fbedba",
+            "histDt_format_ok": true,
+            "histDate_derived": true
+          },
+          "pre_image_equals_document_before_update": true,
+          "document_after": {
+            "contactNotes": "edge probe pre-image",
+            "attributes_kept": true
+          },
+          "id_continues_loaded_sequence": true
+        }
+      },
+      "pass": true,
+      "notes": "no app write path exists today (customer_master: 3 reads, 0 writes); this is the migrate-as-logic trigger replacement"
+    },
+    {
+      "id": "EDGE-U2-005",
+      "description": "pre-image + update atomicity: a failing $set leaves no stray pre-image; a rejected pre-image insert (validator) leaves the customer unchanged; an empty change set is refused; sequential updates chain pre-images with distinct increasing _ids",
+      "backends": {
+        "mongo": {
+          "bad_update_field": "WriteError",
+          "customer_unchanged_after_bad_update": true,
+          "hist_rows_added_by_bad_update": 0,
+          "pre_image_insert_rejected": "WriteError",
+          "customer_unchanged_after_pre_image_failure": true,
+          "hist_rows_added_by_pre_image_failure": 0,
+          "empty_change_set": "ValueError",
+          "two_sequential_updates": {
+            "hist_ids_for_customer": [
+              8,
+              10,
+              11,
+              12
+            ],
+            "distinct_and_increasing": true,
+            "final_contact_notes": "edge probe b",
+            "pre_image_of_second_is_first_result": true
+          }
+        }
+      },
+      "pass": true,
+      "notes": "_next_id is max(_id)+1 read inside the transaction; two concurrent update_customer calls on one node would race to the same _id and the loser gets DuplicateKeyError (nothing persists, no retry as log_msg has). Not reachable today: no app write path to customers"
+    },
+    {
+      "id": "EDGE-U2-006",
+      "description": "NUMBER(14,2) money edges (0.01, -0.01, 999999999999.99 max, 1234567890.1, 0, NULL) load as exact Decimal128 and render identically on /customer and /me.customer",
+      "backends": {
+        "both": {
+          "routes_identical": true,
+          "served_cust_id": true,
+          "rendered": {
+            "cur_bal_amt": "0.01",
+            "past_due_amt": "-0.01",
+            "credit_limit_amt": "999999999999.99",
+            "ytd_billed_amt": "1234567890.1",
+            "ltd_billed_amt": "0",
+            "ytd_paid_amt": null
+          },
+          "me_customer": {
+            "status": 200,
+            "customer": {
+              "credit_hold_yn": "N",
+              "cur_bal_amt": "0.01",
+              "cust_name": "Kai Silva",
+              "cust_no": "DEMO-00000322",
+              "past_due_amt": "-0.01"
+            }
+          },
+          "mongo_stored": {
+            "cur_bal_amt": [
+              "Decimal128",
+              "0.01"
+            ],
+            "past_due_amt": [
+              "Decimal128",
+              "-0.01"
+            ],
+            "credit_limit_amt": [
+              "Decimal128",
+              "999999999999.99"
+            ],
+            "ytd_billed_amt": [
+              "Decimal128",
+              "1234567890.1"
+            ],
+            "ltd_billed_amt": [
+              "Decimal128",
+              "0"
+            ],
+            "ytd_paid_amt": [
+              "NoneType",
+              null
+            ]
+          },
+          "mongo_decimal128_exact": true,
+          "rendered_as_expected": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-007",
+      "description": "EAV rows outside the embed contract (entity_type <> 'CUSTOMER', entity_id without a customer_master row) fail the whole load (no silent drop, nothing partially written: the collection was dropped and stays empty); the Oracle facade never served them",
+      "backends": {
+        "loader": {
+          "non_customer_entity_type": {
+            "loader_exit": 1,
+            "customers_after_load": 0,
+            "customers_before": 25001,
+            "oracle_route_unchanged": true,
+            "attribute_names_served_by_oracle": [
+              "LEGACY_TIER"
+            ]
+          },
+          "orphan_entity_id": {
+            "loader_exit": 1,
+            "customers_after_load": 0,
+            "customers_before": 25001,
+            "oracle_route_unchanged": true,
+            "attribute_names_served_by_oracle": [
+              "LEGACY_TIER"
+            ]
+          },
+          "reload_after_cleanup": {
+            "loader_exit": 0,
+            "customers": 25001
+          }
+        }
+      },
+      "pass": true,
+      "notes": "by design (mapping_spec.json#customers.embedded.identity, 0 live); operational consequence: one stray EAV row blocks the delta load until it is triaged, since U2 defines no quarantine collection"
+    },
+    {
+      "id": "EDGE-U2-008",
+      "description": "EAV rows inserted out of name order with case-variant names, a NULL value and an unparsable CREATED_DT (31-FEB-26): both backends serve them in eav_id order, verbatim, with null createdDate sibling in the document",
+      "backends": {
+        "both": {
+          "routes_identical": true,
+          "attr_names_in_order": [
+            "zeta",
+            "ALPHA",
+            "alpha",
+            "Alpha"
+          ],
+          "attr_values": [
+            "1",
+            "2",
+            "3",
+            null
+          ],
+          "eav_ids_ascending": true,
+          "created_dt_verbatim": [
+            "31-FEB-26",
+            "31-FEB-26",
+            "31-FEB-26",
+            "31-FEB-26"
+          ],
+          "mongo_element_siblings": [
+            {
+              "createdDate": null,
+              "typed": true
+            },
+            {
+              "createdDate": null,
+              "typed": "2"
+            },
+            {
+              "createdDate": null,
+              "typed": "3"
+            },
+            {
+              "createdDate": null,
+              "typed": null
+            }
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-009",
+      "description": "TRG_CUSTOMER_MASTER_SEQ derivations on INSERT (sequence cust_seq_no, Oracle UPPER(cust_name) incl. non-ASCII, carried as Oracle computed it, row_version_no 1) are carried verbatim and rendered identically; an invalid calendar day (29-FEB-25) stays verbatim with a null signupDate; INSERT writes no hist row on either side",
+      "backends": {
+        "both": {
+          "routes_identical": true,
+          "status": 200,
+          "oracle_row": {
+            "cust_seq_no": "125002",
+            "cust_name_upper": "\u00c9DGE MIXED CASE \u00df",
+            "row_version_no": "1"
+          },
+          "mongo_doc": {
+            "custSeqNo": "125002",
+            "custNameUpper": "\u00c9DGE MIXED CASE \u00df",
+            "rowVersionNo": "1",
+            "signupDate(29-FEB-25 invalid day)": null,
+            "attributes": null
+          },
+          "rendered": {
+            "cust_seq_no": "125002",
+            "cust_name_upper": "\u00c9DGE MIXED CASE \u00df",
+            "row_version_no": "1",
+            "signup_dt": "29-FEB-25",
+            "cur_bal_amt": "12.5",
+            "created_dt": "2026-02-20",
+            "attributes": []
+          },
+          "hist_rows_from_insert": 0
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-010",
+      "description": "quarantined rows: no U2 collection has a quarantine sibling (customers embeds EAV without one); the planted orphaned INVOICE_LINE rows belong to U4's quarantine and are listed unverified in the U2 live report",
+      "backends": {
+        "spec": {
+          "u2_quarantine_of": {
+            "customers": null,
+            "customers_hist": null
+          },
+          "u2_embedded_quarantine_collections": {
+            "customers": [
+              null
+            ],
+            "customers_hist": []
+          },
+          "quarantine_collections_in_spec": [],
+          "live_unverified_paths": [
+            "anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated",
+            "census_delta.INVOICES: table is outside the mapping spec",
+            "census_delta.INVOICE_LINES: table is outside the mapping spec",
+            "census_delta.SUBSCRIPTIONS: table is outside the mapping spec",
+            "census_delta.TENANTS: table is outside the mapping spec",
+            "census_delta.USAGE_EVENTS: table is outside the mapping spec",
+            "customers.attributes.typed: derived 'bool | decimal | string' value is loader-defined; recon checks only the verbatim source field"
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-011",
+      "description": "write scope: the U2 loader writes only customers and customers_hist (plus their spec indexes) in the target database and touches no other database; GET /customer and /me on the Mongo backend write nothing for known tenants",
+      "backends": {
+        "mongo": {
+          "loader_exit": 0,
+          "scratch_collections": [
+            "customers",
+            "customers_hist"
+          ],
+          "indexes": {
+            "customers": [
+              "_id_",
+              "ix_customers_conversion_batch",
+              "ix_customers_tenant_seq",
+              "uq_customers_attributes_eav_id"
+            ],
+            "customers_hist": [
+              "_id_",
+              "ix_customers_hist_cust"
+            ]
+          },
+          "other_databases_touched": [],
+          "fixture_db_counts_changed_by_routes": {}
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U2-012",
+      "description": "fixture restored: no probe rows left in customer_master, customer_master_hist or entity_attr_value",
+      "backends": {
+        "oracle": {
+          "customer_master_hist": 0,
+          "edge_rows": 0,
+          "edge_eav": 0
+        }
+      },
+      "pass": true
+    }
+  ],
+  "verdict": "pass"
+}
