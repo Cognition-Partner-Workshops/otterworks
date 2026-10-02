@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T02:09:08Z",
+  "generated_at": "2026-10-02T17:39:37Z",
   "run_mode": "fixture",
   "verdict": "fail",
   "merge_evidence": false,
@@ -26,7 +26,7 @@
   "inputs": {
     "mapping_spec": {
       "path": "migration/billing/mapping_spec.json",
-      "sha256": "d9161df20b134911ee7f5bfd87616458d938a6ea0dc9f2ed98f4ef1a61325777"
+      "sha256": "0bd5fb8b20f00ba3d72da3d079c6ae998195db782aef2d5945bc5c08ac3f39f6"
     },
     "tolerances": {
       "path": "migration/billing/tolerances.json",
@@ -41,8 +41,8 @@
     "oracle_sessions": 1
   },
   "timings": {
-    "source_fetch_s": 0.003,
-    "target_fetch_s": 8.311
+    "source_fetch_s": 0.002,
+    "target_fetch_s": 5.974
   },
   "summary": {
     "checks": 122,
@@ -1366,7 +1366,7 @@
     },
     {
       "id": "derived_fields.rules",
-      "description": "DD-MON-YY dates parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
+      "description": "DD-MON-YY dates (HIST_DT with its HH24:MI:SS suffix) parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
       "result": "pass",
       "expected": 0,
       "actual": 0,

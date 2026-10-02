@@ -567,7 +567,7 @@
           "source": "SUBSCRIPTIONS_HIST.HIST_DT (derived)",
           "bson": "date",
           "nullable": true,
-          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+          "rule": "parsed from the verbatim text under the Oracle RR rule; the history triggers write HIST_DT as TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'), so 'DD-MON-YY HH24:MI:SS' derives the calendar day at 00:00:00 UTC (what the app's f_str2dt reads from it) and the time of day lives only in the verbatim string; absent when the day or the time is malformed; the verbatim string is the recon value"
         },
         {
           "field": "histOp",
@@ -2658,7 +2658,7 @@
           "source": "CUSTOMER_MASTER_HIST.HIST_DT (derived)",
           "bson": "date",
           "nullable": true,
-          "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"
+          "rule": "parsed from the verbatim text under the Oracle RR rule; the history triggers write HIST_DT as TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'), so 'DD-MON-YY HH24:MI:SS' derives the calendar day at 00:00:00 UTC (what the app's f_str2dt reads from it) and the time of day lives only in the verbatim string; absent when the day or the time is malformed; the verbatim string is the recon value"
         },
         {
           "field": "histOp",

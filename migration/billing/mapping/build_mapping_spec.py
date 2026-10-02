@@ -88,6 +88,8 @@ def bson_type(table: str, col: dict, money_cols: set[tuple[str, str]]) -> dict:
 
 DD_MON_YY = {"bson": "date", "nullable": True,
              "rule": "parsed from the verbatim DD-MON-YY text under the Oracle RR rule; absent when the text is malformed or not a calendar date (fixture anomaly dirty_dates); the verbatim string is the recon value"}
+HIST_DT = {**DD_MON_YY,
+           "rule": "parsed from the verbatim text under the Oracle RR rule; the history triggers write HIST_DT as TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'), so 'DD-MON-YY HH24:MI:SS' derives the calendar day at 00:00:00 UTC (what the app's f_str2dt reads from it) and the time of day lives only in the verbatim string; absent when the day or the time is malformed; the verbatim string is the recon value"}
 CSV_LIST = {"bson": "array<string>", "nullable": True,
             "rule": "split of the verbatim CSV on ',' only when it matches the clean form; absent when malformed (fixture anomaly malformed_csv_lists); the verbatim string is the recon value"}
 CSV_CLEAN = {"RELATED_ACCT_IDS": r"^\d{5}(,\d{5}){0,3}$", "CHILD_ACCT_IDS": r"^\d{5}(,\d{5}){0,3}$",
@@ -108,7 +110,8 @@ def fields_for(table: dict, money_cols, skip: set[str] = frozenset(), rename: di
                  "nullable": col["nullable"] == "Y", "note": t["note"]}
         out.append(entry)
         if typed_siblings and col["data_type"] == "VARCHAR2" and name.endswith("_DT"):
-            out.append({"field": field[:-2] + "Date", "source": f"{table['name']}.{name} (derived)", **DD_MON_YY})
+            out.append({"field": field[:-2] + "Date", "source": f"{table['name']}.{name} (derived)",
+                        **(HIST_DT if name == "HIST_DT" else DD_MON_YY)})
         if typed_siblings and name in CSV_CLEAN:
             out.append({"field": field + "List", "source": f"{table['name']}.{name} (derived)", **CSV_LIST,
                         "clean_form": CSV_CLEAN[name]})

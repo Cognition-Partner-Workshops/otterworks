@@ -395,8 +395,21 @@ def values_equal(expected: Any, actual: Any, fm: FieldMap, tol: Tolerance) -> bo
 
 MONTHS = {m: i for i, m in enumerate(["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], 1)}
 DDMONYY_RE = re.compile(r"^(\d{2})-([A-Z]{3})-(\d{2})$")
+HIST_DT_RE = re.compile(r"^(\d{2})-([A-Z]{3})-(\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$")
+TIMESTAMPED_DT_COLUMNS = frozenset({"HIST_DT"})  # TRG_SUBSCRIPTIONS_HIST / TRG_CUSTOMER_MASTER_HIST: TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS')
 CLEAN_CSV_RE = re.compile(r"^\d+(,\d+)*$")
 CLEAN_ID_CSV_RE = re.compile(r"^[A-Za-z0-9-]+(,[A-Za-z0-9-]+)*$")
+
+
+def _rr_date(day: int, mon: str, yy: int) -> dt.date | None:
+    month = MONTHS.get(mon)
+    if month is None:
+        return None
+    year = 2000 + yy if yy < 50 else 1900 + yy
+    try:
+        return dt.date(year, month, day)
+    except ValueError:
+        return None
 
 
 def parse_ddmonyy(text: str | None) -> dt.date | None:
@@ -406,14 +419,28 @@ def parse_ddmonyy(text: str | None) -> dt.date | None:
     m = DDMONYY_RE.match(text.strip().upper())
     if not m:
         return None
-    day, mon, yy = int(m.group(1)), MONTHS.get(m.group(2)), int(m.group(3))
-    if mon is None:
+    return _rr_date(int(m.group(1)), m.group(2), int(m.group(3)))
+
+
+def parse_hist_dt(text: str | None) -> dt.date | None:
+    """HIST_DT as the history triggers write it, TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS'): the calendar day under the
+    RR rule, as the app's f_str2dt reads it (the plain DD-MON-YY form is accepted too). None when the day or the time
+    is not valid."""
+    if not text:
         return None
-    year = 2000 + yy if yy < 50 else 1900 + yy
-    try:
-        return dt.date(year, mon, day)
-    except ValueError:
+    m = HIST_DT_RE.match(text.strip().upper())
+    if not m:
         return None
+    if m.group(4) is not None and not (int(m.group(4)) < 24 and int(m.group(5)) < 60 and int(m.group(6)) < 60):
+        return None
+    return _rr_date(int(m.group(1)), m.group(2), int(m.group(3)))
+
+
+def derived_day(column: str | None, verbatim: Any) -> dt.date | None:
+    """The calendar day a derived date sibling of `column` holds for its verbatim text; None when it must be absent."""
+    if not isinstance(verbatim, str):
+        return None
+    return parse_hist_dt(verbatim) if column in TIMESTAMPED_DT_COLUMNS else parse_ddmonyy(verbatim)
 
 
 def csv_is_clean(text: str | None, pattern: re.Pattern = CLEAN_ID_CSV_RE) -> bool:
@@ -777,7 +804,7 @@ class ReconRun:
         verbatim = row.get(fm.column) if fm.column else None
         present = fm.field in doc and doc[fm.field] is not None
         if fm.bson == "date" and fm.column:
-            parsed = parse_ddmonyy(verbatim) if isinstance(verbatim, str) else None
+            parsed = derived_day(fm.column, verbatim)
             if parsed is None:
                 if present:
                     self._derived_defects.append({"collection": cname, "key": _fmt_key(key), "field": fm.field,
@@ -812,7 +839,7 @@ class ReconRun:
     def _check_derived_defects(self) -> None:
         self.check("derived_fields.rules", 0, len(self._derived_defects), "migration/billing/mapping_spec.json",
                    not self._derived_defects,
-                   "DD-MON-YY dates parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
+                   "DD-MON-YY dates (HIST_DT with its HH24:MI:SS suffix) parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
                    self._derived_defects)
 
     # -- embedded child table
@@ -1031,7 +1058,7 @@ class ReconRun:
         if cm is None:
             return expected, set(), set()
         in_source = {_fmt_key(row_key(r, cm.id_columns)) for r in self.rows(table)
-                     if r.get(column) is not None and parse_ddmonyy(r[column]) is None}
+                     if r.get(column) is not None and derived_day(column, r[column]) is None}
         verbatim = next((f for f in cm.fields if f.column == column and not f.derived), None)
         derived = next((f for f in cm.fields if f.column == column and f.derived), None)
         in_target = set()
@@ -1205,7 +1232,9 @@ def _money(rng, lo: int = 0, hi: int = 50_000_00) -> Decimal:
 def _rand_value(rng, fm: FieldMap, column: str, row_ix: int) -> Any:
     col = column.upper()
     if fm.bson == "string":
-        if col.endswith("_DT") and len(col) <= 20 and col not in ("CREATED_DT", "UPDATED_DT") or col == "HIST_DT":
+        if col in TIMESTAMPED_DT_COLUMNS:
+            return f"{_ddmonyy(_rand_date(rng))} {rng.randrange(24):02d}:{rng.randrange(60):02d}:{rng.randrange(60):02d}"
+        if col.endswith("_DT") and len(col) <= 20 and col not in ("CREATED_DT", "UPDATED_DT"):
             return _ddmonyy(_rand_date(rng))
         if col.endswith("_YN"):
             return rng.choice(["Y", "N", "N", "N"])
@@ -1401,7 +1430,7 @@ def _map_fields(row: dict, fields: list[FieldMap], now: dt.datetime) -> dict:
         if fm.derived:
             verbatim = row.get(fm.column) if fm.column else None
             if fm.bson == "date":
-                d = parse_ddmonyy(verbatim) if isinstance(verbatim, str) else None
+                d = derived_day(fm.column, verbatim)
                 if d is not None:
                     doc[fm.field] = dt.datetime(d.year, d.month, d.day, tzinfo=UTC)
             elif fm.bson == "array<string>":

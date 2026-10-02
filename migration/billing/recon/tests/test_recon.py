@@ -125,6 +125,23 @@ def test_parse_ddmonyy_rr_rule(text, expected):
     assert recon.parse_ddmonyy(text) == expected
 
 
+@pytest.mark.parametrize("text,expected", [
+    ("02-OCT-26 14:30:00", dt.date(2026, 10, 2)), ("31-DEC-99 23:59:59", dt.date(1999, 12, 31)), ("01-JAN-24 00:00:00", dt.date(2024, 1, 1)),
+    ("01-JAN-24", dt.date(2024, 1, 1)), (" 15-jun-49 07:05:09 ", dt.date(2049, 6, 15)),
+    ("31-FEB-24 14:30:00", None), ("02-OCT-26 24:00:00", None), ("02-OCT-26 14:60:00", None), ("02-OCT-26 14:30:60", None),
+    ("02-OCT-26 14:30", None), ("02-OCT-26 14:30:00.123", None), ("02-OCT-26T14:30:00", None), ("02-OCT-26 garbage", None),
+    ("N/A", None), ("1/1/1900", None), ("", None), (None, None),
+])
+def test_parse_hist_dt_accepts_trigger_timestamp(text, expected):
+    assert recon.parse_hist_dt(text) == expected
+
+
+def test_plain_dd_mon_yy_columns_still_reject_a_time_suffix():
+    assert recon.parse_ddmonyy("02-OCT-26 14:30:00") is None
+    assert recon.derived_day("SIGNUP_DT", "02-OCT-26 14:30:00") is None
+    assert recon.derived_day("HIST_DT", "02-OCT-26 14:30:00") == dt.date(2026, 10, 2)
+
+
 @pytest.mark.parametrize("text,clean", [("12345,67890", True), ("12345", True), (" , 99 ,", False), (",,", False),
                                         ("A;B;C", False), ("NULL,NONE,", False), ("12345,,67890,", False), (None, False)])
 def test_csv_clean_form(text, clean):
@@ -146,10 +163,10 @@ def _shrink(inputs: recon.Inputs) -> recon.Inputs:
     """A copy of the real inputs with a tiny fixture manifest: 40 customers, 12 headers, 60 lines, 3 orphans."""
     fx = {
         "namespace": "unit", "tables": {t: {"fixture_rows": n, "census_rows": n, "delta": 0} for t, n in {
-            "CODES": 8, "TENANTS": 3, "PLANS": 2, "SUBSCRIPTIONS": 3, "SUBSCRIPTIONS_HIST": 0, "USAGE_EVENTS": 5,
+            "CODES": 8, "TENANTS": 3, "PLANS": 2, "SUBSCRIPTIONS": 3, "SUBSCRIPTIONS_HIST": 2, "USAGE_EVENTS": 5,
             "RATING_PERIODS": 2, "RATING_RESULTS": 2, "INVOICES": 2, "INVOICE_LINES": 4, "CREDIT_NOTES": 1,
             "DUNNING_ATTEMPTS": 1, "NOTIFICATIONS": 1, "BILLING_AUDIT_LOG": 0, "CUSTOMER_MASTER": 40,
-            "CUSTOMER_MASTER_HIST": 0, "ENTITY_ATTR_VALUE": 6, "INVOICE_HEADER": 12, "INVOICE_LINE": 60}.items()},
+            "CUSTOMER_MASTER_HIST": 2, "ENTITY_ATTR_VALUE": 6, "INVOICE_HEADER": 12, "INVOICE_LINE": 60}.items()},
         "census_delta": {"static_upgrade_rows": {"CUSTOMER_MASTER": ["40000000-0000-0000-0000-00000000a001"]}},
         "anomalies": [
             {"kind": "orphaned_rows", "line_ids": ["o-1", "o-2", "o-3"], "target": "oracle.OW_BILLING.INVOICE_LINE"},
@@ -241,6 +258,35 @@ def test_quarantine_must_match_exactly(inputs):
     run, _ = run_small(inputs, tables, docs, lambda d: d["invoice_feed_quarantine"].pop())
     assert {"invoice_feed_quarantine.row_count", "invoice_feed_quarantine.keyed_presence", "invoice_feed.lines.row_count",
             "anomalies.orphaned_rows.target"} <= failed(run)
+
+
+@pytest.mark.parametrize("collection,id_column", [("subscriptions_hist", "HIST_ID"), ("customers_hist", "HIST_ID")])
+def test_hist_tables_derive_histdate_from_trigger_timestamp(inputs, collection, id_column):
+    cm = next(c for c in inputs.collections if c.name == collection)
+    suffixed = recon.map_source_row(cm, {id_column: 1, "HIST_DT": "02-OCT-26 14:30:00"}, NOW)
+    assert suffixed["histDt"] == "02-OCT-26 14:30:00" and suffixed["histDate"] == dt.datetime(2026, 10, 2, tzinfo=UTC)
+    plain = recon.map_source_row(cm, {id_column: 2, "HIST_DT": "02-OCT-26"}, NOW)
+    assert plain["histDt"] == "02-OCT-26" and plain["histDate"] == dt.datetime(2026, 10, 2, tzinfo=UTC)
+    for garbage in ("31-FEB-24 14:30:00", "02-OCT-26 25:00:00", "N/A", "02-OCT-26 garbage"):
+        doc = recon.map_source_row(cm, {id_column: 3, "HIST_DT": garbage}, NOW)
+        assert doc["histDt"] == garbage and "histDate" not in doc, garbage
+
+
+def test_hist_row_missing_histdate_fails_derived_rules(inputs):
+    tables, docs = small_estate(inputs)
+    for name, table in (("subscriptions_hist", "SUBSCRIPTIONS_HIST"), ("customers_hist", "CUSTOMER_MASTER_HIST")):
+        assert tables[table] and all(recon.HIST_DT_RE.match(r["HIST_DT"]).group(4) for r in tables[table])
+        assert all("histDate" in d for d in docs[name])
+    run, _ = run_small(inputs, tables, docs)
+    assert not failed(run)
+    def drop(d):
+        del d["subscriptions_hist"][0]["histDate"]
+        del d["customers_hist"][0]["histDate"]
+    run, _ = run_small(inputs, tables, docs, drop)
+    assert {"derived_fields.rules"} == failed(run)
+    check = next(c for c in run.checks if c.id == "derived_fields.rules")
+    assert {(s["collection"], s["field"], s["reason"]) for s in check.samples} == {
+        ("subscriptions_hist", "histDate", "derived date absent or differs"), ("customers_hist", "histDate", "derived date absent or differs")}
 
 
 def test_dirty_date_must_stay_verbatim_without_derived_date(inputs):
