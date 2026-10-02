@@ -169,10 +169,11 @@ def _shrink(inputs: recon.Inputs) -> recon.Inputs:
                         inputs.collections, inputs.money_columns)
 
 
-def run_small(inputs, tables, docs, mutate=None):
+def run_small(inputs, tables, docs, mutate=None, collections=None):
     if mutate:
         mutate(docs)
-    run = recon.ReconRun(_shrink(inputs), recon.DictSource(tables), recon.DictTarget(docs), "fixture", now=NOW)
+    run = recon.ReconRun(_shrink(inputs), recon.DictSource(tables), recon.DictTarget(docs), "fixture", now=NOW,
+                         collections=collections)
     idem = recon.execute(run)
     report = recon.build_report(run, "unit", idem)
     assert recon.validate_report(report) == [], recon.validate_report(report)
@@ -260,6 +261,57 @@ def test_eav_spelling_matrix_is_compared_cell_by_cell(inputs):
                     a["value"] = "Y"
     run, _ = run_small(inputs, tables, docs, normalise)
     assert {"anomalies.eav_boolean_spellings.target", "customers.attributes.keyed_values"} == failed(run)
+
+
+ANOMALY_CHECKS = {f"anomalies.{kind}.{side}" for kind in ("orphaned_rows", "dirty_dates", "malformed_csv_lists", "eav_boolean_spellings")
+                  for side in ("source", "target")}
+
+
+def anomaly_checks(run) -> set[str]:
+    return {c.id for c in run.checks if c.id.startswith("anomalies.")}
+
+
+def test_subset_run_skips_out_of_scope_anomaly_kinds_as_unverified(inputs):
+    tables, docs = small_estate(inputs)
+    u1 = ["codes", "tenants", "plans", "subscriptions", "subscriptions_hist"]
+    run, report = run_small(inputs, tables, docs, collections=u1)
+    assert anomaly_checks(run) == set()
+    assert {x for x in run.unverified if x.startswith("anomalies.")} == {
+        "anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated",
+        "anomalies.dirty_dates: CUSTOMER_MASTER outside this run's collections; not evaluated",
+        "anomalies.malformed_csv_lists: CUSTOMER_MASTER outside this run's collections; not evaluated",
+        "anomalies.eav_boolean_spellings: ENTITY_ATTR_VALUE outside this run's collections; not evaluated",
+    }
+    assert set(report["unverified_paths"]) >= {x for x in run.unverified if x.startswith("anomalies.")}
+    assert run.verdict() == "pass" and failed(run) == set()
+    assert report["planted_anomaly_detections"] == {"expected_set": [], "actual_set": [], "missing": [], "unexpected": []}
+    assert {c["id"] for c in report["checks"]} >= {f"{c}.keyed_values" for c in u1}
+
+
+def test_subset_run_including_the_anomaly_table_still_evaluates_it(inputs):
+    tables, docs = small_estate(inputs)
+    run, _ = run_small(inputs, tables, docs, collections=["customers"])
+    assert anomaly_checks(run) == {"anomalies.dirty_dates.source", "anomalies.dirty_dates.target",
+                                   "anomalies.malformed_csv_lists.source", "anomalies.malformed_csv_lists.target",
+                                   "anomalies.eav_boolean_spellings.source", "anomalies.eav_boolean_spellings.target"}
+    assert [x for x in run.unverified if x.startswith("anomalies.")] == [
+        "anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated"]
+    assert failed(run) == set()
+
+    tables, docs = small_estate(inputs)
+    def heal(d):
+        doc = next(x for x in d["customers"] if x["_id"] == "c-dirty-1")
+        doc["signupDate"] = dt.datetime(2024, 2, 29, tzinfo=UTC)
+    run, _ = run_small(inputs, tables, docs, heal, collections=["customers"])
+    assert {"derived_fields.rules", "anomalies.dirty_dates.target"} == failed(run)
+
+
+def test_full_run_evaluates_every_anomaly_kind(inputs):
+    tables, docs = small_estate(inputs)
+    run, report = run_small(inputs, tables, docs)
+    assert anomaly_checks(run) == ANOMALY_CHECKS
+    assert not any("outside this run's collections" in x for x in report["unverified_paths"])
+    assert len(report["planted_anomaly_detections"]["expected_set"]) > 0
 
 
 def test_compound_id_key_order_and_embedded_order(inputs):

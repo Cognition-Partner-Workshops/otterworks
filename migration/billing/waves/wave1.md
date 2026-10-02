@@ -99,7 +99,7 @@ make tp-validate-recon FILE=migration/billing/waves/wave1/U1.fixture.recon.json
 
 ```
 U1: 5 collections ['codes', 'tenants', 'plans', 'subscriptions', 'subscriptions_hist']; synthetic copy 175 rows in ['CODES', 'PLANS', 'SUBSCRIPTIONS', 'SUBSCRIPTIONS_HIST', 'TENANTS'] -> 175 documents
-recon fixture: verdict=fail checks=38 failed=['anomalies.orphaned_rows.source', 'anomalies.orphaned_rows.target', 'anomalies.dirty_dates.source', 'anomalies.dirty_dates.target', 'anomalies.malformed_csv_lists.source', 'anomalies.malformed_csv_lists.target'] -> migration/billing/waves/wave1/U1.fixture.recon.json
+recon fixture: verdict=pass checks=30 failed=[] -> migration/billing/waves/wave1/U1.fixture.recon.json
 merge_evidence=False (fixture/local result: never merge evidence (tolerances.json#source.mode is live))
 
 validated 1 recon file(s)
@@ -107,27 +107,33 @@ PASS
 ```
 
 Report: `migration/billing/waves/wave1/U1.fixture.recon.json` (`run_mode:
-fixture`, `merge_evidence: false`, validates against
-`recon-report.schema.json`). All 32 U1 checks pass: `row_count`,
+fixture`, `merge_evidence: false`, `verdict: pass`, validates against
+`recon-report.schema.json`). All 30 U1 checks pass: `row_count`,
 `keyed_presence`, `keyed_values`, `money_decimal128`,
 `fields_outside_mapping` for each of the five collections, both
 `census_delta.*` checks and `derived_fields.rules`.
 
-**Finding for UNT-15 (not fixed here; the manager decides where):** the 6
-failed checks are the planted-anomaly set compares for `INVOICE_LINE`
-(`orphaned_rows`) and `CUSTOMER_MASTER` (`dirty_dates`,
-`malformed_csv_lists`), tables that belong to U4 and U2. `ReconRun` honours
-the `--collections` subset for every per-collection check but
-`_check_anomaly_sets` still evaluates every kind in `demo.json#anomalies`, so
-with the tables unfetched it sees `size: 0` against the planted 37/50/31 and
-fails. The same will happen to UNT-15's live run
+The planted-anomaly set compares are scoped to the run (UNT-33,
+`s4.1.0b-recon-scope`): when `--collections` restricts a run, `ReconRun`
+skips every anomaly kind whose source table is outside the subset and lists
+it under `unverified_paths` instead of comparing an unfetched table against
+the planted set. For U1 that is all four kinds, since none of their tables
+(`INVOICE_LINE`, `CUSTOMER_MASTER`, `ENTITY_ATTR_VALUE`) belong to U1:
+
+```
+anomalies.dirty_dates: CUSTOMER_MASTER outside this run's collections; not evaluated
+anomalies.eav_boolean_spellings: ENTITY_ATTR_VALUE outside this run's collections; not evaluated
+anomalies.malformed_csv_lists: CUSTOMER_MASTER outside this run's collections; not evaluated
+anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated
+```
+
+A skipped kind is not a pass: it emits no `anomalies.<kind>.*` check and
+contributes nothing to `planted_anomaly_detections`, so those sets are
+evaluated only by the run that owns the table (U2 for `CUSTOMER_MASTER` /
+`ENTITY_ATTR_VALUE`, U4 for `INVOICE_LINE`) and by the full run, which still
+evaluates every kind. UNT-15's live run
 (`recon.py run --mode live --collections codes,tenants,plans,subscriptions,subscriptions_hist`)
-until either (a) `recon.py` skips anomaly kinds whose target table is outside
-the run's collections and lists them under `unverified_paths` (a small change
-in `_check_anomaly_sets`, owed by whoever the manager names), or (b) the
-wave-1 acceptance reads "all U1 collection checks pass; anomaly checks for
-out-of-scope tables are expected `fail` until wave 2". Option (a) keeps the
-verdict meaningful and is the recommendation.
+gets the same four `unverified_paths` entries.
 
 ## 4. UNT-15 has nothing outstanding
 

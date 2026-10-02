@@ -18,7 +18,7 @@ For every collection in the mapping spec it checks, per source table:
 | `invoice_feed_quarantine.*` | orphaned `INVOICE_LINE` rows must land in quarantine exactly |
 | `derived_fields.rules` | DD-MON-YY dates parse under RR; CSV lists split only when clean; else the derived field is absent |
 | `census_delta.<table>` | the fixture-only `static_seed_version` 2 rows are accounted for explicitly, never a defect |
-| `anomalies.<kind>.{source,target}` | planted sets compared as sets (orphans, dirty dates, malformed CSV, EAV spelling matrix) |
+| `anomalies.<kind>.{source,target}` | planted sets compared as sets (orphans, dirty dates, malformed CSV, EAV spelling matrix); a `--collections` subset skips kinds whose table is outside the run and lists them under `unverified_paths` |
 
 Oracle access is `SELECT` only under `SET TRANSACTION READ ONLY`, with a connection pool
 sized from `tolerances.json#source.concurrency` (1 = serial). The principal is refused if it
