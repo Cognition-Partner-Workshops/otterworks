@@ -13,7 +13,8 @@ it compares, per source table:
   * the known fixture anomalies (migration/billing/fixtures/demo.json#anomalies) as sets:
     orphaned INVOICE_LINE rows must land in invoice_feed_quarantine exactly, dirty dates and
     malformed CSV lists must keep the verbatim string and drop the derived field, and the EAV
-    boolean spelling matrix must survive cell by cell,
+    boolean spelling matrix must survive cell by cell; a run restricted with --collections skips
+    the kinds whose source table is outside the subset and lists them under unverified_paths,
   * the fixture's census delta (demo.json#census_delta) is accounted for explicitly, never
     reported as a dropped or unexpected row.
 
@@ -616,8 +617,8 @@ class ReconRun:
         self.tol = Tolerance.from_tolerances(inputs.tolerances)
         self.concurrency = concurrency or int(inputs.tolerances.get("source", {}).get("concurrency", 1))
         self.now = now or dt.datetime.now(UTC)
-        wanted = set(collections) if collections else None
-        self.collections = [c for c in inputs.collections if wanted is None or c.name in wanted]
+        self.subset = set(collections) if collections else None
+        self.collections = [c for c in inputs.collections if self.subset is None or c.name in self.subset]
         self.checks: list[Check] = []
         self.unverified: list[str] = []
         self.anomaly_expected: list[str] = []
@@ -974,6 +975,10 @@ class ReconRun:
             return
         for a in fx["anomalies"]:
             kind = a["kind"]
+            table = self._anomaly_table(a)
+            if self.subset is not None and table is not None and self._find(table) == (None, None):
+                self.unverified.append(f"anomalies.{kind}: {table} outside this run's collections; not evaluated")
+                continue
             handler = getattr(self, f"_anomaly_{kind}", None)
             if handler is None:
                 self.unverified.append(f"anomalies.{kind}: no set comparison implemented")
@@ -991,6 +996,11 @@ class ReconRun:
             self.check(f"anomalies.{kind}.target", {"size": len(expected)}, {"size": len(in_target), "missing": len(missing_tgt), "unexpected": len(extra_tgt)},
                        truth, not missing_tgt and not extra_tgt, f"{a.get('target')} planted set as it survived in the target (compare_as=set)",
                        [{"missing": x} for x in missing_tgt] + [{"unexpected": x} for x in extra_tgt])
+
+    def _anomaly_table(self, a: dict) -> str | None:
+        """Source table an anomaly manifest entry targets (oracle.OW_BILLING.<TABLE>[.<COLUMN>])."""
+        known = {c.table for c in self.inputs.collections} | {e.table for c in self.inputs.collections for e in c.embedded}
+        return next((part for part in str(a.get("target", "")).split(".") if part in known), None)
 
     def _find(self, table: str):
         for c in self.collections:
