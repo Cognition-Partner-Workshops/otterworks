@@ -7,6 +7,11 @@ import oracledb
 from oracle_conn import oracle_connect
 
 NAME = "oracle"
+ESTATE_ERRORS = (oracledb.Error,)
+UNAVAILABLE = {
+    "error": "legacy estate unavailable",
+    "detail": "the Oracle billing estate is not reachable",
+}
 
 
 def _json_value(value):
@@ -168,6 +173,32 @@ def ensure_tenant(connection, tenant_id, email):
             return False
         connection.commit()
         return True
+
+
+def tenant_profile(tenant_id):
+    return query(
+        """SELECT t.id AS tenant_id, t.name,
+                  ts.code_desc AS status, t.tax_exempt_yn AS tax_exempt
+             FROM tenants t
+             LEFT JOIN codes ts
+               ON ts.code_type = 'TENANT_STATUS'
+              AND ts.code_val = t.status_cd
+            WHERE t.id = :1""",
+        (tenant_id,),
+    )
+
+
+def customer_summary(tenant_id):
+    customers = query(
+        """SELECT cust_no, cust_name, cur_bal_amt, past_due_amt,
+                  credit_hold_yn
+             FROM customer_master
+            WHERE tenant_id = :1
+            ORDER BY cust_seq_no
+            FETCH FIRST 1 ROWS ONLY""",
+        (tenant_id,),
+    )
+    return customers[0] if customers else None
 
 
 def _as_date(value):

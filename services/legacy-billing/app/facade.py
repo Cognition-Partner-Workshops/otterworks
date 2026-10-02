@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 import oracledb
 from flask import Blueprint, jsonify, request
 
-from backends import backend_name
+from backends import backend_name, get_backend
 from backends import oracle
 
 facade = Blueprint("facade", __name__, url_prefix="/api/v1/billing")
@@ -41,16 +41,22 @@ def _admin():
 
 
 def _ensure(tenant_id):
-    with oracle.oracle_connect() as connection:
-        oracle.ensure_tenant(
-            connection,
-            tenant_id,
-            request.headers.get("X-User-Email"),
-        )
+    email = request.headers.get("X-User-Email")
+    backend = get_backend()
+    if backend is oracle:
+        with oracle.oracle_connect() as connection:
+            oracle.ensure_tenant(connection, tenant_id, email)
+    else:
+        backend.ensure_tenant(tenant_id, email)
 
 
 def _oracle_only():
     return backend_name() == "oracle"
+
+
+def _plans_backend():
+    """U1 (plans module) is served by the Oracle estate or its Mongo port (d-logic-home)."""
+    return backend_name() in {"oracle", "mongo"}
 
 
 def _parse_date(value, name):
@@ -74,8 +80,9 @@ def plans():
     _, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _plans_backend():
         return _not_available()
+    backend = get_backend()
     try:
         return jsonify(
             [
@@ -87,11 +94,11 @@ def plans():
                     "included_units": row.get("included_units"),
                     "overage_rate": row.get("overage_rate"),
                 }
-                for row in oracle.list_plans()
+                for row in backend.list_plans()
             ]
         )
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/me")
@@ -99,39 +106,22 @@ def me():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _plans_backend():
         return _not_available()
     on, date_error = _parse_date(request.args.get("on"), "on")
     if date_error:
         return date_error
+    backend = get_backend()
     try:
         _ensure(tenant_id)
-        entitlement = oracle.entitlement(tenant_id, on)
-        tenant_rows = oracle.query(
-            """SELECT t.id AS tenant_id, t.name,
-                      ts.code_desc AS status, t.tax_exempt_yn AS tax_exempt
-                 FROM tenants t
-                 LEFT JOIN codes ts
-                   ON ts.code_type = 'TENANT_STATUS'
-                  AND ts.code_val = t.status_cd
-                WHERE t.id = :1""",
-            (tenant_id,),
-        )
-        customer = oracle.query(
-            """SELECT cust_no, cust_name, cur_bal_amt, past_due_amt,
-                      credit_hold_yn
-                 FROM customer_master
-                WHERE tenant_id = :1
-                ORDER BY cust_seq_no
-                FETCH FIRST 1 ROWS ONLY""",
-            (tenant_id,),
-        )
+        entitlement = backend.entitlement(tenant_id, on)
+        tenant_rows = backend.tenant_profile(tenant_id)
         body = tenant_rows[0]
         body["entitlement"] = entitlement
-        body["customer"] = customer[0] if customer else None
+        body["customer"] = backend.customer_summary(tenant_id)
         return jsonify(body)
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/entitlement")
@@ -139,16 +129,17 @@ def entitlement():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _plans_backend():
         return _not_available()
     on, date_error = _parse_date(request.args.get("on"), "on")
     if date_error:
         return date_error
+    backend = get_backend()
     try:
         _ensure(tenant_id)
-        return jsonify(oracle.entitlement(tenant_id, on))
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+        return jsonify(backend.entitlement(tenant_id, on))
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.post("/plan-change")
@@ -156,7 +147,7 @@ def plan_change():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _plans_backend():
         return _not_available()
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
@@ -173,24 +164,25 @@ def plan_change():
         return jsonify(error="invalid plan change", detail="effective_on must be an ISO date (YYYY-MM-DD)"), 400
     if effective_date < datetime.now(timezone.utc).date():
         return jsonify(error="invalid plan change", detail="effective_on must be today or later"), 400
+    backend = get_backend()
     try:
-        if plan_id not in {row.get("plan_id") for row in oracle.list_plans()}:
+        if plan_id not in {row.get("plan_id") for row in backend.list_plans()}:
             return jsonify(error="invalid plan change", detail="plan_id is not a known billing plan"), 400
         _ensure(tenant_id)
-        oracle.change_plan(
+        backend.change_plan(
             tenant_id,
             plan_id,
             effective_on,
         )
         return jsonify(
             status="changed",
-            entitlement=oracle.entitlement(
+            entitlement=backend.entitlement(
                 tenant_id,
                 effective_on,
             ),
         )
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/usage")
