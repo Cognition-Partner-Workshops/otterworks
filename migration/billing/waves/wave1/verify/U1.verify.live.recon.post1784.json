@@ -2,27 +2,29 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T17:48:36Z",
-  "run_mode": "fixture",
+  "generated_at": "2026-10-02T17:48:23Z",
+  "run_mode": "live",
   "verdict": "pass",
-  "merge_evidence": false,
-  "merge_evidence_note": "fixture/local result: never merge evidence (tolerances.json#source.mode is live)",
+  "merge_evidence": true,
+  "merge_evidence_note": "live recon report",
   "source": {
     "system": "oracle",
     "schema": "OW_BILLING",
-    "dsn_secret": "OW_TP_ORACLE_FIXTURE_DSN",
-    "host": "localhost",
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "host": "52.201.36.9",
     "transaction": "SET TRANSACTION READ ONLY",
     "concurrency": 1,
-    "principal": "OW_BILLING",
+    "principal": "OW_BILLING_RO",
     "statements": "SELECT only"
   },
   "target": {
     "system": "mongodb",
     "database": "ow_tp_billing_20261001T233613Z",
-    "uri_secret": "OW_TP_MONGO_FIXTURE_URI",
+    "uri_secret": "MONGODB_ATLAS_URI",
     "hosts": [
-      "127.0.0.1"
+      "ac-zsgrgnt-shard-00-00.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-02.cgbijgv.mongodb.net"
     ],
     "statements": "find only"
   },
@@ -44,8 +46,8 @@
     "oracle_sessions": 1
   },
   "timings": {
-    "source_fetch_s": 0.004,
-    "target_fetch_s": 0.002
+    "source_fetch_s": 1.072,
+    "target_fetch_s": 0.301
   },
   "summary": {
     "checks": 30,
@@ -127,8 +129,8 @@
       "id": "tenants.row_count",
       "description": "TENANTS rows vs tenants documents",
       "result": "pass",
-      "expected": 70,
-      "actual": 70,
+      "expected": 69,
+      "actual": 69,
       "source_of_truth": "oracle.OW_BILLING.TENANTS"
     },
     {
@@ -219,8 +221,8 @@
       "id": "subscriptions.row_count",
       "description": "SUBSCRIPTIONS rows vs subscriptions documents",
       "result": "pass",
-      "expected": 70,
-      "actual": 70,
+      "expected": 69,
+      "actual": 69,
       "source_of_truth": "oracle.OW_BILLING.SUBSCRIPTIONS"
     },
     {
@@ -265,8 +267,8 @@
       "id": "subscriptions_hist.row_count",
       "description": "SUBSCRIPTIONS_HIST rows vs subscriptions_hist documents",
       "result": "pass",
-      "expected": 2,
-      "actual": 2,
+      "expected": 0,
+      "actual": 0,
       "source_of_truth": "oracle.OW_BILLING.SUBSCRIPTIONS_HIST"
     },
     {
@@ -319,13 +321,9 @@
         "rule": "source_rows == census_rows + fixture_only_present"
       },
       "actual": {
-        "source_rows": 70,
-        "fixture_only_in_source": [
-          "20000000-0000-0000-0000-00000000a001"
-        ],
-        "fixture_only_in_target": [
-          "20000000-0000-0000-0000-00000000a001"
-        ]
+        "source_rows": 69,
+        "fixture_only_in_source": [],
+        "fixture_only_in_target": []
       },
       "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
     },
@@ -341,13 +339,9 @@
         "rule": "source_rows == census_rows + fixture_only_present"
       },
       "actual": {
-        "source_rows": 70,
-        "fixture_only_in_source": [
-          "a0000000-0000-0000-0000-000000000001"
-        ],
-        "fixture_only_in_target": [
-          "a0000000-0000-0000-0000-000000000001"
-        ]
+        "source_rows": 69,
+        "fixture_only_in_source": [],
+        "fixture_only_in_target": []
       },
       "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
     },

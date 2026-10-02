@@ -3,10 +3,10 @@
   "unit": "U1",
   "run_mode": "fixture",
   "merge_evidence": false,
-  "generated_at": "2026-10-02T17:44:49Z",
+  "generated_at": "2026-10-02T17:48:41Z",
   "code_under_test": {
     "repo_root": "/home/ubuntu/repos/ow-pr1782",
-    "head": "86c634aeab3ddc6bcf738bfc3d9d48312913bdd0"
+    "head": "ee782154865b67cd3370e195fea73a45cbe69ef3"
   },
   "source": {
     "oracle": "local fixture localhost",
@@ -268,7 +268,7 @@
               "plan_id": "10000000-0000-0000-0000-000000000002",
               "status_cd": 10,
               "hist_dt_format_ok": true,
-              "hist_date_derived_from_hist_dt": false
+              "hist_date_derived_from_hist_dt": true
             },
             {
               "op": "UPD",
@@ -1134,17 +1134,16 @@
       "backends": {
         "oracle_trigger_hist_dt_format": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') (TRG_SUBSCRIPTIONS_HIST, 01_tables.sql)",
         "loader_copy": {
-          "histDt": "02-OCT-26 17:44:38",
-          "histDate_present": false,
+          "histDt": "02-OCT-26 17:48:30",
+          "histDate_present": true,
           "recon.parse_ddmonyy(histDt)": "None",
           "backends.mongo.f_str2dt(histDt)": "2026-10-02"
         },
         "recon.DDMONYY_RE": "^(\\d{2})-([A-Z]{3})-(\\d{2})$",
         "backends.mongo.DDMONYY_RE": "^(\\d{1,2})-([A-Z]{3})-(\\d{2})(?:\\s.*)?$"
       },
-      "pass": false,
-      "notes": "recon.parse_ddmonyy (also the loader's derived rule via map_source_row) accepts DD-MON-YY only, while every trigger-written HIST_DT carries a time suffix; carried hist rows therefore have no histDate and recon's derived_fields.rules treats that as correct (vacuous live: 0 hist rows). The app's own f_str2dt accepts the suffix, so app-written hist rows do get histDate -> inconsistent shape post-cutover"
+      "pass": true
     }
   ],
-  "verdict": "fail"
+  "verdict": "pass"
 }

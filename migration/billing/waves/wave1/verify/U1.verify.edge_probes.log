@@ -92,7 +92,7 @@ indexes: 4 ensured on ow_tp_billing_20261001T233613Z
 pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
 indexes: 4 ensured on ow_tp_billing_20261001T233613Z
 EDGE-013: pass - Fixture.probe canonical ordering (86c634ae) is a permutation of the raw rows and agrees with independent multiset equality on every static tenant
-EDGE-012: FAIL - loader-carried subscriptions_hist row written by the Oracle trigger has a derived histDate
+EDGE-012: pass - loader-carried subscriptions_hist row written by the Oracle trigger has a derived histDate
 pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
 indexes: 4 ensured on ow_tp_billing_20261001T233613Z
-edge probes fail (12/13) -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.edge_probes.json
+edge probes pass (13/13) -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.edge_probes.json

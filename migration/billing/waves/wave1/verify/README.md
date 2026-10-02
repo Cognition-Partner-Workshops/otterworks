@@ -12,13 +12,15 @@ Atlas reads only, database `ow_tp_billing_20261001T233613Z`; secrets by name
 | Four anomaly kinds (`dirty_dates`, `eav_boolean_spellings`, `malformed_csv_lists`, `orphaned_rows`) | listed under `unverified_paths` ("outside this run's collections; not evaluated"), **not** counted as pass | `U1.verify.live.recon.json#unverified_paths` |
 | Atlas read-only probe (counts 32/69/3/69/0, indexes, principal, orphan joins = 0, Decimal128 money) | PASS | `U1.verify.atlas_probe.log` |
 | Plans route parity PLANS-001..005 + U1 facade routes + non-U1 Mongo routes → 501 | PASS (fixture only, `merge_evidence=false`) | `U1.verify.plans_parity.json`, `.log` |
-| Edge probes EDGE-001..013 (fixture only, `merge_evidence=false`) | 12/13 pass at 86c634ae; **EDGE-012 fails** (finding 2, tracked as UNT-34). At 1dd95291 it was 9/12 with EDGE-005 / EDGE-011 failing (finding 1, fixed by 779515b9) | `U1.verify.edge_probes.json`, `.log`, `U1.verify.local_edge.recon.json` |
+| Live recon re-run with the run branch's post-#1784 `recon.py` (86c634ae merged locally onto `tp-run` head d96e0f6f = ee782154, not pushed) | **PASS** 30/30, same check set, `merge_evidence=true`, schema-valid; `derived_fields.rules` pass with `parse_hist_dt` | `U1.verify.live.recon.post1784.json`, `.log` |
+| Edge probes EDGE-001..013 (fixture only, `merge_evidence=false`) | **13/13 pass** against ee782154 (86c634ae + #1784): EDGE-012 now passes. History: 9/12 at 1dd95291 (EDGE-005 / EDGE-011 / EDGE-012 failing), 12/13 at 86c634ae (EDGE-012 only) | `U1.verify.edge_probes.json`, `.log`, `U1.verify.local_edge.recon.json` |
 
-**Final per-batch verdict (U1, the only wave-1 batch): PASS on the merge-evidence axes at 86c634ae.**
-Live recon was not re-run for 86c634ae: `git diff 1dd95291..86c634ae -- migration/billing/loaders
-migration/billing/recon migration/billing/mapping_spec.json migration/billing/tolerances.json` is
-empty (only `backends/mongo.py`, `tests/test_mongo.py`, `plans_parity.py` and wave-1 evidence changed),
-so the live report at 1dd95291 stands for the loader/recon code under merge.
+**Final per-batch verdict (U1, the only wave-1 batch): PASS on the merge-evidence axes at #1782 head
+86c634ae, including with the run branch's current `recon.py` (#1784 merged).** The 86c634ae head itself
+left `migration/billing/loaders`, `migration/billing/recon`, `mapping_spec.json` and `tolerances.json`
+unchanged from 1dd95291 (only `backends/mongo.py`, `tests/test_mongo.py`, `plans_parity.py` and wave-1
+evidence changed); #1784 then changed `recon.py` / `mapping_spec.json` under it, so the live recon was
+re-run with the merged tree.
 
 ## Findings (fixture-reproduced, outside the recon gate)
 
@@ -34,12 +36,15 @@ so the live report at 1dd95291 stands for the loader/recon code under merge.
    codified the divergent behaviour. 779515b9 closes `startsOn = eff` first, then `startsOn < eff`,
    inside the same transaction, and the test now asserts the Oracle shape; at 86c634ae EDGE-005 and
    EDGE-011 pass (one open subscription, entitlement GROWTH, one hist pre-image on both backends).
-2. **Carried `subscriptions_hist` rows get no `histDate` (EDGE-012).** `TRG_SUBSCRIPTIONS_HIST`
+2. **Carried `subscriptions_hist` rows get no `histDate` (EDGE-012) — fixed by #1784 (UNT-34), re-verified pass.**
+   At 1dd95291 / 86c634ae: `TRG_SUBSCRIPTIONS_HIST`
    writes `HIST_DT` as `DD-MON-YY HH24:MI:SS`; `recon.parse_ddmonyy` / the loader's derived rule
    accept `^DD-MON-YY$` only, so every trigger-written row loads without `histDate` and recon
    accepts that as correct. The app's own `f_str2dt` accepts the suffix, so app-written hist rows
-   do get `histDate`. Vacuous for this merge (live `subscriptions_hist` = 0 rows) but a shape
-   inconsistency for parallel run / cutover.
+   did get `histDate`. Vacuous for this merge (live `subscriptions_hist` = 0 rows) but a shape
+   inconsistency for parallel run / cutover. #1784 adds `recon.parse_hist_dt` / `derived_day` (HIST_DT
+   accepts the `HH24:MI:SS` suffix, deriving the calendar day) and the loader maps through it; with the
+   merged tree the carried trigger-written row has `histDate` and EDGE-012 passes.
 
 3. **`Fixture.probe` ordering change (86c634ae) judged — hides nothing (EDGE-013).** `plans_parity.py`
    now sorts subscription rows by `(starts_on, closed-before-open, ends_on, plan_id)` on both estates
