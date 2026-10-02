@@ -453,10 +453,88 @@ def test_facade_mongo_failure_returns_503(monkeypatch):
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/v1/billing/usage", "/api/v1/billing/invoices"],
+    ["/api/v1/billing/invoices"],
 )
 def test_facade_non_u1_routes_not_available_on_mongo(monkeypatch, path):
     monkeypatch.setenv("BILLING_BACKEND", "mongo")
     response = app.test_client().get(path, headers={"X-User-ID": "tenant"})
     assert response.status_code == 501
     assert response.get_json() == {"error": "not available on this backend"}
+
+
+def test_facade_usage_served_by_mongo_backend(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    calls = []
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: calls.append(("ensure", tenant_id)))
+    monkeypatch.setattr(mongo, "usage_summary", lambda t, s, e: [{"kind": "api", "event_count": "1", "units": "260"}])
+    monkeypatch.setattr(mongo, "usage_rating", lambda t, s, e: [{"tenant_id": t, "period_start": s, "period_end": e,
+                                                                 "billable_units": "160", "overage_amount": "8.8"}])
+    monkeypatch.setattr(mongo, "usage_events", lambda t, s, e: [{"id": "e1", "occurred_at": "2026-02-10T10:00:00",
+                                                                 "units": "260", "kind": "api"}])
+    response = app.test_client().get(
+        "/api/v1/billing/usage",
+        query_string={"period_start": "2026-02-01", "period_end": "2026-02-28"},
+        headers={"X-User-ID": "t1"},
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert calls == [("ensure", "t1")]
+    assert body["summary"][0]["units"] == "260"
+    assert body["rating"][0] == {"tenant_id": "t1", "period_start": "2026-02-01", "period_end": "2026-02-28",
+                                 "billable_units": "160", "overage_amount": "8.8"}
+    assert body["events"][0]["kind"] == "api"
+
+
+def test_facade_usage_on_mongo_rejects_bad_dates_before_backend(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    response = app.test_client().get(
+        "/api/v1/billing/usage", query_string={"period_start": "2026-02-30"}, headers={"X-User-ID": "t1"}
+    )
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "invalid date", "detail": "period_start must be an ISO date (YYYY-MM-DD)"}
+
+
+def test_internal_usage_event_recorded_through_mongo_backend(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    monkeypatch.setenv("USAGE_INTERNAL_TOKEN", "secret")
+    mongo = backends.get_backend()
+    seen = []
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: seen.append(("ensure", tenant_id, email)))
+    statuses = iter(["recorded", "duplicate"])
+
+    def record(event_id, tenant_id, occurred_at, units, kind):
+        seen.append((event_id, tenant_id, occurred_at, units, kind))
+        return next(statuses)
+
+    monkeypatch.setattr(mongo, "record_usage_event", record)
+    payload = {"event_id": "30000000-0000-0000-0000-00000000ffff", "tenant_id": "t1", "email": "a@example.com",
+               "kind": "api", "units": 3, "occurred_at": "2026-02-10T10:00:00Z"}
+    client = app.test_client()
+    first = client.post("/internal/usage/events", json=payload, headers={"X-Internal-Token": "secret"})
+    assert (first.status_code, first.get_json()) == (201, {"status": "recorded"})
+    second = client.post("/internal/usage/events", json=payload, headers={"X-Internal-Token": "secret"})
+    assert (second.status_code, second.get_json()) == (200, {"status": "duplicate"})
+    assert seen[0] == ("ensure", "t1", "a@example.com")
+    assert seen[1] == (payload["event_id"], "t1", "2026-02-10T10:00:00Z", 3, "api")
+
+
+def test_internal_usage_event_on_mongo_keeps_validation_and_rejections(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    monkeypatch.setenv("USAGE_INTERNAL_TOKEN", "secret")
+    mongo = backends.get_backend()
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: None)
+
+    def reject(*args):
+        raise mongo.UsageEventRejected("unknown usage kind")
+
+    monkeypatch.setattr(mongo, "record_usage_event", reject)
+    client = app.test_client()
+    payload = {"event_id": "30000000-0000-0000-0000-00000000ffff", "tenant_id": "t1", "kind": "api", "units": 3,
+               "occurred_at": "2026-02-10T10:00:00Z"}
+    assert client.post("/internal/usage/events", json=payload, headers={"X-Internal-Token": "nope"}).status_code == 401
+    bad = client.post("/internal/usage/events", json={**payload, "kind": "bandwidth"}, headers={"X-Internal-Token": "secret"})
+    assert bad.status_code == 400 and bad.get_json()["detail"].startswith("kind must be")
+    rejected = client.post("/internal/usage/events", json=payload, headers={"X-Internal-Token": "secret"})
+    assert rejected.status_code == 422
+

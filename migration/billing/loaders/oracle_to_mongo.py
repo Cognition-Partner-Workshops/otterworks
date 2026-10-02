@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Oracle -> MongoDB loader for the OtterWorks billing migration (U1 and delta loads).
+"""Oracle -> MongoDB loader for the OtterWorks billing migration (U1, wave 2 and delta loads).
 
 Reads the source tables of the requested collections with python-oracledb (every session
 `SET TRANSACTION READ ONLY`, SELECT only, principal checked for write-capable privileges),
@@ -14,6 +14,10 @@ parallel run. The secondary indexes declared in mapping_spec.json are created id
       python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
         --collections codes,tenants,plans,subscriptions,subscriptions_hist --passes 2 \
         --report migration/billing/recon/out/U1.load.json
+    uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
+      python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
+        --collections usage_events,rating_periods --passes 2 \
+        --report migration/billing/recon/out/U3.load.json
 
     # U2: customers embeds ENTITY_ATTR_VALUE as attributes[] (one embedded child table, no quarantine)
     uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
