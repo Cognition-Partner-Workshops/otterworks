@@ -275,12 +275,18 @@ cmd_apply() {
   [ -n "${prefs}" ] || die "eventing.env has no DDB_NOTIF_PREFS"
   irsa_notif="$(eventing_value IRSA_notification_service)"
   irsa_file="$(eventing_value IRSA_file_service)"
+  local image_args=()
+  local baseline; baseline="$(state_get baseline_image)"
+  if [ -n "${baseline}" ]; then
+    image_args=(--set-string "image.tag=${baseline}")
+    log "notification-service image back to ${baseline%%@*}"
+  fi
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
     --set-string "config.SNS_TOPIC_ARN=${sns}" \
     --set-string "config.SQS_QUEUE_URL=${sqs}" \
     --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${ddb}" \
     --set-string "config.DYNAMODB_TABLE_PREFERENCES=${prefs}" \
-    --set-string "serviceAccount.roleArn=${irsa_notif}"
+    --set-string "serviceAccount.roleArn=${irsa_notif}" "${image_args[@]}"
   run helm upgrade file-service "${REPO}/infrastructure/helm/file-service" -n "${NS}" --reuse-values \
     --set-string "config.SNS_TOPIC_ARN=${sns}" \
     --set-string "serviceAccount.roleArn=${irsa_file}"
@@ -336,6 +342,10 @@ cmd_arm() {
   require_operator
   run aws cloudwatch enable-alarm-actions --alarm-names "$(out alarm_name)"
   run aws events enable-rule --name "$(out eventbridge_rule_name)"
+  if [ -z "$(state_get baseline_image)" ]; then
+    local tag; tag="$(read_cmd helm -n "${NS}" get values notification-service -o json | jq -r '.image.tag // empty')"
+    [ -n "${tag}" ] && state_set baseline_image "${tag}"
+  fi
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
     --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${FAULT_TABLE}"
   restart_and_wait notification-service
@@ -598,6 +608,7 @@ cmd_teardown() {
   run kubectl delete -f "${RBAC}" --ignore-not-found
   delete_reader_keys "${user}"
   run rm -f "${READER_FILE}"
+  state_del baseline_image
   if [ "${TEARDOWN_TENANT:-false}" = true ]; then
     run "${REPO}/scripts/teardown-tenant.sh" "${TENANT}"
   else
