@@ -1,0 +1,576 @@
+{
+  "kind": "recon-report",
+  "unit": "billing",
+  "namespace": "demo",
+  "generated_at": "2026-10-02T17:56:51Z",
+  "run_mode": "fixture",
+  "verdict": "pass",
+  "merge_evidence": false,
+  "merge_evidence_note": "fixture/local result: never merge evidence (tolerances.json#source.mode is live)",
+  "source": {
+    "system": "oracle",
+    "mode": "fixture",
+    "schema": "OW_BILLING",
+    "driver": "synthetic copy of migration/billing/fixtures/demo.json",
+    "seed": 714559852
+  },
+  "target": {
+    "system": "mongodb",
+    "database": "ow_recon_fixture_u4",
+    "uri_secret": null,
+    "hosts": [
+      "127.0.0.1"
+    ],
+    "statements": "find only"
+  },
+  "inputs": {
+    "mapping_spec": {
+      "path": "migration/billing/mapping_spec.json",
+      "sha256": "0bd5fb8b20f00ba3d72da3d079c6ae998195db782aef2d5945bc5c08ac3f39f6"
+    },
+    "tolerances": {
+      "path": "migration/billing/tolerances.json",
+      "sha256": "440aeb7f7f68daac2c65563e843ca22e39f0fb5fe3604913275f02186c6590b2"
+    },
+    "fixture": {
+      "path": "migration/billing/fixtures/demo.json",
+      "sha256": "d846f3df928de8459d4fc460ab729f9f18be165ed60834420e4ebd16d47358c3"
+    }
+  },
+  "concurrency": {
+    "oracle_sessions": 1
+  },
+  "timings": {
+    "source_fetch_s": 0.002,
+    "target_fetch_s": 3.172
+  },
+  "summary": {
+    "checks": 38,
+    "pass": 38,
+    "fail": 0,
+    "skipped": 0,
+    "failed_check_ids": []
+  },
+  "checks": [
+    {
+      "id": "tolerances.money_columns_cover_spec",
+      "description": "every decimal column in the mapping spec is listed under numeric_tolerances.money.columns",
+      "result": "pass",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "migration/billing/tolerances.json"
+    },
+    {
+      "id": "tolerances.money_rule",
+      "description": "money compares Decimal vs Decimal128 exactly; a binary float on either side is a defect",
+      "result": "pass",
+      "expected": {
+        "absolute": "0",
+        "float_is_defect": true
+      },
+      "actual": {
+        "absolute": "0",
+        "float_is_defect": true
+      },
+      "source_of_truth": "migration/billing/tolerances.json"
+    },
+    {
+      "id": "invoices.row_count",
+      "description": "INVOICES rows vs invoices documents",
+      "result": "pass",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle.OW_BILLING.INVOICES"
+    },
+    {
+      "id": "invoices.keyed_presence",
+      "description": "every source PK has exactly one document and no document lacks a source row",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.INVOICES"
+    },
+    {
+      "id": "invoices.keyed_values",
+      "description": "field-by-field values of INVOICES with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICES"
+    },
+    {
+      "id": "invoices.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICES"
+    },
+    {
+      "id": "invoices.fields_outside_mapping",
+      "description": "document fields that the mapping spec does not define",
+      "result": "pass",
+      "expected": {},
+      "actual": {},
+      "source_of_truth": "oracle.OW_BILLING.INVOICES"
+    },
+    {
+      "id": "invoices.lines.row_count",
+      "description": "INVOICE_LINES rows vs embedded lines elements",
+      "result": "pass",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
+    },
+    {
+      "id": "invoices.lines.keyed_presence",
+      "description": "each INVOICE_LINES row appears once under its parent, keyed by id",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
+    },
+    {
+      "id": "invoices.lines.keyed_values",
+      "description": "field-by-field values of INVOICE_LINES with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
+    },
+    {
+      "id": "invoices.lines.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
+    },
+    {
+      "id": "invoices.lines.shape_and_order",
+      "description": "lines is a array ordered by ['lineNo']",
+      "result": "pass",
+      "expected": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "actual": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    },
+    {
+      "id": "invoices.lines.orphans",
+      "description": "INVOICE_LINES rows whose INVOICE_ID has no parent row (no quarantine defined for this table)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
+    },
+    {
+      "id": "credit_notes.row_count",
+      "description": "CREDIT_NOTES rows vs credit_notes documents",
+      "result": "pass",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "oracle.OW_BILLING.CREDIT_NOTES"
+    },
+    {
+      "id": "credit_notes.keyed_presence",
+      "description": "every source PK has exactly one document and no document lacks a source row",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.CREDIT_NOTES"
+    },
+    {
+      "id": "credit_notes.keyed_values",
+      "description": "field-by-field values of CREDIT_NOTES with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.CREDIT_NOTES"
+    },
+    {
+      "id": "credit_notes.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.CREDIT_NOTES"
+    },
+    {
+      "id": "credit_notes.fields_outside_mapping",
+      "description": "document fields that the mapping spec does not define",
+      "result": "pass",
+      "expected": {},
+      "actual": {},
+      "source_of_truth": "oracle.OW_BILLING.CREDIT_NOTES"
+    },
+    {
+      "id": "invoice_feed.row_count",
+      "description": "INVOICE_HEADER rows vs invoice_feed documents",
+      "result": "pass",
+      "expected": 18750,
+      "actual": 18750,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_HEADER"
+    },
+    {
+      "id": "invoice_feed.keyed_presence",
+      "description": "every source PK has exactly one document and no document lacks a source row",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_HEADER"
+    },
+    {
+      "id": "invoice_feed.keyed_values",
+      "description": "field-by-field values of INVOICE_HEADER with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_HEADER"
+    },
+    {
+      "id": "invoice_feed.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_HEADER"
+    },
+    {
+      "id": "invoice_feed.fields_outside_mapping",
+      "description": "document fields that the mapping spec does not define",
+      "result": "pass",
+      "expected": {},
+      "actual": {},
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_HEADER"
+    },
+    {
+      "id": "invoice_feed.lines.row_count",
+      "description": "INVOICE_LINE rows vs embedded lines elements + invoice_feed_quarantine documents",
+      "result": "pass",
+      "expected": 150000,
+      "actual": 150000,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed.lines.keyed_presence",
+      "description": "each INVOICE_LINE row appears once under its parent, keyed by lineId",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed.lines.keyed_values",
+      "description": "field-by-field values of INVOICE_LINE with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed.lines.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed.lines.shape_and_order",
+      "description": "lines is a array ordered by ['lineNo', 'lineId']",
+      "result": "pass",
+      "expected": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "actual": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    },
+    {
+      "id": "invoice_feed_quarantine.row_count",
+      "description": "orphaned INVOICE_LINE rows (parent missing) vs invoice_feed_quarantine documents; quarantined rows must match exactly",
+      "result": "pass",
+      "expected": 37,
+      "actual": 37,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed_quarantine.keyed_presence",
+      "description": "quarantine set equals the orphan set",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed_quarantine.keyed_values",
+      "description": "field-by-field values of INVOICE_LINE with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed_quarantine.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "invoice_feed_quarantine.quarantine_reason",
+      "description": "every quarantined document carries quarantine.reason == 'orphaned_rows'",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    },
+    {
+      "id": "census_delta.INVOICES",
+      "description": "fixture-only static_seed_version-2 rows are accounted for explicitly, never reported as dropped/unexpected",
+      "result": "pass",
+      "expected": {
+        "census_rows": 3,
+        "fixture_only_pks": [
+          "60000000-0000-0000-0000-000000000009"
+        ],
+        "rule": "source_rows == census_rows + fixture_only_present"
+      },
+      "actual": {
+        "source_rows": 4,
+        "fixture_only_in_source": [
+          "60000000-0000-0000-0000-000000000009"
+        ],
+        "fixture_only_in_target": [
+          "60000000-0000-0000-0000-000000000009"
+        ]
+      },
+      "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
+    },
+    {
+      "id": "census_delta.INVOICE_LINES",
+      "description": "fixture-only static_seed_version-2 rows are accounted for explicitly, never reported as dropped/unexpected",
+      "result": "pass",
+      "expected": {
+        "census_rows": 2,
+        "fixture_only_pks": [
+          "a0000000-0000-0000-0000-000000000009",
+          "a0000000-0000-0000-0000-00000000000a"
+        ],
+        "rule": "source_rows == census_rows + fixture_only_present"
+      },
+      "actual": {
+        "source_rows": 4,
+        "fixture_only_in_source": [
+          "a0000000-0000-0000-0000-000000000009",
+          "a0000000-0000-0000-0000-00000000000a"
+        ],
+        "fixture_only_in_target": [
+          "a0000000-0000-0000-0000-000000000009",
+          "a0000000-0000-0000-0000-00000000000a"
+        ]
+      },
+      "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
+    },
+    {
+      "id": "anomalies.orphaned_rows.source",
+      "description": "oracle.OW_BILLING.INVOICE_LINE planted set as seen in the source",
+      "result": "pass",
+      "expected": {
+        "size": 37
+      },
+      "actual": {
+        "size": 37,
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "migration/billing/fixtures/demo.json#anomalies"
+    },
+    {
+      "id": "anomalies.orphaned_rows.target",
+      "description": "oracle.OW_BILLING.INVOICE_LINE planted set as it survived in the target (compare_as=set)",
+      "result": "pass",
+      "expected": {
+        "size": 37
+      },
+      "actual": {
+        "size": 37,
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "migration/billing/fixtures/demo.json#anomalies"
+    },
+    {
+      "id": "derived_fields.rules",
+      "description": "DD-MON-YY dates (HIST_DT with its HH24:MI:SS suffix) parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "compare() executed twice over the same fetched rows/documents; 38 check signatures identical"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "orphaned_rows:0e7a3dc2-d003-464a-9c2b-14125c79cbe9",
+      "orphaned_rows:0fbd756a-1d5f-bdfb-4cb9-81d2cbb4fee4",
+      "orphaned_rows:0fe3f0d5-2e0d-87dc-0933-f84887549f80",
+      "orphaned_rows:1c435cb0-171d-69c3-f600-a5f4bc7e90fe",
+      "orphaned_rows:21367220-1d41-e396-0f3b-dbf2ae5d91e9",
+      "orphaned_rows:4b34c0f1-8476-f678-add0-b3f921a7cd5f",
+      "orphaned_rows:4c826f11-c733-eac0-9318-29ae919beec4",
+      "orphaned_rows:50526783-22bf-ae7c-f6ba-4f8aa111b611",
+      "orphaned_rows:57f7b9b0-9e76-4439-48b9-3b71025322a4",
+      "orphaned_rows:670cd75f-cf78-0b95-5426-a95484ef2a0e",
+      "orphaned_rows:7242b80f-45f6-4bbf-3153-bb2ce0c6441e",
+      "orphaned_rows:78572c4c-b635-7daa-183e-5490237ab052",
+      "orphaned_rows:78f6a5bb-18f3-bf6e-2aa3-92f241f6c5b1",
+      "orphaned_rows:8c12956a-e778-88e6-67d5-ad44d3b540c3",
+      "orphaned_rows:8c95dd3d-97ed-420d-1965-cf320c34fb84",
+      "orphaned_rows:8e85a5db-53c9-a05b-3049-752bb6632003",
+      "orphaned_rows:90ddc15d-a71e-ea73-9392-338da7255605",
+      "orphaned_rows:95d5043f-e481-1de8-cd92-bd76bc09dc19",
+      "orphaned_rows:97f42ec8-39e7-19f2-9a76-84414644efc3",
+      "orphaned_rows:982209a3-c282-e02f-83ec-ee9d0b474d7f",
+      "orphaned_rows:9dd7ea2b-091d-c45f-abd6-2a2fb2e43891",
+      "orphaned_rows:9f1600ed-b570-0274-d42e-c1dab91038c4",
+      "orphaned_rows:a53ea126-8621-3e3c-a8be-88435d7ca266",
+      "orphaned_rows:aef7cf16-4fdc-e2bc-7de5-ddbc1782c43a",
+      "orphaned_rows:b0479162-4897-2f54-82d5-c08044b3a1a7",
+      "orphaned_rows:b259311b-5098-d0f9-a658-585d6eff8f81",
+      "orphaned_rows:bddd1f4a-cad4-50cb-a066-9ee465981778",
+      "orphaned_rows:c08e04e0-0a1c-27fc-12a4-802a2421036c",
+      "orphaned_rows:c1008e17-8f78-a845-2ba2-bccd154a0b9c",
+      "orphaned_rows:c4a55285-efd8-3c27-d21e-ab29cdf11eae",
+      "orphaned_rows:c8ee4242-005d-bf23-d5a0-d8c906ef6f3f",
+      "orphaned_rows:cfb214f7-cf89-751a-ed4c-8ef1bfa2665d",
+      "orphaned_rows:d032629f-368d-fc21-534c-13866e7dd45a",
+      "orphaned_rows:da96e215-3481-a34b-2d84-c4a8f67ee7e3",
+      "orphaned_rows:e77fefbf-059b-62cb-f889-1c7296f933b5",
+      "orphaned_rows:f032b198-0c91-8ccd-a23d-3804994faacd",
+      "orphaned_rows:f2053077-7f8a-ea53-b9ed-7c5e2b9fce88"
+    ],
+    "actual_set": [
+      "orphaned_rows:0e7a3dc2-d003-464a-9c2b-14125c79cbe9",
+      "orphaned_rows:0fbd756a-1d5f-bdfb-4cb9-81d2cbb4fee4",
+      "orphaned_rows:0fe3f0d5-2e0d-87dc-0933-f84887549f80",
+      "orphaned_rows:1c435cb0-171d-69c3-f600-a5f4bc7e90fe",
+      "orphaned_rows:21367220-1d41-e396-0f3b-dbf2ae5d91e9",
+      "orphaned_rows:4b34c0f1-8476-f678-add0-b3f921a7cd5f",
+      "orphaned_rows:4c826f11-c733-eac0-9318-29ae919beec4",
+      "orphaned_rows:50526783-22bf-ae7c-f6ba-4f8aa111b611",
+      "orphaned_rows:57f7b9b0-9e76-4439-48b9-3b71025322a4",
+      "orphaned_rows:670cd75f-cf78-0b95-5426-a95484ef2a0e",
+      "orphaned_rows:7242b80f-45f6-4bbf-3153-bb2ce0c6441e",
+      "orphaned_rows:78572c4c-b635-7daa-183e-5490237ab052",
+      "orphaned_rows:78f6a5bb-18f3-bf6e-2aa3-92f241f6c5b1",
+      "orphaned_rows:8c12956a-e778-88e6-67d5-ad44d3b540c3",
+      "orphaned_rows:8c95dd3d-97ed-420d-1965-cf320c34fb84",
+      "orphaned_rows:8e85a5db-53c9-a05b-3049-752bb6632003",
+      "orphaned_rows:90ddc15d-a71e-ea73-9392-338da7255605",
+      "orphaned_rows:95d5043f-e481-1de8-cd92-bd76bc09dc19",
+      "orphaned_rows:97f42ec8-39e7-19f2-9a76-84414644efc3",
+      "orphaned_rows:982209a3-c282-e02f-83ec-ee9d0b474d7f",
+      "orphaned_rows:9dd7ea2b-091d-c45f-abd6-2a2fb2e43891",
+      "orphaned_rows:9f1600ed-b570-0274-d42e-c1dab91038c4",
+      "orphaned_rows:a53ea126-8621-3e3c-a8be-88435d7ca266",
+      "orphaned_rows:aef7cf16-4fdc-e2bc-7de5-ddbc1782c43a",
+      "orphaned_rows:b0479162-4897-2f54-82d5-c08044b3a1a7",
+      "orphaned_rows:b259311b-5098-d0f9-a658-585d6eff8f81",
+      "orphaned_rows:bddd1f4a-cad4-50cb-a066-9ee465981778",
+      "orphaned_rows:c08e04e0-0a1c-27fc-12a4-802a2421036c",
+      "orphaned_rows:c1008e17-8f78-a845-2ba2-bccd154a0b9c",
+      "orphaned_rows:c4a55285-efd8-3c27-d21e-ab29cdf11eae",
+      "orphaned_rows:c8ee4242-005d-bf23-d5a0-d8c906ef6f3f",
+      "orphaned_rows:cfb214f7-cf89-751a-ed4c-8ef1bfa2665d",
+      "orphaned_rows:d032629f-368d-fc21-534c-13866e7dd45a",
+      "orphaned_rows:da96e215-3481-a34b-2d84-c4a8f67ee7e3",
+      "orphaned_rows:e77fefbf-059b-62cb-f889-1c7296f933b5",
+      "orphaned_rows:f032b198-0c91-8ccd-a23d-3804994faacd",
+      "orphaned_rows:f2053077-7f8a-ea53-b9ed-7c5e2b9fce88"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "anomalies.dirty_dates: CUSTOMER_MASTER outside this run's collections; not evaluated",
+    "anomalies.eav_boolean_spellings: ENTITY_ATTR_VALUE outside this run's collections; not evaluated",
+    "anomalies.malformed_csv_lists: CUSTOMER_MASTER outside this run's collections; not evaluated",
+    "census_delta.CUSTOMER_MASTER: table is outside the mapping spec",
+    "census_delta.ENTITY_ATTR_VALUE: table is outside the mapping spec",
+    "census_delta.SUBSCRIPTIONS: table is outside the mapping spec",
+    "census_delta.TENANTS: table is outside the mapping spec",
+    "census_delta.USAGE_EVENTS: table is outside the mapping spec",
+    "invoice_feed_quarantine.quarantine.capturedAt: loader timestamp, not comparable to a source value",
+    "invoice_feed_quarantine.quarantine: derived 'object' value is loader-defined; recon checks only the verbatim source field"
+  ],
+  "wave_readiness": {
+    "plan_step": "s4.2.0-preflight",
+    "unit": "U4",
+    "ticket": "UNT-20",
+    "collections": [
+      "invoices",
+      "credit_notes",
+      "invoice_feed",
+      "invoice_feed_quarantine"
+    ],
+    "source_tables": [
+      "CREDIT_NOTES",
+      "INVOICES",
+      "INVOICE_HEADER",
+      "INVOICE_LINE",
+      "INVOICE_LINES"
+    ],
+    "units_json": "migration/billing/units/units.json"
+  }
+}
