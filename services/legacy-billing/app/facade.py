@@ -64,6 +64,11 @@ def _customers_backend():
     return backend_name() in {"oracle", "mongo"}
 
 
+def _usage_backend():
+    """U3 (usage + rating module) is served by the Oracle estate or its Mongo port (d-logic-home)."""
+    return backend_name() in {"oracle", "mongo"}
+
+
 def _parse_date(value, name):
     if value is None:
         value = date.today().isoformat()
@@ -195,17 +200,16 @@ def usage():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _usage_backend():
         return _not_available()
     start, end, date_error = _usage_range()
     if date_error:
         return date_error
+    backend = get_backend()
     try:
         _ensure(tenant_id)
-        return jsonify(
-            summary=oracle.usage_summary(tenant_id, start, end),
-            rating=oracle.usage_rating(tenant_id, start, end),
-            events=oracle.query(
+        if backend is oracle:
+            events = oracle.query(
                 """SELECT * FROM (
                        SELECT u.id, u.occurred_at, u.units, c.code_desc AS kind
                          FROM usage_events u
@@ -218,10 +222,16 @@ def usage():
                         ORDER BY u.occurred_at DESC, u.id DESC
                    ) WHERE ROWNUM <= 50""",
                 (tenant_id, oracle._as_date(start), end),
-            ),
+            )
+        else:
+            events = backend.usage_events(tenant_id, start, end)
+        return jsonify(
+            summary=backend.usage_summary(tenant_id, start, end),
+            rating=backend.usage_rating(tenant_id, start, end),
+            events=events,
         )
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/invoices")
@@ -347,7 +357,7 @@ def usage_event():
         return jsonify(error="internal usage ingest not configured"), 503
     if request.headers.get("X-Internal-Token") != expected_token:
         return jsonify(error="unauthorized"), 401
-    if not _oracle_only():
+    if not _usage_backend():
         return _not_available()
     raw_body = request.get_data(cache=True)
     if len(raw_body) > 16 * 1024:
@@ -374,6 +384,18 @@ def usage_event():
         datetime.fromisoformat(occurred_at.replace("Z", "+00:00"))
     except ValueError:
         return jsonify(error="invalid usage event", detail="occurred_at must be an ISO-8601 timestamp"), 400
+    backend = get_backend()
+    if backend is not oracle:
+        try:
+            backend.ensure_tenant(tenant_id, payload.get("email"))
+            status = backend.record_usage_event(event_id, tenant_id, occurred_at, units, kind)
+        except backend.UsageEventRejected as exc:
+            return jsonify(error=str(exc)), 422
+        except backend.ESTATE_ERRORS:
+            return jsonify(backend.UNAVAILABLE), 503
+        if status == "duplicate":
+            return jsonify(status="duplicate")
+        return jsonify(status="recorded"), 201
     try:
         with oracle.oracle_connect() as connection:
             oracle.ensure_tenant(connection, tenant_id, payload.get("email"))

@@ -2,22 +2,31 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T19:08:11Z",
-  "run_mode": "fixture",
+  "generated_at": "2026-10-02T18:22:10Z",
+  "run_mode": "live",
   "verdict": "pass",
-  "merge_evidence": false,
-  "merge_evidence_note": "fixture/local result: never merge evidence (tolerances.json#source.mode is live)",
+  "merge_evidence": true,
+  "merge_evidence_note": "live recon report",
   "source": {
     "system": "oracle",
-    "mode": "fixture",
     "schema": "OW_BILLING",
-    "driver": "synthetic copy of migration/billing/fixtures/demo.json",
-    "seed": 714559852
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "host": "52.201.36.9",
+    "transaction": "SET TRANSACTION READ ONLY",
+    "concurrency": 1,
+    "principal": "OW_BILLING_RO",
+    "statements": "SELECT only"
   },
   "target": {
     "system": "mongodb",
-    "mode": "fixture",
-    "driver": "in-memory"
+    "database": "ow_tp_billing_20261001T233613Z",
+    "uri_secret": "MONGODB_ATLAS_URI",
+    "hosts": [
+      "ac-zsgrgnt-shard-00-00.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-02.cgbijgv.mongodb.net"
+    ],
+    "statements": "find only"
   },
   "inputs": {
     "mapping_spec": {
@@ -37,8 +46,8 @@
     "oracle_sessions": 1
   },
   "timings": {
-    "source_fetch_s": 0.004,
-    "target_fetch_s": 0.0
+    "source_fetch_s": 0.876,
+    "target_fetch_s": 0.286
   },
   "summary": {
     "checks": 20,
@@ -74,8 +83,8 @@
       "id": "usage_events.row_count",
       "description": "USAGE_EVENTS rows vs usage_events documents",
       "result": "pass",
-      "expected": 817,
-      "actual": 817,
+      "expected": 814,
+      "actual": 814,
       "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
     },
     {
@@ -236,17 +245,9 @@
         "rule": "source_rows == census_rows + fixture_only_present"
       },
       "actual": {
-        "source_rows": 817,
-        "fixture_only_in_source": [
-          "30000000-0000-0000-0000-00000000a001",
-          "30000000-0000-0000-0000-00000000a002",
-          "30000000-0000-0000-0000-00000000a003"
-        ],
-        "fixture_only_in_target": [
-          "30000000-0000-0000-0000-00000000a001",
-          "30000000-0000-0000-0000-00000000a002",
-          "30000000-0000-0000-0000-00000000a003"
-        ]
+        "source_rows": 814,
+        "fixture_only_in_source": [],
+        "fixture_only_in_target": []
       },
       "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
     },
@@ -282,20 +283,5 @@
     "census_delta.INVOICE_LINES: table is outside the mapping spec",
     "census_delta.SUBSCRIPTIONS: table is outside the mapping spec",
     "census_delta.TENANTS: table is outside the mapping spec"
-  ],
-  "wave_readiness": {
-    "plan_step": "s4.2.0-preflight",
-    "unit": "U3",
-    "ticket": "UNT-19",
-    "collections": [
-      "usage_events",
-      "rating_periods"
-    ],
-    "source_tables": [
-      "RATING_PERIODS",
-      "RATING_RESULTS",
-      "USAGE_EVENTS"
-    ],
-    "units_json": "migration/billing/units/units.json"
-  }
+  ]
 }
