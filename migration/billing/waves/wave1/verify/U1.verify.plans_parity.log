@@ -1,0 +1,54 @@
+TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN='ow_billing/ow_billing@localhost:52521/FREEPDB1' OW_TP_MONGO_FIXTURE_URI='mongodb://127.0.0.1:27117/?directConnection=true' uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with flask==3.1.1 --with pyyaml==6.0.2 python3 migration/billing/waves/wave1/plans_parity.py --out /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.plans_parity.json
+WARN `--no-project` was provided, but no project was found
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 2.5.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 4.10.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(3) @ 3.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(4) @ 6.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(5) @ 50.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(6) @ 2.8.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(7) @ 1.9.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(8) @ 8.5.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(9) @ 2.2.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(10) @ 3.1.6 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(11) @ 3.0.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(12) @ 3.1.9 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(13) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(14) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(15) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(16) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(17) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(18) @ 3.0 without checking dependencies    
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+PLANS-001: oracle=ok mongo=ok -> pass
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+PLANS-002: oracle=ok mongo=ok -> pass
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+PLANS-003: oracle=ok mongo=ok -> pass
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+PLANS-004: oracle=ok mongo=ok -> pass
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+PLANS-005: oracle=ok mongo=ok -> pass
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+facade U1 routes identical on both backends: True; non-U1 routes 501 on mongo: True
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+plans parity pass -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.plans_parity.json

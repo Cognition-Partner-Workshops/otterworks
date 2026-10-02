@@ -1,0 +1,1149 @@
+{
+  "kind": "u1-edge-probes",
+  "unit": "U1",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T17:48:41Z",
+  "code_under_test": {
+    "repo_root": "/home/ubuntu/repos/ow-pr1782",
+    "head": "ee782154865b67cd3370e195fea73a45cbe69ef3"
+  },
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "probes": [
+    {
+      "id": "EDGE-001",
+      "description": "tenant with no subscriptions: entitlement empty on both backends, /me does not bootstrap a subscription",
+      "backends": {
+        "oracle": {
+          "entitlement()": [],
+          "tenant_profile()": [
+            {
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e1",
+              "name": "Edge Empty Tenant",
+              "status": "active",
+              "tax_exempt": "N"
+            }
+          ],
+          "GET /api/v1/billing/entitlement": [],
+          "GET /api/v1/billing/me": {
+            "status": 200,
+            "body": {
+              "entitlement": [],
+              "name": "Edge Empty Tenant",
+              "status": "active",
+              "tax_exempt": "N",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e1"
+            }
+          },
+          "GET /plans/<t>/entitlement": [],
+          "subscriptions_after": []
+        },
+        "mongo": {
+          "entitlement()": [],
+          "tenant_profile()": [
+            {
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e1",
+              "name": "Edge Empty Tenant",
+              "status": "active",
+              "tax_exempt": "N"
+            }
+          ],
+          "GET /api/v1/billing/entitlement": [],
+          "GET /api/v1/billing/me": {
+            "status": 200,
+            "body": {
+              "entitlement": [],
+              "name": "Edge Empty Tenant",
+              "status": "active",
+              "tax_exempt": "N",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e1"
+            }
+          },
+          "GET /plans/<t>/entitlement": [],
+          "subscriptions_after": []
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-002",
+      "description": "unknown tenant and a date before the first subscription: empty results on both backends",
+      "backends": {
+        "oracle": {
+          "entitlement()": [],
+          "tenant_profile()": [],
+          "GET /plans/no-such-tenant/entitlement": [],
+          "entitlement() before first subscription": []
+        },
+        "mongo": {
+          "entitlement()": [],
+          "tenant_profile()": [],
+          "GET /plans/no-such-tenant/entitlement": [],
+          "entitlement() before first subscription": []
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-003",
+      "description": "unknown identity on /me bootstraps the tenant + cheapest active plan once, identically on both backends",
+      "backends": {
+        "oracle": {
+          "GET /api/v1/billing/me (first)": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-10-02",
+                  "included_units": "100",
+                  "monthly_fee": "49",
+                  "plan_code": "STARTER",
+                  "subscription_status": "active",
+                  "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+                  "tier": "starter"
+                }
+              ],
+              "name": "edge-new@example.com",
+              "status": "active",
+              "tax_exempt": "N",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2"
+            }
+          },
+          "second call identical": true,
+          "subscriptions_after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-10-02",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "tenant_profile()": [
+            {
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+              "name": "edge-new@example.com",
+              "status": "active",
+              "tax_exempt": "N"
+            }
+          ]
+        },
+        "mongo": {
+          "GET /api/v1/billing/me (first)": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-10-02",
+                  "included_units": "100",
+                  "monthly_fee": "49",
+                  "plan_code": "STARTER",
+                  "subscription_status": "active",
+                  "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+                  "tier": "starter"
+                }
+              ],
+              "name": "edge-new@example.com",
+              "status": "active",
+              "tax_exempt": "N",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2"
+            }
+          },
+          "second call identical": true,
+          "subscriptions_after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-10-02",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "tenant_profile()": [
+            {
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+              "name": "edge-new@example.com",
+              "status": "active",
+              "tax_exempt": "N"
+            }
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-004",
+      "description": "TRG_SUB_NO_UNCANCEL: change_plan over a cancelled subscription keeps it cancelled; hist pre-images (loaded + written) agree",
+      "backends": {
+        "oracle": {
+          "before": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "cancelled"
+            }
+          ],
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": "2026-03-31",
+              "status": "cancelled"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-04-01",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000005",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "status_cd": 10,
+              "hist_dt_format_ok": true
+            },
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000005",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "status_cd": 30,
+              "hist_dt_format_ok": true
+            }
+          ],
+          "entitlement(2026-03-31)": [
+            {
+              "tenant_id": "00000000-0000-0000-0000-000000000005",
+              "plan_code": "GROWTH",
+              "tier": "growth",
+              "monthly_fee": "149",
+              "included_units": "500",
+              "subscription_status": "cancelled",
+              "effective_on": "2026-03-31"
+            }
+          ],
+          "entitlement(2026-04-01)": [
+            {
+              "tenant_id": "00000000-0000-0000-0000-000000000005",
+              "plan_code": "STARTER",
+              "tier": "starter",
+              "monthly_fee": "49",
+              "included_units": "100",
+              "subscription_status": "active",
+              "effective_on": "2026-04-01"
+            }
+          ]
+        },
+        "mongo": {
+          "before": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "cancelled"
+            }
+          ],
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": "2026-03-31",
+              "status": "cancelled"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-04-01",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000005",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            },
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000005",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "status_cd": 30,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ],
+          "entitlement(2026-03-31)": [
+            {
+              "tenant_id": "00000000-0000-0000-0000-000000000005",
+              "plan_code": "GROWTH",
+              "tier": "growth",
+              "monthly_fee": "149",
+              "included_units": "500",
+              "subscription_status": "cancelled",
+              "effective_on": "2026-03-31"
+            }
+          ],
+          "entitlement(2026-04-01)": [
+            {
+              "tenant_id": "00000000-0000-0000-0000-000000000005",
+              "plan_code": "STARTER",
+              "tier": "starter",
+              "monthly_fee": "49",
+              "included_units": "100",
+              "subscription_status": "active",
+              "effective_on": "2026-04-01"
+            }
+          ]
+        }
+      },
+      "pass": true,
+      "notes": "hist row 1 is the loader's copy of the Oracle trigger row (histDt verbatim, histDate derived); hist row 2 is written by change_plan"
+    },
+    {
+      "id": "EDGE-005",
+      "description": "same-day change_plan: backends/oracle.change_plan first closes subscriptions with starts_on = effective_on (ends_on = effective_on - 1) before PKG_PLANS.sp_change_plan; the Mongo port must do the same",
+      "backends": {
+        "oracle": {
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": "2025-12-31",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true
+            }
+          ],
+          "open_subscriptions": 1,
+          "entitlement(2026-02-28).plan_code": [
+            "GROWTH"
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-01-01",
+              "2025-12-31",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-01-01",
+              null,
+              "active"
+            ]
+          ]
+        },
+        "mongo": {
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": "2025-12-31",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ],
+          "open_subscriptions": 1,
+          "entitlement(2026-02-28).plan_code": [
+            "GROWTH"
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-01-01",
+              "2025-12-31",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-01-01",
+              null,
+              "active"
+            ]
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-006",
+      "description": "repeating the same plan change: deterministic id collides (ORA-00001 / DuplicateKeyError) -> 503 on both, state unchanged",
+      "backends": {
+        "oracle": {
+          "first": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-11-16",
+                  "included_units": "2000",
+                  "monthly_fee": "499",
+                  "plan_code": "SCALE",
+                  "subscription_status": "active",
+                  "tenant_id": "00000000-0000-0000-0000-000000000001",
+                  "tier": "scale"
+                }
+              ],
+              "status": "changed"
+            }
+          },
+          "second": {
+            "status": 503,
+            "error": "legacy estate unavailable",
+            "detail (backend-specific, not compared)": "the Oracle billing estate is not reachable"
+          },
+          "rows_unchanged_by_second": true,
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": "2026-11-15",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "starts_on": "2026-11-16",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true
+            }
+          ]
+        },
+        "mongo": {
+          "first": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-11-16",
+                  "included_units": "2000",
+                  "monthly_fee": "499",
+                  "plan_code": "SCALE",
+                  "subscription_status": "active",
+                  "tenant_id": "00000000-0000-0000-0000-000000000001",
+                  "tier": "scale"
+                }
+              ],
+              "status": "changed"
+            }
+          },
+          "second": {
+            "status": 503,
+            "error": "legacy estate unavailable",
+            "detail (backend-specific, not compared)": "the MongoDB billing database is not reachable"
+          },
+          "rows_unchanged_by_second": true,
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": "2026-11-15",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "starts_on": "2026-11-16",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-007",
+      "description": "close+insert atomicity: when the new id already exists, neither backend leaves the open subscription closed or a stray hist row",
+      "backends": {
+        "oracle": {
+          "raised": "IntegrityError",
+          "rows_unchanged": true,
+          "hist_unchanged": true,
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-05-01",
+              "ends_on": "2026-05-31",
+              "status": "active"
+            }
+          ]
+        },
+        "mongo": {
+          "raised": "DuplicateKeyError",
+          "rows_unchanged": true,
+          "hist_unchanged": true,
+          "after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-01-01",
+              "ends_on": null,
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-05-01",
+              "ends_on": "2026-05-31",
+              "status": "active"
+            }
+          ]
+        }
+      },
+      "pass": true,
+      "notes": "Oracle: PL/SQL statement-level rollback of sp_change_plan; Mongo: session.with_transaction aborts"
+    },
+    {
+      "id": "EDGE-008",
+      "description": "decimal edges: 0.01 / 0.000001 and NUMBER(12,2)/(12,6) maxima load as exact Decimal128 and render identically; inactive plan hidden on both",
+      "backends": {
+        "oracle": {
+          "list_plans()": [
+            {
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "code": "EDGE",
+              "tier": "starter",
+              "monthly_fee": "0.01",
+              "included_units": "0",
+              "overage_rate": "0.000001"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "code": "STARTER",
+              "tier": "starter",
+              "monthly_fee": "49",
+              "included_units": "100",
+              "overage_rate": "0.055"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "code": "GROWTH",
+              "tier": "growth",
+              "monthly_fee": "149",
+              "included_units": "500",
+              "overage_rate": "0.035"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "code": "SCALE",
+              "tier": "scale",
+              "monthly_fee": "499",
+              "included_units": "2000",
+              "overage_rate": "0.02"
+            }
+          ],
+          "GET /api/v1/billing/plans": [
+            {
+              "included_units": "0",
+              "monthly_fee": "0.01",
+              "overage_rate": "0.000001",
+              "plan_code": "EDGE",
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "tier": "starter"
+            },
+            {
+              "included_units": "100",
+              "monthly_fee": "49",
+              "overage_rate": "0.055",
+              "plan_code": "STARTER",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "tier": "starter"
+            },
+            {
+              "included_units": "500",
+              "monthly_fee": "149",
+              "overage_rate": "0.035",
+              "plan_code": "GROWTH",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "tier": "growth"
+            },
+            {
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "overage_rate": "0.02",
+              "plan_code": "SCALE",
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "tier": "scale"
+            }
+          ],
+          "GET /plans": [
+            {
+              "code": "EDGE",
+              "included_units": "0",
+              "monthly_fee": "0.01",
+              "overage_rate": "0.000001",
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "tier": "starter"
+            },
+            {
+              "code": "STARTER",
+              "included_units": "100",
+              "monthly_fee": "49",
+              "overage_rate": "0.055",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "tier": "starter"
+            },
+            {
+              "code": "GROWTH",
+              "included_units": "500",
+              "monthly_fee": "149",
+              "overage_rate": "0.035",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "tier": "growth"
+            },
+            {
+              "code": "SCALE",
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "overage_rate": "0.02",
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "tier": "scale"
+            }
+          ]
+        },
+        "mongo": {
+          "list_plans()": [
+            {
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "code": "EDGE",
+              "tier": "starter",
+              "monthly_fee": "0.01",
+              "included_units": "0",
+              "overage_rate": "0.000001"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "code": "STARTER",
+              "tier": "starter",
+              "monthly_fee": "49",
+              "included_units": "100",
+              "overage_rate": "0.055"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "code": "GROWTH",
+              "tier": "growth",
+              "monthly_fee": "149",
+              "included_units": "500",
+              "overage_rate": "0.035"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "code": "SCALE",
+              "tier": "scale",
+              "monthly_fee": "499",
+              "included_units": "2000",
+              "overage_rate": "0.02"
+            }
+          ],
+          "GET /api/v1/billing/plans": [
+            {
+              "included_units": "0",
+              "monthly_fee": "0.01",
+              "overage_rate": "0.000001",
+              "plan_code": "EDGE",
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "tier": "starter"
+            },
+            {
+              "included_units": "100",
+              "monthly_fee": "49",
+              "overage_rate": "0.055",
+              "plan_code": "STARTER",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "tier": "starter"
+            },
+            {
+              "included_units": "500",
+              "monthly_fee": "149",
+              "overage_rate": "0.035",
+              "plan_code": "GROWTH",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "tier": "growth"
+            },
+            {
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "overage_rate": "0.02",
+              "plan_code": "SCALE",
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "tier": "scale"
+            }
+          ],
+          "GET /plans": [
+            {
+              "code": "EDGE",
+              "included_units": "0",
+              "monthly_fee": "0.01",
+              "overage_rate": "0.000001",
+              "plan_id": "e0000000-0000-0000-0000-0000000000p1",
+              "tier": "starter"
+            },
+            {
+              "code": "STARTER",
+              "included_units": "100",
+              "monthly_fee": "49",
+              "overage_rate": "0.055",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "tier": "starter"
+            },
+            {
+              "code": "GROWTH",
+              "included_units": "500",
+              "monthly_fee": "149",
+              "overage_rate": "0.035",
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "tier": "growth"
+            },
+            {
+              "code": "SCALE",
+              "included_units": "2000",
+              "monthly_fee": "499",
+              "overage_rate": "0.02",
+              "plan_id": "10000000-0000-0000-0000-000000000003",
+              "tier": "scale"
+            }
+          ]
+        }
+      },
+      "pass": true,
+      "mongo_stored_types": {
+        "EDGE": {
+          "monthlyFee": [
+            "Decimal128",
+            "0.01"
+          ],
+          "overageRate": [
+            "Decimal128",
+            "0.000001"
+          ],
+          "includedUnits": [
+            "Int64",
+            "0"
+          ]
+        },
+        "EDGE_INACTIVE": {
+          "monthlyFee": [
+            "Decimal128",
+            "9999999999.99"
+          ],
+          "overageRate": [
+            "Decimal128",
+            "999999.999999"
+          ],
+          "includedUnits": [
+            "Int64",
+            "2147483647"
+          ]
+        }
+      }
+    },
+    {
+      "id": "EDGE-009",
+      "description": "recon.py --mode local over the five U1 collections with subscriptions_hist rows present (dirty-date derived rule exercised)",
+      "backends": {
+        "fixture": {
+          "exit": 0,
+          "stdout": [
+            "recon fixture: verdict=pass checks=30 failed=[] -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.local_edge.recon.json",
+            "merge_evidence=False (fixture/local result: never merge evidence (tolerances.json#source.mode is live))"
+          ],
+          "stderr": [],
+          "verdict": "pass",
+          "run_mode": "fixture",
+          "merge_evidence": false,
+          "oracle_subscriptions_hist_rows": 2,
+          "subscriptions_hist_checks": [
+            {
+              "id": "subscriptions_hist.row_count",
+              "status": null,
+              "expected": 2,
+              "actual": 2
+            },
+            {
+              "id": "subscriptions_hist.keyed_presence",
+              "status": null,
+              "expected": {
+                "missing": 0,
+                "unexpected": 0
+              },
+              "actual": {
+                "missing": 0,
+                "unexpected": 0
+              }
+            },
+            {
+              "id": "subscriptions_hist.keyed_values",
+              "status": null,
+              "expected": 0,
+              "actual": 0
+            },
+            {
+              "id": "subscriptions_hist.money_decimal128",
+              "status": null,
+              "expected": 0,
+              "actual": 0
+            },
+            {
+              "id": "subscriptions_hist.fields_outside_mapping",
+              "status": null,
+              "expected": {},
+              "actual": {}
+            }
+          ]
+        }
+      },
+      "pass": true,
+      "report_path": "/home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.local_edge.recon.json"
+    },
+    {
+      "id": "EDGE-010",
+      "description": "quarantined rows: no U1 collection has a quarantine sibling; quarantine lives in later units and is listed unverified in the live report",
+      "backends": {
+        "quarantine_collections_in_mapping_spec": [
+          "invoice_feed_quarantine"
+        ],
+        "live_unverified_paths": [
+          "anomalies.dirty_dates: CUSTOMER_MASTER outside this run's collections; not evaluated",
+          "anomalies.eav_boolean_spellings: ENTITY_ATTR_VALUE outside this run's collections; not evaluated",
+          "anomalies.malformed_csv_lists: CUSTOMER_MASTER outside this run's collections; not evaluated",
+          "anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated",
+          "census_delta.CUSTOMER_MASTER: table is outside the mapping spec",
+          "census_delta.ENTITY_ATTR_VALUE: table is outside the mapping spec",
+          "census_delta.INVOICES: table is outside the mapping spec",
+          "census_delta.INVOICE_LINES: table is outside the mapping spec",
+          "census_delta.USAGE_EVENTS: table is outside the mapping spec"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-011",
+      "description": "facade path: new identity bootstrapped today, then POST /plan-change effective today -> one open subscription and identical entitlement on both backends",
+      "backends": {
+        "oracle": {
+          "bootstrap /me status": 200,
+          "plan-change": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-10-02",
+                  "included_units": "500",
+                  "monthly_fee": "149",
+                  "plan_code": "GROWTH",
+                  "subscription_status": "active",
+                  "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+                  "tier": "growth"
+                }
+              ],
+              "status": "changed"
+            }
+          },
+          "GET /entitlement after": [
+            {
+              "effective_on": "2026-10-02",
+              "included_units": "500",
+              "monthly_fee": "149",
+              "plan_code": "GROWTH",
+              "subscription_status": "active",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+              "tier": "growth"
+            }
+          ],
+          "subscriptions_after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-10-02",
+              "ends_on": "2026-10-01",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-10-02",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "open_subscriptions": 1,
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "3a073a81-0232-5696-b2c6-89b59e42d27a",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true
+            }
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-10-02",
+              "2026-10-01",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-10-02",
+              null,
+              "active"
+            ]
+          ]
+        },
+        "mongo": {
+          "bootstrap /me status": 200,
+          "plan-change": {
+            "status": 200,
+            "body": {
+              "entitlement": [
+                {
+                  "effective_on": "2026-10-02",
+                  "included_units": "500",
+                  "monthly_fee": "149",
+                  "plan_code": "GROWTH",
+                  "subscription_status": "active",
+                  "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+                  "tier": "growth"
+                }
+              ],
+              "status": "changed"
+            }
+          },
+          "GET /entitlement after": [
+            {
+              "effective_on": "2026-10-02",
+              "included_units": "500",
+              "monthly_fee": "149",
+              "plan_code": "GROWTH",
+              "subscription_status": "active",
+              "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
+              "tier": "growth"
+            }
+          ],
+          "subscriptions_after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-10-02",
+              "ends_on": "2026-10-01",
+              "status": "active"
+            },
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000002",
+              "starts_on": "2026-10-02",
+              "ends_on": null,
+              "status": "active"
+            }
+          ],
+          "open_subscriptions": 1,
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "3a073a81-0232-5696-b2c6-89b59e42d27a",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-10-02",
+              "2026-10-01",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-10-02",
+              null,
+              "active"
+            ]
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-013",
+      "description": "Fixture.probe canonical ordering (86c634ae) is a permutation of the raw rows and agrees with independent multiset equality on every static tenant",
+      "backends": {
+        "per_backend": {
+          "oracle": {
+            "00000000-0000-0000-0000-000000000001": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000002": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000003": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000004": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000005": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000006": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000007": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000008": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000009": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            }
+          },
+          "mongo": {
+            "00000000-0000-0000-0000-000000000001": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000002": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000003": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000004": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000005": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000006": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000007": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000008": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000009": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            }
+          }
+        },
+        "probe_equal_by_tenant": {
+          "00000000-0000-0000-0000-000000000001": true,
+          "00000000-0000-0000-0000-000000000002": true,
+          "00000000-0000-0000-0000-000000000003": true,
+          "00000000-0000-0000-0000-000000000004": true,
+          "00000000-0000-0000-0000-000000000005": true,
+          "00000000-0000-0000-0000-000000000006": true,
+          "00000000-0000-0000-0000-000000000007": true,
+          "00000000-0000-0000-0000-000000000008": true,
+          "00000000-0000-0000-0000-000000000009": true
+        },
+        "raw_multiset_equal_by_tenant": {
+          "00000000-0000-0000-0000-000000000001": true,
+          "00000000-0000-0000-0000-000000000002": true,
+          "00000000-0000-0000-0000-000000000003": true,
+          "00000000-0000-0000-0000-000000000004": true,
+          "00000000-0000-0000-0000-000000000005": true,
+          "00000000-0000-0000-0000-000000000006": true,
+          "00000000-0000-0000-0000-000000000007": true,
+          "00000000-0000-0000-0000-000000000008": true,
+          "00000000-0000-0000-0000-000000000009": true
+        }
+      },
+      "pass": true,
+      "notes": "sort key (starts_on, ends_on is None, ends_on, plan_id) omits status; two rows equal on all four would keep input order, which the deterministic md5 subscription id (tenant+plan+effective) makes unreachable through change_plan"
+    },
+    {
+      "id": "EDGE-012",
+      "description": "loader-carried subscriptions_hist row written by the Oracle trigger has a derived histDate",
+      "backends": {
+        "oracle_trigger_hist_dt_format": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') (TRG_SUBSCRIPTIONS_HIST, 01_tables.sql)",
+        "loader_copy": {
+          "histDt": "02-OCT-26 17:48:30",
+          "histDate_present": true,
+          "recon.parse_ddmonyy(histDt)": "None",
+          "backends.mongo.f_str2dt(histDt)": "2026-10-02"
+        },
+        "recon.DDMONYY_RE": "^(\\d{2})-([A-Z]{3})-(\\d{2})$",
+        "backends.mongo.DDMONYY_RE": "^(\\d{1,2})-([A-Z]{3})-(\\d{2})(?:\\s.*)?$"
+      },
+      "pass": true
+    }
+  ],
+  "verdict": "pass"
+}

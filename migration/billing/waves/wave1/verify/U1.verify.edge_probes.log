@@ -1,0 +1,98 @@
+WARN `--no-project` was provided, but no project was found
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 2.5.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 4.10.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(3) @ 3.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(4) @ 6.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(5) @ 4.25.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(6) @ 0.1.4 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(7) @ 50.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(8) @ 2.8.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(9) @ 1.9.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(10) @ 8.5.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(11) @ 2.2.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(12) @ 3.1.6 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(13) @ 3.0.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(14) @ 3.1.9 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(15) @ 26.1.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(16) @ 2025.9.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(17) @ 0.37.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(18) @ 2026.6.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(19) @ 1.17.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(20) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(21) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(24) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(22) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(23) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(27) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(25) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(26) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(28) @ 3.0 without checking dependencies    
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 176 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +71 ~0 =71, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-001: pass - tenant with no subscriptions: entitlement empty on both backends, /me does not bootstrap a subscription
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-002: pass - unknown tenant and a date before the first subscription: empty results on both backends
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-003: pass - unknown identity on /me bootstraps the tenant + cheapest active plan once, identically on both backends
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 176 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +1 ~0 =1
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 176 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +1 ~0 =1
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-004: pass - TRG_SUB_NO_UNCANCEL: change_plan over a cancelled subscription keeps it cancelled; hist pre-images (loaded + written) agree
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-005: pass - same-day change_plan: backends/oracle.change_plan first closes subscriptions with starts_on = effective_on (ends_on = effective_on - 1) before PKG_PLANS.sp_change_plan; the Mongo port must do the same
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-006: pass - repeating the same plan change: deterministic id collides (ORA-00001 / DuplicateKeyError) -> 503 on both, state unchanged
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 176 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +71 ~0 =71, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 176 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +71 ~0 =71, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-007: pass - close+insert atomicity: when the new id already exists, neither backend leaves the open subscription closed or a stray hist row
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 177 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +5 ~0 =5, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-008: pass - decimal edges: 0.01 / 0.000001 and NUMBER(12,2)/(12,6) maxima load as exact Decimal128 and render identically; inactive plan hidden on both
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 177 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +2 ~0 =2
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-009: pass - recon.py --mode local over the five U1 collections with subscriptions_hist rows present (dirty-date derived rule exercised)
+EDGE-010: pass - quarantined rows: no U1 collection has a quarantine sibling; quarantine lives in later units and is listed unverified in the live report
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-011: pass - facade path: new identity bootstrapped today, then POST /plan-change effective today -> one open subscription and identical entitlement on both backends
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+EDGE-013: pass - Fixture.probe canonical ordering (86c634ae) is a permutation of the raw rows and agrees with independent multiset equality on every static tenant
+EDGE-012: pass - loader-carried subscriptions_hist row written by the Oracle trigger has a derived histDate
+pass 1: 175 documents -> ow_tp_billing_20261001T233613Z codes: +32 ~0 =32, tenants: +70 ~0 =70, plans: +3 ~0 =3, subscriptions: +70 ~0 =70, subscriptions_hist: +0 ~0 =0
+indexes: 4 ensured on ow_tp_billing_20261001T233613Z
+edge probes pass (13/13) -> /home/ubuntu/repos/otterworks/migration/billing/waves/wave1/verify/U1.verify.edge_probes.json

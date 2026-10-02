@@ -1,0 +1,31 @@
+WARN `--no-project` was provided, but no project was found
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 4.10.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 2.5.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(3) @ 4.25.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(4) @ 0.1.4 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(5) @ 2.8.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(6) @ 50.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(7) @ 26.1.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(8) @ 2025.9.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(9) @ 0.37.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(10) @ 2026.6.3 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(11) @ 1.17.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(12) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(13) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(16) @ 2.1.1 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(14) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(15) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(19) @ 4.16.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(17) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(18) @ 3.0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(20) @ 3.0 without checking dependencies    
+Downloading cryptography (4.5MiB)
+Downloading pymongo (1.8MiB)
+Downloading oracledb (2.2MiB)
+ Downloaded pymongo
+ Downloaded oracledb
+ Downloaded cryptography
+Installed 14 packages in 8ms
+recon live: verdict=pass checks=30 failed=[] -> migration/billing/waves/wave1/verify/U1.verify.live.recon.json
+merge_evidence=True (live recon report)
