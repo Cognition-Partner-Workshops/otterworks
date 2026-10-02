@@ -1,5 +1,6 @@
 package com.otterworks.notification.routes
 
+import com.otterworks.notification.health.TableStartupCheck
 import com.otterworks.notification.model.NotificationPreferenceRequest
 import com.otterworks.notification.model.PaginatedResponse
 import com.otterworks.notification.model.UnreadCountResponse
@@ -29,6 +30,9 @@ import org.koin.ktor.ext.inject
 data class HealthResponse(val status: String, val service: String)
 
 @Serializable
+data class ReadinessResponse(val status: String, val service: String, val table: String)
+
+@Serializable
 data class ErrorResponse(val error: String)
 
 @Serializable
@@ -37,10 +41,32 @@ data class MarkAllReadResponse(val markedCount: Int)
 fun Application.configureRouting(prometheusRegistry: PrometheusMeterRegistry) {
     val notificationService by inject<NotificationService>()
     val webSocketManager by inject<WebSocketManager>()
+    val tableStartupCheck by inject<TableStartupCheck>()
 
     routing {
         get("/health") {
             call.respond(HealthResponse(status = "healthy", service = "notification-service"))
+        }
+
+        get("/ready") {
+            if (tableStartupCheck.isReady) {
+                call.respond(
+                    ReadinessResponse(
+                        status = "ready",
+                        service = "notification-service",
+                        table = tableStartupCheck.tableName,
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.ServiceUnavailable,
+                    ReadinessResponse(
+                        status = "unready",
+                        service = "notification-service",
+                        table = tableStartupCheck.tableName,
+                    )
+                )
+            }
         }
 
         get("/metrics") {

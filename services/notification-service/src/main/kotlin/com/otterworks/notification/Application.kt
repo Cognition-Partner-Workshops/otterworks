@@ -6,6 +6,7 @@ import aws.sdk.kotlin.services.sqs.SqsClient
 import aws.smithy.kotlin.runtime.net.url.Url
 import com.otterworks.notification.config.AppConfig
 import com.otterworks.notification.consumer.SqsConsumer
+import com.otterworks.notification.health.TableStartupCheck
 import com.otterworks.notification.plugins.configureMonitoring
 import io.micrometer.core.instrument.MeterRegistry
 import com.otterworks.notification.repository.NotificationRepository
@@ -52,9 +53,12 @@ fun Application.module(config: AppConfig = AppConfig.load()) {
     configureDependencyInjection(config, prometheusRegistry)
     configureRouting(prometheusRegistry)
 
+    val tableStartupCheck by inject<TableStartupCheck>()
     val sqsConsumer by inject<SqsConsumer>()
     launch {
-        sqsConsumer.startPolling()
+        if (tableStartupCheck.run()) {
+            sqsConsumer.startPolling()
+        }
     }
 
     logger.info { "Notification Service started on port ${config.port}" }
@@ -132,6 +136,7 @@ fun Application.configureDependencyInjection(
 
                 singleOf(::WebSocketManager)
 
+                single { TableStartupCheck(get<DynamoDbClient>(), config.dynamoDbTableNotifications) }
                 single { NotificationRepository(get<DynamoDbClient>(), get<AppConfig>()) }
                 single { EmailSender(get<SesClient>(), get<AppConfig>()) }
                 single {

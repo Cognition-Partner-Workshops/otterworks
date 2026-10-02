@@ -37,6 +37,10 @@ healthCheck:
   path: /health
   port: 8086
 
+readinessCheck:
+  path: /ready
+  port: 8086
+
 monitoring:
   enabled: true
   path: /metrics
