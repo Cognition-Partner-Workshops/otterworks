@@ -11,7 +11,7 @@ description: >
 
 # AWS cloud worker on OtterWorks
 
-This skill backs the `!aws_cloud_worker` playbook and the persona sessions of the `aws-cloud-worker` demo. Every command a session needs is on this page. The harness lives in `cloudworker/`, the fault and both gates are recorded in `cloudworker/scenario.yaml`, and the demo runs in the `cloud-worker` tenant (namespace `otterworks-cloud-worker`, web host `t-cloud-worker.demo.otterworks.app`, API host `api-t-cloud-worker.demo.otterworks.app`) in `us-east-1` on cluster `otterworks-dev`.
+This skill backs the `!aws_cloud_worker` playbook and the persona sessions of the `aws-cloud-worker` demo. Every command a session needs is on this page. The harness lives in `cloudworker/`, the fault and both gates are recorded in `cloudworker/scenario.yaml`, and the demo runs in the `cloud-worker` tenant (namespace `otterworks-cloud-worker`, web host `t-cloud-worker.otterworks.app`, API host `api-t-cloud-worker.otterworks.app`) in `us-east-1` on cluster `otterworks-dev`.
 
 The event path runs from `file-service` to SNS topic `otterworks-cw-events`, then to SQS queue `otterworks-cw-notifications`, then to `notification-service`, which writes DynamoDB table `otterworks-cw-notifications`. After 3 failed receives a message moves to DLQ `otterworks-cw-notifications-dlq`. Alarm `otterworks-cw-notifications-dlq-depth` goes to `ALARM` when the DLQ holds 1 message or more, and EventBridge rule `otterworks-cw-dlq-alarm-to-devin` posts the page to the Devin webhook.
 
