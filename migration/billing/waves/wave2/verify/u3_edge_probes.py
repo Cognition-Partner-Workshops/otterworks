@@ -463,6 +463,8 @@ def main(argv=None):
     p.add_argument("--oracle-dsn-env", default="OW_TP_ORACLE_FIXTURE_DSN")
     p.add_argument("--mongo-uri-env", default="OW_TP_MONGO_FIXTURE_URI")
     p.add_argument("--out", default=str(HERE / "U3.verify.edge_probes.json"))
+    p.add_argument("--accept", action="append", default=[], metavar="PROBE=DECISION",
+                   help="probe whose divergence the manager ruled an accepted behavior difference (plan decision id)")
     args = p.parse_args(argv)
     root = Path(args.repo_root).resolve()
     setup_paths(root)
@@ -475,16 +477,23 @@ def main(argv=None):
         probes.run(Path(args.out).parent)
     except Exception as exc:  # keep the probes that did run as evidence
         probes.record("EDGE-U3-ABORT", f"probe run aborted: {type(exc).__name__}: {str(exc)[:200]}", {}, False)
+    accepted = dict(a.split("=", 1) for a in args.accept)
+    for r in probes.results:
+        if not r["pass"] and r["id"] in accepted:
+            r["accepted_behavior_difference"] = accepted[r["id"]]
+    blocking = [r["id"] for r in probes.results if not r["pass"] and r["id"] not in accepted]
     report = {
         "kind": "u3-edge-probes", "unit": "U3", "run_mode": "fixture", "merge_evidence": False,
+        "accepted_behavior_differences": accepted, "blocking_failures": blocking,
         "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "code_under_test": {"repo_root": str(root), "head": head},
         "source": {"oracle": f"local fixture {probes.fixture.oracle_host}", "mongo": f"local fixture, database {probes.fixture.database}"},
         "probes": probes.results,
-        "verdict": "pass" if all(r["pass"] for r in probes.results) else "fail",
+        "verdict": "pass" if not blocking else "fail",
     }
     Path(args.out).write_text(json.dumps(report, indent=2, default=str) + "\n")
-    print(f"edge probes {report['verdict']} ({sum(r['pass'] for r in probes.results)}/{len(probes.results)}) -> {args.out}")
+    print(f"edge probes {report['verdict']} ({sum(r['pass'] for r in probes.results)}/{len(probes.results)} identical, "
+          f"accepted differences {sorted(set(accepted) & {r['id'] for r in probes.results if not r['pass']})}) -> {args.out}")
     return 0 if report["verdict"] == "pass" else 1
 
 

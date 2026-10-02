@@ -1,0 +1,733 @@
+{
+  "kind": "u3-edge-probes",
+  "unit": "U3",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "accepted_behavior_differences": {
+    "EDGE-U3-007": "d-refinalize-seeded-period"
+  },
+  "blocking_failures": [],
+  "generated_at": "2026-10-02T19:26:59Z",
+  "code_under_test": {
+    "repo_root": "/home/ubuntu/wt/pr1788",
+    "head": "3843e73141fd0c69a992f64195906074d74699cd"
+  },
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "probes": [
+    {
+      "id": "EDGE-U3-001",
+      "description": "empty tenant (plan, no events): summary [], events [], rating used 0 / overage 0 on both; tenant with no subscription: quota and overage NULL, billable 0 (NVL) on both; GET /usage and POST /api/rating/preview identical",
+      "backends": {
+        "plan_tenant_no_events": {
+          "oracle": {
+            "status": 200,
+            "summary": [],
+            "rating": {
+              "used_units": "0",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            },
+            "events": []
+          },
+          "mongo": {
+            "status": 200,
+            "summary": [],
+            "rating": {
+              "used_units": "0",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            },
+            "events": []
+          }
+        },
+        "plan_tenant_preview": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "0",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "0",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            }
+          }
+        },
+        "no_subscription_preview": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "0",
+              "quota_units": null,
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": null
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "0",
+              "quota_units": null,
+              "rollover_units": "0",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": null
+            }
+          }
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-002",
+      "description": "TO_CHAR(occurred_at, 'YYYYMMDD') window: 00:00:00 on period_start and 23:59:59 on period_end count, the second before and the midnight after do not; events listed occurred_at DESC, id DESC on a timestamp tie; identical on both",
+      "backends": {
+        "oracle": {
+          "status": 200,
+          "summary": [
+            {
+              "event_count": "1",
+              "kind": "api",
+              "units": "3"
+            },
+            {
+              "event_count": "1",
+              "kind": "compute",
+              "units": "5"
+            },
+            {
+              "event_count": "1",
+              "kind": "storage",
+              "units": "4"
+            }
+          ],
+          "rating": {
+            "used_units": "12",
+            "quota_units": "100",
+            "rollover_units": "0",
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "second_tier_units": "0",
+            "overage_amount": "0"
+          },
+          "events": [
+            [
+              "e3000000-0000-0000-0000-000000000004",
+              "2026-02-28T23:59:59",
+              "5",
+              "compute"
+            ],
+            [
+              "e3000000-0000-0000-0000-000000000003",
+              "2026-02-28T23:59:59",
+              "4",
+              "storage"
+            ],
+            [
+              "e3000000-0000-0000-0000-000000000002",
+              "2026-02-01",
+              "3",
+              "api"
+            ]
+          ]
+        },
+        "mongo": {
+          "status": 200,
+          "summary": [
+            {
+              "event_count": "1",
+              "kind": "api",
+              "units": "3"
+            },
+            {
+              "event_count": "1",
+              "kind": "compute",
+              "units": "5"
+            },
+            {
+              "event_count": "1",
+              "kind": "storage",
+              "units": "4"
+            }
+          ],
+          "rating": {
+            "used_units": "12",
+            "quota_units": "100",
+            "rollover_units": "0",
+            "billable_units": "0",
+            "first_tier_units": "0",
+            "second_tier_units": "0",
+            "overage_amount": "0"
+          },
+          "events": [
+            [
+              "e3000000-0000-0000-0000-000000000004",
+              "2026-02-28T23:59:59",
+              "5",
+              "compute"
+            ],
+            [
+              "e3000000-0000-0000-0000-000000000003",
+              "2026-02-28T23:59:59",
+              "4",
+              "storage"
+            ],
+            [
+              "e3000000-0000-0000-0000-000000000002",
+              "2026-02-01",
+              "3",
+              "api"
+            ]
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-003",
+      "description": "rollover window ADD_MONTHS(period_start, -3) from a month-end start (2026-05-31 -> 2026-02-28 inclusive, 2026-02-27 out, the period's own start out): prior rollover summed identically on both; port's _add_months carries Oracle's last-day rule",
+      "backends": {
+        "oracle": {
+          "status": 200,
+          "rating": {
+            "used_units": "150",
+            "quota_units": "100",
+            "rollover_units": "41",
+            "billable_units": "9",
+            "first_tier_units": "9",
+            "second_tier_units": "0",
+            "overage_amount": "0.5"
+          }
+        },
+        "mongo": {
+          "status": 200,
+          "rating": {
+            "used_units": "150",
+            "quota_units": "100",
+            "rollover_units": "41",
+            "billable_units": "9",
+            "first_tier_units": "9",
+            "second_tier_units": "0",
+            "overage_amount": "0.5"
+          }
+        }
+      },
+      "pass": true,
+      "expected_rollover": "41"
+    },
+    {
+      "id": "EDGE-U3-004",
+      "description": "money edges: ROUND half away from zero on the 2-dp overage (5.555 -> 5.56) and on the suspension-prorated units (2.5 -> 3, overage 0.28 * 0.5 -> 0.14), a NUMBER(12,6) rate (0.123456) small and large (185177.77); identical on both",
+      "backends": {
+        "half_cent_tier": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "201",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "101",
+              "first_tier_units": "101",
+              "second_tier_units": "0",
+              "overage_amount": "5.56"
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "201",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "101",
+              "first_tier_units": "101",
+              "second_tier_units": "0",
+              "overage_amount": "5.56"
+            }
+          }
+        },
+        "suspension_half_unit": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "105",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "3",
+              "first_tier_units": "5",
+              "second_tier_units": "0",
+              "overage_amount": "0.14"
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "105",
+              "quota_units": "100",
+              "rollover_units": "0",
+              "billable_units": "3",
+              "first_tier_units": "5",
+              "second_tier_units": "0",
+              "overage_amount": "0.14"
+            }
+          }
+        },
+        "rate6_small": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "2",
+              "quota_units": "1",
+              "rollover_units": "0",
+              "billable_units": "1",
+              "first_tier_units": "1",
+              "second_tier_units": "0",
+              "overage_amount": "0.12"
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "2",
+              "quota_units": "1",
+              "rollover_units": "0",
+              "billable_units": "1",
+              "first_tier_units": "1",
+              "second_tier_units": "0",
+              "overage_amount": "0.12"
+            }
+          }
+        },
+        "rate6_large": {
+          "oracle": {
+            "status": 200,
+            "rating": {
+              "used_units": "1000001",
+              "quota_units": "1",
+              "rollover_units": "0",
+              "billable_units": "1000000",
+              "first_tier_units": "101",
+              "second_tier_units": "999899",
+              "overage_amount": "185177.77"
+            }
+          },
+          "mongo": {
+            "status": 200,
+            "rating": {
+              "used_units": "1000001",
+              "quota_units": "1",
+              "rollover_units": "0",
+              "billable_units": "1000000",
+              "first_tier_units": "101",
+              "second_tier_units": "999899",
+              "overage_amount": "185177.77"
+            }
+          }
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-005",
+      "description": "sp_finalize_rating for a tenant with no covering subscription fails on both (rating_results.subscription_id NOT NULL / port's ValueError) and leaves no rating_periods row/document (statement-level rollback / aborted transaction); the autonomous log_msg 'compute' audit row survives the rollback on both",
+      "backends": {
+        "response": {
+          "oracle": {
+            "status": 500,
+            "body": null
+          },
+          "mongo": {
+            "status": 500,
+            "body": null
+          }
+        },
+        "periods_before": {
+          "oracle": [],
+          "mongo": []
+        },
+        "periods_after": {
+          "oracle": [],
+          "mongo": []
+        },
+        "audit_compute_rows_before": {
+          "oracle": 10,
+          "mongo": 1
+        },
+        "audit_compute_rows_after": {
+          "oracle": 11,
+          "mongo": 2
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-006",
+      "description": "re-finalising a period the module created (md5 ids): INSERT falls back to UPDATE on both, used/billable/rollover refreshed, quota/subscription/created_at kept, result id = md5(period id); identical on both",
+      "backends": {
+        "first": {
+          "response": {
+            "oracle": {
+              "status": 200,
+              "body": {
+                "status": "finalized"
+              }
+            },
+            "mongo": {
+              "status": 200,
+              "body": {
+                "status": "finalized"
+              }
+            }
+          }
+        },
+        "second": {
+          "response": {
+            "oracle": {
+              "status": 200,
+              "body": {
+                "status": "finalized"
+              }
+            },
+            "mongo": {
+              "status": 200,
+              "body": {
+                "status": "finalized"
+              }
+            }
+          }
+        },
+        "after_first": {
+          "oracle": [
+            {
+              "period_id": "534e30da-e837-7df6-0c75-c5d756c64b93",
+              "period_end": "2026-04-30",
+              "result_id": "db7ce048-a40d-256b-fcff-45b004f6165d",
+              "subscription_id": "e3000000-0000-0000-0000-0000000000b1",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-04-30"
+            }
+          ],
+          "mongo": [
+            {
+              "period_id": "534e30da-e837-7df6-0c75-c5d756c64b93",
+              "period_end": "2026-04-30",
+              "result_id": "db7ce048-a40d-256b-fcff-45b004f6165d",
+              "subscription_id": "e3000000-0000-0000-0000-0000000000b1",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-04-30"
+            }
+          ]
+        },
+        "after_second": {
+          "oracle": [
+            {
+              "period_id": "534e30da-e837-7df6-0c75-c5d756c64b93",
+              "period_end": "2026-04-30",
+              "result_id": "db7ce048-a40d-256b-fcff-45b004f6165d",
+              "subscription_id": "e3000000-0000-0000-0000-0000000000b1",
+              "used": "50",
+              "quota": "100",
+              "rollover": "50",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-04-30"
+            }
+          ],
+          "mongo": [
+            {
+              "period_id": "534e30da-e837-7df6-0c75-c5d756c64b93",
+              "period_end": "2026-04-30",
+              "result_id": "db7ce048-a40d-256b-fcff-45b004f6165d",
+              "subscription_id": "e3000000-0000-0000-0000-0000000000b1",
+              "used": "50",
+              "quota": "100",
+              "rollover": "50",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-04-30"
+            }
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-007",
+      "description": "re-finalising a seeded period whose id is not f_md5_uuid(tenant || period_start) (all 3 live rating_periods are such rows): Oracle fails with ORA-02291 and changes nothing; the port must fail the same way or the backends diverge",
+      "backends": {
+        "response": {
+          "oracle": {
+            "status": 500,
+            "body": null
+          },
+          "mongo": {
+            "status": 200,
+            "body": {
+              "status": "finalized"
+            }
+          }
+        },
+        "before": {
+          "oracle": [
+            {
+              "period_id": "40000000-0000-0000-0000-000000000002",
+              "period_end": "2026-01-31",
+              "result_id": "50000000-0000-0000-0000-000000000002",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-01-31"
+            }
+          ],
+          "mongo": [
+            {
+              "period_id": "40000000-0000-0000-0000-000000000002",
+              "period_end": "2026-01-31",
+              "result_id": "50000000-0000-0000-0000-000000000002",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-01-31"
+            }
+          ]
+        },
+        "after": {
+          "oracle": [
+            {
+              "period_id": "40000000-0000-0000-0000-000000000002",
+              "period_end": "2026-01-31",
+              "result_id": "50000000-0000-0000-0000-000000000002",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-01-31"
+            }
+          ],
+          "mongo": [
+            {
+              "period_id": "40000000-0000-0000-0000-000000000002",
+              "period_end": "2026-01-31",
+              "result_id": "50000000-0000-0000-0000-000000000002",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "used": "0",
+              "quota": "100",
+              "rollover": "100",
+              "billable": "0",
+              "overage": "0",
+              "created": "2026-01-31"
+            }
+          ]
+        },
+        "seeded_period_id_is_md5": false
+      },
+      "pass": false,
+      "notes": "DIVERGENCE: Oracle 500 (sp_finalize_rating recomputes v_period_id = f_md5_uuid(tenant || start) after the DUP_VAL_ON_INDEX fallback, so its rating_results INSERT hits fk_rr_period: ORA-02291), rows unchanged; the port finalises by the existing document's _id and returns 200, recomputing the embedded result in place. Repro: POST /api/rating/finalize {tenant_id: 00000000-0000-0000-0000-000000000001, period_start: 2026-01-01, period_end: 2026-01-31} on each backend after tp-u3-load",
+      "accepted_behavior_difference": "d-refinalize-seeded-period"
+    },
+    {
+      "id": "EDGE-U3-008",
+      "description": "TRG_USAGE_EVENTS_CHECK equivalents: units 0/NULL (ORA-20001) and an unknown kind (ORA-20002) are rejected by the port with the same messages and nothing written; kind lookup case-insensitive like LOWER(code_desc); a USAGE_KIND code 4 'gpu' outside the DECODE is 'UNKNOWN' in the summary and 'gpu' in the event list on both",
+      "backends": {
+        "oracle": {
+          "units_zero": 20001,
+          "units_null": 20001,
+          "unknown_kind": 20002
+        },
+        "mongo": {
+          "units_zero": "UsageEventRejected: units must be > 0",
+          "units_null": "UsageEventRejected: units must be > 0",
+          "unknown_kind": "UsageEventRejected: unknown usage kind gpu",
+          "kind_case_insensitive": 1,
+          "event_after_rejections": 0
+        },
+        "facade_status": {
+          "oracle": {
+            "unknown_kind": 400,
+            "units_zero": 400
+          },
+          "mongo": {
+            "unknown_kind": 400,
+            "units_zero": 400
+          }
+        },
+        "kind_4_gpu": {
+          "oracle": {
+            "status": 200,
+            "summary": [
+              {
+                "event_count": "1",
+                "kind": "UNKNOWN",
+                "units": "9"
+              }
+            ],
+            "rating": {
+              "used_units": "9",
+              "quota_units": "100",
+              "rollover_units": "200",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            },
+            "events": [
+              [
+                "e3000000-0000-0000-0000-00000000000c",
+                "2026-07-10T10:00:00",
+                "9",
+                "gpu"
+              ]
+            ]
+          },
+          "mongo": {
+            "status": 200,
+            "summary": [
+              {
+                "event_count": "1",
+                "kind": "UNKNOWN",
+                "units": "9"
+              }
+            ],
+            "rating": {
+              "used_units": "9",
+              "quota_units": "100",
+              "rollover_units": "200",
+              "billable_units": "0",
+              "first_tier_units": "0",
+              "second_tier_units": "0",
+              "overage_amount": "0"
+            },
+            "events": [
+              [
+                "e3000000-0000-0000-0000-00000000000c",
+                "2026-07-10T10:00:00",
+                "9",
+                "gpu"
+              ]
+            ]
+          }
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-009",
+      "description": "loader embedding: a rating period without a result carries no `result` subdocument, NUMBER(12,2) overage extremes load as exact Decimal128; recon.py --mode local over usage_events,rating_periods passes with the edge rows present",
+      "backends": {
+        "mongo": {
+          "loader_exit": 0,
+          "period_without_result_has_no_result_key": true,
+          "overage_max_decimal128": "9999999999.99",
+          "overage_min_decimal128": "0.01",
+          "overage_type": "Decimal128",
+          "local_recon": {
+            "exit": 0,
+            "verdict": "pass",
+            "run_mode": "fixture",
+            "merge_evidence": false,
+            "checks": 20,
+            "failed": [],
+            "stderr": []
+          }
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "EDGE-U3-010",
+      "description": "write scope: the U3 loader writes only usage_events and rating_periods (plus spec indexes) in the target database and touches no other database; on the Mongo backend GET /usage + preview write only log_msg audit rows (2, as PKG_RATING does), finalize writes one rating_periods document + 2 audit rows, ingest writes one usage_events document and nothing else",
+      "backends": {
+        "mongo": {
+          "loader_exit": 0,
+          "scratch_collections": [
+            "rating_periods",
+            "usage_events"
+          ],
+          "indexes": {
+            "rating_periods": [
+              "_id_",
+              "uq_rating_periods_tenant_start"
+            ],
+            "usage_events": [
+              "_id_",
+              "ix_usage_events_tenant_occurred"
+            ]
+          },
+          "other_databases_touched": [],
+          "reads_changed": {
+            "billing_audit_log": 2
+          },
+          "finalize_changed": {
+            "rating_periods": 1,
+            "billing_audit_log": 2
+          },
+          "ingest_changed": {
+            "usage_events": 1
+          }
+        }
+      },
+      "pass": true,
+      "notes": "billing_audit_log is PKG_OW_UTIL.log_msg's collection (U1 port, wave 1); U5 owns its load"
+    },
+    {
+      "id": "EDGE-U3-011",
+      "description": "fixture restored: static tenants reset (rating_parity.Fixture.reset), no probe tenants/plans/codes/events/periods left on either side",
+      "backends": {
+        "both": {
+          "tenants": 0,
+          "plans": 0,
+          "subscriptions": 0,
+          "usage_events": 0,
+          "rating_periods": 0,
+          "codes_usage_kind_4": 0,
+          "mongo_edge_docs": 0
+        }
+      },
+      "pass": true
+    }
+  ],
+  "verdict": "pass"
+}

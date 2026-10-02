@@ -10,6 +10,7 @@ everything that writes ran on the local fixtures only (`make oracle-billing-up`,
 |------|----|---------------|------------|--------|-------------|---------|
 | U2 customers (`customers,customers_hist`) | #1786 | `ad18ed0410b7b7a32de9f45467bdab9d84906d16` | pass, 28/28, merge_evidence true | customer parity pass | 12/12 | PASS |
 | U3 usage + rating (`rating_periods,usage_events`) | #1788 | `5dd059d3369c25ffe38f9db0442f9960e7f0bcb5` | pass, 20/20, merge_evidence true | RATING-001..008 pass | 10/11 (EDGE-U3-007 divergence) | PASS on merge-evidence axes; one behavioural divergence reported |
+| U3 rebased onto run branch (incl. U2) | #1788 | `3843e73141fd0c69a992f64195906074d74699cd` | fixture recon pass 20/20; live recon + loader-vs-Atlas pending (live Oracle host unreachable at run time) | RATING-001..008 pass, U2 customer parity pass | 10/11 identical, EDGE-U3-007 accepted (d-refinalize-seeded-period) | pending the two live axes |
 
 ## Per-batch procedure
 
@@ -52,7 +53,32 @@ everything that writes ran on the local fixtures only (`make oracle-billing-up`,
   `POST /api/rating/finalize {"tenant_id": "00000000-0000-0000-0000-000000000001", "period_start": "2026-01-01", "period_end": "2026-01-31"}`
   on each backend after `make tp-u3-load`.
 - Note for U2+U3 merged trees: `rating_parity.py` asserts `/api/v1/billing/customer` returns 501 on mongo, which
-  is true only before U2 lands.
+  is true only before U2 lands. Resolved by the rebase below (the probe now targets the still-unported
+  `/invoices` and `/admin/dunning` routes).
+- Manager ruling: EDGE-U3-007 is keep-port, listed as a behavior difference under plan decision
+  `d-refinalize-seeded-period`; it does not block U3.
+
+### U3 rebased head `3843e73141fd0c69a992f64195906074d74699cd` (delta from `5dd059d3`)
+
+Diff review: `app/backends/mongo.py`, `app/facade.py`, `tests/test_facade.py`, `tests/test_mongo.py` carry the same
+U3 hunks (offsets only, now layered over U2); `rating_parity.py` drops the stale `/customer` 501 probe; the U3-specific
+`loaders/oracle_to_mongo.py#build_documents` is replaced by U2's generalised one, so `rating_periods.result` is now
+embedded through `recon.load_documents`. `recon.py`, `tolerances.json`, `mapping_spec.json` unchanged.
+
+- `U3r.verify.u3_load.json` + `U3r.verify.fixture.recon.json`: `make tp-u3-load` through the new loader (817
+  usage_events, 3 rating_periods with 3 embedded results, pass 2 no-op) then `recon.py run --mode local` 20/20,
+  validates; check ids, results and anomaly sets identical to the worker's `U3.fixture.recon.json`.
+- `U3r.verify.rating_parity.json`: RATING-001..008 pass on both backends; `/invoices`, `/admin/dunning` 501 on mongo.
+- `U3r.verify.customer_parity.json` (`make tp-u2-parity`): U2's customer path still passes at this head
+  (4 tenants, 50/50 dirty-date, 31/31 malformed-CSV rows identical).
+- `U3r.verify.edge_probes.json`: 10/11 identical; EDGE-U3-007 recorded as `accepted_behavior_difference`
+  (`--accept EDGE-U3-007=d-refinalize-seeded-period`), `blocking_failures: []`.
+- pytest (`services/legacy-billing`, fixture Mongo set): 78 passed.
+- `loader_vs_atlas.py`: read-only comparison of the head's loader output (built from the live Oracle read-only
+  principal) against the documents already in Atlas for `rating_periods` (incl. embedded `result`) and
+  `usage_events`; `find()` only, no writes. Result file `U3r.verify.loader_vs_atlas.json` once the live Oracle host
+  answers again (TCP connect timed out from ~19:15Z on 2026-10-02); same for the fresh live recon
+  `U3r.verify.live.recon.json`.
 
 ## Re-running
 
@@ -61,5 +87,10 @@ make tp-u3-parity REPORT=/tmp/U3.rating_parity.json
 TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN=... OW_TP_MONGO_FIXTURE_URI=... \
   uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with flask==3.1.1 \
     --with pyyaml==6.0.2 --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4 \
-    python3 migration/billing/waves/wave2/verify/u3_edge_probes.py --repo-root <PR checkout>
+    python3 migration/billing/waves/wave2/verify/u3_edge_probes.py --repo-root <PR checkout> \
+      --accept EDGE-U3-007=d-refinalize-seeded-period
+uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with jsonschema==4.25.1 \
+  --with rfc3339-validator==0.1.4 \
+  python3 migration/billing/waves/wave2/verify/loader_vs_atlas.py --repo-root <PR checkout> \
+    --collections rating_periods,usage_events --out /tmp/U3.loader_vs_atlas.json
 ```

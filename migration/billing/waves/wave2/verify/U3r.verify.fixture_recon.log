@@ -1,0 +1,16 @@
+pass 1: 820 documents -> ow_tp_billing_20261001T233613Z usage_events: +817 ~0 =817, rating_periods: +3 ~0 =3
+pass 2: 820 documents -> ow_tp_billing_20261001T233613Z usage_events: +0 ~0 =817, rating_periods: +0 ~0 =3  (no-op)
+indexes: 2 ensured on ow_tp_billing_20261001T233613Z
+report -> /home/ubuntu/wt/out/U3r.verify.u3_load.json
+load exit 0
+recon fixture: verdict=pass checks=20 failed=[] -> /home/ubuntu/wt/out/U3r.verify.fixture.recon.json
+merge_evidence=False (fixture/local result: never merge evidence (tolerances.json#source.mode is live))
+recon exit 0
+validated 1 recon file(s)
+PASS
+verdict pass fixture summary {'checks': 20, 'pass': 20, 'fail': 0, 'skipped': 0, 'failed_check_ids': []}
+check ids equal: True 20
+Traceback (most recent call last):
+  File "<stdin>", line 7, in <module>
+  File "<stdin>", line 4, in st
+KeyError: 'status'
