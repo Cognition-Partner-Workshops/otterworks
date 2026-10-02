@@ -1,0 +1,52 @@
+{
+  "ok": true,
+  "scenarios": [
+    {
+      "scenario": "faithful",
+      "expected": "pass",
+      "verdict": "pass",
+      "ok": true,
+      "report": "/tmp/recon-selftest-final/selftest-faithful.recon.json",
+      "failed_checks": [],
+      "schema_errors": []
+    },
+    {
+      "scenario": "dropped_row",
+      "expected": "fail",
+      "verdict": "fail",
+      "ok": true,
+      "report": "/tmp/recon-selftest-final/selftest-dropped_row.recon.json",
+      "failed_checks": [
+        "invoice_feed.row_count",
+        "invoice_feed.keyed_presence",
+        "invoice_feed.lines.row_count"
+      ],
+      "schema_errors": []
+    },
+    {
+      "scenario": "changed_amount",
+      "expected": "fail",
+      "verdict": "fail",
+      "ok": true,
+      "report": "/tmp/recon-selftest-final/selftest-changed_amount.recon.json",
+      "failed_checks": [
+        "customers.keyed_values"
+      ],
+      "schema_errors": []
+    },
+    {
+      "scenario": "float_rounded_amount",
+      "expected": "fail",
+      "verdict": "fail",
+      "ok": true,
+      "report": "/tmp/recon-selftest-final/selftest-float_rounded_amount.recon.json",
+      "failed_checks": [
+        "invoice_feed.lines.keyed_values",
+        "invoice_feed.lines.money_decimal128"
+      ],
+      "schema_errors": []
+    }
+  ],
+  "seconds": 161.7,
+  "target": "mongod mongodb://127.0.0.1:27117"
+}
