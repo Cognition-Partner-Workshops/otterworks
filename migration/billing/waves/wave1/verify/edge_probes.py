@@ -92,6 +92,17 @@ class Probes:
     def rows(self, backend, tenant_id):
         return self.fixture.probe(backend, tenant_id)
 
+    def raw_rows(self, backend, tenant_id):
+        """Independent of plans_parity.Fixture.probe/_ordered: unordered (plan_id, starts_on, ends_on, status) multiset."""
+        from collections import Counter
+        if backend == "oracle":
+            got = self.oracle([], fetch=f"SELECT plan_id, TO_CHAR(starts_on, 'YYYY-MM-DD'), TO_CHAR(ends_on, 'YYYY-MM-DD'), status_cd "
+                                        f"FROM subscriptions WHERE tenant_id = '{tenant_id}'")
+            return Counter((r[0], r[1], r[2], {10: "active", 20: "suspended", 30: "cancelled"}.get(int(r[3]), "UNKNOWN")) for r in got)
+        return Counter((d.get("planId"), d["startsOn"].date().isoformat(), d["endsOn"].date().isoformat() if d.get("endsOn") else None,
+                        {10: "active", 20: "suspended", 30: "cancelled"}.get(d.get("statusCd"), "UNKNOWN"))
+                       for d in self.mdb.subscriptions.find({"tenantId": tenant_id}))
+
     def hist(self, backend, tenant_id):
         if backend == "oracle":
             got = self.oracle([], fetch=f"SELECT hist_op, id, plan_id, status_cd, hist_dt FROM subscriptions_hist "
@@ -230,7 +241,8 @@ class Probes:
             out[name] = {"after": sorted(self.rows(name, T[1]), key=lambda r: (r["plan_id"], r["starts_on"])),
                          "hist": self.hist(name, T[1]),
                          "open_subscriptions": sum(1 for r in self.rows(name, T[1]) if r["ends_on"] is None),
-                         "entitlement(2026-02-28).plan_code": [e["plan_code"] for e in backend.entitlement(T[1], "2026-02-28")]}
+                         "entitlement(2026-02-28).plan_code": [e["plan_code"] for e in backend.entitlement(T[1], "2026-02-28")],
+                         "raw_multiset (independent of Fixture.probe)": sorted(self.raw_rows(name, T[1]).elements())}
         strip = lambda rows: [{k: v for k, v in h.items() if k != "hist_date_derived_from_hist_dt"} for h in rows]
         ok = (out["oracle"]["after"] == out["mongo"]["after"] and strip(out["oracle"]["hist"]) == strip(out["mongo"]["hist"])
               and out["oracle"]["entitlement(2026-02-28).plan_code"] == out["mongo"]["entitlement(2026-02-28).plan_code"])
@@ -355,7 +367,8 @@ class Probes:
                 rows = self.rows(name, NEW_TENANT)
                 out[name] = {"bootstrap /me status": me.status_code, "plan-change": {"status": change.status_code, "body": change.get_json()},
                              "GET /entitlement after": ent_after, "subscriptions_after": rows,
-                             "open_subscriptions": sum(1 for r in rows if r["ends_on"] is None), "hist": self.hist(name, NEW_TENANT)}
+                             "open_subscriptions": sum(1 for r in rows if r["ends_on"] is None), "hist": self.hist(name, NEW_TENANT),
+                             "raw_multiset (independent of Fixture.probe)": sorted(self.raw_rows(name, NEW_TENANT).elements())}
                 if name == "oracle":
                     self.oracle([f"DELETE FROM subscriptions WHERE tenant_id = '{NEW_TENANT}'",
                                  f"DELETE FROM subscriptions_hist WHERE tenant_id = '{NEW_TENANT}'",  # after the DEL trigger rows
@@ -369,6 +382,39 @@ class Probes:
             self.oracle([f"DELETE FROM subscriptions WHERE tenant_id = '{NEW_TENANT}'",
                          f"DELETE FROM subscriptions_hist WHERE tenant_id = '{NEW_TENANT}'",  # after the DEL trigger rows
                          f"DELETE FROM tenants WHERE id = '{NEW_TENANT}'"])
+
+    def probe_ordering_hides_nothing(self):
+        """86c634ae changed Fixture.probe to sort rows by (starts_on, closed-before-open, ends_on, plan_id) on both estates
+        instead of ORDER BY starts_on / sort(startsOn), whose tie order was engine-specific. Check it is a pure
+        canonicalisation: probe(...) must be a permutation of the raw rows (nothing dropped, merged or rewritten),
+        and equality of probe outputs must coincide with equality of the independent multisets."""
+        from collections import Counter
+        out = {}
+        for name in ("oracle", "mongo"):
+            self.fixture.reset()
+            backend, _ = self.use(name)
+            backend.change_plan(T[1], P[2], "2026-01-01")      # same-day tie on starts_on
+            backend.change_plan(T[4], P[2], "2026-03-15")      # second row starting the day PLANS-005's row would
+            per_tenant = {}
+            for n in range(1, 10):
+                probe = self.rows(name, T[n])
+                raw = self.raw_rows(name, T[n])
+                per_tenant[T[n]] = {"probe_is_permutation_of_raw": Counter((r["plan_id"], r["starts_on"], r["ends_on"], r["status"]) for r in probe) == raw,
+                                    "rows": len(probe)}
+            out[name] = per_tenant
+        agree = all(out["oracle"][t]["probe_is_permutation_of_raw"] and out["mongo"][t]["probe_is_permutation_of_raw"] for t in out["oracle"])
+        self.fixture.reset()
+        for name in ("oracle", "mongo"):
+            backend, _ = self.use(name)
+            backend.change_plan(T[1], P[2], "2026-01-01")
+            backend.change_plan(T[4], P[2], "2026-03-15")
+        probe_eq = {t: self.rows("oracle", t) == self.rows("mongo", t) for t in out["oracle"]}
+        multiset_eq = {t: self.raw_rows("oracle", t) == self.raw_rows("mongo", t) for t in out["oracle"]}
+        ok = agree and probe_eq == multiset_eq and all(multiset_eq.values())
+        self.record("EDGE-013", "Fixture.probe canonical ordering (86c634ae) is a permutation of the raw rows and agrees with independent multiset equality on every static tenant", 
+                    {"per_backend": out, "probe_equal_by_tenant": probe_eq, "raw_multiset_equal_by_tenant": multiset_eq}, ok,
+                    notes="sort key (starts_on, ends_on is None, ends_on, plan_id) omits status; two rows equal on all four would keep input order, "
+                          "which the deterministic md5 subscription id (tenant+plan+effective) makes unreachable through change_plan")
 
     def probe_loader_hist_date(self):
         import recon
@@ -400,6 +446,7 @@ class Probes:
         self.probe_local_recon_with_hist(out_dir / "U1.verify.local_edge.recon.json")
         self.probe_quarantine_na(live_report)
         self.probe_bootstrap_then_same_day_change()
+        self.probe_ordering_hides_nothing()
         self.probe_loader_hist_date()
         self.fixture.reset()
 

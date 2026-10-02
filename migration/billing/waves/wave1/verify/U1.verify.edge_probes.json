@@ -3,10 +3,10 @@
   "unit": "U1",
   "run_mode": "fixture",
   "merge_evidence": false,
-  "generated_at": "2026-10-02T17:26:15Z",
+  "generated_at": "2026-10-02T17:44:49Z",
   "code_under_test": {
     "repo_root": "/home/ubuntu/repos/ow-pr1782",
-    "head": "1dd952916e32fd7d1868b31d9cf67233e78ac558"
+    "head": "86c634aeab3ddc6bcf738bfc3d9d48312913bdd0"
   },
   "source": {
     "oracle": "local fixture localhost",
@@ -337,6 +337,20 @@
           "open_subscriptions": 1,
           "entitlement(2026-02-28).plan_code": [
             "GROWTH"
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-01-01",
+              "2025-12-31",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-01-01",
+              null,
+              "active"
+            ]
           ]
         },
         "mongo": {
@@ -344,7 +358,7 @@
             {
               "plan_id": "10000000-0000-0000-0000-000000000001",
               "starts_on": "2026-01-01",
-              "ends_on": null,
+              "ends_on": "2025-12-31",
               "status": "active"
             },
             {
@@ -354,15 +368,37 @@
               "status": "active"
             }
           ],
-          "hist": [],
-          "open_subscriptions": 2,
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "20000000-0000-0000-0000-000000000001",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ],
+          "open_subscriptions": 1,
           "entitlement(2026-02-28).plan_code": [
-            "STARTER"
+            "GROWTH"
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-01-01",
+              "2025-12-31",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-01-01",
+              null,
+              "active"
+            ]
           ]
         }
       },
-      "pass": false,
-      "notes": "backends/mongo.change_plan only closes starts_on < effective_on (the PL/SQL cursor) and skips the Oracle backend's same-day UPDATE, so it leaves two open subscriptions and no hist pre-image, and entitlement becomes a sort tie"
+      "pass": true
     },
     {
       "id": "EDGE-006",
@@ -895,6 +931,20 @@
               "status_cd": 10,
               "hist_dt_format_ok": true
             }
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-10-02",
+              "2026-10-01",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-10-02",
+              null,
+              "active"
+            ]
           ]
         },
         "mongo": {
@@ -905,12 +955,12 @@
               "entitlement": [
                 {
                   "effective_on": "2026-10-02",
-                  "included_units": "100",
-                  "monthly_fee": "49",
-                  "plan_code": "STARTER",
+                  "included_units": "500",
+                  "monthly_fee": "149",
+                  "plan_code": "GROWTH",
                   "subscription_status": "active",
                   "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
-                  "tier": "starter"
+                  "tier": "growth"
                 }
               ],
               "status": "changed"
@@ -919,34 +969,164 @@
           "GET /entitlement after": [
             {
               "effective_on": "2026-10-02",
-              "included_units": "100",
-              "monthly_fee": "49",
-              "plan_code": "STARTER",
+              "included_units": "500",
+              "monthly_fee": "149",
+              "plan_code": "GROWTH",
               "subscription_status": "active",
               "tenant_id": "e0000000-0000-0000-0000-0000000000e2",
-              "tier": "starter"
+              "tier": "growth"
             }
           ],
           "subscriptions_after": [
+            {
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "starts_on": "2026-10-02",
+              "ends_on": "2026-10-01",
+              "status": "active"
+            },
             {
               "plan_id": "10000000-0000-0000-0000-000000000002",
               "starts_on": "2026-10-02",
               "ends_on": null,
               "status": "active"
-            },
-            {
-              "plan_id": "10000000-0000-0000-0000-000000000001",
-              "starts_on": "2026-10-02",
-              "ends_on": null,
-              "status": "active"
             }
           ],
-          "open_subscriptions": 2,
-          "hist": []
+          "open_subscriptions": 1,
+          "hist": [
+            {
+              "op": "UPD",
+              "subscription_id": "3a073a81-0232-5696-b2c6-89b59e42d27a",
+              "plan_id": "10000000-0000-0000-0000-000000000001",
+              "status_cd": 10,
+              "hist_dt_format_ok": true,
+              "hist_date_derived_from_hist_dt": true
+            }
+          ],
+          "raw_multiset (independent of Fixture.probe)": [
+            [
+              "10000000-0000-0000-0000-000000000001",
+              "2026-10-02",
+              "2026-10-01",
+              "active"
+            ],
+            [
+              "10000000-0000-0000-0000-000000000002",
+              "2026-10-02",
+              null,
+              "active"
+            ]
+          ]
         }
       },
-      "pass": false,
-      "notes": "reachable through the public facade: the Mongo port leaves the bootstrap subscription open next to the new one"
+      "pass": true
+    },
+    {
+      "id": "EDGE-013",
+      "description": "Fixture.probe canonical ordering (86c634ae) is a permutation of the raw rows and agrees with independent multiset equality on every static tenant",
+      "backends": {
+        "per_backend": {
+          "oracle": {
+            "00000000-0000-0000-0000-000000000001": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000002": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000003": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000004": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000005": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000006": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000007": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000008": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000009": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            }
+          },
+          "mongo": {
+            "00000000-0000-0000-0000-000000000001": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000002": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000003": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000004": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 2
+            },
+            "00000000-0000-0000-0000-000000000005": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000006": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000007": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000008": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            },
+            "00000000-0000-0000-0000-000000000009": {
+              "probe_is_permutation_of_raw": true,
+              "rows": 1
+            }
+          }
+        },
+        "probe_equal_by_tenant": {
+          "00000000-0000-0000-0000-000000000001": true,
+          "00000000-0000-0000-0000-000000000002": true,
+          "00000000-0000-0000-0000-000000000003": true,
+          "00000000-0000-0000-0000-000000000004": true,
+          "00000000-0000-0000-0000-000000000005": true,
+          "00000000-0000-0000-0000-000000000006": true,
+          "00000000-0000-0000-0000-000000000007": true,
+          "00000000-0000-0000-0000-000000000008": true,
+          "00000000-0000-0000-0000-000000000009": true
+        },
+        "raw_multiset_equal_by_tenant": {
+          "00000000-0000-0000-0000-000000000001": true,
+          "00000000-0000-0000-0000-000000000002": true,
+          "00000000-0000-0000-0000-000000000003": true,
+          "00000000-0000-0000-0000-000000000004": true,
+          "00000000-0000-0000-0000-000000000005": true,
+          "00000000-0000-0000-0000-000000000006": true,
+          "00000000-0000-0000-0000-000000000007": true,
+          "00000000-0000-0000-0000-000000000008": true,
+          "00000000-0000-0000-0000-000000000009": true
+        }
+      },
+      "pass": true,
+      "notes": "sort key (starts_on, ends_on is None, ends_on, plan_id) omits status; two rows equal on all four would keep input order, which the deterministic md5 subscription id (tenant+plan+effective) makes unreachable through change_plan"
     },
     {
       "id": "EDGE-012",
@@ -954,7 +1134,7 @@
       "backends": {
         "oracle_trigger_hist_dt_format": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') (TRG_SUBSCRIPTIONS_HIST, 01_tables.sql)",
         "loader_copy": {
-          "histDt": "02-OCT-26 17:26:06",
+          "histDt": "02-OCT-26 17:44:38",
           "histDate_present": false,
           "recon.parse_ddmonyy(histDt)": "None",
           "backends.mongo.f_str2dt(histDt)": "2026-10-02"
