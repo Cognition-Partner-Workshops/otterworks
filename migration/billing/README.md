@@ -13,11 +13,11 @@ migration database named below. Secrets are referenced by name only
 | Atlas project | `otterworks-demos` |
 | Cluster | `otterworks-demo` (M0, 512 MB, so `SCALE=demo` data only; `SCALE=full` needs an M10+ tier, out of scope) |
 | Migration database (decision `d-migration-db`: fresh `ow_tp_billing_<run>` per run) | `ow_tp_billing_20261001T233613Z` |
-| Principal | whatever user `MONGODB_ATLAS_URI` authenticates as; required roles: exactly `readWrite@ow_tp_billing_20261001T233613Z` |
+| Principal | `otterworks-app` (`readWriteAnyDatabase`, `dbAdminAnyDatabase` on `admin`), accepted for this run by decision below; the scoped target was exactly `readWrite@ow_tp_billing_20261001T233613Z` |
 
 The run id is the timestamp of the run branch (`tp-run/mongodb-20261001T233613Z`).
 
-## Write scope is enforced by Atlas, not by convention
+## Write scope check
 
 `migration/billing/scripts/atlas-scope-check.sh` connects with `MONGODB_ATLAS_URI`,
 runs `connectionStatus` with `showPrivileges`, and passes only when the
@@ -38,7 +38,26 @@ migration/billing/scripts/atlas-scope-check.sh \
 Exit code 0 is PASS; anything else is FAIL. The JSON evidence is written to
 `--out` and printed; it contains the username and roles, never the URI.
 
-## Current state (2026-10-01): FAIL, change required
+## Decision (2026-10-01): existing principal accepted for this run
+
+The scope check FAILs against the principal currently in `MONGODB_ATLAS_URI`,
+and the human decided to keep using it for this run rather than provision a
+dedicated user ("Go ahead and use the existing one and continue for this
+run", recorded on UNT-3). Consequences:
+
+- Atlas does **not** enforce the write boundary for this run. The rule "Atlas
+  writes only to `ow_tp_billing_20261001T233613Z`" is enforced by convention:
+  every migration script takes the database name explicitly and writes
+  nowhere else; reviewers check the target database on each PR.
+- The acceptance probe (an insert into another database refused with code 13)
+  cannot be produced, because that insert would succeed. It was not run, since
+  it would itself be a write outside the migration database.
+- `migration/billing/evidence/atlas-scope-check.json` stays at `FAIL` as the
+  live record of the principal's roles. Later tickets do not need to rerun it.
+- A later tier bump or a `SCALE=full` run should revisit this and provision
+  the dedicated user below.
+
+## Principal in `MONGODB_ATLAS_URI` (live, 2026-10-01)
 
 `connectionStatus` for the principal currently in `MONGODB_ATLAS_URI`
 (`migration/billing/evidence/atlas-scope-check.json`):
@@ -56,10 +75,10 @@ Exit code 0 is PASS; anything else is FAIL. The JSON evidence is written to
 
 `otterworks-app` can write to every database on the cluster, including the
 other demo databases that live there (`ow_tp_mmp_live`, `ow_tp_mongodb_*`,
-`ow_billing_migration`). It must not be used for this run, and its roles must
-not be narrowed either, because other demo state depends on it.
+`ow_billing_migration`). Its roles must not be narrowed, because other demo
+state depends on it; the scoped alternative is a dedicated user.
 
-### Change for the human to apply (project-owner action, not performed by the worker)
+### Dedicated user (reference; not applied for this run by decision above)
 
 Create a dedicated database user whose only role is `readWrite` on the
 migration database, scoped to the migration cluster, then repoint the
@@ -97,7 +116,7 @@ mongodb+srv://ow_tp_billing_20261001T233613Z:<password>@<same host as today>/ow_
 Network access does not change: the cluster's IP access list is a project
 setting and already admits the sessions that run this migration.
 
-### Verifying after the change
+### Verifying if the dedicated user is ever provisioned
 
 Rerun the scope check above from a fresh shell (so the rotated secret is
 picked up). Expected:
