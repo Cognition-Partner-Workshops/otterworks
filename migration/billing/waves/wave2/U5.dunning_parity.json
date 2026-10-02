@@ -1,0 +1,496 @@
+{
+  "kind": "dunning-parity",
+  "unit": "U5",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T18:15:30Z",
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "transcripts": "procs/transcripts/dunning/DUNNING-001..005.json (immutable)",
+  "scenarios": [
+    {
+      "id": "DUNNING-001",
+      "entrypoint": "billing.fn_overdue_accounts",
+      "description": "List accounts for 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "days_overdue": [
+            27,
+            15
+          ],
+          "tenant_ids": [
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000005"
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "tenant_ids": [
+              "00000000-0000-0000-0000-000000000002",
+              "00000000-0000-0000-0000-000000000005"
+            ],
+            "days_overdue": [
+              27,
+              15
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "tenant_ids": [
+              "00000000-0000-0000-0000-000000000002",
+              "00000000-0000-0000-0000-000000000005"
+            ],
+            "days_overdue": [
+              27,
+              15
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "DUNNING-002",
+      "entrypoint": "billing.sp_schedule_dunning",
+      "description": "Schedule tenant accounts from 2026-02-14.",
+      "expected": {
+        "business_fields": {
+          "scheduled_for": "2026-02-16",
+          "status": "scheduled"
+        },
+        "probes": {
+          "schedule_rows": [
+            {
+              "attempt_no": 1,
+              "invoice_id": "60000000-0000-0000-0000-000000000001",
+              "scheduled_for": "2026-02-16",
+              "status": "scheduled"
+            },
+            {
+              "attempt_no": 1,
+              "invoice_id": "60000000-0000-0000-0000-000000000002",
+              "scheduled_for": "2026-02-16",
+              "status": "sent"
+            },
+            {
+              "attempt_no": 2,
+              "invoice_id": "60000000-0000-0000-0000-000000000002",
+              "scheduled_for": "2026-02-16",
+              "status": "scheduled"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled"
+          },
+          "probes": {
+            "schedule_rows": [
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000001",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "scheduled"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "sent"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 2,
+                "scheduled_for": "2026-02-16",
+                "status": "scheduled"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled"
+          },
+          "probes": {
+            "schedule_rows": [
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000001",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "scheduled"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "sent"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 2,
+                "scheduled_for": "2026-02-16",
+                "status": "scheduled"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "billing_audit_log_rows": 1
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "DUNNING-003",
+      "entrypoint": "billing.sp_schedule_dunning",
+      "description": "Schedule tenant accounts from 2026-02-17 with existing attempts.",
+      "expected": {
+        "business_fields": {
+          "attempt_no": 2,
+          "scheduled_for": "2026-02-17"
+        },
+        "probes": {
+          "schedule_rows": [
+            {
+              "attempt_no": 1,
+              "invoice_id": "60000000-0000-0000-0000-000000000001",
+              "scheduled_for": "2026-02-17",
+              "status": "scheduled"
+            },
+            {
+              "attempt_no": 1,
+              "invoice_id": "60000000-0000-0000-0000-000000000002",
+              "scheduled_for": "2026-02-16",
+              "status": "sent"
+            },
+            {
+              "attempt_no": 2,
+              "invoice_id": "60000000-0000-0000-0000-000000000002",
+              "scheduled_for": "2026-02-17",
+              "status": "scheduled"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "attempt_no": 2,
+            "scheduled_for": "2026-02-17"
+          },
+          "probes": {
+            "schedule_rows": [
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000001",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-17",
+                "status": "scheduled"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "sent"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 2,
+                "scheduled_for": "2026-02-17",
+                "status": "scheduled"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "attempt_no": 2,
+            "scheduled_for": "2026-02-17"
+          },
+          "probes": {
+            "schedule_rows": [
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000001",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-17",
+                "status": "scheduled"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 1,
+                "scheduled_for": "2026-02-16",
+                "status": "sent"
+              },
+              {
+                "invoice_id": "60000000-0000-0000-0000-000000000002",
+                "attempt_no": 2,
+                "scheduled_for": "2026-02-17",
+                "status": "scheduled"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "billing_audit_log_rows": 1
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "DUNNING-004",
+      "entrypoint": "billing.sp_suspend_overdue",
+      "description": "Apply account handling for 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "status": "suspended",
+          "suspended_on": "2026-02-28"
+        },
+        "probes": {
+          "suspension_notifications": [
+            {
+              "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+              "kind": "suspension",
+              "sent_at": "2026-02-28T00:00:00Z",
+              "tenant_id": "00000000-0000-0000-0000-000000000005"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "status": "suspended",
+            "suspended_on": "2026-02-28"
+          },
+          "probes": {
+            "suspension_notifications": [
+              {
+                "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+                "tenant_id": "00000000-0000-0000-0000-000000000005",
+                "kind": "suspension",
+                "sent_at": "2026-02-28T00:00:00Z"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "status": "suspended",
+            "suspended_on": "2026-02-28"
+          },
+          "probes": {
+            "suspension_notifications": [
+              {
+                "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+                "tenant_id": "00000000-0000-0000-0000-000000000005",
+                "kind": "suspension",
+                "sent_at": "2026-02-28T00:00:00Z"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "billing_audit_log_rows": 1
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "DUNNING-005",
+      "entrypoint": "billing.sp_suspend_overdue",
+      "description": "Apply account handling twice for 2026-02-28 without duplicating the suspension notification.",
+      "expected": {
+        "business_fields": {
+          "notification_kinds": [
+            "suspension"
+          ]
+        },
+        "probes": {
+          "suspension_notifications": [
+            {
+              "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+              "kind": "suspension",
+              "sent_at": "2026-02-28T00:00:00Z",
+              "tenant_id": "00000000-0000-0000-0000-000000000005"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "notification_kinds": [
+              "suspension"
+            ]
+          },
+          "probes": {
+            "suspension_notifications": [
+              {
+                "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+                "tenant_id": "00000000-0000-0000-0000-000000000005",
+                "kind": "suspension",
+                "sent_at": "2026-02-28T00:00:00Z"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "notification_kinds": [
+              "suspension"
+            ]
+          },
+          "probes": {
+            "suspension_notifications": [
+              {
+                "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+                "tenant_id": "00000000-0000-0000-0000-000000000005",
+                "kind": "suspension",
+                "sent_at": "2026-02-28T00:00:00Z"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true,
+          "billing_audit_log_rows": 1
+        }
+      },
+      "pass": true
+    }
+  ],
+  "facade": {
+    "oracle": {
+      "GET /api/v1/billing/admin/overdue?as_of=2026-02-28": {
+        "status": 200,
+        "body": [
+          {
+            "amount": "161.29",
+            "days_overdue": "27",
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "tenant_id": "00000000-0000-0000-0000-000000000002",
+            "tenant_status": "suspended",
+            "total": "161.29"
+          },
+          {
+            "amount": "161.29",
+            "days_overdue": "15",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "tenant_id": "00000000-0000-0000-0000-000000000005",
+            "tenant_status": "active",
+            "total": "161.29"
+          }
+        ]
+      },
+      "GET /api/v1/billing/admin/dunning?as_of=2026-02-28 (after schedule 2026-02-14)": {
+        "status": 200,
+        "body": [
+          {
+            "attempt_no": "1",
+            "id": "80000000-0000-0000-0000-000000000001",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "scheduled_for": "2026-02-16",
+            "status": "sent",
+            "tenant_id": "00000000-0000-0000-0000-000000000005"
+          },
+          {
+            "attempt_no": "2",
+            "id": "6118c817-d22e-6eb3-832a-96f21a646a7a",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled",
+            "tenant_id": "00000000-0000-0000-0000-000000000005"
+          },
+          {
+            "attempt_no": "1",
+            "id": "35737ff3-1220-b903-45dc-e4051972899b",
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled",
+            "tenant_id": "00000000-0000-0000-0000-000000000002"
+          }
+        ]
+      },
+      "GET /api/v1/billing/admin/overdue without ADMIN": 403,
+      "GET /api/v1/billing/admin/dunning?as_of=bad": 400
+    },
+    "mongo": {
+      "GET /api/v1/billing/admin/overdue?as_of=2026-02-28": {
+        "status": 200,
+        "body": [
+          {
+            "amount": "161.29",
+            "days_overdue": "27",
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "tenant_id": "00000000-0000-0000-0000-000000000002",
+            "tenant_status": "suspended",
+            "total": "161.29"
+          },
+          {
+            "amount": "161.29",
+            "days_overdue": "15",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "tenant_id": "00000000-0000-0000-0000-000000000005",
+            "tenant_status": "active",
+            "total": "161.29"
+          }
+        ]
+      },
+      "GET /api/v1/billing/admin/dunning?as_of=2026-02-28 (after schedule 2026-02-14)": {
+        "status": 200,
+        "body": [
+          {
+            "attempt_no": "1",
+            "id": "80000000-0000-0000-0000-000000000001",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "scheduled_for": "2026-02-16",
+            "status": "sent",
+            "tenant_id": "00000000-0000-0000-0000-000000000005"
+          },
+          {
+            "attempt_no": "2",
+            "id": "6118c817-d22e-6eb3-832a-96f21a646a7a",
+            "invoice_id": "60000000-0000-0000-0000-000000000002",
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled",
+            "tenant_id": "00000000-0000-0000-0000-000000000005"
+          },
+          {
+            "attempt_no": "1",
+            "id": "35737ff3-1220-b903-45dc-e4051972899b",
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "scheduled_for": "2026-02-16",
+            "status": "scheduled",
+            "tenant_id": "00000000-0000-0000-0000-000000000002"
+          }
+        ]
+      },
+      "GET /api/v1/billing/admin/overdue without ADMIN": 403,
+      "GET /api/v1/billing/admin/dunning?as_of=bad": 400
+    },
+    "identical": true
+  },
+  "verdict": "pass"
+}

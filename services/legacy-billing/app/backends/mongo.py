@@ -515,14 +515,132 @@ def invoice_lines(invoice_id):
     _not_ported("pkg_invoicing.fn_invoice_lines", "U4")
 
 
+# -------------------------------------------------------------- PKG_DUNNING
+# U5. Invoices become overdue (statusCd 40) outside this module (d-overdue-owner =
+# external-repointed); dunning only reads that flag. JOB_NIGHTLY_DUNNING is the
+# `flask nightly-dunning` command in app.py, run by hand: nothing here is scheduled.
+
+INVOICE_STATUS_OVERDUE = 40
+TENANT_STATUSES = {10: "active", 20: "suspended"}
+TENANT_STATUS_SUSPENDED = 20
+DUNNING_STATUS_SCHEDULED = 10
+NOTIFICATION_KIND_SUSPENSION = 3
+SUSPEND_AFTER_DAYS = 14
+WEEKEND_SHIFT = {5: 2, 6: 1}  # SAT -> Monday, SUN -> Monday (TO_CHAR(.., 'DY') DECODE)
+
+
+def _overdue_invoices(issued_before=None, session=None):
+    """Cursor of fn_overdue_accounts / sp_schedule_dunning: statusCd 40, ORDER BY issued_at, id."""
+    query = {"statusCd": INVOICE_STATUS_OVERDUE}
+    if issued_before is not None:
+        query["issuedAt"] = {"$lt": issued_before}
+    return db().invoices.find(query, {"lines": 0}, session=session).sort([("issuedAt", 1), ("_id", 1)])
+
+
 def overdue(as_of):
-    _not_ported("pkg_dunning.fn_overdue_accounts", "U5")
+    as_of_date = _as_date(as_of)
+    rows = []
+    for inv in _overdue_invoices(issued_before=_as_bson_date(as_of_date)):
+        tenant = db().tenants.find_one({"_id": inv.get("tenantId")}, {"statusCd": 1})
+        rows.append(
+            {
+                "tenant_id": inv.get("tenantId"),
+                "invoice_id": inv["_id"],
+                "total": _json_value(inv.get("total")),
+                "days_overdue": _json_value((as_of_date - _as_date(inv["issuedAt"])).days),
+                "tenant_status": TENANT_STATUSES.get(tenant.get("statusCd"), "UNKNOWN") if tenant else "UNKNOWN",
+            }
+        )
+    return rows
 
 
 def schedule_dunning(as_of):
-    _not_ported("pkg_dunning.sp_schedule_dunning", "U5")
+    as_of_date = _as_date(as_of)
+    scheduled_for = _as_bson_date(as_of_date + timedelta(days=WEEKEND_SHIFT.get(as_of_date.weekday(), 0)))
+    attempts = db().dunning_attempts
+    scheduled = 0
+    for inv in _overdue_invoices():
+        last = attempts.find_one({"invoiceId": inv["_id"]}, {"attemptNo": 1}, sort=[("attemptNo", DESCENDING)])
+        attempt_no = (int(last["attemptNo"]) if last else 0) + 1
+        try:
+            attempts.insert_one(
+                {
+                    "_id": f_md5_uuid(f"{inv['_id']}{attempt_no}"),
+                    "tenantId": inv.get("tenantId"),
+                    "invoiceId": inv["_id"],
+                    "attemptNo": attempt_no,
+                    "scheduledFor": scheduled_for,
+                    "statusCd": DUNNING_STATUS_SCHEDULED,
+                }
+            )
+            scheduled += 1
+        except DuplicateKeyError:
+            # ON CONFLICT DO NOTHING: _id or uq_dunning_attempts_invoice_attempt already taken.
+            continue
+    log_msg("DUNNING", f"scheduled {scheduled} attempts as of {f_dt2str(as_of_date)}")
+
+
+def _suspend_tenant(tenant_id, as_of_date, session):
+    suspended_on = _as_bson_date(as_of_date)
+    result = db().tenants.update_one(
+        {"_id": tenant_id, "statusCd": STATUS_ACTIVE},
+        {"$set": {"statusCd": TENANT_STATUS_SUSPENDED}},
+        session=session,
+    )
+    if result.matched_count == 0:
+        return False
+    for sub in db().subscriptions.find({"tenantId": tenant_id, "statusCd": STATUS_ACTIVE}, session=session):
+        _write_pre_image(sub, "UPD", session)
+        db().subscriptions.update_one(
+            {"_id": sub["_id"]},
+            {"$set": {"statusCd": TENANT_STATUS_SUSPENDED, "suspendedOn": suspended_on}},
+            session=session,
+        )
+    key = {"tenantId": tenant_id, "kindCd": NOTIFICATION_KIND_SUSPENSION, "sentAt": suspended_on}
+    if db().notifications.find_one(key, {"_id": 1}, session=session) is None:
+        db().notifications.insert_one(
+            {"_id": f_md5_uuid(f"{tenant_id}suspension{as_of_date.isoformat()}"), **key},
+            session=session,
+        )
+    return True
 
 
 def suspend_overdue(as_of):
-    _not_ported("pkg_dunning.sp_suspend_overdue", "U5")
+    as_of_date = _as_date(as_of)
+    # issued day <= as_of - 14  <=>  issuedAt < midnight of as_of - 13
+    cutoff = _as_bson_date(as_of_date - timedelta(days=SUSPEND_AFTER_DAYS - 1))
+    tenant_ids = sorted(
+        db().invoices.distinct("tenantId", {"statusCd": INVOICE_STATUS_OVERDUE, "issuedAt": {"$lt": cutoff}})
+    )
+    for tenant_id in tenant_ids:
+        if _transaction(lambda session, t=tenant_id: _suspend_tenant(t, as_of_date, session)):
+            log_msg("DUNNING", f"suspended tenant={tenant_id}")
+
+
+def dunning_attempts(as_of):
+    """GET /admin/dunning: attempts due on or before as_of, newest 200, status via CODES('DUN_STATUS')."""
+    cursor = (
+        db().dunning_attempts.find({"scheduledFor": {"$lte": _as_bson_date(as_of)}})
+        .sort([("scheduledFor", DESCENDING), ("_id", DESCENDING)])
+        .limit(200)
+    )
+    return [
+        {
+            "id": d["_id"],
+            "tenant_id": d.get("tenantId"),
+            "invoice_id": d.get("invoiceId"),
+            "attempt_no": _json_value(d.get("attemptNo")),
+            "scheduled_for": _json_value(d.get("scheduledFor")),
+            "status": _code_desc_or_none("DUN_STATUS", d.get("statusCd")),
+        }
+        for d in cursor
+    ]
+
+
+def _code_desc_or_none(code_type, code_val):
+    """LEFT JOIN codes: NULL when the code is unknown (unlike f_code_desc's UNKNOWN(n))."""
+    if code_val is None:
+        return None
+    doc = db().codes.find_one({"_id": {"codeType": code_type, "codeVal": int(code_val)}}, {"codeDesc": 1})
+    return doc.get("codeDesc") if doc else None
 

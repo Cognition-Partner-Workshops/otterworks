@@ -1,0 +1,144 @@
+{
+  "kind": "load-report",
+  "run_mode": "fixture",
+  "generated_at": "2026-10-02T18:16:21Z",
+  "source": {
+    "system": "oracle",
+    "schema": "OW_BILLING",
+    "dsn_secret": "OW_TP_ORACLE_FIXTURE_DSN",
+    "host": "localhost",
+    "transaction": "SET TRANSACTION READ ONLY",
+    "concurrency": 1,
+    "principal": "OW_BILLING",
+    "statements": "SELECT only"
+  },
+  "target": {
+    "system": "mongodb",
+    "database": "ow_tp_billing_20261001T233613Z",
+    "uri_secret": "OW_TP_MONGO_FIXTURE_URI",
+    "hosts": [
+      "127.0.0.1"
+    ],
+    "statements": "bulk_write ReplaceOne(upsert=True) on _id; create_index"
+  },
+  "inputs": {
+    "mapping_spec": {
+      "path": "migration/billing/mapping_spec.json",
+      "sha256": "0bd5fb8b20f00ba3d72da3d079c6ae998195db782aef2d5945bc5c08ac3f39f6"
+    },
+    "tolerances": {
+      "path": "migration/billing/tolerances.json",
+      "sha256": "440aeb7f7f68daac2c65563e843ca22e39f0fb5fe3604913275f02186c6590b2"
+    }
+  },
+  "collections": [
+    "dunning_attempts",
+    "notifications",
+    "billing_audit_log"
+  ],
+  "passes": [
+    {
+      "pass": 1,
+      "seconds": 0.024,
+      "noop": false,
+      "collections": {
+        "dunning_attempts": {
+          "table": "DUNNING_ATTEMPTS",
+          "source_rows": 1,
+          "documents": 1,
+          "upserted": 1,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 1
+        },
+        "notifications": {
+          "table": "NOTIFICATIONS",
+          "source_rows": 1,
+          "documents": 1,
+          "upserted": 1,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 1
+        },
+        "billing_audit_log": {
+          "table": "BILLING_AUDIT_LOG",
+          "source_rows": 10,
+          "documents": 10,
+          "upserted": 10,
+          "matched": 0,
+          "modified": 0,
+          "target_count_after": 10
+        }
+      }
+    },
+    {
+      "pass": 2,
+      "seconds": 0.006,
+      "noop": true,
+      "collections": {
+        "dunning_attempts": {
+          "table": "DUNNING_ATTEMPTS",
+          "source_rows": 1,
+          "documents": 1,
+          "upserted": 0,
+          "matched": 1,
+          "modified": 0,
+          "target_count_after": 1
+        },
+        "notifications": {
+          "table": "NOTIFICATIONS",
+          "source_rows": 1,
+          "documents": 1,
+          "upserted": 0,
+          "matched": 1,
+          "modified": 0,
+          "target_count_after": 1
+        },
+        "billing_audit_log": {
+          "table": "BILLING_AUDIT_LOG",
+          "source_rows": 10,
+          "documents": 10,
+          "upserted": 0,
+          "matched": 10,
+          "modified": 0,
+          "target_count_after": 10
+        }
+      }
+    }
+  ],
+  "indexes": [
+    {
+      "collection": "dunning_attempts",
+      "name": "uq_dunning_attempts_invoice_attempt",
+      "keys": {
+        "invoiceId": 1,
+        "attemptNo": 1
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    {
+      "collection": "dunning_attempts",
+      "name": "ix_dunning_attempts_scheduled",
+      "keys": {
+        "scheduledFor": -1,
+        "_id": -1
+      },
+      "options": {}
+    },
+    {
+      "collection": "notifications",
+      "name": "uq_notifications_tenant_kind_sent",
+      "keys": {
+        "tenantId": 1,
+        "kindCd": 1,
+        "sentAt": 1
+      },
+      "options": {
+        "unique": true
+      }
+    }
+  ],
+  "rerun_noop": true
+}

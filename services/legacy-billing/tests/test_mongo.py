@@ -280,3 +280,216 @@ def test_util_helpers(mongo):
     assert mongo.f_str2dt("15-JUN-99").isoformat() == "1999-06-15"
     with pytest.raises(NotImplementedError):
         mongo.usage_rating(T[1], "2026-02-01", "2026-02-28")
+
+
+# ------------------------------------------------------------------------- U5: dunning + audit
+# Seeds the dunning slice of 03_seed_static.sql (invoices 1-3, attempt 1 on invoice 2, the kind-2
+# notification) on top of the U1 fixture and replays DUNNING-001..005 (procs/transcripts/dunning).
+
+INV = [f"60000000-0000-0000-0000-00000000000{n}" for n in range(0, 4)]
+PERIOD = "40000000-0000-0000-0000-000000000001"
+DUNNING_TRANSCRIPTS = Path(__file__).resolve().parents[3] / "procs" / "transcripts" / "dunning"
+DUN_STATUS = {10: "scheduled", 20: "sent", 30: "skipped"}
+
+
+def transcript(scenario):
+    import json
+
+    return json.loads((DUNNING_TRANSCRIPTS / f"{scenario}.json").read_text())
+
+
+@pytest.fixture
+def dunning(mongo):
+    from bson import Decimal128
+
+    db = mongo.db()
+    for name in ("invoices", "dunning_attempts", "notifications"):
+        db.drop_collection(name)
+    db.codes.insert_many([{"_id": {"codeType": "DUN_STATUS", "codeVal": k}, "codeDesc": v} for k, v in DUN_STATUS.items()])
+    # 03_seed_static.sql: Tenant Two is suspended, Tenant Five active on GROWTH, Tenant Six active.
+    db.tenants.update_one({"_id": T[2]}, {"$set": {"statusCd": 20}})
+    db.tenants.insert_one({"_id": T[6], "name": "Tenant Six", "taxExemptYn": "N", "statusCd": 10})
+    db.subscriptions.update_one({"_id": S[5]}, {"$set": {"planId": P[2], "statusCd": 10}})
+    db.subscriptions.insert_one({"_id": S[6], "tenantId": T[6], "planId": P[1], "startsOn": day("2026-01-01"), "statusCd": 10})
+    money = {"subtotal": Decimal128("149.00"), "tax": Decimal128("12.29"), "total": Decimal128("161.29")}
+    db.invoices.insert_many([
+        {"_id": INV[1], "tenantId": T[2], "periodId": PERIOD, "issuedAt": day("2026-02-01"), **money, "statusCd": 40, "lines": []},
+        {"_id": INV[2], "tenantId": T[5], "periodId": PERIOD, "issuedAt": day("2026-02-13"), **money, "statusCd": 40, "lines": []},
+        {"_id": INV[3], "tenantId": T[6], "periodId": PERIOD, "issuedAt": day("2026-02-28"), "subtotal": Decimal128("49.00"),
+         "tax": Decimal128("4.04"), "total": Decimal128("53.04"), "statusCd": 20, "lines": []},
+    ])
+    db.dunning_attempts.create_index([("invoiceId", 1), ("attemptNo", 1)], unique=True, name="uq_dunning_attempts_invoice_attempt")
+    db.dunning_attempts.create_index([("scheduledFor", -1), ("_id", -1)], name="ix_dunning_attempts_scheduled")
+    db.dunning_attempts.insert_one({"_id": "80000000-0000-0000-0000-000000000001", "tenantId": T[5], "invoiceId": INV[2],
+                                    "attemptNo": 1, "scheduledFor": day("2026-02-16"), "statusCd": 20})
+    db.notifications.create_index([("tenantId", 1), ("kindCd", 1), ("sentAt", 1)], unique=True, name="uq_notifications_tenant_kind_sent")
+    db.notifications.insert_one({"_id": "90000000-0000-0000-0000-000000000001", "tenantId": T[5], "kindCd": 2,
+                                 "sentAt": day("2026-02-16T09:00:00")})
+    return mongo
+
+
+def _schedule_rows(mongo):
+    return [
+        {"attempt_no": d["attemptNo"], "invoice_id": d["invoiceId"], "scheduled_for": d["scheduledFor"].date().isoformat(),
+         "status": DUN_STATUS[d["statusCd"]]}
+        for d in mongo.db().dunning_attempts.find().sort([("invoiceId", 1), ("attemptNo", 1)])
+    ]
+
+
+def _suspension_notifications(mongo):
+    return [
+        {"id": d["_id"], "kind": "suspension", "sent_at": d["sentAt"].strftime("%Y-%m-%dT%H:%M:%SZ"), "tenant_id": d["tenantId"]}
+        for d in mongo.db().notifications.find({"kindCd": 3}).sort([("tenantId", 1), ("sentAt", 1)])
+    ]
+
+
+def _audit(mongo):
+    return [(a["module"], a["message"]) for a in mongo.db().billing_audit_log.find().sort("_id", 1)]
+
+
+def test_dunning_001_overdue(dunning):
+    rows = dunning.overdue("2026-02-28")
+    expected = transcript("DUNNING-001")["business_fields"]
+    assert [r["tenant_id"] for r in rows] == expected["tenant_ids"]
+    assert [int(r["days_overdue"]) for r in rows] == expected["days_overdue"]
+    assert rows[0] == {"tenant_id": T[2], "invoice_id": INV[1], "total": "161.29", "days_overdue": "27", "tenant_status": "suspended"}
+    assert rows[1]["tenant_status"] == "active" and "lines" not in rows[1]
+    # TO_CHAR(issued_at, 'YYYYMMDD') < TO_CHAR(as_of, 'YYYYMMDD'): the issue day itself is not overdue.
+    assert [r["invoice_id"] for r in dunning.overdue("2026-02-13")] == [INV[1]]
+    assert dunning.overdue("2026-02-01") == []
+    dunning.db().tenants.delete_one({"_id": T[2]})
+    assert dunning.overdue("2026-02-28")[0]["tenant_status"] == "UNKNOWN"  # tenants t (+) outer join
+    assert _audit(dunning) == []  # fn_overdue_accounts does not log
+
+
+def test_dunning_002_schedule_saturday(dunning):
+    dunning.schedule_dunning("2026-02-14")  # Saturday -> Monday 16th
+    two = transcript("DUNNING-002")
+    assert _schedule_rows(dunning) == two["probes"]["schedule_rows"]
+    latest = dunning.db().dunning_attempts.find_one({"invoiceId": INV[1]}, sort=[("attemptNo", -1)])
+    assert (latest["scheduledFor"].date().isoformat(), DUN_STATUS[latest["statusCd"]]) == (
+        two["business_fields"]["scheduled_for"], two["business_fields"]["status"])
+    assert latest["_id"] == dunning.f_md5_uuid(f"{INV[1]}1") and latest["tenantId"] == T[2]
+    assert _audit(dunning) == [("DUNNING", "scheduled 2 attempts as of 14-FEB-26")]
+    dunning.schedule_dunning("2026-02-14")  # a rerun numbers the next attempt; nothing is overwritten
+    assert [r["attempt_no"] for r in _schedule_rows(dunning)] == [1, 2, 1, 2, 3]
+    assert _audit(dunning)[-1] == ("DUNNING", "scheduled 2 attempts as of 14-FEB-26")
+
+
+def test_dunning_003_schedule_with_existing_attempt(dunning):
+    dunning.schedule_dunning("2026-02-17")  # Tuesday; invoice 2 already has attempt 1
+    three = transcript("DUNNING-003")
+    assert _schedule_rows(dunning) == three["probes"]["schedule_rows"]
+    latest = dunning.db().dunning_attempts.find_one({"invoiceId": INV[2]}, sort=[("attemptNo", -1)])
+    assert (latest["attemptNo"], latest["scheduledFor"].date().isoformat()) == (
+        three["business_fields"]["attempt_no"], three["business_fields"]["scheduled_for"])
+    assert latest["_id"] == dunning.f_md5_uuid(f"{INV[2]}2")
+    assert _audit(dunning) == [("DUNNING", "scheduled 2 attempts as of 17-FEB-26")]
+
+
+def test_schedule_dunning_sunday_and_conflict_swallowed(dunning):
+    # A foreign row already holding the deterministic id of invoice 1 attempt 1: the Oracle
+    # EXCEPTION WHEN OTHERS swallows the ORA-00001 and the loop moves on.
+    dunning.db().dunning_attempts.insert_one({"_id": dunning.f_md5_uuid(f"{INV[1]}1"), "tenantId": T[9], "invoiceId": "other",
+                                              "attemptNo": 1, "scheduledFor": day("2026-01-01"), "statusCd": 30})
+    dunning.schedule_dunning("2026-02-15")  # Sunday -> Monday 16th
+    rows = _schedule_rows(dunning)
+    assert [r for r in rows if r["invoice_id"] == INV[1]] == []
+    assert [r for r in rows if r["invoice_id"] == INV[2]] == [
+        {"attempt_no": 1, "invoice_id": INV[2], "scheduled_for": "2026-02-16", "status": "sent"},
+        {"attempt_no": 2, "invoice_id": INV[2], "scheduled_for": "2026-02-16", "status": "scheduled"},
+    ]
+    assert _audit(dunning) == [("DUNNING", "scheduled 1 attempts as of 15-FEB-26")]
+    # uq_dunning_attempts_invoice_attempt refuses a racing duplicate (invoiceId, attemptNo).
+    with pytest.raises(dunning.DuplicateKeyError):
+        dunning.db().dunning_attempts.insert_one({"_id": "race", "tenantId": T[5], "invoiceId": INV[2], "attemptNo": 2,
+                                                  "scheduledFor": day("2026-02-16"), "statusCd": 10})
+
+
+def test_dunning_004_005_suspend(dunning):
+    dunning.suspend_overdue("2026-02-28")
+    four = transcript("DUNNING-004")
+    (sub,) = dunning.db().subscriptions.find({"tenantId": T[5]})
+    assert (dunning.SUBSCRIPTION_STATUSES[sub["statusCd"]], sub["suspendedOn"].date().isoformat()) == (
+        four["business_fields"]["status"], four["business_fields"]["suspended_on"])
+    assert _suspension_notifications(dunning) == four["probes"]["suspension_notifications"]
+    assert dunning.db().tenants.find_one({"_id": T[5]})["statusCd"] == 20
+    # Tenant Two is already suspended (status 20): untouched, no notification, no audit row.
+    assert dunning.db().tenants.find_one({"_id": T[2]})["statusCd"] == 20
+    assert dunning.db().subscriptions.find_one({"_id": S[2]})["suspendedOn"] == day("2026-02-15")
+    # Tenant Six's invoice is not overdue: untouched.
+    assert dunning.db().tenants.find_one({"_id": T[6]})["statusCd"] == 10
+    (hist,) = dunning.db().subscriptions_hist.find()  # TRG_SUBSCRIPTIONS_HIST pre-image of S5
+    assert (hist["histOp"], hist["subscriptionId"], hist["statusCd"]) == ("UPD", S[5], 10) and "suspendedOn" not in hist
+    assert _audit(dunning) == [("DUNNING", f"suspended tenant={T[5]}")]
+
+    dunning.suspend_overdue("2026-02-28")  # DUNNING-005: second run, nothing to do
+    five = transcript("DUNNING-005")
+    assert [n["kind"] for n in _suspension_notifications(dunning)] == five["business_fields"]["notification_kinds"]
+    assert _suspension_notifications(dunning) == five["probes"]["suspension_notifications"]
+    assert dunning.db().subscriptions_hist.count_documents({}) == 1
+    assert _audit(dunning) == [("DUNNING", f"suspended tenant={T[5]}")]
+    # The suspend transaction is atomic: a uq_notifications_tenant_kind_sent conflict rolls the tenant back.
+    dunning.db().tenants.update_one({"_id": T[6]}, {"$set": {"statusCd": 10}})
+    dunning.db().invoices.update_one({"_id": INV[3]}, {"$set": {"statusCd": 40}})
+    dunning.db().notifications.insert_one({"_id": "foreign", "tenantId": T[6], "kindCd": 3, "sentAt": day("2026-03-20")})
+    with pytest.raises(dunning.DuplicateKeyError):
+        dunning.db().notifications.insert_one({"_id": "dup", "tenantId": T[6], "kindCd": 3, "sentAt": day("2026-03-20")})
+    dunning.suspend_overdue("2026-03-20")  # NOT EXISTS: the existing notification is kept, tenant still suspended
+    assert dunning.db().tenants.find_one({"_id": T[6]})["statusCd"] == 20
+    assert dunning.db().notifications.count_documents({"tenantId": T[6]}) == 1
+
+
+def test_suspend_overdue_window(dunning):
+    # issued day <= as_of - 14: invoice 2 (13 Feb) qualifies on 27 Feb, not on 26 Feb.
+    dunning.suspend_overdue("2026-02-26")
+    assert dunning.db().tenants.find_one({"_id": T[5]})["statusCd"] == 10
+    dunning.suspend_overdue("2026-02-27")
+    assert dunning.db().tenants.find_one({"_id": T[5]})["statusCd"] == 20
+    assert dunning.db().subscriptions.find_one({"_id": S[5]})["suspendedOn"] == day("2026-02-27")
+    assert dunning.db().notifications.find_one({"tenantId": T[5], "kindCd": 3})["_id"] == dunning.f_md5_uuid(
+        f"{T[5]}suspension2026-02-27")
+
+
+def test_dunning_attempts_listing(dunning):
+    dunning.schedule_dunning("2026-02-14")
+    listing = dunning.dunning_attempts("2026-02-28")
+    expected = sorted(
+        [(INV[2], "2", "2026-02-16", "scheduled", dunning.f_md5_uuid(f"{INV[2]}2")),
+         (INV[1], "1", "2026-02-16", "scheduled", dunning.f_md5_uuid(f"{INV[1]}1")),
+         (INV[2], "1", "2026-02-16", "sent", "80000000-0000-0000-0000-000000000001")],
+        key=lambda r: (r[2], r[4]), reverse=True)  # ORDER BY scheduled_for DESC, id DESC
+    assert [(r["invoice_id"], r["attempt_no"], r["scheduled_for"], r["status"], r["id"]) for r in listing] == expected
+    assert set(listing[0]) == {"id", "tenant_id", "invoice_id", "attempt_no", "scheduled_for", "status"}
+    assert dunning.dunning_attempts("2026-02-15") == []
+    dunning.db().codes.delete_one({"_id": {"codeType": "DUN_STATUS", "codeVal": 20}})
+    assert [r["status"] for r in dunning.dunning_attempts("2026-02-16") if r["attempt_no"] == "1" and r["invoice_id"] == INV[2]] == [None]  # LEFT JOIN codes
+    assert sorted(i["name"] for i in dunning.db().billing_audit_log.list_indexes()) == ["_id_"]  # d-audit-retention: no TTL
+
+
+def test_dunning_routes_on_mongo(dunning):
+    from app import app
+
+    client = app.test_client()
+    admin = {"X-User-ID": T[1], "X-User-Roles": "ADMIN"}
+    overdue = client.get("/api/v1/billing/admin/overdue", query_string={"as_of": "2026-02-28"}, headers=admin)
+    assert overdue.status_code == 200
+    assert [(r["tenant_id"], r["amount"], r["total"]) for r in overdue.get_json()] == [(T[2], "161.29", "161.29"), (T[5], "161.29", "161.29")]
+    assert client.get("/api/v1/billing/admin/overdue", headers={"X-User-ID": T[1]}).status_code == 403
+    assert client.get("/api/v1/billing/admin/dunning", query_string={"as_of": "tomorrow"}, headers=admin).status_code == 400
+    assert client.get("/api/dunning/overdue", query_string={"as_of": "2026-02-28"}).get_json() == dunning.overdue("2026-02-28")
+    assert client.post("/api/dunning/schedule", data={"as_of": "2026-02-14"}).get_json() == {"status": "scheduled"}
+    assert client.post("/api/dunning/suspend", data={"as_of": "2026-02-28"}).get_json() == {"status": "suspended"}
+    listing = client.get("/api/v1/billing/admin/dunning", query_string={"as_of": "2026-02-28"}, headers=admin)
+    assert listing.status_code == 200 and listing.get_json() == dunning.dunning_attempts("2026-02-28")
+    assert dunning.db().tenants.find_one({"_id": T[5]})["statusCd"] == 20
+
+
+def test_nightly_dunning_command(dunning):
+    from app import app
+
+    result = app.test_cli_runner().invoke(args=["nightly-dunning", "--as-of", "2026-02-28"])
+    assert result.exit_code == 0, result.output
+    assert "as_of=2026-02-28 backend=mongo" in result.output
+    assert _audit(dunning) == [("DUNNING", "scheduled 2 attempts as of 28-FEB-26"), ("DUNNING", f"suspended tenant={T[5]}")]
+    assert dunning.db().dunning_attempts.count_documents({}) == 3
