@@ -293,16 +293,15 @@ def change_plan(tenant_id, plan_id, effective_on):
     new_id = f_md5_uuid(f"{tenant_id}{plan_id}{effective_date.isoformat()}")
 
     def work(session):
-        open_subs = db().subscriptions.find(
-            {
-                "tenantId": tenant_id,
-                "endsOn": None,
-                "startsOn": {"$lt": _as_bson_date(effective_date)},
-            },
-            session=session,
-        )
-        for sub in open_subs:
-            _close_subscription(sub, effective_date - timedelta(days=1), session)
+        # Same order as the Oracle backend: the facade's same-day close (starts_on = eff)
+        # first, then sp_change_plan's cursor over the still-open rows (starts_on < eff).
+        for starts_on in ({"$eq": _as_bson_date(effective_date)}, {"$lt": _as_bson_date(effective_date)}):
+            open_subs = db().subscriptions.find(
+                {"tenantId": tenant_id, "endsOn": None, "startsOn": starts_on},
+                session=session,
+            )
+            for sub in open_subs:
+                _close_subscription(sub, effective_date - timedelta(days=1), session)
         db().subscriptions.insert_one(
             {
                 "_id": new_id,

@@ -118,13 +118,20 @@ def test_plans_005_change_plan(mongo):
     assert _rows(mongo, T[4]) == [(P[1], "2026-01-01", "2026-03-14", "active"), (P[3], "2026-03-15", None, "active")]
 
 
-def test_change_plan_same_day_leaves_same_day_subscription_open(mongo):
-    # sp_change_plan closes rows with starts_on < effective_on only, as the Oracle cursor does.
+def test_change_plan_same_day_closes_same_day_subscription(mongo):
+    # Oracle backend: UPDATE ... SET ends_on = eff - 1 WHERE ends_on IS NULL AND starts_on = eff
+    # (hist pre-image via TRG_SUBSCRIPTIONS_HIST), then sp_change_plan inserts the new row.
     mongo.change_plan(T[1], P[2], "2026-01-01")
-    assert sorted(_rows(mongo, T[1])) == [(P[1], "2026-01-01", None, "active"), (P[2], "2026-01-01", None, "active")]
-    assert mongo.db().subscriptions_hist.count_documents({}) == 0
+    assert _rows(mongo, T[1]) == [(P[1], "2026-01-01", "2025-12-31", "active"), (P[2], "2026-01-01", None, "active")]
+    (hist,) = mongo.db().subscriptions_hist.find({"subscriptionId": S[1]})
+    assert hist["histOp"] == "UPD" and hist["planId"] == P[1] and "endsOn" not in hist
+    (entitled,) = mongo.entitlement(T[1], "2026-01-01")
+    assert entitled["plan_code"] == "GROWTH" and entitled["effective_on"] == "2026-01-01"
+    # Repeating the same change collides on the deterministic subscription id and rolls back.
     with pytest.raises(mongo.DuplicateKeyError):
         mongo.change_plan(T[1], P[2], "2026-01-01")
+    assert _rows(mongo, T[1]) == [(P[1], "2026-01-01", "2025-12-31", "active"), (P[2], "2026-01-01", None, "active")]
+    assert mongo.db().subscriptions_hist.count_documents({"subscriptionId": S[1]}) == 1
 
 
 def test_cancelled_stays_cancelled(mongo):
