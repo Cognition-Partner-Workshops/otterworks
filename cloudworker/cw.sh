@@ -352,7 +352,7 @@ TIMELINE
 }
 
 status_json() {
-  local live git prefs_live prefs_git qd dd alarm pods_json helm_json armed quiet
+  local live git prefs_live prefs_git qd dd alarm armed quiet
   live="$(live_table)"
   git="$(git_table)"
   prefs_live="$(live_preferences_table)"
@@ -360,15 +360,16 @@ status_json() {
   qd="$(queue_depth "$(out sqs_queue_url)")"
   dd="$(queue_depth "$(out sqs_dlq_url)")"
   alarm="$(alarm_state)"
-  pods_json="$(read_cmd kubectl -n "${NS}" get pods -o json 2>/dev/null || true)"
-  helm_json="$(read_cmd helm history notification-service -n "${NS}" -o json 2>/dev/null || true)"
+  local tmp; tmp="$(mktemp -d)"
+  read_cmd kubectl -n "${NS}" get pods -o json >"${tmp}/pods.json" 2>/dev/null || true
+  read_cmd helm history notification-service -n "${NS}" -o json >"${tmp}/helm.json" 2>/dev/null || true
   armed="$(state_get armed_at)"
   quiet="$(state_get quiet_until)"
   jq -n \
     --arg ns "${NS}" --arg live "${live}" --arg git "${git}" \
     --arg prefs_live "${prefs_live}" --arg prefs_git "${prefs_git}" \
     --arg qd "${qd}" --arg dd "${dd}" --arg alarm "${alarm}" \
-    --arg pods "${pods_json}" --arg helm "${helm_json}" \
+    --rawfile pods "${tmp}/pods.json" --rawfile helm "${tmp}/helm.json" \
     --arg armed "${armed}" --arg quiet "${quiet}" '
     def num: if . == "" or . == null or . == "None" then null else tonumber end;
     def nz: if . == "" or . == "None" then null else . end;
@@ -389,6 +390,7 @@ status_json() {
       armed_at: ($armed | nz),
       quiet_until: ($quiet | nz)
     }'
+  rm -rf "${tmp}"
 }
 
 cmd_status() {
