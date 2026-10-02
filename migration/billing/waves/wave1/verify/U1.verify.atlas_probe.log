@@ -1,0 +1,21 @@
+database: ow_tp_billing_20261001T233613Z (read-only probe: list/count/find/index_information only)
+collections: ['codes', 'plans', 'subscriptions', 'subscriptions_hist', 'tenants']
+codes: count=32 indexes={"_id_": [[["_id", 1]], false]}
+plans: count=3 indexes={"_id_": [[["_id", 1]], false], "uq_plans_code": [[["code", 1]], true]}
+subscriptions: count=69 indexes={"_id_": [[["_id", 1]], false], "ix_subscriptions_tenant_starts": [[["tenantId", 1], ["startsOn", -1]], false]}
+subscriptions_hist: count=0 indexes={"_id_": [[["_id", 1]], false], "ix_subscriptions_hist_subscription": [[["subscriptionId", 1], ["_id", 1]], false]}
+tenants: count=69 indexes={"_id_": [[["_id", 1]], false], "uq_tenants_name": [[["name", 1]], true]}
+principal: [{'user': 'otterworks-app', 'db': 'admin'}]
+tenants without any subscription: 0
+subscriptions whose tenantId has no tenant: 0
+subscriptions whose planId has no plan: 0
+subscriptions by status: [{'_id': None, 'n': 69}]
+plans: [('10000000-0000-0000-0000-000000000001', 'STARTER', '49', '0.055'), ('10000000-0000-0000-0000-000000000002', 'GROWTH', '149', '0.035'), ('10000000-0000-0000-0000-000000000003', 'SCALE', '499', '0.02')]
+money bson types: [{'_id': {'fee': 'decimal', 'over': 'decimal'}, 'n': 3}]
+any double anywhere in U1 collections:
+subscriptions_hist count: 0
+codes codeTypes: ['CUST_STATUS', 'CUST_TYPE', 'DUN_STATUS', 'INV_STATUS', 'NOTIF_KIND', 'PHONE_TYPE', 'PLAN_TIER', 'SUB_STATUS', 'TENANT_STATUS', 'USAGE_KIND']
+sample subscription: {'_id': '013adf36-54c4-13b3-9a07-b3082f2df28e', 'tenantId': '7f0620c4-4161-2f50-3869-0805321b660a', 'planId': '10000000-0000-0000-0000-000000000003', 'startsOn': datetime.datetime(2026, 1, 1, 0, 0), 'statusCd': 10}
+sample tenant: {'_id': '00000000-0000-0000-0000-000000000001', 'name': 'Tenant One', 'taxExemptYn': 'N', 'statusCd': 10}
+sample code: {'_id': {'codeType': 'CUST_STATUS', 'codeVal': 1}, 'codeType': 'CUST_STATUS', 'codeVal': 1, 'codeDesc': 'active'}
+sample plan: {'_id': '10000000-0000-0000-0000-000000000001', 'code': 'STARTER', 'tierCd': 1, 'monthlyFee': Decimal128('49'), 'includedUnits': 100, 'overageRate': Decimal128('0.055'), 'activeYn': 'Y'}
