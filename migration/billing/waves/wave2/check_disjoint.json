@@ -1,0 +1,96 @@
+{
+  "kind": "wave2-disjointness",
+  "plan_step": "s4.2.0-preflight",
+  "inputs": {
+    "units": "migration/billing/units/units.json",
+    "mapping_spec": "migration/billing/mapping_spec.json"
+  },
+  "wave2_units": [
+    "U2",
+    "U3",
+    "U4",
+    "U5"
+  ],
+  "u1_collections": [
+    "codes",
+    "plans",
+    "subscriptions",
+    "subscriptions_hist",
+    "tenants"
+  ],
+  "write_targets": {
+    "U2": [
+      "customers",
+      "customers_hist"
+    ],
+    "U3": [
+      "rating_periods",
+      "usage_events"
+    ],
+    "U4": [
+      "credit_notes",
+      "invoice_feed",
+      "invoice_feed_quarantine",
+      "invoices"
+    ],
+    "U5": [
+      "billing_audit_log",
+      "dunning_attempts",
+      "notifications"
+    ]
+  },
+  "source_tables": {
+    "U2": [
+      "CUSTOMER_MASTER",
+      "CUSTOMER_MASTER_HIST",
+      "ENTITY_ATTR_VALUE"
+    ],
+    "U3": [
+      "RATING_PERIODS",
+      "RATING_RESULTS",
+      "USAGE_EVENTS"
+    ],
+    "U4": [
+      "CREDIT_NOTES",
+      "INVOICES",
+      "INVOICE_HEADER",
+      "INVOICE_LINE",
+      "INVOICE_LINES"
+    ],
+    "U5": [
+      "BILLING_AUDIT_LOG",
+      "DUNNING_ATTEMPTS",
+      "NOTIFICATIONS"
+    ]
+  },
+  "secondary_indexes": {
+    "U1": 4,
+    "U2": 4,
+    "U3": 2,
+    "U4": 8,
+    "U5": 3,
+    "total": 21
+  },
+  "shared_writes": {
+    "billing_audit_log": {
+      "owner": "U5",
+      "writer_shipped_by": "U1",
+      "rule": "every module appends through the U1 log_msg helper, outside its transaction; only U5 loads the carried rows, runs recon on the collection and owns retention (match-live, no TTL)",
+      "cross_unit_edge": {
+        "from": "*",
+        "to": "U5",
+        "kind": "write",
+        "via": "audit writer (log_msg port, U1 helper)",
+        "collections": [
+          "billing_audit_log"
+        ],
+        "note": "every module appends audit documents outside its transaction; U5 owns the collection's load, recon and retention"
+      }
+    }
+  },
+  "pairwise_disjoint": true,
+  "disjoint_from_u1": true,
+  "covers_non_u1": true,
+  "failures": [],
+  "verdict": "pass"
+}
