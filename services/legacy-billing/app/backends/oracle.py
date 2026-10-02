@@ -136,6 +136,22 @@ def suspend_overdue(as_of):
     _procedure("pkg_dunning.sp_suspend_overdue", (_as_date(as_of),))
 
 
+def dunning_attempts(as_of):
+    return query(
+        """SELECT * FROM (
+               SELECT d.id, d.tenant_id, d.invoice_id, d.attempt_no,
+                      d.scheduled_for, c.code_desc AS status
+                 FROM dunning_attempts d
+                 LEFT JOIN codes c
+                   ON c.code_type = 'DUN_STATUS'
+                  AND c.code_val = d.status_cd
+                WHERE d.scheduled_for <= :1
+                ORDER BY d.scheduled_for DESC, d.id DESC
+           ) WHERE ROWNUM <= 200""",
+        (_as_date(as_of),),
+    )
+
+
 def ensure_tenant(connection, tenant_id, email):
     with connection.cursor() as cursor:
         cursor.execute("SELECT 1 FROM tenants WHERE id = :1", (tenant_id,))

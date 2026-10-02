@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T17:56:51Z",
+  "generated_at": "2026-10-02T18:15:49Z",
   "run_mode": "fixture",
   "verdict": "pass",
   "merge_evidence": false,
@@ -42,7 +42,7 @@
   },
   "timings": {
     "source_fetch_s": 0.0,
-    "target_fetch_s": 0.002
+    "target_fetch_s": 0.001
   },
   "summary": {
     "checks": 18,

@@ -144,6 +144,12 @@ tp-u2-load: ## Load U2 (customers with embedded attributes, customers_hist) from
 tp-u2-parity: ## Customer route parity, Oracle vs Mongo backend: GET /api/v1/billing/customer and /me.customer field for field (requires oracle-billing-up seeded NS=demo + mongo-billing-up)
 	TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave2/customer_parity.py $(if $(REPORT),--out $(REPORT),)
 
+tp-u5-load: ## Load the U5 collections (dunning_attempts, notifications, billing_audit_log) from the Oracle fixture into the mongo fixture, twice (rerun must be a no-op)
+	OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/loaders/oracle_to_mongo.py --mode fixture --collections dunning_attempts,notifications,billing_audit_log --oracle-dsn-env OW_TP_ORACLE_FIXTURE_DSN --mongo-uri-env OW_TP_MONGO_FIXTURE_URI --passes 2 $(if $(REPORT),--report $(REPORT),)
+
+tp-u5-parity: ## Dunning-module parity, Oracle vs Mongo backend, against the immutable DUNNING-001..005 transcripts (requires oracle-billing-up + mongo-billing-up)
+	TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave2/dunning_parity.py $(if $(REPORT),--out $(REPORT),)
+
 TP_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.tp.yml
 TP_SERVICES = $(if $(filter core,$(PROFILE)),api-gateway auth-service document-service file-service web-app admin-dashboard legacy-billing usage-bridge,)
 

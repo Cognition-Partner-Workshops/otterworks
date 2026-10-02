@@ -64,6 +64,11 @@ def _customers_backend():
     return backend_name() in {"oracle", "mongo"}
 
 
+def _dunning_backend():
+    """U5 (dunning module) is served by the Oracle estate or its Mongo port (d-logic-home)."""
+    return backend_name() in {"oracle", "mongo"}
+
+
 def _parse_date(value, name):
     if value is None:
         value = date.today().isoformat()
@@ -293,13 +298,14 @@ def customer():
 def admin_overdue():
     if not _admin():
         return jsonify(error="forbidden"), 403
-    if not _oracle_only():
+    if not _dunning_backend():
         return _not_available()
     as_of, date_error = _parse_date(request.args.get("as_of"), "as_of")
     if date_error:
         return date_error
+    backend = get_backend()
     try:
-        rows = oracle.overdue(as_of)
+        rows = backend.overdue(as_of)
         normalized = []
         for row in rows:
             row = dict(row)
@@ -307,37 +313,24 @@ def admin_overdue():
                 row.setdefault("amount", row["total"])
             normalized.append(row)
         return jsonify(normalized)
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/admin/dunning")
 def admin_dunning():
     if not _admin():
         return jsonify(error="forbidden"), 403
-    if not _oracle_only():
+    if not _dunning_backend():
         return _not_available()
     as_of, date_error = _parse_date(request.args.get("as_of"), "as_of")
     if date_error:
         return date_error
+    backend = get_backend()
     try:
-        return jsonify(
-            oracle.query(
-                """SELECT * FROM (
-                       SELECT d.id, d.tenant_id, d.invoice_id, d.attempt_no,
-                              d.scheduled_for, c.code_desc AS status
-                         FROM dunning_attempts d
-                         LEFT JOIN codes c
-                           ON c.code_type = 'DUN_STATUS'
-                          AND c.code_val = d.status_cd
-                        WHERE d.scheduled_for <= :1
-                        ORDER BY d.scheduled_for DESC, d.id DESC
-                   ) WHERE ROWNUM <= 200""",
-                (oracle._as_date(as_of),),
-            )
-        )
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+        return jsonify(backend.dunning_attempts(as_of))
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @internal.post("/internal/usage/events")

@@ -1,3 +1,6 @@
+from datetime import date
+
+import click
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 from backends import get_backend
@@ -76,6 +79,20 @@ def invoice_issue(tenant_id):
 @app.get("/api/invoices/<invoice_id>/lines")
 def invoice_lines(invoice_id):
     return jsonify(get_backend().invoice_lines(invoice_id))
+
+
+@app.cli.command("nightly-dunning")
+@click.option("--as-of", "as_of", default=None, help="run date (YYYY-MM-DD); default: today")
+def nightly_dunning(as_of):
+    """JOB_NIGHTLY_DUNNING, run by hand: schedule_dunning then suspend_overdue for AS_OF.
+
+    Nothing schedules this; the Oracle job was created DISABLED and the estate keeps it that way.
+    """
+    as_of = as_of or date.today().isoformat()
+    backend = get_backend()
+    backend.schedule_dunning(as_of)
+    backend.suspend_overdue(as_of)
+    click.echo(f"nightly-dunning as_of={as_of} backend={backend.NAME}: scheduled, suspended")
 
 
 @app.get("/api/dunning/overdue")
