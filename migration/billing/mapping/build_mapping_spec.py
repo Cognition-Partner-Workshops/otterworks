@@ -12,6 +12,7 @@ cannot drift from them:
     migration/billing/tolerances.json                 money columns compared as decimal (#1771)
     migration/billing/fixtures/demo.json              planted anomalies, legacy representations (#1773)
     migration/billing/mapping/cardinality.json        live child-per-parent bounds (mapping/cardinality.py)
+    migration/billing/mapping/dispositions.py         Oracle-specific construct dispositions (s3.2-known-incompatibilities)
 
 Usage:
     build_mapping_spec.py            # (re)write migration/billing/mapping_spec.json
@@ -26,6 +27,8 @@ import json
 import re
 import sys
 from pathlib import Path
+
+from dispositions import incompatibilities
 
 REPO = Path(__file__).resolve().parents[3]
 BILLING = REPO / "migration/billing"
@@ -283,7 +286,7 @@ def model(t: dict, money_cols, card: dict) -> list[dict]:
                "PK_INVOICE_LINES carried across documents as a unique multikey index (partial so invoices without lines do not collide on a missing key)",
                unique=True, partialFilterExpression={"lines.id": {"$exists": True}}),
         ],
-        "writes": {"post_cutover": "sp_issue_invoice replacement inserts header+lines as one document inside the issue_invoice transaction; statusCd 40/30 is still set outside the app (access_patterns §2.10)"},
+        "writes": {"post_cutover": "sp_issue_invoice replacement inserts header+lines as one document inside the issue_invoice transaction; statusCd 40/30 is never written by the app (access_patterns §2.10) and has no named owner after cutover: open behavior difference incompatibilities bd-overdue-status-owner"},
         "notes": ["invoice by tenant/status (ticket) = ix_invoices_tenant_issued prefix + statusCd filter in memory per tenant (<= tens of invoices per tenant); overdue by status across tenants = ix_invoices_status_issued.",
                   "Uniqueness of (invoice, lineNo) inside one document cannot be expressed as a MongoDB unique index (multikey indexes do not compare entries of the same document); the writer and the $jsonSchema validator enforce it."],
     })
@@ -339,11 +342,13 @@ def model(t: dict, money_cols, card: dict) -> list[dict]:
                 "rule": "SEQ_BILLING_AUDIT_LOG value (TRG_BILLING_AUDIT_LOG_ID) kept for carried rows; new rows get the app-issued next value"},
         "fields": fields_for(t["BILLING_AUDIT_LOG"], money_cols, skip={"LOG_ID"}),
         "embedded": [],
-        "indexes": [ix("ttl_billing_audit_log_logged_at", {"loggedAt": 1}, ["JOB_PURGE_AUDIT_LOG (retired)"],
-                       "TTL replaces the 03:30 daily DELETE of rows older than 90 days (census bucket note)", expireAfterSeconds=90 * 24 * 3600)],
-        "writes": {"post_cutover": "log_msg replacement: a single-document insert issued OUTSIDE any session/transaction (its own connection or no session), errors swallowed as in the PL/SQL; never part of an atomic unit",
+        "indexes": [],
+        "writes": {"post_cutover": "log_msg replacement: a single-document insert issued OUTSIDE any session/transaction (its own connection or no session); an insert failure is raised to the caller (incompatibilities bd-log-msg-swallow); never part of an atomic unit",
                    "autonomous": True},
-        "notes": ["TTL deletion is intended retention (census: JOB_PURGE_AUDIT_LOG retire -> TTL); recon excludes rows older than 90 days at capture time."],
+        "retention": {"decision": "d-audit-retention", "chosen": "match-live",
+                      "rule": "no TTL index and no purge: JOB_PURGE_AUDIT_LOG is DISABLED live (run_count 0), so matching live keeps every row; recon compares every row",
+                      "alternative": "ttl-90d (human pick on the plan): add ttl_billing_audit_log_logged_at {loggedAt: 1} expireAfterSeconds 7776000 and exclude rows older than 90 days from recon"},
+        "notes": ["Never read by the app, so no secondary index; the census bucket note's 'retire -> TTL' for JOB_PURGE_AUDIT_LOG is superseded by d-audit-retention = match-live."],
     })
 
     # --- customers (CUSTOMER_MASTER + ENTITY_ATTR_VALUE, d-customer-eav) -----------------------
@@ -548,7 +553,7 @@ def build() -> dict:
         {"name": "usage ingest", "collections": ["usage_events"], "documents": "1", "mechanism": "single-document insert; duplicate _id -> 'duplicate'",
          "oracle": "POST /internal/usage/events: second transaction after ensure_tenant"},
         {"name": "log_msg (audit)", "collections": ["billing_audit_log"], "documents": "1",
-         "mechanism": "single-document insert outside any transaction/session; failure swallowed", "oracle": "PRAGMA AUTONOMOUS_TRANSACTION"},
+         "mechanism": "single-document insert outside any transaction/session; failure raised to the caller (bd-log-msg-swallow)", "oracle": "PRAGMA AUTONOMOUS_TRANSACTION; WHEN OTHERS THEN ROLLBACK"},
     ]
 
     anomalies = {a["kind"]: {"count": a.get("count"), "handling": h} for a, h in zip(
@@ -580,6 +585,7 @@ def build() -> dict:
                 "d-customer-eav": "One customer doc, EAV embedded and typed -> customers.attributes[] with value (verbatim) + typed",
                 "d-history-tables": "Separate history collections -> subscriptions_hist, customers_hist",
                 "d-migration-db": f"Fresh database ow_tp_billing_<run> per run (UNT-3) -> {DATABASE}",
+                "d-audit-retention": "match-live (default; the live purge job is DISABLED) -> billing_audit_log has no TTL index and no purge; ttl-90d is the human's alternative (billing_audit_log.retention)",
             },
             "made_here": {
                 "d-embed-rating-result": "RATING_RESULTS is a 1:1 child written with its period (md5(period_id) id, same transaction) and never read alone -> rating_periods.result sub-document",
@@ -587,6 +593,11 @@ def build() -> dict:
                 "d-feed-embed-lines": "INVOICE_LINE embedded under INVOICE_HEADER (1-23 live, read only via the header join); orphans to invoice_feed_quarantine",
                 "d-flat-customer-columns": "all 155 CUSTOMER_MASTER columns carried flat (camelCase) for SELECT * parity; regrouping deferred to the service refactor",
                 "d-null-absent": "an Oracle NULL is an absent field; '' is the string '' (tolerances.null.null_equals_empty_string = false)",
+            },
+            "open": {
+                "d-cdc-connector": "human decision on s2.3-dependency-register (off-repo CDC principal); not taken here - nothing in this spec depends on it except who writes the delta after the initial load (s5.1)",
+                "d-mainframe-load": "human decision on s2.3-dependency-register (CUSTBILL month-end load); not taken here - it names the post-cutover loader of invoice_feed / invoice_feed_quarantine, whose shape is fixed above",
+                "bd-overdue-status-owner": "who sets invoices.statusCd = 40 after cutover; nobody in the app does today (incompatibilities.behavior_differences)",
             },
         },
         "target": {
@@ -651,8 +662,9 @@ def build() -> dict:
         "out_of_scope": [
             "FIXTURE_META (not in the migrate bucket; census coverage only)",
             "collection creation, validators and index builds (s3.4 recon/load scripts consume this spec)",
-            "the Oracle-specific construct dispositions (s3.2-known-incompatibilities): TIMESTAMP(6) sub-ms precision, package-global g_* state, autonomous audit, YYYYMMDD string date compares are flagged above as inputs to it",
+            "the application code that implements the dispositions in 'incompatibilities' (billing service refactor, CDC connector, mainframe loader)",
         ],
+        "incompatibilities": incompatibilities(census, buckets),
         "stats": {"collections": len(collections), "secondary_indexes": index_count,
                   "deferred_indexes": sum(1 for c in collections for i in c["indexes"] if i["options"].get("build") == "deferred"),
                   "embedded_arrays": sum(1 for c in collections for e in c["embedded"] if e["relationship"] != "one-to-one"),
@@ -675,10 +687,11 @@ def main() -> int:
         if current != text:
             print(f"FAIL {args.out} differs from the generated spec; rerun build_mapping_spec.py", file=sys.stderr)
             return 1
-        s = spec["stats"]
+        s, inc = spec["stats"], spec["incompatibilities"]["coverage"]
         print(f"OK {args.out}: {s['migrate_tables']} migrate tables -> {s['collections']} collections, "
               f"{s['embedded_arrays']} embedded arrays + {s['embedded_subdocuments']} sub-document, {s['secondary_indexes']} indexes "
-              f"({s['deferred_indexes']} deferred), {s['fields']} fields, {len(spec['access_pattern_coverage'])} entrypoints covered")
+              f"({s['deferred_indexes']} deferred), {s['fields']} fields, {len(spec['access_pattern_coverage'])} entrypoints covered, "
+              f"{inc['dispositions']} dispositions / {inc['behavior_differences']} behavior differences ({len(inc['open'])} open)")
         return 0
     Path(args.out).write_text(text, encoding="utf-8")
     print(f"wrote {args.out} ({len(text)} bytes)")
