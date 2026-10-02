@@ -5,7 +5,7 @@ the plans scenarios PLANS-001..005 (procs/transcripts/plans) plus the PKG_OW_UTI
 """
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -168,3 +168,137 @@ def test_util_helpers(mongo):
     assert mongo.f_str2dt("15-JUN-99").isoformat() == "1999-06-15"
     with pytest.raises(NotImplementedError):
         mongo.usage_rating(T[1], "2026-02-01", "2026-02-28")
+
+
+# ---------------------------------------------------------------- U4 invoicing
+
+FEB = (date(2026, 2, 1), date(2026, 2, 28))
+
+
+@pytest.fixture
+def mongo_u4(mongo):
+    from bson import Decimal128
+
+    db = mongo.db()
+    for name in ("usage_events", "rating_periods", "credit_notes", "invoices"):
+        db.drop_collection(name)
+    db.codes.insert_many([
+        {"_id": {"codeType": "INV_STATUS", "codeVal": 20}, "codeDesc": "issued"},
+        {"_id": {"codeType": "INV_STATUS", "codeVal": 30}, "codeDesc": "paid"},
+    ])
+    db.usage_events.insert_many([
+        {"_id": "u1", "tenantId": T[1], "units": 100, "occurredAt": day("2026-02-03")},
+        {"_id": "u2", "tenantId": T[1], "units": 100, "occurredAt": day("2026-02-28")},
+        {"_id": "u3", "tenantId": T[1], "units": 12, "occurredAt": day("2026-02-15")},
+        {"_id": "u4", "tenantId": T[1], "units": 999, "occurredAt": day("2026-03-01")},
+    ])
+    db.credit_notes.insert_many([
+        {"_id": "n-newer", "tenantId": T[1], "issuedOn": day("2026-01-10"), "amount": Decimal128("3.00"), "remainingAmount": Decimal128("3.00")},
+        {"_id": "n-older", "tenantId": T[1], "issuedOn": day("2026-01-05"), "amount": Decimal128("100.00"), "remainingAmount": Decimal128("100.00")},
+        {"_id": "n-spent", "tenantId": T[1], "issuedOn": day("2025-12-01"), "amount": Decimal128("50.00"), "remainingAmount": Decimal128("0.00")},
+    ])
+    db.invoices.insert_one({
+        "_id": "inv-seeded", "tenantId": T[4], "periodId": "p-seeded", "issuedAt": day("2026-01-31"),
+        "subtotal": Decimal128("161.29"), "tax": Decimal128("0.00"), "total": Decimal128("161.29"), "statusCd": 30,
+        "lines": [
+            {"id": "l2", "lineNo": 2, "lineType": "usage", "description": "usage overage", "amount": Decimal128("12.29")},
+            {"id": "l1", "lineNo": 1, "lineType": "plan", "description": "GROWTH", "amount": Decimal128("149.00")},
+        ],
+    })
+    db.rating_periods.insert_one({"_id": "p-seeded", "tenantId": T[4], "periodStart": day("2026-01-01"), "periodEnd": day("2026-01-31")})
+    return mongo
+
+
+def _by_type(lines):
+    return {line["line_type"] + ("" if line["line_type"] != "tax" else line["description"]): line for line in lines}
+
+
+def test_invoice_preview_five_lines_rated_and_taxed(mongo_u4):
+    lines = mongo_u4.invoice_preview(T[1], *FEB)
+    assert [(l["line_no"], l["line_type"], l["description"]) for l in lines] == [
+        ("1", "plan", "STARTER"), ("2", "usage", "usage overage"), ("3", "tax", "regional tax"),
+        ("4", "tax", "local tax"), ("5", "credit", "credit notes"),
+    ]
+    by = _by_type(lines)
+    assert by["plan"]["amount"] == "49" and by["plan"]["total"] == "49"
+    # 212 units in period (the March event is outside), 100 included: 101 at 0.05 + 11 at 0.075 = 5.875 -> 5.88
+    assert by["usage"]["amount"] == "5.88"
+    # (49 + 5.88) * 0.0825 = 4.5276, split in two unrounded halves as fn_invoice_preview does
+    assert by["taxregional tax"]["amount"] == by["taxlocal tax"]["amount"] == "2.2638"
+    # 103.00 of open credit, capped at ROUND(49 + 5.88 + 4.5276, 2) = 59.41; spent notes do not count
+    assert by["credit"]["amount"] == "0" and by["credit"]["credit_applied"] == "59.41" and by["credit"]["total"] == "-59.41"
+    assert all(l["tax_amount"] == "0" for l in lines)
+
+
+def test_invoice_preview_without_usage_or_credit(mongo_u4):
+    by = _by_type(mongo_u4.invoice_preview(T[4], *FEB))
+    assert (by["plan"]["amount"], by["usage"]["amount"], by["credit"]["total"]) == ("49", "0", "0")
+    assert by["taxregional tax"]["amount"] == "2.02125"
+
+
+def test_invoice_preview_tax_exempt_tenant(mongo_u4):
+    mongo_u4.db().tenants.update_one({"_id": T[4]}, {"$set": {"taxExemptYn": "Y"}})
+    by = _by_type(mongo_u4.invoice_preview(T[4], *FEB))
+    assert by["taxregional tax"]["amount"] == by["taxlocal tax"]["amount"] == "0"
+
+
+def test_issue_invoice_is_deterministic_rebuilds_lines_and_burns_credit_oldest_first(mongo_u4):
+    from bson import Decimal128
+
+    db = mongo_u4.db()
+    mongo_u4.issue_invoice(T[1], *FEB)
+    period_id = mongo_u4.f_md5_uuid(f"{T[1]}2026-02-01")
+    invoice_id = mongo_u4.f_md5_uuid(f"{period_id}invoice")
+    invoice = db.invoices.find_one({"_id": invoice_id})
+    assert invoice["tenantId"] == T[1] and invoice["periodId"] == period_id and invoice["statusCd"] == 20
+    # sp_issue_invoice sums the two rounded tax lines (2.26 + 2.26) but caps the credit on the
+    # unrounded tax (59.41), so the Oracle total for a fully covered invoice here is -0.01
+    assert (invoice["subtotal"], invoice["tax"], invoice["total"]) == (Decimal128("54.88"), Decimal128("4.52"), Decimal128("-0.01"))
+    assert [(l["lineNo"], l["lineType"], l["amount"]) for l in invoice["lines"]] == [
+        (1, "plan", Decimal128("49.00")), (2, "usage", Decimal128("5.88")), (3, "tax", Decimal128("2.26")),
+        (4, "tax", Decimal128("2.26")), (5, "credit", Decimal128("-59.41")),
+    ]
+    assert all(isinstance(l["amount"], Decimal128) for l in invoice["lines"])
+    assert len({l["id"] for l in invoice["lines"]}) == 5
+    remaining = {n["_id"]: n["remainingAmount"] for n in db.credit_notes.find({"tenantId": T[1]})}
+    assert remaining == {"n-older": Decimal128("40.59"), "n-newer": Decimal128("3.00"), "n-spent": Decimal128("0.00")}
+
+    period = db.rating_periods.find_one({"_id": period_id})
+    assert period["tenantId"] == T[1] and period["periodStart"] == day("2026-02-01") and period["periodEnd"] == day("2026-02-28")
+    assert period["result"]["usedUnits"] == 212 and period["result"]["billableUnits"] == 112
+    assert period["result"]["overageAmount"] == Decimal128("5.88") and period["result"]["subscriptionId"] == S[1]
+    assert db.billing_audit_log.count_documents({"module": "INVOICING", "message": {"$regex": f"issued invoice={invoice_id} total=-0\\.01$"}}) == 1
+
+    mongo_u4.issue_invoice(T[1], *FEB)
+    assert db.invoices.count_documents({"tenantId": T[1]}) == 1
+    again = db.invoices.find_one({"_id": invoice_id})
+    assert again["statusCd"] == 20 and len(again["lines"]) == 5
+    assert again["total"] == Decimal128("15.81"), "43.59 of credit left against 59.40 of charges"
+    assert {n["_id"]: n["remainingAmount"] for n in db.credit_notes.find({"tenantId": T[1]})} == {
+        "n-older": Decimal128("0.00"), "n-newer": Decimal128("0.00"), "n-spent": Decimal128("0.00")}
+
+
+def test_issue_invoice_without_covering_plan_rolls_back(mongo_u4):
+    db = mongo_u4.db()
+    with pytest.raises(ValueError, match="no covering plan"):
+        mongo_u4.issue_invoice(T[9], *FEB)
+    assert db.invoices.count_documents({"tenantId": T[9]}) == 0
+    assert db.rating_periods.count_documents({"tenantId": T[9]}) == 0
+
+
+def test_invoice_lines_and_listing(mongo_u4):
+    assert mongo_u4.invoice_lines("inv-seeded") == [
+        {"line_no": "1", "line_type": "plan", "description": "GROWTH", "amount": "149"},
+        {"line_no": "2", "line_type": "usage", "description": "usage overage", "amount": "12.29"},
+    ]
+    assert mongo_u4.invoice_lines("missing") == []
+    assert mongo_u4.invoice_owned("inv-seeded", T[4]) is True
+    assert mongo_u4.invoice_owned("inv-seeded", T[1]) is False
+
+    mongo_u4.issue_invoice(T[4], *FEB)
+    listing = mongo_u4.invoices_for_tenant(T[4])
+    assert [(i["period_start"], i["period_end"], i["status"]) for i in listing] == [
+        ("2026-02-01", "2026-02-28", "issued"), ("2026-01-01", "2026-01-31", "paid")]
+    assert (listing[0]["subtotal"], listing[0]["tax"], listing[0]["total"]) == ("49", "4.04", "53.04")
+    assert listing[1]["invoice_id"] == "inv-seeded" and "lines" not in listing[1]
+    assert mongo_u4.invoices_for_tenant(T[1]) == []

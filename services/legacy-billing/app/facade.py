@@ -59,6 +59,11 @@ def _plans_backend():
     return backend_name() in {"oracle", "mongo"}
 
 
+def _invoicing_backend():
+    """U4 (invoicing module) is served by the Oracle estate or its Mongo port (d-logic-home)."""
+    return backend_name() in {"oracle", "mongo"}
+
+
 def _parse_date(value, name):
     if value is None:
         value = date.today().isoformat()
@@ -224,10 +229,13 @@ def invoices():
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _invoicing_backend():
         return _not_available()
+    backend = get_backend()
     try:
         _ensure(tenant_id)
+        if backend is not oracle:
+            return jsonify(backend.invoices_for_tenant(tenant_id))
         return jsonify(
             oracle.query(
                 """SELECT i.id AS invoice_id, rp.period_start, rp.period_end,
@@ -242,8 +250,8 @@ def invoices():
                 (tenant_id,),
             )
         )
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/invoices/<invoice_id>/lines")
@@ -251,19 +259,23 @@ def invoice_lines(invoice_id):
     tenant_id, error = _identity()
     if error:
         return error
-    if not _oracle_only():
+    if not _invoicing_backend():
         return _not_available()
+    backend = get_backend()
     try:
         _ensure(tenant_id)
-        owned = oracle.query(
-            "SELECT 1 FROM invoices WHERE id = :1 AND tenant_id = :2",
-            (invoice_id, tenant_id),
-        )
+        if backend is oracle:
+            owned = oracle.query(
+                "SELECT 1 FROM invoices WHERE id = :1 AND tenant_id = :2",
+                (invoice_id, tenant_id),
+            )
+        else:
+            owned = backend.invoice_owned(invoice_id, tenant_id)
         if not owned:
             return jsonify(error="invoice not found"), 404
-        return jsonify(oracle.invoice_lines(invoice_id))
-    except oracledb.Error:
-        return jsonify(UNAVAILABLE), 503
+        return jsonify(backend.invoice_lines(invoice_id))
+    except backend.ESTATE_ERRORS:
+        return jsonify(backend.UNAVAILABLE), 503
 
 
 @facade.get("/customer")

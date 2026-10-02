@@ -1,4 +1,4 @@
-"""Month-end finance reporting served straight from the Oracle billing estate.
+"""Month-end finance reporting served from the billing estate.
 
 The report is the legacy RPT-114 rollup (see
 db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt and the CODES lookup conventions):
@@ -6,6 +6,13 @@ invoice counts and header totals by status, plus a line rollup by status and
 line type. Orphaned INVOICE_LINE rows fall out of the join, exactly as finance
 always ran it. Rows are namespace-scoped through the deterministic
 conversion batch number.
+
+With BILLING_BACKEND=mongo the same rollups are aggregations over the migrated
+`invoice_feed` collection (headers with their embedded `lines[]`; the orphans
+sit in `invoice_feed_quarantine` and so fall out exactly like the join) and
+`customers`, behind the same JSON contract with `source.engine` = mongodb
+(docs/tech-partnerships/billing-report-contract.md). Any other backend keeps
+reading the Oracle estate directly.
 """
 
 import hashlib
@@ -13,11 +20,12 @@ import logging
 import csv
 import os
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 from flask import Blueprint, jsonify, request
 
+from backends import backend_name, get_backend
 from oracle_conn import oracle_connect as connect_oracle
 
 reports = Blueprint("reports", __name__)
@@ -34,10 +42,18 @@ SOURCE = {
     "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
 }
 
+MONGO_SOURCE = {
+    "engine": "mongodb",
+    "system": "ow_tp_billing_20261001T233613Z (MongoDB Atlas)",
+    "detail": "invoice_feed / invoice_feed.lines via codes lookup (RPT-114)",
+}
+
 FINANCE_SOURCE = {
     "system": "CUSTBILL month-end batch",
     "detail": "ksh/Perl chain over Oracle CUSTBILL extract",
 }
+
+LINE_TYPE_DESC = {1: "CHARGE", 2: "CREDIT", 3: "ADJUSTMENT", 9: "MISC"}
 
 STATUS_SQL = """
 SELECT NVL(st.code_desc, 'UNKNOWN(' || TO_CHAR(h.status_cd) || ')') AS status_desc,
@@ -139,11 +155,172 @@ def oracle_query(sql, params):
         return cursor.fetchall()
 
 
+def mongo_mode():
+    return backend_name() == "mongo"
+
+
+def mongo_db():
+    return get_backend().db()
+
+
+def _unknown(code):
+    return f"UNKNOWN({'' if code is None else code})"
+
+
+def _fm_amount(total, non_null_rows):
+    """TO_CHAR(SUM(x), 'FM999999999999990.00'): NULL when no row had a value."""
+    if not non_null_rows:
+        return None
+    return f"{Decimal(str(total)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP):f}"
+
+
+def _non_null_rows(path):
+    return {"$sum": {"$cond": [{"$gt": [path, None]}, 1, 0]}}
+
+
+def _inv_status_desc(db):
+    codes = {
+        doc["_id"]["codeVal"]: doc.get("codeDesc")
+        for doc in db.codes.find({"_id.codeType": "INV_STATUS"}, {"codeDesc": 1})
+    }
+
+    def desc(status_cd):
+        found = codes.get(status_cd)
+        return found if found is not None else _unknown(status_cd)
+
+    return desc
+
+
+def mongo_status_rows(db, batch_no):
+    status_desc = _inv_status_desc(db)
+    merged = {}
+    for group in db.invoice_feed.aggregate(
+        [
+            {"$match": {"batchNo": batch_no}},
+            {
+                "$group": {
+                    "_id": "$statusCd",
+                    "invoice_count": {"$sum": 1},
+                    "header_total_amt": {"$sum": "$totalAmt"},
+                    "amount_rows": _non_null_rows("$totalAmt"),
+                }
+            },
+        ]
+    ):
+        row = merged.setdefault(status_desc(group["_id"]), [0, Decimal(0), 0])
+        row[0] += group["invoice_count"]
+        row[1] += Decimal(str(group["header_total_amt"]))
+        row[2] += group["amount_rows"]
+    return [(status, count, _fm_amount(total, rows)) for status, (count, total, rows) in sorted(merged.items())]
+
+
+def mongo_line_rows(db, batch_no):
+    status_desc = _inv_status_desc(db)
+    merged = {}
+    for group in db.invoice_feed.aggregate(
+        [
+            {"$match": {"batchNo": batch_no}},
+            {"$unwind": "$lines"},
+            {
+                "$group": {
+                    "_id": {"statusCd": "$statusCd", "lineTypeCd": "$lines.lineTypeCd"},
+                    "line_count": {"$sum": 1},
+                    "line_amount": {"$sum": "$lines.amount"},
+                    "amount_rows": _non_null_rows("$lines.amount"),
+                    "line_tax": {"$sum": "$lines.taxAmt"},
+                    "tax_rows": _non_null_rows("$lines.taxAmt"),
+                    "invoices": {"$addToSet": "$_id"},
+                }
+            },
+            {"$addFields": {"invoices_touched": {"$size": "$invoices"}}},
+            {"$project": {"invoices": 0}},
+        ]
+    ):
+        line_type_cd = group["_id"]["lineTypeCd"]
+        key = (status_desc(group["_id"]["statusCd"]), LINE_TYPE_DESC.get(line_type_cd, _unknown(line_type_cd)))
+        row = merged.setdefault(key, [0, Decimal(0), 0, Decimal(0), 0, 0])
+        row[0] += group["line_count"]
+        row[1] += Decimal(str(group["line_amount"]))
+        row[2] += group["amount_rows"]
+        row[3] += Decimal(str(group["line_tax"]))
+        row[4] += group["tax_rows"]
+        row[5] += group["invoices_touched"]
+    return [
+        (status, line_type, count, _fm_amount(amount, amount_rows), _fm_amount(tax, tax_rows), touched)
+        for (status, line_type), (count, amount, amount_rows, tax, tax_rows, touched) in sorted(merged.items())
+    ]
+
+
+def mongo_balance_row(db, batch_no):
+    groups = list(
+        db.customers.aggregate(
+            [
+                {"$match": {"conversionBatchNo": batch_no}},
+                {
+                    "$group": {
+                        "_id": None,
+                        "customer_count": {"$sum": 1},
+                        "current_balance_total": {"$sum": "$curBalAmt"},
+                        "current_rows": _non_null_rows("$curBalAmt"),
+                        "past_due_total": {"$sum": "$pastDueAmt"},
+                        "past_due_rows": _non_null_rows("$pastDueAmt"),
+                    }
+                },
+            ]
+        )
+    )
+    if not groups:
+        return (0, None, None)
+    group = groups[0]
+    return (
+        group["customer_count"],
+        _fm_amount(group["current_balance_total"], group["current_rows"]),
+        _fm_amount(group["past_due_total"], group["past_due_rows"]),
+    )
+
+
+def _count(collection, pipeline):
+    rows = list(collection.aggregate([*pipeline, {"$count": "n"}]))
+    return rows[0]["n"] if rows else 0
+
+
+def mongo_recon_checks(db, batch_no):
+    """Integrity of the migrated feed for the namespace: orphans stayed quarantined, every
+    embedded line belongs to its header's batch, every header status maps to an INV_STATUS code."""
+    requarantined = _count(
+        db.invoice_feed_quarantine,
+        [
+            {"$match": {"batchNo": batch_no}},
+            {"$lookup": {"from": "invoice_feed", "localField": "invoiceId", "foreignField": "_id", "as": "header"}},
+            {"$match": {"header": {"$ne": []}}},
+        ],
+    )
+    stray_lines = _count(
+        db.invoice_feed,
+        [
+            {"$match": {"batchNo": batch_no}},
+            {"$unwind": "$lines"},
+            {"$match": {"$expr": {"$ne": ["$lines.batchNo", "$batchNo"]}}},
+        ],
+    )
+    known = [doc["_id"]["codeVal"] for doc in db.codes.find({"_id.codeType": "INV_STATUS"}, {"_id": 1})]
+    unmapped = db.invoice_feed.count_documents({"batchNo": batch_no, "statusCd": {"$nin": known}})
+    observed = [
+        ("invoice-feed-quarantine-orphans-only", 0, requarantined),
+        ("invoice-feed-lines-match-header-batch", 0, stray_lines),
+        ("invoice-feed-status-codes-mapped", 0, unmapped),
+    ]
+    return [
+        {"name": name, "status": "pass" if actual == expected else "fail", "expected": str(expected), "actual": str(actual)}
+        for name, expected, actual in observed
+    ]
+
+
 def report_meta(ns):
     return {
         "namespace": ns,
         "batch_no": ns_batch_no(ns),
-        "source": SOURCE,
+        "source": MONGO_SOURCE if mongo_mode() else SOURCE,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
@@ -161,8 +338,13 @@ def month_end():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
-        line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
+        if mongo_mode():
+            db = mongo_db()
+            status_rows = mongo_status_rows(db, batch_no)
+            line_rows = mongo_line_rows(db, batch_no)
+        else:
+            status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
+            line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
     except Exception:  # estate offline: fail closed, never fabricate numbers
         logger.exception("month-end report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
@@ -185,17 +367,27 @@ def reconciliation():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        balance_rows = oracle_query(BALANCES_SQL, {"batch_no": batch_no})
+        if mongo_mode():
+            db = mongo_db()
+            balance_row = mongo_balance_row(db, batch_no)
+            checks = mongo_recon_checks(db, batch_no)
+        else:
+            balance_row = oracle_query(BALANCES_SQL, {"batch_no": batch_no})[0]
+            checks = None
     except Exception:
         logger.exception("reconciliation report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
     body = report_meta(ns)
-    body["balances"] = shape_balances(balance_rows[0])
+    body["balances"] = shape_balances(balance_row)
     # The legacy estate IS the source of truth: there is nothing to reconcile
     # against, so it reports baseline with no checks. Post-migration backends
     # return status pass|fail with per-check results instead.
-    body["status"] = "baseline"
-    body["checks"] = []
+    if checks is None:
+        body["status"] = "baseline"
+        body["checks"] = []
+    else:
+        body["status"] = "pass" if all(check["status"] == "pass" for check in checks) else "fail"
+        body["checks"] = checks
     return jsonify(body)
 
 

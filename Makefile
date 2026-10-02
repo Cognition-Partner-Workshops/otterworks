@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity mongo-billing-up mongo-billing-down tp-u1-load tp-u1-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-usage-demo tp-month-end tp-run-branch tp-demo-reset demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity mongo-billing-up mongo-billing-down tp-u1-load tp-u1-parity tp-u4-load tp-u4-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-usage-demo tp-month-end tp-run-branch tp-demo-reset demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
 
 SHELL := /bin/bash
 
@@ -137,6 +137,12 @@ tp-u1-load: ## Load U1 (codes, tenants, plans, subscriptions, subscriptions_hist
 
 tp-u1-parity: ## Plans-module parity, Oracle vs Mongo backend, against the immutable PLANS-001..005 transcripts (requires oracle-billing-up + mongo-billing-up)
 	TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave1/plans_parity.py $(if $(REPORT),--out $(REPORT),)
+
+tp-u4-load: ## Load U4 (credit_notes, invoice_feed, invoice_feed_quarantine, invoices) from the local Oracle fixture into the mongo fixture, twice (rerun must be a no-op)
+	OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/loaders/oracle_to_mongo.py --mode fixture --oracle-dsn-env OW_TP_ORACLE_FIXTURE_DSN --mongo-uri-env OW_TP_MONGO_FIXTURE_URI --collections credit_notes,invoice_feed,invoice_feed_quarantine,invoices --passes 2 $(if $(REPORT),--report $(REPORT),)
+
+tp-u4-parity: ## Invoicing-module parity, Oracle vs Mongo backend (INVOICE-001..006 transcripts, facade invoice routes, admin reports, CUSTBILL byte diff; requires oracle-billing-up + mongo-billing-up)
+	TZ=UTC LC_ALL=C OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)' $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave2/invoicing_parity.py $(if $(REPORT),--out $(REPORT),)
 
 TP_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.tp.yml
 TP_SERVICES = $(if $(filter core,$(PROFILE)),api-gateway auth-service document-service file-service web-app admin-dashboard legacy-billing usage-bridge,)
@@ -664,7 +670,7 @@ endif
 	base="$${OTTERWORKS_LEGACY_ROOT:-/tmp/otterworks-legacy}"; \
 	root="$$base/$(NS)"; \
 	mkdir -p "$$root/incoming" "$$root/reports"; \
-	ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) etl/legacy-extra/tools/oracle_custbill_extract.py --ns "$(NS)" --out "$$root/incoming"; \
+	ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) --with pymongo==4.10.1 etl/legacy-extra/tools/oracle_custbill_extract.py --ns "$(NS)" --out "$$root/incoming"; \
 	OTTERWORKS_LEGACY_ROOT="$$root" $(MAKE) legacy-etl-run JOB=parse_custbill_fixedwidth; \
 	OTTERWORKS_LEGACY_ROOT="$$root" $(MAKE) legacy-etl-run JOB=finance_excel_report; \
 	report=$$(ls -1t "$$root"/reports/finance_billing_*.csv | head -1); \

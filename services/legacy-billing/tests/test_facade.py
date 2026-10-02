@@ -425,10 +425,69 @@ def test_facade_mongo_failure_returns_503(monkeypatch):
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/v1/billing/usage", "/api/v1/billing/invoices", "/api/v1/billing/customer"],
+    ["/api/v1/billing/usage", "/api/v1/billing/customer"],
 )
 def test_facade_non_u1_routes_not_available_on_mongo(monkeypatch, path):
     monkeypatch.setenv("BILLING_BACKEND", "mongo")
     response = app.test_client().get(path, headers={"X-User-ID": "tenant"})
     assert response.status_code == 501
     assert response.get_json() == {"error": "not available on this backend"}
+
+
+def test_facade_invoices_served_by_mongo_backend(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    seen = []
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: seen.append(tenant_id) or True)
+    monkeypatch.setattr(
+        mongo,
+        "invoices_for_tenant",
+        lambda tenant_id: [
+            {
+                "invoice_id": "inv-1",
+                "period_start": "2026-02-01",
+                "period_end": "2026-02-28",
+                "subtotal": "54.56",
+                "tax": "4.5",
+                "total": "59.06",
+                "status": "issued",
+            }
+        ],
+    )
+    response = app.test_client().get(
+        "/api/v1/billing/invoices", headers={"X-User-ID": "t6"}
+    )
+    assert response.status_code == 200
+    assert response.get_json()[0]["invoice_id"] == "inv-1"
+    assert response.get_json()[0]["total"] == "59.06"
+    assert seen == ["t6"]
+
+
+def test_facade_invoice_lines_on_mongo_checks_ownership(monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    mongo = backends.get_backend()
+    monkeypatch.setattr(mongo, "ensure_tenant", lambda tenant_id, email: True)
+    monkeypatch.setattr(mongo, "invoice_owned", lambda invoice_id, tenant_id: tenant_id == "t6")
+    monkeypatch.setattr(
+        mongo,
+        "invoice_lines",
+        lambda invoice_id: [
+            {"line_no": "1", "line_type": "plan", "description": "GROWTH", "amount": "149"},
+            {"line_no": "2", "line_type": "usage", "description": "usage overage", "amount": "12.29"},
+        ],
+    )
+    client = app.test_client()
+    owned = client.get("/api/v1/billing/invoices/inv-6/lines", headers={"X-User-ID": "t6"})
+    assert owned.status_code == 200
+    assert [line["line_type"] for line in owned.get_json()] == ["plan", "usage"]
+    foreign = client.get("/api/v1/billing/invoices/inv-6/lines", headers={"X-User-ID": "t3"})
+    assert foreign.status_code == 404
+    assert foreign.get_json() == {"error": "invoice not found"}
+
+
+def test_facade_invoices_on_postgres_stay_not_available(monkeypatch):
+    monkeypatch.delenv("BILLING_BACKEND", raising=False)
+    client = app.test_client()
+    for path in ("/api/v1/billing/invoices", "/api/v1/billing/invoices/x/lines"):
+        response = client.get(path, headers={"X-User-ID": "t1"})
+        assert response.status_code == 501, path

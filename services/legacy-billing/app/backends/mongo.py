@@ -1,16 +1,19 @@
-"""MongoDB backend: U1 (foundation + plans) of the Oracle -> Atlas migration.
+"""MongoDB backend: U1 (foundation + plans) and U4 (invoicing) of the Oracle -> Atlas migration.
 
 Ports PKG_OW_UTIL (f_md5_uuid, f_code_desc, f_dt2str, f_str2dt, log_msg), PKG_PLANS
 (fn_list_plans, fn_entitlement, sp_change_plan), the ensure_tenant bootstrap and the two
-subscription triggers (TRG_SUBSCRIPTIONS_HIST pre-image copy, TRG_SUB_NO_UNCANCEL) onto the
-documents produced by migration/billing/recon/recon.py's reference mapping. Every statement
-names the migration database explicitly; nothing else is ever touched.
+subscription triggers (TRG_SUBSCRIPTIONS_HIST pre-image copy, TRG_SUB_NO_UNCANCEL), and
+PKG_INVOICING (fn_invoice_preview, fn_invoice_lines, sp_issue_invoice as one transaction over
+rating_periods + invoices + credit_notes) onto the documents produced by
+migration/billing/recon/recon.py's reference mapping. Every statement names the migration
+database explicitly; nothing else is ever touched.
 """
+import calendar
 import hashlib
 import os
 import re
 from datetime import date, datetime, timedelta, timezone
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal, localcontext
 from uuid import NAMESPACE_URL, uuid5
 
 from bson import Decimal128, Int64
@@ -377,6 +380,360 @@ def customer_summary(tenant_id):
     return None
 
 
+# ------------------------------------------------------------ PKG_INVOICING
+
+
+TAX_RATE = Decimal("0.0825")
+INVOICE_STATUS_ISSUED = 20
+SUBSCRIPTION_SUSPENDED = 20
+TIER_BREAK_UNITS = 101
+CENTS = Decimal("0.01")
+
+
+def _round(value, places=2):
+    """Oracle ROUND(n, places): ties away from zero; NULL in, NULL out."""
+    if value is None:
+        return None
+    return Decimal(value).quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP)
+
+
+def _num(value):
+    """Render a NUMBER as python-oracledb hands it to the Oracle backend: no trailing zeros."""
+    if value is None:
+        return None
+    d = _decimal(value)
+    if d == d.to_integral_value():
+        return str(int(d))
+    return format(d.normalize(), "f")
+
+
+def _nvl(value, default):
+    return default if value is None else value
+
+
+def _least(a, b):
+    return None if a is None or b is None else min(a, b)
+
+
+def _greatest(a, b):
+    return None if a is None or b is None else max(a, b)
+
+
+def _money(value):
+    """Store as the NUMBER(12,2) column did: rounded to cents, Decimal128."""
+    return Decimal128(_round(value))
+
+
+def _add_months(d, months):
+    """Oracle ADD_MONTHS: a month-end day stays a month-end day."""
+    index = d.month - 1 + months
+    year, month = d.year + index // 12, index % 12 + 1
+    last = calendar.monthrange(year, month)[1]
+    day = last if d.day == calendar.monthrange(d.year, d.month)[1] else min(d.day, last)
+    return date(year, month, day)
+
+
+def _period_subscriptions(tenant_id, start, end, session=None):
+    """The tenant's subscriptions covering the period, latest starts_on first."""
+    start_dt, end_dt = _as_bson_date(start), _as_bson_date(end)
+    return list(
+        db().subscriptions.find(
+            {
+                "tenantId": tenant_id,
+                "startsOn": {"$lte": end_dt},
+                "$or": [{"endsOn": None}, {"endsOn": {"$gte": start_dt}}],
+            },
+            sort=[("startsOn", DESCENDING)],
+            session=session,
+        )
+    )
+
+
+def _plan_doc(plan_id, session=None):
+    if plan_id is None:
+        return None
+    return db().plans.find_one({"_id": plan_id}, session=session)
+
+
+def _rating_quantities(tenant_id, start, end, session=None):
+    """pkg_rating.compute_rating: the rated quantities of one period (the package globals).
+
+    Carried here for the issue transaction; the U3 port owns the rating entrypoints."""
+    start_d, end_d = _as_date(start), _as_date(end)
+    subs = _period_subscriptions(tenant_id, start_d, end_d, session)
+    sub = subs[0] if subs else None
+    plan = _plan_doc(sub.get("planId"), session) if sub else None
+    included = None if plan is None or plan.get("includedUnits") is None else int(plan["includedUnits"])
+    rate = None if plan is None else _decimal(plan.get("overageRate"))
+
+    used = 0
+    for event in db().usage_events.find({"tenantId": tenant_id}, {"units": 1, "occurredAt": 1}, session=session):
+        occurred = event.get("occurredAt")
+        if occurred is not None and start_d <= _as_date(occurred) <= end_d:
+            used += int(_nvl(event.get("units"), 0))
+
+    prior = 0
+    for period in db().rating_periods.find(
+        {
+            "tenantId": tenant_id,
+            "periodStart": {"$lt": _as_bson_date(start_d), "$gte": _as_bson_date(_add_months(start_d, -3))},
+            "result": {"$exists": True},
+        },
+        {"result.rolloverUnits": 1},
+        session=session,
+    ):
+        prior += int(_nvl(period["result"].get("rolloverUnits"), 0))
+    cap = None if included is None else 2 * included
+    prior = _least(_nvl(cap, prior), prior)
+
+    rollover = _least(prior, _nvl(cap, prior))
+    billable = _greatest(_nvl(None if included is None else used - rollover - included, 0), 0)
+    first_tier = _least(billable, TIER_BREAK_UNITS)
+    second_tier = _greatest(billable - TIER_BREAK_UNITS, 0)
+    overage = None if rate is None else _round(first_tier * rate + second_tier * rate * Decimal("1.5"))
+
+    suspended_on = sub.get("suspendedOn") if sub else None
+    if sub and sub.get("statusCd") == SUBSCRIPTION_SUSPENDED and suspended_on is not None:
+        suspended = _as_date(suspended_on)
+        if start_d <= suspended <= end_d:
+            with localcontext() as ctx:
+                ctx.prec = 38
+                factor = Decimal((end_d - suspended).days + 1) / Decimal((end_d - start_d).days + 1)
+                billable = int(_round(billable * factor, 0))
+                overage = None if overage is None else _round(overage * factor)
+
+    log_msg("RATING", f"compute tenant={tenant_id} used={_num(_nvl(used, -1))} billable={_num(_nvl(billable, -1))}")
+    return {
+        "subscription": sub,
+        "used_units": used,
+        "quota_units": included,
+        "rollover_units": rollover,
+        "billable_units": billable,
+        "first_tier_units": first_tier,
+        "second_tier_units": second_tier,
+        "overage_amount": overage,
+    }
+
+
+def _finalize_rating_period(tenant_id, start, end, session):
+    """pkg_rating.sp_finalize_rating, the first step of sp_issue_invoice: upsert the rating
+    period and its embedded result inside the issue transaction (U3 owns the standalone
+    finalize_rating entrypoint; issue_invoice calls the merged implementation)."""
+    start_d, end_d = _as_date(start), _as_date(end)
+    period_id = f_md5_uuid(f"{tenant_id}{start_d.isoformat()}")
+    subs = _period_subscriptions(tenant_id, start_d, end_d, session)
+    sub_id = subs[0]["_id"] if subs else None
+    periods = db().rating_periods
+    period = periods.find_one({"tenantId": tenant_id, "periodStart": _as_bson_date(start_d)}, session=session)
+    if period is None:
+        period = {"_id": period_id, "tenantId": tenant_id, "periodStart": _as_bson_date(start_d), "periodEnd": _as_bson_date(end_d)}
+        periods.insert_one(period, session=session)
+    else:
+        periods.update_one({"_id": period["_id"]}, {"$set": {"periodEnd": _as_bson_date(end_d)}}, session=session)
+
+    rating = _rating_quantities(tenant_id, start_d, end_d, session)
+    quota, used = rating["quota_units"], rating["used_units"]
+    if quota is None or rating["billable_units"] is None or rating["overage_amount"] is None:
+        raise ValueError(f"tenant {tenant_id} has no covering plan for {start_d.isoformat()}; rating result cannot be finalized")
+    rated = {
+        "usedUnits": Int64(used),
+        "rolloverUnits": Int64(max(quota - used, 0)),
+        "billableUnits": Int64(rating["billable_units"]),
+        "overageAmount": _money(rating["overage_amount"]),
+    }
+    if period.get("result") is not None:
+        periods.update_one({"_id": period["_id"]}, {"$set": {f"result.{k}": v for k, v in rated.items()}}, session=session)
+        return period["_id"]
+    result = {"id": f_md5_uuid(period_id), "quotaUnits": Int64(quota), "createdAt": _as_bson_date(end_d), **rated}
+    if sub_id is not None:
+        result["subscriptionId"] = sub_id
+    periods.update_one({"_id": period["_id"]}, {"$set": {"result": result}}, session=session)
+    log_msg("RATING", f"finalized period={period_id}")
+    return period["_id"]
+
+
+def _preview_amounts(tenant_id, start, end, session=None):
+    """pkg_invoicing.compute_preview: plan code and fee, rated overage, open credit and tax."""
+    start_d, end_d = _as_date(start), _as_date(end)
+    plan_code = plan_fee = None
+    for sub in _period_subscriptions(tenant_id, start_d, end_d, session):
+        plan = _plan_doc(sub.get("planId"), session)
+        if plan is not None:
+            plan_code, plan_fee = plan.get("code"), _decimal(plan.get("monthlyFee"))
+            break
+    overage = _rating_quantities(tenant_id, start_d, end_d, session)["overage_amount"]
+    credit = Decimal(0)
+    for note in db().credit_notes.find({"tenantId": tenant_id, "remainingAmount": {"$gt": 0}}, {"remainingAmount": 1}, session=session):
+        credit += _nvl(_decimal(note.get("remainingAmount")), Decimal(0))
+    tenant = db().tenants.find_one({"_id": tenant_id}, {"taxExemptYn": 1}, session=session)
+    exempt = _nvl((tenant or {}).get("taxExemptYn"), "N")
+    if exempt == "Y":
+        tax = Decimal(0)
+    elif plan_fee is None or overage is None:
+        tax = None
+    else:
+        tax = (plan_fee + overage) * TAX_RATE
+    return plan_code, plan_fee, overage, credit, tax
+
+
+def _preview_lines(tenant_id, start, end, session=None):
+    """fn_invoice_preview's five rows, with Decimal (or None) amounts."""
+    plan_code, plan_fee, overage, credit, tax = _preview_amounts(tenant_id, start, end, session)
+    charge_cap = None if plan_fee is None or overage is None or tax is None else _round(plan_fee + overage + tax)
+    credit_applied = _least(credit, _nvl(charge_cap, credit))
+    half_tax = None if tax is None else tax / 2
+    zero = Decimal(0)
+
+    def line(line_no, line_type, description, amount, credit_part, total):
+        return {
+            "line_no": line_no,
+            "line_type": line_type,
+            "description": description,
+            "amount": amount,
+            "tax_amount": zero,
+            "credit_applied": credit_part,
+            "total": total,
+        }
+
+    return [
+        line(1, "plan", plan_code, _round(plan_fee), zero, _round(plan_fee)),
+        line(2, "usage", "usage overage", _round(overage), zero, _round(overage)),
+        line(3, "tax", "regional tax", half_tax, zero, half_tax),
+        line(4, "tax", "local tax", half_tax, zero, half_tax),
+        line(5, "credit", "credit notes", zero, credit_applied, -credit_applied),
+    ]
+
+
+def _render_line(line):
+    return {k: (_num(v) if isinstance(v, (Decimal, Decimal128, int)) else v) for k, v in line.items()}
+
+
+def invoice_preview(tenant, start, end):
+    return [_render_line(line) for line in _preview_lines(tenant, start, end)]
+
+
+def invoice_lines(invoice_id):
+    invoice = db().invoices.find_one({"_id": invoice_id}, {"lines": 1})
+    lines = sorted((invoice or {}).get("lines") or [], key=lambda line: int(line.get("lineNo", 0)))
+    return [
+        {
+            "line_no": _num(line.get("lineNo")),
+            "line_type": line.get("lineType"),
+            "description": line.get("description"),
+            "amount": _num(line.get("amount")),
+        }
+        for line in lines
+    ]
+
+
+def issue_invoice(tenant, start, end):
+    """sp_issue_invoice: finalize the rating period, upsert the invoice header with its lines
+    rebuilt from the preview, and burn open credit notes oldest-first, in one transaction.
+    Only status 20 (issued) is ever written. The audit append runs after the commit."""
+    start_d, end_d = _as_date(start), _as_date(end)
+    period_id = f_md5_uuid(f"{tenant}{start_d.isoformat()}")
+    invoice_id = f_md5_uuid(f"{period_id}invoice")
+
+    def work(session):
+        _finalize_rating_period(tenant, start_d, end_d, session)
+        invoices = db().invoices
+        if invoices.find_one({"_id": invoice_id}, {"_id": 1}, session=session) is None:
+            invoices.insert_one(
+                {
+                    "_id": invoice_id,
+                    "tenantId": tenant,
+                    "periodId": period_id,
+                    "issuedAt": _as_bson_date(end_d),
+                    "subtotal": _money(0),
+                    "tax": _money(0),
+                    "total": _money(0),
+                    "statusCd": INVOICE_STATUS_ISSUED,
+                },
+                session=session,
+            )
+        else:
+            invoices.update_one({"_id": invoice_id}, {"$set": {"statusCd": INVOICE_STATUS_ISSUED}}, session=session)
+
+        subtotal = tax = Decimal(0)
+        credit = Decimal(0)
+        lines = []
+        for row in _preview_lines(tenant, start_d, end_d, session):
+            amount = row["total"] if row["line_type"] == "credit" else row["amount"]
+            if amount is None or row["description"] is None:
+                raise ValueError(f"tenant {tenant} has no covering plan for {start_d.isoformat()}; invoice line {row['line_no']} would be NULL")
+            lines.append(
+                {
+                    "id": f_md5_uuid(f"{invoice_id}{row['line_no']}"),
+                    "lineNo": row["line_no"],
+                    "lineType": row["line_type"],
+                    "description": row["description"],
+                    "amount": _money(amount),
+                }
+            )
+            if row["line_type"] in ("plan", "usage"):
+                subtotal += _round(row["amount"])
+            elif row["line_type"] == "tax":
+                tax += _round(row["amount"])
+            elif row["line_type"] == "credit":
+                credit = row["credit_applied"]
+        total = _round(subtotal + tax - credit)
+        invoices.update_one(
+            {"_id": invoice_id},
+            {"$set": {"subtotal": _money(subtotal), "tax": _money(tax), "total": _money(total), "lines": lines}},
+            session=session,
+        )
+
+        notes = db().credit_notes
+        for note in notes.find({"tenantId": tenant, "remainingAmount": {"$gt": 0}}, sort=[("issuedOn", 1), ("_id", 1)], session=session):
+            if credit <= 0:
+                break
+            remaining = _decimal(note.get("remainingAmount"))
+            notes.update_one({"_id": note["_id"]}, {"$set": {"remainingAmount": _money(max(remaining - credit, Decimal(0)))}}, session=session)
+            credit = max(credit - remaining, Decimal(0))
+        return total
+
+    total = _transaction(work)
+    log_msg("INVOICING", f"issued invoice={invoice_id} total={_num(_nvl(total, 0))}")
+
+
+def invoices_for_tenant(tenant_id):
+    """GET /invoices: headers joined to their rating period and INV_STATUS code, newest first."""
+    pipeline = [
+        {"$match": {"tenantId": tenant_id}},
+        {"$lookup": {"from": "rating_periods", "localField": "periodId", "foreignField": "_id", "as": "period"}},
+        {"$unwind": "$period"},
+        {
+            "$lookup": {
+                "from": "codes",
+                "let": {"cd": "$statusCd"},
+                "pipeline": [
+                    {"$match": {"$expr": {"$and": [{"$eq": ["$_id.codeType", "INV_STATUS"]}, {"$eq": ["$_id.codeVal", "$$cd"]}]}}},
+                    {"$project": {"_id": 0, "codeDesc": 1}},
+                ],
+                "as": "status",
+            }
+        },
+        {"$project": {"lines": 0}},
+        {"$sort": {"issuedAt": DESCENDING, "_id": DESCENDING}},
+    ]
+    return [
+        {
+            "invoice_id": doc["_id"],
+            "period_start": _json_value(doc["period"].get("periodStart")),
+            "period_end": _json_value(doc["period"].get("periodEnd")),
+            "subtotal": _num(doc.get("subtotal")),
+            "tax": _num(doc.get("tax")),
+            "total": _num(doc.get("total")),
+            "status": doc["status"][0].get("codeDesc") if doc.get("status") else None,
+        }
+        for doc in db().invoices.aggregate(pipeline)
+    ]
+
+
+def invoice_owned(invoice_id, tenant_id):
+    return db().invoices.find_one({"_id": invoice_id, "tenantId": tenant_id}, {"_id": 1}) is not None
+
+
 # -------------------------------------------------- modules not ported yet
 
 
@@ -394,18 +751,6 @@ def usage_summary(tenant, start, end):
 
 def finalize_rating(tenant, start, end):
     _not_ported("pkg_rating.sp_finalize_rating", "U3")
-
-
-def invoice_preview(tenant, start, end):
-    _not_ported("pkg_invoicing.fn_invoice_preview", "U4")
-
-
-def issue_invoice(tenant, start, end):
-    _not_ported("pkg_invoicing.sp_issue_invoice", "U4")
-
-
-def invoice_lines(invoice_id):
-    _not_ported("pkg_invoicing.fn_invoice_lines", "U4")
 
 
 def overdue(as_of):
