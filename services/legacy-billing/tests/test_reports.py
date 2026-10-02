@@ -164,3 +164,165 @@ def test_finance_report_over_size_limit_returns_413(client, monkeypatch, tmp_pat
     response = client.get("/api/reports/finance?ns=demo")
     assert response.status_code == 413
     assert response.get_json() == {"error": "finance report too large"}
+
+
+class FakeCollection:
+    def __init__(self, docs):
+        self.docs = docs
+
+    def find(self, query, projection=None):
+        code_type = query.get("_id.codeType")
+        return [d for d in self.docs if code_type is None or d["_id"]["codeType"] == code_type]
+
+    def count_documents(self, query):
+        known = query["statusCd"]["$nin"]
+        return sum(1 for d in self.docs if d.get("batchNo") == query["batchNo"] and d.get("statusCd") not in known)
+
+
+class FakeFeed(FakeCollection):
+    """invoice_feed: answers the two month-end groupings and the reconciliation probes."""
+
+    def aggregate(self, pipeline):
+        batch_no = pipeline[0]["$match"]["batchNo"]
+        docs = [d for d in self.docs if d.get("batchNo") == batch_no]
+        if pipeline[-1] == {"$count": "n"}:
+            stray = [line for d in docs for line in d.get("lines", []) if line.get("batchNo") != d.get("batchNo")]
+            return [{"n": len(stray)}] if stray else []
+        if "$unwind" in pipeline[1]:
+            groups = {}
+            for d in docs:
+                for line in d.get("lines", []):
+                    g = groups.setdefault((d.get("statusCd"), line.get("lineTypeCd")), {"line_count": 0, "line_amount": 0, "amount_rows": 0, "line_tax": 0, "tax_rows": 0, "invoices": set()})
+                    g["line_count"] += 1
+                    g["invoices"].add(d["_id"])
+                    if line.get("amount") is not None:
+                        g["line_amount"] += line["amount"]
+                        g["amount_rows"] += 1
+                    if line.get("taxAmt") is not None:
+                        g["line_tax"] += line["taxAmt"]
+                        g["tax_rows"] += 1
+            return [
+                {"_id": {"statusCd": status, "lineTypeCd": line_type}, **{k: v for k, v in g.items() if k != "invoices"}, "invoices_touched": len(g["invoices"])}
+                for (status, line_type), g in groups.items()
+            ]
+        groups = {}
+        for d in docs:
+            g = groups.setdefault(d.get("statusCd"), {"invoice_count": 0, "header_total_amt": 0, "amount_rows": 0})
+            g["invoice_count"] += 1
+            if d.get("totalAmt") is not None:
+                g["header_total_amt"] += d["totalAmt"]
+                g["amount_rows"] += 1
+        return [{"_id": status, **g} for status, g in groups.items()]
+
+
+class FakeQuarantine(FakeCollection):
+    def __init__(self, docs, headers):
+        super().__init__(docs)
+        self.headers = headers
+
+    def aggregate(self, pipeline):
+        batch_no = pipeline[0]["$match"]["batchNo"]
+        hits = [q for q in self.docs if q.get("batchNo") == batch_no and q.get("invoiceId") in self.headers]
+        return [{"n": len(hits)}] if hits else []
+
+
+class FakeCustomers(FakeCollection):
+    def aggregate(self, pipeline):
+        batch_no = pipeline[0]["$match"]["conversionBatchNo"]
+        docs = [d for d in self.docs if d.get("conversionBatchNo") == batch_no]
+        if not docs:
+            return []
+        return [{
+            "customer_count": len(docs),
+            "current_balance_total": sum(d.get("curBalAmt") or 0 for d in docs),
+            "current_rows": sum(1 for d in docs if d.get("curBalAmt") is not None),
+            "past_due_total": sum(d.get("pastDueAmt") or 0 for d in docs),
+            "past_due_rows": sum(1 for d in docs if d.get("pastDueAmt") is not None),
+        }]
+
+
+class FakeDb:
+    def __init__(self, batch_no, feed_docs, quarantine_docs, customer_docs):
+        from decimal import Decimal
+
+        self.codes = FakeCollection([
+            {"_id": {"codeType": "INV_STATUS", "codeVal": 20}, "codeDesc": "issued"},
+            {"_id": {"codeType": "INV_STATUS", "codeVal": 30}, "codeDesc": "paid"},
+            {"_id": {"codeType": "TENANT_STATUS", "codeVal": 10}, "codeDesc": "active"},
+        ])
+        self.invoice_feed = FakeFeed(feed_docs)
+        self.invoice_feed_quarantine = FakeQuarantine(quarantine_docs, {d["_id"] for d in feed_docs})
+        self.customers = FakeCustomers(customer_docs)
+        self.Decimal = Decimal
+
+
+@pytest.fixture
+def mongo_client(monkeypatch):
+    from decimal import Decimal
+
+    batch_no = ns_batch_no("demo")
+    feed = [
+        {"_id": "H1", "batchNo": batch_no, "statusCd": 20, "totalAmt": Decimal("100.00"),
+         "lines": [{"lineId": "L1", "batchNo": batch_no, "lineTypeCd": 1, "amount": Decimal("90.00"), "taxAmt": Decimal("10.00")},
+                   {"lineId": "L2", "batchNo": batch_no, "lineTypeCd": 2, "amount": Decimal("-5.50"), "taxAmt": None}]},
+        {"_id": "H2", "batchNo": batch_no, "statusCd": 20, "totalAmt": Decimal("20.25"),
+         "lines": [{"lineId": "L3", "batchNo": batch_no, "lineTypeCd": 1, "amount": Decimal("20.25"), "taxAmt": Decimal("0.00")}]},
+        {"_id": "H3", "batchNo": batch_no, "statusCd": 77, "totalAmt": None,
+         "lines": [{"lineId": "L4", "batchNo": batch_no, "lineTypeCd": 5, "amount": None, "taxAmt": None}]},
+        {"_id": "H4", "batchNo": batch_no + 1, "statusCd": 30, "totalAmt": Decimal("999.00"), "lines": []},
+    ]
+    quarantine = [{"_id": "Q1", "batchNo": batch_no, "invoiceId": "GHOST"}]
+    customers = [
+        {"_id": "C1", "conversionBatchNo": batch_no, "curBalAmt": Decimal("10.00"), "pastDueAmt": Decimal("1.00")},
+        {"_id": "C2", "conversionBatchNo": batch_no, "curBalAmt": Decimal("2.50"), "pastDueAmt": None},
+        {"_id": "C3", "conversionBatchNo": batch_no + 1, "curBalAmt": Decimal("7.00"), "pastDueAmt": Decimal("7.00")},
+    ]
+    db = FakeDb(batch_no, feed, quarantine, customers)
+    monkeypatch.setenv("BILLING_BACKEND", "mongo")
+    monkeypatch.setattr(reports_module, "mongo_db", lambda: db)
+    monkeypatch.setattr(reports_module, "oracle_query", lambda sql, params: pytest.fail("Oracle must not be queried on the Mongo backend"))
+    app = Flask(__name__)
+    app.register_blueprint(reports)
+    return app.test_client(), db
+
+
+def test_mongo_month_end_contract(mongo_client):
+    client, _db = mongo_client
+    body = client.get("/api/reports/month-end?ns=demo").get_json()
+    assert body["report"] == "month-end-finance"
+    assert body["namespace"] == "demo"
+    assert body["batch_no"] == ns_batch_no("demo")
+    assert body["source"]["engine"] == "mongodb"
+    assert body["by_status"] == [
+        {"status": "UNKNOWN(77)", "invoice_count": 1, "header_total_amt": None},
+        {"status": "issued", "invoice_count": 2, "header_total_amt": "120.25"},
+    ]
+    assert body["by_status_line_type"] == [
+        {"status": "UNKNOWN(77)", "line_type": "UNKNOWN(5)", "line_count": 1, "line_amount": None, "line_tax": None, "invoices_touched": 1},
+        {"status": "issued", "line_type": "CHARGE", "line_count": 2, "line_amount": "110.25", "line_tax": "10.00", "invoices_touched": 2},
+        {"status": "issued", "line_type": "CREDIT", "line_count": 1, "line_amount": "-5.50", "line_tax": None, "invoices_touched": 1},
+    ]
+
+
+def test_mongo_reconciliation_contract(mongo_client):
+    client, db = mongo_client
+    body = client.get("/api/reports/reconciliation?ns=demo").get_json()
+    assert body["namespace"] == "demo"
+    assert body["source"]["engine"] == "mongodb"
+    assert body["balances"] == {"customer_count": 2, "current_balance_total": "12.50", "past_due_total": "1.00"}
+    assert body["status"] == "fail"
+    by_name = {check["name"]: check for check in body["checks"]}
+    assert set(by_name) == {"invoice-feed-quarantine-orphans-only", "invoice-feed-lines-match-header-batch", "invoice-feed-status-codes-mapped"}
+    assert by_name["invoice-feed-quarantine-orphans-only"]["status"] == "pass"
+    assert by_name["invoice-feed-lines-match-header-batch"]["status"] == "pass"
+    assert by_name["invoice-feed-status-codes-mapped"] == {"name": "invoice-feed-status-codes-mapped", "status": "fail", "expected": "0", "actual": "1"}
+    db.codes.docs.append({"_id": {"codeType": "INV_STATUS", "codeVal": 77}, "codeDesc": "void"})
+    body = client.get("/api/reports/reconciliation?ns=demo").get_json()
+    assert body["status"] == "pass" and all(check["status"] == "pass" for check in body["checks"])
+
+
+def test_oracle_report_path_unchanged_on_mongo_env(client, monkeypatch):
+    monkeypatch.setenv("BILLING_BACKEND", "oracle")
+    body = client.get("/api/reports/month-end?ns=demo").get_json()
+    assert body["source"]["engine"] == "oracle"
+    assert body["by_status"][0]["invoice_count"] == 100

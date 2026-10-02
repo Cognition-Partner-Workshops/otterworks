@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
-"""Oracle -> MongoDB loader for the OtterWorks billing migration (U1 and delta loads).
+"""Oracle -> MongoDB loader for the OtterWorks billing migration (wave loads and delta loads).
 
 Reads the source tables of the requested collections with python-oracledb (every session
 `SET TRANSACTION READ ONLY`, SELECT only, principal checked for write-capable privileges),
-maps each row with recon.py's reference mapping (`map_source_row`; a collection that embeds
-a child table goes through `load_documents`, so loader documents are by construction what the
-recon expects), and bulk-upserts on `_id` (ReplaceOne, upsert=True) into the migration database
-only. Upsert on `_id` makes a rerun a no-op (0 upserted,
-0 modified), which is the idempotency proof; the same command is the delta load of the
-parallel run. The secondary indexes declared in mapping_spec.json are created idempotently.
+maps the rows with recon.py's reference mapping (`load_documents`: primary rows through
+`map_source_row`, embedded child tables grouped under their parent, orphans partitioned into
+the quarantine collection; so loader documents are by construction what the recon expects),
+and bulk-upserts on `_id` (ReplaceOne, upsert=True) into the migration database only. Upsert
+on `_id` makes a rerun a no-op (0 upserted, 0 modified), which is the idempotency proof; the
+same command is the delta load of the parallel run. The secondary indexes declared in
+mapping_spec.json are created idempotently; an index whose build is deferred is not created.
 
     uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
       python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
         --collections codes,tenants,plans,subscriptions,subscriptions_hist --passes 2 \
         --report migration/billing/recon/out/U1.load.json
+    uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
+      python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
+        --collections usage_events,rating_periods --passes 2 \
+        --report migration/billing/recon/out/U3.load.json
+    ... --collections credit_notes,invoice_feed,invoice_feed_quarantine,invoices --passes 2 \
+        --report migration/billing/recon/out/U4.load.json
+
+A collection with embedded children is loaded from its primary table plus every child table;
+a quarantine collection is loaded together with the collection it quarantines (the orphan set
+is defined by the parent keys of that same read), so both names must be in --collections.
 
     # U2: customers embeds ENTITY_ATTR_VALUE as attributes[] (one embedded child table, no quarantine)
     uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
@@ -41,6 +52,7 @@ sys.path.insert(0, str(BILLING / "recon"))
 import recon  # noqa: E402
 
 U1_COLLECTIONS = ["codes", "tenants", "plans", "subscriptions", "subscriptions_hist"]
+U4_COLLECTIONS = ["credit_notes", "invoice_feed", "invoice_feed_quarantine", "invoices"]
 
 
 def _loopback(hosts) -> bool:
@@ -61,49 +73,53 @@ def _collection_maps(inputs: recon.Inputs, names: list[str]) -> list[recon.Colle
     missing = [n for n in names if n not in by_name]
     if missing:
         raise SystemExit(f"not in mapping_spec.json#collections: {missing}")
+    quarantined_by = {e.quarantine_collection: c.name
+                      for c in inputs.collections for e in c.embedded if e.quarantine_collection}
     for n in names:
         cm = by_name[n]
-        if cm.quarantine_of is not None or any(e.quarantine_collection for e in cm.embedded):
-            raise SystemExit(f"{n} has quarantine children; this loader handles primary tables and embedded "
-                             "children without a quarantine collection")
+        if cm.quarantine_of is not None and quarantined_by.get(n) not in names:
+            raise SystemExit(f"{n} quarantines the orphans of {quarantined_by.get(n)}; load both in the same run")
+        for e in cm.embedded:
+            if e.quarantine_collection and e.quarantine_collection not in names:
+                raise SystemExit(f"{n}.{e.path} sends orphans to {e.quarantine_collection}; load both in the same run")
     return [by_name[n] for n in names]
 
 
-def build_documents(source, inputs: recon.Inputs, cm: recon.CollectionMap, now: dt.datetime) -> tuple[list[dict], dict]:
-    """The collection's documents: primary rows mapped by `map_source_row`, each embedded child table grouped under
-    its parent by `recon.load_documents` (the reference shape). A child row of another entity type or without a
-    parent row fails the load instead of being dropped (no quarantine is defined for these tables)."""
-    rows = source.rows(cm.table)
-    tables = {cm.table: rows}
-    stats = {"table": cm.table, "source_rows": len(rows)}
-    if not cm.embedded:
-        return [recon.map_source_row(cm, row, now) for row in rows], stats
-    parents = {recon.row_key(row, cm.id_columns) for row in rows}
-    stats["embedded"] = {}
-    for e in cm.embedded:
-        children = source.rows(e.table)
-        other = [r for r in children if any(r.get(c) != v for c, v in e.fixed_filter.items())]
-        if other:
-            raise SystemExit(f"{e.table}: {len(other)} rows outside {e.fixed_filter} would be dropped from "
-                             f"{cm.name}.{e.path}, e.g. {recon._fmt_key(recon.row_key(other[0], [e.identity_column]))}")
-        orphans = [r for r in children if (recon.canon_key(r.get(e.parent_fk)),) not in parents]
-        if orphans:
-            raise SystemExit(f"{e.table}: {len(orphans)} rows whose {e.parent_fk} has no {cm.table} row, "
-                             f"e.g. {recon._fmt_key(recon.row_key(orphans[0], [e.identity_column]))}")
-        tables[e.table] = children
-        stats["embedded"][e.path] = {"table": e.table, "source_rows": len(children)}
-    docs = recon.load_documents(inputs, tables, now)[cm.name]
-    for e in cm.embedded:
-        stats["embedded"][e.path]["elements"] = sum(
-            (1 if e.path in d else 0) if e.shape == "subdoc" else len(d.get(e.path) or []) for d in docs)
-    return docs, stats
+def read_tables(source, maps: list[recon.CollectionMap]) -> dict[str, list[dict]]:
+    """One read per source table: the primary table of every requested collection plus the
+    child tables it embeds (a quarantine collection reads nothing; its rows are the orphans)."""
+    tables: dict[str, list[dict]] = {}
+    for cm in maps:
+        if cm.quarantine_of is not None:
+            continue
+        for table in [cm.table, *(e.table for e in cm.embedded)]:
+            if table not in tables:
+                tables[table] = source.rows(table)
+    return tables
 
 
-def load_collection(source, db, inputs: recon.Inputs, cm: recon.CollectionMap, now: dt.datetime) -> dict:
+def map_documents(inputs: recon.Inputs, maps: list[recon.CollectionMap], tables: dict[str, list[dict]],
+                  now: dt.datetime) -> dict[str, list[dict]]:
+    """recon.load_documents over the tables read for this run, restricted to the requested names."""
+    docs = recon.load_documents(inputs, tables, now)
+    return {cm.name: docs.get(cm.name, []) for cm in maps}
+
+
+def load_collection(db, cm: recon.CollectionMap, docs: list[dict], tables: dict[str, list[dict]]) -> dict:
     from pymongo import ReplaceOne
 
-    docs, stats = build_documents(source, inputs, cm, now)
-    stats.update({"documents": len(docs), "upserted": 0, "matched": 0, "modified": 0})
+    stats = {"table": cm.table, "documents": len(docs), "upserted": 0, "matched": 0, "modified": 0}
+    if cm.quarantine_of is not None:
+        stats["source_rows"] = len(docs)
+        stats["quarantine_of"] = cm.quarantine_of.table
+    else:
+        stats["source_rows"] = len(tables.get(cm.table, []))
+        if cm.embedded:
+            stats["embedded"] = {
+                e.path: {"table": e.table, "source_rows": len(tables.get(e.table, [])),
+                         "embedded_rows": sum(len(d.get(e.path, [])) if e.shape != "subdoc" else int(e.path in d)
+                                              for d in docs)}
+                for e in cm.embedded}
     if docs:
         ops = [ReplaceOne({"_id": d["_id"]}, d, upsert=True) for d in docs]
         res = db[cm.name].bulk_write(ops, ordered=False)
@@ -118,10 +134,10 @@ def ensure_indexes(spec: dict, db, names: list[str]) -> list[dict]:
         if c["name"] not in names:
             continue
         for ix in c.get("indexes", []):
-            if ix.get("deferred"):
+            options = dict(ix.get("options", {}))
+            if ix.get("deferred") or options.pop("build", None) == "deferred":
                 continue
             keys = [(k, v) for k, v in ix["keys"].items()]
-            options = dict(ix.get("options", {}))
             db[c["name"]].create_index(keys, name=ix["name"], **options)
             created.append({"collection": c["name"], "name": ix["name"], "keys": ix["keys"], "options": options})
     return created
@@ -131,7 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--mode", choices=["live", "fixture"], required=True)
     p.add_argument("--collections", default=",".join(U1_COLLECTIONS),
-                   help="comma-separated collection names from mapping_spec.json (default: U1)")
+                   help="comma-separated collection names from mapping_spec.json (default: U1; "
+                        f"U4 is {','.join(U4_COLLECTIONS)})")
     p.add_argument("--spec", default=str(recon.SPEC_PATH))
     p.add_argument("--tolerances", default=str(recon.TOLERANCES_PATH))
     p.add_argument("--oracle-dsn-env", default=None, help="env var holding the Oracle DSN (default: tolerances.json#source.dsn_secret)")
@@ -177,7 +194,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         for n in range(1, args.passes + 1):
             t0 = time.monotonic()
-            stats = {cm.name: load_collection(source, db, inputs, cm, now) for cm in maps}
+            tables = read_tables(source, maps)
+            docs = map_documents(inputs, maps, tables, now)
+            stats = {cm.name: load_collection(db, cm, docs[cm.name], tables) for cm in maps}
             noop = all(s["upserted"] == 0 and s["modified"] == 0 for s in stats.values())
             report["passes"].append({"pass": n, "seconds": round(time.monotonic() - t0, 3), "noop": noop, "collections": stats})
             total = sum(s["documents"] for s in stats.values())

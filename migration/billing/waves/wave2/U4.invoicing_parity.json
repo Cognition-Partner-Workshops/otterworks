@@ -1,0 +1,888 @@
+{
+  "kind": "invoicing-parity",
+  "unit": "U4",
+  "run_mode": "fixture",
+  "merge_evidence": false,
+  "generated_at": "2026-10-02T19:08:07Z",
+  "source": {
+    "oracle": "local fixture localhost",
+    "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
+  },
+  "transcripts": "procs/transcripts/invoicing/INVOICE-001..006.json (immutable)",
+  "scenarios": [
+    {
+      "id": "INVOICE-001",
+      "entrypoint": "billing.fn_invoice_preview",
+      "description": "Preview tenant 6 for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "amounts": [
+            "49.00",
+            "5.56",
+            "2.25",
+            "2.25",
+            "0.00"
+          ],
+          "line_numbers": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "totals": [
+            "49.00",
+            "5.56",
+            "2.25",
+            "2.25",
+            "0.00"
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "line_numbers": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "amounts": [
+              "49.00",
+              "5.56",
+              "2.25",
+              "2.25",
+              "0.00"
+            ],
+            "totals": [
+              "49.00",
+              "5.56",
+              "2.25",
+              "2.25",
+              "0.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "line_numbers": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "amounts": [
+              "49.00",
+              "5.56",
+              "2.25",
+              "2.25",
+              "0.00"
+            ],
+            "totals": [
+              "49.00",
+              "5.56",
+              "2.25",
+              "2.25",
+              "0.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "INVOICE-002",
+      "entrypoint": "billing.fn_invoice_preview",
+      "description": "Preview tenant 3 for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "line_types": [
+            "plan",
+            "usage",
+            "tax",
+            "tax",
+            "credit"
+          ],
+          "tax_amount": [
+            "0.00",
+            "0.00",
+            "0.00",
+            "0.00",
+            "0.00"
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "line_types": [
+              "plan",
+              "usage",
+              "tax",
+              "tax",
+              "credit"
+            ],
+            "tax_amount": [
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "line_types": [
+              "plan",
+              "usage",
+              "tax",
+              "tax",
+              "credit"
+            ],
+            "tax_amount": [
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "INVOICE-003",
+      "entrypoint": "billing.sp_issue_invoice",
+      "description": "Issue tenant 9 for 2026-02-01 through 2026-02-28 after two credit dates.",
+      "expected": {
+        "business_fields": {
+          "credit_ids": [
+            "70000000-0000-0000-0000-000000000005",
+            "70000000-0000-0000-0000-000000000006"
+          ],
+          "issued_on": [
+            "2026-01-31",
+            "2026-02-01"
+          ],
+          "remaining": [
+            "0.00",
+            "6.96"
+          ]
+        },
+        "probes": {
+          "invoice_state": [
+            {
+              "status": "issued",
+              "subtotal": "49.00",
+              "tax": "4.04",
+              "total": "0.00"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "credit_ids": [
+              "70000000-0000-0000-0000-000000000005",
+              "70000000-0000-0000-0000-000000000006"
+            ],
+            "issued_on": [
+              "2026-01-31",
+              "2026-02-01"
+            ],
+            "remaining": [
+              "0.00",
+              "6.96"
+            ]
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "49.00",
+                "tax": "4.04",
+                "total": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "credit_ids": [
+              "70000000-0000-0000-0000-000000000005",
+              "70000000-0000-0000-0000-000000000006"
+            ],
+            "issued_on": [
+              "2026-01-31",
+              "2026-02-01"
+            ],
+            "remaining": [
+              "0.00",
+              "6.96"
+            ]
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "49.00",
+                "tax": "4.04",
+                "total": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "INVOICE-004",
+      "entrypoint": "billing.sp_issue_invoice",
+      "description": "Issue tenant 4 for 2026-02-01 through 2026-02-28 with equal credit dates.",
+      "expected": {
+        "business_fields": {
+          "credit_ids": [
+            "70000000-0000-0000-0000-000000000001",
+            "70000000-0000-0000-0000-000000000002"
+          ],
+          "issued_on": [
+            "2026-02-01",
+            "2026-02-01"
+          ],
+          "remaining": [
+            "0.00",
+            "6.96"
+          ]
+        },
+        "probes": {
+          "invoice_state": [
+            {
+              "status": "issued",
+              "subtotal": "49.00",
+              "tax": "4.04",
+              "total": "0.00"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "credit_ids": [
+              "70000000-0000-0000-0000-000000000001",
+              "70000000-0000-0000-0000-000000000002"
+            ],
+            "issued_on": [
+              "2026-02-01",
+              "2026-02-01"
+            ],
+            "remaining": [
+              "0.00",
+              "6.96"
+            ]
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "49.00",
+                "tax": "4.04",
+                "total": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "credit_ids": [
+              "70000000-0000-0000-0000-000000000001",
+              "70000000-0000-0000-0000-000000000002"
+            ],
+            "issued_on": [
+              "2026-02-01",
+              "2026-02-01"
+            ],
+            "remaining": [
+              "0.00",
+              "6.96"
+            ]
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "49.00",
+                "tax": "4.04",
+                "total": "0.00"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "INVOICE-005",
+      "entrypoint": "billing.sp_issue_invoice",
+      "description": "Issue tenant 6 for 2026-02-01 through 2026-02-28.",
+      "expected": {
+        "business_fields": {
+          "status": "issued",
+          "tax": "4.50",
+          "total": "59.06"
+        },
+        "probes": {
+          "invoice_state": [
+            {
+              "status": "issued",
+              "subtotal": "54.56",
+              "tax": "4.50",
+              "total": "59.06"
+            }
+          ]
+        }
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "status": "issued",
+            "tax": "4.50",
+            "total": "59.06"
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "54.56",
+                "tax": "4.50",
+                "total": "59.06"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "status": "issued",
+            "tax": "4.50",
+            "total": "59.06"
+          },
+          "probes": {
+            "invoice_state": [
+              {
+                "status": "issued",
+                "subtotal": "54.56",
+                "tax": "4.50",
+                "total": "59.06"
+              }
+            ]
+          },
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "INVOICE-006",
+      "entrypoint": "billing.fn_invoice_lines",
+      "description": "Read the persisted lines for invoice 1.",
+      "expected": {
+        "business_fields": {
+          "amounts": [
+            "149.00",
+            "12.29"
+          ],
+          "line_types": [
+            "plan",
+            "usage"
+          ]
+        },
+        "probes": {}
+      },
+      "backends": {
+        "oracle": {
+          "business_fields": {
+            "line_types": [
+              "plan",
+              "usage"
+            ],
+            "amounts": [
+              "149.00",
+              "12.29"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        },
+        "mongo": {
+          "business_fields": {
+            "line_types": [
+              "plan",
+              "usage"
+            ],
+            "amounts": [
+              "149.00",
+              "12.29"
+            ]
+          },
+          "probes": {},
+          "fields_match": true,
+          "probes_match": true
+        }
+      },
+      "pass": true
+    }
+  ],
+  "facade": {
+    "oracle": {
+      "GET /api/v1/billing/invoices (tenant 2)": {
+        "status": 200,
+        "body": [
+          {
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "period_end": "2025-12-31",
+            "period_start": "2025-12-01",
+            "status": "overdue",
+            "subtotal": "149",
+            "tax": "12.29",
+            "total": "161.29"
+          }
+        ]
+      },
+      "GET /api/v1/billing/invoices/60000000-0000-0000-0000-000000000001/lines (owner)": {
+        "status": 200,
+        "body": [
+          {
+            "amount": "149",
+            "description": "GROWTH",
+            "line_no": "1",
+            "line_type": "plan"
+          },
+          {
+            "amount": "12.29",
+            "description": "usage overage",
+            "line_no": "2",
+            "line_type": "usage"
+          }
+        ]
+      },
+      "GET /api/v1/billing/invoices/60000000-0000-0000-0000-000000000001/lines (tenant 6, not owner)": {
+        "status": 404,
+        "body": {
+          "error": "invoice not found"
+        }
+      }
+    },
+    "mongo": {
+      "GET /api/v1/billing/invoices (tenant 2)": {
+        "status": 200,
+        "body": [
+          {
+            "invoice_id": "60000000-0000-0000-0000-000000000001",
+            "period_end": "2025-12-31",
+            "period_start": "2025-12-01",
+            "status": "overdue",
+            "subtotal": "149",
+            "tax": "12.29",
+            "total": "161.29"
+          }
+        ]
+      },
+      "GET /api/v1/billing/invoices/60000000-0000-0000-0000-000000000001/lines (owner)": {
+        "status": 200,
+        "body": [
+          {
+            "amount": "149",
+            "description": "GROWTH",
+            "line_no": "1",
+            "line_type": "plan"
+          },
+          {
+            "amount": "12.29",
+            "description": "usage overage",
+            "line_no": "2",
+            "line_type": "usage"
+          }
+        ]
+      },
+      "GET /api/v1/billing/invoices/60000000-0000-0000-0000-000000000001/lines (tenant 6, not owner)": {
+        "status": 404,
+        "body": {
+          "error": "invoice not found"
+        }
+      }
+    },
+    "identical": true,
+    "foreign_invoice_404_on_both": true
+  },
+  "reports": {
+    "oracle": {
+      "month_end": {
+        "batch_no": 85559852,
+        "by_status": [
+          {
+            "header_total_amt": "55450955.92",
+            "invoice_count": "5504",
+            "status": "issued"
+          },
+          {
+            "header_total_amt": "27585416.69",
+            "invoice_count": "2748",
+            "status": "overdue"
+          },
+          {
+            "header_total_amt": "104582085.97",
+            "invoice_count": "10498",
+            "status": "paid"
+          }
+        ],
+        "by_status_line_type": [
+          {
+            "invoices_touched": "3970",
+            "line_amount": "89342458.72",
+            "line_count": "7172",
+            "line_tax": "7370753.25",
+            "line_type": "ADJUSTMENT",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": "5390",
+            "line_amount": "272970444.56",
+            "line_count": "21986",
+            "line_tax": "22520061.50",
+            "line_type": "CHARGE",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": "4043",
+            "line_amount": "89070669.33",
+            "line_count": "7289",
+            "line_tax": "7348329.83",
+            "line_type": "CREDIT",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": "4082",
+            "line_amount": "91004713.28",
+            "line_count": "7427",
+            "line_tax": "7507889.17",
+            "line_type": "MISC",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": "2010",
+            "line_amount": "46159627.92",
+            "line_count": "3669",
+            "line_tax": "3808169.31",
+            "line_type": "ADJUSTMENT",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": "2697",
+            "line_amount": "138879290.51",
+            "line_count": "11033",
+            "line_tax": "11457541.62",
+            "line_type": "CHARGE",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": "2023",
+            "line_amount": "45603750.56",
+            "line_count": "3713",
+            "line_tax": "3762309.77",
+            "line_type": "CREDIT",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": "2057",
+            "line_amount": "45428735.38",
+            "line_count": "3704",
+            "line_tax": "3747870.82",
+            "line_type": "MISC",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": "7728",
+            "line_amount": "173231742.31",
+            "line_count": "13994",
+            "line_tax": "14291619.19",
+            "line_type": "ADJUSTMENT",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": "10305",
+            "line_amount": "518314902.74",
+            "line_count": "42099",
+            "line_tax": "42760980.82",
+            "line_type": "CHARGE",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": "7681",
+            "line_amount": "172716626.64",
+            "line_count": "13961",
+            "line_tax": "14249122.33",
+            "line_type": "CREDIT",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": "7681",
+            "line_amount": "172756944.90",
+            "line_count": "13916",
+            "line_tax": "14252447.75",
+            "line_type": "MISC",
+            "status": "paid"
+          }
+        ],
+        "generated_at": "2026-10-02T19:08:16Z",
+        "namespace": "demo",
+        "report": "month-end-finance",
+        "source": {
+          "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
+          "engine": "oracle",
+          "system": "OW_BILLING legacy estate (Oracle FREEPDB1)"
+        }
+      },
+      "reconciliation": {
+        "balances": {
+          "current_balance_total": "39799450.31",
+          "customer_count": "25000",
+          "past_due_total": "7330214.66"
+        },
+        "batch_no": 85559852,
+        "checks": [],
+        "generated_at": "2026-10-02T19:08:16Z",
+        "namespace": "demo",
+        "source": {
+          "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
+          "engine": "oracle",
+          "system": "OW_BILLING legacy estate (Oracle FREEPDB1)"
+        },
+        "status": "baseline"
+      }
+    },
+    "mongo": {
+      "month_end": {
+        "batch_no": 85559852,
+        "by_status": [
+          {
+            "header_total_amt": "55450955.92",
+            "invoice_count": 5504,
+            "status": "issued"
+          },
+          {
+            "header_total_amt": "27585416.69",
+            "invoice_count": 2748,
+            "status": "overdue"
+          },
+          {
+            "header_total_amt": "104582085.97",
+            "invoice_count": 10498,
+            "status": "paid"
+          }
+        ],
+        "by_status_line_type": [
+          {
+            "invoices_touched": 3970,
+            "line_amount": "89342458.72",
+            "line_count": 7172,
+            "line_tax": "7370753.25",
+            "line_type": "ADJUSTMENT",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": 5390,
+            "line_amount": "272970444.56",
+            "line_count": 21986,
+            "line_tax": "22520061.50",
+            "line_type": "CHARGE",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": 4043,
+            "line_amount": "89070669.33",
+            "line_count": 7289,
+            "line_tax": "7348329.83",
+            "line_type": "CREDIT",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": 4082,
+            "line_amount": "91004713.28",
+            "line_count": 7427,
+            "line_tax": "7507889.17",
+            "line_type": "MISC",
+            "status": "issued"
+          },
+          {
+            "invoices_touched": 2010,
+            "line_amount": "46159627.92",
+            "line_count": 3669,
+            "line_tax": "3808169.31",
+            "line_type": "ADJUSTMENT",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": 2697,
+            "line_amount": "138879290.51",
+            "line_count": 11033,
+            "line_tax": "11457541.62",
+            "line_type": "CHARGE",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": 2023,
+            "line_amount": "45603750.56",
+            "line_count": 3713,
+            "line_tax": "3762309.77",
+            "line_type": "CREDIT",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": 2057,
+            "line_amount": "45428735.38",
+            "line_count": 3704,
+            "line_tax": "3747870.82",
+            "line_type": "MISC",
+            "status": "overdue"
+          },
+          {
+            "invoices_touched": 7728,
+            "line_amount": "173231742.31",
+            "line_count": 13994,
+            "line_tax": "14291619.19",
+            "line_type": "ADJUSTMENT",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": 10305,
+            "line_amount": "518314902.74",
+            "line_count": 42099,
+            "line_tax": "42760980.82",
+            "line_type": "CHARGE",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": 7681,
+            "line_amount": "172716626.64",
+            "line_count": 13961,
+            "line_tax": "14249122.33",
+            "line_type": "CREDIT",
+            "status": "paid"
+          },
+          {
+            "invoices_touched": 7681,
+            "line_amount": "172756944.90",
+            "line_count": 13916,
+            "line_tax": "14252447.75",
+            "line_type": "MISC",
+            "status": "paid"
+          }
+        ],
+        "generated_at": "2026-10-02T19:08:17Z",
+        "namespace": "demo",
+        "report": "month-end-finance",
+        "source": {
+          "detail": "invoice_feed / invoice_feed.lines via codes lookup (RPT-114)",
+          "engine": "mongodb",
+          "system": "ow_tp_billing_20261001T233613Z (MongoDB Atlas)"
+        }
+      },
+      "reconciliation": {
+        "balances": {
+          "current_balance_total": "39799450.31",
+          "customer_count": 25000,
+          "past_due_total": "7330214.66"
+        },
+        "batch_no": 85559852,
+        "checks": [
+          {
+            "actual": "0",
+            "expected": "0",
+            "name": "invoice-feed-quarantine-orphans-only",
+            "status": "pass"
+          },
+          {
+            "actual": "0",
+            "expected": "0",
+            "name": "invoice-feed-lines-match-header-batch",
+            "status": "pass"
+          },
+          {
+            "actual": "0",
+            "expected": "0",
+            "name": "invoice-feed-status-codes-mapped",
+            "status": "pass"
+          }
+        ],
+        "generated_at": "2026-10-02T19:08:17Z",
+        "namespace": "demo",
+        "source": {
+          "detail": "invoice_feed / invoice_feed.lines via codes lookup (RPT-114)",
+          "engine": "mongodb",
+          "system": "ow_tp_billing_20261001T233613Z (MongoDB Atlas)"
+        },
+        "status": "pass"
+      }
+    },
+    "rollups_identical": true,
+    "engines": {
+      "oracle": "oracle",
+      "mongo": "mongodb"
+    },
+    "reconciliation_status": {
+      "oracle": "baseline",
+      "mongo": "pass"
+    },
+    "contract": true
+  },
+  "custbill": {
+    "oracle": {
+      "file": "CUSTBILL_DEMO_ORACLE.dat",
+      "records": 18750,
+      "bytes": 1237500,
+      "sha256": "c3e2cf43e099f9e17cc59a2b202cd876c103b8f21a8693eba45fb5fd7eb946db",
+      "path": "/home/ubuntu/tmp/custbill-oracle-g99z6dr4/CUSTBILL_DEMO_ORACLE.dat"
+    },
+    "mongo": {
+      "file": "CUSTBILL_DEMO_ORACLE.dat",
+      "records": 18750,
+      "bytes": 1237500,
+      "sha256": "c3e2cf43e099f9e17cc59a2b202cd876c103b8f21a8693eba45fb5fd7eb946db",
+      "path": "/home/ubuntu/tmp/custbill-mongo-hks8v2r8/CUSTBILL_DEMO_ORACLE.dat"
+    },
+    "byte_identical": true
+  },
+  "verdict": "pass"
+}
