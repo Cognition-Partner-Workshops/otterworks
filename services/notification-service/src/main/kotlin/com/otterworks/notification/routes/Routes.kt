@@ -3,6 +3,7 @@ package com.otterworks.notification.routes
 import com.otterworks.notification.model.NotificationPreferenceRequest
 import com.otterworks.notification.model.PaginatedResponse
 import com.otterworks.notification.model.UnreadCountResponse
+import com.otterworks.notification.health.TableReadiness
 import com.otterworks.notification.service.NotificationService
 import com.otterworks.notification.websocket.WebSocketManager
 import io.ktor.http.HttpStatusCode
@@ -36,11 +37,23 @@ data class MarkAllReadResponse(val markedCount: Int)
 
 fun Application.configureRouting(prometheusRegistry: PrometheusMeterRegistry) {
     val notificationService by inject<NotificationService>()
+    val tableReadiness by inject<TableReadiness>()
     val webSocketManager by inject<WebSocketManager>()
 
     routing {
         get("/health") {
             call.respond(HealthResponse(status = "healthy", service = "notification-service"))
+        }
+
+        get("/ready") {
+            val ready = tableReadiness.isReady
+            call.respond(
+                status = if (ready) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable,
+                message = HealthResponse(
+                    status = if (ready) "ready" else "not_ready",
+                    service = "notification-service",
+                ),
+            )
         }
 
         get("/metrics") {
