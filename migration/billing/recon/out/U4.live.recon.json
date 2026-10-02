@@ -2,22 +2,31 @@
   "kind": "recon-report",
   "unit": "billing",
   "namespace": "demo",
-  "generated_at": "2026-10-02T18:47:59Z",
-  "run_mode": "fixture",
+  "generated_at": "2026-10-02T18:52:55Z",
+  "run_mode": "live",
   "verdict": "pass",
-  "merge_evidence": false,
-  "merge_evidence_note": "fixture/local result: never merge evidence (tolerances.json#source.mode is live)",
+  "merge_evidence": true,
+  "merge_evidence_note": "live recon report",
   "source": {
     "system": "oracle",
-    "mode": "fixture",
     "schema": "OW_BILLING",
-    "driver": "synthetic copy of migration/billing/fixtures/demo.json",
-    "seed": 714559852
+    "dsn_secret": "OW_TP_ORACLE_RO_DSN",
+    "host": "52.201.36.9",
+    "transaction": "SET TRANSACTION READ ONLY",
+    "concurrency": 1,
+    "principal": "OW_BILLING_RO",
+    "statements": "SELECT only"
   },
   "target": {
     "system": "mongodb",
-    "mode": "fixture",
-    "driver": "in-memory"
+    "database": "ow_tp_billing_20261001T233613Z",
+    "uri_secret": "MONGODB_ATLAS_URI",
+    "hosts": [
+      "ac-zsgrgnt-shard-00-00.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-01.cgbijgv.mongodb.net",
+      "ac-zsgrgnt-shard-00-02.cgbijgv.mongodb.net"
+    ],
+    "statements": "find only"
   },
   "inputs": {
     "mapping_spec": {
@@ -37,8 +46,8 @@
     "oracle_sessions": 1
   },
   "timings": {
-    "source_fetch_s": 0.002,
-    "target_fetch_s": 0.0
+    "source_fetch_s": 4.346,
+    "target_fetch_s": 6.684
   },
   "summary": {
     "checks": 38,
@@ -74,8 +83,8 @@
       "id": "invoices.row_count",
       "description": "INVOICES rows vs invoices documents",
       "result": "pass",
-      "expected": 4,
-      "actual": 4,
+      "expected": 3,
+      "actual": 3,
       "source_of_truth": "oracle.OW_BILLING.INVOICES"
     },
     {
@@ -120,8 +129,8 @@
       "id": "invoices.lines.row_count",
       "description": "INVOICE_LINES rows vs embedded lines elements",
       "result": "pass",
-      "expected": 4,
-      "actual": 4,
+      "expected": 2,
+      "actual": 2,
       "source_of_truth": "oracle.OW_BILLING.INVOICE_LINES"
     },
     {
@@ -378,13 +387,9 @@
         "rule": "source_rows == census_rows + fixture_only_present"
       },
       "actual": {
-        "source_rows": 4,
-        "fixture_only_in_source": [
-          "60000000-0000-0000-0000-000000000009"
-        ],
-        "fixture_only_in_target": [
-          "60000000-0000-0000-0000-000000000009"
-        ]
+        "source_rows": 3,
+        "fixture_only_in_source": [],
+        "fixture_only_in_target": []
       },
       "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
     },
@@ -401,15 +406,9 @@
         "rule": "source_rows == census_rows + fixture_only_present"
       },
       "actual": {
-        "source_rows": 4,
-        "fixture_only_in_source": [
-          "a0000000-0000-0000-0000-000000000009",
-          "a0000000-0000-0000-0000-00000000000a"
-        ],
-        "fixture_only_in_target": [
-          "a0000000-0000-0000-0000-000000000009",
-          "a0000000-0000-0000-0000-00000000000a"
-        ]
+        "source_rows": 2,
+        "fixture_only_in_source": [],
+        "fixture_only_in_target": []
       },
       "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
     },
@@ -549,24 +548,5 @@
     "census_delta.USAGE_EVENTS: table is outside the mapping spec",
     "invoice_feed_quarantine.quarantine.capturedAt: loader timestamp, not comparable to a source value",
     "invoice_feed_quarantine.quarantine: derived 'object' value is loader-defined; recon checks only the verbatim source field"
-  ],
-  "wave_readiness": {
-    "plan_step": "s4.2.0-preflight",
-    "unit": "U4",
-    "ticket": "UNT-20",
-    "collections": [
-      "invoices",
-      "credit_notes",
-      "invoice_feed",
-      "invoice_feed_quarantine"
-    ],
-    "source_tables": [
-      "CREDIT_NOTES",
-      "INVOICES",
-      "INVOICE_HEADER",
-      "INVOICE_LINE",
-      "INVOICE_LINES"
-    ],
-    "units_json": "migration/billing/units/units.json"
-  }
+  ]
 }

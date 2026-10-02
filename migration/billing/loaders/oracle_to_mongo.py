@@ -15,6 +15,10 @@ mapping_spec.json are created idempotently; an index whose build is deferred is 
       python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
         --collections codes,tenants,plans,subscriptions,subscriptions_hist --passes 2 \
         --report migration/billing/recon/out/U1.load.json
+    uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
+      python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
+        --collections usage_events,rating_periods --passes 2 \
+        --report migration/billing/recon/out/U3.load.json
     ... --collections credit_notes,invoice_feed,invoice_feed_quarantine,invoices --passes 2 \
         --report migration/billing/recon/out/U4.load.json
 

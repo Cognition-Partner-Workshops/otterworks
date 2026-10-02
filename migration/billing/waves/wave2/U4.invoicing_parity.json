@@ -3,7 +3,7 @@
   "unit": "U4",
   "run_mode": "fixture",
   "merge_evidence": false,
-  "generated_at": "2026-10-02T18:36:54Z",
+  "generated_at": "2026-10-02T18:48:20Z",
   "source": {
     "oracle": "local fixture localhost",
     "mongo": "local fixture, database ow_tp_billing_20261001T233613Z"
@@ -665,7 +665,7 @@
             "status": "paid"
           }
         ],
-        "generated_at": "2026-10-02T18:37:03Z",
+        "generated_at": "2026-10-02T18:48:29Z",
         "namespace": "demo",
         "report": "month-end-finance",
         "source": {
@@ -682,7 +682,7 @@
         },
         "batch_no": 85559852,
         "checks": [],
-        "generated_at": "2026-10-02T18:37:03Z",
+        "generated_at": "2026-10-02T18:48:29Z",
         "namespace": "demo",
         "source": {
           "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
@@ -810,7 +810,7 @@
             "status": "paid"
           }
         ],
-        "generated_at": "2026-10-02T18:37:04Z",
+        "generated_at": "2026-10-02T18:48:30Z",
         "namespace": "demo",
         "report": "month-end-finance",
         "source": {
@@ -846,7 +846,7 @@
             "status": "pass"
           }
         ],
-        "generated_at": "2026-10-02T18:37:04Z",
+        "generated_at": "2026-10-02T18:48:31Z",
         "namespace": "demo",
         "source": {
           "detail": "invoice_feed / invoice_feed.lines via codes lookup (RPT-114)",
@@ -873,14 +873,14 @@
       "records": 18750,
       "bytes": 1237500,
       "sha256": "c3e2cf43e099f9e17cc59a2b202cd876c103b8f21a8693eba45fb5fd7eb946db",
-      "path": "/home/ubuntu/tmp/custbill-oracle-j13zenpq/CUSTBILL_DEMO_ORACLE.dat"
+      "path": "/home/ubuntu/tmp/custbill-oracle-0wp426zb/CUSTBILL_DEMO_ORACLE.dat"
     },
     "mongo": {
       "file": "CUSTBILL_DEMO_ORACLE.dat",
       "records": 18750,
       "bytes": 1237500,
       "sha256": "c3e2cf43e099f9e17cc59a2b202cd876c103b8f21a8693eba45fb5fd7eb946db",
-      "path": "/home/ubuntu/tmp/custbill-mongo-_w9h9haj/CUSTBILL_DEMO_ORACLE.dat"
+      "path": "/home/ubuntu/tmp/custbill-mongo-4hcqwyqr/CUSTBILL_DEMO_ORACLE.dat"
     },
     "byte_identical": true
   },
