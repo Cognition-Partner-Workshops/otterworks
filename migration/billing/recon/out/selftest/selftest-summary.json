@@ -6,7 +6,7 @@
       "expected": "pass",
       "verdict": "pass",
       "ok": true,
-      "report": "/tmp/recon-selftest-final/selftest-faithful.recon.json",
+      "report": "migration/billing/recon/out/selftest/selftest-faithful.recon.json",
       "failed_checks": [],
       "schema_errors": []
     },
@@ -15,7 +15,7 @@
       "expected": "fail",
       "verdict": "fail",
       "ok": true,
-      "report": "/tmp/recon-selftest-final/selftest-dropped_row.recon.json",
+      "report": "migration/billing/recon/out/selftest/selftest-dropped_row.recon.json",
       "failed_checks": [
         "invoice_feed.row_count",
         "invoice_feed.keyed_presence",
@@ -28,7 +28,7 @@
       "expected": "fail",
       "verdict": "fail",
       "ok": true,
-      "report": "/tmp/recon-selftest-final/selftest-changed_amount.recon.json",
+      "report": "migration/billing/recon/out/selftest/selftest-changed_amount.recon.json",
       "failed_checks": [
         "customers.keyed_values"
       ],
@@ -39,7 +39,7 @@
       "expected": "fail",
       "verdict": "fail",
       "ok": true,
-      "report": "/tmp/recon-selftest-final/selftest-float_rounded_amount.recon.json",
+      "report": "migration/billing/recon/out/selftest/selftest-float_rounded_amount.recon.json",
       "failed_checks": [
         "invoice_feed.lines.keyed_values",
         "invoice_feed.lines.money_decimal128"
@@ -47,6 +47,6 @@
       "schema_errors": []
     }
   ],
-  "seconds": 161.7,
+  "seconds": 144.7,
   "target": "mongod mongodb://127.0.0.1:27117"
 }
