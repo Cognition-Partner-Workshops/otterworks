@@ -1,0 +1,293 @@
+{
+  "kind": "recon-report",
+  "unit": "billing",
+  "namespace": "demo",
+  "generated_at": "2026-10-02T18:56:21Z",
+  "run_mode": "fixture",
+  "verdict": "pass",
+  "merge_evidence": false,
+  "merge_evidence_note": "fixture/local result: never merge evidence (tolerances.json#source.mode is live)",
+  "source": {
+    "system": "oracle",
+    "schema": "OW_BILLING",
+    "dsn_secret": "OW_TP_ORACLE_FIXTURE_DSN",
+    "host": "localhost",
+    "transaction": "SET TRANSACTION READ ONLY",
+    "concurrency": 1,
+    "principal": "OW_BILLING",
+    "statements": "SELECT only"
+  },
+  "target": {
+    "system": "mongodb",
+    "database": "ow_tp_billing_20261001T233613Z",
+    "uri_secret": "OW_TP_MONGO_FIXTURE_URI",
+    "hosts": [
+      "127.0.0.1"
+    ],
+    "statements": "find only"
+  },
+  "inputs": {
+    "mapping_spec": {
+      "path": "migration/billing/mapping_spec.json",
+      "sha256": "0bd5fb8b20f00ba3d72da3d079c6ae998195db782aef2d5945bc5c08ac3f39f6"
+    },
+    "tolerances": {
+      "path": "migration/billing/tolerances.json",
+      "sha256": "440aeb7f7f68daac2c65563e843ca22e39f0fb5fe3604913275f02186c6590b2"
+    },
+    "fixture": {
+      "path": "migration/billing/fixtures/demo.json",
+      "sha256": "d846f3df928de8459d4fc460ab729f9f18be165ed60834420e4ebd16d47358c3"
+    }
+  },
+  "concurrency": {
+    "oracle_sessions": 1
+  },
+  "timings": {
+    "source_fetch_s": 0.005,
+    "target_fetch_s": 0.004
+  },
+  "summary": {
+    "checks": 20,
+    "pass": 20,
+    "fail": 0,
+    "skipped": 0,
+    "failed_check_ids": []
+  },
+  "checks": [
+    {
+      "id": "tolerances.money_columns_cover_spec",
+      "description": "every decimal column in the mapping spec is listed under numeric_tolerances.money.columns",
+      "result": "pass",
+      "expected": [],
+      "actual": [],
+      "source_of_truth": "migration/billing/tolerances.json"
+    },
+    {
+      "id": "tolerances.money_rule",
+      "description": "money compares Decimal vs Decimal128 exactly; a binary float on either side is a defect",
+      "result": "pass",
+      "expected": {
+        "absolute": "0",
+        "float_is_defect": true
+      },
+      "actual": {
+        "absolute": "0",
+        "float_is_defect": true
+      },
+      "source_of_truth": "migration/billing/tolerances.json"
+    },
+    {
+      "id": "usage_events.row_count",
+      "description": "USAGE_EVENTS rows vs usage_events documents",
+      "result": "pass",
+      "expected": 817,
+      "actual": 817,
+      "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
+    },
+    {
+      "id": "usage_events.keyed_presence",
+      "description": "every source PK has exactly one document and no document lacks a source row",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
+    },
+    {
+      "id": "usage_events.keyed_values",
+      "description": "field-by-field values of USAGE_EVENTS with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
+    },
+    {
+      "id": "usage_events.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
+    },
+    {
+      "id": "usage_events.fields_outside_mapping",
+      "description": "document fields that the mapping spec does not define",
+      "result": "pass",
+      "expected": {},
+      "actual": {},
+      "source_of_truth": "oracle.OW_BILLING.USAGE_EVENTS"
+    },
+    {
+      "id": "rating_periods.row_count",
+      "description": "RATING_PERIODS rows vs rating_periods documents",
+      "result": "pass",
+      "expected": 9,
+      "actual": 9,
+      "source_of_truth": "oracle.OW_BILLING.RATING_PERIODS"
+    },
+    {
+      "id": "rating_periods.keyed_presence",
+      "description": "every source PK has exactly one document and no document lacks a source row",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.RATING_PERIODS"
+    },
+    {
+      "id": "rating_periods.keyed_values",
+      "description": "field-by-field values of RATING_PERIODS with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.RATING_PERIODS"
+    },
+    {
+      "id": "rating_periods.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.RATING_PERIODS"
+    },
+    {
+      "id": "rating_periods.fields_outside_mapping",
+      "description": "document fields that the mapping spec does not define",
+      "result": "pass",
+      "expected": {},
+      "actual": {},
+      "source_of_truth": "oracle.OW_BILLING.RATING_PERIODS"
+    },
+    {
+      "id": "rating_periods.result.row_count",
+      "description": "RATING_RESULTS rows vs embedded result elements",
+      "result": "pass",
+      "expected": 8,
+      "actual": 8,
+      "source_of_truth": "oracle.OW_BILLING.RATING_RESULTS"
+    },
+    {
+      "id": "rating_periods.result.keyed_presence",
+      "description": "each RATING_RESULTS row appears once under its parent, keyed by id",
+      "result": "pass",
+      "expected": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "actual": {
+        "missing": 0,
+        "unexpected": 0
+      },
+      "source_of_truth": "oracle.OW_BILLING.RATING_RESULTS"
+    },
+    {
+      "id": "rating_periods.result.keyed_values",
+      "description": "field-by-field values of RATING_RESULTS with the mapping applied (tolerances.json)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.RATING_RESULTS"
+    },
+    {
+      "id": "rating_periods.result.money_decimal128",
+      "description": "money fields are Decimal128 and equal the Oracle NUMBER as Decimal; no binary floats",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.RATING_RESULTS"
+    },
+    {
+      "id": "rating_periods.result.shape_and_order",
+      "description": "result is a subdoc ordered by n/a",
+      "result": "pass",
+      "expected": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "actual": {
+        "shape_defects": 0,
+        "order_defects": 0
+      },
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    },
+    {
+      "id": "rating_periods.result.orphans",
+      "description": "RATING_RESULTS rows whose PERIOD_ID has no parent row (no quarantine defined for this table)",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle.OW_BILLING.RATING_RESULTS"
+    },
+    {
+      "id": "census_delta.USAGE_EVENTS",
+      "description": "fixture-only static_seed_version-2 rows are accounted for explicitly, never reported as dropped/unexpected",
+      "result": "pass",
+      "expected": {
+        "census_rows": 814,
+        "fixture_only_pks": [
+          "30000000-0000-0000-0000-00000000a001",
+          "30000000-0000-0000-0000-00000000a002",
+          "30000000-0000-0000-0000-00000000a003"
+        ],
+        "rule": "source_rows == census_rows + fixture_only_present"
+      },
+      "actual": {
+        "source_rows": 817,
+        "fixture_only_in_source": [
+          "30000000-0000-0000-0000-00000000a001",
+          "30000000-0000-0000-0000-00000000a002",
+          "30000000-0000-0000-0000-00000000a003"
+        ],
+        "fixture_only_in_target": [
+          "30000000-0000-0000-0000-00000000a001",
+          "30000000-0000-0000-0000-00000000a002",
+          "30000000-0000-0000-0000-00000000a003"
+        ]
+      },
+      "source_of_truth": "migration/billing/fixtures/demo.json#census_delta"
+    },
+    {
+      "id": "derived_fields.rules",
+      "description": "DD-MON-YY dates (HIST_DT with its HH24:MI:SS suffix) parse under the RR rule and CSV lists split only when clean; otherwise the derived field is absent",
+      "result": "pass",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "migration/billing/mapping_spec.json"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "compare() executed twice over the same fetched rows/documents; 20 check signatures identical"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [],
+    "actual_set": [],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "anomalies.dirty_dates: CUSTOMER_MASTER outside this run's collections; not evaluated",
+    "anomalies.eav_boolean_spellings: ENTITY_ATTR_VALUE outside this run's collections; not evaluated",
+    "anomalies.malformed_csv_lists: CUSTOMER_MASTER outside this run's collections; not evaluated",
+    "anomalies.orphaned_rows: INVOICE_LINE outside this run's collections; not evaluated",
+    "census_delta.CUSTOMER_MASTER: table is outside the mapping spec",
+    "census_delta.ENTITY_ATTR_VALUE: table is outside the mapping spec",
+    "census_delta.INVOICES: table is outside the mapping spec",
+    "census_delta.INVOICE_LINES: table is outside the mapping spec",
+    "census_delta.SUBSCRIPTIONS: table is outside the mapping spec",
+    "census_delta.TENANTS: table is outside the mapping spec"
+  ]
+}
