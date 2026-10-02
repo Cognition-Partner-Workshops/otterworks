@@ -122,11 +122,15 @@ With no `--destination-arn` the messages go back to `otterworks-cw-notifications
 
 ## 7. Verify
 
+The gate publishes one simulated event, and only the builder role may publish to the demo topic, so run it under the builder role and switch back afterwards.
+
 ```bash
+source <(cloudworker/assume.sh builder devin-<session id> --kubeconfig)
 make cw-verify EXPECT=after
+source <(cloudworker/assume.sh observer devin-<session id> --kubeconfig)
 ```
 
-The gate passes when the live table matches git, the DLQ depth is 0, the alarm is `OK` or `INSUFFICIENT_DATA`, the pods are ready, and one simulated `file_shared` event shows up as an item in `otterworks-cw-notifications` within 90 seconds. The alarm can take a minute or two to leave `ALARM` after the DLQ empties. Re-run the gate after that minute and leave the thresholds alone. Paste the gate output exactly as printed. If one step is refused for lack of permission, report that step and its error, and say the operator runs the gate.
+The gate passes when the live table matches git, the DLQ depth is 0, the alarm is `OK` or `INSUFFICIENT_DATA`, the pods are ready, and one simulated `file_shared` event shows up as an item in `otterworks-cw-notifications` within 90 seconds. The alarm can take a minute or two to leave `ALARM` after the DLQ empties. Re-run the gate after that minute and leave the thresholds alone. Paste the gate output exactly as printed. If a step is still refused, report that step and its error, and say the operator runs the gate.
 
 ## 8. Fix pull request
 

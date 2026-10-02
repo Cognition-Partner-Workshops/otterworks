@@ -335,6 +335,7 @@ cmd_credentials() {
 cmd_arm() {
   require_operator
   run aws cloudwatch enable-alarm-actions --alarm-names "$(out alarm_name)"
+  run aws events enable-rule --name "$(out eventbridge_rule_name)"
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
     --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${FAULT_TABLE}"
   restart_and_wait notification-service
@@ -537,9 +538,10 @@ cmd_quiet() {
   minutes="${minutes#MINUTES=}"
   [[ "${minutes}" =~ ^[0-9]+$ ]] || die "usage: cw.sh quiet [MINUTES]"
   run aws cloudwatch disable-alarm-actions --alarm-names "$(out alarm_name)"
+  run aws events disable-rule --name "$(out eventbridge_rule_name)"
   local until; until="$(utc_minutes_from_now "+${minutes}")"
   state_set quiet_until "${until}"
-  log "alarm actions disabled until ${until}"
+  log "alarm actions and the EventBridge rule are disabled until ${until}; arm or disarm turns them back on"
 }
 
 cmd_disarm() {
@@ -551,6 +553,7 @@ cmd_disarm() {
   run aws cloudwatch set-alarm-state --alarm-name "$(out alarm_name)" --state-value OK --state-reason "cw.sh disarm"
   wait_queues_empty
   run aws cloudwatch enable-alarm-actions --alarm-names "$(out alarm_name)"
+  run aws events enable-rule --name "$(out eventbridge_rule_name)"
   state_del armed_at
   state_del quiet_until
   log "disarmed"

@@ -53,7 +53,9 @@ resource "aws_iam_role_policy" "notification_service" {
           "dynamodb:PutItem",
           "dynamodb:Query",
           "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
           "dynamodb:Scan",
+          "dynamodb:DescribeTable",
         ]
         Resource = [
           aws_dynamodb_table.notifications.arn,
@@ -192,6 +194,11 @@ resource "aws_iam_role_policy" "devin_builder" {
         Effect   = "Allow"
         Action   = ["cloudwatch:SetAlarmState"]
         Resource = [aws_cloudwatch_metric_alarm.dlq_depth.arn]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
+        Resource = [aws_sns_topic.events.arn]
       },
     ]
   })
