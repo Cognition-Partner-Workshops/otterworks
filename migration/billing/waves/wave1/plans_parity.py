@@ -68,6 +68,11 @@ def capture(rows, specs):
     return out
 
 
+def _ordered(rows):
+    """Same total order on both estates: starts_on, then closed rows before open ones, then plan_id."""
+    return sorted(rows, key=lambda r: (r["starts_on"] or "", r["ends_on"] is None, r["ends_on"] or "", r["plan_id"] or ""))
+
+
 class Fixture:
     def __init__(self, oracle_dsn_env, mongo_uri_env):
         import oracle_record  # procs/harness: STATIC_TENANTS + 03_seed_static.sql statements
@@ -144,22 +149,22 @@ class Fixture:
             cur.execute(
                 """SELECT plan_id, starts_on, ends_on,
                           DECODE(status_cd, 10, 'active', 20, 'suspended', 30, 'cancelled', 'UNKNOWN') AS status
-                     FROM subscriptions WHERE tenant_id = :1 ORDER BY starts_on""",
+                     FROM subscriptions WHERE tenant_id = :1""",
                 (tenant_id,),
             )
-            return [
+            return _ordered([
                 {"plan_id": r[0], "starts_on": r[1].date().isoformat() if r[1] else None,
                  "ends_on": r[2].date().isoformat() if r[2] else None, "status": r[3]}
                 for r in cur.fetchall()
-            ]
+            ])
 
     def probe_mongo(self, tenant_id):
-        return [
+        return _ordered([
             {"plan_id": d.get("planId"), "starts_on": d["startsOn"].date().isoformat(),
              "ends_on": d["endsOn"].date().isoformat() if d.get("endsOn") else None,
              "status": STATUS.get(d.get("statusCd"), "UNKNOWN")}
-            for d in self.mongo[self.database].subscriptions.find({"tenantId": tenant_id}).sort("startsOn", 1)
-        ]
+            for d in self.mongo[self.database].subscriptions.find({"tenantId": tenant_id})
+        ])
 
     def probe(self, backend, tenant_id):
         return self.probe_oracle(tenant_id) if backend == "oracle" else self.probe_mongo(tenant_id)
