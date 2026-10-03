@@ -1,0 +1,71 @@
+demo: aws-cloud-worker
+record: req-2026-10-01-008
+tenant:
+  id: cloud-worker
+  namespace: otterworks-cloud-worker
+  branch: demo-cloud-worker
+  run_branch: demo-cw-<unix ts>-<slug>
+source_of_truth: infrastructure/helm/tenant-values/cloud-worker/eventing.env
+
+path:
+  publisher: file-service
+  topic: otterworks-cw-events
+  queue: otterworks-cw-notifications
+  dlq: otterworks-cw-notifications-dlq
+  consumer: notification-service
+  table: otterworks-cw-notifications
+  preferences_table: otterworks-cw-notification-preferences
+  alarm: otterworks-cw-notifications-dlq-depth
+  dashboard: otterworks-cloud-worker
+  eventbridge_rule: otterworks-cw-dlq-alarm-to-devin
+
+event:
+  type: file_shared
+  shape: services/file-service/src/events.rs FileEvent
+  owner_id: 5eed0001-0000-4000-a000-000000000001
+  recipient_id: 5eed0002-0000-4000-a000-000000000002
+  message_attribute:
+    demoSource: aws-cloud-worker
+
+fault:
+  planted_by: cw.sh arm
+  release: notification-service
+  key: config.DYNAMODB_TABLE_NOTIFICATIONS
+  git_value: otterworks-cw-notifications
+  live_value: otterworks-cw-notifications-v2
+  mechanism: helm upgrade --reuse-values, then rollout restart
+  events_published: 6
+  symptom: ResourceNotFoundException on PutItem to otterworks-cw-notifications-v2; the preferences GetItem before it succeeds, processEvent throws, and the consumer leaves the message for redelivery
+  requires: otterworks-cw-notification-preferences exists and the notification-service IRSA role can GetItem on it; otherwise every message fails before the fault
+  fix: cw.sh apply, then aws sqs start-message-move-task to redrive the DLQ
+
+drift:
+  planted_by: cw.sh up
+  resource: otterworks-cw-notifications
+  attribute: MessageRetentionPeriod
+  terraform_value: 345600
+  live_value: 1209600
+
+thresholds:
+  visibility_timeout_seconds: 30
+  max_receive_count: 3
+  alarm_metric: AWS/SQS ApproximateNumberOfMessagesVisible
+  alarm_threshold: ">= 1 for 1 period of 60 s"
+  dlq_expected_after_minutes: 2
+  alarm_expected_after_minutes: 3
+  log_window_minutes: 15
+  landing_timeout_seconds: 90
+  quiet_default_minutes: 10
+
+gates:
+  before:
+    - live DYNAMODB_TABLE_NOTIFICATIONS differs from eventing.env
+    - DLQ depth is at least 1
+    - alarm state is ALARM
+    - at least one ResourceNotFoundException in the last 15 min of notification-service logs
+  after:
+    - live DYNAMODB_TABLE_NOTIFICATIONS equals eventing.env
+    - DLQ depth is 0
+    - alarm state is OK or INSUFFICIENT_DATA
+    - notification-service and file-service pods are ready
+    - one simulated file_shared event lands in otterworks-cw-notifications within 90 s, found by the userId GSI
