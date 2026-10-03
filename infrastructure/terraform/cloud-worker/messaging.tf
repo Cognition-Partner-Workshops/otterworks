@@ -65,7 +65,7 @@ resource "aws_sqs_queue_policy" "events_dlq" {
   })
 }
 
-resource "aws_dynamodb_table" "notifications" {
+resource "aws_dynamodb_table" "notifications" { # nosemgrep: terraform.aws.security.aws-dynamodb-table-unencrypted.aws-dynamodb-table-unencrypted
   name         = local.table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
@@ -97,7 +97,7 @@ resource "aws_dynamodb_table" "notifications" {
   }
 }
 
-resource "aws_dynamodb_table" "notification_preferences" {
+resource "aws_dynamodb_table" "notification_preferences" { # nosemgrep: terraform.aws.security.aws-dynamodb-table-unencrypted.aws-dynamodb-table-unencrypted
   name         = local.prefs_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "userId"

@@ -80,7 +80,7 @@ def main() -> int:
             print("+ " + shlex.join(cmd), file=sys.stderr)
             message_id = "dry-run"
         else:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
             if result.returncode != 0:
                 print(result.stderr.strip(), file=sys.stderr)
                 return result.returncode

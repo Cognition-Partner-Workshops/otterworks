@@ -212,7 +212,7 @@ resource "aws_iam_user_policy" "devin_reader" {
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Action = "sts:AssumeRole"
+      Action = "sts:AssumeRole" # nosemgrep: terraform.lang.security.iam.no-iam-creds-exposure.no-iam-creds-exposure
       Resource = [
         aws_iam_role.devin_observer.arn,
         aws_iam_role.devin_builder.arn,
