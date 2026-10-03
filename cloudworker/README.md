@@ -20,7 +20,7 @@ Each verb is `cloudworker/cw.sh <verb>` and also `make cw-<verb>`.
 
 | Verb | Make target | Who runs it | What it does |
 |---|---|---|---|
-| `up` | `make cw-up` | operator | Applies the Terraform, maps the Devin roles, applies the RBAC, plants the retention drift, wires the tenant if it exists, sends one event and watches the DLQ for two minutes |
+| `up` | `make cw-up` | operator | Applies the Terraform, maps the Devin roles, applies the RBAC, adds the tenant's two hosts to external-dns's domain filters (perpetual tenants sit at the apex, outside the `demo.` filter), plants the retention drift, wires the tenant if it exists, sends one event and watches the DLQ for two minutes |
 | `apply` | `make cw-apply` | operator or builder | Sets the eventing keys, including the preferences table, and IRSA roles from `eventing.env` on notification-service and file-service, then restarts both |
 | `credentials` | `make cw-credentials` | operator | Replaces the `devin-cw-reader` access key and writes `.state/devin-cw-reader.json` with mode 600 |
 | `arm` | `make cw-arm` | operator | Points notification-service at `otterworks-cw-notifications-v2`, sends six events and clears any quiet window |

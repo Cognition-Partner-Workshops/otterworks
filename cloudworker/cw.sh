@@ -205,6 +205,19 @@ namespace_exists() {
   kubectl get namespace "${NS}" >/dev/null 2>&1
 }
 
+dns_filters() {  # add|remove the tenant's apex hosts in external-dns's domain filters
+  local verb="$1" current new want
+  want="$(printf -- '--domain-filter=%s\n' "t-${TENANT}.otterworks.app" "api-t-${TENANT}.otterworks.app" | jq -Rsc 'split("\n")[:-1]')"
+  if [ "${DRY}" = 1 ]; then show kubectl patch deploy external-dns -n external-dns --type=json -p "[${verb} ${want}]"; return 0; fi
+  current="$(kubectl get deploy external-dns -n external-dns -o json 2>/dev/null | jq -c '.spec.template.spec.containers[0].args')" \
+    || { log "external-dns not found; tenant hosts need DNS by hand"; return 0; }
+  new="$(jq -c --argjson want "${want}" --arg verb "${verb}" 'if $verb == "add" then . + ($want - .) else . - $want end' <<<"${current}")"
+  [ "${new}" = "${current}" ] && return 0
+  run kubectl patch deploy external-dns -n external-dns --type=json \
+    -p "[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/args\",\"value\":${new}}]"
+  run kubectl rollout status deploy external-dns -n external-dns --timeout=120s
+}
+
 restart_and_wait() {
   local d
   for d in "$@"; do run kubectl -n "${NS}" rollout restart "deploy/${d}"; done
@@ -302,6 +315,7 @@ cmd_up() {
   run rm -f "${OUTPUTS}"
   run bash "${AWS_AUTH}" add "$(out devin_observer_role_arn)" "$(out devin_builder_role_arn)"
   run kubectl apply -f "${RBAC}"
+  dns_filters add
   run aws sqs set-queue-attributes --queue-url "$(out sqs_queue_url)" \
     --attributes "MessageRetentionPeriod=${DRIFT_RETENTION}"
   if namespace_exists; then
@@ -610,6 +624,7 @@ cmd_teardown() {
   run rm -f "${READER_FILE}"
   state_del baseline_image
   if [ "${TEARDOWN_TENANT:-false}" = true ]; then
+    dns_filters remove
     run "${REPO}/scripts/teardown-tenant.sh" "${TENANT}"
   else
     log "leaving tenant ${TENANT} in place (TEARDOWN_TENANT=true removes it)"

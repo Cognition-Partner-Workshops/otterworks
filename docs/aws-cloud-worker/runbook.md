@@ -122,4 +122,4 @@ make cw-status
 
 To stop a run in the middle without closing anything, run `make cw-disarm`. To keep the alarm from paging while you rehearse, run `make cw-quiet MINUTES=10`.
 
-At the end of the cycle, run `make cw-teardown`. It runs the reset, removes the Devin roles from the cluster, deletes the reader's access keys and destroys the demo Terraform. Tenant `cloud-worker` stays unless you set `TEARDOWN_TENANT=true`. Delete the four `CW_*` org secrets afterward.
+At the end of the cycle, run `make cw-teardown`. It runs the reset, removes the Devin roles from the cluster, deletes the reader's access keys and destroys the demo Terraform. Tenant `cloud-worker` stays unless you set `TEARDOWN_TENANT=true`, which also drops its hosts from external-dns and lets the Route53 records expire with the ingress. Delete the four `CW_*` org secrets afterward.
