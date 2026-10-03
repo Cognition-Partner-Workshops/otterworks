@@ -28,7 +28,7 @@ Each verb is `cloudworker/cw.sh <verb>` and also `make cw-<verb>`.
 | `verify` | `make cw-verify EXPECT=before` | anyone | Prints PASS or FAIL per check with the measured value and exits 1 on any FAIL |
 | `simulate` | `make cw-simulate COUNT=3` | operator | Publishes `file_shared` events from a seeded owner to a seeded recipient |
 | `quiet` | `make cw-quiet MINUTES=10` | operator | Disables the alarm actions and the EventBridge rule, and records when the quiet window ends; `arm` and `disarm` turn both back on |
-| `disarm` | `make cw-disarm` | operator | Quiets the alarm, restores the config, purges both queues, sets the alarm to OK and turns its actions back on |
+| `disarm` | `make cw-disarm` | operator | Quiets the alarm, restores the config and the image recorded at `arm`, purges both queues, sets the alarm to OK and turns its actions back on |
 | `reset` | `make cw-reset` | operator | Disarms, closes `demo-cw-*` pull requests, deletes those branches, removes `cw-*` tenants and plants the drift again |
 | `teardown` | `make cw-teardown` | operator | Resets, unmaps the roles, deletes the RBAC and reader keys and destroys the Terraform. Set `TEARDOWN_TENANT=true` to remove tenant `cloud-worker` as well |
 | `trail` | `make cw-trail` | operator | Lists CloudTrail events from `devin-cw-*` identities in the last two hours |

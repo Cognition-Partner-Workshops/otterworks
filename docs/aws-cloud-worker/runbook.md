@@ -118,7 +118,7 @@ make cw-reset
 make cw-status
 ```
 
-`cw-reset` runs `cw-disarm` (restores the config from git, purges both queues, sets the alarm to `OK`, re-enables alarm actions), closes open pull requests whose branch starts with `demo-cw-`, deletes those branches, tears down the `cw-*` tenants, re-applies the retention drift for act 1 and ends any quiet window. When `cw-status` shows the live table equal to git, both queues at 0 and the alarm `OK`, the next run can start.
+`cw-reset` runs `cw-disarm` (restores the config from git and the notification-service image recorded at `arm`, so a fix image a session deployed does not carry into the next run; purges both queues, sets the alarm to `OK`, re-enables alarm actions), closes open pull requests whose branch starts with `demo-cw-`, deletes those branches, tears down the `cw-*` tenants, re-applies the retention drift for act 1 and ends any quiet window. When `cw-status` shows the live table equal to git, both queues at 0 and the alarm `OK`, the next run can start.
 
 To stop a run in the middle without closing anything, run `make cw-disarm`. To keep the alarm from paging while you rehearse, run `make cw-quiet MINUTES=10`.
 
