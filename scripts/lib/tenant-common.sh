@@ -336,6 +336,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${DDB_NOTIF}")
+      if [ -n "${DDB_NOTIF_PREFS:-}" ]; then EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE_PREFERENCES=${DDB_NOTIF_PREFS}"); fi
       EXTRA_ARGS+=(--set-string "config.SNS_TOPIC_ARN=${sns_topic}")
       EXTRA_ARGS+=(--set-string "config.SQS_QUEUE_URL=${sqs_notif}") ;;
     search-service)

@@ -115,3 +115,4 @@ __pycache__/
 # incident-responder harness runtime state and gate reports
 incident/.state/
 incident/reports/
+!infrastructure/helm/tenant-values/**/eventing.env
