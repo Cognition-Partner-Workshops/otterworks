@@ -22,7 +22,7 @@ Devin converts a Redshift mart estate of 20 units to Databricks SQL in waves, on
 
 ## Live, readiness path (what exists today)
 
-1. Sign in as the Databricks persona and start a session on `dbx-redshift-migration` with the prompt in `/home/ubuntu/prompts/aws-native/prompts/dbx-plan-readiness.md`. Devin runs `make check`, posts a plan table with one row per unit (wave, legacy files, outputs, golden row counts, Redshift features that behave differently on Databricks, expected fix pattern), posts the fan-out plan, and probes the workspace with `databricks current-user me`, printing the error and the three secret names it needs.
+1. Sign in as the Databricks persona and start a session with the prompt in `/home/ubuntu/prompts/aws-native/prompts/dbx-plan-readiness.md`. The prompt names the repository, which matters because the composer's repository picker in `Partner Demo - ViewOnly` offers only `otterworks`. Devin runs `make check`, posts a plan table with one row per unit (wave, legacy files, outputs, golden row counts, Redshift features that behave differently on Databricks, expected fix pattern), posts the fan-out plan, and probes the workspace with `databricks current-user me`, printing the error and the three secret names it needs.
 2. Start a second session with `/home/ubuntu/prompts/aws-native/prompts/dbx-run1-audit.md`. Devin audits `migration-run-1` as an independent reviewer: one row per evidence file, the pull request per unit with its CI state and whether it stayed inside the writable paths, and the determinism checks (`GETDATE`, `CURRENT_DATE`, `SYSDATE`, `RANDOM`, as-of dates other than `2025-12-31`).
 3. Close on the two tables and the honest line in the first session: the workspace is not reachable with the secrets at hand, and no workspace object was created or changed.
 
@@ -68,3 +68,4 @@ Twenty units, the same contract each, one child per unit on its own machine, and
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | Databricks persona | `cf5822ff`, `d851ed33` | Both candidate workspaces reject the token, so the runbook needs the readiness path as a first-class route; added. |
+| 2026-10-05 | Databricks persona, readiness path, second run | `2c603394` | The repository picker in the ViewOnly composer lists only `otterworks`, so the prompt has to name `dbx-redshift-migration` itself; it does. |

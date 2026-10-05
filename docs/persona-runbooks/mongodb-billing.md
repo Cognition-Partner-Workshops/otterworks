@@ -72,3 +72,4 @@ The gate comes first and it refuses before it connects: Devin cannot write to At
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | MongoDB persona | `5b01bf3`, `9e56ceba`, `910ac7c8` | The scope check must fail closed without the URI (it used to skip); fixed in the harness and written above. |
+| 2026-10-05 | MongoDB persona, gate and loader, second run | `d4665ccb` | Nothing new in the prompt; `otterworks` is the only repository the composer offers and it is the right one. |

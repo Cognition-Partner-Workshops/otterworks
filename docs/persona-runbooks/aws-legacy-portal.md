@@ -64,6 +64,8 @@ Each run token has its own Terraform state key, so two tokens can be up at once.
 - `lp-up` fails while the writer is creating: run it again; the second apply is a no-op on what already exists.
 - A worker's first replay returns 502 from the API: the function is still on the placeholder or the handler name is wrong; read `aws lambda get-function-configuration` for the function the token names.
 - Aurora paused after 600 idle seconds: the first request wakes it in about 15 seconds and the replay tolerates that.
+- The Migration Agent reports `Unknown board ticket ids` right after approval: the board is still indexing; it retries on its own within a minute.
+- The stack-check worker says Aurora shows no Serverless v2 scaling settings: answer in the session with the operator's `make lp-status RUN=<token>` output, which reads `ServerlessV2ScalingConfiguration` with operator credentials.
 - The Migrations page is unavailable: run way A. The audience sees the same children and the same pull request.
 
 ## Talk track
@@ -86,3 +88,4 @@ Three workers, one job each, one recording as the contract. Devin does the port 
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | AWS persona, way A, token `lp-20261005-vo` | `e2d39853` | Announcements must land before preferences and feedback because it owns the common routes; added to the prompt file. |
+| 2026-10-05 | AWS persona, way B, token `lp-20261005-mp` | `509a30c2` | The Migration Agent's first dispatch failed with `Unknown board ticket ids` while the board was still indexing and retried on its own a minute later; added to Fallback. The stack-check worker reads Aurora under the observer role and may not see the Serverless v2 scaling block; added to Fallback. |

@@ -18,7 +18,7 @@ Devin is paged by CloudWatch, finds the commit that broke the consumer, ships th
 
 Run from a checkout of `devin/1791187037-cw-parser-fault` with operator AWS credentials.
 
-1. `make cw-status`. Expect `table live` equal to `table git`, `queue 0 visible`, `dlq 0 visible`, `alarm OK, actions enabled`, and the notification-service image at the baseline tag `workshop-ep-contracts-2c2d7ff`. The queue retention reads 1209600 seconds against 345600 in Terraform; that drift is planted on purpose for the discovery act and `cw-arm` leaves it alone.
+1. `make cw-apply`, then `make cw-status`. The apply puts the baseline image and config back when the previous run's fix image is still deployed. Expect `table live` equal to `table git`, `queue 0 visible`, `dlq 0 visible`, `alarm OK, actions enabled`, and the notification-service image at the baseline tag `workshop-ep-contracts-2c2d7ff`. The queue retention reads 1209600 seconds against 345600 in Terraform; that drift is planted on purpose for the discovery act and `cw-arm` leaves it alone.
 2. Confirm the automation. In the Devin web app as the AWS persona, open Automations and check that the DLQ automation is owned by AWS, runs as its creator and uses the `aws-cloud-worker` playbook. The EventBridge rule `otterworks-cw-dlq-alarm-to-devin` must be `ENABLED` and point at the API destination `otterworks-cw-devin-webhook`.
 3. Check the org secrets exist, by name only: `CW_AWS_ACCESS_KEY_ID`, `CW_AWS_SECRET_ACCESS_KEY`, `CW_OBSERVER_ROLE_ARN`, `CW_BUILDER_ROLE_ARN`. The session assumes `devin-cw-observer` for every read and `devin-cw-builder` for the deploy and the redrive.
 4. Read `make cw-trail` once so you know what an empty trail looks like before the session writes to it.
@@ -83,3 +83,4 @@ The value is the loop, and the loop is generic: a release breaks a consumer, a m
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | AWS persona through the automation | `546a849a` | Approve the network request for Gradle; re-plant the retention drift after `cw-arm`. Both added above. |
+| 2026-10-05 | AWS persona through the automation, second run | `d6ebb5e0` | The tenant was still on the previous run's fix image, so the preflight now starts with `make cw-apply`. Armed 15:11:35Z, alarm 15:15:14Z, session 15:15:15Z. |
