@@ -7,12 +7,14 @@ ROOT = Path(__file__).resolve().parents[3]
 LEGACY = ROOT / "services" / "legacy-billing" / "db" / "seed.sql"
 OUTPUT = ROOT / "services" / "billing-service" / "db" / "seed.sql"
 TABLES = ("tenants", "plans", "subscriptions")
+# --- rating ---
+RATING_TABLES = ("usage_events", "rating_periods", "rating_results")
 
 
 def generate() -> str:
     source = LEGACY.read_text()
     statements = []
-    for table in TABLES:
+    for table in TABLES + RATING_TABLES:
         match = re.search(
             rf"INSERT INTO billing\.{table} .*?;\n",
             source,
