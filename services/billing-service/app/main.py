@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -12,8 +13,15 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    InvoicingError,
+    catalog,
+    change_plan,
+    entitlement,
+    invoice_preview,
+    issue_invoice,
+)
+from app.repository import PostgresInvoicingRepository, PostgresPlansRepository
 
 
 @asynccontextmanager
@@ -127,3 +135,93 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+# --- invoicing ----------------------------------------------------------------
+
+
+class InvoiceIssue(BaseModel):
+    period_start: date
+    period_end: date
+
+
+def _invoicing_decimal(value: Decimal | None) -> str | None:
+    return None if value is None else str(value)
+
+
+def _invoice_state_row(row: dict) -> dict:
+    return {
+        "status": row["status"],
+        "subtotal": str(row["subtotal"]),
+        "tax": str(row["tax"]),
+        "total": str(row["total"]),
+    }
+
+
+@app.get("/api/invoices/{tenant_id}/preview")
+def get_invoice_preview(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    with connect() as connection:
+        lines = invoice_preview(
+            PostgresInvoicingRepository(connection), tenant_id, period_start, period_end
+        )
+    return [
+        {
+            "line_no": line.line_no,
+            "line_type": line.line_type,
+            "description": line.description,
+            "amount": _invoicing_decimal(line.amount),
+            "tax_amount": _invoicing_decimal(line.tax_amount),
+            "credit_applied": _invoicing_decimal(line.credit_applied),
+            "total": _invoicing_decimal(line.total),
+        }
+        for line in lines
+    ]
+
+
+@app.post("/api/invoices/{tenant_id}/issue")
+def issue_tenant_invoice(tenant_id: Annotated[UUID, Path()], request: InvoiceIssue) -> dict:
+    try:
+        with connect() as connection:
+            repository = PostgresInvoicingRepository(connection)
+            invoice_id, period_id = issue_invoice(
+                repository, tenant_id, request.period_start, request.period_end
+            )
+            state = [_invoice_state_row(row) for row in repository.invoice_state(period_id)]
+            credit_notes = repository.list_credit_notes(tenant_id)
+    except InvoicingError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except psycopg.errors.IntegrityError as error:
+        raise HTTPException(status_code=409, detail="invoice could not be issued") from error
+    return {
+        "invoice_id": str(invoice_id),
+        "period_id": str(period_id),
+        "invoice": state[0] if state else None,
+        "invoice_state": state,
+        "credit_notes": [
+            {
+                "id": str(row["id"]),
+                "issued_on": row["issued_on"].isoformat(),
+                "remaining_amount": str(row["remaining_amount"]),
+            }
+            for row in credit_notes
+        ],
+    }
+
+
+@app.get("/api/invoices/{invoice_id}/lines")
+def get_invoice_lines(invoice_id: Annotated[UUID, Path()]) -> list[dict]:
+    with connect() as connection:
+        lines = PostgresInvoicingRepository(connection).list_invoice_lines(invoice_id)
+    return [
+        {
+            "line_no": line.line_no,
+            "line_type": line.line_type,
+            "description": line.description,
+            "amount": str(line.amount),
+        }
+        for line in lines
+    ]

@@ -1,0 +1,275 @@
+module: invoicing
+rules:
+  - id: INVOICE-001
+    statement: >-
+      The invoice preview always returns exactly five lines in line_no order 1..5 with
+      fixed types and descriptions - 1 plan (<plan code>), 2 usage ("usage overage"),
+      3 tax ("regional tax"), 4 tax ("local tax"), 5 credit ("credit notes") - even when a
+      line's value is zero. The tax_amount column is always 0 on every line; tax is
+      reported only in the amount/total of lines 3 and 4.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [45, 58]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [line_no, line_type, description, tax_amount]
+    confidence: high
+    scenarios: [INVOICE-001, INVOICE-002]
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Transcripts confirm line_numbers [1,2,3,4,5] (INVOICE-001), line_types
+        [plan, usage, tax, tax, credit] and tax_amount all 0.00 (INVOICE-002). Zero-value lines
+        (usage 0.00, credit 0) are still emitted.
+  - id: INVOICE-002
+    statement: >-
+      The plan line charges the full monthly fee of the plan on the subscription that overlaps
+      the period (starts_on <= period_end AND (ends_on IS NULL OR ends_on >= period_start)),
+      choosing the latest starts_on when several overlap; amount and total are
+      round(monthly_fee, 2). No proration for mid-period starts, plan changes or suspension.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [23, 47]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [amount, total]
+    confidence: medium
+    scenarios: [INVOICE-001, INVOICE-002]
+    question: >-
+      (a) Mid-period plan change: SQL bills only the latest-starting overlapping plan at the
+      full fee (no proration, no charge for the earlier plan) - keep? (b) Subscription status
+      is ignored: a subscription suspended mid-period (tenant 2, suspended 2026-02-15) is
+      still charged the full 149.00 fee, while only its usage overage is prorated by rating -
+      keep? (c) No overlapping subscription: SQL returns NULL plan code/amount/total for
+      lines 1-4 and 0 for the credit line (verified, tenant 6 for 2025-11) rather than an
+      error - should the target return 404/empty instead?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Boundaries are inclusive on both ends (starts_on <= period_end, ends_on >= period_start).
+        Rounding: round(monthly_fee, 2) is a no-op for the seeded fees (numeric(12,2)).
+        Transcripts: INVOICE-001 plan 49.00 (STARTER), INVOICE-002 line 1 type plan. Edge
+        behaviours (a)-(c) are derived from the SQL and an ad-hoc read-only query; no
+        transcript covers them. Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-003
+    statement: >-
+      The usage line is the rated overage_amount for the tenant and period produced by the
+      rating module (billing.fn_usage_rating), shown as round(overage_amount, 2) in amount and
+      total.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [31, 50]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [amount, total]
+    confidence: medium
+    scenarios: [INVOICE-001, INVOICE-002]
+    question: >-
+      Invoicing depends on the rating rules (tiers, rollover, suspension proration) which are
+      owned by the rating ledger and extracted in a sibling PR. Should the target invoicing
+      code call a shared rating function (and accept a dependency on the rating PR), or carry
+      its own invoicing-local copy of the overage calculation until rating lands?
+    answer: "Approved: invoicing carries an invoicing-local overage calculation that reproduces the recorded rating rules exactly, so this extraction is independent of the sibling rating PR; consolidate onto the shared rating domain function in a follow-up once both land."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Rating already rounds overage to 2 dp (round half away from zero) so the invoicing
+        round() is a no-op. Transcripts: INVOICE-001 usage 5.56 (201 units, 100 included,
+        101 x 0.055 = 5.555 -> 5.56), INVOICE-002 usage line present for tax-exempt tenant 3.
+  - id: INVOICE-004
+    statement: >-
+      Tax is 8.25% of (monthly_fee + overage_amount) unless the tenant is tax_exempt, in which
+      case it is 0. Tax is computed before credits (credits do not reduce the tax base) and is
+      split into two equal halves, regional (line 3) and local (line 4), each v_tax / 2
+      unrounded in the preview.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [39, 54]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [amount, total]
+    confidence: low
+    scenarios: [INVOICE-001, INVOICE-002]
+    question: >-
+      (a) Rounding: the preview returns unrounded halves (e.g. 2.2506 for tenant 6), the
+      persisted invoice rounds each half to 2 dp separately and sums them, and the credit cap
+      uses the unrounded tax. Should tax be rounded once on the total (round(v_tax, 2) then
+      split) or per half as today, and should the preview API return 2-dp values? (b) A
+      tenant id missing from billing.tenants makes tax_exempt NULL, which falls to the ELSE
+      branch and is taxed - keep?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        SQL: v_tax = (monthly_fee + overage) * 0.0825 with no rounding (line 42); lines 3/4 are
+        v_tax / 2 unrounded (lines 52, 54). The parity harness normalizes decimals to 2 dp
+        ROUND_HALF_UP, so transcripts show 2.25 / 2.25 for tenant 6 (raw 2.2506 each, verified
+        against the legacy DB). Tax-exempt tenant 3 shows 0 tax (INVOICE-002). The 8.25% rate
+        and 50/50 split are hardcoded in the procedure. Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-005
+    statement: >-
+      The credit line applies the tenant's total remaining credit (sum of remaining_amount over
+      all credit notes with remaining_amount > 0), capped at round(monthly_fee + overage +
+      unrounded tax, 2). The line reports amount 0, credit_applied as the positive applied
+      credit and total as its negation.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [34, 58]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [amount, credit_applied, total]
+    confidence: medium
+    scenarios: [INVOICE-001, INVOICE-003, INVOICE-004]
+    question: >-
+      (a) Credit notes are not filtered by issued_on: a note issued after the period (tenant 3,
+      issued 2026-02-02) is applied to the January 2026 preview (verified) - should credits be
+      limited to issued_on <= period_end? (b) The cap is the gross after tax (credits cover tax
+      too) - confirm credits apply post-tax rather than reducing the taxable base.
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Ordering: tax is computed first on the undiscounted base, then credit is applied as
+        LEAST(available, round(gross, 2)), so credits never make the preview negative. Tenant 6
+        has no credit notes -> credit line 0 (INVOICE-001 line 5 = 0.00). Tenants 9 and 4 have
+        60.00 available against 53.04 gross -> credit 53.04 (INVOICE-003/004 total 0.00). Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-006
+    statement: >-
+      Issuing an invoice upserts one invoice per tenant and period with deterministic ids
+      (period_id = md5(tenant_id || period_start), invoice_id = md5(period_id || 'invoice')),
+      issued_at = period_end at 00:00 UTC and status 'issued'. Re-issuing the same period
+      resets status to 'issued' and replaces all invoice lines with the current preview lines;
+      persisted line amounts are stored at 2 dp and the credit line stores its negative total.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [84, 113]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [invoices, invoice_lines]
+    confidence: medium
+    scenarios: [INVOICE-003, INVOICE-004, INVOICE-005]
+    question: >-
+      Re-issue is not idempotent: re-issuing a period resets a 'paid' or 'overdue' invoice
+      back to 'issued' and recomputes the credit from the already-reduced credit notes, so
+      credit is applied a second time (verified for tenant 9: first issue total 0.00, re-issue
+      total 46.08 with credit line -6.96 and all credit consumed). Keep this behaviour, or make
+      re-issue a no-op / reject it for non-draft invoices?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Transcripts show status 'issued' for tenants 9, 4 and 6 (INVOICE-003/004/005). Persisted
+        tax lines are rounded by the numeric(12,2) column cast (half away from zero), e.g.
+        2.02125 -> 2.02. issued_at depends on the session time zone (UTC in the stack). Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-007
+    statement: >-
+      Issuing runs the rating finalization for the same tenant and period
+      (billing.sp_finalize_rating) before writing the invoice, which creates/updates the
+      rating period that the invoice references.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [93, 93]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [rating_periods, rating_results]
+    confidence: low
+    scenarios: [INVOICE-005]
+    question: >-
+      Should the extracted issue endpoint also finalize rating (writing rating_periods and
+      rating_results owned by the rating module), or only record the invoice and leave rating
+      finalization to the rating service? No invoicing scenario probes the rating side effect.
+    answer: "Approved: preserve legacy behavior; issuing finalizes rating for the same tenant and period (rating period and rating result rows) before writing the invoice."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Cross-module side effect. billing.invoices.period_id has an FK to rating_periods, so
+        the legacy invoice cannot exist without the rating period.
+  - id: INVOICE-008
+    statement: >-
+      Invoice totals are subtotal = sum of round(amount, 2) over plan and usage lines, tax =
+      sum of round(amount, 2) over the two tax lines (each half rounded separately), and
+      total = round(subtotal + tax - credit_applied, 2), where credit_applied is the preview's
+      cap computed on unrounded tax.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [114, 125]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [subtotal, tax, total]
+    confidence: low
+    scenarios: [INVOICE-003, INVOICE-004, INVOICE-005]
+    question: >-
+      Because the credit cap uses unrounded tax but the invoice tax is the sum of two
+      individually rounded halves, a fully credited invoice can end at +0.01 or -0.01.
+      Verified: with a 49.07 fee and 60.00 credit (tax halves 2.0241 -> 2.02 + 2.02 = 4.04, cap
+      round(53.1183) = 53.12) total becomes -0.01 and the legacy procedure fails on the
+      invoices.total >= 0 CHECK. Keep per-half rounding for parity, or round the tax once and
+      cap credit on the rounded total?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Rounding is PostgreSQL round(numeric, 2) = half away from zero, applied per line, then
+        again on totals. Transcripts: tenant 6 subtotal 54.56, tax 4.50 (2.25 + 2.25 vs
+        round(4.5012) = 4.50), total 59.06 (INVOICE-005); tenants 9/4 subtotal 49.00, tax 4.04,
+        total 0.00 (INVOICE-003/004). The +/-0.01 divergence is derived; no transcript hits it. Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-009
+    statement: >-
+      After issuing, the applied credit is consumed from the tenant's credit notes oldest
+      first by (issued_on, id); each note's remaining_amount is reduced by the outstanding
+      credit and floored at 0, until the applied credit is exhausted.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [127, 138]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [credit_notes]
+    confidence: medium
+    scenarios: [INVOICE-003, INVOICE-004]
+    question: >-
+      Equal issued_on dates are tie-broken by credit note id (uuid byte order), not by
+      creation time or amount - is id order the intended tie-break?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Transcripts: tenant 9 consumes the 2026-01-31 note (5.00 -> 0.00) before the 2026-02-01
+        note (55.00 -> 6.96) (INVOICE-003); tenant 4 has two 2026-02-01 notes and consumes
+        ...0001 before ...0002 (30.00 -> 0.00, 30.00 -> 6.96) even though ...0002 was inserted
+        first (INVOICE-004). Consumption uses the cap from INVOICE-005 (53.04) and is not
+        restricted to notes issued within the period. Preserved as recorded, follow-up ticket.
+
+  - id: INVOICE-010
+    statement: >-
+      Invoice lines for an invoice are the persisted lines (line_no, line_type, description,
+      amount) ordered by line_no; an unknown invoice returns no lines.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [62, 75]
+    inputs: [invoice_id]
+    outputs: [line_no, line_type, description, amount]
+    confidence: high
+    scenarios: [INVOICE-006]
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Pure read of stored rows; no recomputation. Seeded invoice 60000000-...-0001 returns
+        plan 149.00 and usage 12.29 only (INVOICE-006), i.e. legacy-seeded invoices need not
+        have the five-line layout.
