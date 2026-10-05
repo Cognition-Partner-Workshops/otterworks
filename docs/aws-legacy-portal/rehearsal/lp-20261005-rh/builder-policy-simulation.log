@@ -1,0 +1,12 @@
+# aws iam simulate-principal-policy on role devin-cw-builder, between 2026-10-05T08:08Z and 08:09Z, while lp-20261005-rh was applied
+# context key aws:ResourceTag/run_token passed explicitly; the simulator does not read live tags
+UpdateFunctionCode own fn, tag=lp-20261005-rh: allowed
+UpdateFunctionCode own name, other tag: implicitDeny
+UpdateFunctionCode other fn: implicitDeny
+rds-data ExecuteStatement own cluster: allowed
+GetSecretValue own secret: allowed
+FilterLogEvents own group: allowed
+apigateway PATCH own api route: allowed
+apigateway PATCH other api: implicitDeny
+rds:DeleteDBCluster own: implicitDeny
+iam:PassRole lambda role: implicitDeny

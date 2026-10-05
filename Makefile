@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean
 
 SHELL := /bin/bash
 
@@ -568,3 +568,25 @@ cw-teardown: ## Reset, unmap the roles, delete RBAC and keys, destroy the cloud-
 
 cw-trail: ## CloudTrail events from devin-cw-* identities in the last two hours
 	$(CW) trail
+
+# legacy-portal-serverless: Terraform root infrastructure/terraform/legacy-portal-serverless, one state per run token.
+# Transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
+LP = RUN=$(RUN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-serverless.sh
+
+lp-up: ## Apply the legacy-portal serverless stack for a run (RUN=lp-<yyyymmdd>-<xx>)
+	@$(LP) up
+
+lp-replay: ## Replay the recorded Java corpus against the run's HTTP API (RUN=, CTX=<context|all>, STAGE=first|full)
+	@$(LP) replay
+
+lp-status: ## List legacy-portal serverless runs by tag, or one run's outputs and functions (RUN optional)
+	@$(LP) status
+
+lp-reset: ## Truncate the run's context tables back to the seeded (empty) state (RUN=, CTX=<context|all>)
+	@$(LP) reset
+
+lp-down: ## Destroy the run's legacy-portal serverless stack (RUN=)
+	@$(LP) down
+
+lp-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
+	@$(LP) verify-clean

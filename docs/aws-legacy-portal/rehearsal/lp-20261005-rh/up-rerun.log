@@ -1,0 +1,94 @@
+# lp-up run=lp-20261005-rh started 2026-10-05T08:08:24Z
+# caller arn:aws:iam::<account>:user/<caller>
+terraform init: state otterworks/legacy-portal-serverless/lp-20261005-rh/terraform.tfstate
+random_password.db: Refreshing state... [id=none]
+data.archive_file.placeholder: Reading...
+data.archive_file.placeholder: Read complete after 0s [id=2bb269829b1fe2e849d12bcc2a57c553f2b457b0]
+data.aws_vpc.this: Reading...
+data.aws_caller_identity.current: Reading...
+data.aws_iam_policy_document.lambda_assume: Reading...
+data.aws_iam_role.builder: Reading...
+data.aws_partition.current: Reading...
+aws_cloudwatch_log_group.api: Refreshing state... [id=/aws/apigateway/lp-20261005-rh]
+aws_cloudwatch_log_group.lambda["preferences"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-preferences]
+aws_secretsmanager_secret.db: Refreshing state... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr]
+aws_apigatewayv2_api.this: Refreshing state... [id=iukn6912ki]
+aws_cloudwatch_log_group.lambda["announcements"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-announcements]
+data.aws_partition.current: Read complete after 0s [id=aws]
+data.aws_iam_policy_document.lambda_assume: Read complete after 0s [id=2690255455]
+aws_cloudwatch_log_group.lambda["feedback"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-feedback]
+aws_iam_role.lambda: Refreshing state... [id=lp-20261005-rh-lambda]
+data.aws_caller_identity.current: Read complete after 0s [id=<account>]
+data.aws_iam_role.builder: Read complete after 1s [id=devin-cw-builder]
+aws_secretsmanager_secret_version.db: Refreshing state... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr|terraform-20261005080027643000000002]
+aws_apigatewayv2_stage.default: Refreshing state... [id=$default]
+data.aws_vpc.this: Read complete after 1s [id=vpc-06a10b8ada56a6b91]
+data.aws_subnets.private: Reading...
+aws_security_group.aurora: Refreshing state... [id=sg-0bdb5e7583280678a]
+data.aws_subnets.private: Read complete after 0s [id=us-east-1]
+aws_db_subnet_group.this: Refreshing state... [id=lp-20261005-rh]
+aws_rds_cluster.this: Refreshing state... [id=lp-20261005-rh]
+data.aws_iam_policy_document.lambda: Reading...
+aws_rds_cluster_instance.writer: Refreshing state... [id=lp-20261005-rh-writer]
+data.aws_iam_policy_document.builder: Reading...
+data.aws_iam_policy_document.lambda: Read complete after 0s [id=3852465628]
+aws_iam_role_policy.lambda: Refreshing state... [id=lp-20261005-rh-lambda:lp-20261005-rh-lambda]
+data.aws_iam_policy_document.builder: Read complete after 0s [id=1324129921]
+aws_iam_policy.builder: Refreshing state... [id=arn:aws:iam::<account>:policy/lp-20261005-rh-builder]
+aws_lambda_function.context["feedback"]: Refreshing state... [id=lp-20261005-rh-feedback]
+aws_lambda_function.context["announcements"]: Refreshing state... [id=lp-20261005-rh-announcements]
+aws_lambda_function.context["preferences"]: Refreshing state... [id=lp-20261005-rh-preferences]
+aws_iam_role_policy_attachment.builder: Refreshing state... [id=devin-cw-builder-20261005080102549500000003]
+terraform_data.schema: Refreshing state... [id=e79f29e2-4d3d-82e8-358e-6995c8307d15]
+aws_lambda_permission.api["feedback"]: Refreshing state... [id=AllowHttpApi]
+aws_lambda_permission.api["announcements"]: Refreshing state... [id=AllowHttpApi]
+aws_lambda_permission.api["preferences"]: Refreshing state... [id=AllowHttpApi]
+aws_apigatewayv2_integration.context["feedback"]: Refreshing state... [id=7zjy8it]
+aws_apigatewayv2_integration.context["announcements"]: Refreshing state... [id=n0qjdn2]
+aws_apigatewayv2_integration.context["preferences"]: Refreshing state... [id=jc8tswi]
+aws_apigatewayv2_route.default: Refreshing state... [id=5x32s50]
+aws_apigatewayv2_route.context["announcements-root"]: Refreshing state... [id=gcn82wd]
+aws_apigatewayv2_route.context["preferences-root"]: Refreshing state... [id=5c160pk]
+aws_apigatewayv2_route.context["preferences-proxy"]: Refreshing state... [id=wivdv36]
+aws_apigatewayv2_route.context["feedback-root"]: Refreshing state... [id=uj2d89r]
+aws_apigatewayv2_route.context["feedback-proxy"]: Refreshing state... [id=l6tiffg]
+aws_apigatewayv2_route.context["announcements-proxy"]: Refreshing state... [id=z3gpriv]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+api_id = "iukn6912ki"
+api_url = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/"
+aurora_capacity = "0-1 ACU"
+aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder"
+db_name = "legacyportal"
+db_secret_arn = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+lambda_names = {
+  "announcements" = "lp-20261005-rh-announcements"
+  "feedback" = "lp-20261005-rh-feedback"
+  "preferences" = "lp-20261005-rh-preferences"
+}
+
+api_id = "iukn6912ki"
+api_url = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/"
+aurora_capacity = "0-1 ACU"
+aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder"
+db_name = "legacyportal"
+db_secret_arn = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+lambda_names = {
+  "announcements" = "lp-20261005-rh-announcements"
+  "feedback" = "lp-20261005-rh-feedback"
+  "preferences" = "lp-20261005-rh-preferences"
+}
+
+lp-up wall clock: 13 s (0.2 min)
+# lp-up finished 2026-10-05T08:08:37Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/up-20261005T080823Z.log

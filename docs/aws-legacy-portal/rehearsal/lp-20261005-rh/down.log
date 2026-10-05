@@ -1,0 +1,1211 @@
+# lp-down run=lp-20261005-rh started 2026-10-05T08:09:27Z
+# caller arn:aws:iam::<account>:user/<caller>
+terraform init: state otterworks/legacy-portal-serverless/lp-20261005-rh/terraform.tfstate
+data.archive_file.placeholder: Reading...
+data.archive_file.placeholder: Read complete after 0s [id=2bb269829b1fe2e849d12bcc2a57c553f2b457b0]
+random_password.db: Refreshing state... [id=none]
+data.aws_vpc.this: Reading...
+data.aws_iam_policy_document.lambda_assume: Reading...
+data.aws_partition.current: Reading...
+aws_secretsmanager_secret.db: Refreshing state... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr]
+data.aws_iam_role.builder: Reading...
+aws_cloudwatch_log_group.lambda["feedback"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-feedback]
+aws_cloudwatch_log_group.lambda["preferences"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-preferences]
+aws_cloudwatch_log_group.api: Refreshing state... [id=/aws/apigateway/lp-20261005-rh]
+aws_cloudwatch_log_group.lambda["announcements"]: Refreshing state... [id=/aws/lambda/lp-20261005-rh-announcements]
+aws_apigatewayv2_api.this: Refreshing state... [id=iukn6912ki]
+data.aws_partition.current: Read complete after 0s [id=aws]
+data.aws_iam_policy_document.lambda_assume: Read complete after 0s [id=2690255455]
+data.aws_caller_identity.current: Reading...
+aws_iam_role.lambda: Refreshing state... [id=lp-20261005-rh-lambda]
+data.aws_caller_identity.current: Read complete after 0s [id=<account>]
+data.aws_iam_role.builder: Read complete after 1s [id=devin-cw-builder]
+aws_secretsmanager_secret_version.db: Refreshing state... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr|terraform-20261005080027643000000002]
+aws_apigatewayv2_stage.default: Refreshing state... [id=$default]
+data.aws_vpc.this: Read complete after 1s [id=vpc-06a10b8ada56a6b91]
+aws_security_group.aurora: Refreshing state... [id=sg-0bdb5e7583280678a]
+data.aws_subnets.private: Reading...
+data.aws_subnets.private: Read complete after 1s [id=us-east-1]
+aws_db_subnet_group.this: Refreshing state... [id=lp-20261005-rh]
+aws_rds_cluster.this: Refreshing state... [id=lp-20261005-rh]
+data.aws_iam_policy_document.lambda: Reading...
+aws_rds_cluster_instance.writer: Refreshing state... [id=lp-20261005-rh-writer]
+data.aws_iam_policy_document.builder: Reading...
+data.aws_iam_policy_document.builder: Read complete after 0s [id=1324129921]
+data.aws_iam_policy_document.lambda: Read complete after 1s [id=3852465628]
+aws_iam_role_policy.lambda: Refreshing state... [id=lp-20261005-rh-lambda:lp-20261005-rh-lambda]
+aws_iam_policy.builder: Refreshing state... [id=arn:aws:iam::<account>:policy/lp-20261005-rh-builder]
+aws_lambda_function.context["announcements"]: Refreshing state... [id=lp-20261005-rh-announcements]
+aws_lambda_function.context["preferences"]: Refreshing state... [id=lp-20261005-rh-preferences]
+aws_lambda_function.context["feedback"]: Refreshing state... [id=lp-20261005-rh-feedback]
+aws_iam_role_policy_attachment.builder: Refreshing state... [id=devin-cw-builder-20261005080102549500000003]
+terraform_data.schema: Refreshing state... [id=e79f29e2-4d3d-82e8-358e-6995c8307d15]
+aws_lambda_permission.api["feedback"]: Refreshing state... [id=AllowHttpApi]
+aws_apigatewayv2_integration.context["preferences"]: Refreshing state... [id=jc8tswi]
+aws_lambda_permission.api["announcements"]: Refreshing state... [id=AllowHttpApi]
+aws_apigatewayv2_integration.context["feedback"]: Refreshing state... [id=7zjy8it]
+aws_lambda_permission.api["preferences"]: Refreshing state... [id=AllowHttpApi]
+aws_apigatewayv2_integration.context["announcements"]: Refreshing state... [id=n0qjdn2]
+aws_apigatewayv2_route.context["announcements-proxy"]: Refreshing state... [id=z3gpriv]
+aws_apigatewayv2_route.context["preferences-proxy"]: Refreshing state... [id=wivdv36]
+aws_apigatewayv2_route.context["feedback-proxy"]: Refreshing state... [id=l6tiffg]
+aws_apigatewayv2_route.context["feedback-root"]: Refreshing state... [id=uj2d89r]
+aws_apigatewayv2_route.context["announcements-root"]: Refreshing state... [id=gcn82wd]
+aws_apigatewayv2_route.context["preferences-root"]: Refreshing state... [id=5c160pk]
+aws_apigatewayv2_route.default: Refreshing state... [id=5x32s50]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_apigatewayv2_api.this will be destroyed
+  - resource "aws_apigatewayv2_api" "this" {
+      - api_endpoint                 = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com" -> null
+      - api_key_selection_expression = "$request.header.x-api-key" -> null
+      - arn                          = "arn:aws:apigateway:us-east-1::/apis/iukn6912ki" -> null
+      - description                  = "legacy-portal routes for lp-20261005-rh" -> null
+      - disable_execute_api_endpoint = false -> null
+      - execution_arn                = "arn:aws:execute-api:us-east-1:<account>:iukn6912ki" -> null
+      - id                           = "iukn6912ki" -> null
+      - ip_address_type              = "ipv4" -> null
+      - name                         = "lp-20261005-rh" -> null
+      - protocol_type                = "HTTP" -> null
+      - route_selection_expression   = "$request.method $request.path" -> null
+      - tags                         = {} -> null
+      - tags_all                     = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_apigatewayv2_integration.context["announcements"] will be destroyed
+  - resource "aws_apigatewayv2_integration" "context" {
+      - api_id                                    = "iukn6912ki" -> null
+      - connection_type                           = "INTERNET" -> null
+      - id                                        = "n0qjdn2" -> null
+      - integration_method                        = "POST" -> null
+      - integration_type                          = "AWS_PROXY" -> null
+      - integration_uri                           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-announcements/invocations" -> null
+      - payload_format_version                    = "2.0" -> null
+      - request_parameters                        = {} -> null
+      - request_templates                         = {} -> null
+      - timeout_milliseconds                      = 29000 -> null
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_integration.context["feedback"] will be destroyed
+  - resource "aws_apigatewayv2_integration" "context" {
+      - api_id                                    = "iukn6912ki" -> null
+      - connection_type                           = "INTERNET" -> null
+      - id                                        = "7zjy8it" -> null
+      - integration_method                        = "POST" -> null
+      - integration_type                          = "AWS_PROXY" -> null
+      - integration_uri                           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-feedback/invocations" -> null
+      - payload_format_version                    = "2.0" -> null
+      - request_parameters                        = {} -> null
+      - request_templates                         = {} -> null
+      - timeout_milliseconds                      = 29000 -> null
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_integration.context["preferences"] will be destroyed
+  - resource "aws_apigatewayv2_integration" "context" {
+      - api_id                                    = "iukn6912ki" -> null
+      - connection_type                           = "INTERNET" -> null
+      - id                                        = "jc8tswi" -> null
+      - integration_method                        = "POST" -> null
+      - integration_type                          = "AWS_PROXY" -> null
+      - integration_uri                           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-preferences/invocations" -> null
+      - payload_format_version                    = "2.0" -> null
+      - request_parameters                        = {} -> null
+      - request_templates                         = {} -> null
+      - timeout_milliseconds                      = 29000 -> null
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["announcements-proxy"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "z3gpriv" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/announcements/{proxy+}" -> null
+      - target                              = "integrations/n0qjdn2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["announcements-root"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "gcn82wd" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/announcements" -> null
+      - target                              = "integrations/n0qjdn2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["feedback-proxy"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "l6tiffg" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/feedback/{proxy+}" -> null
+      - target                              = "integrations/7zjy8it" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["feedback-root"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "uj2d89r" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/feedback" -> null
+      - target                              = "integrations/7zjy8it" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["preferences-proxy"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "wivdv36" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/preferences/{proxy+}" -> null
+      - target                              = "integrations/jc8tswi" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.context["preferences-root"] will be destroyed
+  - resource "aws_apigatewayv2_route" "context" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "5c160pk" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "ANY /api/preferences" -> null
+      - target                              = "integrations/jc8tswi" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_route.default will be destroyed
+  - resource "aws_apigatewayv2_route" "default" {
+      - api_id                              = "iukn6912ki" -> null
+      - api_key_required                    = false -> null
+      - authorization_scopes                = [] -> null
+      - authorization_type                  = "NONE" -> null
+      - id                                  = "5x32s50" -> null
+      - request_models                      = {} -> null
+      - route_key                           = "$default" -> null
+      - target                              = "integrations/n0qjdn2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_apigatewayv2_stage.default will be destroyed
+  - resource "aws_apigatewayv2_stage" "default" {
+      - api_id                = "iukn6912ki" -> null
+      - arn                   = "arn:aws:apigateway:us-east-1::/apis/iukn6912ki/stages/$default" -> null
+      - auto_deploy           = true -> null
+      - deployment_id         = "nwyl6r" -> null
+      - execution_arn         = "arn:aws:execute-api:us-east-1:<account>:iukn6912ki/$default" -> null
+      - id                    = "$default" -> null
+      - invoke_url            = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/" -> null
+      - name                  = "$default" -> null
+      - stage_variables       = {} -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (2 unchanged attributes hidden)
+
+      - access_log_settings {
+          - destination_arn = "arn:aws:logs:us-east-1:<account>:log-group:/aws/apigateway/lp-20261005-rh" -> null
+          - format          = jsonencode(
+                {
+                  - error     = "$context.integrationErrorMessage"
+                  - latencyMs = "$context.integrationLatency"
+                  - method    = "$context.httpMethod"
+                  - path      = "$context.path"
+                  - requestId = "$context.requestId"
+                  - routeKey  = "$context.routeKey"
+                  - status    = "$context.status"
+                  - time      = "$context.requestTime"
+                }
+            ) -> null
+        }
+
+      - default_route_settings {
+          - data_trace_enabled       = false -> null
+          - detailed_metrics_enabled = false -> null
+          - throttling_burst_limit   = 0 -> null
+          - throttling_rate_limit    = 0 -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_cloudwatch_log_group.api will be destroyed
+  - resource "aws_cloudwatch_log_group" "api" {
+      - arn               = "arn:aws:logs:us-east-1:<account>:log-group:/aws/apigateway/lp-20261005-rh" -> null
+      - id                = "/aws/apigateway/lp-20261005-rh" -> null
+      - log_group_class   = "STANDARD" -> null
+      - name              = "/aws/apigateway/lp-20261005-rh" -> null
+      - retention_in_days = 3 -> null
+      - skip_destroy      = false -> null
+      - tags              = {} -> null
+      - tags_all          = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.lambda["announcements"] will be destroyed
+  - resource "aws_cloudwatch_log_group" "lambda" {
+      - arn               = "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-announcements" -> null
+      - id                = "/aws/lambda/lp-20261005-rh-announcements" -> null
+      - log_group_class   = "STANDARD" -> null
+      - name              = "/aws/lambda/lp-20261005-rh-announcements" -> null
+      - retention_in_days = 3 -> null
+      - skip_destroy      = false -> null
+      - tags              = {} -> null
+      - tags_all          = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.lambda["feedback"] will be destroyed
+  - resource "aws_cloudwatch_log_group" "lambda" {
+      - arn               = "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-feedback" -> null
+      - id                = "/aws/lambda/lp-20261005-rh-feedback" -> null
+      - log_group_class   = "STANDARD" -> null
+      - name              = "/aws/lambda/lp-20261005-rh-feedback" -> null
+      - retention_in_days = 3 -> null
+      - skip_destroy      = false -> null
+      - tags              = {} -> null
+      - tags_all          = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.lambda["preferences"] will be destroyed
+  - resource "aws_cloudwatch_log_group" "lambda" {
+      - arn               = "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-preferences" -> null
+      - id                = "/aws/lambda/lp-20261005-rh-preferences" -> null
+      - log_group_class   = "STANDARD" -> null
+      - name              = "/aws/lambda/lp-20261005-rh-preferences" -> null
+      - retention_in_days = 3 -> null
+      - skip_destroy      = false -> null
+      - tags              = {} -> null
+      - tags_all          = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_db_subnet_group.this will be destroyed
+  - resource "aws_db_subnet_group" "this" {
+      - arn                     = "arn:aws:rds:us-east-1:<account>:subgrp:lp-20261005-rh" -> null
+      - description             = "Private subnets of otterworks-dev for lp-20261005-rh" -> null
+      - id                      = "lp-20261005-rh" -> null
+      - name                    = "lp-20261005-rh" -> null
+      - subnet_ids              = [
+          - "subnet-019ec28935f650c45",
+          - "subnet-01d13ffe0d17f3195",
+        ] -> null
+      - supported_network_types = [
+          - "IPV4",
+        ] -> null
+      - tags                    = {} -> null
+      - tags_all                = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - vpc_id                  = "vpc-06a10b8ada56a6b91" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_iam_policy.builder will be destroyed
+  - resource "aws_iam_policy" "builder" {
+      - arn              = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder" -> null
+      - attachment_count = 1 -> null
+      - description      = "legacy-portal-serverless run lp-20261005-rh: deploy and read the run's functions, API, Data API, secret and logs" -> null
+      - id               = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder" -> null
+      - name             = "lp-20261005-rh-builder" -> null
+      - path             = "/" -> null
+      - policy           = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = [
+                          - "lambda:UpdateFunctionConfiguration",
+                          - "lambda:UpdateFunctionCode",
+                          - "lambda:PublishVersion",
+                          - "lambda:ListVersionsByFunction",
+                          - "lambda:InvokeFunction",
+                          - "lambda:GetFunctionConfiguration",
+                          - "lambda:GetFunction",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "aws:ResourceTag/run_token" = "lp-20261005-rh"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Resource  = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-*"
+                      - Sid       = "LambdaRunFunctions"
+                    },
+                  - {
+                      - Action   = [
+                          - "apigateway:PUT",
+                          - "apigateway:POST",
+                          - "apigateway:PATCH",
+                          - "apigateway:GET",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = [
+                          - "arn:aws:apigateway:us-east-1::/apis/iukn6912ki/*",
+                          - "arn:aws:apigateway:us-east-1::/apis/iukn6912ki",
+                        ]
+                      - Sid      = "HttpApiOfRun"
+                    },
+                  - {
+                      - Action    = [
+                          - "rds-data:RollbackTransaction",
+                          - "rds-data:ExecuteStatement",
+                          - "rds-data:CommitTransaction",
+                          - "rds-data:BeginTransaction",
+                          - "rds-data:BatchExecuteStatement",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "aws:ResourceTag/run_token" = "lp-20261005-rh"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Resource  = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+                      - Sid       = "DataApiOnRunCluster"
+                    },
+                  - {
+                      - Action    = [
+                          - "secretsmanager:GetSecretValue",
+                          - "secretsmanager:DescribeSecret",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "aws:ResourceTag/run_token" = "lp-20261005-rh"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Resource  = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+                      - Sid       = "ReadRunDbSecret"
+                    },
+                  - {
+                      - Action    = [
+                          - "logs:StartQuery",
+                          - "logs:StartLiveTail",
+                          - "logs:GetLogEvents",
+                          - "logs:FilterLogEvents",
+                          - "logs:DescribeLogStreams",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "aws:ResourceTag/run_token" = "lp-20261005-rh"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Resource  = [
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-preferences:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-preferences",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-feedback:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-feedback",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-announcements:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-announcements",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/apigateway/lp-20261005-rh:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/apigateway/lp-20261005-rh",
+                        ]
+                      - Sid       = "ReadRunLogs"
+                    },
+                  - {
+                      - Action   = [
+                          - "logs:StopQuery",
+                          - "logs:GetQueryResults",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = "*"
+                      - Sid      = "LogQueryResults"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - policy_id        = "ANPAYW7BN5DEDIJJMFAVH" -> null
+      - tags             = {} -> null
+      - tags_all         = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_iam_role.lambda will be destroyed
+  - resource "aws_iam_role" "lambda" {
+      - arn                   = "arn:aws:iam::<account>:role/lp-20261005-rh-lambda" -> null
+      - assume_role_policy    = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "sts:AssumeRole"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "lambda.amazonaws.com"
+                        }
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - create_date           = "2026-10-05T08:00:27Z" -> null
+      - description           = "Execution role of the lp-20261005-rh context functions" -> null
+      - force_detach_policies = false -> null
+      - id                    = "lp-20261005-rh-lambda" -> null
+      - managed_policy_arns   = [] -> null
+      - max_session_duration  = 3600 -> null
+      - name                  = "lp-20261005-rh-lambda" -> null
+      - path                  = "/" -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - unique_id             = "AROAYW7BN5DED742DC7VP" -> null
+        # (2 unchanged attributes hidden)
+
+      - inline_policy {
+          - name   = "lp-20261005-rh-lambda" -> null
+          - policy = jsonencode(
+                {
+                  - Statement = [
+                      - {
+                          - Action   = [
+                              - "logs:PutLogEvents",
+                              - "logs:CreateLogStream",
+                            ]
+                          - Effect   = "Allow"
+                          - Resource = [
+                              - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-preferences:*",
+                              - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-feedback:*",
+                              - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-announcements:*",
+                            ]
+                          - Sid      = "WriteOwnLogs"
+                        },
+                      - {
+                          - Action   = [
+                              - "rds-data:RollbackTransaction",
+                              - "rds-data:ExecuteStatement",
+                              - "rds-data:CommitTransaction",
+                              - "rds-data:BeginTransaction",
+                              - "rds-data:BatchExecuteStatement",
+                            ]
+                          - Effect   = "Allow"
+                          - Resource = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+                          - Sid      = "DataApi"
+                        },
+                      - {
+                          - Action   = "secretsmanager:GetSecretValue"
+                          - Effect   = "Allow"
+                          - Resource = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+                          - Sid      = "ReadDbSecret"
+                        },
+                    ]
+                  - Version   = "2012-10-17"
+                }
+            ) -> null
+        }
+    }
+
+  # aws_iam_role_policy.lambda will be destroyed
+  - resource "aws_iam_role_policy" "lambda" {
+      - id          = "lp-20261005-rh-lambda:lp-20261005-rh-lambda" -> null
+      - name        = "lp-20261005-rh-lambda" -> null
+      - policy      = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action   = [
+                          - "logs:PutLogEvents",
+                          - "logs:CreateLogStream",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = [
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-preferences:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-feedback:*",
+                          - "arn:aws:logs:us-east-1:<account>:log-group:/aws/lambda/lp-20261005-rh-announcements:*",
+                        ]
+                      - Sid      = "WriteOwnLogs"
+                    },
+                  - {
+                      - Action   = [
+                          - "rds-data:RollbackTransaction",
+                          - "rds-data:ExecuteStatement",
+                          - "rds-data:CommitTransaction",
+                          - "rds-data:BeginTransaction",
+                          - "rds-data:BatchExecuteStatement",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+                      - Sid      = "DataApi"
+                    },
+                  - {
+                      - Action   = "secretsmanager:GetSecretValue"
+                      - Effect   = "Allow"
+                      - Resource = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+                      - Sid      = "ReadDbSecret"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - role        = "lp-20261005-rh-lambda" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_iam_role_policy_attachment.builder will be destroyed
+  - resource "aws_iam_role_policy_attachment" "builder" {
+      - id         = "devin-cw-builder-20261005080102549500000003" -> null
+      - policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder" -> null
+      - role       = "devin-cw-builder" -> null
+    }
+
+  # aws_lambda_function.context["announcements"] will be destroyed
+  - resource "aws_lambda_function" "context" {
+      - architectures                  = [
+          - "x86_64",
+        ] -> null
+      - arn                            = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-announcements" -> null
+      - code_sha256                    = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - description                    = "legacy-portal announcements context (lp-20261005-rh)" -> null
+      - filename                       = "./.build/placeholder.zip" -> null
+      - function_name                  = "lp-20261005-rh-announcements" -> null
+      - handler                        = "handler.handler" -> null
+      - id                             = "lp-20261005-rh-announcements" -> null
+      - invoke_arn                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-announcements/invocations" -> null
+      - last_modified                  = "2026-10-05T08:01:15.268+0000" -> null
+      - layers                         = [] -> null
+      - memory_size                    = 512 -> null
+      - package_type                   = "Zip" -> null
+      - publish                        = false -> null
+      - qualified_arn                  = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-announcements:$LATEST" -> null
+      - qualified_invoke_arn           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-announcements:$LATEST/invocations" -> null
+      - reserved_concurrent_executions = -1 -> null
+      - role                           = "arn:aws:iam::<account>:role/lp-20261005-rh-lambda" -> null
+      - runtime                        = "python3.12" -> null
+      - skip_destroy                   = false -> null
+      - source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - source_code_size               = 340 -> null
+      - tags                           = {} -> null
+      - tags_all                       = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - timeout                        = 29 -> null
+      - version                        = "$LATEST" -> null
+        # (5 unchanged attributes hidden)
+
+      - environment {
+          - variables = {
+              - "CLUSTER_ARN" = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+              - "CONTEXT"     = "announcements"
+              - "DB_NAME"     = "legacyportal"
+              - "DB_SCHEMA"   = "announcements"
+              - "RUN_TOKEN"   = "lp-20261005-rh"
+              - "SECRET_ARN"  = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+            } -> null
+        }
+
+      - ephemeral_storage {
+          - size = 512 -> null
+        }
+
+      - logging_config {
+          - log_format            = "Text" -> null
+          - log_group             = "/aws/lambda/lp-20261005-rh-announcements" -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - tracing_config {
+          - mode = "PassThrough" -> null
+        }
+    }
+
+  # aws_lambda_function.context["feedback"] will be destroyed
+  - resource "aws_lambda_function" "context" {
+      - architectures                  = [
+          - "x86_64",
+        ] -> null
+      - arn                            = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-feedback" -> null
+      - code_sha256                    = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - description                    = "legacy-portal feedback context (lp-20261005-rh)" -> null
+      - filename                       = "./.build/placeholder.zip" -> null
+      - function_name                  = "lp-20261005-rh-feedback" -> null
+      - handler                        = "handler.handler" -> null
+      - id                             = "lp-20261005-rh-feedback" -> null
+      - invoke_arn                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-feedback/invocations" -> null
+      - last_modified                  = "2026-10-05T08:01:02.697+0000" -> null
+      - layers                         = [] -> null
+      - memory_size                    = 512 -> null
+      - package_type                   = "Zip" -> null
+      - publish                        = false -> null
+      - qualified_arn                  = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-feedback:$LATEST" -> null
+      - qualified_invoke_arn           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-feedback:$LATEST/invocations" -> null
+      - reserved_concurrent_executions = -1 -> null
+      - role                           = "arn:aws:iam::<account>:role/lp-20261005-rh-lambda" -> null
+      - runtime                        = "python3.12" -> null
+      - skip_destroy                   = false -> null
+      - source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - source_code_size               = 340 -> null
+      - tags                           = {} -> null
+      - tags_all                       = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - timeout                        = 29 -> null
+      - version                        = "$LATEST" -> null
+        # (5 unchanged attributes hidden)
+
+      - environment {
+          - variables = {
+              - "CLUSTER_ARN" = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+              - "CONTEXT"     = "feedback"
+              - "DB_NAME"     = "legacyportal"
+              - "DB_SCHEMA"   = "feedback"
+              - "RUN_TOKEN"   = "lp-20261005-rh"
+              - "SECRET_ARN"  = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+            } -> null
+        }
+
+      - ephemeral_storage {
+          - size = 512 -> null
+        }
+
+      - logging_config {
+          - log_format            = "Text" -> null
+          - log_group             = "/aws/lambda/lp-20261005-rh-feedback" -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - tracing_config {
+          - mode = "PassThrough" -> null
+        }
+    }
+
+  # aws_lambda_function.context["preferences"] will be destroyed
+  - resource "aws_lambda_function" "context" {
+      - architectures                  = [
+          - "x86_64",
+        ] -> null
+      - arn                            = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-preferences" -> null
+      - code_sha256                    = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - description                    = "legacy-portal preferences context (lp-20261005-rh)" -> null
+      - filename                       = "./.build/placeholder.zip" -> null
+      - function_name                  = "lp-20261005-rh-preferences" -> null
+      - handler                        = "handler.handler" -> null
+      - id                             = "lp-20261005-rh-preferences" -> null
+      - invoke_arn                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-preferences/invocations" -> null
+      - last_modified                  = "2026-10-05T08:01:09.045+0000" -> null
+      - layers                         = [] -> null
+      - memory_size                    = 512 -> null
+      - package_type                   = "Zip" -> null
+      - publish                        = false -> null
+      - qualified_arn                  = "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-preferences:$LATEST" -> null
+      - qualified_invoke_arn           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-preferences:$LATEST/invocations" -> null
+      - reserved_concurrent_executions = -1 -> null
+      - role                           = "arn:aws:iam::<account>:role/lp-20261005-rh-lambda" -> null
+      - runtime                        = "python3.12" -> null
+      - skip_destroy                   = false -> null
+      - source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8=" -> null
+      - source_code_size               = 340 -> null
+      - tags                           = {} -> null
+      - tags_all                       = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - timeout                        = 29 -> null
+      - version                        = "$LATEST" -> null
+        # (5 unchanged attributes hidden)
+
+      - environment {
+          - variables = {
+              - "CLUSTER_ARN" = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+              - "CONTEXT"     = "preferences"
+              - "DB_NAME"     = "legacyportal"
+              - "DB_SCHEMA"   = "user_preferences"
+              - "RUN_TOKEN"   = "lp-20261005-rh"
+              - "SECRET_ARN"  = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+            } -> null
+        }
+
+      - ephemeral_storage {
+          - size = 512 -> null
+        }
+
+      - logging_config {
+          - log_format            = "Text" -> null
+          - log_group             = "/aws/lambda/lp-20261005-rh-preferences" -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - tracing_config {
+          - mode = "PassThrough" -> null
+        }
+    }
+
+  # aws_lambda_permission.api["announcements"] will be destroyed
+  - resource "aws_lambda_permission" "api" {
+      - action              = "lambda:InvokeFunction" -> null
+      - function_name       = "lp-20261005-rh-announcements" -> null
+      - id                  = "AllowHttpApi" -> null
+      - principal           = "apigateway.amazonaws.com" -> null
+      - source_arn          = "arn:aws:execute-api:us-east-1:<account>:iukn6912ki/*/*" -> null
+      - statement_id        = "AllowHttpApi" -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_lambda_permission.api["feedback"] will be destroyed
+  - resource "aws_lambda_permission" "api" {
+      - action              = "lambda:InvokeFunction" -> null
+      - function_name       = "lp-20261005-rh-feedback" -> null
+      - id                  = "AllowHttpApi" -> null
+      - principal           = "apigateway.amazonaws.com" -> null
+      - source_arn          = "arn:aws:execute-api:us-east-1:<account>:iukn6912ki/*/*" -> null
+      - statement_id        = "AllowHttpApi" -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_lambda_permission.api["preferences"] will be destroyed
+  - resource "aws_lambda_permission" "api" {
+      - action              = "lambda:InvokeFunction" -> null
+      - function_name       = "lp-20261005-rh-preferences" -> null
+      - id                  = "AllowHttpApi" -> null
+      - principal           = "apigateway.amazonaws.com" -> null
+      - source_arn          = "arn:aws:execute-api:us-east-1:<account>:iukn6912ki/*/*" -> null
+      - statement_id        = "AllowHttpApi" -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_rds_cluster.this will be destroyed
+  - resource "aws_rds_cluster" "this" {
+      - allocated_storage                     = 1 -> null
+      - allow_major_version_upgrade           = false -> null
+      - apply_immediately                     = true -> null
+      - arn                                   = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh" -> null
+      - availability_zones                    = [
+          - "us-east-1a",
+          - "us-east-1b",
+          - "us-east-1d",
+        ] -> null
+      - backtrack_window                      = 0 -> null
+      - backup_retention_period               = 1 -> null
+      - cluster_identifier                    = "lp-20261005-rh" -> null
+      - cluster_members                       = [
+          - "lp-20261005-rh-writer",
+        ] -> null
+      - cluster_resource_id                   = "cluster-UNNLPZ2YBU27URPKVDOLQODQQI" -> null
+      - copy_tags_to_snapshot                 = true -> null
+      - database_insights_mode                = "standard" -> null
+      - database_name                         = "legacyportal" -> null
+      - db_cluster_parameter_group_name       = "default.aurora-postgresql16" -> null
+      - db_subnet_group_name                  = "lp-20261005-rh" -> null
+      - delete_automated_backups              = true -> null
+      - deletion_protection                   = false -> null
+      - enable_global_write_forwarding        = false -> null
+      - enable_http_endpoint                  = true -> null
+      - enable_local_write_forwarding         = false -> null
+      - enabled_cloudwatch_logs_exports       = [] -> null
+      - endpoint                              = "lp-20261005-rh.cluster-c0x4mes64o5e.us-east-1.rds.amazonaws.com" -> null
+      - engine                                = "aurora-postgresql" -> null
+      - engine_lifecycle_support              = "open-source-rds-extended-support" -> null
+      - engine_mode                           = "provisioned" -> null
+      - engine_version                        = "16.13" -> null
+      - engine_version_actual                 = "16.13" -> null
+      - hosted_zone_id                        = "Z2R2ITUGPM61AM" -> null
+      - iam_database_authentication_enabled   = false -> null
+      - iam_roles                             = [] -> null
+      - id                                    = "lp-20261005-rh" -> null
+      - iops                                  = 0 -> null
+      - kms_key_id                            = "arn:aws:kms:us-east-1:<account>:key/0f36e70e-d7c8-4632-8794-d4dfed8fb8fb" -> null
+      - master_password                       = (sensitive value) -> null
+      - master_password_wo                    = (write-only attribute) -> null
+      - master_user_secret                    = [] -> null
+      - master_username                       = "legacyportal" -> null
+      - monitoring_interval                   = 0 -> null
+      - network_type                          = "IPV4" -> null
+      - performance_insights_enabled          = false -> null
+      - performance_insights_retention_period = 0 -> null
+      - port                                  = 5432 -> null
+      - preferred_backup_window               = "08:28-08:58" -> null
+      - preferred_maintenance_window          = "mon:07:04-mon:07:34" -> null
+      - reader_endpoint                       = "lp-20261005-rh.cluster-ro-c0x4mes64o5e.us-east-1.rds.amazonaws.com" -> null
+      - skip_final_snapshot                   = true -> null
+      - storage_encrypted                     = true -> null
+      - tags                                  = {} -> null
+      - tags_all                              = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - vpc_security_group_ids                = [
+          - "sg-0bdb5e7583280678a",
+        ] -> null
+        # (11 unchanged attributes hidden)
+
+      - serverlessv2_scaling_configuration {
+          - max_capacity             = 1 -> null
+          - min_capacity             = 0 -> null
+          - seconds_until_auto_pause = 600 -> null
+        }
+    }
+
+  # aws_rds_cluster_instance.writer will be destroyed
+  - resource "aws_rds_cluster_instance" "writer" {
+      - apply_immediately                     = true -> null
+      - arn                                   = "arn:aws:rds:us-east-1:<account>:db:lp-20261005-rh-writer" -> null
+      - auto_minor_version_upgrade            = true -> null
+      - availability_zone                     = "us-east-1b" -> null
+      - ca_cert_identifier                    = "rds-ca-rsa2048-g1" -> null
+      - cluster_identifier                    = "lp-20261005-rh" -> null
+      - copy_tags_to_snapshot                 = false -> null
+      - db_parameter_group_name               = "default.aurora-postgresql16" -> null
+      - db_subnet_group_name                  = "lp-20261005-rh" -> null
+      - dbi_resource_id                       = "db-CD7XIV2ISPU32SXPVF5HPEFLOQ" -> null
+      - endpoint                              = "lp-20261005-rh-writer.c0x4mes64o5e.us-east-1.rds.amazonaws.com" -> null
+      - engine                                = "aurora-postgresql" -> null
+      - engine_version                        = "16.13" -> null
+      - engine_version_actual                 = "16.13" -> null
+      - force_destroy                         = false -> null
+      - id                                    = "lp-20261005-rh-writer" -> null
+      - identifier                            = "lp-20261005-rh-writer" -> null
+      - instance_class                        = "db.serverless" -> null
+      - kms_key_id                            = "arn:aws:kms:us-east-1:<account>:key/0f36e70e-d7c8-4632-8794-d4dfed8fb8fb" -> null
+      - monitoring_interval                   = 0 -> null
+      - network_type                          = "IPV4" -> null
+      - performance_insights_enabled          = false -> null
+      - performance_insights_retention_period = 0 -> null
+      - port                                  = 5432 -> null
+      - preferred_backup_window               = "08:28-08:58" -> null
+      - preferred_maintenance_window          = "thu:03:50-thu:04:20" -> null
+      - promotion_tier                        = 0 -> null
+      - publicly_accessible                   = false -> null
+      - storage_encrypted                     = true -> null
+      - tags                                  = {} -> null
+      - tags_all                              = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - writer                                = true -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_secretsmanager_secret.db will be destroyed
+  - resource "aws_secretsmanager_secret" "db" {
+      - arn                            = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr" -> null
+      - description                    = "Master credential of the lp-20261005-rh Aurora cluster (legacy-portal-serverless)." -> null
+      - force_overwrite_replica_secret = false -> null
+      - id                             = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr" -> null
+      - name                           = "lp-20261005-rh/aurora/master" -> null
+      - recovery_window_in_days        = 0 -> null
+      - tags                           = {} -> null
+      - tags_all                       = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+        # (3 unchanged attributes hidden)
+    }
+
+  # aws_secretsmanager_secret_version.db will be destroyed
+  - resource "aws_secretsmanager_secret_version" "db" {
+      - arn              = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr" -> null
+      - id               = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr|terraform-20261005080027643000000002" -> null
+      - secret_id        = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr" -> null
+      - secret_string    = (sensitive value) -> null
+      - secret_string_wo = (write-only attribute) -> null
+      - version_id       = "terraform-20261005080027643000000002" -> null
+      - version_stages   = [
+          - "AWSCURRENT",
+        ] -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_security_group.aurora will be destroyed
+  - resource "aws_security_group" "aurora" {
+      - arn                    = "arn:aws:ec2:us-east-1:<account>:security-group/sg-0bdb5e7583280678a" -> null
+      - description            = "Aurora cluster of lp-20261005-rh; Data API only, no inbound rules" -> null
+      - egress                 = [] -> null
+      - id                     = "sg-0bdb5e7583280678a" -> null
+      - ingress                = [] -> null
+      - name                   = "lp-20261005-rh-aurora" -> null
+      - owner_id               = "<account>" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {} -> null
+      - tags_all               = {
+          - "Expires"   = "2026-10-07"
+          - "ManagedBy" = "terraform"
+          - "RunToken"  = "lp-20261005-rh"
+          - "demo"      = "legacy-portal-serverless"
+          - "run_token" = "lp-20261005-rh"
+        } -> null
+      - vpc_id                 = "vpc-06a10b8ada56a6b91" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # random_password.db will be destroyed
+  - resource "random_password" "db" {
+      - bcrypt_hash = (sensitive value) -> null
+      - id          = "none" -> null
+      - length      = 32 -> null
+      - lower       = true -> null
+      - min_lower   = 0 -> null
+      - min_numeric = 0 -> null
+      - min_special = 0 -> null
+      - min_upper   = 0 -> null
+      - number      = true -> null
+      - numeric     = true -> null
+      - result      = (sensitive value) -> null
+      - special     = false -> null
+      - upper       = true -> null
+    }
+
+  # terraform_data.schema will be destroyed
+  - resource "terraform_data" "schema" {
+      - id               = "e79f29e2-4d3d-82e8-358e-6995c8307d15" -> null
+      - triggers_replace = [
+          - "cluster-UNNLPZ2YBU27URPKVDOLQODQQI",
+          - "e4fcbbe8883e140ee8de1e28dd9678b855132f60c34047de7ae23d02effeb7e1",
+        ] -> null
+    }
+
+Plan: 0 to add, 0 to change, 34 to destroy.
+
+Changes to Outputs:
+  - api_id             = "iukn6912ki" -> null
+  - api_url            = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/" -> null
+  - aurora_capacity    = "0-1 ACU" -> null
+  - aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh" -> null
+  - builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder" -> null
+  - db_name            = "legacyportal" -> null
+  - db_secret_arn      = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr" -> null
+  - lambda_names       = {
+      - announcements = "lp-20261005-rh-announcements"
+      - feedback      = "lp-20261005-rh-feedback"
+      - preferences   = "lp-20261005-rh-preferences"
+    } -> null
+terraform_data.schema: Destroying... [id=e79f29e2-4d3d-82e8-358e-6995c8307d15]
+terraform_data.schema: Destruction complete after 0s
+aws_iam_role_policy_attachment.builder: Destroying... [id=devin-cw-builder-20261005080102549500000003]
+aws_lambda_permission.api["feedback"]: Destroying... [id=AllowHttpApi]
+aws_lambda_permission.api["announcements"]: Destroying... [id=AllowHttpApi]
+aws_apigatewayv2_route.default: Destroying... [id=5x32s50]
+aws_apigatewayv2_route.context["preferences-root"]: Destroying... [id=5c160pk]
+aws_apigatewayv2_route.context["feedback-root"]: Destroying... [id=uj2d89r]
+aws_secretsmanager_secret_version.db: Destroying... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr|terraform-20261005080027643000000002]
+aws_apigatewayv2_route.context["announcements-root"]: Destroying... [id=gcn82wd]
+aws_apigatewayv2_route.context["feedback-proxy"]: Destroying... [id=l6tiffg]
+aws_apigatewayv2_stage.default: Destroying... [id=$default]
+aws_secretsmanager_secret_version.db: Destruction complete after 1s
+aws_lambda_permission.api["preferences"]: Destroying... [id=AllowHttpApi]
+aws_apigatewayv2_route.context["preferences-root"]: Destruction complete after 1s
+aws_apigatewayv2_route.context["preferences-proxy"]: Destroying... [id=wivdv36]
+aws_lambda_permission.api["announcements"]: Destruction complete after 1s
+aws_apigatewayv2_route.context["feedback-proxy"]: Destruction complete after 1s
+aws_apigatewayv2_route.context["announcements-proxy"]: Destroying... [id=z3gpriv]
+aws_rds_cluster_instance.writer: Destroying... [id=lp-20261005-rh-writer]
+aws_apigatewayv2_route.default: Destruction complete after 1s
+aws_apigatewayv2_route.context["announcements-root"]: Destruction complete after 1s
+aws_lambda_permission.api["feedback"]: Destruction complete after 1s
+aws_iam_role_policy_attachment.builder: Destruction complete after 1s
+aws_iam_policy.builder: Destroying... [id=arn:aws:iam::<account>:policy/lp-20261005-rh-builder]
+aws_apigatewayv2_route.context["feedback-root"]: Destruction complete after 1s
+aws_lambda_permission.api["preferences"]: Destruction complete after 0s
+aws_apigatewayv2_route.context["preferences-proxy"]: Destruction complete after 0s
+aws_apigatewayv2_route.context["announcements-proxy"]: Destruction complete after 0s
+aws_apigatewayv2_integration.context["preferences"]: Destroying... [id=jc8tswi]
+aws_apigatewayv2_integration.context["announcements"]: Destroying... [id=n0qjdn2]
+aws_apigatewayv2_integration.context["feedback"]: Destroying... [id=7zjy8it]
+aws_apigatewayv2_stage.default: Destruction complete after 1s
+aws_apigatewayv2_integration.context["feedback"]: Destruction complete after 0s
+aws_apigatewayv2_integration.context["preferences"]: Destruction complete after 0s
+aws_apigatewayv2_integration.context["announcements"]: Destruction complete after 0s
+aws_lambda_function.context["feedback"]: Destroying... [id=lp-20261005-rh-feedback]
+aws_lambda_function.context["announcements"]: Destroying... [id=lp-20261005-rh-announcements]
+aws_lambda_function.context["preferences"]: Destroying... [id=lp-20261005-rh-preferences]
+aws_iam_policy.builder: Destruction complete after 0s
+aws_cloudwatch_log_group.api: Destroying... [id=/aws/apigateway/lp-20261005-rh]
+aws_apigatewayv2_api.this: Destroying... [id=iukn6912ki]
+aws_lambda_function.context["preferences"]: Destruction complete after 0s
+aws_lambda_function.context["announcements"]: Destruction complete after 0s
+aws_lambda_function.context["feedback"]: Destruction complete after 0s
+aws_iam_role_policy.lambda: Destroying... [id=lp-20261005-rh-lambda:lp-20261005-rh-lambda]
+aws_iam_role_policy.lambda: Destruction complete after 0s
+aws_secretsmanager_secret.db: Destroying... [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr]
+aws_cloudwatch_log_group.lambda["feedback"]: Destroying... [id=/aws/lambda/lp-20261005-rh-feedback]
+aws_cloudwatch_log_group.lambda["preferences"]: Destroying... [id=/aws/lambda/lp-20261005-rh-preferences]
+aws_cloudwatch_log_group.lambda["announcements"]: Destroying... [id=/aws/lambda/lp-20261005-rh-announcements]
+aws_iam_role.lambda: Destroying... [id=lp-20261005-rh-lambda]
+aws_cloudwatch_log_group.api: Destruction complete after 0s
+aws_apigatewayv2_api.this: Destruction complete after 1s
+aws_cloudwatch_log_group.lambda["preferences"]: Destruction complete after 1s
+aws_secretsmanager_secret.db: Destruction complete after 1s
+aws_cloudwatch_log_group.lambda["feedback"]: Destruction complete after 1s
+aws_cloudwatch_log_group.lambda["announcements"]: Destruction complete after 1s
+aws_iam_role.lambda: Destruction complete after 1s
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 00m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 00m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 00m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 00m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 00m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 01m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 02m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 03m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 04m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 05m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 06m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 07m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 08m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 09m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m10s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m20s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m30s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m40s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 10m50s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 11m00s elapsed]
+aws_rds_cluster_instance.writer: Still destroying... [id=lp-20261005-rh-writer, 11m10s elapsed]
+aws_rds_cluster_instance.writer: Destruction complete after 11m14s
+aws_rds_cluster.this: Destroying... [id=lp-20261005-rh]
+aws_rds_cluster.this: Still destroying... [id=lp-20261005-rh, 00m10s elapsed]
+aws_rds_cluster.this: Still destroying... [id=lp-20261005-rh, 00m20s elapsed]
+aws_rds_cluster.this: Still destroying... [id=lp-20261005-rh, 00m30s elapsed]
+aws_rds_cluster.this: Still destroying... [id=lp-20261005-rh, 00m40s elapsed]
+aws_rds_cluster.this: Destruction complete after 41s
+aws_db_subnet_group.this: Destroying... [id=lp-20261005-rh]
+aws_security_group.aurora: Destroying... [id=sg-0bdb5e7583280678a]
+random_password.db: Destroying... [id=none]
+random_password.db: Destruction complete after 0s
+aws_db_subnet_group.this: Destruction complete after 0s
+aws_security_group.aurora: Destruction complete after 1s
+
+Destroy complete! Resources: 34 destroyed.
+
+lp-down wall clock: 727 s (12.1 min)
+# lp-down finished 2026-10-05T08:21:34Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/down-20261005T080926Z.log

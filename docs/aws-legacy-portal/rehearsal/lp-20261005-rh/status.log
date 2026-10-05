@@ -1,0 +1,41 @@
+# lp-status run=lp-20261005-rh started 2026-10-05T08:08:38Z
+# caller arn:aws:iam::<account>:user/<caller>
+resources tagged demo=legacy-portal-serverless in us-east-1, by run_token:
+  lp-20261005-rh     apigateway       2
+  lp-20261005-rh     ec2              1
+  lp-20261005-rh     iam              1
+  lp-20261005-rh     lambda           3
+  lp-20261005-rh     logs             4
+  lp-20261005-rh     rds              4
+  lp-20261005-rh     secretsmanager   1
+
+outputs:
+api_id = "iukn6912ki"
+api_url = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/"
+aurora_capacity = "0-1 ACU"
+aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder"
+db_name = "legacyportal"
+db_secret_arn = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+lambda_names = {
+  "announcements" = "lp-20261005-rh-announcements"
+  "feedback" = "lp-20261005-rh-feedback"
+  "preferences" = "lp-20261005-rh-preferences"
+}
+
+aurora:
+-----------------------------------------------------------------
+|                      DescribeDBClusters                       |
++---------+---------+---------+---------+---------+-------------+
+| dataApi | engine  | maxACU  | minACU  |  pause  |   status    |
++---------+---------+---------+---------+---------+-------------+
+|  True   |  16.13  |  1.0    |  0.0    |  600    |  available  |
++---------+---------+---------+---------+---------+-------------+
+functions:
+lp-20261005-rh-announcements	python3.12	512	Active	2026-10-05T08:01:15.268+0000
+lp-20261005-rh-feedback	python3.12	512	Active	2026-10-05T08:01:02.697+0000
+lp-20261005-rh-preferences	python3.12	512	Active	2026-10-05T08:01:09.045+0000
+health of the API (the placeholder answers 501):
+  GET /health 501 in 0.480874s
+# lp-status finished 2026-10-05T08:08:50Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/status-20261005T080837Z.log
