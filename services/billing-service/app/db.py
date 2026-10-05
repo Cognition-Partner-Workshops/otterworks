@@ -8,8 +8,9 @@ from psycopg.rows import dict_row
 from app.config import settings
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "db" / "migrations" / "001_initial.sql"
+MIGRATIONS = sorted((ROOT / "db" / "migrations").glob("*.sql"))
 SEED = ROOT / "db" / "seed.sql"
+DUNNING_SEED = ROOT / "db" / "seed_dunning.sql"
 
 
 def connect() -> psycopg.Connection:
@@ -18,17 +19,23 @@ def connect() -> psycopg.Connection:
 
 def migrate() -> None:
     with connect() as connection:
-        connection.execute(MIGRATION.read_text())
+        for migration in MIGRATIONS:
+            connection.execute(migration.read_text())
 
 
 def reset() -> None:
     with connect() as connection:
-        connection.execute(MIGRATION.read_text())
+        for migration in MIGRATIONS:
+            connection.execute(migration.read_text())
         connection.execute(
             """
             TRUNCATE TABLE billing_svc.subscriptions,
                            billing_svc.plans,
-                           billing_svc.tenants
+                           billing_svc.tenants,
+                           billing_svc.notifications,
+                           billing_svc.dunning_attempts,
+                           billing_svc.invoices
             """
         )
         connection.execute(SEED.read_text())
+        connection.execute(DUNNING_SEED.read_text())
