@@ -4,11 +4,13 @@
 Reads the source tables of the requested collections with python-oracledb (every session
 `SET TRANSACTION READ ONLY`, SELECT only, principal checked for write-capable privileges),
 maps each row with recon.py's reference mapping (`map_source_row`; a collection that embeds
-a child table goes through `load_documents`, then the element shape manifest under
-migration/billing/fixtures/ for that embedded path, when one exists), and bulk-upserts on `_id` (ReplaceOne, upsert=True) into the migration database
-only. Upsert on `_id` makes a rerun a no-op (0 upserted,
-0 modified), which is the idempotency proof; the same command is the delta load of the
-parallel run. The secondary indexes declared in mapping_spec.json are created idempotently.
+a child table goes through `load_documents`), and bulk-upserts on `_id` (ReplaceOne, upsert=True)
+into the migration database only. mapping_spec.json is the only source of document shape: an
+embedded verbatim field such as customers.attributes[].value is written exactly as the source
+text, and its typed reading lives only in the derived sibling (attributes[].typed). Upsert on
+`_id` makes a rerun a no-op (0 upserted, 0 modified), which is the idempotency proof; the same
+command is the delta load of the parallel run. The secondary indexes declared in mapping_spec.json
+are created idempotently.
 
     uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 \
       python3 migration/billing/loaders/oracle_to_mongo.py --mode live \
@@ -41,26 +43,6 @@ sys.path.insert(0, str(BILLING / "recon"))
 import recon  # noqa: E402
 
 U1_COLLECTIONS = ["codes", "tenants", "plans", "subscriptions", "subscriptions_hist"]
-SHAPE_MANIFESTS = BILLING / "fixtures"
-
-
-def _element_shape(collection: str, path: str) -> dict | None:
-    """The embedded-element-shape manifest for collection.path, if the fixtures directory holds one."""
-    for f in sorted(SHAPE_MANIFESTS.glob("*.json")):
-        m = json.loads(f.read_text())
-        if m.get("kind") == "embedded-element-shape" and m.get("collection") == collection and m.get("path") == path:
-            return m
-    return None
-
-
-def _apply_element_shape(docs: list[dict], path: str, shape: dict) -> None:
-    spellings = {s: True for s in shape["boolean_spellings"]["true"]} | {s: False for s in shape["boolean_spellings"]["false"]}
-    fields = [f for f, rule in shape["fields"].items() if rule.get("render") == "boolean_spellings"]
-    for d in docs:
-        for el in d.get(path) or []:
-            for f in fields:
-                if el.get(f) in spellings:
-                    el[f] = spellings[el[f]]
 
 
 def _loopback(hosts) -> bool:
@@ -113,11 +95,6 @@ def build_documents(source, inputs: recon.Inputs, cm: recon.CollectionMap, now: 
         tables[e.table] = children
         stats["embedded"][e.path] = {"table": e.table, "source_rows": len(children)}
     docs = recon.load_documents(inputs, tables, now)[cm.name]
-    for e in cm.embedded:
-        shape = _element_shape(cm.name, e.path)
-        if shape:
-            _apply_element_shape(docs, e.path, shape)
-            stats["embedded"][e.path]["element_shape"] = f"migration/billing/fixtures (version {shape.get('version')})"
     for e in cm.embedded:
         stats["embedded"][e.path]["elements"] = sum(
             (1 if e.path in d else 0) if e.shape == "subdoc" else len(d.get(e.path) or []) for d in docs)
