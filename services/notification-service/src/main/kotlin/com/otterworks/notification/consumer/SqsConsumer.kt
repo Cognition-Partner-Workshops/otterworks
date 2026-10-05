@@ -26,11 +26,9 @@ class SqsConsumer(
     private val processingErrorsCounter: Counter? =
         meterRegistry?.counter("notifications.processing.errors")
 
-    // Events must match the declared schema. An unknown field means a producer
-    // and this consumer disagree on the contract, so the message is rejected
-    // instead of being processed with data silently dropped.
+    // Ignore fields added by AWS or producers while keeping required fields and types strict.
     private val json = Json {
-        ignoreUnknownKeys = false
+        ignoreUnknownKeys = true
         isLenient = false
     }
 

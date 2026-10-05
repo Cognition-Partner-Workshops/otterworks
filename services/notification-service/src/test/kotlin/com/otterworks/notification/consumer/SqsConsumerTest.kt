@@ -74,7 +74,7 @@ class SqsConsumerTest {
     }
 
     @Test
-    fun `parseMessage rejects fields the schema does not declare`() {
+    fun `parseMessage ignores fields the schema does not declare`() {
         val body = """
             {
                 "eventType": "file_shared",
@@ -85,6 +85,45 @@ class SqsConsumerTest {
                 "timestamp": "2024-01-01T00:00:00Z"
             }
         """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("file-123", event.fileId)
+        assertEquals("user-2", event.sharedWithUserId)
+    }
+
+    @Test
+    fun `parseMessage accepts the SNS envelope from the dead-letter queue`() {
+        val body = """{
+  "Type" : "Notification",
+  "MessageId" : "30e744fd-6978-5114-a038-27c0a91e27dc",
+  "TopicArn" : "arn:aws:sns:us-east-1:<account>:otterworks-cw-events",
+  "Message" : "{\"eventType\":\"file_shared\",\"fileId\":\"850af405-66a0-4c15-bc43-58e083c44dc8\",\"ownerId\":\"5eed0001-0000-4000-a000-000000000001\",\"folderId\":null,\"sharedWithUserId\":\"5eed0002-0000-4000-a000-000000000002\",\"timestamp\":\"2026-10-05T15:11:33.905789+00:00\"}",
+  "Timestamp" : "2026-10-05T15:11:34.521Z",
+  "SignatureVersion" : "1",
+  "Signature" : "ZtemSmQcoLa36L+32DhaSsTfPq3PhR96JGh6CqTsLh3HEkouyjT6fHAgCZ26+uzSyvZMJJkWb2gFQBLONL/NkFqT1R6T3dU1C3C0s7a0f1StdYPn0dDAASEnKp3vurlGPla05IxgYUPimUeCZZUMN3YjlPfGtvdXK7h57oDzACghZClkZTBGosVaq9BjZsFI/FJccj3LPOp/KeYfOJnz3R4dUQBBtqeEYSXKY/vY0Ccc1OBezkF6SXR5co7HPN7Ao7b4uI73ZV1kmCNr6c0uqg8rwSbqFJMxA0iAfR9kM4bYRY0koArc/qF0kRGfkSfvrFZbWBCTzl6RSvU9I34otQ==",
+  "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-1e59c4574facfe41babdb2d652f8ebef.pem",
+  "UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:<account>:otterworks-cw-events:7ab97102-bb50-4a79-a944-f017b10368d6",
+  "MessageAttributes" : {
+    "demoSource" : {"Type":"String","Value":"aws-cloud-worker"}
+  }
+}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("850af405-66a0-4c15-bc43-58e083c44dc8", event.fileId)
+        assertEquals("5eed0001-0000-4000-a000-000000000001", event.ownerId)
+        assertEquals("5eed0002-0000-4000-a000-000000000002", event.sharedWithUserId)
+        assertEquals("2026-10-05T15:11:33.905789+00:00", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage rejects an event without eventType`() {
+        val body = """{"fileId":"f","timestamp":"2024-01-01T00:00:00Z"}"""
 
         assertNull(consumer.parseMessage(body))
     }
