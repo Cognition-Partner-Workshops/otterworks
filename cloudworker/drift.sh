@@ -498,49 +498,6 @@ def run_aws(arguments):
     return value
 
 
-def live_queues():
-    fixture = os.environ.get("CW_DRIFT_LIVE_FILE")
-    if fixture:
-        try:
-            data = json.loads(Path(fixture).read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as error:
-            raise DriftError(f"cannot read CW_DRIFT_LIVE_FILE: {error}") from error
-        if not isinstance(data, dict) or any(not isinstance(value, dict) for value in data.values()):
-            raise DriftError("CW_DRIFT_LIVE_FILE must map queue names to Attributes maps")
-        return {name: attributes for name, attributes in data.items() if name.startswith(QUEUE_PREFIX)}
-
-    listing = run_aws(
-        ["sqs", "list-queues", "--queue-name-prefix", QUEUE_PREFIX, "--output", "json"]
-    )
-    urls = listing.get("QueueUrls", [])
-    if not isinstance(urls, list):
-        raise DriftError("aws sqs list-queues returned an invalid QueueUrls value")
-    queues = {}
-    for url in urls:
-        if not isinstance(url, str) or not url:
-            raise DriftError("aws sqs list-queues returned an invalid queue URL")
-        name = url.rstrip("/").rsplit("/", 1)[-1]
-        if not name.startswith(QUEUE_PREFIX):
-            continue
-        attributes_result = run_aws(
-            [
-                "sqs",
-                "get-queue-attributes",
-                "--queue-url",
-                url,
-                "--attribute-names",
-                "All",
-                "--output",
-                "json",
-            ]
-        )
-        attributes = attributes_result.get("Attributes")
-        if not isinstance(attributes, dict):
-            raise DriftError(f"aws sqs get-queue-attributes returned no Attributes for {name}")
-        queues[name] = attributes
-    return queues
-
-
 def live_redrive(attributes, queue_name):
     raw = attributes.get("RedrivePolicy")
     if not raw:
@@ -575,76 +532,6 @@ def live_values(attributes, queue_name):
     else:
         values["SSE"] = "off"
     return values
-
-
-def make_rows(terraform, live):
-    rows = []
-    terraform_by_name = {queue["name"]: queue for queue in terraform}
-
-    for queue in terraform:
-        name = queue["name"]
-        if name not in live:
-            name_line = queue["values"]["name"]["line"]
-            rows.append(
-                {
-                    "queue": name,
-                    "attribute": "-",
-                    "live": "-",
-                    "git": "-",
-                    "root": queue["root"],
-                    "file_line": f"{queue['path']}:{name_line}",
-                    "status": "MISSING",
-                }
-            )
-            continue
-
-        actual_values = live_values(live[name], name)
-        attribute_map = {
-            "MessageRetentionPeriod": "message_retention_seconds",
-            "VisibilityTimeout": "visibility_timeout_seconds",
-            "ReceiveMessageWaitTimeSeconds": "receive_wait_time_seconds",
-            "RedrivePolicy": "redrive_policy",
-            "SSE": "sse",
-        }
-        for attribute in ATTRIBUTE_ORDER:
-            git_attribute = queue["attributes"][attribute_map[attribute]]
-            actual = actual_values[attribute]
-            rows.append(
-                {
-                    "queue": name,
-                    "attribute": attribute,
-                    "live": actual,
-                    "git": git_attribute["display"],
-                    "root": queue["root"],
-                    "file_line": f"{queue['path']}:{git_attribute['line']}",
-                    "status": "ok" if actual == git_attribute["value"] else "DRIFT",
-                }
-            )
-
-    for name in live:
-        if name not in terraform_by_name:
-            rows.append(
-                {
-                    "queue": name,
-                    "attribute": "-",
-                    "live": "-",
-                    "git": "-",
-                    "root": "none",
-                    "file_line": "-",
-                    "status": "UNOWNED",
-                }
-            )
-
-    root_order = {"cloud-worker": 0, "main": 1, "none": 2}
-    attribute_order = {name: index for index, name in enumerate(ATTRIBUTE_ORDER)}
-    rows.sort(
-        key=lambda row: (
-            root_order[row["root"]],
-            row["queue"],
-            attribute_order.get(row["attribute"], -1),
-        )
-    )
-    return rows
 
 
 SECTION_NAMES = {"sqs", "sns", "dynamodb", "alarms"}
@@ -1382,17 +1269,9 @@ def new_rows(definitions, live, checked):
         "cloud-worker": [item for item in queue_defs if item["root"] == "cloud-worker"],
         "main": [item for item in queue_defs if item["root"] == "main"],
     }
-    queue_by_name = {item["name"]: item for item in queue_defs}
     sqs_git = {item["name"]: item for item in queue_defs}
-    cloud_queue_labels = {}
-    for path in sorted((Path(os.environ["CW_DRIFT_ROOT"]) / "infrastructure/terraform/cloud-worker").glob("*.tf")):
-        source = read_file(Path(os.environ["CW_DRIFT_ROOT"]), str(path.relative_to(Path(os.environ["CW_DRIFT_ROOT"]))))
-        pattern = r'(?m)^[ \t]*resource\s+"aws_sqs_queue"\s+"([^"]+)"\s*\{'
-        if re.search(pattern, source):
-            for block in find_blocks(source, pattern, "aws_sqs_queue resources"):
-                queue = queue_by_name.get(next((q["name"] for q in queue_defs if q["path"] == str(path.relative_to(Path(os.environ["CW_DRIFT_ROOT"]))) and q["line"] == block["line"]), ""))
-                if queue:
-                    cloud_queue_labels[block["match"].group(1)] = queue
+    if any(kind in checked for kind in ("sns", "dynamodb", "alarm")):
+        definitions.update(terraform_cloud_resources(Path(os.environ["CW_DRIFT_ROOT"]), queue_names))
 
     for queue in queue_defs:
         name = queue["name"]
@@ -1421,7 +1300,6 @@ def new_rows(definitions, live, checked):
             add_row("sqs", name, "-", "-", "-", "none", "-", "UNOWNED")
 
     if "sns" in checked:
-        definitions.update(terraform_cloud_resources(Path(os.environ["CW_DRIFT_ROOT"]), queue_names))
         sns_git = {item["name"]: item for item in definitions["sns"]}
         for topic in definitions["sns"]:
             name = topic["name"]
@@ -1463,8 +1341,6 @@ def new_rows(definitions, live, checked):
                 add_row("sns", name, "-", "-", "-", "none", "-", "UNOWNED")
 
     if "dynamodb" in checked:
-        if not definitions["dynamodb"]:
-            definitions.update(terraform_cloud_resources(Path(os.environ["CW_DRIFT_ROOT"]), queue_names))
         dynamodb_git = {item["name"]: item for item in definitions["dynamodb"]}
         for table in definitions["dynamodb"]:
             name = table["name"]
@@ -1506,8 +1382,6 @@ def new_rows(definitions, live, checked):
                 add_row("dynamodb", name, "-", "-", "-", "none", "-", "UNOWNED")
 
     if "alarm" in checked:
-        if not definitions["alarm"]:
-            definitions.update(terraform_cloud_resources(Path(os.environ["CW_DRIFT_ROOT"]), queue_names))
         alarm_git = {item["name"]: item for item in definitions["alarm"]}
         for alarm in definitions["alarm"]:
             name = alarm["name"]
@@ -1582,9 +1456,6 @@ except DriftError as error:
     print(f"cloudworker/drift.sh: {redact(error)}", file=sys.stderr)
     sys.exit(2)
 except (OSError, KeyError, TypeError, ValueError) as error:
-    print(f"cloudworker/drift.sh: {redact(error)}", file=sys.stderr)
-    sys.exit(2)
-except Exception as error:
     print(f"cloudworker/drift.sh: {redact(error)}", file=sys.stderr)
     sys.exit(2)
 PY
