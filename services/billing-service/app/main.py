@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -12,8 +12,16 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    catalog,
+    change_plan,
+    entitlement,
+    next_attempt_date,
+    overdue_accounts,
+    schedule_dunning,
+    suspend_overdue,
+)
+from app.repository import PostgresDunningRepository, PostgresPlansRepository
 
 
 @asynccontextmanager
@@ -127,3 +135,125 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+class DunningRequest(BaseModel):
+    as_of: date
+
+
+def _format_sent_at(sent_at: datetime) -> str:
+    return sent_at.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@app.get("/api/dunning/overdue")
+def list_overdue_accounts(as_of: Annotated[date, Query()]) -> list[dict]:
+    with connect() as connection:
+        accounts = overdue_accounts(
+            PostgresDunningRepository(connection).list_invoices(), as_of
+        )
+    return [
+        {
+            "tenant_id": str(row.tenant_id),
+            "invoice_id": str(row.invoice_id),
+            "total": f"{row.total:.2f}",
+            "days_overdue": row.days_overdue,
+            "tenant_status": row.tenant_status,
+        }
+        for row in accounts
+    ]
+
+
+@app.post("/api/dunning/schedule")
+def schedule_dunning_attempts(request: DunningRequest) -> dict:
+    with connect() as connection:
+        repository = PostgresDunningRepository(connection)
+        scheduled = schedule_dunning(repository, request.as_of)
+        attempts = repository.list_attempts()
+    latest: dict[str, dict] = {}
+    for attempt in attempts:
+        latest[str(attempt.invoice_id)] = {
+            "attempt_no": attempt.attempt_no,
+            "scheduled_for": attempt.scheduled_for.isoformat(),
+            "status": attempt.status,
+        }
+    return {
+        "as_of": request.as_of.isoformat(),
+        "scheduled_for": next_attempt_date(request.as_of).isoformat(),
+        "scheduled": [
+            {
+                "invoice_id": str(attempt.invoice_id),
+                "tenant_id": str(attempt.tenant_id),
+                "attempt_no": attempt.attempt_no,
+                "scheduled_for": attempt.scheduled_for.isoformat(),
+                "status": attempt.status,
+            }
+            for attempt in scheduled
+        ],
+        "latest_attempts": latest,
+        "attempts": [
+            {
+                "invoice_id": str(attempt.invoice_id),
+                "attempt_no": attempt.attempt_no,
+                "scheduled_for": attempt.scheduled_for.isoformat(),
+                "status": attempt.status,
+            }
+            for attempt in attempts
+        ],
+    }
+
+
+@app.post("/api/dunning/suspend")
+def suspend_overdue_tenants(request: DunningRequest) -> dict:
+    with connect() as connection:
+        repository = PostgresDunningRepository(connection)
+        suspended = suspend_overdue(repository, request.as_of)
+        tenant_ids = sorted(
+            {
+                invoice.tenant_id
+                for invoice in repository.list_invoices()
+                if invoice.status == "overdue"
+            }
+        )
+        tenants: dict[str, dict] = {}
+        for tenant_id in tenant_ids:
+            tenant = repository.get_tenant(tenant_id)
+            tenants[str(tenant_id)] = {
+                "status": tenant.status if tenant else None,
+                "subscriptions": [
+                    {
+                        "subscription_id": str(subscription.subscription_id),
+                        "status": subscription.status,
+                        "suspended_on": (
+                            subscription.suspended_on.isoformat()
+                            if subscription.suspended_on
+                            else None
+                        ),
+                    }
+                    for subscription in repository.list_subscriptions(tenant_id)
+                ],
+                "suspension_notifications": [
+                    {
+                        "id": str(notification.notification_id),
+                        "kind": notification.kind,
+                        "sent_at": _format_sent_at(notification.sent_at),
+                    }
+                    for notification in repository.list_notifications(
+                        tenant_id, "suspension"
+                    )
+                ],
+            }
+        notifications = repository.list_suspension_notifications()
+    return {
+        "as_of": request.as_of.isoformat(),
+        "suspended_tenants": [str(tenant_id) for tenant_id in suspended],
+        "tenants": tenants,
+        "suspension_notifications": [
+            {
+                "id": str(notification.notification_id),
+                "tenant_id": str(notification.tenant_id),
+                "kind": notification.kind,
+                "sent_at": _format_sent_at(notification.sent_at),
+            }
+            for notification in notifications
+        ],
+    }

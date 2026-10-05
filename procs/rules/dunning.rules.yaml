@@ -10,7 +10,9 @@ rules:
     confidence: medium
     scenarios: [DUNNING-001]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguous boundary: the filter is issued_at::date < as_of (exclusive), so an
         overdue invoice issued on as_of itself is not listed (it would have
@@ -32,7 +34,9 @@ rules:
     confidence: high
     scenarios: [DUNNING-001]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Computed as (as_of - issued_at::date)::integer, i.e. counted from the issue
         date, not from a due date (there is no due date in the schema), with the time
@@ -50,7 +54,9 @@ rules:
     confidence: medium
     scenarios: [DUNNING-002, DUNNING-003]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguous selection: the loop takes all invoices with status 'overdue' and does
         NOT filter by issue date relative to as_of (unlike fn_overdue_accounts) or by
@@ -72,7 +78,9 @@ rules:
     confidence: high
     scenarios: [DUNNING-002, DUNNING-003]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Uses ISO day of week (isodow 6 = Saturday, 7 = Sunday). 2026-02-14 (Saturday)
         schedules for 2026-02-16; 2026-02-17 (Tuesday) is unchanged. No holiday
@@ -88,7 +96,9 @@ rules:
     confidence: medium
     scenarios: [DUNNING-002, DUNNING-003]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         The id is md5 of the invoice uuid text concatenated with the attempt number
         text, no separator, then cast to uuid; the scenarios' schedule_rows probe does
@@ -106,7 +116,9 @@ rules:
     confidence: medium
     scenarios: [DUNNING-004, DUNNING-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguous boundary: issued_at::date <= as_of - 14 is inclusive, so an invoice
         exactly 14 days old triggers suspension (contrast with the exclusive < in
@@ -127,7 +139,9 @@ rules:
     confidence: high
     scenarios: [DUNNING-004]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Only subscriptions with status 'active' are touched; cancelled or already
         suspended subscriptions keep their status and suspended_on. Subscription
@@ -144,7 +158,9 @@ rules:
     confidence: medium
     scenarios: [DUNNING-004, DUNNING-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         sent_at is p_as_of::timestamptz, i.e. midnight in the session TimeZone (UTC in
         the stack), recorded as 2026-02-28T00:00:00Z; the id for Tenant Five is

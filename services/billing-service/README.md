@@ -4,6 +4,14 @@ This FastAPI service is the extraction target for the plans module. It owns a
 separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and places
 plans behavior in a plain-Python domain layer.
 
+The dunning module is extracted the same way: `GET /api/dunning/overdue`
+mirrors `billing.fn_overdue_accounts`, `POST /api/dunning/schedule` mirrors
+`billing.sp_schedule_dunning`, and `POST /api/dunning/suspend` mirrors
+`billing.sp_suspend_overdue`. All invoice-date reasoning happens in UTC in the
+domain layer (`app/domain.py`); attempt ids and suspension notification ids are
+derived with the same `md5(...)::uuid` convention as the legacy procedures so
+parity transcripts match byte for byte.
+
 ## Development
 
 ```bash
