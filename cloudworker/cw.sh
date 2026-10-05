@@ -12,6 +12,7 @@ EVENTING_ENV="${REPO}/infrastructure/helm/tenant-values/cloud-worker/eventing.en
 RBAC="${HERE}/k8s/rbac.yaml"
 AWS_AUTH="${HERE}/aws-auth.sh"
 SIMULATE="${HERE}/simulate.py"
+SCENARIO="${HERE}/scenario.yaml"
 
 export AWS_REGION="${AWS_REGION:-us-east-1}"
 NS="otterworks-cloud-worker"
@@ -22,7 +23,6 @@ TABLE="otterworks-cw-notifications"
 ALARM="otterworks-cw-notifications-dlq-depth"
 TOPIC="otterworks-cw-events"
 READER_USER="devin-cw-reader"
-FAULT_TABLE="otterworks-cw-notifications-v2"
 DRIFT_RETENTION=1209600
 GSI="userId-createdAt-index"
 LOG_WINDOW="15m"
@@ -30,6 +30,8 @@ LAND_SECONDS="${CW_LAND_SECONDS:-90}"
 SETTLE_SECONDS="${CW_SETTLE_SECONDS:-120}"
 GH_REPO="${CW_GH_REPO:-Cognition-Partner-Workshops/otterworks}"
 DRY="${CW_DRY_RUN:-0}"
+FAULT="${CW_FAULT:-}"
+PAGE="${CW_PAGE:-1}"
 
 OUTPUT_NAMES=(
   sns_topic_arn sqs_queue_url sqs_queue_arn sqs_dlq_url sqs_dlq_arn dynamodb_table
@@ -60,16 +62,19 @@ usage: cloudworker/cw.sh <verb> [args]
   up                     provision infra, map roles, plant drift, wire tenant, smoke test
   apply                  re-render tenant eventing config from eventing.env
   credentials            rotate the devin-cw-reader access key into .state/
-  arm                    plant the table fault and publish six events
-  status [--json]        tenant, config, queues, alarm, helm history, demo state
-  verify before|after    gate the demo state (also EXPECT=before|after)
+  arm [--fault NAME]     plant a fault from scenario.yaml (default table) and publish six events
+  status [--json]        tenant, config, image, queues, alarm, rule, helm history, demo state
+  verify before|after [--fault NAME]
+                         gate the demo state (also EXPECT=before|after, FAULT=NAME)
   simulate [--count N]   publish file_shared events (also COUNT=N)
   quiet [MINUTES]        disable alarm actions for a while (default 10)
   disarm                 quiet, apply, purge queues, reset alarm, re-enable actions
-  reset                  disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant drift
+  reset [--scope run]    disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant drift;
+                         --scope run only touches branches and tenants created since the arm
   teardown               reset, unmap roles, delete RBAC and keys, destroy infra
   trail                  CloudTrail events from devin-cw-* identities in the last 2 h
 CW_DRY_RUN=1 prints every command instead of running it.
+CW_PAGE=0 makes arm, disarm and reset leave the EventBridge rule as they find it.
 USAGE
 }
 
@@ -107,6 +112,45 @@ eventing_value() {
     printf '%s' "${!key:-}"
   )
 }
+
+scenario_get() {  # dotted path; prints a scalar, key=value per map entry, or one line per list item
+  python3 - "${SCENARIO}" "$1" <<'PY'
+import sys
+import yaml
+
+node = yaml.safe_load(open(sys.argv[1]))
+for part in sys.argv[2].split("."):
+    node = node.get(part) if isinstance(node, dict) else None
+    if node is None:
+        sys.exit(0)
+if isinstance(node, dict):
+    for key, value in node.items():
+        print(f"{key}={value}")
+elif isinstance(node, list):
+    for value in node:
+        print(value)
+elif isinstance(node, bool):
+    print(str(node).lower())
+else:
+    print(node)
+PY
+}
+
+parse_fault() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --fault) FAULT="${2:-}"; shift 2 ;;
+      --fault=*|FAULT=*) FAULT="${1#*=}"; shift ;;
+      *) die "unexpected argument: $1" ;;
+    esac
+  done
+  [ -n "${FAULT}" ] || FAULT="$(scenario_get default_fault)"
+  [ -n "${FAULT}" ] || die "scenario.yaml has no default_fault"
+  [ -n "$(scenario_get "faults.${FAULT}.release")" ] \
+    || die "unknown fault ${FAULT}; scenario.yaml faults: $(scenario_get faults | cut -d= -f1 | tr '\n' ' ')"
+}
+
+fault_get() { scenario_get "faults.${FAULT}.$1"; }
 
 outputs_load() {
   [ -s "${OUTPUTS}" ] && return 0
@@ -186,6 +230,33 @@ queue_depth() {
 alarm_state() {
   read_cmd aws cloudwatch describe-alarms --alarm-names "$(out alarm_name)" \
     --query 'MetricAlarms[0].[StateValue,ActionsEnabled]' --output text 2>/dev/null || true
+}
+
+rule_state() {
+  read_cmd aws events describe-rule --name "$(out eventbridge_rule_name)" \
+    --query State --output text 2>/dev/null || true
+}
+
+enable_rule() {
+  if [ "${PAGE}" = 0 ]; then
+    log "CW_PAGE=0: leaving EventBridge rule $(out eventbridge_rule_name) $(rule_state)"
+  else
+    run aws events enable-rule --name "$(out eventbridge_rule_name)"
+  fi
+}
+
+queue_config() {  # MessageRetentionPeriod VisibilityTimeout maxReceiveCount
+  local attrs
+  attrs="$(read_cmd aws sqs get-queue-attributes --queue-url "$(out sqs_queue_url)" \
+    --attribute-names MessageRetentionPeriod VisibilityTimeout RedrivePolicy --output json 2>/dev/null || true)"
+  [ -n "${attrs}" ] || return 0
+  jq -r '.Attributes | [.MessageRetentionPeriod, .VisibilityTimeout,
+    ((.RedrivePolicy // "{}") | fromjson | .maxReceiveCount // "" | tostring)] | join(" ")' <<<"${attrs}" 2>/dev/null || true
+}
+
+running_image() {
+  read_cmd kubectl -n "${NS}" get deploy notification-service \
+    -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true
 }
 
 live_table() {
@@ -278,28 +349,32 @@ delete_reader_keys() {
   done
 }
 
+notification_eventing_args() {
+  local prefs; prefs="$(eventing_value DDB_NOTIF_PREFS)"
+  [ -n "${prefs}" ] || die "eventing.env has no DDB_NOTIF_PREFS"
+  printf '%s\n' \
+    --set-string "config.SNS_TOPIC_ARN=$(eventing_value SNS_TOPIC)" \
+    --set-string "config.SQS_QUEUE_URL=$(eventing_value SQS_NOTIF)" \
+    --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=$(eventing_value DDB_NOTIF)" \
+    --set-string "config.DYNAMODB_TABLE_PREFERENCES=${prefs}" \
+    --set-string "serviceAccount.roleArn=$(eventing_value IRSA_notification_service)"
+}
+
 cmd_apply() {
   ensure_account
-  local sns sqs ddb prefs irsa_notif irsa_file
+  local sns irsa_file
   sns="$(eventing_value SNS_TOPIC)"
-  sqs="$(eventing_value SQS_NOTIF)"
-  ddb="$(eventing_value DDB_NOTIF)"
-  prefs="$(eventing_value DDB_NOTIF_PREFS)"
-  [ -n "${prefs}" ] || die "eventing.env has no DDB_NOTIF_PREFS"
-  irsa_notif="$(eventing_value IRSA_notification_service)"
   irsa_file="$(eventing_value IRSA_file_service)"
-  local image_args=()
+  local -a notif_args image_args=()
+  mapfile -t notif_args < <(notification_eventing_args)
+  [ "${#notif_args[@]}" -gt 0 ] || die "cannot read eventing.env"
   local baseline; baseline="$(state_get baseline_image)"
   if [ -n "${baseline}" ]; then
     image_args=(--set-string "image.tag=${baseline}")
     log "notification-service image back to ${baseline%%@*}"
   fi
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
-    --set-string "config.SNS_TOPIC_ARN=${sns}" \
-    --set-string "config.SQS_QUEUE_URL=${sqs}" \
-    --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${ddb}" \
-    --set-string "config.DYNAMODB_TABLE_PREFERENCES=${prefs}" \
-    --set-string "serviceAccount.roleArn=${irsa_notif}" "${image_args[@]}"
+    "${notif_args[@]}" "${image_args[@]}"
   run helm upgrade file-service "${REPO}/infrastructure/helm/file-service" -n "${NS}" --reuse-values \
     --set-string "config.SNS_TOPIC_ARN=${sns}" \
     --set-string "serviceAccount.roleArn=${irsa_file}"
@@ -352,31 +427,66 @@ cmd_credentials() {
   log "wrote ${READER_FILE#"${REPO}/"} (mode 600) with a new key for ${user}"
 }
 
+release_image_ref() {  # tag@digest of the fault's release image, or nothing when the fault keeps the image
+  local tag repo digest
+  tag="$(fault_get image_tag)"
+  [ -n "${tag}" ] || return 0
+  repo="$(fault_get image_repository)"
+  if [ "${DRY}" = 1 ]; then
+    show aws ecr describe-images --repository-name "${repo}" --image-ids "imageTag=${tag}"
+    printf '%s' "${tag}"; return 0
+  fi
+  digest="$(aws ecr describe-images --repository-name "${repo}" --image-ids "imageTag=${tag}" \
+    --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)"
+  case "${digest}" in sha256:*) ;; *) die "image ${repo}:${tag} is not in ECR; push $(fault_get release_branch) and wait for CD" ;; esac
+  printf '%s@%s' "${tag}" "${digest}"
+}
+
 cmd_arm() {
+  parse_fault "$@"
   require_operator
+  ensure_account
+  local -a set_args=()
+  local kv image
+  while IFS= read -r kv; do
+    [ -n "${kv}" ] && set_args+=(--set-string "${kv}")
+  done < <(fault_get set)
+  if [ "$(fault_get config_vs_git)" = equals ]; then
+    local -a notif_args
+    mapfile -t notif_args < <(notification_eventing_args)
+    [ "${#notif_args[@]}" -gt 0 ] || die "cannot read eventing.env"
+    set_args+=("${notif_args[@]}")
+  fi
+  image="$(release_image_ref)"
+  [ -n "${image}" ] && set_args+=(--set-string "image.tag=${image}")
+  log "arming fault ${FAULT}"
   run aws cloudwatch enable-alarm-actions --alarm-names "$(out alarm_name)"
-  run aws events enable-rule --name "$(out eventbridge_rule_name)"
+  enable_rule
   if [ -z "$(state_get baseline_image)" ]; then
     local tag; tag="$(read_cmd helm -n "${NS}" get values notification-service -o json | jq -r '.image.tag // empty')"
     [ -n "${tag}" ] && state_set baseline_image "${tag}"
   fi
+  if [ "$(fault_get align_queue_with_terraform)" = true ]; then
+    run aws sqs set-queue-attributes --queue-url "$(out sqs_queue_url)" \
+      --attributes "MessageRetentionPeriod=$(scenario_get drift.terraform_value)"
+  fi
   run helm upgrade notification-service "${REPO}/infrastructure/helm/notification-service" -n "${NS}" --reuse-values \
-    --set-string "config.DYNAMODB_TABLE_NOTIFICATIONS=${FAULT_TABLE}"
+    "${set_args[@]}"
   restart_and_wait notification-service
-  simulate 6
+  # Keep node consolidation from evicting the pod, and its parse-failure log, mid-demo.
+  run kubectl -n "${NS}" annotate pod -l app.kubernetes.io/name=notification-service \
+    karpenter.sh/do-not-disrupt=true --overwrite
+  simulate "$(fault_get events_published)"
   local now; now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   state_set armed_at "${now}"
+  state_set armed_fault "${FAULT}"
   state_del quiet_until
-  cat <<TIMELINE
-armed at ${now}
-  now        six file_shared events reach ${QUEUE}; every receive fails with ResourceNotFoundException
-  ~2 min     after three receives each message moves to ${DLQ}
-  ~3 min     ${ALARM} goes to ALARM and EventBridge posts the Devin webhook
-TIMELINE
+  echo "armed ${FAULT} at ${now}"
+  fault_get timeline | sed 's/^/  /'
 }
 
 status_json() {
-  local live git prefs_live prefs_git qd dd alarm armed quiet
+  local live git prefs_live prefs_git qd dd alarm armed quiet image rule qc fault
   live="$(live_table)"
   git="$(git_table)"
   prefs_live="$(live_preferences_table)"
@@ -384,17 +494,23 @@ status_json() {
   qd="$(queue_depth "$(out sqs_queue_url)")"
   dd="$(queue_depth "$(out sqs_dlq_url)")"
   alarm="$(alarm_state)"
+  image="$(running_image)"
+  rule="$(rule_state)"
+  qc="$(queue_config)"
   local tmp; tmp="$(mktemp -d)"
   read_cmd kubectl -n "${NS}" get pods -o json >"${tmp}/pods.json" 2>/dev/null || true
   read_cmd helm history notification-service -n "${NS}" -o json >"${tmp}/helm.json" 2>/dev/null || true
   armed="$(state_get armed_at)"
   quiet="$(state_get quiet_until)"
+  fault="$(state_get armed_fault)"
   jq -n \
     --arg ns "${NS}" --arg live "${live}" --arg git "${git}" \
     --arg prefs_live "${prefs_live}" --arg prefs_git "${prefs_git}" \
     --arg qd "${qd}" --arg dd "${dd}" --arg alarm "${alarm}" \
     --rawfile pods "${tmp}/pods.json" --rawfile helm "${tmp}/helm.json" \
-    --arg armed "${armed}" --arg quiet "${quiet}" '
+    --arg armed "${armed}" --arg quiet "${quiet}" --arg fault "${fault}" \
+    --arg image "${image}" --arg baseline "$(state_get baseline_image)" --arg rule "${rule}" \
+    --arg qc "${qc}" --arg retention_tf "$(scenario_get drift.terraform_value)" '
     def num: if . == "" or . == null or . == "None" then null else tonumber end;
     def nz: if . == "" or . == "None" then null else . end;
     {
@@ -408,10 +524,16 @@ status_json() {
       preferences_table: {live: ($prefs_live | nz), git: ($prefs_git | nz), drift: ($prefs_live != "" and $prefs_live != $prefs_git)},
       queue: ($qd | split("\t") | {visible: (.[0] | num), in_flight: (.[1] | num)}),
       dlq: ($dd | split("\t") | {visible: (.[0] | num), in_flight: (.[1] | num)}),
+      queue_config: ($qc | split(" ") | {retention: (.[0] | num), retention_terraform: ($retention_tf | num),
+        visibility_timeout: (.[1] | num), max_receive_count: (.[2] | num)}),
+      image: {running: ($image | nz), tag: ($image | nz | if . == null then null else (split("/") | last | split("@")[0]) end),
+        baseline: ($baseline | nz)},
+      eventbridge_rule: ($rule | nz),
       alarm: ($alarm | split("\t") | {state: (.[0] | nz), actions_enabled: (if .[1] == null then null else (.[1] == "True") end)}),
       helm: (if $helm == "" then null else ($helm | fromjson) as $h
         | {revisions: ($h | length), last_description: ($h | last | .description)} end),
       armed_at: ($armed | nz),
+      armed_fault: ($fault | nz),
       quiet_until: ($quiet | nz)
     }'
   rm -rf "${tmp}"
@@ -430,9 +552,12 @@ cmd_status() {
     "prefs git      \(.preferences_table.git | v)\(if .preferences_table.drift then "  (drift)" else "" end)",
     "queue          \(.queue.visible | v) visible, \(.queue.in_flight | v) in flight",
     "dlq            \(.dlq.visible | v) visible, \(.dlq.in_flight | v) in flight",
+    "retention      \(.queue_config.retention | v)s, terraform \(.queue_config.retention_terraform | v)s\(if .queue_config.retention != null and .queue_config.retention != .queue_config.retention_terraform then "  (drift)" else "" end)",
+    "image          \(.image.tag | v)",
     "alarm          \(.alarm.state | v), actions \(if .alarm.actions_enabled == true then "enabled" elif .alarm.actions_enabled == false then "disabled" else "unknown" end)",
+    "rule           \(.eventbridge_rule | v)",
     "helm           \(if .helm == null then "unavailable" else "\(.helm.revisions) revisions, last: \(.helm.last_description)" end)",
-    "armed_at       \(.armed_at // "-")",
+    "armed_at       \(.armed_at // "-")\(if .armed_fault then " (\(.armed_fault))" else "" end)",
     "quiet_until    \(.quiet_until // "-")"
   ' <<<"${json}"
 }
@@ -451,11 +576,23 @@ pf() { if "$@"; then echo PASS; else echo FAIL; fi; }
 
 dlq_visible() { queue_depth "$(out sqs_dlq_url)" | awk '{print $1}'; }
 
-resource_not_found_count() {
+log_count() {
   local logs
   logs="$(read_cmd kubectl -n "${NS}" logs -l app.kubernetes.io/name=notification-service \
     --since="${LOG_WINDOW}" --tail=-1 --all-containers 2>/dev/null || true)"
-  grep -c ResourceNotFoundException <<<"${logs}" || true
+  grep -cF -- "$1" <<<"${logs}" || true
+}
+
+config_matches_git() {  # prints the measured values; returns 0 when tables and queue attributes equal git
+  local live=$1 git=$2 prefs_live prefs_git qc ret vis mrc want_ret want_vis want_mrc
+  prefs_live="$(live_preferences_table)"; prefs_git="$(eventing_value DDB_NOTIF_PREFS)"
+  qc="$(queue_config)"; read -r ret vis mrc <<<"${qc}"
+  want_ret="$(scenario_get drift.terraform_value)"
+  want_vis="$(scenario_get thresholds.visibility_timeout_seconds)"
+  want_mrc="$(scenario_get thresholds.max_receive_count)"
+  echo "table=${live:-unknown} prefs=${prefs_live:-unknown} retention=${ret:-unknown} visibility=${vis:-unknown} maxReceive=${mrc:-unknown}"
+  [ -n "${live}" ] && [ "${live}" = "${git}" ] && [ -n "${prefs_live}" ] && [ "${prefs_live}" = "${prefs_git}" ] \
+    && [ "${ret:-}" = "${want_ret}" ] && [ "${vis:-}" = "${want_vis}" ] && [ "${mrc:-}" = "${want_mrc}" ]
 }
 
 deploys_ready() {
@@ -509,19 +646,31 @@ landing_check() {
 
 cmd_verify() {
   local expect=${1:-${EXPECT:-}}
+  [ $# -gt 0 ] && shift
   expect="${expect#EXPECT=}"
-  case "${expect}" in before|after) ;; *) die "usage: cw.sh verify before|after" ;; esac
+  case "${expect}" in before|after) ;; *) die "usage: cw.sh verify before|after [--fault NAME]" ;; esac
+  parse_fault "$@"
   ensure_account
+  local verify_label=""
+  if [ "${expect}" = before ] && [ "${FAULT}" != "$(scenario_get default_fault)" ]; then verify_label=" (${FAULT})"; fi
   local live git dlq alarm
   live="$(live_table)"; git="$(git_table)"
   dlq="$(dlq_visible)"; dlq="${dlq:-unknown}"
   alarm="$(alarm_state | awk '{print $1}')"; alarm="${alarm:-unknown}"
   if [ "${expect}" = before ]; then
-    local rnf; rnf="$(resource_not_found_count)"
-    check "$(pf test -n "${live}" -a "${live}" != "${git}")" "live table differs from git" "live=${live:-unknown} git=${git}"
+    local pattern hits measured result
+    pattern="$(fault_get log_pattern)"
+    [ -n "${pattern}" ] || die "fault ${FAULT} has no log_pattern"
+    hits="$(log_count "${pattern}")"
+    if [ "$(fault_get config_vs_git)" = equals ]; then
+      if measured="$(config_matches_git "${live}" "${git}")"; then result=PASS; else result=FAIL; fi
+      check "${result}" "config equals git" "${measured}"
+    else
+      check "$(pf test -n "${live}" -a "${live}" != "${git}")" "live table differs from git" "live=${live:-unknown} git=${git}"
+    fi
     check "$(pf test "${dlq}" != unknown -a "${dlq}" -ge 1 2>/dev/null)" "DLQ depth >= 1" "${dlq}"
     check "$(pf test "${alarm}" = ALARM)" "alarm state ALARM" "${alarm}"
-    check "$(pf test "${rnf:-0}" -ge 1)" "ResourceNotFoundException in ${LOG_WINDOW}" "${rnf:-0}"
+    check "$(pf test "${hits:-0}" -ge 1)" "${pattern} in ${LOG_WINDOW}" "${hits:-0}"
   else
     local ready; ready="$(deploys_ready)"
     check "$(pf test -n "${live}" -a "${live}" = "${git}")" "live table equals git" "live=${live:-unknown} git=${git}"
@@ -531,11 +680,11 @@ cmd_verify() {
     landing_check
   fi
   if [ "${DRY}" = 1 ]; then
-    echo "verify ${expect}: dry run, ${VERIFY_TOTAL} checks not evaluated"
+    echo "verify ${expect}${verify_label}: dry run, ${VERIFY_TOTAL} checks not evaluated"
   elif [ "${VERIFY_FAILS}" -eq 0 ]; then
-    echo "verify ${expect}: PASS (${VERIFY_TOTAL}/${VERIFY_TOTAL})"
+    echo "verify ${expect}${verify_label}: PASS (${VERIFY_TOTAL}/${VERIFY_TOTAL})"
   else
-    echo "verify ${expect}: FAIL (${VERIFY_FAILS} of ${VERIFY_TOTAL} failed)"
+    echo "verify ${expect}${verify_label}: FAIL (${VERIFY_FAILS} of ${VERIFY_TOTAL} failed)"
     exit 1
   fi
 }
@@ -570,31 +719,87 @@ cmd_quiet() {
   log "alarm actions and the EventBridge rule are disabled until ${until}; arm or disarm turns them back on"
 }
 
+wait_alarm_settled() {  # $1 = purge time; true once a DLQ datapoint after it reads 0 and the alarm is not ALARM
+  [ "${DRY}" = 1 ] && return 0
+  local since=$1 waited=0 limit=$((SETTLE_SECONDS * 3)) latest
+  log "waiting up to ${limit}s for a DLQ datapoint after ${since} before the rule goes back on"
+  while [ "${waited}" -lt "${limit}" ]; do
+    latest="$(aws cloudwatch get-metric-statistics --namespace AWS/SQS --metric-name ApproximateNumberOfMessagesVisible \
+      --dimensions "Name=QueueName,Value=${DLQ}" --statistics Sum --period 60 \
+      --start-time "${since}" --end-time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --output json 2>/dev/null \
+      | jq -r '.Datapoints | sort_by(.Timestamp) | last | .Sum // empty' 2>/dev/null || true)"
+    if [ -n "${latest}" ] && [ "${latest%.*}" = 0 ] && [ "$(alarm_state)" != ALARM ]; then return 0; fi
+    sleep 15; waited=$((waited + 15))
+  done
+  return 1
+}
+
 cmd_disarm() {
   require_operator
   cmd_quiet 10
   if namespace_exists; then cmd_apply; else log "namespace ${NS} not found; skipping apply"; fi
+  local purged_at; purged_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   run aws sqs purge-queue --queue-url "$(out sqs_queue_url)" || log "purge of ${QUEUE} refused (purged within 60s)"
   run aws sqs purge-queue --queue-url "$(out sqs_dlq_url)" || log "purge of ${DLQ} refused (purged within 60s)"
   run aws cloudwatch set-alarm-state --alarm-name "$(out alarm_name)" --state-value OK --state-reason "cw.sh disarm"
   wait_queues_empty
   run aws cloudwatch enable-alarm-actions --alarm-names "$(out alarm_name)"
-  run aws events enable-rule --name "$(out eventbridge_rule_name)"
+  # The forced OK flips back to ALARM when CloudWatch re-evaluates the last full DLQ minute, which would page.
+  if [ "${PAGE}" != 0 ] && ! wait_alarm_settled "${purged_at}"; then
+    log "alarm $(alarm_state); leaving rule $(out eventbridge_rule_name) $(rule_state). Enable it after make cw-verify EXPECT=after passes"
+  else
+    enable_rule
+  fi
   state_del armed_at
+  state_del armed_fault
   state_del quiet_until
   log "disarmed"
 }
 
+epoch_of() { date -u -d "$1" +%s 2>/dev/null || date -u -j -f %Y-%m-%dT%H:%M:%SZ "$1" +%s; }
+
+in_reset_scope() {  # run branch or tenant name, minus its demo-/otterworks- prefix
+  local name=$1 since=$2 ts
+  case "${name}" in cw-release-*) return 1 ;; esac
+  [ -z "${since}" ] && return 0
+  ts="${name#cw-}"; ts="${ts%%-*}"
+  [[ "${ts}" =~ ^[0-9]+$ ]] && [ "${ts}" -ge "${since}" ]
+}
+
 cmd_reset() {
+  local scope=all
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --scope) scope="${2:-}"; shift 2 ;;
+      --scope=*|SCOPE=*) scope="${1#*=}"; shift ;;
+      *) die "usage: cw.sh reset [--scope all|run]" ;;
+    esac
+  done
+  case "${scope}" in all|run) ;; *) die "usage: cw.sh reset [--scope all|run]" ;; esac
   require_operator
+  local since=""
+  if [ "${scope}" = run ]; then
+    local armed; armed="$(state_get armed_at)"
+    [ -n "${armed}" ] || die "--scope run needs armed_at in ${STATE_FILE#"${REPO}/"}; run a full reset instead"
+    since="$(epoch_of "${armed}")"
+    log "scope run: only demo-cw-<ts>-* branches and cw-<ts>-* tenants with ts >= ${since} (${armed})"
+  fi
   cmd_disarm
-  local branches b
-  branches="$(read_cmd git -C "${REPO}" ls-remote --heads origin 'refs/heads/demo-cw-*' | awk '{sub("refs/heads/", "", $2); print $2}')"
+  local branches b candidates
+  candidates="$(read_cmd git -C "${REPO}" ls-remote --heads origin 'refs/heads/demo-cw-*' | awk '{sub("refs/heads/", "", $2); print $2}')"
+  branches=""
+  for b in ${candidates}; do
+    if in_reset_scope "${b#demo-}" "${since}"; then branches="${branches} ${b}"; else log "keeping branch ${b}"; fi
+  done
   if command -v gh >/dev/null 2>&1; then
-    local prs n
+    local prs n head
     prs="$(read_cmd gh pr list --repo "${GH_REPO}" --state open --limit 200 --json number,headRefName \
-      --jq '.[] | select(.headRefName | startswith("demo-cw-")) | .number' || true)"
-    for n in ${prs}; do run gh pr close "${n}" --repo "${GH_REPO}" --comment "Closed by cloudworker reset."; done
+      --jq '.[] | select(.headRefName | startswith("demo-cw-")) | "\(.number) \(.headRefName)"' || true)"
+    while read -r n head; do
+      [ -n "${n}" ] || continue
+      in_reset_scope "${head#demo-}" "${since}" || continue
+      run gh pr close "${n}" --repo "${GH_REPO}" --comment "Closed by cloudworker reset."
+    done <<<"${prs}"
   else
     log "gh not found; close the open PRs at these links by hand:"
     for b in ${branches}; do log "  https://github.com/${GH_REPO}/pulls?q=is%3Apr+is%3Aopen+head%3A${b}"; done
@@ -603,7 +808,15 @@ cmd_reset() {
   local nss ns
   nss="$(read_cmd kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' || true)"
   for ns in ${nss}; do
-    case "${ns}" in otterworks-cw-*) run "${REPO}/scripts/teardown-tenant.sh" "${ns#otterworks-}" ;; esac
+    case "${ns}" in
+      otterworks-cw-release-*) [ -z "${since}" ] && run "${REPO}/scripts/teardown-tenant.sh" "${ns#otterworks-}" ;;
+      otterworks-cw-*)
+        if in_reset_scope "${ns#otterworks-}" "${since}"; then
+          run "${REPO}/scripts/teardown-tenant.sh" "${ns#otterworks-}"
+        else
+          log "keeping tenant ${ns#otterworks-}"
+        fi ;;
+    esac
   done
   run aws sqs set-queue-attributes --queue-url "$(out sqs_queue_url)" \
     --attributes "MessageRetentionPeriod=${DRIFT_RETENTION}"
@@ -666,13 +879,13 @@ case "${verb}" in
   up) cmd_up ;;
   apply) cmd_apply ;;
   credentials) cmd_credentials ;;
-  arm) cmd_arm ;;
+  arm) cmd_arm "$@" ;;
   status) cmd_status "$@" ;;
   verify) cmd_verify "$@" ;;
   simulate) cmd_simulate "$@" ;;
   quiet) cmd_quiet "$@" ;;
   disarm) cmd_disarm ;;
-  reset) cmd_reset ;;
+  reset) cmd_reset "$@" ;;
   teardown) cmd_teardown ;;
   trail) cmd_trail ;;
   -h|--help|help|"") usage ;;

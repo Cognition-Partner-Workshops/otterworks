@@ -40,6 +40,16 @@ The input transformer sends this body, and the Automation appends the body to th
 }
 ```
 
+## Code-cause variant
+
+The demo has two faults, and both page through the same alarm, rule and payload. `make cw-arm` plants the default configuration fault. `make cw-arm FAULT=parser` rolls a release image whose strict parser rejects every event, with the live config equal to git. Register the code-cause variant as a second Automation, `aws-cloud-worker-dlq-alarm-code`, with every setting from the table below except the name and the prompt. Its prompt is this one line from the demo record:
+
+```text
+!aws_cloud_worker The CloudWatch payload below is the whole brief and nobody will type a follow-up. Read telemetry under the observer role before any code; when the live config equals git, read the parse failures in the consumer log and the dead-letter bodies, read the rollout history and the commit behind the running image, name the file, line and commit in services/notification-service that rejects them, post the cause before you change anything, then fix the code with a test built from those bodies, roll the fixed image into otterworks-cloud-worker under the builder role, redrive the DLQ, run make cw-verify EXPECT=after, and report with the gate output and the CloudTrail table.
+```
+
+Both Automations listen on their own incoming webhook, and the EventBridge rule posts to one API destination. Point `~/.cw-webhook.json` at the Automation for the variant you present and run `make cw-up` to apply it, or keep one Automation and swap its prompt in the UI before the run. Only one of the two should receive the page.
+
 ## Connecting EventBridge to the Automation
 
 Create the Automation, then copy its incoming webhook URL and its one-time secret into `~/.cw-webhook.json` on the operator machine. `make cw-up` reads that file (or the path in `CW_WEBHOOK_FILE`) and passes the values to Terraform as `TF_VAR_devin_webhook_url` and `TF_VAR_devin_webhook_secret`. Keep the file mode 600 and out of git.
@@ -103,3 +113,15 @@ aws cloudwatch set-alarm-state --alarm-name otterworks-cw-notifications-dlq-dept
 ```
 
 The session then finds an empty DLQ and a live table that matches git, and reports that. Run `make cw-disarm` afterward to set the alarm back to `OK`. Each test counts against the 3 per hour cap.
+
+To rehearse either fault without starting a session, disable the rule first and pass `PAGE=0`, so the harness leaves the rule as it finds it. Without `PAGE=0`, `cw-arm`, `cw-disarm` and `cw-reset` enable the rule again.
+
+```bash
+aws events disable-rule --name otterworks-cw-dlq-alarm-to-devin
+make cw-arm FAULT=parser PAGE=0
+make cw-verify EXPECT=before FAULT=parser
+make cw-reset SCOPE=run PAGE=0
+make cw-verify EXPECT=after
+aws events enable-rule --name otterworks-cw-dlq-alarm-to-devin
+aws events describe-rule --name otterworks-cw-dlq-alarm-to-devin --query State --output text
+```

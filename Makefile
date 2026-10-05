@@ -527,7 +527,8 @@ incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audite
 	$(INCIDENT) record --reason "$(REASON)"
 
 # --- AWS cloud worker (see cloudworker/README.md) ---
-CW = cloudworker/cw.sh
+CW = $(if $(PAGE),CW_PAGE=$(PAGE) ,)cloudworker/cw.sh
+CW_FAULT_ARG = $(if $(FAULT),--fault $(FAULT),)
 .PHONY: cw-up cw-apply cw-credentials cw-arm cw-status cw-verify cw-simulate cw-quiet cw-disarm cw-reset cw-teardown cw-trail
 
 cw-up: ## Provision the cloud-worker infra, map the Devin roles, wire the tenant, smoke test
@@ -539,17 +540,17 @@ cw-apply: ## Re-render the cloud-worker tenant eventing config from eventing.env
 cw-credentials: ## Rotate the devin-cw-reader access key into cloudworker/.state/
 	$(CW) credentials
 
-cw-arm: ## Plant the notification table fault and publish six file_shared events
-	$(CW) arm
+cw-arm: ## Plant a fault and publish six file_shared events (FAULT=table|parser, default table; PAGE=0 keeps the EventBridge rule as is)
+	$(CW) arm $(CW_FAULT_ARG)
 
-cw-status: ## Tenant pods, live vs git table, queue depths, alarm, helm history (JSON=1 for JSON)
+cw-status: ## Tenant pods, live vs git table, image, queue depths, alarm, rule, helm history (JSON=1 for JSON)
 	$(CW) status $(if $(JSON),--json,)
 
-cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after)
+cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after, FAULT=table|parser for before)
 ifndef EXPECT
 	$(error EXPECT is required, e.g. make cw-verify EXPECT=before)
 endif
-	$(CW) verify $(EXPECT)
+	$(CW) verify $(EXPECT) $(CW_FAULT_ARG)
 
 cw-simulate: ## Publish file_shared events to the cloud-worker topic (COUNT=n, default 1)
 	$(CW) simulate --count $(or $(COUNT),1)
@@ -557,11 +558,11 @@ cw-simulate: ## Publish file_shared events to the cloud-worker topic (COUNT=n, d
 cw-quiet: ## Disable the DLQ alarm actions for a while (MINUTES=n, default 10)
 	$(CW) quiet $(or $(MINUTES),10)
 
-cw-disarm: ## Restore the config, purge both queues, reset the alarm
+cw-disarm: ## Restore the config and image, purge both queues, reset the alarm (PAGE=0 keeps the rule as is)
 	$(CW) disarm
 
-cw-reset: ## Disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant the drift
-	$(CW) reset
+cw-reset: ## Disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant the drift (SCOPE=run, PAGE=0)
+	$(CW) reset $(if $(SCOPE),--scope $(SCOPE),)
 
 cw-teardown: ## Reset, unmap the roles, delete RBAC and keys, destroy the cloud-worker infra
 	$(CW) teardown

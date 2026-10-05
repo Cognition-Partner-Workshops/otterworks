@@ -7,6 +7,7 @@ This runbook takes the operator through the `aws-cloud-worker` demo: one AWS eng
 - [Pre-flight](#pre-flight)
 - [Act 1: ask](#act-1-ask)
 - [Act 2: page](#act-2-page)
+- [Act 2, code-cause variant](#act-2-code-cause)
 - [Act 3: change](#act-3-change)
 - [Act 4: close](#act-4-close)
 - [Timings](#timings)
@@ -60,6 +61,36 @@ make cw-verify EXPECT=before
 
 Open the act 2 session and follow it. Devin posts the cause (the live table differs from `infrastructure/helm/tenant-values/cloud-worker/eventing.env`), runs `make cw-apply` under `devin-cw-builder`, redrives the DLQ, runs `make cw-verify EXPECT=after`, opens a pull request against `demo-cloud-worker` that adds a startup table check to `notification-service`, and posts the report. Act 2 ends when the after gate passes and the report is in the session.
 
+<a id="act-2-code-cause"></a>
+## Act 2, code-cause variant
+
+Present this variant instead of the table fault when the audience cares about release regressions more than configuration drift. Register the second Automation from `automation.md` and point the webhook at it before you arm.
+
+```bash
+make cw-arm FAULT=parser
+```
+
+`cw-arm FAULT=parser` keeps the config equal to git, sets the queue retention to the Terraform value so act 1's drift cannot be blamed, and rolls `notification-service` to image `demo-cw-release-1791186929-strict-parser-14ca29e`, pinned by digest. That image comes from commit `14ca29e` on branch `demo-cw-release-1791186929-strict-parser`, which makes the strict JSON parser the only parser. Then it publishes six `file_shared` events, and the parser rejects every one. The before gate for this variant:
+
+```bash
+make cw-verify EXPECT=before FAULT=parser
+```
+
+It passes when the config equals git, the DLQ holds 1 message or more, the alarm is `ALARM`, and the last 15 minutes of logs carry `Failed to parse SQS message`.
+
+The answer key, which Devin has to reach from telemetry and git before it changes anything:
+
+| Item | Value |
+|---|---|
+| File | `services/notification-service/src/main/kotlin/com/otterworks/notification/consumer/SqsConsumer.kt` |
+| Line | 33, `ignoreUnknownKeys = false` in the only `Json` instance |
+| Commit | `14ca29e`, "notification-service: validate queue events against the declared schema" |
+| Log line | `Failed to parse SQS message: <message id>`, after `Failed to parse message body` at `ERROR` |
+| Exception | `kotlinx.serialization.json.internal.JsonDecodingException: Unexpected JSON token at offset 447: Encountered an unknown key 'Timestamp' at path: $` |
+| Rejected | All six. Each SQS body is the SNS envelope, and `SnsEnvelope` does not declare `Timestamp`, `SignatureVersion`, `Signature`, `SigningCertURL`, `UnsubscribeURL` or `MessageAttributes`. The event inside carries `folderId`, which `SqsNotificationMessage` does not declare |
+
+A fix that accepts the envelope but still rejects `folderId` leaves the DLQ full after the redrive, and the after gate's simulated event fails too. The after gate is the same five checks as for the table fault.
+
 <a id="act-3-change"></a>
 ## Act 3: change
 
@@ -91,6 +122,9 @@ The harness expectations come from `make cw-arm`, which prints them when it runs
 |---|---|---|
 | `make cw-arm` to first message in the DLQ | about 2 minutes | |
 | `make cw-arm` to alarm `ALARM` | about 3 minutes | |
+| `make cw-arm FAULT=parser` returns to first message in the DLQ | about 1.5 minutes | 1m29s on 2026-10-05 (08:03:20Z to 08:04:49Z) |
+| `make cw-arm FAULT=parser` returns to alarm `ALARM` | about 4 minutes | 3m59s on 2026-10-05 (08:07:19Z in the alarm history) |
+| `make cw-reset` to after gate passing | | 2m56s on 2026-10-05; the alarm flipped back to `ALARM` once before it settled |
 | Alarm `ALARM` to act 2 session started | | |
 | Act 2 session started to after gate passed | | |
 | Act 3 prompt to pull request opened | | |
@@ -118,7 +152,22 @@ make cw-reset
 make cw-status
 ```
 
-`cw-reset` runs `cw-disarm` (restores the config from git and the notification-service image recorded at `arm`, so a fix image a session deployed does not carry into the next run; purges both queues, sets the alarm to `OK`, re-enables alarm actions), closes open pull requests whose branch starts with `demo-cw-`, deletes those branches, tears down the `cw-*` tenants, re-applies the retention drift for act 1 and ends any quiet window. When `cw-status` shows the live table equal to git, both queues at 0 and the alarm `OK`, the next run can start.
+To rehearse on a cluster that other sessions share, keep the page off and limit the cleanup to your run. `PAGE=0` makes `cw-arm`, `cw-disarm` and `cw-reset` leave the EventBridge rule as they find it. `SCOPE=run` limits the cleanup to `demo-cw-<ts>-*` branches and `cw-<ts>-*` tenants whose timestamp is at or after `armed_at`.
+
+```bash
+aws events disable-rule --name otterworks-cw-dlq-alarm-to-devin
+make cw-arm FAULT=parser PAGE=0
+make cw-verify EXPECT=before FAULT=parser
+make cw-reset SCOPE=run PAGE=0
+make cw-verify EXPECT=after        # rerun after a minute if the alarm still reads ALARM
+aws events enable-rule --name otterworks-cw-dlq-alarm-to-devin
+aws events describe-rule --name otterworks-cw-dlq-alarm-to-devin --query State --output text
+make cw-status
+```
+
+Baseline means `cw-status` shows the live table equal to git, both queues at 0, retention at 1209600s with the drift marker for act 1, image `workshop-ep-contracts-2c2d7ff`, alarm `OK, actions enabled`, rule `ENABLED`, and no `armed_at`. The reset never deletes `demo-cw-release-*` branches, so the parser image keeps its source commit.
+
+`cw-reset` runs `cw-disarm` (restores the config from git and the notification-service image recorded at `arm`, so a fix image or the parser release image does not carry into the next run; purges both queues, sets the alarm to `OK`, re-enables alarm actions, and turns the rule back on once the DLQ metric reads 0), closes open pull requests whose branch starts with `demo-cw-`, deletes those branches, tears down the `cw-*` tenants, re-applies the retention drift for act 1 and ends any quiet window. When `cw-status` shows the live table equal to git, both queues at 0 and the alarm `OK`, the next run can start.
 
 To stop a run in the middle without closing anything, run `make cw-disarm`. To keep the alarm from paging while you rehearse, run `make cw-quiet MINUTES=10`.
 
