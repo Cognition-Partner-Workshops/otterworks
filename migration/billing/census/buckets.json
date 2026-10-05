@@ -1,0 +1,67 @@
+{
+  "kind": "oracle-census-buckets",
+  "version": 1,
+  "schema": "OW_BILLING",
+  "buckets": {
+    "migrate": "Data is carried into the Atlas migration database as collection documents and reconciled under migration/billing/tolerances.json (exact match, row-diff 0).",
+    "migrate-as-logic": "Behaviour is re-implemented in the billing service (no Oracle object is carried); parity is proven by the repo's procs/harness transcripts, not by row recon.",
+    "retire": "Not carried and not re-implemented as code; any surviving requirement is noted and met by a MongoDB-native feature (ObjectId keys, TTL index).",
+    "out-of-scope": "Not part of the billing estate (fixture plumbing or unrelated); excluded from migration and recon."
+  },
+  "cite_root": "services/legacy-billing/db/oracle/",
+  "index_rule": {
+    "bucket": "inherit-table",
+    "cite": "ALL_INDEXES.TABLE_NAME joined to ALL_CONSTRAINTS (every OW_BILLING index backs a PK/UQ constraint)",
+    "note": "An index takes the bucket of its table: on a migrated table it becomes the matching unique index on the collection."
+  },
+  "objects": {
+    "TABLE:CODES":                {"bucket": "migrate", "cite": "schema/01_tables.sql:10", "note": "Generic lookup that decodes every magic-number *_CD column (README: 'magic-number *_CD statuses resolved through the generic CODES table'); carried so historical codes still decode."},
+    "TABLE:TENANTS":              {"bucket": "migrate", "cite": "schema/01_tables.sql:40", "note": "Shared across namespaces: 9 baseline rows (schema/03_seed_static.sql:9-18) plus 60 per demo namespace named '<ns>::tenant-*'; the ns slice is selected with name LIKE '<ns>::%'."},
+    "TABLE:PLANS":                {"bucket": "migrate", "cite": "schema/01_tables.sql:49", "note": "Money columns monthly_fee/overage_rate are under exact-decimal recon (migration/billing/tolerances.json)."},
+    "TABLE:SUBSCRIPTIONS":        {"bucket": "migrate", "cite": "schema/01_tables.sql:61", "note": "Core subscription state; its two business-rule triggers are bucketed separately."},
+    "TABLE:USAGE_EVENTS":         {"bucket": "migrate", "cite": "schema/01_tables.sql:74", "note": "Rating input; validation lives in TRG_USAGE_EVENTS_CHECK (migrate-as-logic)."},
+    "TABLE:RATING_PERIODS":       {"bucket": "migrate", "cite": "schema/01_tables.sql:84"},
+    "TABLE:RATING_RESULTS":       {"bucket": "migrate", "cite": "schema/01_tables.sql:94", "note": "overage_amount under exact-decimal recon."},
+    "TABLE:INVOICES":             {"bucket": "migrate", "cite": "schema/01_tables.sql:109", "note": "subtotal/tax/total under exact-decimal recon."},
+    "TABLE:INVOICE_LINES":        {"bucket": "migrate", "cite": "schema/01_tables.sql:123", "note": "Transactional lines used by pkg_invoicing; distinct from the bulk INVOICE_LINE feed."},
+    "TABLE:CREDIT_NOTES":         {"bucket": "migrate", "cite": "schema/01_tables.sql:135", "note": "amount/remaining_amount under exact-decimal recon."},
+    "TABLE:DUNNING_ATTEMPTS":     {"bucket": "migrate", "cite": "schema/01_tables.sql:145"},
+    "TABLE:NOTIFICATIONS":        {"bucket": "migrate", "cite": "schema/01_tables.sql:158"},
+    "TABLE:BILLING_AUDIT_LOG":    {"bucket": "migrate", "cite": "schema/01_tables.sql:169", "note": "Audit records written by pkg_ow_util.log_msg (autonomous transaction, packages/01_pkg_util.sql:67); carried as an audit collection with a TTL index on logged_at replacing JOB_PURGE_AUDIT_LOG's 90-day purge."},
+    "TABLE:SUBSCRIPTIONS_HIST":   {"bucket": "migrate", "cite": "schema/01_tables.sql:190", "note": "Full-row-copy history maintained by TRG_SUBSCRIPTIONS_HIST; existing history rows are carried, the copying rule is migrate-as-logic."},
+    "TABLE:CUSTOMER_MASTER":      {"bucket": "migrate", "cite": "schema/02_horror.sql:22", "note": "155-column denormalized master (ADDR_LINE_1..6, PHONE1..4, FLAG_01..20, UDF_01..40, DD-MON-YY text dates, CSV id lists); all *_amt columns under exact-decimal recon."},
+    "TABLE:CUSTOMER_MASTER_HIST": {"bucket": "migrate", "cite": "schema/02_horror.sql:181", "note": "Full-row-copy history maintained by TRG_CUSTOMER_MASTER_HIST; listed in migration/billing/tolerances.json money columns, so it is recon scope."},
+    "TABLE:ENTITY_ATTR_VALUE":    {"bucket": "migrate", "cite": "schema/02_horror.sql:378", "note": "EAV dumping ground typed as strings; carried (natural fit for embedded attributes), keyed by eav_id."},
+    "TABLE:INVOICE_LINE":         {"bucket": "migrate", "cite": "schema/02_horror.sql:405", "note": "Bulk mainframe-conversion feed with an unenforced pointer at INVOICE_HEADER (planted orphans are compared as a set per tolerances.json); qty/unit_price/amount/tax_amt under exact-decimal recon."},
+    "TABLE:INVOICE_HEADER":       {"bucket": "migrate", "cite": "schema/02_horror.sql:429", "note": "total_amt under exact-decimal recon."},
+    "TABLE:FIXTURE_META":         {"bucket": "out-of-scope", "cite": "startup/00_init.sh:150", "note": "Fixture bootstrap/health marker written by the Oracle Free startup orchestrator; no package, trigger or job references it (ALL_DEPENDENCIES), it is not billing data."},
+
+    "PACKAGE:PKG_OW_UTIL":        {"bucket": "migrate-as-logic", "cite": "packages/01_pkg_util.sql:6", "note": "f_md5_uuid, f_code_desc (EXECUTE IMMEDIATE lookup), f_dt2str/f_str2dt (DD-MON-YY round-trips), log_msg (autonomous-transaction logger); package-state globals g_call_count/g_last_module/g_last_uuid are dropped."},
+    "PACKAGE BODY:PKG_OW_UTIL":   {"bucket": "migrate-as-logic", "cite": "packages/01_pkg_util.sql:20"},
+    "PACKAGE:PKG_PLANS":          {"bucket": "migrate-as-logic", "cite": "packages/02_pkg_plans.sql:5", "note": "Entrypoints fn_list_plans, fn_entitlement, sp_change_plan (README 'Entrypoint mapping'); parity via procs/harness."},
+    "PACKAGE BODY:PKG_PLANS":     {"bucket": "migrate-as-logic", "cite": "packages/02_pkg_plans.sql:18"},
+    "PACKAGE:PKG_RATING":         {"bucket": "migrate-as-logic", "cite": "packages/03_pkg_rating.sql:5", "note": "Entrypoints fn_usage_rating, fn_usage_summary, sp_finalize_rating; rating state in package globals between compute and finalize."},
+    "PACKAGE BODY:PKG_RATING":    {"bucket": "migrate-as-logic", "cite": "packages/03_pkg_rating.sql:30"},
+    "PACKAGE:PKG_INVOICING":      {"bucket": "migrate-as-logic", "cite": "packages/04_pkg_invoicing.sql:5", "note": "Entrypoints fn_invoice_preview, fn_invoice_lines, sp_issue_invoice; depends on PKG_RATING and PKG_OW_UTIL (ALL_DEPENDENCIES)."},
+    "PACKAGE BODY:PKG_INVOICING": {"bucket": "migrate-as-logic", "cite": "packages/04_pkg_invoicing.sql:24"},
+    "PACKAGE:PKG_DUNNING":        {"bucket": "migrate-as-logic", "cite": "packages/05_pkg_dunning.sql:5", "note": "Entrypoints fn_overdue_accounts, sp_schedule_dunning, sp_suspend_overdue; invoked nightly by JOB_NIGHTLY_DUNNING."},
+    "PACKAGE BODY:PKG_DUNNING":   {"bucket": "migrate-as-logic", "cite": "packages/05_pkg_dunning.sql:15"},
+
+    "TRIGGER:TRG_SUBSCRIPTIONS_HIST":   {"bucket": "migrate-as-logic", "cite": "schema/01_tables.sql:206", "note": "AFTER UPDATE OR DELETE full-row copy into SUBSCRIPTIONS_HIST with a text timestamp; becomes application-side versioning."},
+    "TRIGGER:TRG_SUB_NO_UNCANCEL":      {"bucket": "migrate-as-logic", "cite": "schema/01_tables.sql:228", "note": "Business rule in a trigger: status_cd 30 (cancelled) can never change; becomes a service-layer invariant."},
+    "TRIGGER:TRG_USAGE_EVENTS_CHECK":   {"bucket": "migrate-as-logic", "cite": "schema/01_tables.sql:239", "note": "Validation in a trigger: units > 0 and kind_cd present in CODES('USAGE_KIND'); becomes service/schema validation."},
+    "TRIGGER:TRG_CUSTOMER_MASTER_SEQ":  {"bucket": "migrate-as-logic", "cite": "schema/02_horror.sql:346", "note": "Derives cust_name_upper and defaults row_version_no on insert (logic kept); the seq_customer_master assignment part is retired with the sequence."},
+    "TRIGGER:TRG_CUSTOMER_MASTER_HIST": {"bucket": "migrate-as-logic", "cite": "schema/02_horror.sql:358", "note": "AFTER UPDATE OR DELETE 155-column full-row copy into CUSTOMER_MASTER_HIST; becomes application-side versioning."},
+    "TRIGGER:TRG_BILLING_AUDIT_LOG_ID": {"bucket": "retire", "cite": "schema/01_tables.sql:179", "note": "Pure key assignment from SEQ_BILLING_AUDIT_LOG (README 'Sequences + triggers instead of identity columns')."},
+    "TRIGGER:TRG_ENTITY_ATTR_VALUE_SEQ": {"bucket": "retire", "cite": "schema/02_horror.sql:391", "note": "Pure key assignment from SEQ_ENTITY_ATTR_VALUE."},
+
+    "SEQUENCE:SEQ_BILLING_AUDIT_LOG":    {"bucket": "retire", "cite": "schema/01_tables.sql:177", "note": "Synthetic key generator; existing log_id values travel as data, new documents use ObjectId."},
+    "SEQUENCE:SEQ_SUBSCRIPTIONS_HIST":   {"bucket": "retire", "cite": "schema/01_tables.sql:204", "note": "Synthetic key generator for SUBSCRIPTIONS_HIST.hist_id."},
+    "SEQUENCE:SEQ_CUSTOMER_MASTER":      {"bucket": "retire", "cite": "schema/02_horror.sql:343", "note": "Feeds CUSTOMER_MASTER.cust_seq_no (starts at 100000); existing values travel as data with the table."},
+    "SEQUENCE:SEQ_CUSTOMER_MASTER_HIST": {"bucket": "retire", "cite": "schema/02_horror.sql:344", "note": "Synthetic key generator for CUSTOMER_MASTER_HIST.hist_id."},
+    "SEQUENCE:SEQ_ENTITY_ATTR_VALUE":    {"bucket": "retire", "cite": "schema/02_horror.sql:389", "note": "Synthetic key generator for ENTITY_ATTR_VALUE.eav_id (CACHE 1000)."},
+
+    "JOB:JOB_NIGHTLY_DUNNING":  {"bucket": "migrate-as-logic", "cite": "schema/04_jobs.sql:10", "note": "02:00 daily: pkg_dunning.sp_schedule_dunning + sp_suspend_overdue; becomes a scheduled job in the billing service. Created DISABLED in the estate."},
+    "JOB:JOB_PURGE_AUDIT_LOG":  {"bucket": "retire", "cite": "schema/04_jobs.sql:21", "note": "03:30 daily DELETE of BILLING_AUDIT_LOG older than 90 days with EXCEPTION WHEN OTHERS THEN NULL; the retention requirement is met by a TTL index on logged_at (expireAfterSeconds = 90 days), the swallowed-error path is dropped."}
+  }
+}

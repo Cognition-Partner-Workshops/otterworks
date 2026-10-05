@@ -116,3 +116,6 @@ __pycache__/
 incident/.state/
 incident/reports/
 !infrastructure/helm/tenant-values/**/eventing.env
+
+# Legacy seed manifests (runtime artifacts)
+testdata/legacy/manifests/*.json

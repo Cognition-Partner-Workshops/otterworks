@@ -1,0 +1,48 @@
+{
+  "kind": "access-patterns",
+  "plan_step": "s2.2-access-patterns",
+  "source": "services/legacy-billing/app/backends/oracle.py",
+  "census": "migration/billing/census.json",
+  "entrypoints": {
+    "list_plans":       {"plsql": "pkg_plans.fn_list_plans",           "wrapper": "_function",  "reads": ["plans"], "writes": [], "audit": true,  "atomic_unit": null},
+    "entitlement":      {"plsql": "pkg_plans.fn_entitlement",          "wrapper": "_function",  "reads": ["tenants", "subscriptions", "plans"], "writes": [], "audit": false, "atomic_unit": null},
+    "change_plan":      {"plsql": "pkg_plans.sp_change_plan",          "wrapper": "custom",     "reads": ["subscriptions"], "writes": ["subscriptions", "subscriptions_hist"], "audit": true, "atomic_unit": ["subscriptions", "subscriptions_hist"]},
+    "usage_rating":     {"plsql": "pkg_rating.fn_usage_rating",        "wrapper": "_function",  "reads": ["subscriptions", "plans", "usage_events", "rating_results", "rating_periods"], "writes": [], "audit": true, "atomic_unit": null},
+    "usage_summary":    {"plsql": "pkg_rating.fn_usage_summary",       "wrapper": "_function",  "reads": ["usage_events"], "writes": [], "audit": false, "atomic_unit": null},
+    "finalize_rating":  {"plsql": "pkg_rating.sp_finalize_rating",     "wrapper": "_procedure", "reads": ["subscriptions", "plans", "usage_events", "rating_results", "rating_periods"], "writes": ["rating_periods", "rating_results"], "audit": true, "atomic_unit": ["rating_periods", "rating_results"]},
+    "invoice_preview":  {"plsql": "pkg_invoicing.fn_invoice_preview",  "wrapper": "_function",  "reads": ["subscriptions", "plans", "credit_notes", "tenants", "usage_events", "rating_results", "rating_periods"], "writes": [], "audit": true, "atomic_unit": null},
+    "issue_invoice":    {"plsql": "pkg_invoicing.sp_issue_invoice",    "wrapper": "_procedure", "reads": ["subscriptions", "plans", "credit_notes", "tenants", "usage_events", "rating_results", "rating_periods"], "writes": ["rating_periods", "rating_results", "invoices", "invoice_lines", "credit_notes"], "audit": true, "atomic_unit": ["rating_periods", "rating_results", "invoices", "invoice_lines", "credit_notes"]},
+    "invoice_lines":    {"plsql": "pkg_invoicing.fn_invoice_lines",    "wrapper": "_function",  "reads": ["invoice_lines"], "writes": [], "audit": false, "atomic_unit": null},
+    "overdue":          {"plsql": "pkg_dunning.fn_overdue_accounts",   "wrapper": "_function",  "reads": ["invoices", "tenants"], "writes": [], "audit": false, "atomic_unit": null},
+    "schedule_dunning": {"plsql": "pkg_dunning.sp_schedule_dunning",   "wrapper": "_procedure", "reads": ["invoices", "dunning_attempts"], "writes": ["dunning_attempts"], "audit": true, "atomic_unit": ["dunning_attempts"]},
+    "suspend_overdue":  {"plsql": "pkg_dunning.sp_suspend_overdue",    "wrapper": "_procedure", "reads": ["invoices", "tenants"], "writes": ["tenants", "subscriptions", "subscriptions_hist", "notifications"], "audit": true, "atomic_unit": ["tenants", "subscriptions", "subscriptions_hist", "notifications"]}
+  },
+  "package_tables": {
+    "PKG_OW_UTIL":   {"static": ["BILLING_AUDIT_LOG"], "dynamic_sql_only": ["CODES"]},
+    "PKG_PLANS":     {"static": ["PLANS", "SUBSCRIPTIONS", "TENANTS"], "dynamic_sql_only": []},
+    "PKG_RATING":    {"static": ["PLANS", "RATING_PERIODS", "RATING_RESULTS", "SUBSCRIPTIONS", "USAGE_EVENTS"], "dynamic_sql_only": []},
+    "PKG_INVOICING": {"static": ["CREDIT_NOTES", "INVOICES", "INVOICE_LINES", "PLANS", "SUBSCRIPTIONS", "TENANTS"], "dynamic_sql_only": []},
+    "PKG_DUNNING":   {"static": ["DUNNING_ATTEMPTS", "INVOICES", "NOTIFICATIONS", "SUBSCRIPTIONS", "TENANTS"], "dynamic_sql_only": []}
+  },
+  "table_sites": {
+    "codes":                {"reads": 9, "writes": 0},
+    "tenants":              {"reads": 6, "writes": 2},
+    "plans":                {"reads": 6, "writes": 0},
+    "subscriptions":        {"reads": 6, "writes": 5},
+    "subscriptions_hist":   {"reads": 0, "writes": 1},
+    "usage_events":         {"reads": 3, "writes": 1},
+    "rating_periods":       {"reads": 2, "writes": 2},
+    "rating_results":       {"reads": 1, "writes": 2},
+    "invoices":             {"reads": 5, "writes": 3},
+    "invoice_lines":        {"reads": 1, "writes": 2},
+    "credit_notes":         {"reads": 2, "writes": 1},
+    "dunning_attempts":     {"reads": 2, "writes": 1},
+    "notifications":        {"reads": 1, "writes": 1},
+    "billing_audit_log":    {"reads": 0, "writes": 2},
+    "customer_master":      {"reads": 3, "writes": 0},
+    "customer_master_hist": {"reads": 0, "writes": 1},
+    "entity_attr_value":    {"reads": 1, "writes": 0},
+    "invoice_header":       {"reads": 2, "writes": 0},
+    "invoice_line":         {"reads": 1, "writes": 0}
+  }
+}

@@ -1,0 +1,46 @@
+name: Billing migration harness
+
+on:
+  push:
+    paths:
+      - "migration/billing/**"
+      - "services/legacy-billing/**"
+      - "scripts/tp_validate.py"
+      - "scripts/tp-run-branch.sh"
+      - "docs/tech-partnerships/contracts/schema/**"
+      - ".github/workflows/migration-billing.yml"
+  pull_request:
+    paths:
+      - "migration/billing/**"
+      - "services/legacy-billing/**"
+      - "scripts/tp_validate.py"
+      - "scripts/tp-run-branch.sh"
+      - "docs/tech-partnerships/contracts/schema/**"
+      - ".github/workflows/migration-billing.yml"
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    env:
+      # The runner's system python exposes dist-packages (an old pyOpenSSL that
+      # breaks pymongo's import); a uv-managed interpreter keeps the env clean.
+      UV_PYTHON_PREFERENCE: only-managed
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: shellcheck migration/billing/scripts/*.sh migration/billing/env/postsetup-check.sh scripts/tp-run-branch.sh
+      - run: make tp-validate-schemas
+      - run: uv run --no-project --with pytest==8.3.5 --with oracledb==2.5.1 --with pymongo==4.10.1 --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4 python3 -m pytest -q migration/billing/recon/tests
+      - run: make tp-recon-selftest
+      - run: uv run --no-project --with pytest==8.3.5 --with Flask==3.1.1 --with 'psycopg[binary]==3.2.9' --with oracledb==2.5.1 --with pymongo==4.10.1 --with pyyaml==6.0.2 python3 -m pytest -q services/legacy-billing/tests
+      - name: Atlas scope check fails closed without MONGODB_ATLAS_URI
+        run: |
+          set +e
+          env -u MONGODB_ATLAS_URI migration/billing/scripts/atlas-scope-check.sh --db ow_tp_billing_ci; a=$?
+          MONGODB_ATLAS_URI= migration/billing/scripts/atlas-scope-check.sh --db ow_tp_billing_ci; b=$?
+          env -u MONGODB_ATLAS_URI migration/billing/scripts/atlas-scope-check.sh --db 'mongodb+srv://u:p@h/x'; c=$?
+          echo "unset=$a empty=$b uri-arg=$c"
+          [ "$a" = 2 ] && [ "$b" = 2 ] && [ "$c" = 2 ]
