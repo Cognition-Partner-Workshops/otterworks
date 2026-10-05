@@ -11,6 +11,7 @@ export interface User {
   createdAt: string;
   department?: string;
   documentsCount: number;
+  fileCount?: number;
 }
 
 export interface UserActivity {

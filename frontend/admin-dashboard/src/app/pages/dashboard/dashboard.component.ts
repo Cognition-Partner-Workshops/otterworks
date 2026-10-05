@@ -8,7 +8,7 @@ import { ChartConfiguration } from 'chart.js';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminApiService } from '../../core/services/admin-api.service';
-import { DashboardStats } from '../../core/models/analytics.model';
+import { DashboardStats, StorageUsage } from '../../core/models/analytics.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -51,12 +51,9 @@ import { DashboardStats } from '../../core/models/analytics.model';
           <mat-card class="stat-card">
             <mat-icon class="stat-icon storage-icon">cloud</mat-icon>
             <div class="stat-info">
-              <span class="stat-label">Storage Used</span>
-              <span class="stat-value">{{ stats.storageUsed }}</span>
-              <span class="stat-growth" [class.positive]="stats.storageGrowth > 0" [class.negative]="stats.storageGrowth < 0">
-                <mat-icon>{{ stats.storageGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                {{ stats.storageGrowth }}%
-              </span>
+              <span class="stat-label">Storage used</span>
+              <span class="stat-value">{{ storageUsage?.storageUsed || (storageUnavailable ? 'Unavailable' : '—') }}</span>
+              <span class="stat-subtitle" *ngIf="storageUsage">{{ storageUsage.fileCount | number }} files</span>
             </div>
           </mat-card>
 
@@ -165,6 +162,8 @@ import { DashboardStats } from '../../core/models/analytics.model';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   stats: DashboardStats | null = null;
+  storageUsage: StorageUsage | null = null;
+  storageUnavailable = false;
   loading = true;
 
   signupChartData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [] };
@@ -188,6 +187,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadStats();
+    this.loadStorageUsage();
 
     this.api.statsChanged$
       .pipe(takeUntil(this.destroy$))
@@ -225,6 +225,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api.getDashboardStats().subscribe((stats: DashboardStats) => {
       this.stats = stats;
       this.loading = false;
+    });
+  }
+
+  private loadStorageUsage(): void {
+    this.api.getStorageUsage().subscribe({
+      next: usage => {
+        this.storageUsage = usage;
+        this.storageUnavailable = false;
+      },
+      error: () => {
+        this.storageUnavailable = true;
+      },
     });
   }
 }

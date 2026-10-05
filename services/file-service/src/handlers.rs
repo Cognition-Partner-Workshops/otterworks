@@ -24,6 +24,73 @@ use crate::models::{
 };
 use crate::storage::S3Client;
 
+#[derive(Debug, serde::Deserialize)]
+pub struct UsageRequest {
+    owner_ids: Vec<String>,
+}
+
+#[derive(Debug, serde::Serialize, PartialEq, Eq)]
+struct OwnerUsage {
+    owner_id: Uuid,
+    file_count: u64,
+    total_bytes: u64,
+}
+
+#[derive(Debug, serde::Serialize, PartialEq, Eq)]
+struct UsageResponse {
+    file_count: u64,
+    total_bytes: u64,
+    owners: Vec<OwnerUsage>,
+}
+
+fn build_usage_response(owners: Vec<OwnerUsage>) -> UsageResponse {
+    let file_count = owners.iter().map(|owner| owner.file_count).sum();
+    let total_bytes = owners.iter().map(|owner| owner.total_bytes).sum();
+
+    UsageResponse {
+        file_count,
+        total_bytes,
+        owners,
+    }
+}
+
+pub async fn usage(
+    meta: web::Data<MetadataClient>,
+    body: web::Json<UsageRequest>,
+) -> Result<HttpResponse, ServiceError> {
+    if body.owner_ids.len() > 100 {
+        return Err(ServiceError::BadRequest(
+            "owner_ids must contain at most 100 entries".into(),
+        ));
+    }
+
+    let mut seen = std::collections::HashSet::new();
+    let owner_ids = body
+        .owner_ids
+        .iter()
+        .map(|owner_id| {
+            owner_id.parse::<Uuid>().map_err(|e| {
+                ServiceError::BadRequest(format!("invalid owner_id '{owner_id}': {e}"))
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .filter(|owner_id| seen.insert(*owner_id))
+        .collect::<Vec<_>>();
+
+    let mut owners = Vec::with_capacity(owner_ids.len());
+    for owner_id in owner_ids {
+        let (file_count, total_bytes) = meta.usage_for_owner(&owner_id).await?;
+        owners.push(OwnerUsage {
+            owner_id,
+            file_count,
+            total_bytes,
+        });
+    }
+
+    Ok(HttpResponse::Ok().json(build_usage_response(owners)))
+}
+
 // -- Health & Metrics --
 
 pub async fn health() -> HttpResponse {
@@ -710,6 +777,78 @@ pub async fn list_activity(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use actix_web::ResponseError;
+
+    fn metadata_client() -> web::Data<MetadataClient> {
+        let aws_config = aws_config::SdkConfig::builder()
+            .behavior_version(aws_config::BehaviorVersion::latest())
+            .region(aws_config::Region::new("us-east-1"))
+            .build();
+
+        web::Data::new(MetadataClient {
+            client: aws_sdk_dynamodb::Client::new(&aws_config),
+            files_table: "files".into(),
+            folders_table: "folders".into(),
+            versions_table: "versions".into(),
+            shares_table: "shares".into(),
+        })
+    }
+
+    #[test]
+    fn test_build_usage_response_totals_and_order() {
+        let first_owner = Uuid::new_v4();
+        let second_owner = Uuid::new_v4();
+        let response = build_usage_response(vec![
+            OwnerUsage {
+                owner_id: first_owner,
+                file_count: 2,
+                total_bytes: 1024,
+            },
+            OwnerUsage {
+                owner_id: second_owner,
+                file_count: 0,
+                total_bytes: 0,
+            },
+        ]);
+
+        assert_eq!(response.file_count, 2);
+        assert_eq!(response.total_bytes, 1024);
+        assert_eq!(response.owners[0].owner_id, first_owner);
+        assert_eq!(response.owners[1].owner_id, second_owner);
+        assert_eq!(response.owners[1].file_count, 0);
+    }
+
+    #[actix_rt::test]
+    async fn test_usage_rejects_invalid_owner_id() {
+        let result = usage(
+            metadata_client(),
+            web::Json(UsageRequest {
+                owner_ids: vec!["not-a-uuid".into()],
+            }),
+        )
+        .await;
+
+        assert_eq!(
+            result.unwrap_err().error_response().status(),
+            actix_web::http::StatusCode::BAD_REQUEST
+        );
+    }
+
+    #[actix_rt::test]
+    async fn test_usage_rejects_more_than_100_owner_ids() {
+        let result = usage(
+            metadata_client(),
+            web::Json(UsageRequest {
+                owner_ids: (0..101).map(|_| Uuid::new_v4().to_string()).collect(),
+            }),
+        )
+        .await;
+
+        assert_eq!(
+            result.unwrap_err().error_response().status(),
+            actix_web::http::StatusCode::BAD_REQUEST
+        );
+    }
 
     #[actix_rt::test]
     async fn test_health_endpoint() {

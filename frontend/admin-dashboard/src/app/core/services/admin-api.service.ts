@@ -6,7 +6,7 @@ import { AuditEvent } from '../models/audit.model';
 import { FeatureFlag } from '../models/feature-flag.model';
 import { Announcement } from '../models/announcement.model';
 import { ServiceHealth } from '../models/system-health.model';
-import { DashboardStats, AnalyticsReport, ChartDataPoint } from '../models/analytics.model';
+import { DashboardStats, AnalyticsReport, ChartDataPoint, StorageUsage } from '../models/analytics.model';
 import { Incident } from '../models/incident.model';
 
 // Service metadata not available from the health endpoint — kept here for display purposes
@@ -42,6 +42,25 @@ export class AdminApiService {
   getDashboardStats(): Observable<DashboardStats> {
     return this.http.get<any>(`${this.baseUrl}/admin/metrics/summary`).pipe(
       map(res => this.mapDashboardStats(res)),
+    );
+  }
+
+  getStorageUsage(): Observable<StorageUsage> {
+    return this.http.get<any>(`${this.baseUrl}/admin/storage/usage`).pipe(
+      map(res => {
+        const byUser = Object.fromEntries(
+          (res.users || []).map((user: any) => [
+            user.user_id,
+            { fileCount: user.file_count, totalBytes: user.total_bytes },
+          ]),
+        );
+        return {
+          totalBytes: res.total_bytes,
+          fileCount: res.file_count,
+          storageUsed: this.formatBytes(res.total_bytes),
+          byUser,
+        };
+      }),
     );
   }
 

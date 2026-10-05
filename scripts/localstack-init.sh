@@ -53,8 +53,12 @@ awslocal sns subscribe \
 # DynamoDB Tables
 table_exists otterworks-file-metadata || awslocal dynamodb create-table \
   --table-name otterworks-file-metadata \
-  --attribute-definitions AttributeName=id,AttributeType=S \
+  --attribute-definitions \
+    AttributeName=id,AttributeType=S \
+    AttributeName=owner_id,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
+  --global-secondary-indexes \
+    '[{"IndexName":"owner-index","KeySchema":[{"AttributeName":"owner_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"ALL"}}]' \
   --billing-mode PAY_PER_REQUEST
 
 table_exists otterworks-audit-events || awslocal dynamodb create-table \

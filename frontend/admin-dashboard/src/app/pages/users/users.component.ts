@@ -103,6 +103,11 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
             <td mat-cell *matCellDef="let user">{{ user.lastLogin ? (user.lastLogin | date:'short') : 'Never' }}</td>
           </ng-container>
 
+          <ng-container matColumnDef="fileCount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Files</th>
+            <td mat-cell *matCellDef="let user">{{ user.fileCount == null ? '—' : (user.fileCount | number) }}</td>
+          </ng-container>
+
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let user">
@@ -176,7 +181,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
   `],
 })
 export class UsersComponent implements OnInit {
-  displayedColumns = ['displayName', 'role', 'status', 'department', 'lastLogin', 'actions'];
+  displayedColumns = ['displayName', 'role', 'status', 'department', 'lastLogin', 'fileCount', 'actions'];
   dataSource = new MatTableDataSource<User>([]);
   loading = true;
   roleFilter = '';
@@ -207,6 +212,17 @@ export class UsersComponent implements OnInit {
       this.dataSource.data = users;
       this.loading = false;
       this.setupFilterPredicate();
+      this.api.getStorageUsage().subscribe({
+        next: usage => {
+          this.dataSource.data = users.map(user => ({
+            ...user,
+            fileCount: usage.byUser[user.id]?.fileCount ?? 0,
+          }));
+        },
+        error: () => {
+          this.dataSource.data = users.map(user => ({ ...user, fileCount: undefined }));
+        },
+      });
     });
   }
 

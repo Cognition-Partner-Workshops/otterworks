@@ -362,6 +362,7 @@ services:
       REDIS_PORT: 6379
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: admin-service
+      FILE_SERVICE_URL: http://file-service:8082
       RAILS_ENV: development
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
       DATABASE_URL: postgres://otterworks:otterworks_dev@postgres:5432/otterworks
@@ -531,4 +532,3 @@ networks:
 volumes:
   postgres_data: null
   localstack_data: null
-

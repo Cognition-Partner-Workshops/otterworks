@@ -9,6 +9,13 @@ export interface DashboardStats {
   sessionsGrowth: number;
 }
 
+export interface StorageUsage {
+  totalBytes: number;
+  fileCount: number;
+  storageUsed: string;
+  byUser: Record<string, { fileCount: number; totalBytes: number }>;
+}
+
 export interface ChartDataPoint {
   label: string;
   value: number;

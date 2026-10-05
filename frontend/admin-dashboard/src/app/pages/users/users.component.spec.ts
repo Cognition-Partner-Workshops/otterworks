@@ -1,63 +1,88 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { of, throwError } from 'rxjs';
+import { AdminApiService } from '../../core/services/admin-api.service';
+import { User } from '../../core/models/user.model';
 import { UsersComponent } from './users.component';
 
 describe('UsersComponent', () => {
   let component: UsersComponent;
   let fixture: ComponentFixture<UsersComponent>;
+  let api: jasmine.SpyObj<AdminApiService>;
+
+  const user: User = {
+    id: 'user-1',
+    email: 'user@example.com',
+    displayName: 'Test User',
+    role: 'admin',
+    status: 'active',
+    storageUsed: 0,
+    storageQuota: 1024,
+    lastLogin: '2026-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
+    documentsCount: 0,
+  };
 
   beforeEach(async () => {
+    api = jasmine.createSpyObj<AdminApiService>('AdminApiService', ['getUsers', 'getStorageUsage']);
+    api.getUsers.and.returnValue(of([user]));
+    api.getStorageUsage.and.returnValue(of({
+      totalBytes: 2048,
+      fileCount: 3,
+      storageUsed: '2 KB',
+      byUser: { 'user-1': { fileCount: 3, totalBytes: 2048 } },
+    }));
+
     await TestBed.configureTestingModule({
       imports: [
         UsersComponent,
-        HttpClientTestingModule,
         RouterTestingModule,
         NoopAnimationsModule,
       ],
+      providers: [{ provide: AdminApiService, useValue: api }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UsersComponent);
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
+  it('creates and loads users', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should start with loading state', () => {
     expect(component.loading).toBeTrue();
-  });
-
-  it('should load users', fakeAsync(() => {
-    fixture.detectChanges();
-    tick(700);
     fixture.detectChanges();
     expect(component.loading).toBeFalse();
-    expect(component.dataSource.data.length).toBeGreaterThan(0);
-  }));
-
-  it('should have correct displayed columns', () => {
-    expect(component.displayedColumns).toEqual([
-      'displayName', 'role', 'status', 'department', 'lastLogin', 'actions',
-    ]);
+    expect(component.dataSource.data.length).toBe(1);
+    expect(component.dataSource.data[0].fileCount).toBe(3);
   });
 
-  it('should apply text filter', fakeAsync(() => {
+  it('adds a sortable Files column after the existing columns', () => {
+    expect(component.displayedColumns).toEqual([
+      'displayName', 'role', 'status', 'department', 'lastLogin', 'fileCount', 'actions',
+    ]);
     fixture.detectChanges();
-    tick(700);
-    fixture.detectChanges();
-    const event = { target: { value: 'alice' } } as unknown as Event;
-    component.applyFilter(event);
-    expect(component.dataSource.filter).toBe('alice');
-  }));
 
-  it('should display page title', fakeAsync(() => {
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('th[mat-sort-header]')) as HTMLElement[];
+    const header = headers.find(element => element.textContent?.trim() === 'Files');
+    expect(header).toBeTruthy();
+    const fileCell = fixture.nativeElement.querySelector('td.mat-column-fileCount') as HTMLElement;
+    expect(fileCell.textContent?.trim()).toBe('3');
+  });
+
+  it('shows an em dash when the usage request fails', () => {
+    api.getStorageUsage.and.returnValue(throwError(() => new Error('file service unavailable')));
     fixture.detectChanges();
-    tick(700);
+
+    const fileCell = fixture.nativeElement.querySelector('td.mat-column-fileCount') as HTMLElement;
+    expect(fileCell.textContent?.trim()).toBe('—');
+  });
+
+  it('applies a text filter and displays the page title', () => {
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('User Management');
-  }));
+
+    const event = { target: { value: 'test user' } } as unknown as Event;
+    component.applyFilter(event);
+    expect(component.dataSource.filter).toBe('test user');
+    expect(fixture.nativeElement.textContent).toContain('User Management');
+  });
 });

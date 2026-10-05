@@ -45,6 +45,49 @@ impl MetadataClient {
         }
     }
 
+    pub async fn usage_for_owner(&self, owner_id: &Uuid) -> Result<(u64, u64), ServiceError> {
+        let mut file_count = 0;
+        let mut total_bytes = 0;
+        let mut last_evaluated_key = None;
+
+        loop {
+            let page = self
+                .client
+                .query()
+                .table_name(&self.files_table)
+                .index_name("owner-index")
+                .key_condition_expression("#owner_id = :owner_id")
+                .expression_attribute_names("#owner_id", "owner_id")
+                .expression_attribute_values(":owner_id", AttributeValue::S(owner_id.to_string()))
+                .projection_expression("size_bytes")
+                .set_exclusive_start_key(last_evaluated_key)
+                .send()
+                .await
+                .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+
+            for item in page.items() {
+                let size_bytes = item
+                    .get("size_bytes")
+                    .and_then(|value| value.as_n().ok())
+                    .and_then(|size| size.parse::<u64>().ok())
+                    .ok_or_else(|| {
+                        ServiceError::DynamoError(
+                            "file metadata item has invalid size_bytes".into(),
+                        )
+                    })?;
+                file_count += 1;
+                total_bytes += size_bytes;
+            }
+
+            last_evaluated_key = page.last_evaluated_key().cloned();
+            if !matches!(last_evaluated_key.as_ref(), Some(key) if !key.is_empty()) {
+                break;
+            }
+        }
+
+        Ok((file_count, total_bytes))
+    }
+
     // -- File Metadata --
 
     pub async fn put_file(&self, file: &FileMetadata) -> Result<(), ServiceError> {
