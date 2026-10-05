@@ -35,6 +35,7 @@ jobs:
       web-app: ${{ steps.changes.outputs.web-app }}
       admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
       demo-platform: ${{ steps.changes.outputs.demo-platform }}
+      cloudworker: ${{ steps.changes.outputs.cloudworker }}
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
@@ -72,6 +73,8 @@ jobs:
             demo-platform:
               - 'demo-platform/**'
               - 'scripts/**'
+            cloudworker:
+              - 'cloudworker/**'
             infrastructure:
               - 'infrastructure/**'
             report-service:
@@ -376,6 +379,16 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
+
+  # Offline cloud-worker drift comparison across its Terraform-owned resources.
+  cloudworker:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.cloudworker == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - run: shellcheck cloudworker/drift.sh cloudworker/test-drift.sh
+      - run: ./cloudworker/test-drift.sh
 
   # The tenant control plane: dashboard typecheck/lint, plus the shell tests for
   # the reaper and idle-suspend. Those two decide what gets deleted and what gets

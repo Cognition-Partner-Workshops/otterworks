@@ -545,7 +545,7 @@ cw-arm: ## Plant the notification table fault and publish six file_shared events
 cw-status: ## Tenant pods, live vs git table, queue depths, alarm, helm history (JSON=1 for JSON)
 	$(CW) status $(if $(JSON),--json,)
 
-cw-drift: ## SQS drift between the account and the two Terraform roots; exits 1 on drift (JSON=1 for JSON)
+cw-drift: ## SQS, SNS, DynamoDB and alarm drift against Terraform; exits 1 on drift (JSON=1 for JSON)
 	cloudworker/drift.sh $(if $(JSON),--json,)
 
 cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after)
