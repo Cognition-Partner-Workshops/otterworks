@@ -31,6 +31,7 @@ The user ids behind the personas, read from the session API on 2026-10-05:
 
 - `main` of `otterworks` is the golden app. Demo sessions push to their own branches and open pull requests against the branch the runbook names. Nobody merges a demo pull request during a demo, and the pull requests that remove a planted fault (the parser fix, the table startup check) stay open for good.
 - Credentials are named by environment variable only. A runbook that needs a secret the org does not hold says so in its preflight and stops there.
+- Each persona sits in the uncapped `FieldKit` usage tier (Enterprise Settings, Usage policies). A persona left in the default tier has 100 ACU a cycle and every one of its sessions sleeps when that runs out; the legacy portal program spent that in about 40 minutes on 2026-10-05.
 - Account numbers are redacted as `<account>` in every transcript that leaves the operator machine.
 - Each runbook has a rerun log. Add a row every time you run it from a fresh session, with the date, the session link and what the runbook failed to say.
 

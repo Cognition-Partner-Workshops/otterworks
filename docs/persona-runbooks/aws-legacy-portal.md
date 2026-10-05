@@ -66,6 +66,7 @@ Each run token has its own Terraform state key, so two tokens can be up at once.
 - Aurora paused after 600 idle seconds: the first request wakes it in about 15 seconds and the replay tolerates that.
 - The Migration Agent reports `Unknown board ticket ids` right after approval: the board is still indexing; it retries on its own within a minute.
 - The stack-check worker says Aurora shows no Serverless v2 scaling settings: answer in the session with the operator's `make lp-status RUN=<token>` output, which reads `ServerlessV2ScalingConfiguration` with operator credentials.
+- Every session stops with `Devin went to sleep because your per-user ACU limit was exceeded`: the persona is in the enterprise default tier (100 ACU a cycle). Put it in the uncapped `FieldKit` tier under Enterprise Settings, Usage policies, or `PUT /v3beta1/enterprise/usage-policies/tiers/<FieldKit tier id>/users/<user id>`, then send the manager one message and it wakes the workers. Check the tier the day before; a program with five sessions spends 100 ACU in about 40 minutes.
 - The Migrations page is unavailable: run way A. The audience sees the same children and the same pull request.
 
 ## Talk track
