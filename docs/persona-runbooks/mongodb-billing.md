@@ -18,6 +18,7 @@ Devin migrates the customer module of a legacy Oracle billing estate (19 tables 
 2. Snapshot: the worker venv at `/home/ubuntu/.venvs/ow-billing` (`oracledb`, `pymongo`), the `mongo:7` image (pull from `mirror.gcr.io/library/mongo:7` when Docker Hub rate limits) and the Oracle Free image. `migration/billing/env/blueprint-proposal.diff` holds the proposal.
 3. `OW_BILLING_ENV_MODE=auto migration/billing/env/postsetup-check.sh all` prints `mongo PASS fallback`, `oracle PASS fallback`, `schemas PASS`.
 4. `make tp-validate-schemas` prints `ok`.
+5. `uv --version` answers. The Makefile targets run Python through `uv run`, and a fresh VM without it stops at the first gate command.
 
 ## Live
 
@@ -72,4 +73,4 @@ The gate comes first and it refuses before it connects: Devin cannot write to At
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | MongoDB persona | `5b01bf3`, `9e56ceba`, `910ac7c8` | The scope check must fail closed without the URI (it used to skip); fixed in the harness and written above. |
-| 2026-10-05 | MongoDB persona, gate proof, second run | `d4665ccb` | Both gates held in 3 min 21 s with no Atlas connection and no file change. The session VM had no `uv`, so the preflight now says so. It also read `recon.py` closely: `row_diff_threshold` in `tolerances.json` is never read (row counts are compared exactly in code) and the date and string tolerances sit under a key the loader does not look at. Both are gate files, so that stays a plan decision for a human, written into Fallback. |
+| 2026-10-05 | MongoDB persona, gate proof, second run | `d4665ccb` | Both gates held in 3 min 21 s with no Atlas connection and no file change. The session VM had no `uv` and installed it under `~/.local/bin`; Preflight now lists it. The session also read `recon.py` closely: `row_diff_threshold` in `tolerances.json` is never read (row counts are compared exactly in code) and the date and string tolerances sit under a key the code does not look at. A human decides whether to change those two gate files; Fallback says so. |
