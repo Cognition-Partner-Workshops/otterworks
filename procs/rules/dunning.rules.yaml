@@ -1,0 +1,172 @@
+module: dunning
+rules:
+  - id: DUNNING-001
+    statement: >-
+      The overdue-accounts listing returns every invoice whose status is 'overdue'
+      and whose issue date (issued_at cast to a UTC calendar date) is strictly before
+      the as-of date, joined to its tenant regardless of tenant status, with
+      days_overdue = as_of - issue date as a whole-day integer, ordered by issued_at
+      then invoice id.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [1, 18]
+    inputs: [as_of]
+    outputs: [tenant_id, invoice_id, total, days_overdue, tenant_status]
+    confidence: medium
+    scenarios: [DUNNING-001]
+    question: >-
+      Should the extraction keep (a) the strict "issued before as_of" boundary
+      (an invoice issued on as_of is excluded), (b) days_overdue counted from the
+      issue date rather than a due date, and (c) listing invoices of tenants that
+      are already suspended?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Boundary: SQL filters i.issued_at::date < p_as_of (exclusive); an overdue
+        invoice issued on the as-of date is not listed, so the minimum reported
+        days_overdue is 1. Overdue-ness is not computed here: the function trusts
+        invoices.status = 'overdue' and applies no payment terms or grace period;
+        days_overdue is measured from the issue date, not a due date. The
+        timestamptz->date cast uses the DB session TimeZone (Etc/UTC on the
+        recording stack), so the target must truncate issued_at in UTC. Rounding:
+        none - days_overdue is integer date subtraction and total is passed through
+        unchanged as stored numeric(12,2); no minimum-balance threshold, credit
+        notes or partial payments are considered. Transcript DUNNING-001 (as_of
+        2026-02-28) shows tenant 2 (status suspended) still listed with 27 days
+        (issued 2026-02-01) followed by tenant 5 with 15 days (issued 2026-02-13),
+        confirming issued_at ordering and no tenant-status filter. The scenario
+        captures only tenant_id and days_overdue; invoice_id, total and
+        tenant_status are returned but not graded. Preserved as recorded, follow-up ticket.
+  - id: DUNNING-002
+    statement: >-
+      Scheduling creates exactly one new attempt per overdue invoice per call, with
+      attempt_no = (highest existing attempt_no for that invoice, any status) + 1,
+      status 'scheduled', tenant_id taken from the invoice, and a deterministic id
+      md5(invoice_id::text || attempt_no::text) as uuid; it applies to every
+      'overdue' invoice regardless of issue date or tenant status.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [20, 51]
+    inputs: [as_of]
+    outputs: [dunning_attempts]
+    confidence: medium
+    scenarios: [DUNNING-002, DUNNING-003]
+    question: >-
+      Should the extraction keep the legacy behavior that every call appends a new
+      attempt (no per-day idempotency, no attempt cap, no minimum spacing from the
+      previous attempt, no issue-date filter, suspended tenants still dunned)?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Selection: WHERE i.status = 'overdue' only - unlike fn_overdue_accounts there
+        is no issued_at < as_of filter, so an invoice issued after as_of would still
+        be scheduled (not exercised by transcripts). Tenant status is not checked:
+        DUNNING-002/003 show invoice ...001 of suspended tenant 2 receiving attempt 1.
+        Attempt numbering: COALESCE(max(attempt_no), 0) + 1 counts attempts of any
+        status ('sent' included); DUNNING-002 shows invoice ...002 (attempt 1 'sent'
+        for 2026-02-16) get attempt 2 scheduled for 2026-02-16, i.e. the same date as
+        the prior attempt and even though as_of (2026-02-14) precedes it - no
+        cadence or ordering check. Idempotency: ON CONFLICT (invoice_id, attempt_no)
+        DO NOTHING can never fire in a single-session run because attempt_no is
+        always max+1, so calling the procedure twice on the same day creates
+        attempts N+1 and N+2 (not covered by a transcript). No maximum attempt
+        count, no dunning notification is written, no amount threshold, no
+        rounding (no monetary computation). Invoices are processed in issued_at,
+        id order; order has no observable effect on results. Preserved as recorded, follow-up ticket.
+  - id: DUNNING-003
+    statement: >-
+      A dunning attempt is scheduled for the as-of date, rolled forward to the
+      following Monday when the as-of date is a Saturday (+2 days) or Sunday
+      (+1 day); weekdays are kept unchanged.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [37, 42]
+    inputs: [as_of]
+    outputs: [scheduled_for]
+    confidence: high
+    scenarios: [DUNNING-002, DUNNING-003]
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Uses ISO day-of-week (isodow 6 = Saturday, 7 = Sunday) on the as-of date
+        itself. DUNNING-002: as_of 2026-02-14 (Saturday) -> scheduled_for 2026-02-16
+        (Monday) for both invoices. DUNNING-003: as_of 2026-02-17 (Tuesday) ->
+        2026-02-17 unchanged. No holiday calendar, no business-day offset from the
+        previous attempt, no tenant time zone; the roll-forward is the only date
+        adjustment.
+  - id: DUNNING-004
+    statement: >-
+      Suspension selects each distinct tenant with at least one 'overdue' invoice
+      whose issue date is on or before as_of - 14 days; for each such tenant that is
+      currently 'active' it sets the tenant status to 'suspended' and sets every
+      'active' subscription of that tenant to status 'suspended' with suspended_on =
+      as_of.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [53, 75]
+    inputs: [as_of]
+    outputs: [tenant_status, subscription_status, suspended_on]
+    confidence: medium
+    scenarios: [DUNNING-004]
+    question: >-
+      Is the 14-day suspension threshold intended to be inclusive (an invoice
+      issued exactly 14 days before as_of triggers suspension), measured from the
+      issue date, and independent of whether any dunning attempt was sent?
+    answer: "Approved: preserve the behavior recorded in the transcripts; no semantic change in this extraction."
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        Boundary: i.issued_at::date <= p_as_of - 14 is inclusive - an invoice
+        overdue for exactly 14 days (days_overdue as in DUNNING-001) suspends the
+        tenant; 13 days does not. The grace period is a hard-coded 14 calendar days
+        from the issue date (UTC date), with no weekend roll-forward and no
+        dependency on dunning_attempts (no attempt has to be sent or exhausted).
+        No amount threshold, credits or partial payments are considered and no
+        rounding is involved. Only subscriptions with status 'active' are touched
+        (cancelled ones are left; starts_on/ends_on are not checked). Already
+        suspended tenants are skipped entirely (EXISTS ... status = 'active'), so
+        their subscriptions keep their earlier suspended_on. DUNNING-004 (as_of
+        2026-02-28, cutoff 2026-02-14): tenant 5 (invoice issued 2026-02-13, 15
+        days) -> subscription suspended, suspended_on 2026-02-28; tenant 2
+        (already suspended, issued 2026-02-01) is skipped. The exact 14-day
+        boundary itself is not exercised by any transcript. Preserved as recorded, follow-up ticket.
+  - id: DUNNING-005
+    statement: >-
+      Each newly suspended tenant receives one 'suspension' notification with
+      sent_at = as_of at 00:00 UTC and id md5(tenant_id::text || 'suspension' ||
+      as_of::text) as uuid, inserted only if no suspension notification exists for
+      that tenant at that sent_at; repeating the run for the same as-of date neither
+      re-suspends nor duplicates the notification.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [65, 86]
+    inputs: [as_of]
+    outputs: [notifications]
+    confidence: high
+    scenarios: [DUNNING-004, DUNNING-005]
+    decision:
+      status: approved
+      reviewer: product-manager
+      date: "2026-10-05"
+      note: >-
+        p_as_of::timestamptz resolves midnight in the DB session TimeZone (Etc/UTC
+        on the recording stack); transcripts show sent_at 2026-02-28T00:00:00Z and
+        id 8cd558f5-d843-8d3d-be19-fb94c21ab81f for tenant 5 (verified =
+        md5('00000000-0000-0000-0000-000000000005suspension2026-02-28')). Two
+        guards give idempotency: the outer EXISTS status = 'active' check (a
+        tenant suspended by the first run is skipped on the second) and the inner
+        NOT EXISTS on (tenant_id, kind, sent_at). DUNNING-005 runs the procedure
+        twice for 2026-02-28 and shows exactly one suspension notification.
+        Tenants that were already suspended before the run (tenant 2) receive no
+        notification. No dunning-kind notification is produced by any dunning
+        entrypoint.
