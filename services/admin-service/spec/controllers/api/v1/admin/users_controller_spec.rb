@@ -28,6 +28,16 @@ RSpec.describe Api::V1::Admin::UsersController do
       expect(body['users'].all? { |u| u['status'] == 'suspended' }).to be true
     end
 
+    it 'includes last_login_at for each user' do
+      signed_in_user = create(:admin_user, last_login_at: Time.zone.parse('2026-10-05 09:30:00'))
+      get :index
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body['users'].all? { |u| u.key?('last_login_at') }).to be true
+      user_json = body['users'].find { |u| u['id'] == signed_in_user.id }
+      expect(Time.zone.parse(user_json['last_login_at'])).to eq(signed_in_user.last_login_at)
+    end
+
     it 'searches by query' do
       user = create(:admin_user, email: 'searchable@test.com')
       get :index, params: { q: 'searchable' }

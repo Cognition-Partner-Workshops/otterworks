@@ -1,5 +1,6 @@
 export interface DashboardStats {
   totalUsers: number;
+  signedInToday: number;
   activeDocuments: number;
   storageUsed: string;
   activeSessions: number;

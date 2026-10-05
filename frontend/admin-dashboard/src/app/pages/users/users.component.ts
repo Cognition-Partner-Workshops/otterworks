@@ -99,7 +99,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
           </ng-container>
 
           <ng-container matColumnDef="lastLogin">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Login</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Last sign-in</th>
             <td mat-cell *matCellDef="let user">{{ user.lastLogin ? (user.lastLogin | date:'short') : 'Never' }}</td>
           </ng-container>
 

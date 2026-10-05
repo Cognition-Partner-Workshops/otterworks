@@ -37,6 +37,15 @@ import { DashboardStats } from '../../core/models/analytics.model';
           </mat-card>
 
           <mat-card class="stat-card">
+            <mat-icon class="stat-icon signin-icon">login</mat-icon>
+            <div class="stat-info">
+              <span class="stat-label">Signed in today</span>
+              <span class="stat-value">{{ stats.signedInToday | number }}</span>
+              <span class="stat-caption">Since 00:00 UTC</span>
+            </div>
+          </mat-card>
+
+          <mat-card class="stat-card">
             <mat-icon class="stat-icon docs-icon">description</mat-icon>
             <div class="stat-info">
               <span class="stat-label">Active Documents</span>
@@ -137,10 +146,12 @@ import { DashboardStats } from '../../core/models/analytics.model';
     .docs-icon { background: #e8f5e9; color: #388e3c; }
     .storage-icon { background: #fff3e0; color: #f57c00; }
     .sessions-icon { background: #f3e5f5; color: #7b1fa2; }
+    .signin-icon { background: #e0f2f1; color: #00796b; }
 
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
     .stat-value { font-size: 1.8rem; font-weight: 700; color: #333; }
+    .stat-caption { font-size: 0.8rem; color: #999; }
 
     .stat-growth {
       display: flex;

@@ -148,4 +148,47 @@ describe('AdminApiService', () => {
       req.flush(null, { status: 204, statusText: 'No Content' });
     });
   });
+
+  describe('Dashboard stats mapping', () => {
+    let httpMock: HttpTestingController;
+
+    beforeEach(() => {
+      httpMock = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => {
+      httpMock.verify();
+    });
+
+    it('maps users.signed_in_today to signedInToday and defaults to 0 when absent', () => {
+      service.getDashboardStats().subscribe(stats => {
+        expect(stats.signedInToday).toBe(7);
+      });
+      const req = httpMock.expectOne('/api/v1/admin/metrics/summary');
+      expect(req.request.method).toBe('GET');
+      req.flush({ users: { total: 10, signed_in_today: 7 } });
+
+      service.getDashboardStats().subscribe(stats => {
+        expect(stats.signedInToday).toBe(0);
+      });
+      const req2 = httpMock.expectOne('/api/v1/admin/metrics/summary');
+      req2.flush({ users: { total: 10 } });
+    });
+
+    it('maps last_login_at to lastLogin, with empty string for null', () => {
+      service.getUsers().subscribe(users => {
+        expect(users[0].lastLogin).toBe('');
+        expect(users[1].lastLogin).toBe('2026-10-05T09:30:00Z');
+      });
+      const req = httpMock.expectOne('/api/v1/admin/users');
+      expect(req.request.method).toBe('GET');
+      req.flush({
+        users: [
+          { id: 'u1', email: 'a@test.com', last_login_at: null, created_at: '2026-01-01T00:00:00Z' },
+          { id: 'u2', email: 'b@test.com', last_login_at: '2026-10-05T09:30:00Z', created_at: '2026-01-01T00:00:00Z' },
+        ],
+        total: 2, page: 1, per_page: 20,
+      });
+    });
+  });
 });
