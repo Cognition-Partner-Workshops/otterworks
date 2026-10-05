@@ -74,13 +74,39 @@ class SqsConsumerTest {
     }
 
     @Test
-    fun `parseMessage rejects fields the schema does not declare`() {
+    fun `parseMessage parses the SNS envelope from the cloud-worker DLQ`() {
+        // Dead-letter body from otterworks-cw-notifications-dlq, account number replaced.
         val body = """
             {
-                "eventType": "file_shared",
+              "Type" : "Notification",
+              "MessageId" : "96475d9d-e9b3-5c35-a8aa-3ea08cb5acfc",
+              "TopicArn" : "arn:aws:sns:us-east-1:<account>:otterworks-cw-events",
+              "Message" : "{\"eventType\":\"file_shared\",\"fileId\":\"17c9ef4b-8fa2-4047-a66a-af973d61d67b\",\"ownerId\":\"5eed0001-0000-4000-a000-000000000001\",\"folderId\":null,\"sharedWithUserId\":\"5eed0002-0000-4000-a000-000000000002\",\"timestamp\":\"2026-10-05T08:41:41.650653+00:00\"}",
+              "Timestamp" : "2026-10-05T08:41:42.315Z",
+              "SignatureVersion" : "1",
+              "Signature" : "AKdnFEwI/aiaQMnL+NWCQRXzW90KXdOZe5PTSCfvWeZ9qqnbf1edEZet5E7dbKracfCsSrG4+D7AbMj3xC+faMEdHRpwArbr1mJKFv00o3TCo5c6lYRQNKwKUydioNNysbbEETUDIcUy/fIN1zDFi+DZ6DYUA5eOfIoqFTIyp3ZlXkrTeIcxfggD6bADTCgOaSr0/OKDaJlS8HpAga0PqZpfjGxl/A8bv/JsYrxGlW1wFvHRQ9swlpxv5m4yL2PdqKSwJP4pwHTrx+FvGt3O5pZZjW0one2RyQzat49gg0UoA9MVXVCwjeehZxO0mG8w/b5SE+8lgPUnaEsCbbjxgA==",
+              "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-1e59c4574facfe41babdb2d652f8ebef.pem",
+              "UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:<account>:otterworks-cw-events:7ab97102-bb50-4a79-a944-f017b10368d6",
+              "MessageAttributes" : {
+                "demoSource" : {"Type":"String","Value":"aws-cloud-worker"}
+              }
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("17c9ef4b-8fa2-4047-a66a-af973d61d67b", event.fileId)
+        assertEquals("5eed0001-0000-4000-a000-000000000001", event.ownerId)
+        assertEquals("5eed0002-0000-4000-a000-000000000002", event.sharedWithUserId)
+        assertEquals("2026-10-05T08:41:41.650653+00:00", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage rejects an event without the required eventType`() {
+        val body = """
+            {
                 "fileId": "file-123",
-                "ownerId": "owner-1",
-                "sharedWithUserId": "user-2",
                 "unexpectedField": "value",
                 "timestamp": "2024-01-01T00:00:00Z"
             }
