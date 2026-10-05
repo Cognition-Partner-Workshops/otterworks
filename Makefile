@@ -81,7 +81,7 @@ MONGO_BILLING_CONTAINER ?= ow-billing-mongo
 MONGO_BILLING_PORT ?= 27117
 MONGO_BILLING_URI = mongodb://127.0.0.1:$(MONGO_BILLING_PORT)/?directConnection=true
 ORACLE_BILLING_FIXTURE_DSN = ow_billing/ow_billing@localhost:$(ORACLE_BILLING_DB_PORT)/FREEPDB1
-MIGRATION_BILLING_UV = uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with flask==3.1.1 --with pyyaml==6.0.2
+MIGRATION_BILLING_UV = uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with flask==3.1.1 --with pyyaml==6.0.2 --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4
 MIGRATION_BILLING_FIXTURE_ENV = OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)'
 MIGRATION_BILLING_FIXTURE_ARGS = --oracle-dsn-env OW_TP_ORACLE_FIXTURE_DSN --mongo-uri-env OW_TP_MONGO_FIXTURE_URI $(if $(MIGRATION_DB),--mongo-db $(MIGRATION_DB),)
 
