@@ -2,6 +2,7 @@ import { DashboardStats, AnalyticsReport } from '../../models/analytics.model';
 
 export let MOCK_DASHBOARD_STATS: DashboardStats = {
   totalUsers: 1284,
+  signedInToday: 96,
   activeDocuments: 8742,
   storageUsed: '2.4 TB',
   activeSessions: 347,

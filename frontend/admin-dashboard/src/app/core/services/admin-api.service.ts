@@ -252,7 +252,7 @@ export class AdminApiService {
       avatarUrl: raw.avatar_url,
       storageUsed: quota?.used_bytes ?? 0,
       storageQuota: quota?.quota_bytes ?? 5 * 1024 * 1024 * 1024,
-      lastLogin: raw.last_login_at ?? raw.created_at,
+      lastLogin: raw.last_login_at ?? '',
       createdAt: raw.created_at,
       department: raw.metadata?.department ?? '',
       documentsCount: raw.metadata?.documents_count ?? 0,
@@ -388,6 +388,7 @@ export class AdminApiService {
     const usedBytes: number = storage.total_used_bytes ?? 0;
     return {
       totalUsers: users.total ?? 0,
+      signedInToday: users.signed_in_today ?? 0,
       activeDocuments: 0,  // not tracked by admin-service metrics
       storageUsed: this.formatBytes(usedBytes),
       activeSessions: users.active ?? 0,

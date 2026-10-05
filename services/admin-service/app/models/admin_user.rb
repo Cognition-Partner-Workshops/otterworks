@@ -13,6 +13,7 @@ class AdminUser < ApplicationRecord
   scope :active, -> { where(status: 'active') }
   scope :suspended, -> { where(status: 'suspended') }
   scope :by_role, ->(role) { where(role: role) }
+  scope :signed_in_since, ->(time) { where(last_login_at: time..) }
   scope :search, lambda { |query|
     where('email ILIKE :q OR display_name ILIKE :q', q: "%#{sanitize_sql_like(query)}%")
   }

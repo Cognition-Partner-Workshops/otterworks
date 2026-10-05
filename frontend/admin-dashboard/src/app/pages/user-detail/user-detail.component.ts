@@ -61,7 +61,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
               </div>
               <div class="detail-row">
                 <mat-icon>login</mat-icon>
-                <span>Last login: {{ user.lastLogin ? (user.lastLogin | date:'medium') : 'Never' }}</span>
+                <span>Last sign-in: {{ user.lastLogin ? (user.lastLogin | date:'medium') : 'Never' }}</span>
               </div>
               <div class="detail-row">
                 <mat-icon>description</mat-icon>

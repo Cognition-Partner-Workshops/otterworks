@@ -13,7 +13,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | `/api/v1/notifications` | Notification service | Notification listing and lifecycle. |
 | `/api/v1/search` | Search service | Search, suggest, advanced search, indexing. |
 | `/api/v1/analytics` | Analytics service | Event ingestion and aggregate metrics. |
-| `/api/v1/admin` | Admin service | User, quota, feature, announcement, audit-log, metrics, health admin APIs. |
+| `/api/v1/admin` | Admin service | User, quota, feature, announcement, audit-log, metrics, health admin APIs. See [Admin API](admin-api.md). |
 | `/api/v1/audit` | Audit service | Audit events, history, reports, export, archive. |
 
 ## Critical user-flow routes
