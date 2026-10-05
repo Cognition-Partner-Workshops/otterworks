@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Protocol
 from uuid import UUID, uuid5
 
@@ -110,3 +111,135 @@ def change_plan(
     )
     created = next(item for item in subscriptions if item.subscription_id == created_id)
     return subscriptions, created
+
+
+TAX_RATE = Decimal("0.0825")
+CENT = Decimal("0.01")
+ZERO = Decimal("0")
+
+
+@dataclass(frozen=True)
+class InvoiceLine:
+    line_no: int
+    line_type: str
+    description: str
+    amount: Decimal
+    tax_amount: Decimal
+    credit_applied: Decimal
+    total: Decimal
+
+
+@dataclass(frozen=True)
+class StoredInvoiceLine:
+    line_no: int
+    line_type: str
+    description: str
+    amount: Decimal
+
+
+@dataclass(frozen=True)
+class CreditNoteRow:
+    credit_id: UUID
+    issued_on: date
+    amount: Decimal
+    remaining_amount: Decimal
+
+
+@dataclass(frozen=True)
+class InvoiceTotals:
+    subtotal: Decimal
+    tax: Decimal
+    credit_applied: Decimal
+    total: Decimal
+
+
+def round_money(value: Decimal) -> Decimal:
+    return value.quantize(CENT, rounding=ROUND_HALF_UP)
+
+
+def md5_uuid(value: str) -> UUID:
+    return UUID(hashlib.md5(value.encode()).hexdigest())
+
+
+def rating_period_id(tenant_id: UUID, period_start: date) -> UUID:
+    return md5_uuid(f"{tenant_id}{period_start.isoformat()}")
+
+
+def invoice_id_for(period_id: UUID) -> UUID:
+    return md5_uuid(f"{period_id}invoice")
+
+
+def invoice_line_id(invoice_id: UUID, line_no: int) -> UUID:
+    return md5_uuid(f"{invoice_id}{line_no}")
+
+
+def available_credit(notes: list[CreditNoteRow]) -> Decimal:
+    return sum((note.remaining_amount for note in notes if note.remaining_amount > 0), ZERO)
+
+
+def preview_lines(
+    plan: PlanRow,
+    overage_amount: Decimal,
+    tax_exempt: bool | None,
+    credit_balance: Decimal,
+) -> list[InvoiceLine]:
+    tax = ZERO if tax_exempt else (plan.monthly_fee + overage_amount) * TAX_RATE
+    half_tax = tax / 2
+    credit = min(credit_balance, round_money(plan.monthly_fee + overage_amount + tax))
+    fee = round_money(plan.monthly_fee)
+    usage = round_money(overage_amount)
+    return [
+        InvoiceLine(1, "plan", plan.code, fee, ZERO, ZERO, fee),
+        InvoiceLine(2, "usage", "usage overage", usage, ZERO, ZERO, usage),
+        InvoiceLine(3, "tax", "regional tax", half_tax, ZERO, ZERO, half_tax),
+        InvoiceLine(4, "tax", "local tax", half_tax, ZERO, ZERO, half_tax),
+        InvoiceLine(5, "credit", "credit notes", ZERO, ZERO, credit, ZERO - credit),
+    ]
+
+
+def persisted_lines(lines: list[InvoiceLine]) -> list[StoredInvoiceLine]:
+    return [
+        StoredInvoiceLine(
+            line.line_no,
+            line.line_type,
+            line.description,
+            round_money(line.total if line.line_type == "credit" else line.amount),
+        )
+        for line in lines
+    ]
+
+
+def invoice_totals(lines: list[InvoiceLine]) -> InvoiceTotals:
+    subtotal = ZERO
+    tax = ZERO
+    credit = ZERO
+    for line in lines:
+        if line.line_type in ("plan", "usage"):
+            subtotal += round_money(line.amount)
+        elif line.line_type == "tax":
+            tax += round_money(line.amount)
+        elif line.line_type == "credit":
+            credit = line.credit_applied
+    return InvoiceTotals(
+        subtotal=round_money(subtotal),
+        tax=round_money(tax),
+        credit_applied=credit,
+        total=round_money(subtotal + tax - credit),
+    )
+
+
+def consume_credits(
+    notes: list[CreditNoteRow], credit_applied: Decimal
+) -> list[tuple[UUID, Decimal]]:
+    outstanding = credit_applied
+    updates: list[tuple[UUID, Decimal]] = []
+    open_notes = sorted(
+        (note for note in notes if note.remaining_amount > 0),
+        key=lambda note: (note.issued_on, note.credit_id),
+    )
+    for note in open_notes:
+        if outstanding <= 0:
+            break
+        updates.append((note.credit_id, max(note.remaining_amount - outstanding, ZERO)))
+        outstanding = max(outstanding - note.remaining_amount, ZERO)
+    return updates

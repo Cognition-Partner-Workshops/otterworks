@@ -15,7 +15,9 @@ rules:
     confidence: high
     scenarios: [INVOICE-001, INVOICE-002]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) period overlap is inclusive on both ends (starts_on <= period_end,
         ends_on >= period_start), so a subscription that ends on period_start still counts;
@@ -40,7 +42,9 @@ rules:
     confidence: medium
     scenarios: [INVOICE-001, INVOICE-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         The overage figure is delegated to the rating module (fn_usage_rating, being extracted
         by a sibling session). The invoicing target must reproduce rating's result for the
@@ -64,7 +68,9 @@ rules:
     confidence: medium
     scenarios: [INVOICE-001, INVOICE-002]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) rounding - the preview does not round tax: each half is v_tax / 2 at
         full numeric precision (tenant 6: 54.56 * 0.0825 = 4.5012 -> 2.2506 per line; tenant 9:
@@ -89,7 +95,9 @@ rules:
     confidence: medium
     scenarios: [INVOICE-001, INVOICE-002, INVOICE-003, INVOICE-004]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) credit notes are not filtered by date - every credit with
         remaining_amount > 0 is applied regardless of issued_on, including notes issued after
@@ -116,7 +124,9 @@ rules:
     confidence: high
     scenarios: [INVOICE-003, INVOICE-004, INVOICE-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) ON CONFLICT (id) DO UPDATE SET status = 'issued' means re-issuing a
         paid or overdue invoice silently resets it to 'issued'; proposal: mirror (no scenario
@@ -140,7 +150,9 @@ rules:
     confidence: medium
     scenarios: [INVOICE-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) the rounding of persisted tax lines is implicit - the procedure inserts
         the unrounded half and the numeric(12,2) column rounds it half away from zero (2.2506 ->
@@ -163,7 +175,9 @@ rules:
     confidence: medium
     scenarios: [INVOICE-003, INVOICE-004, INVOICE-005]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) rounding mode/precision - each tax half is rounded to 2 dp half away
         from zero (PostgreSQL numeric round) and the halves are summed, rather than rounding the
@@ -187,7 +201,9 @@ rules:
     confidence: high
     scenarios: [INVOICE-003, INVOICE-004]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguities: (a) ordering ties - equal issued_on is broken by id ascending (uuid
         order), confirmed by INVOICE-004 where 70000000-...-0001 is drained before ...-0002
@@ -210,7 +226,9 @@ rules:
     confidence: high
     scenarios: [INVOICE-006]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Plain read; no ambiguity in ordering (line_no is unique per invoice). Null handling: an
         unknown invoice id returns an empty list rather than an error; proposal: target returns

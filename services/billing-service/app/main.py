@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -13,7 +14,8 @@ from pydantic import BaseModel
 from app.config import settings
 from app.db import connect, migrate, reset
 from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.invoicing import NoSubscriptionError, issue_invoice, preview_invoice
+from app.repository import PostgresInvoicingRepository, PostgresPlansRepository
 
 
 @asynccontextmanager
@@ -35,6 +37,15 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class InvoicePeriod(BaseModel):
+    period_start: date
+    period_end: date
+
+
+def _money(value: Decimal) -> str:
+    return format(value, "f")
 
 
 @app.get("/health")
@@ -127,3 +138,73 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+@app.get("/api/tenants/{tenant_id}/invoices/preview")
+def get_invoice_preview(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    with connect() as connection:
+        try:
+            lines = preview_invoice(
+                PostgresInvoicingRepository(connection), tenant_id, period_start, period_end
+            )
+        except NoSubscriptionError as error:
+            raise HTTPException(status_code=404, detail="no subscription for period") from error
+    return [
+        {
+            "line_no": line.line_no,
+            "line_type": line.line_type,
+            "description": line.description,
+            "amount": _money(line.amount),
+            "tax_amount": _money(line.tax_amount),
+            "credit_applied": _money(line.credit_applied),
+            "total": _money(line.total),
+        }
+        for line in lines
+    ]
+
+
+@app.post("/api/tenants/{tenant_id}/invoices")
+def post_issue_invoice(tenant_id: Annotated[UUID, Path()], request: InvoicePeriod) -> dict:
+    with connect() as connection:
+        repository = PostgresInvoicingRepository(connection)
+        try:
+            issued = issue_invoice(
+                repository, tenant_id, request.period_start, request.period_end
+            )
+        except NoSubscriptionError as error:
+            raise HTTPException(status_code=404, detail="no subscription for period") from error
+        invoice_state = repository.invoice_state(issued.period_id)
+        credit_notes = repository.list_credit_notes(tenant_id)
+    return {
+        "invoice_id": str(issued.invoice_id),
+        "period_id": str(issued.period_id),
+        "invoice": invoice_state[0] if invoice_state else None,
+        "invoice_state": invoice_state,
+        "credit_notes": [
+            {
+                "credit_id": str(note.credit_id),
+                "issued_on": note.issued_on.isoformat(),
+                "remaining_amount": _money(note.remaining_amount),
+            }
+            for note in credit_notes
+        ],
+    }
+
+
+@app.get("/api/invoices/{invoice_id}/lines")
+def get_invoice_lines(invoice_id: Annotated[UUID, Path()]) -> list[dict]:
+    with connect() as connection:
+        lines = PostgresInvoicingRepository(connection).list_invoice_lines(invoice_id)
+    return [
+        {
+            "line_no": line.line_no,
+            "line_type": line.line_type,
+            "description": line.description,
+            "amount": _money(line.amount),
+        }
+        for line in lines
+    ]
