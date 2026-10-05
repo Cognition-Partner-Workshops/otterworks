@@ -1,6 +1,7 @@
 package com.otterworks.legacyportal.lambda.announcements;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Bounded context: announcements. Owns the {@code announcements} schema.
@@ -20,7 +21,7 @@ public class Announcement {
         this.title = title;
         this.body = body;
         this.published = published;
-        this.createdAt = Instant.now();
+        this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     public Long getId() {

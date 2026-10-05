@@ -23,7 +23,14 @@ import software.amazon.awssdk.services.rdsdata.model.SqlParameter;
  */
 public class DataApiAnnouncementRepository implements AnnouncementRepository {
 
-    private static final DateTimeFormatter TS_FORMAT = new DateTimeFormatterBuilder()
+    // Sends always carry the full microsecond precision Postgres stores; the Data API
+    // may hand a timestamp back with a shortened or absent fraction.
+    static final DateTimeFormatter TS_WRITE = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
+            .appendFraction(ChronoField.MICRO_OF_SECOND, 6, 6, true)
+            .toFormatter();
+
+    static final DateTimeFormatter TS_FORMAT = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ss")
             .optionalStart()
             .appendFraction(ChronoField.MICRO_OF_SECOND, 1, 6, true)
@@ -50,13 +57,13 @@ public class DataApiAnnouncementRepository implements AnnouncementRepository {
         if (announcement.getId() == null) {
             ExecuteStatementResponse response = execute(
                     "INSERT INTO " + table
-                            + " (title, body, published, created_at) VALUES (:title, :body, :published, :created_at)"
+                            + " (title, body, published, created_at) VALUES (:title, :body, :published, CAST(:created_at AS timestamp))"
                             + " RETURNING id, title, body, published, created_at",
                     params(announcement));
             return row(response.records().get(0));
         }
         execute("UPDATE " + table
-                        + " SET title = :title, body = :body, published = :published, created_at = :created_at"
+                        + " SET title = :title, body = :body, published = :published, created_at = CAST(:created_at AS timestamp)"
                         + " WHERE id = :id",
                 params(announcement));
         return announcement;
@@ -98,7 +105,7 @@ public class DataApiAnnouncementRepository implements AnnouncementRepository {
         params.add(param("body", Field.builder().stringValue(a.getBody()).build()));
         params.add(param("published", Field.builder().booleanValue(a.isPublished()).build()));
         params.add(param("created_at", Field.builder()
-                .stringValue(TS_FORMAT.format(LocalDateTime.ofInstant(a.getCreatedAt(), ZoneOffset.UTC)))
+                .stringValue(TS_WRITE.format(LocalDateTime.ofInstant(a.getCreatedAt(), ZoneOffset.UTC)))
                 .build()));
         return params;
     }
