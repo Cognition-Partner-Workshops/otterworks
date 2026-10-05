@@ -1,0 +1,187 @@
+module: rating
+rules:
+  - id: RATING-001
+    statement: Rating uses the tenant subscription that overlaps the period (starts_on <= period_end and ends_on null or >= period_start) with the latest starts_on, and that subscription's plan supplies included_units and overage_rate.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [31, 41]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [quota_units]
+    confidence: medium
+    scenarios: [RATING-001, RATING-003]
+    decision:
+      status: pending
+      note: >-
+        Ambiguous tie-break and null handling. The query is ORDER BY starts_on DESC LIMIT 1 with
+        no secondary key, so two overlapping subscriptions with the same starts_on resolve in an
+        unspecified order; the target will break ties by subscription id unless told otherwise.
+        Any status (active, suspended, cancelled) is eligible; status is not filtered. With no
+        overlapping subscription the procedure does not fail: the plan row is NULL, so quota_units
+        and overage_amount come back NULL while used/rollover/billable/tier units come back 0
+        (LEAST/GREATEST ignore NULLs). Confirm the target should reproduce that NULL/0 mix rather
+        than return 404.
+  - id: RATING-002
+    statement: Used units are the sum of the tenant's usage event units whose occurred_at date falls in the period, both ends inclusive, or 0 when there are none.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [43, 46]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units]
+    confidence: medium
+    scenarios: [RATING-001, RATING-004]
+    decision:
+      status: pending
+      note: >-
+        Boundary is inclusive on both ends (BETWEEN): RATING-004's event at 2026-02-28T10:00Z is
+        counted. The doubt is the day boundary: occurred_at is timestamptz and is cast with
+        ::date in the database session time zone, which is Etc/UTC on the legacy stack. An event
+        at 23:30 local time in a non-UTC zone could fall into a different period. The target will
+        bucket by the UTC calendar date unless a tenant time zone is required. All usage kinds are
+        summed together.
+  - id: RATING-003
+    statement: Rollover is the sum of rollover_units stored on the tenant's rating results whose period_start is within the three months before period_start (lower bound inclusive, current period excluded), capped at twice the current plan's included_units.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [48, 56]
+    inputs: [tenant_id, period_start]
+    outputs: [rollover_units]
+    confidence: medium
+    scenarios: [RATING-001, RATING-002]
+    decision:
+      status: pending
+      note: >-
+        Window is period_start - 3 months <= prior period_start < period_start, so for February
+        2026 the November, December and January periods all count (RATING-002: 100+100+100=300,
+        capped to 200). The cap is applied twice (once in the SELECT and again on v_rollover) with
+        the same value, so it is effectively one cap. Doubts: the cap uses the current plan's
+        included_units, not the plan in force when the rollover was earned; prior rollover is
+        never marked as consumed, so the same unused units can be credited in up to three later
+        periods; prior periods with no rating result contribute nothing. With no subscription the
+        cap is NULL and LEAST ignores it, giving the raw sum (0 when there is no history).
+  - id: RATING-004
+    statement: Billable units are used units minus rollover minus included units, floored at 0.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [57, 57]
+    inputs: [used_units, rollover_units, quota_units]
+    outputs: [billable_units]
+    confidence: high
+    scenarios: [RATING-001, RATING-002]
+    decision:
+      status: pending
+      note: >-
+        GREATEST(used - rollover - included, 0). Rollover and the included allowance are both
+        consumed before any unit is billable; the floor is applied once after both subtractions.
+        RATING-001 (260-0-100=160) and RATING-002 (260-200-100 -> 0) observe this directly. When
+        included_units is NULL (no subscription) GREATEST ignores the NULL and returns 0.
+  - id: RATING-005
+    statement: Billable units split into a first tier of up to 101 units and a second tier of everything beyond 101.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [58, 59]
+    inputs: [billable_units]
+    outputs: [first_tier_units, second_tier_units]
+    confidence: medium
+    scenarios: [RATING-004, RATING-005, RATING-006]
+    decision:
+      status: pending
+      note: >-
+        The tier boundary is the literal 101, not 100: 101 billable units stay entirely in tier 1
+        (RATING-004) and the 102nd unit is the first tier-2 unit (RATING-005). This looks like a
+        possible off-by-one against a "first 100 units" intent, but the procedure and the
+        transcripts use 101 and the target will reproduce 101. The split uses the pre-proration
+        billable units, and the tier unit outputs are never prorated (see RATING-007).
+  - id: RATING-006
+    statement: Overage amount is first-tier units times the plan overage rate plus second-tier units times 1.5 times the rate, rounded to 2 decimal places half away from zero.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [60, 60]
+    inputs: [first_tier_units, second_tier_units, overage_rate]
+    outputs: [overage_amount]
+    confidence: medium
+    scenarios: [RATING-003, RATING-004, RATING-006]
+    decision:
+      status: pending
+      note: >-
+        Rounding mode and precision matter: PostgreSQL numeric round(x, 2) rounds half away from
+        zero on exact decimals (101 x 0.055 = 5.555 -> 5.56 in RATING-004). Half-to-even
+        (banker's) rounding or binary floats would diverge on other ties, e.g. the 4.365 step in
+        RATING-003 would become 4.36 under half-to-even. The sum is computed in exact decimal and
+        rounded once at the end, not per tier. The 1.5
+        multiplier is hard-coded rather than coming from the plan. With a NULL plan the amount is
+        NULL.
+  - id: RATING-007
+    statement: When the subscription is suspended with suspended_on inside the period, billable units and overage amount are scaled by (period_end - suspended_on + 1) / (period_end - period_start + 1), units rounded to an integer and the amount rounded again to 2 decimals.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [62, 72]
+    inputs: [subscription_status, suspended_on, period_start, period_end]
+    outputs: [billable_units, overage_amount]
+    confidence: low
+    scenarios: [RATING-003]
+    decision:
+      status: pending
+      note: >-
+        Several real doubts. (1) Direction: the factor counts the days from the suspension date
+        through period end, inclusive, i.e. the suspended part of the period, not the active part
+        before it. In RATING-003 (suspended 2026-02-15 in February) both are 14/28, so the
+        scenario cannot tell the two apart; the procedure as written bills the suspended days.
+        (2) Proration is applied after tiering and after the amount was already rounded, so the
+        amount is rounded twice (8.7325 -> 8.73 -> x0.5 = 4.365 -> 4.37, half away from zero);
+        prorating the unrounded amount would give 4.37 as well here but can differ elsewhere.
+        (3) billable_units is rounded half away from zero to an integer, but first_tier_units and
+        second_tier_units are NOT prorated, so they no longer sum to billable_units (RATING-003:
+        101 + 99 vs 100). (4) It only applies when status = 'suspended' and suspended_on is set
+        and falls inside the period, both ends inclusive; cancelled subscriptions and suspensions
+        before the period are billed in full. The target will reproduce the procedure exactly.
+  - id: RATING-008
+    statement: Usage summary returns, for each usage kind with at least one event in the period (dates inclusive), the event count and summed units, ordered by kind.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [79, 93]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [kind, event_count, units]
+    confidence: high
+    scenarios: [RATING-007]
+    decision:
+      status: pending
+      note: >-
+        Kinds with no events are omitted rather than returned with zero. Ordering is by kind text
+        (api, compute, storage), which is unique per group so there are no ties. The same
+        inclusive, session-time-zone (UTC) date bucketing as RATING-002 applies.
+  - id: RATING-009
+    statement: Finalizing a period upserts the rating period keyed by (tenant_id, period_start) with the deterministic id md5(tenant_id || period_start), updating period_end on conflict.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [95, 118]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [rating_periods]
+    confidence: high
+    scenarios: [RATING-008]
+    decision:
+      status: pending
+      note: >-
+        Finalization is idempotent per (tenant, period_start): re-running it with a different
+        period_end overwrites period_end instead of creating a second period. The period row is
+        written before rating is computed, but the rollover window excludes the current
+        period_start, so the new row does not affect its own rating.
+  - id: RATING-010
+    statement: Finalizing stores one rating result per period with the computed used, quota, billable and overage values, but stores rollover_units as the unused allowance max(quota_units - used_units, 0), with created_at at period_end, upserting used/rollover/billable/overage on rerun.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [120, 137]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units, quota_units, rollover_units, billable_units, overage_amount]
+    confidence: medium
+    scenarios: [RATING-008]
+    decision:
+      status: pending
+      note: >-
+        The stored rollover_units is not the rollover returned by fn_usage_rating; it is the unused
+        included allowance carried forward to later periods. RATING-008 shows this: the rating
+        applied 200 rollover, but 0 is stored because 260 used exceeds the 100 quota. Applied
+        rollover is not persisted at all. On rerun the conflict update refreshes used, rollover,
+        billable and overage but keeps the original quota_units, subscription_id and created_at,
+        even if the plan changed. The result id is md5(period_id). If no subscription overlaps
+        the period the insert fails on the NOT NULL subscription_id (and NULL quota/overage), so
+        finalize errors rather than storing a row. The target will mirror all of this.
