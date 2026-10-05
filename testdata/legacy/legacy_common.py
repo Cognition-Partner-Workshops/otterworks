@@ -120,7 +120,7 @@ class Checksum:
         self.count = 0
 
     def add(self, line: str) -> None:
-        digest = hashlib.md5(line.encode()).digest()
+        digest = hashlib.md5(line.encode(), usedforsecurity=False).digest()
         self._total = (self._total + int.from_bytes(digest, "big")) % self._MOD
         self.count += 1
 

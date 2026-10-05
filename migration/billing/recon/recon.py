@@ -501,7 +501,7 @@ class OracleSource:
         with self._pool.acquire() as conn, conn.cursor() as cur:
             cur.execute("SET TRANSACTION READ ONLY")
             cur.arraysize = 5000
-            cur.execute(f"SELECT * FROM {self.schema}.{table}")
+            cur.execute(f"SELECT * FROM {self.schema}.{table}")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- identifiers from mapping_spec.json
             cols = [d[0].upper() for d in cur.description]
             out = [dict(zip(cols, r)) for r in cur.fetchall()]
             conn.rollback()

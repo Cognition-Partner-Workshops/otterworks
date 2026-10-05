@@ -125,7 +125,7 @@ def seed_slice(cur, manifest: dict, ns: str) -> dict:
         ("CUSTOMER_MASTER", "cust_id", "cur_bal_amt", "conversion_batch_no = :b"),
         ("INVOICE_LINE", "line_id", "amount", "batch_no = :b"),
     ):
-        h = hashlib.md5()
+        h = hashlib.md5(usedforsecurity=False)
         for k, a in sorted(rows(cur, f"SELECT {pk}, {amt} FROM {table} WHERE {where}", b=batch_no)):
             h.update(f"{k}:{a:.2f}\n".encode())
         checksums[table] = h.hexdigest()

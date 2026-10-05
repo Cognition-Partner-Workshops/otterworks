@@ -165,7 +165,7 @@ def reset_baseline(connection_handle) -> None:
     ids = ", ".join(f"'{tenant}'" for tenant in STATIC_TENANTS)
     with connection_handle.cursor() as cursor:
         for template in RESET_DELETES:
-            cursor.execute(template.format(ids=ids))
+            cursor.execute(template.format(ids=ids))  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- fixed templates, fixture tenant ids
         for statement in seed_statements():
             try:
                 cursor.execute(statement)
@@ -230,7 +230,7 @@ def run_scenario(
             after_call = overrides.get("after_call")
             if not after_call:
                 raise KeyError(f"{scenario['id']}: after_sql has no oracle after_call mapping")
-            cursor.execute(f"BEGIN {after_call}; END;")
+            cursor.execute(f"BEGIN {after_call}; END;")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- call text from the recorded scenario list
     if scenario.get("capture_query"):
         capture_query = overrides.get("capture_query")
         if not capture_query:

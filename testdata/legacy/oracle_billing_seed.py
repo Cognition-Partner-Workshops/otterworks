@@ -52,7 +52,7 @@ ITEM_DESCS = ["Monthly platform fee", "API overage", "Storage overage",
 
 
 def md5_uuid(s: str) -> str:
-    h = hashlib.md5(s.encode()).hexdigest()
+    h = hashlib.md5(s.encode(), usedforsecurity=False).hexdigest()
     return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
 
 
@@ -68,7 +68,7 @@ class Checksum:
     """md5 of ordered PK+amount columns (rows fed in PK order)."""
 
     def __init__(self):
-        self._h = hashlib.md5()
+        self._h = hashlib.md5(usedforsecurity=False)
 
     def add(self, pk: str, amount) -> None:
         self._h.update(f"{pk}:{amount}\n".encode())

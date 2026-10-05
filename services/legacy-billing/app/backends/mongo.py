@@ -80,7 +80,7 @@ def health():
 
 
 def f_md5_uuid(text):
-    hexdigest = hashlib.md5(str(text).encode("utf-8")).hexdigest()
+    hexdigest = hashlib.md5(str(text).encode("utf-8"), usedforsecurity=False).hexdigest()
     return f"{hexdigest[:8]}-{hexdigest[8:12]}-{hexdigest[12:16]}-{hexdigest[16:20]}-{hexdigest[20:]}"
 
 

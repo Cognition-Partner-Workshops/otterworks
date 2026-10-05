@@ -126,10 +126,10 @@ class Fixture:
                 f"WHEN NOT MATCHED THEN INSERT ({', '.join(cols)}) VALUES ({', '.join('x.' + c for c in cols)})"
             )
         with oracledb.connect(**self.dsn_kw) as conn, conn.cursor() as cur:
-            cur.execute(f"DELETE FROM subscriptions WHERE tenant_id IN ({ids}) AND id NOT IN ({', '.join(seed_ids)})")
+            cur.execute(f"DELETE FROM subscriptions WHERE tenant_id IN ({ids}) AND id NOT IN ({', '.join(seed_ids)})")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- integer ids from the fixture
             for merge in merges:
                 cur.execute(merge)
-            cur.execute(f"DELETE FROM subscriptions_hist WHERE tenant_id IN ({ids})")
+            cur.execute(f"DELETE FROM subscriptions_hist WHERE tenant_id IN ({ids})")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- integer ids from the fixture
             conn.commit()
         for name in U1:
             self.mongo[self.database].drop_collection(name)
