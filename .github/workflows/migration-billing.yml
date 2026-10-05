@@ -21,6 +21,11 @@ on:
 jobs:
   harness:
     runs-on: ubuntu-latest
+    env:
+      # The runner's system python exposes dist-packages (an old pyOpenSSL that
+      # breaks pymongo's import); a uv-managed interpreter keeps the env clean.
+      UV_PYTHON_PREFERENCE: only-managed
+      UV_PYTHON: "3.12"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
