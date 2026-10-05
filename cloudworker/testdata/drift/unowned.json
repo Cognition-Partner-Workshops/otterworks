@@ -1,0 +1,183 @@
+{
+  "alarms": {
+    "otterworks-cw-notifications-dlq-depth": {
+      "ActionsEnabled": true,
+      "AlarmName": "otterworks-cw-notifications-dlq-depth",
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "Dimensions": [
+        {
+          "Name": "QueueName",
+          "Value": "otterworks-cw-notifications-dlq"
+        }
+      ],
+      "EvaluationPeriods": 1,
+      "MetricName": "ApproximateNumberOfMessagesVisible",
+      "Namespace": "AWS/SQS",
+      "Period": 60,
+      "Statistic": "Sum",
+      "Threshold": 1.0
+    }
+  },
+  "dynamodb": {
+    "otterworks-cw-notification-preferences": {
+      "ContinuousBackupsDescription": {
+        "PointInTimeRecoveryDescription": {
+          "PointInTimeRecoveryStatus": "DISABLED"
+        }
+      },
+      "Table": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "userId",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingModeSummary": {
+          "BillingMode": "PAY_PER_REQUEST"
+        },
+        "KeySchema": [
+          {
+            "AttributeName": "userId",
+            "KeyType": "HASH"
+          }
+        ]
+      },
+      "TimeToLiveDescription": {
+        "TimeToLiveStatus": "DISABLED"
+      }
+    },
+    "otterworks-cw-notifications": {
+      "ContinuousBackupsDescription": {
+        "PointInTimeRecoveryDescription": {
+          "PointInTimeRecoveryStatus": "DISABLED"
+        }
+      },
+      "Table": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "userId",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "createdAt",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingModeSummary": {
+          "BillingMode": "PAY_PER_REQUEST"
+        },
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ]
+      },
+      "TimeToLiveDescription": {
+        "TimeToLiveStatus": "DISABLED"
+      }
+    },
+    "otterworks-cw-scratch": {
+      "ContinuousBackupsDescription": {
+        "PointInTimeRecoveryDescription": {
+          "PointInTimeRecoveryStatus": "DISABLED"
+        }
+      },
+      "Table": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "userId",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "createdAt",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingModeSummary": {
+          "BillingMode": "PAY_PER_REQUEST"
+        },
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ]
+      },
+      "TimeToLiveDescription": {
+        "TimeToLiveStatus": "DISABLED"
+      }
+    }
+  },
+  "sns": {
+    "otterworks-cw-events": {
+      "Attributes": {},
+      "Subscriptions": [
+        {
+          "Attributes": {},
+          "Endpoint": "arn:aws:sqs:us-east-1:000000000000:otterworks-cw-notifications",
+          "Protocol": "sqs",
+          "SubscriptionArn": "arn:aws:sns:us-east-1:000000000000:otterworks-cw-events:000000000000"
+        }
+      ]
+    },
+    "otterworks-cw-scratch": {
+      "Attributes": {},
+      "Subscriptions": []
+    }
+  },
+  "sqs": {
+    "otterworks-analytics-events-dev": {
+      "MessageRetentionPeriod": "259200",
+      "ReceiveMessageWaitTimeSeconds": "20",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "120"
+    },
+    "otterworks-cw-events-dlq": {
+      "MessageRetentionPeriod": "1209600",
+      "ReceiveMessageWaitTimeSeconds": "0",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "30"
+    },
+    "otterworks-cw-notifications": {
+      "MessageRetentionPeriod": "345600",
+      "ReceiveMessageWaitTimeSeconds": "20",
+      "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:otterworks-cw-notifications-dlq\",\"maxReceiveCount\":3}",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "30"
+    },
+    "otterworks-cw-notifications-dlq": {
+      "MessageRetentionPeriod": "1209600",
+      "ReceiveMessageWaitTimeSeconds": "0",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "30"
+    },
+    "otterworks-notifications-dev": {
+      "MessageRetentionPeriod": "86400",
+      "ReceiveMessageWaitTimeSeconds": "20",
+      "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:otterworks-notifications-dlq-dev\",\"maxReceiveCount\":3}",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "60"
+    },
+    "otterworks-notifications-dlq-dev": {
+      "MessageRetentionPeriod": "1209600",
+      "ReceiveMessageWaitTimeSeconds": "0",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "30"
+    },
+    "otterworks-search-indexing-dev": {
+      "MessageRetentionPeriod": "86400",
+      "ReceiveMessageWaitTimeSeconds": "20",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "60"
+    }
+  }
+}

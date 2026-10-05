@@ -528,7 +528,7 @@ incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audite
 
 # --- AWS cloud worker (see cloudworker/README.md) ---
 CW = cloudworker/cw.sh
-.PHONY: cw-up cw-apply cw-credentials cw-arm cw-status cw-verify cw-simulate cw-quiet cw-disarm cw-reset cw-teardown cw-trail
+.PHONY: cw-up cw-apply cw-credentials cw-arm cw-status cw-drift cw-verify cw-simulate cw-quiet cw-disarm cw-reset cw-teardown cw-trail
 
 cw-up: ## Provision the cloud-worker infra, map the Devin roles, wire the tenant, smoke test
 	$(CW) up
@@ -544,6 +544,9 @@ cw-arm: ## Plant the notification table fault and publish six file_shared events
 
 cw-status: ## Tenant pods, live vs git table, queue depths, alarm, helm history (JSON=1 for JSON)
 	$(CW) status $(if $(JSON),--json,)
+
+cw-drift: ## SQS, SNS, DynamoDB and alarm drift against Terraform; exits 1 on drift (JSON=1 for JSON)
+	cloudworker/drift.sh $(if $(JSON),--json,)
 
 cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after)
 ifndef EXPECT
