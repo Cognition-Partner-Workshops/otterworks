@@ -83,4 +83,4 @@ The value is the loop, and the loop is generic: a release breaks a consumer, a m
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | AWS persona through the automation | `546a849a` | Approve the network request for Gradle; re-plant the retention drift after `cw-arm`. Both added above. |
-| 2026-10-05 | AWS persona through the automation, second run | `d6ebb5e0` | The tenant was still on the previous run's fix image, so the preflight now starts with `make cw-apply`. Armed 15:11:35Z, alarm 15:15:14Z, session 15:15:15Z. |
+| 2026-10-05 | AWS persona through the automation, second run | `d6ebb5e0` | The tenant was still on the previous run's fix image, so the preflight now starts with `make cw-apply`. Armed 15:11:35Z, alarm 15:15:14Z, session 15:15:15Z, redrive 15:26:20Z, alarm OK 15:28:14Z, pull request 1813 open with CI green at 15:31Z; 16 minutes from arm to gate. The session also noticed a second session's builder rows in the shared trail and left them out of its table, which the talk track now mentions. |
