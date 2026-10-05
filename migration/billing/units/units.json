@@ -1,0 +1,161 @@
+{
+  "kind": "unit-model",
+  "version": 1,
+  "plan_step": "s3.3-unit-derivation",
+  "run_branch": "tp-run/mongodb-20261001T233613Z",
+  "inputs": {
+    "mapping_spec": "migration/billing/mapping_spec.json",
+    "census": "migration/billing/census.json",
+    "buckets": "migration/billing/census/buckets.json",
+    "access_patterns": "migration/billing/access_patterns/access_patterns.json",
+    "facade_contract": "docs/tech-partnerships/contracts/billing-facade.contract.json"
+  },
+  "decisions": {
+    "applied": {
+      "d-logic-home": "Mongo backend in the legacy-billing facade: a `backends/mongo.py` module selected by BILLING_BACKEND=mongo; facade.py, app.py and reports.py keep their routes and stop calling the Oracle backend directly."
+    },
+    "open": {
+      "bd-overdue-status-owner": {"alias": "d-overdue-owner", "unit": "U5", "effect": "may add a job or route that sets invoices.statusCd = 40; nobody in the app does today"},
+      "d-cdc-connector": {"unit": null, "phase": "cutover (s5.1-delta-sync)", "effect": "names who writes the Oracle->Atlas delta after each unit's initial load; no unit's scope depends on it"},
+      "d-mainframe-load": {"unit": null, "phase": "cutover (s5.1-delta-sync / s6.3-repoint)", "effect": "names the post-cutover loader of invoice_feed / invoice_feed_quarantine; U4 fixes their shape and loads the census rows once, the recurring loader is not in U4"}
+    }
+  },
+  "units": [
+    {
+      "id": "U1",
+      "name": "foundation",
+      "ticket": "UNT-15",
+      "plan_node": "s4.1.b01",
+      "wave": 1,
+      "collections": ["codes", "tenants", "plans", "subscriptions", "subscriptions_hist"],
+      "entrypoints": ["list_plans", "entitlement", "change_plan"],
+      "bootstrap": ["ensure_tenant"],
+      "routes": [
+        "GET /api/v1/billing/plans", "GET /api/v1/billing/me", "GET /api/v1/billing/entitlement", "POST /api/v1/billing/plan-change",
+        "GET /health", "GET /", "GET /plans", "GET /plans/<tenant_id>/entitlement", "POST /plans/<tenant_id>/change"
+      ],
+      "code": [
+        "services/legacy-billing/app/backends/__init__.py",
+        "services/legacy-billing/app/backends/mongo.py (new)",
+        "services/legacy-billing/app/facade.py",
+        "services/legacy-billing/app/app.py",
+        "docker-compose.tp.yml",
+        ".github/workflows/tp-golden-smoke.yml",
+        "Makefile"
+      ],
+      "logic": ["PKG_OW_UTIL", "PKG_PLANS", "TRG_SUBSCRIPTIONS_HIST", "TRG_SUB_NO_UNCANCEL"],
+      "retire": ["SEQ_SUBSCRIPTIONS_HIST"],
+      "scaffolding": [
+        "backends/mongo.py skeleton behind BILLING_BACKEND=mongo (MONGODB_ATLAS_URI by name, database ow_tp_billing_20261001T233613Z)",
+        "mongo:7 fixture container in docker-compose.tp.yml and the tp-golden-smoke legacy-billing job (pymongo added to the uv run deps)",
+        "shared helpers ported from PKG_OW_UTIL: code lookup (f_code_desc), DD-MON-YY round-trip (f_dt2str/f_str2dt), md5 uuid, audit writer (log_msg) that inserts into billing_audit_log outside any transaction"
+      ]
+    },
+    {
+      "id": "U2",
+      "name": "customers",
+      "ticket": "UNT-18",
+      "plan_node": "s4.2.b01",
+      "wave": 2,
+      "collections": ["customers", "customers_hist"],
+      "entrypoints": [],
+      "routes": ["GET /api/v1/billing/customer"],
+      "code": ["services/legacy-billing/app/facade.py"],
+      "logic": ["TRG_CUSTOMER_MASTER_SEQ", "TRG_CUSTOMER_MASTER_HIST"],
+      "retire": ["SEQ_CUSTOMER_MASTER", "SEQ_CUSTOMER_MASTER_HIST", "SEQ_ENTITY_ATTR_VALUE", "TRG_ENTITY_ATTR_VALUE_SEQ"],
+      "scaffolding": [
+        "customer sub-document of GET /api/v1/billing/me (the route stays in U1; U2 fills its `customer` key)",
+        "155 flat camelCase columns + attributes[] (d-flat-customer-columns, d-customer-eav)"
+      ]
+    },
+    {
+      "id": "U3",
+      "name": "rating",
+      "ticket": "UNT-19",
+      "plan_node": "s4.2.b02",
+      "wave": 2,
+      "collections": ["usage_events", "rating_periods"],
+      "entrypoints": ["usage_rating", "usage_summary", "finalize_rating"],
+      "routes": ["GET /api/v1/billing/usage", "POST /internal/usage/events", "POST /api/rating/preview", "POST /api/rating/finalize"],
+      "code": [
+        "services/legacy-billing/app/facade.py",
+        "services/legacy-billing/app/app.py",
+        "services/legacy-billing/bridge/bridge.py"
+      ],
+      "logic": ["PKG_RATING", "TRG_USAGE_EVENTS_CHECK"],
+      "retire": [],
+      "scaffolding": [
+        "usage bridge keeps posting to /internal/usage/events; the Mongo path inserts one usage_events document after the U1 tenant bootstrap",
+        "rating_periods.result sub-document replaces RATING_RESULTS (d-embed-rating-result); package-global rating state becomes per-request state"
+      ]
+    },
+    {
+      "id": "U4",
+      "name": "invoicing",
+      "ticket": "UNT-20",
+      "plan_node": "s4.2.b03",
+      "wave": 2,
+      "collections": ["invoices", "credit_notes", "invoice_feed", "invoice_feed_quarantine"],
+      "entrypoints": ["invoice_preview", "issue_invoice", "invoice_lines"],
+      "routes": [
+        "GET /api/v1/billing/invoices", "GET /api/v1/billing/invoices/<invoice_id>/lines",
+        "GET /api/v1/billing/admin/reports/month-end", "GET /api/v1/billing/admin/reports/reconciliation", "GET /api/v1/billing/admin/reports/finance",
+        "GET /api/reports/month-end", "GET /api/reports/reconciliation", "GET /api/reports/finance",
+        "GET /api/invoices/<tenant_id>/preview", "POST /api/invoices/<tenant_id>/issue", "GET /api/invoices/<invoice_id>/lines"
+      ],
+      "code": [
+        "services/legacy-billing/app/facade.py",
+        "services/legacy-billing/app/app.py",
+        "services/legacy-billing/app/reports.py",
+        "etl/legacy-extra/tools/oracle_custbill_extract.py",
+        "Makefile"
+      ],
+      "logic": ["PKG_INVOICING"],
+      "retire": [],
+      "scaffolding": [
+        "admin reports in reports.py (month-end, reconciliation, finance) re-pointed from INVOICE_HEADER/INVOICE_LINE/CUSTOMER_MASTER SQL to invoice_feed / customers aggregations; `status: baseline` becomes pass|fail with per-check results",
+        "CUSTBILL extract (`make tp-month-end`, oracle_custbill_extract.py) reads invoice_feed + customers + tenants instead of Oracle",
+        "invoice_feed_quarantine receives the orphan INVOICE_LINE rows (d-feed-embed-lines); ix_invoice_feed_status_due stays deferred"
+      ]
+    },
+    {
+      "id": "U5",
+      "name": "dunning",
+      "ticket": "UNT-21",
+      "plan_node": "s4.2.b04",
+      "wave": 2,
+      "collections": ["dunning_attempts", "notifications", "billing_audit_log"],
+      "entrypoints": ["overdue", "schedule_dunning", "suspend_overdue"],
+      "routes": ["GET /api/v1/billing/admin/overdue", "GET /api/v1/billing/admin/dunning", "GET /api/dunning/overdue", "POST /api/dunning/schedule", "POST /api/dunning/suspend"],
+      "code": [
+        "services/legacy-billing/app/facade.py",
+        "services/legacy-billing/app/app.py"
+      ],
+      "logic": ["PKG_DUNNING", "JOB_NIGHTLY_DUNNING"],
+      "retire": ["JOB_PURGE_AUDIT_LOG", "SEQ_BILLING_AUDIT_LOG", "TRG_BILLING_AUDIT_LOG_ID"],
+      "scaffolding": [
+        "JOB_NIGHTLY_DUNNING (02:00: schedule_dunning + suspend_overdue) becomes a scheduled job in the billing service, created disabled like the estate's",
+        "JOB_PURGE_AUDIT_LOG is retired with no replacement under d-audit-retention = match-live (no TTL index, no purge)",
+        "billing_audit_log load + recon (0 live rows); the writer helper itself ships in U1"
+      ]
+    }
+  ],
+  "waves": [
+    {"wave": 1, "units": ["U1"], "readiness": "UNT-14 (s4.1.0-preflight)", "verify": "UNT-16 (s4.1.verify)"},
+    {"wave": 2, "units": ["U2", "U3", "U4", "U5"], "depends_on": [1], "readiness": "UNT-17 (s4.2.0-preflight)", "verify": "UNT-22 (s4.2.verify)"}
+  ],
+  "cross_unit": [
+    {"from": "U4", "to": "U3", "kind": "atomic-write", "via": "issue_invoice", "collections": ["rating_periods"], "note": "sp_issue_invoice finalizes the period inside its transaction (PKG_INVOICING depends on PKG_RATING); intra-wave merge order U3 before U4, or U4 carries the finalize step until U3 lands"},
+    {"from": "U5", "to": "U1", "kind": "atomic-write", "via": "suspend_overdue", "collections": ["tenants", "subscriptions", "subscriptions_hist"], "note": "satisfied by wave 1"},
+    {"from": "U5", "to": "U4", "kind": "read", "via": "overdue, schedule_dunning, suspend_overdue", "collections": ["invoices"], "note": "U5 live recon needs U4's invoices loaded; both wave 2, checked in s4.2.verify"},
+    {"from": "U1", "to": "U2", "kind": "read", "via": "GET /api/v1/billing/me", "collections": ["customers"], "deferred_to_wave": 2, "note": "`customer` key is null on the Mongo backend until U2 lands; parity of that key is a wave-2 check"},
+    {"from": "U3", "to": "U1", "kind": "write", "via": "POST /internal/usage/events -> ensure_tenant", "collections": ["tenants", "subscriptions"], "note": "satisfied by wave 1"},
+    {"from": "U4", "to": "U2", "kind": "read", "via": "oracle_custbill_extract.py", "collections": ["customers", "tenants"], "note": "CUSTBILL extract joins customers; both wave 2"},
+    {"from": "U4", "to": "U2", "kind": "read", "via": "reports.py BALANCES_SQL", "collections": ["customers"], "note": "reconciliation report groups customers by conversionBatchNo (ix_customers_conversion_batch is owned by U2)"},
+    {"from": "U2", "to": "U1", "kind": "read", "via": "GET /api/v1/billing/customer, GET /me", "collections": ["codes"], "note": "code descriptions; satisfied by wave 1"},
+    {"from": "U3", "to": "U1", "kind": "read", "via": "usage_rating, finalize_rating", "collections": ["plans", "subscriptions", "codes"], "note": "satisfied by wave 1"},
+    {"from": "U4", "to": "U1", "kind": "read", "via": "invoice_preview, issue_invoice", "collections": ["plans", "subscriptions", "tenants", "codes"], "note": "satisfied by wave 1"},
+    {"from": "U4", "to": "U3", "kind": "read", "via": "invoice_preview, issue_invoice, GET /invoices", "collections": ["usage_events", "rating_periods"], "note": "both wave 2"},
+    {"from": "*", "to": "U5", "kind": "write", "via": "audit writer (log_msg port, U1 helper)", "collections": ["billing_audit_log"], "note": "every module appends audit documents outside its transaction; U5 owns the collection's load, recon and retention"}
+  ]
+}

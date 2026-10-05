@@ -1,0 +1,19 @@
+{
+  "kind": "embedded-element-shape",
+  "version": 1,
+  "collection": "customers",
+  "path": "attributes",
+  "source_table": "ENTITY_ATTR_VALUE",
+  "definition": "How the loader renders one ENTITY_ATTR_VALUE row as an element of customers.attributes[]. The boolean spellings are the ones fixtures/demo.json#anomalies[kind=eav_boolean_spellings] enumerates for the NS=demo seed.",
+  "boolean_spellings": {
+    "true": ["Y", "1", "TRUE"],
+    "false": ["N", "0"]
+  },
+  "fields": {
+    "value": {
+      "source": "ENTITY_ATTR_VALUE.ATTR_VALUE",
+      "render": "boolean_spellings",
+      "note": "a boolean spelling is written as a BSON boolean, any other text as the string itself"
+    }
+  }
+}

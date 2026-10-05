@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm oracle-billing-up oracle-billing-down oracle-billing-seed mongo-billing-up mongo-billing-down tp-u1-load tp-u2-load tp-u2-recon tp-u2-parity tp-recon-selftest tp-mongodb-reset tp-atlas-scope-check tp-validate-schemas tp-validate-recon tp-run-branch tp-u1-parity oracle-record oracle-parity
 
 SHELL := /bin/bash
 
@@ -54,6 +54,91 @@ insurance-down: procs-validate ## Stop the Oracle insurance fixture and drop its
 insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites (NS=<namespace>)
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_tests.sql
 	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_olap_tests.sql
+
+# --- Legacy Billing: Oracle billing estate and the MongoDB migration harness ---
+# Oracle Free fixture (schema OW_BILLING) plus the migration/billing/ harness. Local-only, never
+# started by `make up`. The mongo:7 fixture is the fallback target for every local check; Atlas is
+# only reached through MONGODB_ATLAS_URI by name in a run session, never from these fixture targets.
+
+ORACLE_BILLING_COMPOSE = docker compose -f docker-compose.oracle-billing.yml -p otterworks-oracle-billing
+ORACLE_BILLING_DB_PORT ?= 52521
+ORACLE_BILLING_UV = uv run --with oracledb==2.5.1
+
+oracle-billing-up: ## Start the Oracle billing estate fixture (localhost:$(ORACLE_BILLING_DB_PORT), PDB FREEPDB1, schema OW_BILLING)
+	ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_COMPOSE) up -d --wait --wait-timeout 1200
+
+oracle-billing-down: ## Stop the Oracle billing estate fixture and drop its data
+	ORACLE_BILLING_DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_COMPOSE) down -v
+
+oracle-billing-seed: ## Seed the Oracle billing estate (NS=<namespace>, SCALE=demo|full; writes testdata/legacy/manifests/<NS>.json)
+ifndef NS
+	$(error NS is required, e.g. make oracle-billing-seed NS=dev)
+endif
+	$(call validate_ns)
+	DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) testdata/legacy/oracle_billing_seed.py --ns $(NS) --scale $(or $(SCALE),demo)
+
+MONGO_BILLING_CONTAINER ?= ow-billing-mongo
+MONGO_BILLING_PORT ?= 27117
+MONGO_BILLING_URI = mongodb://127.0.0.1:$(MONGO_BILLING_PORT)/?directConnection=true
+ORACLE_BILLING_FIXTURE_DSN = ow_billing/ow_billing@localhost:$(ORACLE_BILLING_DB_PORT)/FREEPDB1
+MIGRATION_BILLING_UV = uv run --no-project --with oracledb==2.5.1 --with pymongo==4.10.1 --with flask==3.1.1 --with pyyaml==6.0.2
+MIGRATION_BILLING_FIXTURE_ENV = OW_TP_ORACLE_FIXTURE_DSN='$(ORACLE_BILLING_FIXTURE_DSN)' OW_TP_MONGO_FIXTURE_URI='$(MONGO_BILLING_URI)'
+MIGRATION_BILLING_FIXTURE_ARGS = --oracle-dsn-env OW_TP_ORACLE_FIXTURE_DSN --mongo-uri-env OW_TP_MONGO_FIXTURE_URI $(if $(MIGRATION_DB),--mongo-db $(MIGRATION_DB),)
+
+mongo-billing-up: ## Start the mongo:7 billing fixture (127.0.0.1:$(MONGO_BILLING_PORT), single-node replica set; never Atlas)
+	@docker inspect $(MONGO_BILLING_CONTAINER) > /dev/null 2>&1 || docker run -d --rm --name $(MONGO_BILLING_CONTAINER) -p 127.0.0.1:$(MONGO_BILLING_PORT):27017 mongo:7 mongod --replSet rs0 --bind_ip_all > /dev/null
+	@for i in $$(seq 1 30); do docker exec $(MONGO_BILLING_CONTAINER) mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: '127.0.0.1:27017'}]}).ok }" 2>/dev/null | grep -q 1 && break; sleep 1; done
+	@docker exec $(MONGO_BILLING_CONTAINER) mongosh --quiet --eval "db.hello().isWritablePrimary" | grep -q true && echo "mongo fixture: $(MONGO_BILLING_URI)"
+
+mongo-billing-down: ## Stop the mongo:7 billing fixture
+	-docker rm -f $(MONGO_BILLING_CONTAINER) > /dev/null 2>&1
+
+tp-u1-load: ## Load U1 (codes, tenants, plans, subscriptions, subscriptions_hist) from the Oracle fixture into the mongo fixture, twice (MIGRATION_DB optional)
+	$(MIGRATION_BILLING_FIXTURE_ENV) $(MIGRATION_BILLING_UV) python3 migration/billing/loaders/oracle_to_mongo.py --mode fixture $(MIGRATION_BILLING_FIXTURE_ARGS) --passes 2 $(if $(REPORT),--report $(REPORT),)
+
+tp-u1-parity: ## Plans-module parity, Oracle vs Mongo backend, against the immutable PLANS-001..005 transcripts (requires oracle-billing-up + mongo-billing-up)
+	TZ=UTC LC_ALL=C $(MIGRATION_BILLING_FIXTURE_ENV) $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave1/plans_parity.py $(if $(REPORT),--out $(REPORT),)
+
+tp-u2-load: ## Load U2 (customers with embedded attributes, customers_hist) from the Oracle fixture into the mongo fixture, twice (MIGRATION_DB optional)
+	$(MIGRATION_BILLING_FIXTURE_ENV) $(MIGRATION_BILLING_UV) python3 migration/billing/loaders/oracle_to_mongo.py --mode fixture $(MIGRATION_BILLING_FIXTURE_ARGS) --collections customers,customers_hist --passes 2 $(if $(REPORT),--report $(REPORT),)
+
+tp-u2-recon: ## Recon U2 (customers, customers_hist) Oracle fixture vs mongo fixture; run mode fixture, never merge evidence (OUT=<report>)
+	$(MIGRATION_BILLING_FIXTURE_ENV) $(MIGRATION_BILLING_UV) python3 migration/billing/recon/recon.py run --mode local $(MIGRATION_BILLING_FIXTURE_ARGS) --collections customers,customers_hist --out $(or $(OUT),migration/billing/recon/out/U2.local.recon.json)
+
+tp-u2-parity: ## Customer route parity, Oracle vs Mongo backend: GET /api/v1/billing/customer and /me.customer (requires oracle-billing-up seeded NS=demo + mongo-billing-up)
+	TZ=UTC LC_ALL=C $(MIGRATION_BILLING_FIXTURE_ENV) $(MIGRATION_BILLING_UV) python3 migration/billing/waves/wave2/customer_parity.py $(if $(REPORT),--out $(REPORT),)
+
+tp-recon-selftest: ## Recon self-test: a faithful synthetic copy passes and three planted defects fail (in-memory, nothing started)
+	$(MIGRATION_BILLING_UV) python3 migration/billing/recon/recon.py selftest --out $(or $(OUT),/tmp/ow-billing-recon-selftest)
+
+tp-mongodb-reset: ## Reset the MongoDB migration target (TARGET=fallback|atlas, DB=ow_tp_billing_<run> for atlas, RESEED=1 reseeds Oracle NS=demo)
+	TARGET=$(or $(TARGET),fallback) DB=$(DB) RESEED=$(RESEED) MONGO_BILLING_CONTAINER=$(MONGO_BILLING_CONTAINER) migration/billing/scripts/reset.sh
+
+tp-atlas-scope-check: ## Prove the principal in MONGODB_ATLAS_URI holds readWrite on DB=ow_tp_billing_<run> only (fails closed when unset)
+	migration/billing/scripts/atlas-scope-check.sh --db $(DB) $(if $(OUT),--out $(OUT),)
+
+ORACLE_PARITY_UV = uv run --with oracledb==2.5.1 --with pyyaml==6.0.2
+ORACLE_PARITY_RUN = procs/reports/oracle-parity-run
+
+oracle-record: ## Record immutable Oracle billing transcripts (requires oracle-billing-up; MODULE optional)
+	TZ=UTC LC_ALL=C DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_PARITY_UV) procs/harness/oracle_record.py $(if $(MODULE),--module $(MODULE),) $(if $(ALLOW_RERECORD),--allow-rerecord,)
+
+oracle-parity: procs-validate ## Oracle vs Postgres parity run (NS=<namespace>; requires procs-up and oracle-billing-up)
+	$(call validate_ns)
+	DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) testdata/legacy/oracle_billing_seed.py --ns $(NS) --scale $(or $(SCALE),demo)
+	rm -rf $(ORACLE_PARITY_RUN)/$(NS)
+	TZ=UTC LC_ALL=C $(PROCS_ENV) DB_NAME=billing_$(NS) DB_PORT=$(PROCS_DB_PORT) $(PROCS_UV) procs/harness/record.py --output-dir $(ORACLE_PARITY_RUN)/$(NS)/postgres
+	TZ=UTC LC_ALL=C DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_PARITY_UV) procs/harness/oracle_record.py --output-dir $(ORACLE_PARITY_RUN)/$(NS)/oracle
+	TZ=UTC LC_ALL=C uv run procs/harness/oracle_parity.py --postgres-dir $(ORACLE_PARITY_RUN)/$(NS)/postgres --oracle-dir $(ORACLE_PARITY_RUN)/$(NS)/oracle --namespace $(NS)
+
+tp-validate-schemas: ## Validate the contract/recon schemas themselves against their metaschema
+	uv run --no-project --with check-jsonschema==0.38.0 check-jsonschema --check-metaschema docs/tech-partnerships/contracts/schema/*.schema.json
+
+tp-validate-recon: ## Validate recon reports (FILE=<path>; no reports is valid, other JSON is informational)
+	uv run --no-project --with jsonschema==4.25.1 --with rfc3339-validator==0.1.4 python3 scripts/tp_validate.py recon $(FILE)
+
+tp-run-branch: ## Cut and push the per-run working branch from main (TRACK=mongodb; DRY_RUN=1 stamps a detached worktree and pushes nothing)
+	@DRY_RUN=$(DRY_RUN) scripts/tp-run-branch.sh $(TRACK)
 
 # --- Local Development ---
 
