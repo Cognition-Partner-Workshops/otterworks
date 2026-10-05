@@ -65,19 +65,39 @@ impl MetadataClient {
                 .await
                 .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
 
-            for item in page.items() {
-                let size_bytes = item
-                    .get("size_bytes")
-                    .and_then(|value| value.as_n().ok())
-                    .and_then(|size| size.parse::<u64>().ok())
-                    .ok_or_else(|| {
-                        ServiceError::DynamoError(
-                            "file metadata item has invalid size_bytes".into(),
-                        )
-                    })?;
-                file_count += 1;
-                total_bytes += size_bytes;
+            let (page_file_count, page_total_bytes) = accumulate_usage(page.items())?;
+            file_count += page_file_count;
+            total_bytes += page_total_bytes;
+
+            last_evaluated_key = page.last_evaluated_key().cloned();
+            if !matches!(last_evaluated_key.as_ref(), Some(key) if !key.is_empty()) {
+                break;
             }
+        }
+
+        Ok((file_count, total_bytes))
+    }
+
+    pub async fn usage_summary(&self) -> Result<(u64, u64), ServiceError> {
+        let mut file_count = 0;
+        let mut total_bytes = 0;
+        let mut last_evaluated_key = None;
+
+        loop {
+            let page = self
+                .client
+                .scan()
+                .table_name(&self.files_table)
+                .projection_expression("#size_bytes")
+                .expression_attribute_names("#size_bytes", "size_bytes")
+                .set_exclusive_start_key(last_evaluated_key)
+                .send()
+                .await
+                .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+
+            let (page_file_count, page_total_bytes) = accumulate_usage(page.items())?;
+            file_count += page_file_count;
+            total_bytes += page_total_bytes;
 
             last_evaluated_key = page.last_evaluated_key().cloned();
             if !matches!(last_evaluated_key.as_ref(), Some(key) if !key.is_empty()) {
@@ -682,6 +702,20 @@ impl MetadataClient {
 
 // -- Parsing helpers --
 
+fn accumulate_usage(
+    items: &[std::collections::HashMap<String, AttributeValue>],
+) -> Result<(u64, u64), ServiceError> {
+    let mut file_count = 0;
+    let mut total_bytes = 0;
+
+    for item in items {
+        file_count += 1;
+        total_bytes += get_n_u64(item, "size_bytes")?;
+    }
+
+    Ok((file_count, total_bytes))
+}
+
 fn get_s(
     item: &std::collections::HashMap<String, AttributeValue>,
     key: &str,
@@ -862,6 +896,37 @@ mod tests {
         item.remove("name");
         let result = parse_file_metadata(&item);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_accumulate_usage_sums_sizes() {
+        let mut first = HashMap::new();
+        first.insert("size_bytes".into(), AttributeValue::N("1024".into()));
+        let mut second = HashMap::new();
+        second.insert("size_bytes".into(), AttributeValue::N("512".into()));
+
+        assert_eq!(accumulate_usage(&[first, second]).unwrap(), (2, 1536));
+    }
+
+    #[test]
+    fn test_accumulate_usage_empty() {
+        assert_eq!(accumulate_usage(&[]).unwrap(), (0, 0));
+    }
+
+    #[test]
+    fn test_accumulate_usage_rejects_missing_size() {
+        assert!(accumulate_usage(&[HashMap::new()]).is_err());
+    }
+
+    #[test]
+    fn test_accumulate_usage_rejects_invalid_size() {
+        let mut item = HashMap::new();
+        item.insert(
+            "size_bytes".into(),
+            AttributeValue::N("not-a-number".into()),
+        );
+
+        assert!(accumulate_usage(&[item]).is_err());
     }
 
     #[test]

@@ -43,6 +43,12 @@ struct UsageResponse {
     owners: Vec<OwnerUsage>,
 }
 
+#[derive(Debug, serde::Serialize, PartialEq, Eq)]
+struct UsageSummaryResponse {
+    file_count: u64,
+    total_bytes: u64,
+}
+
 fn build_usage_response(owners: Vec<OwnerUsage>) -> UsageResponse {
     let file_count = owners.iter().map(|owner| owner.file_count).sum();
     let total_bytes = owners.iter().map(|owner| owner.total_bytes).sum();
@@ -89,6 +95,14 @@ pub async fn usage(
     }
 
     Ok(HttpResponse::Ok().json(build_usage_response(owners)))
+}
+
+pub async fn usage_summary(meta: web::Data<MetadataClient>) -> Result<HttpResponse, ServiceError> {
+    let (file_count, total_bytes) = meta.usage_summary().await?;
+    Ok(HttpResponse::Ok().json(UsageSummaryResponse {
+        file_count,
+        total_bytes,
+    }))
 }
 
 // -- Health & Metrics --

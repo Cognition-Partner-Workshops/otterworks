@@ -61,6 +61,10 @@ async fn main() -> std::io::Result<()> {
             .route("/health", web::get().to(handlers::health))
             .route("/metrics", web::get().to(handlers::metrics))
             .route("/internal/usage", web::post().to(handlers::usage))
+            .route(
+                "/internal/usage/summary",
+                web::get().to(handlers::usage_summary),
+            )
             .service(
                 web::scope("/api/v1/files")
                     .route("/upload", web::post().to(handlers::upload_file))

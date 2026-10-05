@@ -61,6 +61,20 @@ table_exists otterworks-file-metadata || awslocal dynamodb create-table \
     '[{"IndexName":"owner-index","KeySchema":[{"AttributeName":"owner_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"ALL"}}]' \
   --billing-mode PAY_PER_REQUEST
 
+if ! FILE_METADATA_OWNER_INDEX_COUNT=$(awslocal dynamodb describe-table \
+  --table-name otterworks-file-metadata \
+  --query "Table.GlobalSecondaryIndexes[?IndexName=='owner-index'] | length(@)" \
+  --output text 2>/dev/null); then
+  FILE_METADATA_OWNER_INDEX_COUNT=0
+fi
+if [[ "$FILE_METADATA_OWNER_INDEX_COUNT" != "1" ]]; then
+  awslocal dynamodb update-table \
+    --table-name otterworks-file-metadata \
+    --attribute-definitions AttributeName=owner_id,AttributeType=S \
+    --global-secondary-index-updates \
+    '[{"Create":{"IndexName":"owner-index","KeySchema":[{"AttributeName":"owner_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"ALL"}}}]'
+fi
+
 table_exists otterworks-audit-events || awslocal dynamodb create-table \
   --table-name otterworks-audit-events \
   --attribute-definitions AttributeName=id,AttributeType=S \

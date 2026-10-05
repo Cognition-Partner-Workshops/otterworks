@@ -5,17 +5,19 @@ require an admin JWT in the `Authorization: Bearer <token>` header.
 
 ## Storage usage
 
-`GET /api/v1/admin/storage/usage` returns the actual stored-file usage for all
-admin users. The byte totals are calculated from file-service metadata, rather
-than storage quota values. Trashed files are included because they continue to
-occupy storage.
+`GET /api/v1/admin/storage/usage` returns the actual stored-file usage across
+all files in file-service. The byte totals are calculated from file-service
+metadata, rather than storage quota values. Trashed files are included because
+they continue to occupy storage. The `users` array reports counts for
+admin-service users only, so top-level totals can exceed the sum of the user
+entries when files belong to users not present in admin-service.
 
 Example response:
 
 ```json
 {
-  "total_bytes": 1536,
-  "file_count": 2,
+  "total_bytes": 2048,
+  "file_count": 3,
   "generated_at": "2026-07-20T14:30:00Z",
   "users": [
     {
@@ -48,3 +50,8 @@ per distinct owner, including zero-valued entries for owners without files.
 Requests are limited to 100 owner IDs. Invalid UUIDs or requests exceeding that
 limit return `400 Bad Request`. File-service queries the `owner-index` metadata
 index and includes trashed files in its totals.
+
+`GET /internal/usage/summary` returns `file_count` and `total_bytes` for every
+file metadata item, including files owned by users that are not admin users and
+trashed files. It uses a full-table scan projecting only `size_bytes`, which is
+appropriate at demo scale.
