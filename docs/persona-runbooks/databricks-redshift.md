@@ -68,4 +68,4 @@ Twenty units, the same contract each, one child per unit on its own machine, and
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | Databricks persona | `cf5822ff`, `d851ed33` | Both candidate workspaces reject the token, so the runbook needs the readiness path as a first-class route; added. |
-| 2026-10-05 | Databricks persona, readiness path, second run | `2c603394` | The repository picker in the ViewOnly composer lists only `otterworks`, so the prompt has to name `dbx-redshift-migration` itself; it does. |
+| 2026-10-05 | Databricks persona, readiness path, second run | `2c603394` | The repository picker in the ViewOnly composer lists only `otterworks`, so the prompt has to name `dbx-redshift-migration` itself; it does. The session VM had no Databricks CLI (the repo blueprint dropped it in commit `229d566`) and `Partner Demo - ViewOnly` holds none of the three secrets, so the verdict was NOT READY with the CLI install and the three names as the blockers; both added to Preflight. |

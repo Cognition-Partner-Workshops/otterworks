@@ -72,4 +72,4 @@ The gate comes first and it refuses before it connects: Devin cannot write to At
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | MongoDB persona | `5b01bf3`, `9e56ceba`, `910ac7c8` | The scope check must fail closed without the URI (it used to skip); fixed in the harness and written above. |
-| 2026-10-05 | MongoDB persona, gate and loader, second run | `d4665ccb` | Nothing new in the prompt; `otterworks` is the only repository the composer offers and it is the right one. |
+| 2026-10-05 | MongoDB persona, gate proof, second run | `d4665ccb` | Both gates held in 3 min 21 s with no Atlas connection and no file change. The session VM had no `uv`, so the preflight now says so. It also read `recon.py` closely: `row_diff_threshold` in `tolerances.json` is never read (row counts are compared exactly in code) and the date and string tolerances sit under a key the loader does not look at. Both are gate files, so that stays a plan decision for a human, written into Fallback. |
