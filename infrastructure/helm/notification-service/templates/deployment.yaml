@@ -39,7 +39,7 @@ spec:
             failureThreshold: 6
           readinessProbe:
             httpGet:
-              path: {{ .Values.healthCheck.path }}
+              path: {{ dig "path" "/ready" (.Values.readinessCheck | default dict) }}
               port: {{ .Values.healthCheck.port }}
             initialDelaySeconds: 10
             periodSeconds: 10

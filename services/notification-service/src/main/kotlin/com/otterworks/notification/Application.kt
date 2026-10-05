@@ -12,6 +12,7 @@ import com.otterworks.notification.repository.NotificationRepository
 import com.otterworks.notification.routes.configureRouting
 import com.otterworks.notification.service.EmailSender
 import com.otterworks.notification.service.NotificationService
+import com.otterworks.notification.startup.TableStartupCheck
 import com.otterworks.notification.websocket.WebSocketManager
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -53,8 +54,11 @@ fun Application.module(config: AppConfig = AppConfig.load()) {
     configureRouting(prometheusRegistry)
 
     val sqsConsumer by inject<SqsConsumer>()
+    val tableStartupCheck by inject<TableStartupCheck>()
     launch {
-        sqsConsumer.startPolling()
+        if (tableStartupCheck.run()) {
+            sqsConsumer.startPolling()
+        }
     }
 
     logger.info { "Notification Service started on port ${config.port}" }
@@ -143,6 +147,7 @@ fun Application.configureDependencyInjection(
                     )
                 }
                 single { SqsConsumer(get<SqsClient>(), get<NotificationService>(), get<AppConfig>(), get<MeterRegistry>()) }
+                single { TableStartupCheck(get<DynamoDbClient>(), get<AppConfig>()) }
             }
         )
     }
