@@ -1,0 +1,156 @@
+module: dunning
+rules:
+  - id: DUNNING-001
+    statement: Overdue accounts lists every invoice in status overdue whose issue date is strictly before as_of, for active and already-suspended tenants alike, ordered by issued_at then invoice id.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [1, 18]
+    inputs: [as_of]
+    outputs: [tenant_id, invoice_id, total, tenant_status]
+    confidence: medium
+    scenarios: [DUNNING-001]
+    decision:
+      status: pending
+      note: >-
+        Ambiguous boundary: the filter is issued_at::date < as_of (exclusive), so an
+        overdue invoice issued on as_of itself is not listed (it would have
+        days_overdue 0); DUNNING-001 does not exercise that edge. Note the contrast
+        with sp_suspend_overdue, which uses an inclusive <=. Selection relies only on
+        invoices.status = 'overdue'; there is no due-date or payment-terms check.
+        Tenant status is not filtered: Tenant Two (already suspended) is returned with
+        tenant_status 'suspended'. issued_at is timestamptz and ::date uses the
+        session TimeZone (UTC in the stack; no TZ is configured). Ties on issued_at are
+        broken by uuid ordering of invoice id. Confirm exclusive boundary, UTC date
+        derivation and inclusion of suspended tenants are intended.
+  - id: DUNNING-002
+    statement: days_overdue is the integer number of calendar days from the invoice issue date to as_of.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [11, 12]
+    inputs: [as_of]
+    outputs: [days_overdue]
+    confidence: high
+    scenarios: [DUNNING-001]
+    decision:
+      status: pending
+      note: >-
+        Computed as (as_of - issued_at::date)::integer, i.e. counted from the issue
+        date, not from a due date (there is no due date in the schema), with the time
+        of day discarded after converting to the session TimeZone (UTC). Recorded
+        values: 27 for the 2026-02-01 invoice and 15 for the 2026-02-13 invoice at
+        as_of 2026-02-28. Because of DUNNING-001's exclusive filter the value is always
+        >= 1.
+  - id: DUNNING-003
+    statement: Scheduling creates one new attempt for every overdue invoice, numbered one past the highest existing attempt_no for that invoice regardless of the prior attempts' status.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [28, 36]
+    inputs: [as_of]
+    outputs: [dunning_attempts.invoice_id, dunning_attempts.attempt_no]
+    confidence: medium
+    scenarios: [DUNNING-002, DUNNING-003]
+    decision:
+      status: pending
+      note: >-
+        Ambiguous selection: the loop takes all invoices with status 'overdue' and does
+        NOT filter by issue date relative to as_of (unlike fn_overdue_accounts) or by
+        tenant status, so the suspended Tenant Two's invoice is scheduled too. Attempt
+        numbering is COALESCE(max(attempt_no), 0) + 1 over all existing attempts
+        (scheduled, sent and skipped all count; gaps are not filled): invoice ...0002
+        with a seeded 'sent' attempt 1 gets attempt 2. There is no cap on attempts and
+        no check that an attempt is already scheduled for the same date, so every call
+        adds a new attempt per overdue invoice. Invoices are processed in issued_at,
+        id order (order only affects insertion order, not results). Confirm no
+        as_of/issue-date filter, no attempt cap and non-idempotent repeat calls.
+  - id: DUNNING-004
+    statement: An attempt is scheduled for as_of, moved forward to the following Monday when as_of falls on a Saturday (+2 days) or Sunday (+1 day).
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [37, 42]
+    inputs: [as_of]
+    outputs: [dunning_attempts.scheduled_for]
+    confidence: high
+    scenarios: [DUNNING-002, DUNNING-003]
+    decision:
+      status: pending
+      note: >-
+        Uses ISO day of week (isodow 6 = Saturday, 7 = Sunday). 2026-02-14 (Saturday)
+        schedules for 2026-02-16; 2026-02-17 (Tuesday) is unchanged. No holiday
+        calendar and no offset from the issue date or previous attempt: scheduled_for
+        depends only on as_of.
+  - id: DUNNING-005
+    statement: Each new attempt is inserted with status scheduled and a deterministic id md5(invoice_id || attempt_no) cast to uuid, skipping silently on an (invoice_id, attempt_no) conflict.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [43, 48]
+    inputs: [as_of]
+    outputs: [dunning_attempts.id, dunning_attempts.tenant_id, dunning_attempts.status]
+    confidence: medium
+    scenarios: [DUNNING-002, DUNNING-003]
+    decision:
+      status: pending
+      note: >-
+        The id is md5 of the invoice uuid text concatenated with the attempt number
+        text, no separator, then cast to uuid; the scenarios' schedule_rows probe does
+        not capture id, so the exact id is not parity-checked. tenant_id is copied from
+        the invoice. ON CONFLICT (invoice_id, attempt_no) DO NOTHING can only trigger on
+        a concurrent insert, since attempt_no is always max+1; existing attempts are
+        never modified. Confirm the target must reproduce the same deterministic id.
+  - id: DUNNING-006
+    statement: Suspension applies to tenants that are currently active and have at least one overdue invoice issued on or before as_of minus 14 days; already-suspended tenants are skipped entirely.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [59, 68]
+    inputs: [as_of]
+    outputs: [tenants.status]
+    confidence: medium
+    scenarios: [DUNNING-004, DUNNING-005]
+    decision:
+      status: pending
+      note: >-
+        Ambiguous boundary: issued_at::date <= as_of - 14 is inclusive, so an invoice
+        exactly 14 days old triggers suspension (contrast with the exclusive < in
+        fn_overdue_accounts); with as_of 2026-02-28 the cutoff is 2026-02-14 and the
+        2026-02-13 invoice of Tenant Five qualifies. The age is measured from the issue
+        date (UTC date), not from dunning attempts: suspension does not require any
+        attempt to have been scheduled or sent. Tenants not in status 'active'
+        (Tenant Two) get no tenant, subscription or notification change. A second run
+        for the same as_of is a no-op because the tenant is no longer active
+        (DUNNING-005). Confirm the inclusive 14-day threshold measured from issue date.
+  - id: DUNNING-007
+    statement: Suspending a tenant sets the tenant to suspended and sets every active subscription of that tenant to suspended with suspended_on = as_of.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [69, 75]
+    inputs: [as_of]
+    outputs: [tenants.status, subscriptions.status, subscriptions.suspended_on]
+    confidence: high
+    scenarios: [DUNNING-004]
+    decision:
+      status: pending
+      note: >-
+        Only subscriptions with status 'active' are touched; cancelled or already
+        suspended subscriptions keep their status and suspended_on. Subscription
+        ends_on / effective dates are not considered (an active subscription ending
+        before as_of would still be suspended). Tenant Five's subscription becomes
+        suspended with suspended_on 2026-02-28.
+  - id: DUNNING-008
+    statement: Suspending a tenant records one suspension notification with id md5(tenant_id || 'suspension' || as_of) and sent_at = as_of at midnight, never duplicating an existing notification for the same tenant, kind and sent_at.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [76, 84]
+    inputs: [as_of]
+    outputs: [notifications.id, notifications.tenant_id, notifications.kind, notifications.sent_at]
+    confidence: medium
+    scenarios: [DUNNING-004, DUNNING-005]
+    decision:
+      status: pending
+      note: >-
+        sent_at is p_as_of::timestamptz, i.e. midnight in the session TimeZone (UTC in
+        the stack), recorded as 2026-02-28T00:00:00Z; the id for Tenant Five is
+        8cd558f5-d843-8d3d-be19-fb94c21ab81f (md5 of tenant uuid text + 'suspension' +
+        YYYY-MM-DD, no separators). The NOT EXISTS guard only matches the same tenant,
+        kind and exact sent_at; a suspension on a different date would add another row.
+        On repeat runs (DUNNING-005) the guard is effectively redundant because the
+        active-tenant check in DUNNING-006 already skips the tenant; only one
+        notification exists afterwards. Confirm UTC midnight for sent_at.
