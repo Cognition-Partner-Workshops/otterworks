@@ -40,7 +40,6 @@ declare -A CHAOS_KEY=(
   [file-upload-fails]="chaos:file-service:upload_s3_error"
   [search-suggest-500]="chaos:search-service:suggest_500"
   [document-slow]="chaos:document-service:slow_queries"
-  [notification-schema]="chaos:notification-service:consumer_strict_schema"
 )
 CHAOS_TTL="${CHAOS_TTL:-3600}"
 

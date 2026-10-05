@@ -74,6 +74,22 @@ class SqsConsumerTest {
     }
 
     @Test
+    fun `parseMessage rejects fields the schema does not declare`() {
+        val body = """
+            {
+                "eventType": "file_shared",
+                "fileId": "file-123",
+                "ownerId": "owner-1",
+                "sharedWithUserId": "user-2",
+                "unexpectedField": "value",
+                "timestamp": "2024-01-01T00:00:00Z"
+            }
+        """.trimIndent()
+
+        assertNull(consumer.parseMessage(body))
+    }
+
+    @Test
     fun `parseMessage returns null for invalid JSON`() {
         val event = consumer.parseMessage("not json at all")
         assertNull(event)
