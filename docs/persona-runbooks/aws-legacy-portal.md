@@ -37,8 +37,9 @@ From a checkout of the harness branch with operator AWS credentials. Pick a run 
 2. The migration agent drafts a four-phase plan in the Plan view: program branch and harness check, one step per context, integration and full replay, hand-off and verification. Each step carries exit criteria measured by the replay.
 3. Resolve the open decisions it marks. Expect two: whether workers port fresh from the Java source or read an earlier branch (answer: fresh port, earlier branch read only), and the first-divergence policy (answer: stop and ask, as the brief says).
 4. Approve the plan. Approval creates one board ticket per step with the dependencies carried over; worker sessions take the tickets and the board moves them across.
-5. The live decision: when the announcements worker reports its first divergence, answer it in the plan or the ticket so the room sees the plan change hands.
-6. Close on the board with every ticket done, two or three worker sessions open, and the exit criteria ticked on the replay evidence and the pull request.
+5. The live decisions: the agent asks the presenter a question each time a worker stops. The recorded run asked five: the stack-check worker could not read the Aurora scaling block (answer with the operator's `make lp-status` output), preferences and feedback stopped at a case-variant 404 (answer: the recording is right), announcements stopped at `ann-03` with `created_at` bound as text (answer: bind it as a timestamp), the verifying worker could not diff `parity/` against `main` because the corpus lives on the harness branch (answer: the harness-branch diff plus checksums is the check), and the handover record had no stack owner (answer: the AWS operator, on the ticket only). Each answer is one click on the option the agent recommends.
+6. The last ticket is the human step. Send the agent one message that you reviewed the pull request; it clears the owner blocker, moves the ticket to Done and posts the program summary with the stack record.
+7. Close on the board at `9 / 9 done`, the integration pull request open against the harness branch, and the fresh-session verify ticket Done on a session that changed nothing.
 
 ## Expected state after
 
@@ -83,10 +84,14 @@ Three workers, one job each, one recording as the contract. Devin does the port 
 | Stack status, function versions, live responses | `evidence/aws/final-audit-lp-20261005-vo.txt` |
 | Rehearsal timings and cost | `docs/aws-legacy-portal/rehearsal.md` on the harness branch |
 | Migrations-page session, run `lp-20261005-mp` | https://partner-workshops.devinenterprise.com/sessions/509a30c2af9b4e0f8f55d4e07f728ef0 |
+| Migrations-page board, nine tickets, `9 / 9 done` | `Partner Demo - ViewOnly`, Boards, `Legacy portal: Spring Boot to Lambda` (`UNT`) |
+| Integration pull request and stack record, run `lp-20261005-mp` | https://github.com/Cognition-Partner-Workshops/otterworks/pull/1814 (handover comment on the PR names the API, the function hashes, `Expires=2026-10-08` on 16 resources and the owner) |
+| Fresh-session verify, run `lp-20261005-mp` | https://partner-workshops.devinenterprise.com/sessions/09e54575ce794904b442d051f8b3904e |
+| Screens of each live decision and the board | `evidence/devin/migrations/` |
 
 ## Rerun log
 
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | AWS persona, way A, token `lp-20261005-vo` | `e2d39853` | Announcements must land before preferences and feedback because it owns the common routes; added to the prompt file. |
-| 2026-10-05 | AWS persona, way B, token `lp-20261005-mp` | `509a30c2` | The Migration Agent's first dispatch failed with `Unknown board ticket ids` while the board was still indexing and retried on its own a minute later; added to Fallback. The stack-check worker reads Aurora under the observer role and may not see the Serverless v2 scaling block; added to Fallback. |
+| 2026-10-05 | AWS persona, way B, token `lp-20261005-mp` | `509a30c2` | The Migration Agent's first dispatch failed with `Unknown board ticket ids` while the board was still indexing and retried on its own a minute later; added to Fallback. The stack-check worker reads Aurora under the observer role and may not see the Serverless v2 scaling block; added to Fallback. The run asked five live questions and the last ticket waits for a presenter message; steps 5 to 7 rewritten. The personas were in the default 100 ACU tier and every session slept at 15:38Z; added to preflight and Fallback. Approval 15:08Z to `9 / 9 done` 16:55Z, with 20 minutes lost to the tier; the manager spent 18 ACU. |
