@@ -20,7 +20,8 @@ From a checkout of `demo-cloud-worker` with operator AWS credentials and `kubect
 1. `make demo-verify-clean NS=d24-before` and `make demo-verify-clean NS=d24-after` both exit 0, or `make demo-destroy NS=<token>` first.
 2. `make demo-up NS=d24-before TTL=72h` and `make demo-up NS=d24-after TTL=72h`. The Db2 seed of 5.3 million rows takes 20 to 35 minutes per tenant; start both the evening before. Both web tenants answer at `https://t-<token>.otterworks.app`.
 3. The shared RDS instance must be `db.t3.small` or larger. On `db.t3.micro` the load stage exhausted connection slots and the instance restarted (RDS events 09:08 to 09:13 UTC on 2026-10-05). Pull request 1811 records the size in Terraform; check `aws rds describe-db-instances --db-instance-identifier otterworks-postgres-dev --query 'DBInstances[0].DBInstanceClass'`.
-4. Read `docs/demos/legacy-data-migration.md` sections 1 to 4 and `migration/CONTRACTS.md` for the stage names and exit codes you will see in the session.
+4. `make demo-up` builds the job image from `python:3.12-slim-bookworm`. Docker Hub answers HTTP 429 to an anonymous pull from the shared runner once the hourly quota is spent; pull `mirror.gcr.io/library/python:3.12-slim-bookworm` and tag it as `python:3.12-slim-bookworm` before the build.
+5. Read `docs/demos/legacy-data-migration.md` sections 1 to 4 and `migration/CONTRACTS.md` for the stage names and exit codes you will see in the session.
 
 ## Live
 
@@ -59,7 +60,7 @@ make demo-up NS=d24-after TTL=72h       # 20 to 35 minutes for the seed
 
 ## Talk track
 
-Devin runs the same five stages a data engineer would, under a role that can only touch the after tenant, and the output is a row-level reconciliation that says which source rows are safe to delete. The 42 rows that stay in Db2 show the rule: a row leaves the source only after validation proves its copy.
+Devin runs the same five stages a data engineer would, under a role that can only touch the after tenant, and the output is a row-level reconciliation that says which source rows are safe to delete. The 42 rows that stay in Db2 show the rule: a row leaves the source only after validation proves its copy. The observer role has no `pods/exec`, so when the session counts the Db2 side itself it says it is switching to the builder role for that read; point at that line, since it is the role discipline the audience came to see.
 
 ## Evidence from the recorded run
 
@@ -68,9 +69,11 @@ Devin runs the same five stages a data engineer would, under a role that can onl
 | Session, AWS, Normal mode | https://partner-workshops.devinenterprise.com/sessions/3be933fc2a404afa9d155ff5f27ea4a0 |
 | Jobs, RDS events, memory after resize | `evidence/aws/final-audit-d24-after-migration.txt` |
 | RDS resize | `evidence/aws/rds-modify-t3small.json`, pull request https://github.com/Cognition-Partner-Workshops/otterworks/pull/1811 |
+| Rerun from this runbook, run `r20261005161009`, independent counts and the Before/After compare widget | https://partner-workshops.devinenterprise.com/sessions/a550d92b99c84659b86075e1ca3d690c, `evidence/aws/db2-rds-rerun-r20261005161009-operator.txt` |
 
 ## Rerun log
 
 | Date | Who | Session | What the runbook had not said |
 |---|---|---|---|
 | 2026-10-05 | AWS persona | `3be933fc` | RDS needs `db.t3.small`; added to preflight. The purge cannot be undone, so the reset is a tenant rebuild; added. |
+| 2026-10-05 | AWS persona, Normal, fresh session from this runbook, run `r20261005161009` | `a550d92b` | `make demo-up NS=d24-after` can fail on a Docker Hub rate limit while pulling `python:3.12-slim-bookworm`; pull it from `mirror.gcr.io/library` and tag it first; added to preflight. The observer role has no `pods/exec`, so the Db2 counts need the builder role and the session says so; added to the talk track. The session's own counts agreed with the report on every number and added one the report lacks: `stg.DOCARCH` keeps the 5 duplicate-key rows. Jobs took 937 s; the session took 58 min end to end and 5.5 ACU. |
