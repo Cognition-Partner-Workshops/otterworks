@@ -27,6 +27,9 @@ def reset() -> None:
         connection.execute(
             """
             TRUNCATE TABLE billing_svc.subscriptions,
+                           billing_svc.rating_results,
+                           billing_svc.rating_periods,
+                           billing_svc.usage_events,
                            billing_svc.plans,
                            billing_svc.tenants
             """

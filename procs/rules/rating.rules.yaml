@@ -10,7 +10,9 @@ rules:
     confidence: medium
     scenarios: [RATING-001, RATING-003]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Ambiguous tie-break and null handling. The query is ORDER BY starts_on DESC LIMIT 1 with
         no secondary key, so two overlapping subscriptions with the same starts_on resolve in an
@@ -30,7 +32,9 @@ rules:
     confidence: medium
     scenarios: [RATING-001, RATING-004]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Boundary is inclusive on both ends (BETWEEN): RATING-004's event at 2026-02-28T10:00Z is
         counted. The doubt is the day boundary: occurred_at is timestamptz and is cast with
@@ -48,7 +52,9 @@ rules:
     confidence: medium
     scenarios: [RATING-001, RATING-002]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Window is period_start - 3 months <= prior period_start < period_start, so for February
         2026 the November, December and January periods all count (RATING-002: 100+100+100=300,
@@ -68,7 +74,9 @@ rules:
     confidence: high
     scenarios: [RATING-001, RATING-002]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         GREATEST(used - rollover - included, 0). Rollover and the included allowance are both
         consumed before any unit is billable; the floor is applied once after both subtractions.
@@ -84,7 +92,9 @@ rules:
     confidence: medium
     scenarios: [RATING-004, RATING-005, RATING-006]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         The tier boundary is the literal 101, not 100: 101 billable units stay entirely in tier 1
         (RATING-004) and the 102nd unit is the first tier-2 unit (RATING-005). This looks like a
@@ -101,7 +111,9 @@ rules:
     confidence: medium
     scenarios: [RATING-003, RATING-004, RATING-006]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Rounding mode and precision matter: PostgreSQL numeric round(x, 2) rounds half away from
         zero on exact decimals (101 x 0.055 = 5.555 -> 5.56 in RATING-004). Half-to-even
@@ -120,7 +132,9 @@ rules:
     confidence: low
     scenarios: [RATING-003]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Several real doubts. (1) Direction: the factor counts the days from the suspension date
         through period end, inclusive, i.e. the suspended part of the period, not the active part
@@ -144,7 +158,9 @@ rules:
     confidence: high
     scenarios: [RATING-007]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Kinds with no events are omitted rather than returned with zero. Ordering is by kind text
         (api, compute, storage), which is unique per group so there are no ties. The same
@@ -159,7 +175,9 @@ rules:
     confidence: high
     scenarios: [RATING-008]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         Finalization is idempotent per (tenant, period_start): re-running it with a different
         period_end overwrites period_end instead of creating a second period. The period row is
@@ -175,7 +193,9 @@ rules:
     confidence: medium
     scenarios: [RATING-008]
     decision:
-      status: pending
+      status: approved
+      reviewer: "AWS (Read-Only)"
+      date: "2026-10-05"
       note: >-
         The stored rollover_units is not the rollover returned by fn_usage_rating; it is the unused
         included allowance carried forward to later periods. RATING-008 shows this: the rating

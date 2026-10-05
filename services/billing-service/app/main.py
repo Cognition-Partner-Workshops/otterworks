@@ -12,8 +12,16 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    NoSubscriptionError,
+    catalog,
+    change_plan,
+    entitlement,
+    finalize_rating,
+    rate_period,
+    summarize_usage,
+)
+from app.repository import PostgresPlansRepository, PostgresRatingRepository
 
 
 @asynccontextmanager
@@ -35,6 +43,11 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class RatingPeriod(BaseModel):
+    period_start: date
+    period_end: date
 
 
 @app.get("/health")
@@ -127,3 +140,71 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+@app.get("/api/tenants/{tenant_id}/rating")
+def get_rating(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    with connect() as connection:
+        row = rate_period(
+            PostgresRatingRepository(connection),
+            tenant_id,
+            period_start,
+            period_end,
+        )
+    return {
+        "tenant_id": str(row.tenant_id),
+        "period_start": row.period_start.isoformat(),
+        "period_end": row.period_end.isoformat(),
+        "used_units": row.used_units,
+        "quota_units": row.quota_units,
+        "rollover_units": row.rollover_units,
+        "billable_units": row.billable_units,
+        "first_tier_units": row.first_tier_units,
+        "second_tier_units": row.second_tier_units,
+        "overage_amount": f"{row.overage_amount:.2f}" if row.overage_amount is not None else None,
+    }
+
+
+@app.get("/api/tenants/{tenant_id}/usage-summary")
+def get_usage_summary(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    with connect() as connection:
+        rows = summarize_usage(
+            PostgresRatingRepository(connection).list_usage_events(tenant_id),
+            period_start,
+            period_end,
+        )
+    return [
+        {"kind": row.kind, "event_count": row.event_count, "units": row.units}
+        for row in rows
+    ]
+
+
+@app.post("/api/tenants/{tenant_id}/rating/finalize")
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingPeriod) -> dict:
+    try:
+        with connect() as connection:
+            result = finalize_rating(
+                PostgresRatingRepository(connection),
+                tenant_id,
+                request.period_start,
+                request.period_end,
+            )
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    overage_amount = f"{result.overage_amount:.2f}"
+    stored = {
+        "used_units": result.used_units,
+        "quota_units": result.quota_units,
+        "rollover_units": result.rollover_units,
+        "billable_units": result.billable_units,
+        "overage_amount": overage_amount,
+    }
+    return {**stored, "rating_result": [stored]}

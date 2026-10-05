@@ -1,8 +1,12 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans module. It owns a
-separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and places
-plans behavior in a plain-Python domain layer.
+This FastAPI service is the extraction target for the plans and rating modules.
+It owns a separate Postgres `billing_svc` schema, keeps the HTTP layer thin,
+and places business behavior in a plain-Python domain layer.
+
+Rating is available through `GET /api/tenants/{tenant_id}/rating`,
+`GET /api/tenants/{tenant_id}/usage-summary`, and
+`POST /api/tenants/{tenant_id}/rating/finalize`.
 
 ## Development
 
