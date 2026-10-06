@@ -34,13 +34,13 @@ The API access log for the API replay shows 19 requests on `ANY /api/preferences
 `pref-18` (`GET /API/preferences/alice`) does not match the case-sensitive route key, so `$default` sends it to the
 monolith, which answers 404 as recorded. `pref-15` (`GET /api/preferences/`) reaches the Lambda and gets the same 404.
 
-## Gap fixed on the way
+## Gap found on the way
 
 Right after `terraform apply`, the published version stays `Pending` while SnapStart takes its snapshot, and during that
 window the HTTP API answers `500 {"message":"Internal Server Error"}` for the module's routes. The first `lp-mod-status`
-probe of `/api/preferences/u1` hit this window. `lp-mod-up` now waits with
-`aws lambda wait function-active-v2 --qualifier live` before printing the outputs. After that all four status probes
-(`/health`, `/api/announcements`, `/api/preferences/u1`, `/api/feedback/average-rating`) returned 200.
+probe of `/api/preferences/u1` hit this window. The base now carries the fix (f9808c12): `lp-mod-up` waits with
+`aws lambda wait function-active-v2 --qualifier live` before printing the outputs. Once `live` was Active, all four status
+probes (`/health`, `/api/announcements`, `/api/preferences/u1`, `/api/feedback/average-rating`) returned 200.
 
 ## AWS documentation read (AWS MCP `aws___read_documentation`)
 
