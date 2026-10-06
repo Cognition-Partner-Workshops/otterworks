@@ -44,6 +44,12 @@ data "aws_iam_policy_document" "lambda" {
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.this.master_user_secret[0].secret_arn]
   }
+
+  statement {
+    sid       = "PutAnnouncementEvents"
+    actions   = ["events:PutEvents"]
+    resources = [aws_cloudwatch_event_bus.this.arn]
+  }
 }
 
 resource "aws_iam_role_policy" "lambda" {
@@ -58,8 +64,9 @@ resource "aws_cloudwatch_log_group" "lambda" { # nosemgrep: terraform.aws.securi
   retention_in_days = var.log_retention_days
 }
 
-# Placeholder handlers answer 501. The child sessions deploy the real handlers with
-# update-function-code under the builder role, so Terraform leaves code and runtime alone after create.
+# Placeholder handlers answer 501. The real handlers are deployed with update-function-code (by a child
+# session or lp-deploy), so Terraform leaves code and runtime alone after create. publish creates the
+# version the live alias starts on.
 resource "aws_lambda_function" "context" { # nosemgrep: terraform.aws.security.aws-lambda-x-ray-tracing-not-active.aws-lambda-x-ray-tracing-not-active
   for_each         = var.contexts
   function_name    = local.function_names[each.key]
@@ -72,16 +79,18 @@ resource "aws_lambda_function" "context" { # nosemgrep: terraform.aws.security.a
   memory_size      = var.lambda_memory_mb
   timeout          = 29
   architectures    = ["x86_64"]
+  publish          = true
 
   environment { # nosemgrep: terraform.aws.security.aws-lambda-environment-unencrypted.aws-lambda-environment-unencrypted
-    variables = {
+    variables = merge({
       CONTEXT     = each.key
       DB_SCHEMA   = each.value.schema
       DB_NAME     = aws_rds_cluster.this.database_name
       CLUSTER_ARN = aws_rds_cluster.this.arn
       SECRET_ARN  = aws_rds_cluster.this.master_user_secret[0].secret_arn
       RUN_TOKEN   = var.run_token
-    }
+      FAIL_READS  = "0"
+    }, each.key == "announcements" ? { EVENT_BUS_NAME = aws_cloudwatch_event_bus.this.name } : {})
   }
 
   lifecycle {
