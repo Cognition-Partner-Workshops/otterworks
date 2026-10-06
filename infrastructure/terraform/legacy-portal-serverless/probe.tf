@@ -94,13 +94,22 @@ data "archive_file" "probe" {
   output_path = "${path.module}/.build/probe.zip"
 }
 
+# The canary only picks up new code when its S3 key changes.
+resource "aws_s3_object" "probe_code" {
+  bucket = aws_s3_bucket.probe_artifacts.id
+  key    = "code/probe-${data.archive_file.probe.output_md5}.zip"
+  source = data.archive_file.probe.output_path
+  etag   = data.archive_file.probe.output_md5
+}
+
 resource "aws_synthetics_canary" "probe" {
   name                 = local.probe_name
   artifact_s3_location = "s3://${aws_s3_bucket.probe_artifacts.bucket}/canary/"
   execution_role_arn   = aws_iam_role.probe.arn
   runtime_version      = var.probe_runtime_version
   handler              = "probe.handler"
-  zip_file             = data.archive_file.probe.output_path
+  s3_bucket            = aws_s3_object.probe_code.bucket
+  s3_key               = aws_s3_object.probe_code.key
   start_canary         = false
   delete_lambda        = true
 
