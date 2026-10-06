@@ -5,6 +5,36 @@
 # with 7-day retention. ingress-nginx lines are filed under the namespace of the
 # tenant they were proxied to, not under ingress-nginx.
 
+# Delivery durability (docs.aws.amazon.com/AmazonECS/latest/developerguide/firelens-docker-buffer-limit.html):
+# the cloudwatch_logs output drops a chunk after retry_limit retries (plugin
+# default 1, i.e. ~10-20 s of CloudWatch throttling or outage), and memory-only
+# chunks die with the pod. Chunks are buffered under the existing /var/log
+# hostPath instead, so they survive a pod restart, and retried with capped,
+# jittered backoff for ~12 minutes before being dropped.
+service:
+  extraService: |
+    HTTP_Server  On
+    HTTP_Listen  0.0.0.0
+    HTTP_PORT    2020
+    Health_Check On
+    HC_Errors_Count 5
+    HC_Retry_Failure_Count 5
+    HC_Period 5
+    # Below the pod's default 30 s terminationGracePeriodSeconds.
+    Grace 25
+    scheduler.base 10
+    scheduler.cap  60
+    storage.path /var/log/flb-storage/
+    storage.sync normal
+    storage.checksum off
+    # Chunks held in memory (each up to ~2-5 MB); bounded by the 250Mi limit.
+    storage.max_chunks_up 16
+    storage.backlog.mem_limit 5M
+    storage.backlog.flush_on_shutdown On
+    storage.metrics On
+  parsersFiles:
+    - /fluent-bit/parsers/parsers.conf
+
 serviceAccount:
   create: true
   name: fluent-bit
@@ -21,6 +51,8 @@ input:
   memBufLimit: 5MB
   skipLongLines: "On"
   refreshInterval: 10
+  extraInputs: |
+    storage.type filesystem
 
 filter:
   enabled: true
@@ -58,6 +90,11 @@ cloudWatchLogs:
   logStreamTemplate: "$kubernetes['pod_name']"
   autoCreateGroup: true
   logRetentionDays: 7
+  # 1 initial try + 15 retries at random(10, min(10*2^n, 60)) s. Past that, or
+  # past 1G of backlog on a node (oldest dropped first), records are lost.
+  extraOutputs: |
+    retry_limit 15
+    storage.total_limit_size 1G
 
 firehose:
   enabled: false

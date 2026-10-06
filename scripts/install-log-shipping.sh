@@ -34,9 +34,20 @@ if [ -z "${role_arn}" ] || [ "${role_arn}" = "None" ]; then
   err "IAM role ${ROLE_NAME} not found; apply infrastructure/terraform (module.irsa) first."; exit 1
 fi
 
-log "Switching shared ingress-nginx to the JSON access log format..."
+# Only the access-log values change here; stay on the chart version that is
+# already deployed so re-running this script never upgrades the shared
+# controller every tenant's traffic goes through.
+ingress_chart_version="$(helm list -n "${INGRESS_NAMESPACE}" --filter '^ingress-nginx$' -o json \
+  | sed -n 's/.*"chart":"ingress-nginx-\([^"]*\)".*/\1/p')"
+if [ -z "${ingress_chart_version}" ]; then
+  err "Helm release ingress-nginx not found in ${INGRESS_NAMESPACE}; install the tenant platform baseline first."; exit 1
+fi
+
+log "Switching shared ingress-nginx ${ingress_chart_version} to the JSON access log format..."
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx >/dev/null 2>&1 || true
+helm repo update ingress-nginx >/dev/null 2>&1 || true
 helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n "${INGRESS_NAMESPACE}" \
+  --version "${ingress_chart_version}" \
   --reuse-values -f "${REPO_ROOT}/infrastructure/helm/ingress-nginx/values-logging.yaml" \
   --wait --timeout 5m
 
