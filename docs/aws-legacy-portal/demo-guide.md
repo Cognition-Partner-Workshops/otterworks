@@ -1,6 +1,6 @@
 # Talking about Devin on AWS: the presenter guide
 
-This guide is for the person who opens the partner demo org in front of an AWS audience and talks for twenty to forty minutes. Each thing you show is a Devin session that the AWS, Databricks or MongoDB persona started. You sign in through the Field Kit SSO page, pick the area and the identity, and the sidebar of that persona is the demo. You never need the AWS console yourself: every session recorded the console as a read-only user while it worked, and the recording is attached to the session.
+This guide is for the person who opens the partner demo org org in front of an AWS audience and talks for twenty to forty minutes. Each thing you show is a Devin session that the AWS, Databricks or MongoDB persona started. You sign in through the Field Kit SSO page, pick the area and the identity, and the sidebar of that persona is the demo. You never need the AWS console yourself: every session recorded the console as a read-only user while it worked, and the recording is attached to the session.
 
 ## The one idea
 
@@ -113,6 +113,24 @@ Tests: 1, 2, 3, 5.
 
 What to open: the automation page with instructions a person can read, the schedule (first Tuesday, 06:40 UTC), the test session that planted an expired stack and a stale log group and then ran the automation, the run's table of what it removed, what it kept and why, and the estimated monthly saving.
 
+### 8. The TCO decision dashboard, with the Pricing Calculator estimates to match
+
+Session: https://partner-workshops.devinenterprise.com/sessions/2cfae20440af4a28b831ade4f691efbf. No PR; nothing was created in AWS.
+
+Say first: "Every architecture review has a slide with numbers nobody can trace. This one has a footnote on every figure and a Pricing Calculator estimate the reviewers can open themselves."
+
+Tests: 3 (tedious: thirty Cost Explorer lines, Pricing API rates, two request counters, a PR's measurements), 4 (context from Cost Explorer, CloudWatch, the Pricing API, PR #1823 and the on-call test, in one place), 5 (the "today" column has to reconcile to Cost Explorer to the cent before Devin stops).
+
+The request was one message: finish the strangler or stay on EC2, Graviton or not, give me one HTML file for the review with three-year TCO per option and the source of every number, and build the same options in calculator.aws so the reviewers see them in a tool they trust.
+
+What to open: the dashboard attached to the session (the options side by side, sliders for 1x, 3x and 10x traffic and for a one- or three-year Savings Plan, the break-even month, the assumptions table you can edit live, and the provenance footnotes), the reconciliation block (September 2026 is $411.51 across 30 service lines, and the lines add up to the total), the three Pricing Calculator estimates (A https://calculator.aws/#/estimate?id=887075261b639cb7c8b4c2865638fe88c9246190, B https://calculator.aws/#/estimate?id=d125e51fe5e2b49897fef8e76580e3f0853826e7, C https://calculator.aws/#/estimate?id=326cf1fb39a3c82d529c351d3592e11a60df53b7) next to the model's own figure with the gap explained, and the read-only console recording of Cost Explorer and the pricing pages.
+
+The answer is the part to dwell on. Staying on EC2 is cheapest at every traffic level ($40.93 a month against $97.50 serverless and $81.51 on EKS Spot), and Devin says why: the one-a-minute Synthetics probe costs $52.56 a month and keeps Aurora awake at 0.5 ACU for another $43.80. Drop the probe and let Aurora pause, and serverless is cheaper from month one. That is the conversation an architecture review wants, and the audience sees that Devin reported a number that argued against the migration it had just built.
+
+Live moment: change an assumption in the table (Aurora awake hours, the migration effort, the no-responder recovery time) and watch the three-year totals and the break-even month move. Or send "what if traffic triples and we commit to a one-year Savings Plan" as a follow-up and let Devin answer from the same file.
+
+Labelled assumptions, say them if asked: cost allocation tags are inactive, so the "today" column is modelled from the portal's resources at reconciled rates, and the dashboard labels it that way instead of calling it attributed spend; recovery without the responder (30 minutes) and Graviton energy (AWS's "up to 60%" claim on measured GB-s per million requests) were never measured; the EKS option charges the portal 25% of a c6g.xlarge node, which the calculator cannot express, so its estimate prices the whole node; the share links expire in a year.
+
 ### Databricks and MongoDB
 
 Sessions: Databricks: https://partner-workshops.devinenterprise.com/sessions/cf5822ffaa724b798f867f67ab1cf3b0 (readiness check) and https://partner-workshops.devinenterprise.com/sessions/2c6033940ae940e3b801321ed8197c86 (runbook re-run); both stop at the credential gate because the organisation has no working DATABRICKS_HOST, DATABRICKS_TOKEN or DATABRICKS_WAREHOUSE_ID, MongoDB: https://partner-workshops.devinenterprise.com/sessions/5b01fbf33ade48908b565d74bbabbd27 (migration plan), https://partner-workshops.devinenterprise.com/sessions/9e56cebaf84040ba9f1ed6affdbc05ab (U2 rehearsal against the local Oracle fixture and mongo:7, planted document-shape mismatch preserved), https://partner-workshops.devinenterprise.com/sessions/910ac7c80059469284ff63affd4a87fa and https://partner-workshops.devinenterprise.com/sessions/d4665ccb32cf43279c5897b298ff7834 (readiness and gates); Atlas itself is blocked on MONGODB_ATLAS_URI.
@@ -157,5 +175,6 @@ Not tagged, remove by hand when the portfolio retires:
 - The tester session used an IAM user for the bad deploy. The responder used the scoped builder role, which is the one CloudTrail shows.
 - The iOS session tested the iPhone simulator in one orientation only. Android and portrait were left out, and a 403 on the mobile notification endpoint, which has a different cause, was noted and left for a later session.
 - Databricks and MongoDB stop at the credential gate (no working `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_WAREHOUSE_ID`; no `MONGODB_ATLAS_URI`). Their sessions show the plan, the harness and the local rehearsal; the live run waits for the credentials.
+- The TCO dashboard models the portal's "today" column from its resources at rates reconciled to Cost Explorer, because the cost allocation tags are inactive and the EC2 before-state had not yet reached a billed month. Recovery time without the responder, Graviton energy and the EKS node share are labelled assumptions, and the Pricing Calculator share links expire on 2027-10-06.
 - The monthly reaper has run once, against a planted expired run, and the schedule has not yet fired on its own. Its first scheduled run is the first Tuesday of the month at 06:40 UTC.
 - Pull requests #1819, #1820, #1821 and #1822 stay open on purpose. Merging #1819 or #1822 would start a real cutover; merging #1820 would remove the planted mobile-latency scenario.
