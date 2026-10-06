@@ -461,7 +461,7 @@ cmd_page_status() {
   echo "alarms:"; alarm_summary
   for name in "$(out alarm_page)" "$(out alarm_5xx_rate)" "$(out alarm_lambda_errors)"; do
     echo; echo "alarm history ${name} (state changes, newest first):"
-    aws cloudwatch describe-alarm-history --alarm-name "$name" --history-item-type StateUpdate --max-items 10 --output json \
+    aws cloudwatch describe-alarm-history --alarm-name "$name" --alarm-types MetricAlarm CompositeAlarm --history-item-type StateUpdate --max-items 10 --output json \
       | jq -r '.AlarmHistoryItems[] | "  \(.Timestamp[0:19])Z \(.HistorySummary)"' | sed '/^$/d'
   done
   echo; echo "deployment history ($(out codedeploy_app), newest first):"

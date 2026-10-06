@@ -107,11 +107,11 @@ Two optional variables carry the webhook, as in the cloud-worker root:
 
 With either one empty, the connection and destination hold cloud-worker's placeholders (`https://example.invalid/webhook`, `replace-me`) and the rule `<token>-page-devin` is `DISABLED`, so the alarm changes state but nothing is posted.
 
-`lp-up` reads both from `~/.lp-webhook.json` (or the file in `LP_WEBHOOK_FILE`), the same loader as `webhook_env` in `cloudworker/cw.sh`. Keep the file out of git. The Devin webhook does not check the secret, so any random value works for `X-Webhook-Secret`:
+`lp-up` reads both from `~/.lp-webhook.json` (or the file in `LP_WEBHOOK_FILE`), the same loader as `webhook_env` in `cloudworker/cw.sh`. Keep the file mode 600 and out of git. The secret is the one-time value the automation shows when its webhook is created: the webhook answers `403 {"detail":"Invalid webhook secret"}` to any other value, and EventBridge then moves the event to `<token>-page-dlq`.
 
 ```bash
 ( umask 077; jq -n --arg url 'https://<devin-host>/api/webhooks/automations/<org>/<automation>' \
-    --arg secret "$(openssl rand -hex 32)" '{url: $url, secret: $secret}' > ~/.lp-webhook.json )
+    --arg secret '<webhook secret>' '{url: $url, secret: $secret}' > ~/.lp-webhook.json )
 make lp-up RUN=<token>
 ```
 
