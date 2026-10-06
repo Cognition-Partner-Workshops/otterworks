@@ -53,6 +53,22 @@ tf_vars() {
   TF_VARS=(-var "run_token=${RUN}" -var "expires=$(cat "$expires_file")")
 }
 
+# Same loader as cloudworker/cw.sh webhook_env. The file stays outside git and the transcripts.
+webhook_env() {
+  local file="${LP_WEBHOOK_FILE:-${HOME}/.lp-webhook.json}"
+  if [ -f "$file" ]; then
+    TF_VAR_devin_webhook_url="$(jq -r '.url // empty' "$file")"
+    TF_VAR_devin_webhook_secret="$(jq -r '.secret // empty' "$file")"
+    if [ -z "$TF_VAR_devin_webhook_url" ] || [ -z "$TF_VAR_devin_webhook_secret" ]; then
+      die "${file} needs both url and secret"
+    fi
+    export TF_VAR_devin_webhook_url TF_VAR_devin_webhook_secret
+    echo "webhook url and secret from ${file}"
+  else
+    echo "no ${file}; the page rule stays disabled"
+  fi
+}
+
 elapsed() { awk -v s="$1" -v e="$(date +%s)" 'BEGIN { printf "%d s (%.1f min)", e - s, (e - s) / 60 }'; }
 
 data_api() {
@@ -85,7 +101,7 @@ load_outputs() {
 cmd_up() {
   need_run; start_transcript "$RUN"
   local t0; t0="$(date +%s)"
-  tf_init; tf_vars
+  tf_init; tf_vars; webhook_env
   tf plan -input=false -no-color "${TF_VARS[@]}" -out="${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
   tf apply -input=false -no-color -auto-approve "${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
   echo

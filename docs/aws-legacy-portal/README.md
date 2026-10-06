@@ -105,17 +105,31 @@ Two optional variables carry the webhook, as in the cloud-worker root:
 | `devin_webhook_url` | The Devin automation webhook URL |
 | `devin_webhook_secret` | Sent in the `X-Webhook-Secret` header (sensitive) |
 
-With either one empty, the connection and destination hold cloud-worker's placeholders (`https://example.invalid/webhook`, `replace-me`) and the rule `<token>-page-devin` is `DISABLED`, so the alarm changes state but nothing is posted. To page the automation, pass both to `lp-up`:
+With either one empty, the connection and destination hold cloud-worker's placeholders (`https://example.invalid/webhook`, `replace-me`) and the rule `<token>-page-devin` is `DISABLED`, so the alarm changes state but nothing is posted.
+
+`lp-up` reads both from `~/.lp-webhook.json` (or the file in `LP_WEBHOOK_FILE`), the same loader as `webhook_env` in `cloudworker/cw.sh`. Keep the file out of git. The Devin webhook does not check the secret, so any random value works for `X-Webhook-Secret`:
 
 ```bash
-TF_VAR_devin_webhook_url='https://...' TF_VAR_devin_webhook_secret='...' make lp-up RUN=<token>
+( umask 077; jq -n --arg url 'https://<devin-host>/api/webhooks/automations/<org>/<automation>' \
+    --arg secret "$(openssl rand -hex 32)" '{url: $url, secret: $secret}' > ~/.lp-webhook.json )
+make lp-up RUN=<token>
 ```
 
-After that apply, `page_rule_state` in the outputs is `ENABLED`. A later `lp-up` without the two variables disables the rule again.
+`lp-up` prints `webhook url and secret from /home/<user>/.lp-webhook.json` (or `no ...; the page rule stays disabled`), Terraform shows the secret as `(sensitive value)`, and the output `page_rule_state` is `ENABLED`. Without the file, the next `lp-up` puts the placeholders back and disables the rule.
+
+To test the wiring without breaking a function, force the composite into ALARM, then read the rule's metrics and put it back:
+
+```bash
+aws cloudwatch set-alarm-state --alarm-name <token>-page --state-value ALARM --state-reason "wiring test"
+make lp-page-status RUN=<token>   # Invocations 1, FailedInvocations 0 for <token>-page-devin
+aws cloudwatch set-alarm-state --alarm-name <token>-page --state-value OK --state-reason "wiring test done"
+```
+
+The automation's Events tab then lists the post and the session it started.
 
 ### Deploys and the drill
 
-The functions start on the placeholder at version 1. `lp-deploy` builds the Java 21 handlers from `services/legacy-portal-lambda`, uploads them, publishes a version with `FAIL_READS=0` and moves `live` through CodeDeploy. The first move off the placeholder uses `CodeDeployDefault.LambdaAllAtOnce` with alarm rollback off, because the placeholder answers 501. Every later move uses the deployment group's canary. Once all three aliases are on Java, `lp-deploy` starts the probe.
+The functions start on the placeholder at version 1. `lp-deploy` builds the Java 21 handlers from `services/legacy-portal-lambda`, uploads them, publishes a version with `FAIL_READS=0` and moves `live` through CodeDeploy. The first move off the placeholder uses `CodeDeployDefault.LambdaAllAtOnce` with alarm rollback off, because the placeholder answers 501. Every later move uses the deployment group's canary. Once all three aliases are on Java, `lp-deploy` starts the probe. An `lp-up` that changes the probe's code or settings leaves it stopped, and the next `lp-deploy` starts it again.
 
 `lp-break` ships the bad build: the same code with `FAIL_READS=1`, so every `GET` on that context answers 500. It is a published version that CodeDeploy moves with the canary config. For the first five minutes 10% of traffic hits it and the 5xx rate stays under 20%, so the alarm fires after CodeDeploy shifts the rest. `lp-heal` then stops and rolls back a deployment that is still in flight, or deploys `FAIL_READS=0` through the canary. In the second case the alarm is already in ALARM and would stop the new deployment at once, so `lp-heal` turns alarm rollback off for that one deployment with `overrideAlarmConfiguration`.
 
