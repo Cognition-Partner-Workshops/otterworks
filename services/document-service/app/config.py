@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     aws_endpoint_url: str = ""
     aws_region: str = "us-east-1"
     sns_enabled: bool = False
+    sns_connect_timeout_seconds: float = 2.0
+    sns_read_timeout_seconds: float = 5.0
+    sns_max_retries: int = 2
 
     otel_exporter_otlp_endpoint: str = "http://localhost:4318"
     otel_enabled: bool = False

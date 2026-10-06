@@ -31,8 +31,16 @@ class EventPublisher:
     def _get_client(self):  # noqa: ANN202
         if self._client is None:
             import boto3
+            from botocore.config import Config
 
-            kwargs = {"region_name": settings.aws_region}
+            kwargs = {
+                "region_name": settings.aws_region,
+                "config": Config(
+                    connect_timeout=settings.sns_connect_timeout_seconds,
+                    read_timeout=settings.sns_read_timeout_seconds,
+                    retries={"mode": "standard", "max_attempts": settings.sns_max_retries},
+                ),
+            }
             if settings.aws_endpoint_url:
                 kwargs["endpoint_url"] = settings.aws_endpoint_url
             self._client = boto3.client("sns", **kwargs)
@@ -56,7 +64,8 @@ class EventPublisher:
                 TopicArn=settings.sns_topic_arn,
                 Message=json.dumps(message, cls=_UUIDEncoder),
                 MessageAttributes={
-                    "event_type": {"DataType": "String", "StringValue": event_type}
+                    "eventType": {"DataType": "String", "StringValue": event_type},
+                    "event_type": {"DataType": "String", "StringValue": event_type},
                 },
             )
             logger.info("sns_event_published", event_type=event_type)
