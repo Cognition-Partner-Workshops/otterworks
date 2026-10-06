@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Logger returns an HTTP middleware that logs each request using zerolog.
+// Logger returns an HTTP middleware that writes one JSON access log line per
+// request. method, route, status, duration_ms and client are the fields the
+// CloudWatch Logs Insights queries in docs/observability/mobile-latency.md
+// group by.
 func Logger(logger zerolog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,16 +35,20 @@ func Logger(logger zerolog.Logger) func(http.Handler) http.Handler {
 				event = logger.Info()
 			}
 
+			ua := r.UserAgent()
 			event.
 				Str("request_id", requestID).
 				Str("method", r.Method).
+				Str("route", RouteFor(r.URL.Path)).
 				Str("path", r.URL.Path).
 				Str("query", r.URL.RawQuery).
 				Int("status", status).
 				Int("bytes", ww.BytesWritten()).
+				Float64("duration_ms", float64(duration.Microseconds())/1000).
 				Dur("latency_ms", duration).
 				Str("remote_addr", r.RemoteAddr).
-				Str("user_agent", r.UserAgent()).
+				Str("client", ClientFromUserAgent(ua)).
+				Str("user_agent", ua).
 				Str("protocol", r.Proto).
 				Msg("request completed")
 		})

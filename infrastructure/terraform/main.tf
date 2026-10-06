@@ -400,5 +400,33 @@ module "irsa" {
         },
       ]
     })
+
+    # Ships api-gateway and ingress-nginx access logs to CloudWatch
+    # (infrastructure/helm/aws-for-fluent-bit, scripts/install-log-shipping.sh).
+    # Runs in otterworks-system, which the otterworks-* trust condition covers.
+    "fluent-bit" = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:PutRetentionPolicy",
+            "logs:DescribeLogStreams",
+          ]
+          Resource = [
+            "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/otterworks/eks/${local.cluster_name}/*",
+            "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/otterworks/eks/${local.cluster_name}/*:log-stream:*",
+          ]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["logs:DescribeLogGroups"]
+          Resource = "*"
+        },
+      ]
+    })
   }
 }

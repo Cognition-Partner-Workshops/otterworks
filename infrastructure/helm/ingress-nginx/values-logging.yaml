@@ -1,0 +1,8 @@
+# JSON access log for the shared ingress-nginx controller, layered onto the
+# install in scripts/lib/ingress-nginx.sh. $namespace is the namespace of the
+# Ingress that served the request, which Fluent Bit uses to file each line
+# under /otterworks/eks/otterworks-dev/<namespace>/ingress-nginx.
+controller:
+  config:
+    log-format-escape-json: "true"
+    log-format-upstream: '{"time":"$time_iso8601","namespace":"$namespace","ingress":"$ingress_name","service":"$service_name","request_id":"$req_id","method":"$request_method","path":"$uri","status":$status,"request_time":$request_time,"upstream_response_time":"$upstream_response_time","bytes":$bytes_sent,"remote_addr":"$remote_addr","user_agent":"$http_user_agent"}'
