@@ -2,6 +2,7 @@
 # Assume a cloud-worker Devin role and print export lines for it.
 #   source <(cloudworker/assume.sh observer devin-<session id>)
 #   source <(cloudworker/assume.sh builder devin-<session id> --kubeconfig)
+#   source <(cloudworker/assume.sh engineer devin-<session id>)   # Terraform applies: PowerUser plus scoped IAM
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,12 +27,14 @@ if [ -f "$READER_FILE" ]; then
   : "${CW_AWS_SECRET_ACCESS_KEY:=$(jq -r '.CW_AWS_SECRET_ACCESS_KEY // empty' "$READER_FILE")}"
   : "${CW_OBSERVER_ROLE_ARN:=$(jq -r '.CW_OBSERVER_ROLE_ARN // empty' "$READER_FILE")}"
   : "${CW_BUILDER_ROLE_ARN:=$(jq -r '.CW_BUILDER_ROLE_ARN // empty' "$READER_FILE")}"
+  : "${CW_ENGINEER_ROLE_ARN:=$(jq -r '.CW_ENGINEER_ROLE_ARN // empty' "$READER_FILE")}"
 fi
 
 case "$ROLE" in
   observer) ROLE_ARN="${CW_OBSERVER_ROLE_ARN:-}" ;;
   builder)  ROLE_ARN="${CW_BUILDER_ROLE_ARN:-}" ;;
-  *) die "usage: assume.sh observer|builder [session-name] [--kubeconfig]" ;;
+  engineer) ROLE_ARN="${CW_ENGINEER_ROLE_ARN:-}" ;;
+  *) die "usage: assume.sh observer|builder|engineer [session-name] [--kubeconfig]" ;;
 esac
 [ -n "${CW_AWS_ACCESS_KEY_ID:-}" ] || die "CW_AWS_ACCESS_KEY_ID is not set"
 [ -n "${CW_AWS_SECRET_ACCESS_KEY:-}" ] || die "CW_AWS_SECRET_ACCESS_KEY is not set"

@@ -57,3 +57,7 @@ output "dashboard_url" {
 output "eventbridge_rule_name" {
   value = aws_cloudwatch_event_rule.dlq_alarm.name
 }
+
+output "devin_engineer_role_arn" {
+  value = aws_iam_role.devin_engineer.arn
+}
