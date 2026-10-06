@@ -19,6 +19,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
+	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/chaos"
 	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/config"
 	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/health"
 	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/middleware"
@@ -108,7 +109,10 @@ func main() {
 		Logger:        logger,
 		EnableTracing: true,
 	})
-	r.Mount("/", proxyRouter)
+	// Chaos: mobile-latency (scripts/bug-catalog.yaml). Runs after auth so a
+	// rejected request is never delayed.
+	chaosFlags := chaos.NewRedis(cfg.RedisAddr())
+	r.Mount("/", middleware.MobileLatency(chaosFlags)(proxyRouter))
 
 	// HTTP server
 	srv := &http.Server{
