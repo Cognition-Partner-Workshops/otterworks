@@ -1,41 +1,59 @@
-# Announcements carve-out: the first module off the EC2 box
+# Strangler carve-out: one legacy-portal module at a time off the EC2 box
 
-The announcements context of `services/legacy-portal` runs on API Gateway, Lambda and Aurora Serverless v2,
-and every create or publish puts an `announcement.published` event on EventBridge (the contract of
-`legacy-portal-serverless`, from the same Lambda code in `services/legacy-portal-lambda/announcements`). Everything else (preferences, feedback,
-`/health`, `/actuator/*`) stays on an `lp-ec2` run, reached through the same HTTP API.
+One bounded context of `services/legacy-portal` (announcements, preferences or feedback) runs on API Gateway,
+Lambda and Aurora Serverless v2, with the Lambda code main already carries in `services/legacy-portal-lambda/<module>`.
+Everything else (the other modules, `/health`, `/actuator/*`) stays on an `lp-ec2` run, reached through the
+same HTTP API. Announcements was the first module: every create or publish puts an `announcement.published`
+event on EventBridge, the contract `legacy-portal-serverless` uses too.
 
 ```
-client -> HTTP API  --ANY /api/announcements, ANY /api/announcements/{proxy+}-->  Lambda <run>-announcements (java21, alias live, SnapStart)
-             |                                                                     |-- RDS Data API --> Aurora Serverless v2 <run> (0-1 ACU)
-             |                                                                     '-- PutEvents ----> bus otterworks-<run>
-             |                                                                           rule <run>-announcement-published
-             |                                                                             |--> SQS <run>-announcement-published (notification side, DLQ)
-             |                                                                             '--> log group /aws/events/<run>-announcement-published
+client -> HTTP API  --ANY <prefix>, ANY <prefix>/{proxy+}-->  Lambda <run>-<module> (java21, alias live, SnapStart)
+             |                                                  |-- RDS Data API --> Aurora Serverless v2 <run> (0-1 ACU)
+             |                                                  '-- PutEvents (announcements only) --> bus otterworks-<run>
+             |                                                        rule <run>-announcement-published
+             |                                                          |--> SQS <run>-announcement-published (notification side, DLQ)
+             |                                                          '--> log group /aws/events/<run>-announcement-published
              '--$default (HTTP_PROXY, full path + query)--> ALB of the lp-ec2 run (Spring Boot monolith + local Postgres)
 ```
 
+| Module | Run token | Prefix on Lambda | Aurora table | Events |
+|---|---|---|---|---|
+| announcements | `lp-ann-<yyyymmdd>-<xx>` | `/api/announcements` | `announcements.announcement` | `announcement.published` |
+| preferences | `lp-pref-<yyyymmdd>-<xx>` | `/api/preferences` | `user_preferences.user_preference` | none |
+| feedback | `lp-fb-<yyyymmdd>-<xx>` | `/api/feedback` | `feedback.feedback` | none |
+
+The abbreviation in the run token picks the module; `MODULE=` is optional and must agree with it.
+
 | Piece | Where |
 |---|---|
-| Lambda code | `services/legacy-portal-lambda/announcements` (Java 21, AWS SDK v2, no Spring) |
-| Terraform root | `infrastructure/terraform/legacy-portal-announcements`, state `otterworks/legacy-portal-announcements/<run>/terraform.tfstate` |
-| Harness | `scripts/lp-announcements.sh`, `make lp-ann-*` |
-| Tags on every resource | `demo=legacy-portal-announcements`, `run_token`/`RunToken=<run>`, `Expires`, `ManagedBy=terraform`, `strangles=<lp-ec2 run>`, `bounded_ctx=announcements` |
+| Lambda code | `services/legacy-portal-lambda/<module>` (Java 21, AWS SDK v2, no Spring), unchanged from main |
+| Terraform root | `infrastructure/terraform/legacy-portal-strangler`, state `otterworks/legacy-portal-strangler/<run>/terraform.tfstate`; schema DDL from `legacy-portal-serverless/schema.sql` |
+| Harness | `scripts/lp-strangler.sh`, `make lp-mod-*` |
+| Tags on every resource | `demo=legacy-portal-strangler`, `run_token`/`RunToken=<run>`, `Expires`, `ManagedBy=terraform`, `strangles=<lp-ec2 run>`, `bounded_ctx=<module>` |
 
-The EC2 stack is only read (`data "aws_lb"`), never managed, so `lp-ann-down` cannot touch it.
+The EC2 stack is only read (`data "aws_lb"`), never managed, so `lp-mod-down` cannot touch it.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `make lp-ann-up RUN=lp-ann-<yyyymmdd>-<xx> EC2_RUN=lp-ec2-<yyyymmdd>-<xx>` | Builds the shaded jar with Maven (JDK 21), plans and applies the root |
-| `make lp-ann-status RUN=<run>` | Outputs, Lambda version and SnapStart status, cluster, rule pattern, three probe requests through the API |
-| `make lp-ann-reset RUN=<run>` | Truncates `announcements.announcement` on Aurora and the three context tables on the EC2 box (SSM Run Command) |
-| `make lp-ann-replay RUN=<run> TARGET=both` | Resets, replays the 95-case corpus against the EC2 ALB, resets again, replays against the HTTP API, prints the parity table |
-| `make lp-ann-events RUN=<run>` | Creates one announcement through the API and shows the event in the queue and in the audit log group |
-| `make lp-ann-down RUN=<run>` then `make lp-ann-verify-clean RUN=<run>` | Destroys the run and proves nothing tagged or named with it remains |
+| `make lp-mod-up RUN=lp-<ann\|pref\|fb>-<yyyymmdd>-<xx> EC2_RUN=lp-ec2-<yyyymmdd>-<xx>` | Builds the module's shaded jar with Maven (JDK 21), plans and applies the root |
+| `make lp-mod-status RUN=<run>` | Outputs, Lambda version and SnapStart status, cluster, rule pattern (announcements), four probe requests through the API |
+| `make lp-mod-reset RUN=<run>` | Truncates the module's table on Aurora and, under the EC2 lock, the three context tables on the EC2 box (SSM Run Command) |
+| `make lp-mod-replay RUN=<run> TARGET=both` | Under the EC2 lock: resets, replays the 95-case corpus against the EC2 ALB, resets again, replays against the HTTP API, prints the parity table |
+| `make lp-mod-events RUN=<lp-ann run>` | Creates one announcement through the API and shows the event in the queue and in the audit log group |
+| `make lp-mod-down RUN=<run>` then `make lp-mod-verify-clean RUN=<run>` | Destroys the run and proves nothing tagged or named with it remains |
 
-## Event contract
+## Shared EC2 box: the replay lock
+
+Every replay needs empty tables on the EC2 box, and all runs in front of one `lp-ec2` run share its Postgres.
+`reset` and `replay` therefore hold `s3://otterworks-terraform-state/otterworks/legacy-portal-strangler/locks/<lp-ec2 run>.lock`,
+created with `put-object --if-none-match '*'` (fails with `PreconditionFailed` while another run holds it) and
+deleted on exit. A waiting run polls every 20 s for up to `LOCK_WAIT_SECONDS` (2700); a lock older than
+`LOCK_STALE_SECONDS` (1800) is taken to belong to a crashed run and is broken. `up`, `status`, `events` and
+`down` take no lock, so builds and applies of different modules run in parallel.
+
+## Event contract (announcements)
 
 ```json
 {
@@ -61,7 +79,7 @@ Read through the AWS Documentation MCP server (`aws___search_documentation`, `aw
 | Payload format | HTTP API, `AWS_PROXY`, `payload_format_version = "2.0"`; the handler returns the full `statusCode`/`headers`/`body`/`isBase64Encoded` shape | [HTTP API Lambda integrations](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html): 2.0 carries `rawPath` and `rawQueryString` (the dispatcher needs the undecoded path for Spring's case-sensitive and trailing-slash matching), lowercases header names, and only guesses the response when `statusCode` is missing, which would break the 406/415 parity cases |
 | Routing the rest | `$default` route on an `HTTP_PROXY` integration to the lp-ec2 ALB | [HTTP API routes](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-routes.html): `$default` catches every request no other route matches and passes the full path; `{proxy+}` must be the last path segment |
 | Event entry | `PutEvents` with `EventBusName`, `Source`, `DetailType`, `Detail` (JSON string) | [PutEventsRequestEntry](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html): `Source` is free form but `aws.` is reserved, `DetailType` up to 128 characters, `Detail` must be valid JSON |
-| Rule shape | Custom bus, pattern `{"source": [...], "detail-type": ["announcement.published"]}` | [Event patterns](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html): patterns have the structure of the events they match, arrays of exact values, match on `source`, `detail-type` and `detail`; narrow patterns avoid unwanted matches |
+| Rule shape | Custom bus (announcements runs only), pattern `{"source": [...], "detail-type": ["announcement.published"]}` | [Event patterns](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html): patterns have the structure of the events they match, arrays of exact values, match on `source`, `detail-type` and `detail`; narrow patterns avoid unwanted matches |
 | Rule targets | SQS queue (+ DLQ) with a queue policy scoped to the rule ARN; CloudWatch Logs group with a log resource policy for `events.amazonaws.com` and `delivery.logs.amazonaws.com` | [EventBridge resource-based policies](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-use-resource-based.html): the console adds the CloudWatch Logs policy itself, the API/Terraform must create it |
 
 ## Known limits
@@ -72,9 +90,15 @@ Read through the AWS Documentation MCP server (`aws___search_documentation`, `aw
 - EventBridge publication is best effort: a failed `PutEvents` is logged and the write
   still returns its usual status.
 
-## Parity, run `lp-ann-20261006-a1` in front of `lp-ec2-20261006-b1`
+## Parity per module
 
-`make lp-ann-replay RUN=lp-ann-20261006-a1 TARGET=both`, 2026-10-06. The corpus checksums matched `SHA256SUMS`, and every replay started from empty tables with ids restarting at 1.
+Each module's run replays the whole corpus twice from empty tables with ids restarting at 1: against the
+`lp-ec2` ALB (the Java monolith) and against the run's HTTP API (the module on Lambda + Aurora, the rest on
+EC2), both compared with `java-reference.json` after the checksums matched `SHA256SUMS`.
+
+### announcements, run `lp-ann-20261006-a1` in front of `lp-ec2-20261006-b1`
+
+`make lp-mod-replay RUN=lp-ann-20261006-a1`, 2026-10-06, Lambda version 4 (main's `services/legacy-portal-lambda/announcements`).
 
 | Context | Cases | Served by (new) | EC2 ALB identical | HTTP API identical |
 |---|---|---|---|---|
@@ -83,3 +107,9 @@ Read through the AWS Documentation MCP server (`aws___search_documentation`, `aw
 | preferences | 20 | EC2 | 20/20 | 20/20 |
 | feedback | 29 | EC2 | 29/29 | 29/29 |
 | **total** | **95** | | **95/95** | **95/95** |
+
+`make lp-mod-events RUN=lp-ann-20261006-a1` then showed `announcement.published` (source `otterworks.legacy-portal`)
+for the create in the SQS queue and in `/aws/events/lp-ann-20261006-a1-announcement-published`, and the corpus's
+own create and `/publish` events in the queue.
+
+Cleanup: `make lp-mod-down RUN=lp-ann-20261006-a1 && make lp-mod-verify-clean RUN=lp-ann-20261006-a1`

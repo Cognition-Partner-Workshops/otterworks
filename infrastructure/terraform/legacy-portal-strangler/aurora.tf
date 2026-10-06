@@ -5,7 +5,7 @@ resource "random_password" "db" {
 
 resource "aws_secretsmanager_secret" "db" { # nosemgrep: terraform.aws.security.aws-secretsmanager-secret-unencrypted.aws-secretsmanager-secret-unencrypted
   name                    = "${local.name}/aurora/master"
-  description             = "Master credential of the ${local.name} Aurora cluster (legacy-portal-announcements)."
+  description             = "Master credential of the ${local.name} Aurora cluster (legacy-portal-strangler)."
   recovery_window_in_days = 0
 }
 
@@ -69,9 +69,10 @@ resource "aws_rds_cluster_instance" "writer" {
   apply_immediately    = true
 }
 
-# Creates the announcements schema and table through the Data API once the writer is available.
+# Creates the three context schemas through the Data API once the writer is available, from the DDL
+# legacy-portal-serverless keeps (captured from Hibernate), so both roots build the same tables.
 resource "terraform_data" "schema" {
-  triggers_replace = [aws_rds_cluster.this.cluster_resource_id, filesha256("${path.module}/schema.sql")]
+  triggers_replace = [aws_rds_cluster.this.cluster_resource_id, filesha256(local.schema_sql)]
 
   provisioner "local-exec" {
     command = "${path.module}/apply-schema.sh"
@@ -79,10 +80,14 @@ resource "terraform_data" "schema" {
       CLUSTER_ARN = aws_rds_cluster.this.arn
       SECRET_ARN  = aws_secretsmanager_secret.db.arn
       DATABASE    = aws_rds_cluster.this.database_name
-      SQL_FILE    = "${path.module}/schema.sql"
+      SQL_FILE    = local.schema_sql
       AWS_REGION  = var.region
     }
   }
 
   depends_on = [aws_rds_cluster_instance.writer, aws_secretsmanager_secret_version.db]
+}
+
+locals {
+  schema_sql = "${path.module}/../legacy-portal-serverless/schema.sql"
 }

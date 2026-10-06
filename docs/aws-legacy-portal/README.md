@@ -10,7 +10,7 @@ This folder holds the prompts, the run of show and the rehearsal record for the 
 | `run-of-show.md` | Presenter steps for the AWS persona in Partner Demo - ViewOnly |
 | `rehearsal.md` | Measured rehearsal with timings, capacity and cost |
 | `rehearsal/<token>/` | The four transcripts of the rehearsal |
-| `announcements.md` | Announcements carve-out: Lambda, Aurora Serverless v2 and EventBridge in front of an `lp-ec2` run, `make lp-ann-*` |
+| `strangler.md` | Strangler carve-out of one module at a time: Lambda, Aurora Serverless v2 (and EventBridge for announcements) in front of an `lp-ec2` run, `make lp-mod-*` |
 
 ## Recorded corpus
 

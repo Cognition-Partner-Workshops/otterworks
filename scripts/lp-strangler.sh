@@ -1,28 +1,44 @@
 #!/usr/bin/env bash
-# Harness for the announcements carve-out of the legacy portal: the announcements context on API Gateway,
-# Lambda, Aurora Serverless v2 and EventBridge, every other route still on a legacy-portal-ec2 run.
-#   scripts/lp-announcements.sh up|status|reset|replay|events|down|verify-clean
-# Inputs come from the environment: RUN (lp-ann-<yyyymmdd>-<two characters>), EC2_RUN (the lp-ec2 run whose
-# ALB the $default route forwards to; up only, later commands read it from the state), TARGET (replay:
+# Harness for carving one bounded context out of the legacy portal (strangler fig): the module on API Gateway,
+# Lambda and Aurora Serverless v2 (announcements also on EventBridge), every other route still on a
+# legacy-portal-ec2 run.
+#   scripts/lp-strangler.sh up|status|reset|replay|events|down|verify-clean
+# Inputs come from the environment: RUN (lp-<ann|pref|fb>-<yyyymmdd>-<two characters>; the abbreviation picks
+# the module), MODULE (optional, announcements|preferences|feedback, must match RUN), EC2_RUN (the lp-ec2 run
+# whose ALB the $default route forwards to; up only, later commands read it from the state), TARGET (replay:
 # both|ec2|api), EXPIRES_DAYS. Every command writes a transcript to .demo/legacy-portal/<token>/<command>-<UTC
 # time>.log with the AWS account number replaced by <account>.
+#
+# Resetting and replaying truncate the three context tables on the shared EC2 box, so reset and replay hold a
+# lock per EC2 run (an S3 object created with If-None-Match) and parallel runs take turns there.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TF_ROOT="${ROOT}/infrastructure/terraform/legacy-portal-announcements"
-LAMBDA_SRC="${ROOT}/services/legacy-portal-lambda/announcements"
+TF_ROOT="${ROOT}/infrastructure/terraform/legacy-portal-strangler"
+STATE_BUCKET="otterworks-terraform-state"
+STATE_PREFIX="otterworks/legacy-portal-strangler"
 PARITY="${ROOT}/services/legacy-portal/parity"
 export AWS_REGION="${AWS_REGION:-us-east-1}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-${AWS_REGION}}"
 export AWS_PAGER="" TF_IN_AUTOMATION=1
 CMD="${1:-}"; shift || true
 
-die() { echo "lp-ann: $*" >&2; exit 2; }
+die() { echo "lp-mod: $*" >&2; exit 2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
 need_run() {
-  [ -n "${RUN:-}" ] || die "RUN is required, e.g. make lp-ann-${CMD} RUN=lp-ann-$(date -u +%Y%m%d)-a1"
-  [[ "$RUN" =~ ^lp-ann-[0-9]{8}-[a-z0-9]{2}$ ]] || die "RUN must look like lp-ann-20261006-a1, got ${RUN}"
+  [ -n "${RUN:-}" ] || die "RUN is required, e.g. make lp-mod-${CMD} RUN=lp-pref-$(date -u +%Y%m%d)-a1"
+  [[ "$RUN" =~ ^lp-(ann|pref|fb)-[0-9]{8}-[a-z0-9]{2}$ ]] || die "RUN must look like lp-ann-20261006-a1, lp-pref-... or lp-fb-..., got ${RUN}"
+  local mod
+  case "${BASH_REMATCH[1]}" in ann) mod=announcements ;; pref) mod=preferences ;; fb) mod=feedback ;; esac
+  [ -z "${MODULE:-}" ] || [ "$MODULE" = "$mod" ] || die "RUN ${RUN} names module ${mod}, but MODULE=${MODULE}"
+  MODULE="$mod"
+  LAMBDA_SRC="${ROOT}/services/legacy-portal-lambda/${MODULE}"
+  case "$MODULE" in
+    announcements) PREFIX=/api/announcements; TABLE=announcements.announcement ;;
+    preferences) PREFIX=/api/preferences; TABLE=user_preferences.user_preference ;;
+    feedback) PREFIX=/api/feedback; TABLE=feedback.feedback ;;
+  esac
 }
 
 start_transcript() {
@@ -32,17 +48,17 @@ start_transcript() {
   local account
   account="$(aws sts get-caller-identity --query Account --output text)"
   exec > >(sed -u -E "s/${account}/<account>/g" | tee "$TRANSCRIPT") 2>&1
-  echo "# lp-ann-${CMD} run=${1} started $(now)"
+  echo "# lp-mod-${CMD} run=${1} module=${MODULE:-} started $(now)"
   echo "# caller $(aws sts get-caller-identity --query Arn --output text | sed -E 's#:user/.*#:user/<caller>#')"
-  trap 'rc=$?; echo "# lp-ann-${CMD} finished $(now) exit=${rc}"; echo "# transcript ${TRANSCRIPT#"${ROOT}"/}"' EXIT
+  trap 'rc=$?; ec2_unlock; echo "# lp-mod-${CMD} finished $(now) exit=${rc}"; echo "# transcript ${TRANSCRIPT#"${ROOT}"/}"' EXIT
 }
 
 tf() { TF_DATA_DIR="${ROOT}/.demo/legacy-portal/${RUN}/.terraform" terraform -chdir="$TF_ROOT" "$@"; }
 
 tf_init() {
   tf init -input=false -reconfigure -no-color \
-    -backend-config="key=otterworks/legacy-portal-announcements/${RUN}/terraform.tfstate" >/dev/null
-  echo "terraform init: state otterworks/legacy-portal-announcements/${RUN}/terraform.tfstate"
+    -backend-config="key=${STATE_PREFIX}/${RUN}/terraform.tfstate" >/dev/null
+  echo "terraform init: state ${STATE_PREFIX}/${RUN}/terraform.tfstate"
 }
 
 # The EC2 run token is fixed at the first apply; destroy and later plans reuse it.
@@ -60,7 +76,8 @@ tf_vars() {
     [ -n "$from_state" ] || die "EC2_RUN is required on the first up, e.g. EC2_RUN=lp-ec2-20261006-b1"
     echo "$from_state" > "${dir}/ec2_run"
   fi
-  TF_VARS=(-var "run_token=${RUN}" -var "ec2_run_token=$(cat "${dir}/ec2_run")" -var "expires=$(cat "${dir}/expires")")
+  TF_VARS=(-var "run_token=${RUN}" -var "module=${MODULE}" -var "ec2_run_token=$(cat "${dir}/ec2_run")"
+    -var "expires=$(cat "${dir}/expires")" -var "jar_path=$(jar_path)")
 }
 
 elapsed() { awk -v s="$1" -v e="$(date +%s)" 'BEGIN { printf "%d s (%.1f min)", e - s, (e - s) / 60 }'; }
@@ -84,13 +101,18 @@ build_jar() {
 </settings>
 XML
   (cd "$LAMBDA_SRC" && "$mvn" -s "$settings" -q -B package)
-  ls -l "${LAMBDA_SRC}/target/legacy-portal-lambda-announcements-1.0.0.jar"
+  ls -l "$(jar_path)"
+}
+
+# The shaded jar each module's pom produces (the names differ per module).
+jar_path() {
+  find "${LAMBDA_SRC}/target" -maxdepth 1 -name '*.jar' ! -name 'original-*' 2>/dev/null | head -1
 }
 
 load_outputs() {
   local json
   json="$(tf output -json)"
-  [ "$(jq 'length' <<<"$json")" -gt 0 ] || die "no Terraform outputs for ${RUN}; run make lp-ann-up RUN=${RUN} EC2_RUN=<lp-ec2 run> first"
+  [ "$(jq 'length' <<<"$json")" -gt 0 ] || die "no Terraform outputs for ${RUN}; run make lp-mod-up RUN=${RUN} EC2_RUN=<lp-ec2 run> first"
   OUTPUTS_JSON="$json"
   API_URL="$(jq -r .api_url.value <<<"$json")"
   EC2_URL="$(jq -r .ec2_base_url.value <<<"$json")"
@@ -128,7 +150,7 @@ ec2_psql() {
   instance="$(ec2_instance)"
   [ -n "$instance" ] || die "no running instance tagged run_token=${EC2_RUN_TOKEN}"
   cmd="$(aws ssm send-command --instance-ids "$instance" --document-name AWS-RunShellScript \
-    --comment "lp-ann ${RUN} reset" \
+    --comment "lp-mod ${RUN} reset" \
     --parameters "$(jq -cn --arg s "$sql" '{commands: ["sudo -u postgres psql -d legacyportal -v ON_ERROR_STOP=1 -Atc " + ($s | @sh)]}')" \
     --query Command.CommandId --output text)"
   for _ in $(seq 1 30); do
@@ -143,8 +165,43 @@ ec2_psql() {
 }
 
 reset_aurora() {
-  data_api "TRUNCATE announcements.announcement RESTART IDENTITY" >/dev/null
-  echo "aurora ${RUN}: truncated announcements.announcement, ids restart at 1 ($(data_api 'SELECT count(*) FROM announcements.announcement' | jq -r '.records[0][0].longValue') rows)"
+  data_api "TRUNCATE ${TABLE} RESTART IDENTITY" >/dev/null
+  echo "aurora ${RUN}: truncated ${TABLE}, ids restart at 1 ($(data_api "SELECT count(*) FROM ${TABLE}" | jq -r '.records[0][0].longValue') rows)"
+}
+
+# Lock per EC2 run around everything that truncates or replays against the shared box. A lock older than
+# LOCK_STALE_SECONDS is a crashed holder and is broken.
+LOCK_HELD=0
+ec2_lock() {
+  local key="${STATE_PREFIX}/locks/${EC2_RUN_TOKEN}.lock" deadline out holder modified age
+  deadline=$(( $(date +%s) + ${LOCK_WAIT_SECONDS:-2700} ))
+  while :; do
+    printf '%s %s\n' "$RUN" "$(now)" > "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock"
+    if out="$(aws s3api put-object --bucket "$STATE_BUCKET" --key "$key" \
+        --body "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock" --if-none-match '*' 2>&1)"; then
+      LOCK_HELD=1; LOCK_KEY="$key"
+      echo "ec2 lock taken: s3://${STATE_BUCKET}/${key}"
+      return 0
+    fi
+    case "$out" in *PreconditionFailed*|*ConditionalRequestConflict*) ;; *) die "ec2 lock: ${out}" ;; esac
+    holder="$(aws s3 cp "s3://${STATE_BUCKET}/${key}" - 2>/dev/null || echo unknown)"
+    modified="$(aws s3api head-object --bucket "$STATE_BUCKET" --key "$key" --query LastModified --output text 2>/dev/null || true)"
+    age=$(( $(date +%s) - $(date -d "${modified:-now}" +%s) ))
+    if [ "$age" -gt "${LOCK_STALE_SECONDS:-1800}" ]; then
+      echo "ec2 lock: breaking a ${age} s old lock held by ${holder}"
+      aws s3api delete-object --bucket "$STATE_BUCKET" --key "$key" >/dev/null
+      continue
+    fi
+    [ "$(date +%s)" -lt "$deadline" ] || die "ec2 lock: still held by ${holder} after ${LOCK_WAIT_SECONDS:-2700} s"
+    echo "$(now) ec2 lock held by ${holder} (${age} s), waiting"
+    sleep 20
+  done
+}
+
+ec2_unlock() {
+  [ "$LOCK_HELD" = 1 ] || return 0
+  aws s3api delete-object --bucket "$STATE_BUCKET" --key "$LOCK_KEY" >/dev/null && echo "ec2 lock released"
+  LOCK_HELD=0
 }
 
 reset_ec2() {
@@ -162,15 +219,15 @@ cmd_up() {
   echo
   tf output -no-color
   echo
-  echo "lp-ann-up wall clock: $(elapsed "$t0")"
+  echo "lp-mod-up wall clock: $(elapsed "$t0")"
 }
 
 cmd_status() {
   local scope="${RUN:-all-runs}"
   [ -z "${RUN:-}" ] || need_run
   start_transcript "$scope"
-  echo "resources tagged demo=legacy-portal-announcements in ${AWS_REGION}, by run_token:"
-  aws resourcegroupstaggingapi get-resources --tag-filters Key=demo,Values=legacy-portal-announcements --output json \
+  echo "resources tagged demo=legacy-portal-strangler in ${AWS_REGION}, by run_token:"
+  aws resourcegroupstaggingapi get-resources --tag-filters Key=demo,Values=legacy-portal-strangler --output json \
     | jq -r '.ResourceTagMappingList[] | [(.Tags[] | select(.Key=="run_token") | .Value), (.ResourceARN | split(":")[2])] | @tsv' \
     | sort | uniq -c | awk '{ printf "  %-20s %-16s %s\n", $2, $3, $1 }'
   [ -n "${RUN:-}" ] || { echo "set RUN=<token> for one run's outputs, function, cluster and rule"; return 0; }
@@ -179,24 +236,28 @@ cmd_status() {
   load_outputs
   echo; echo "outputs:"; tf output -no-color
   echo; echo "function:"
-  aws lambda get-function-configuration --function-name "${RUN}-announcements" --qualifier live --output text \
+  aws lambda get-function-configuration --function-name "${RUN}-${MODULE}" --qualifier live --output text \
     --query '[FunctionName,Version,Runtime,MemorySize,State,SnapStart.OptimizationStatus]'
   echo "aurora:"
   aws rds describe-db-clusters --db-cluster-identifier "$RUN" --output text \
     --query 'DBClusters[0].[Status,EngineVersion,ServerlessV2ScalingConfiguration.MinCapacity,ServerlessV2ScalingConfiguration.MaxCapacity,HttpEndpointEnabled]'
-  echo "rule:"
-  aws events describe-rule --name "${RUN}-announcement-published" --event-bus-name "otterworks-${RUN}" --output text \
-    --query '[Name,State,EventPattern]'
-  echo "routes of the HTTP API:"
-  curl -s -o /dev/null -w '  GET /health (EC2 via default route)     %{http_code} in %{time_total}s\n' "${API_URL%/}/health" || true
-  curl -s -o /dev/null -w '  GET /api/announcements (Lambda)          %{http_code} in %{time_total}s\n' "${API_URL%/}/api/announcements" || true
-  curl -s -o /dev/null -w '  GET /api/feedback/average-rating (EC2)   %{http_code} in %{time_total}s\n' "${API_URL%/}/api/feedback/average-rating" || true
+  if [ "$MODULE" = announcements ]; then
+    echo "rule:"
+    aws events describe-rule --name "${RUN}-announcement-published" --event-bus-name "otterworks-${RUN}" --output text \
+      --query '[Name,State,EventPattern]'
+  fi
+  echo "routes of the HTTP API (${PREFIX} on Lambda, the rest on EC2 through \$default):"
+  local path
+  for path in /health /api/announcements /api/preferences/u1 /api/feedback/average-rating; do
+    curl -s -o /dev/null -w "  GET %{url_effective} %{http_code} in %{time_total}s\n" "${API_URL%/}${path}" || true
+  done
 }
 
 cmd_reset() {
   need_run; start_transcript "$RUN"
   tf_init >/dev/null; load_outputs
   reset_aurora
+  ec2_lock
   reset_ec2
 }
 
@@ -209,12 +270,13 @@ replay_one() {
 }
 
 parity_table() {
-  python3 - "$@" <<'PY'
+  python3 - "$MODULE" "$@" <<'PY'
 import json, sys
 from pathlib import Path
-dirs = [(sys.argv[i], Path(sys.argv[i + 1])) for i in range(1, len(sys.argv), 2)]
+module = sys.argv[1]
+dirs = [(sys.argv[i], Path(sys.argv[i + 1])) for i in range(2, len(sys.argv), 2)]
 ctxs = ["common", "announcements", "preferences", "feedback"]
-served = {"common": "EC2", "announcements": "Lambda + Aurora", "preferences": "EC2", "feedback": "EC2"}
+served = {c: "Lambda + Aurora" if c == module else "EC2" for c in ctxs}
 head = "| Context | Cases | Served by (new) | " + " | ".join(f"{l} identical" for l, _ in dirs) + " |"
 print(head)
 print("|" + "---|" * (3 + len(dirs)))
@@ -237,6 +299,7 @@ cmd_replay() {
   case "$target" in both|ec2|api) ;; *) die "TARGET must be both, ec2 or api" ;; esac
   tf_init >/dev/null; load_outputs
   (cd "$PARITY" && sha256sum -c SHA256SUMS)
+  ec2_lock
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   out_ec2="${ROOT}/.demo/legacy-portal/${RUN}/replay-ec2-${stamp}"
   out_api="${ROOT}/.demo/legacy-portal/${RUN}/replay-api-${stamp}"
@@ -258,7 +321,9 @@ cmd_replay() {
 
 # Creates one announcement through the new front door and shows where the announcement.published event landed.
 cmd_events() {
-  need_run; start_transcript "$RUN"
+  need_run
+  [ "$MODULE" = announcements ] || die "${MODULE} publishes no events; events is for an lp-ann run"
+  start_transcript "$RUN"
   tf_init >/dev/null; load_outputs
   local queue log_group start body
   queue="$(jq -r .notifications_queue_url.value <<<"$OUTPUTS_JSON")"
@@ -280,10 +345,10 @@ cmd_down() {
   need_run; start_transcript "$RUN"
   local t0; t0="$(date +%s)"
   tf_init; tf_vars
-  [ -s "${LAMBDA_SRC}/target/legacy-portal-lambda-announcements-1.0.0.jar" ] || build_jar
+  [ -n "$(jar_path)" ] || build_jar
   tf destroy -input=false -no-color -auto-approve "${TF_VARS[@]}"
   echo
-  echo "lp-ann-down wall clock: $(elapsed "$t0")"
+  echo "lp-mod-down wall clock: $(elapsed "$t0")"
 }
 
 cmd_verify_clean() {
@@ -307,7 +372,7 @@ cmd_verify_clean() {
   check_gone() { if "$@" >/dev/null 2>&1; then echo "  still present: ${*: -1}"; left=1; else echo "  absent: ${*: -1}"; fi; }
   echo "direct lookups:"
   check_gone aws iam get-role --role-name "${RUN}-lambda"
-  check_gone aws lambda get-function --function-name "${RUN}-announcements"
+  check_gone aws lambda get-function --function-name "${RUN}-${MODULE}"
   check_gone aws rds describe-db-clusters --db-cluster-identifier "$RUN"
   check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"
   check_gone aws events describe-event-bus --name "otterworks-${RUN}"
@@ -330,5 +395,5 @@ case "$CMD" in
   events) cmd_events ;;
   down) cmd_down ;;
   verify-clean) cmd_verify_clean ;;
-  *) die "usage: lp-announcements.sh up|status|reset|replay|events|down|verify-clean (RUN, EC2_RUN, TARGET from the environment)" ;;
+  *) die "usage: lp-strangler.sh up|status|reset|replay|events|down|verify-clean (RUN, MODULE, EC2_RUN, TARGET from the environment)" ;;
 esac

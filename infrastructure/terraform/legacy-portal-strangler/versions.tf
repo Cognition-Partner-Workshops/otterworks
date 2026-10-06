@@ -12,8 +12,8 @@ terraform {
     }
   }
 
-  # One state object per run token. scripts/lp-announcements.sh passes
-  # -backend-config="key=otterworks/legacy-portal-announcements/<token>/terraform.tfstate".
+  # One state object per run token. scripts/lp-strangler.sh passes
+  # -backend-config="key=otterworks/legacy-portal-strangler/<token>/terraform.tfstate".
   backend "s3" {
     bucket = "otterworks-terraform-state"
     region = "us-east-1"

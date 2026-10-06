@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status lp-ann-up lp-ann-status lp-ann-reset lp-ann-replay lp-ann-events lp-ann-down lp-ann-verify-clean
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status lp-mod-up lp-mod-status lp-mod-reset lp-mod-replay lp-mod-events lp-mod-down lp-mod-verify-clean
 
 SHELL := /bin/bash
 
@@ -623,28 +623,28 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
 
-# legacy-portal-announcements: the announcements context on API Gateway + Lambda + Aurora Serverless v2 +
-# EventBridge, every other route forwarded to an lp-ec2 run's ALB. Terraform root
-# infrastructure/terraform/legacy-portal-announcements, one state per run token. See docs/aws-legacy-portal/announcements.md.
-LP_ANN = RUN=$(RUN) EC2_RUN=$(EC2_RUN) TARGET=$(TARGET) scripts/lp-announcements.sh
+# legacy-portal-strangler: one legacy-portal module (announcements, preferences or feedback) on API Gateway +
+# Lambda + Aurora Serverless v2, every other route on an lp-ec2 run through the HTTP API's $default route.
+# infrastructure/terraform/legacy-portal-strangler, one state per run token. See docs/aws-legacy-portal/strangler.md.
+LP_MOD = RUN=$(RUN) MODULE=$(MODULE) EC2_RUN=$(EC2_RUN) TARGET=$(TARGET) scripts/lp-strangler.sh
 
-lp-ann-up: ## Build the announcements Lambda and apply its stack in front of an EC2 run (RUN=lp-ann-<yyyymmdd>-<xx>, EC2_RUN=lp-ec2-...)
-	@$(LP_ANN) up
+lp-mod-up: ## Build one module's Lambda and apply its stack in front of an EC2 run (RUN=lp-<ann|pref|fb>-<yyyymmdd>-<xx>, EC2_RUN=lp-ec2-..., MODULE optional)
+	@$(LP_MOD) up
 
-lp-ann-status: ## List announcements carve-out runs by tag, or one run's outputs, function, cluster and rule (RUN optional)
-	@$(LP_ANN) status
+lp-mod-status: ## List strangler runs by tag, or one run's outputs, function, cluster, rule and routes (RUN optional)
+	@$(LP_MOD) status
 
-lp-ann-reset: ## Empty the announcements table on Aurora and the three context tables on the EC2 box (RUN=)
-	@$(LP_ANN) reset
+lp-mod-reset: ## Empty the module's table on Aurora and, under the EC2 lock, the three context tables on the EC2 box (RUN=)
+	@$(LP_MOD) reset
 
-lp-ann-replay: ## Reset, then replay the 95-case corpus against the EC2 ALB and the new HTTP API (RUN=, TARGET=both|ec2|api)
-	@$(LP_ANN) replay
+lp-mod-replay: ## Under the EC2 lock, reset and replay the 95-case corpus against the EC2 ALB and the new HTTP API (RUN=, TARGET=both|ec2|api)
+	@$(LP_MOD) replay
 
-lp-ann-events: ## Create one announcement and show the AnnouncementCreated event in the queue and the audit log (RUN=)
-	@$(LP_ANN) events
+lp-mod-events: ## Announcements runs only: create one announcement and show announcement.published in the queue and the audit log (RUN=)
+	@$(LP_MOD) events
 
-lp-ann-down: ## Destroy the run's announcements stack; the EC2 run is not touched (RUN=)
-	@$(LP_ANN) down
+lp-mod-down: ## Destroy the run's stack; the EC2 run is not touched (RUN=)
+	@$(LP_MOD) down
 
-lp-ann-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
-	@$(LP_ANN) verify-clean
+lp-mod-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
+	@$(LP_MOD) verify-clean

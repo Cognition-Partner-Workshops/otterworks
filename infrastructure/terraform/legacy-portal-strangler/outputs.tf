@@ -1,5 +1,5 @@
 output "api_url" {
-  description = "Invoke URL of the HTTP API: the portal's new front door. lp-ann-replay uses it as the target base URL."
+  description = "Invoke URL of the HTTP API: the portal's new front door. lp-mod-replay uses it as the target base URL."
   value       = aws_apigatewayv2_stage.default.invoke_url
 }
 
@@ -13,7 +13,7 @@ output "ec2_base_url" {
 }
 
 output "lambda_name" {
-  value = aws_lambda_function.announcements.function_name
+  value = aws_lambda_function.this.function_name
 }
 
 output "lambda_live_version" {
@@ -41,22 +41,30 @@ output "db_name" {
 }
 
 output "event_bus_name" {
-  value = aws_cloudwatch_event_bus.this.name
+  value = local.events ? aws_cloudwatch_event_bus.this[0].name : null
 }
 
 output "event_rule_name" {
-  value = aws_cloudwatch_event_rule.announcement_published.name
+  value = local.events ? aws_cloudwatch_event_rule.announcement_published[0].name : null
 }
 
 output "notifications_queue_url" {
-  value = aws_sqs_queue.notifications.url
+  value = local.events ? aws_sqs_queue.notifications[0].url : null
 }
 
 output "events_log_group" {
-  value = aws_cloudwatch_log_group.events.name
+  value = local.events ? aws_cloudwatch_log_group.events[0].name : null
 }
 
 output "ec2_run_token" {
-  description = "legacy-portal-ec2 run that still serves every route outside /api/announcements."
+  description = "legacy-portal-ec2 run that still serves every route outside the module's prefix."
   value       = var.ec2_run_token
+}
+
+output "module" {
+  value = var.module
+}
+
+output "route_prefix" {
+  value = local.m.prefix
 }

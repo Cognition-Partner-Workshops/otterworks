@@ -1,6 +1,6 @@
 resource "aws_apigatewayv2_api" "this" {
   name          = local.name
-  description   = "legacy-portal front door for ${local.name}: announcements on Lambda, everything else on ${var.ec2_run_token}"
+  description   = "legacy-portal front door for ${local.name}: ${var.module} on Lambda, everything else on ${var.ec2_run_token}"
   protocol_type = "HTTP"
 }
 
@@ -30,7 +30,7 @@ resource "aws_apigatewayv2_stage" "default" {
   }
 }
 
-resource "aws_apigatewayv2_integration" "announcements" {
+resource "aws_apigatewayv2_integration" "lambda" {
   api_id                 = aws_apigatewayv2_api.this.id
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_alias.live.invoke_arn
@@ -47,11 +47,11 @@ resource "aws_apigatewayv2_integration" "ec2" {
   timeout_milliseconds = 29000
 }
 
-resource "aws_apigatewayv2_route" "announcements" {
-  for_each  = toset(["ANY /api/announcements", "ANY /api/announcements/{proxy+}"])
+resource "aws_apigatewayv2_route" "module" {
+  for_each  = toset(["ANY ${local.m.prefix}", "ANY ${local.m.prefix}/{proxy+}"])
   api_id    = aws_apigatewayv2_api.this.id
   route_key = each.value
-  target    = "integrations/${aws_apigatewayv2_integration.announcements.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
 resource "aws_apigatewayv2_route" "default" {
@@ -63,7 +63,7 @@ resource "aws_apigatewayv2_route" "default" {
 resource "aws_lambda_permission" "api" {
   statement_id  = "AllowHttpApi"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.announcements.function_name
+  function_name = aws_lambda_function.this.function_name
   qualifier     = aws_lambda_alias.live.name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
