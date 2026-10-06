@@ -3,7 +3,7 @@
 # the default bus for the composite alarm going to ALARM. With either webhook variable empty the
 # connection and destination carry cloud-worker's placeholder values and the rule is DISABLED.
 locals {
-  page_enabled   = var.devin_webhook_url != "" && var.devin_webhook_secret != ""
+  page_enabled   = var.devin_webhook_url != "" && nonsensitive(var.devin_webhook_secret != "")
   webhook_url    = local.page_enabled ? var.devin_webhook_url : "https://example.invalid/webhook"
   webhook_secret = local.page_enabled ? var.devin_webhook_secret : "replace-me"
   page_rule_name = "${local.name}-page-devin"
