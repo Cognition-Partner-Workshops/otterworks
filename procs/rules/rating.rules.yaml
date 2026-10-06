@@ -17,11 +17,13 @@ rules:
       occurred_at::date depends on the session TimeZone (the recorded stack runs in UTC).
       Should the service pin period boundaries to UTC explicitly? With TimeZone
       America/New_York an event at 2026-03-01T02:00Z is counted in February.
+    answer: >-
+      Keep the legacy session-timezone date cast for the migration (parity is the contract). The explicit UTC date cast is deferred to follow-up ticket UNT2-13; the NULL quota/amount result when there is no subscription is also kept and is to be confirmed with finance in UNT2-13.
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-002
     statement: >-
       Rollover is the sum of the stored rollover_units of the tenant's rating results whose
@@ -39,11 +41,13 @@ rules:
       Rollover that a later period already consumed is not deducted, so the same unused
       units can be applied again in the next period (tenant 1: 200 rollover applied in
       February and the same December/January units applied again in March). Keep as-is?
+    answer: >-
+      Keep the legacy behaviour for the migration (previously consumed rollover is re-applied). To be confirmed with finance in follow-up ticket UNT2-13.
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-003
     statement: >-
       Billable units are used_units minus rollover minus the plan's included_units, floored
@@ -56,10 +60,10 @@ rules:
     confidence: high
     scenarios: [RATING-001, RATING-002]
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-004
     statement: >-
       The first tier holds the first 101 billable units (LEAST(billable, 101)); every unit
@@ -75,11 +79,13 @@ rules:
     question: >-
       The tier boundary is 101 units, not 100. RATING-004/005/006 record 101 as the
       boundary, so parity pins it. Intended, or an off-by-one to keep only for parity?
+    answer: >-
+      Keep the legacy 101-unit first-tier boundary for the migration. To be confirmed with finance in follow-up ticket UNT2-13.
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-005
     statement: >-
       Overage amount is first_tier_units x overage_rate + second_tier_units x overage_rate
@@ -93,10 +99,10 @@ rules:
     confidence: high
     scenarios: [RATING-002, RATING-004, RATING-006]
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-006
     statement: >-
       When the subscription status is suspended and suspended_on falls inside the period,
@@ -124,11 +130,13 @@ rules:
       first/second tier units (101/99) and the amount (from 200 units) are not. RATING-003
       cannot tell these apart because February 15 splits the month 14/14. Keep for parity
       and change later with finance sign-off, or change now?
+    answer: >-
+      Keep the legacy behaviour exactly for the migration, double rounding and the suspended-days fraction included. Round-once and proration by active days are deferred to follow-up ticket UNT2-13.
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-007
     statement: >-
       The usage summary returns one row per usage kind with the event count and summed
@@ -142,10 +150,10 @@ rules:
     confidence: high
     scenarios: [RATING-007]
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
   - id: RATING-008
     statement: >-
       Finalizing upserts the rating period (id md5(tenant_id || period_start), conflict on
@@ -163,7 +171,7 @@ rules:
     confidence: high
     scenarios: [RATING-008]
     decision:
-      status: pending
-      reviewer: null
-      date: null
-      note: Awaiting human review.
+      status: approved
+      reviewer: AWS
+      date: "2026-10-06"
+      note: Approved as recorded; exact legacy behaviour kept for parity (plan decision d-rating-rounding).
