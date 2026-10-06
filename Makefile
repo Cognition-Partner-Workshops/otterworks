@@ -244,14 +244,56 @@ endif
 tf-init: ## Initialize Terraform
 	cd infrastructure/terraform && terraform init
 
-tf-plan: ## Plan Terraform changes
-	cd infrastructure/terraform && terraform plan -var-file=environments/dev.tfvars
+tf-plan: ## Plan Terraform changes into plan.out (needs TF_VAR_db_password)
+	cd infrastructure/terraform && terraform plan -input=false -out=plan.out
 
-tf-apply: ## Apply Terraform changes
-	cd infrastructure/terraform && terraform apply -var-file=environments/dev.tfvars -auto-approve
+tf-apply: ## Apply the reviewed plan.out written by make tf-plan
+	@test -f infrastructure/terraform/plan.out || { echo "no plan.out: run make tf-plan and review it first" >&2; exit 2; }
+	cd infrastructure/terraform && terraform apply -input=false plan.out
 
-tf-destroy: ## Destroy Terraform resources
-	cd infrastructure/terraform && terraform destroy -var-file=environments/dev.tfvars -auto-approve
+tf-destroy: ## Destroy the application layer (CONFIRM=otterworks-<environment>, prompts before deleting)
+	@test "$(CONFIRM)" = "otterworks-$${TF_VAR_environment:-dev}" || { echo "refusing: destroying the shared application layer needs CONFIRM=otterworks-$${TF_VAR_environment:-dev}" >&2; exit 2; }
+	cd infrastructure/terraform && terraform destroy -input=false
+
+# --- Messaging reliability sandbox (RUN=rs-<yyyymmdd>-<xx>, PHASE=after|before; see infrastructure/terraform/reliability-sandbox/README.md) ---
+
+SBX = RUN="$(RUN)" PHASE="$(PHASE)" COUNT="$(COUNT)" EXPIRES="$(EXPIRES)" CONFIRM="$(CONFIRM)" ./scripts/sandbox-messaging.sh
+
+.PHONY: sbx-plan sbx-up sbx-drill sbx-before-drill sbx-replay sbx-reset sbx-status sbx-destroy sbx-verify-clean sbx-test
+
+sbx-plan: ## Plan the sandbox for RUN= and check it only creates that token's resources
+	$(SBX) plan
+
+sbx-up: ## Apply the guarded sandbox plan for RUN= (EXPIRES= defaults to +24 h)
+	$(SBX) up
+
+sbx-drill: ## Fail COUNT= events into the analytics DLQ, then redrive and verify exactly-once (RUN=)
+	$(SBX) drill
+
+sbx-before-drill: ## PHASE=before: show a failing event cycling with no DLQ (RUN=)
+	$(SBX) before-drill
+
+sbx-replay: ## Redrive the analytics DLQ and verify exactly-once (RUN=)
+	$(SBX) replay
+
+sbx-reset: ## Purge the sandbox queues and empty its ledger (RUN=)
+	$(SBX) reset
+
+sbx-status: ## Queue depths, redrive policies and alarm states (RUN=)
+	$(SBX) status
+
+sbx-destroy: ## Destroy both sandbox phases (RUN= CONFIRM=<RUN>), then verify-clean
+	$(SBX) destroy
+
+sbx-verify-clean: ## Prove nothing tagged or named with the sandbox token remains (RUN=)
+	$(SBX) verify-clean
+
+sbx-test: ## Offline tests for the messaging module, sandbox roots and sandbox scripts
+	cd infrastructure/terraform/modules/messaging && terraform init -backend=false -input=false >/dev/null && terraform test
+	cd infrastructure/terraform/reliability-sandbox && terraform init -backend=false -input=false >/dev/null && terraform test
+	python3 -m pytest -q scripts/tests/test_sandbox_messaging.py
+	bash scripts/tests/test_sandbox_messaging_sh.sh
+	bash scripts/tests/test_deploy_dev_preflight.sh
 
 deploy-dev: ## Deploy all services to dev EKS
 	./scripts/deploy-dev.sh
