@@ -30,7 +30,7 @@ resource "aws_apigatewayv2_stage" "default" {
 }
 
 resource "aws_apigatewayv2_integration" "context" {
-  for_each               = aws_lambda_function.context
+  for_each               = aws_lambda_alias.live
   api_id                 = aws_apigatewayv2_api.this.id
   integration_type       = "AWS_PROXY"
   integration_uri        = each.value.invoke_arn
@@ -62,10 +62,11 @@ resource "aws_apigatewayv2_route" "default" {
 }
 
 resource "aws_lambda_permission" "api" {
-  for_each      = aws_lambda_function.context
+  for_each      = aws_lambda_alias.live
   statement_id  = "AllowHttpApi"
   action        = "lambda:InvokeFunction"
   function_name = each.value.function_name
+  qualifier     = each.value.name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
 }

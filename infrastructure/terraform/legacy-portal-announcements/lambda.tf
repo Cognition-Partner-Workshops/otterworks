@@ -74,8 +74,8 @@ resource "aws_lambda_function" "announcements" { # nosemgrep: terraform.aws.secu
       CLUSTER_ARN    = aws_rds_cluster.this.arn
       SECRET_ARN     = aws_secretsmanager_secret.db.arn
       EVENT_BUS_NAME = aws_cloudwatch_event_bus.this.name
-      EVENT_SOURCE   = var.event_source
       RUN_TOKEN      = var.run_token
+      FAIL_READS     = "0"
     }
   }
 

@@ -185,7 +185,7 @@ cmd_status() {
   aws rds describe-db-clusters --db-cluster-identifier "$RUN" --output text \
     --query 'DBClusters[0].[Status,EngineVersion,ServerlessV2ScalingConfiguration.MinCapacity,ServerlessV2ScalingConfiguration.MaxCapacity,HttpEndpointEnabled]'
   echo "rule:"
-  aws events describe-rule --name "${RUN}-announcement-created" --event-bus-name "otterworks-${RUN}" --output text \
+  aws events describe-rule --name "${RUN}-announcement-published" --event-bus-name "otterworks-${RUN}" --output text \
     --query '[Name,State,EventPattern]'
   echo "routes of the HTTP API:"
   curl -s -o /dev/null -w '  GET /health (EC2 via default route)     %{http_code} in %{time_total}s\n' "${API_URL%/}/health" || true
@@ -256,7 +256,7 @@ cmd_replay() {
   return "$rc"
 }
 
-# Creates one announcement through the new front door and shows where the AnnouncementCreated event landed.
+# Creates one announcement through the new front door and shows where the announcement.published event landed.
 cmd_events() {
   need_run; start_transcript "$RUN"
   tf_init >/dev/null; load_outputs
@@ -311,14 +311,14 @@ cmd_verify_clean() {
   check_gone aws rds describe-db-clusters --db-cluster-identifier "$RUN"
   check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"
   check_gone aws events describe-event-bus --name "otterworks-${RUN}"
-  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-created"
-  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-created-dlq"
+  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-published"
+  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-published-dlq"
   n="$(aws apigatewayv2 get-apis --query "length(Items[?Name=='${RUN}'])" --output text)"
   echo "  HTTP APIs named ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
   n="$(aws logs describe-log-groups --log-group-name-pattern "$RUN" --query 'length(logGroups)' --output text)"
   echo "  log groups matching ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
-  n="$(aws logs describe-resource-policies --query "length(resourcePolicies[?policyName=='${RUN}-announcement-created'])" --output text)"
-  echo "  log resource policies named ${RUN}-announcement-created: ${n}"; [ "$n" = 0 ] || left=1
+  n="$(aws logs describe-resource-policies --query "length(resourcePolicies[?policyName=='${RUN}-announcement-published'])" --output text)"
+  echo "  log resource policies named ${RUN}-announcement-published: ${n}"; [ "$n" = 0 ] || left=1
   if [ "$left" = 0 ]; then echo "CLEAN: nothing tagged or named ${RUN} remains"; else echo "NOT CLEAN"; return 1; fi
 }
 

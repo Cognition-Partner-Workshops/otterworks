@@ -73,15 +73,33 @@ modules:
     # hit here would still be reported, which is the point of measuring it.
     cases: null
 
+  # The Java 21 Lambda handlers of the integrated legacy-portal port, one Maven
+  # module per bounded context. No interpolation call path in their own code:
+  # measured for the dependency tree and their suites only.
   - id: legacy-portal-lambda-announcements
     path: services/legacy-portal-lambda/announcements
     build: maven
     java_home:
       - $JAVA_HOME_21_X64
-      - /usr/lib/jvm/temurin-21-jdk-amd64
       - /usr/lib/jvm/java-21-openjdk-amd64
-    # Lambda port of the announcements context (runtime java21). No wrapper, so the
-    # `mvn` on PATH. No interpolation call path: measured for the dependency tree only.
+    test: -B test
+    cases: null
+
+  - id: legacy-portal-lambda-preferences
+    path: services/legacy-portal-lambda/preferences
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: legacy-portal-lambda-feedback
+    path: services/legacy-portal-lambda/feedback
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
     test: -B test
     cases: null
 

@@ -45,7 +45,7 @@ output "event_bus_name" {
 }
 
 output "event_rule_name" {
-  value = aws_cloudwatch_event_rule.announcement_created.name
+  value = aws_cloudwatch_event_rule.announcement_published.name
 }
 
 output "notifications_queue_url" {

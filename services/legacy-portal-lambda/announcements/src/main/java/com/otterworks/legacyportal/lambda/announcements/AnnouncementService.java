@@ -19,7 +19,7 @@ public class AnnouncementService {
 
     public Announcement create(String title, String body, boolean published) {
         Announcement saved = repository.save(new Announcement(title, body, published));
-        events.created(saved);
+        events.published(saved);
         return saved;
     }
 
@@ -39,6 +39,8 @@ public class AnnouncementService {
     public Announcement publish(Long id) {
         Announcement announcement = get(id);
         announcement.setPublished(true);
-        return repository.save(announcement);
+        Announcement saved = repository.save(announcement);
+        events.published(saved);
+        return saved;
     }
 }

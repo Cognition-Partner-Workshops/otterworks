@@ -1,77 +1,65 @@
 package com.otterworks.legacyportal.lambda.announcements;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
-import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
-import software.amazon.awssdk.services.eventbridge.model.PutEventsResultEntry;
 
 /**
- * Puts one {@code AnnouncementCreated} event on the run's custom event bus per created
- * announcement, so the notification side can subscribe instead of polling the table.
+ * Puts one {@code announcement.published} event on the run's custom bus per write. A failed put
+ * is logged and swallowed, so the HTTP response stays the one the Java monolith gave.
  */
 public class EventBridgeAnnouncementEvents implements AnnouncementEvents {
 
-    public static final String DETAIL_TYPE = "AnnouncementCreated";
+    public static final String SOURCE = "otterworks.legacy-portal";
+    public static final String DETAIL_TYPE = "announcement.published";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final EventBridgeClient client;
-    private final String eventBusName;
-    private final String source;
+    private final String busName;
 
-    public EventBridgeAnnouncementEvents(EventBridgeClient client, String eventBusName, String source) {
+    public EventBridgeAnnouncementEvents(EventBridgeClient client, String busName) {
         this.client = client;
-        this.eventBusName = eventBusName;
-        this.source = source;
+        this.busName = busName;
+    }
+
+    /** Bus from EVENT_BUS_NAME; no events when the variable is unset. */
+    public static AnnouncementEvents fromEnvironment() {
+        String bus = System.getenv("EVENT_BUS_NAME");
+        if (bus == null || bus.isBlank()) {
+            return NONE;
+        }
+        return new EventBridgeAnnouncementEvents(EventBridgeClient.builder().build(), bus);
+    }
+
+    public static String detail(Announcement a) {
+        ObjectNode b = MAPPER.createObjectNode();
+        b.put("id", a.getId());
+        b.put("title", a.getTitle());
+        b.put("body", a.getBody());
+        b.put("published", a.isPublished());
+        b.put("createdAt", a.getCreatedAt() == null ? null : a.getCreatedAt().toString());
+        return b.toString();
     }
 
     @Override
-    public void created(Announcement announcement) {
+    public void published(Announcement announcement) {
         try {
-            PutEventsResponse response = client.putEvents(request(announcement));
-            PutEventsResultEntry entry = response.entries().get(0);
+            PutEventsResponse response = client.putEvents(r -> r.entries(PutEventsRequestEntry.builder()
+                    .eventBusName(busName)
+                    .source(SOURCE)
+                    .detailType(DETAIL_TYPE)
+                    .detail(detail(announcement))
+                    .build()));
             if (response.failedEntryCount() != null && response.failedEntryCount() > 0) {
-                System.out.println("{\"level\":\"ERROR\",\"msg\":\"AnnouncementCreated rejected\",\"announcementId\":"
-                        + announcement.getId() + ",\"errorCode\":\"" + entry.errorCode() + "\"}");
-            } else {
-                System.out.println("{\"level\":\"INFO\",\"msg\":\"AnnouncementCreated published\",\"announcementId\":"
-                        + announcement.getId() + ",\"eventId\":\"" + entry.eventId() + "\",\"eventBus\":\""
-                        + eventBusName + "\"}");
+                System.err.println("announcement event not accepted for id " + announcement.getId()
+                        + ": " + response.entries().get(0).errorCode());
             }
         } catch (RuntimeException e) {
-            System.out.println("{\"level\":\"ERROR\",\"msg\":\"AnnouncementCreated not published\",\"announcementId\":"
-                    + announcement.getId() + ",\"error\":\"" + e.getClass().getSimpleName() + "\"}");
-        }
-    }
-
-    PutEventsRequest request(Announcement announcement) {
-        return PutEventsRequest.builder()
-                .entries(PutEventsRequestEntry.builder()
-                        .eventBusName(eventBusName)
-                        .source(source)
-                        .detailType(DETAIL_TYPE)
-                        .detail(detail(announcement))
-                        .build())
-                .build();
-    }
-
-    static String detail(Announcement announcement) {
-        Map<String, Object> detail = new LinkedHashMap<>();
-        detail.put("id", announcement.getId());
-        detail.put("title", announcement.getTitle());
-        detail.put("published", announcement.isPublished());
-        detail.put("createdAt", announcement.getCreatedAt() == null ? null : announcement.getCreatedAt().toString());
-        try {
-            return MAPPER.writeValueAsString(detail);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
+            System.err.println("announcement event failed for id " + announcement.getId() + ": " + e);
         }
     }
 }

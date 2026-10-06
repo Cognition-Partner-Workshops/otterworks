@@ -16,13 +16,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.otterworks.legacyportal.lambda.announcements.AnnouncementService;
 import com.otterworks.legacyportal.lambda.announcements.DataApiAnnouncementRepository;
 import com.otterworks.legacyportal.lambda.announcements.EventBridgeAnnouncementEvents;
+import com.otterworks.legacyportal.lambda.common.PortalBrandingSettings;
 import com.otterworks.legacyportal.lambda.http.Dispatcher;
 
-import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 import software.amazon.awssdk.services.rdsdata.RdsDataClient;
 
 /**
- * Lambda entry point for the announcements bounded context of the legacy portal monolith.
+ * Lambda entry point for the announcements bounded context plus the shared
+ * {@code /health} and {@code /actuator/*} plumbing of the legacy portal monolith.
  * Parses the API Gateway HTTP API (payload format 2.0) proxy event and answers with
  * the proxy response shape.
  */
@@ -31,13 +32,15 @@ public class AnnouncementsHandler implements RequestStreamHandler {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final Dispatcher dispatcher;
+    private final boolean failReads;
 
     public AnnouncementsHandler() {
-        this(defaultDispatcher());
+        this(defaultDispatcher(), "1".equals(System.getenv("FAIL_READS")));
     }
 
-    AnnouncementsHandler(Dispatcher dispatcher) {
+    AnnouncementsHandler(Dispatcher dispatcher, boolean failReads) {
         this.dispatcher = dispatcher;
+        this.failReads = failReads;
     }
 
     private static Dispatcher defaultDispatcher() {
@@ -48,11 +51,8 @@ public class AnnouncementsHandler implements RequestStreamHandler {
                 System.getenv("SECRET_ARN"),
                 System.getenv("DB_NAME"),
                 System.getenv("DB_SCHEMA"));
-        EventBridgeAnnouncementEvents events = new EventBridgeAnnouncementEvents(
-                EventBridgeClient.builder().build(),
-                System.getenv("EVENT_BUS_NAME"),
-                System.getenv("EVENT_SOURCE"));
-        return new Dispatcher(new AnnouncementService(repository, events));
+        return new Dispatcher(new AnnouncementService(repository, EventBridgeAnnouncementEvents.fromEnvironment()),
+                new PortalBrandingSettings());
     }
 
     @Override
@@ -81,8 +81,10 @@ public class AnnouncementsHandler implements RequestStreamHandler {
             }
         }
 
-        Dispatcher.Response response = dispatcher.dispatch(
-                new Dispatcher.Request(method, path, rawQuery, headers, body));
+        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
+        Dispatcher.Response response = failReads && "GET".equalsIgnoreCase(method)
+                ? dispatcher.failedRead(path)
+                : dispatcher.dispatch(new Dispatcher.Request(method, path, rawQuery, headers, body));
 
         ObjectNode out = MAPPER.createObjectNode();
         out.put("statusCode", response.status());
@@ -93,14 +95,5 @@ public class AnnouncementsHandler implements RequestStreamHandler {
         out.put("body", response.body() == null ? "" : response.body());
         out.put("isBase64Encoded", false);
         output.write(MAPPER.writeValueAsBytes(out));
-
-        ObjectNode access = MAPPER.createObjectNode();
-        access.put("level", "INFO");
-        access.put("msg", "request");
-        access.put("requestId", event.path("requestContext").path("requestId").asText(""));
-        access.put("method", method);
-        access.put("path", path);
-        access.put("status", response.status());
-        System.out.println(MAPPER.writeValueAsString(access));
     }
 }

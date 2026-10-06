@@ -41,6 +41,8 @@ python3 replay.py --base <api url> --context feedback --stage first --out /tmp/r
 | `aws_iam_policy` | `<token>-builder`, attached to `devin-cw-builder` |
 | `terraform_data.schema` | Runs `apply-schema.sh`, which sends `schema.sql` through the Data API |
 
+The events, canary, probe and page resources are listed in [Events, canary deploys, probe and page](#events-canary-deploys-probe-and-page).
+
 `schema.sql` is what Hibernate creates for the Java service. It was taken from `pg_dump --schema-only` of the Java service running locally in Docker against PostgreSQL 15 with the `postgres` profile, and a second database built from `schema.sql` produced an identical dump. The sequence names (`announcement_id_seq`, `feedback_id_seq`) are the ones Hibernate uses, so the sequential ids in the corpus hold.
 
 The functions are created with a Python placeholder so the stack can be applied before any port exists. Terraform ignores later changes to code, runtime, handler and memory, so a child session can deploy its Java handler with `update-function-code` and `update-function-configuration` and a later `lp-up` leaves it in place.
@@ -73,6 +75,80 @@ Each target writes a transcript to `.demo/legacy-portal/<token>/<target>-<UTC ti
 | `make lp-verify-clean RUN=<token>` | Resource Groups Tagging API in every region for `run_token` and `RunToken`, then direct lookups of the IAM role and policy, cluster, API, functions, secret and log groups; exits 1 unless everything is gone |
 
 The corpus is stateful within a context, so run `lp-reset` for a context before each replay of it. A reset of one context leaves the other two alone, so the three children can replay at the same time.
+
+## Events, canary deploys, probe and page
+
+The root also carries the event-driven publish, the canary deploys, the synthetic probe and the page. Every object below carries the same tags as the rest of the run.
+
+| Resource | Name | Notes |
+|---|---|---|
+| `aws_cloudwatch_event_bus` | `otterworks-<token>` | The announcements function puts `source=otterworks.legacy-portal`, `detail-type=announcement.published` and the announcement as `detail`, after the database write of `POST /api/announcements` and `POST /api/announcements/<id>/publish` |
+| `aws_cloudwatch_event_rule` | `<token>-announcement-published` | On that bus, targets the consumer |
+| `aws_lambda_function` | `<token>-notifications` | Python consumer, writes one item per event |
+| `aws_dynamodb_table` | `otterworks-<token>-notifications` | Key `eventId`, with `announcementId`, `title`, `body`, `published`, `createdAt`, `eventTime` and the raw `detail` |
+| `aws_lambda_alias` | `<token>-<context>:live` | The HTTP API integrates with this alias. CodeDeploy moves it |
+| `aws_codedeploy_app` | `<token>` | One deployment group per context, `CodeDeployDefault.LambdaCanary10Percent5Minutes`, rollback on deployment failure and on alarm |
+| `aws_synthetics_canary` | `<token>-probe` | Node runtime `syn-nodejs-puppeteer-13.1`. Every minute it calls `GET /api/announcements` and `GET /api/preferences/synthetic-probe` and fails on anything but 2xx. Artifacts go to bucket `<token>-probe-artifacts-<account>`, expired after two days |
+| `aws_cloudwatch_metric_alarm` | `<token>-api-5xx-rate` | `100 * 5xx / Count` on the HTTP API, one-minute periods, ALARM when two of three datapoints are above 20%. HTTP APIs publish the metric as `5xx`, which REST APIs call `5XXError` |
+| `aws_cloudwatch_metric_alarm` | `<token>-lambda-errors` | Sum of `Errors` over the three context functions, ALARM at one or more in two of three minutes |
+| `aws_cloudwatch_composite_alarm` | `<token>-page` | `ALARM(<token>-api-5xx-rate) OR ALARM(<token>-lambda-errors)` |
+| `aws_cloudwatch_event_rule` | `<token>-page-devin` | Default bus, matches `<token>-page` going to ALARM. Targets the API destination with the alarm name, state, reason and the full alarm `detail` as the body. Failed posts go to queue `<token>-page-dlq` |
+| `aws_cloudwatch_event_connection`, `aws_cloudwatch_event_api_destination` | `<token>-devin-webhook` | Same shape as `infrastructure/terraform/cloud-worker/eventbridge.tf`: `API_KEY` auth sending `X-Webhook-Secret`, `POST`, one call a second |
+
+The corpus never sees the event: a failed `PutEvents` is logged and the response is the one the Java service gave. Replay stays at 95 of 95.
+
+### The Devin automation webhook
+
+Two optional variables carry the webhook, as in the cloud-worker root:
+
+| Variable | Use |
+|---|---|
+| `devin_webhook_url` | The Devin automation webhook URL |
+| `devin_webhook_secret` | Sent in the `X-Webhook-Secret` header (sensitive) |
+
+With either one empty, the connection and destination hold cloud-worker's placeholders (`https://example.invalid/webhook`, `replace-me`) and the rule `<token>-page-devin` is `DISABLED`, so the alarm changes state but nothing is posted.
+
+`lp-up` looks for the pair in two places, in this order:
+
+1. The environment variables `LP_WEBHOOK_URL` and `LP_WEBHOOK_SECRET`, when both are set. The org stores the automation's URL and secret as Devin secrets under these names, so a fresh Devin shell already has them.
+2. `~/.lp-webhook.json` (or the file in `LP_WEBHOOK_FILE`), with the keys `url` and `secret`, the same loader as `webhook_env` in `cloudworker/cw.sh`. Keep the file mode 600 and out of git.
+
+The secret must be the one the automation shows when its webhook is created. The webhook answers `403 {"detail":"Invalid webhook secret"}` to any other value, and EventBridge then moves the event to `<token>-page-dlq`. A random value doesn't work.
+
+To write the file from the environment variables without printing either value:
+
+```bash
+( umask 077; jq -n --arg url "$LP_WEBHOOK_URL" --arg secret "$LP_WEBHOOK_SECRET" \
+    '{url: $url, secret: $secret}' > ~/.lp-webhook.json )
+make lp-up RUN=<token>
+```
+
+`lp-up` prints `webhook url and secret from LP_WEBHOOK_URL and LP_WEBHOOK_SECRET`, `webhook url and secret from /home/<user>/.lp-webhook.json`, or `no LP_WEBHOOK_URL/LP_WEBHOOK_SECRET and no ...; the page rule stays disabled`. Terraform shows the secret as `(sensitive value)`, and the output `page_rule_state` is `ENABLED`. With neither source present, the next `lp-up` puts the placeholders back and disables the rule.
+
+To test the wiring without breaking a function, force the composite into ALARM, then read the rule's metrics and put it back:
+
+```bash
+aws cloudwatch set-alarm-state --alarm-name <token>-page --state-value ALARM --state-reason "wiring test"
+make lp-page-status RUN=<token>   # Invocations 1, FailedInvocations 0 for <token>-page-devin
+aws cloudwatch set-alarm-state --alarm-name <token>-page --state-value OK --state-reason "wiring test done"
+```
+
+The automation's Events tab then lists the post and the session it started.
+
+### Deploys and the drill
+
+The functions start on the placeholder at version 1. `lp-deploy` builds the Java 21 handlers from `services/legacy-portal-lambda`, uploads them, publishes a version with `FAIL_READS=0` and moves `live` through CodeDeploy. The first move off the placeholder uses `CodeDeployDefault.LambdaAllAtOnce` with alarm rollback off, because the placeholder answers 501. Every later move uses the deployment group's canary. Once all three aliases are on Java, `lp-deploy` starts the probe. An `lp-up` that changes the probe's code or settings leaves it stopped, and the next `lp-deploy` starts it again.
+
+`lp-break` ships the bad build: the same code with `FAIL_READS=1`, so every `GET` on that context answers 500. It is a published version that CodeDeploy moves with the canary config. For the first five minutes 10% of traffic hits it and the 5xx rate stays under 20%, so the alarm fires after CodeDeploy shifts the rest. `lp-heal` then stops and rolls back a deployment that is still in flight, or deploys `FAIL_READS=0` through the canary. In the second case the alarm is already in ALARM and would stop the new deployment at once, so `lp-heal` turns alarm rollback off for that one deployment with `overrideAlarmConfiguration`.
+
+| Target | What it prints |
+|---|---|
+| `make lp-deploy RUN=<token> CTX=<context or all>` | The jar uploaded per context, `live <from> -> <to>` with the config, each deployment id and final status, `started probe <token>-probe`, then `<token>-<context>:live -> v<n> (java21)` per context. `MVN_FLAGS` passes Maven arguments, `SKIP_BUILD=1` deploys the jars already built |
+| `make lp-break RUN=<token> CTX=announcements` | `CodeDeploy deployment id: d-...`, then every 15 seconds the deployment status, the live version, the codes of four `GET`s, the three alarm states and the 5xx rate per minute, until `<token>-page` is ALARM. It ends with the deployment line and each alarm's state and reason |
+| `make lp-heal RUN=<token> CTX=announcements` | The deployment id of the rollback or the good build, the same lines until the deployment succeeds and `<token>-page` is OK, then the alarm states |
+| `make lp-page-status RUN=<token>` | The alarm states, the last ten state changes of each alarm, the last five deployments per group with config and rollback links, the page rule state, the API destination host, and the last `Invocations`, `FailedInvocations` and `InvocationsSentToDlq` of the page rule in 24 hours |
+
+The probe keeps Aurora awake, so a run with the probe on does not pause at 0 ACU. `lp-down` removes the function, layer and log group that Synthetics creates for the probe, and `lp-verify-clean` also looks up the new roles, the bus, table, CodeDeploy application, canary, bucket, rules, connection, destination, queue and alarms by name.
 
 ## EC2 before state
 

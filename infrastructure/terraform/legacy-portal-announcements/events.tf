@@ -3,25 +3,25 @@ resource "aws_cloudwatch_event_bus" "this" {
 }
 
 # Event pattern: exact match on source and detail-type, the shape PutEvents entries carry.
-resource "aws_cloudwatch_event_rule" "announcement_created" {
-  name           = "${local.name}-announcement-created"
-  description    = "AnnouncementCreated from the announcements Lambda, for the notification side"
+resource "aws_cloudwatch_event_rule" "announcement_published" {
+  name           = "${local.name}-announcement-published"
+  description    = "announcement.published from the announcements Lambda, for the notification side"
   event_bus_name = aws_cloudwatch_event_bus.this.name
   event_pattern = jsonencode({
     source        = [var.event_source]
-    "detail-type" = ["AnnouncementCreated"]
+    "detail-type" = ["announcement.published"]
   })
 }
 
 # Queue the notification service consumes instead of polling the announcements table.
 resource "aws_sqs_queue" "notifications_dlq" {
-  name                      = "${local.name}-announcement-created-dlq"
+  name                      = "${local.name}-announcement-published-dlq"
   message_retention_seconds = 1209600
   sqs_managed_sse_enabled   = true
 }
 
 resource "aws_sqs_queue" "notifications" {
-  name                       = "${local.name}-announcement-created"
+  name                       = "${local.name}-announcement-published"
   message_retention_seconds  = 345600
   visibility_timeout_seconds = 60
   sqs_managed_sse_enabled    = true
@@ -39,7 +39,7 @@ data "aws_iam_policy_document" "notifications_queue" {
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_event_rule.announcement_created.arn]
+      values   = [aws_cloudwatch_event_rule.announcement_published.arn]
     }
   }
 }
@@ -61,7 +61,7 @@ data "aws_iam_policy_document" "notifications_dlq" {
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_event_rule.announcement_created.arn]
+      values   = [aws_cloudwatch_event_rule.announcement_published.arn]
     }
   }
 }
@@ -72,7 +72,7 @@ resource "aws_sqs_queue_policy" "notifications_dlq" {
 }
 
 resource "aws_cloudwatch_event_target" "notifications" {
-  rule           = aws_cloudwatch_event_rule.announcement_created.name
+  rule           = aws_cloudwatch_event_rule.announcement_published.name
   event_bus_name = aws_cloudwatch_event_bus.this.name
   target_id      = "notifications-queue"
   arn            = aws_sqs_queue.notifications.arn
@@ -87,7 +87,7 @@ resource "aws_cloudwatch_event_target" "notifications" {
 # Audit copy of every matched event. EventBridge needs a CloudWatch Logs resource policy
 # that lets events.amazonaws.com and delivery.logs.amazonaws.com write to /aws/events/*.
 resource "aws_cloudwatch_log_group" "events" { # nosemgrep: terraform.aws.security.aws-cloudwatch-log-group-unencrypted.aws-cloudwatch-log-group-unencrypted
-  name              = "/aws/events/${local.name}-announcement-created"
+  name              = "/aws/events/${local.name}-announcement-published"
   retention_in_days = var.log_retention_days
 }
 
@@ -102,18 +102,18 @@ data "aws_iam_policy_document" "events_logs" {
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_event_rule.announcement_created.arn]
+      values   = [aws_cloudwatch_event_rule.announcement_published.arn]
     }
   }
 }
 
 resource "aws_cloudwatch_log_resource_policy" "events" {
-  policy_name     = "${local.name}-announcement-created"
+  policy_name     = "${local.name}-announcement-published"
   policy_document = data.aws_iam_policy_document.events_logs.json
 }
 
 resource "aws_cloudwatch_event_target" "audit_log" {
-  rule           = aws_cloudwatch_event_rule.announcement_created.name
+  rule           = aws_cloudwatch_event_rule.announcement_published.name
   event_bus_name = aws_cloudwatch_event_bus.this.name
   target_id      = "audit-log"
   arn            = aws_cloudwatch_log_group.events.arn

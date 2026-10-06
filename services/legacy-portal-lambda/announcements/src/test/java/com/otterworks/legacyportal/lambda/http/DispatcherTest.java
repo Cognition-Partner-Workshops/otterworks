@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.legacyportal.lambda.announcements.Announcement;
 import com.otterworks.legacyportal.lambda.announcements.AnnouncementRepository;
 import com.otterworks.legacyportal.lambda.announcements.AnnouncementService;
-import com.otterworks.legacyportal.lambda.announcements.AnnouncementEvents;
+import com.otterworks.legacyportal.lambda.common.PortalBrandingSettings;
 import com.otterworks.legacyportal.lambda.http.Dispatcher.Request;
 import com.otterworks.legacyportal.lambda.http.Dispatcher.Response;
 
@@ -29,7 +29,6 @@ class DispatcherTest {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private FakeRepository repo;
-    private List<Announcement> published;
     private Dispatcher dispatcher;
 
     static class FakeRepository implements AnnouncementRepository {
@@ -79,9 +78,7 @@ class DispatcherTest {
     @BeforeEach
     void setUp() {
         repo = new FakeRepository();
-        published = new ArrayList<>();
-        AnnouncementEvents events = published::add;
-        dispatcher = new Dispatcher(new AnnouncementService(repo, events));
+        dispatcher = new Dispatcher(new AnnouncementService(repo), new PortalBrandingSettings());
     }
 
     private static Map<String, String> headers(String... kv) {
@@ -117,56 +114,85 @@ class DispatcherTest {
         return MAPPER.readTree(r.body());
     }
 
+    // ---- common ----
+
     @Test
-    void wrongCaseAnnouncementsPathIs404() throws Exception {
-        Response r = get("/API/announcements");
-        assertEquals(404, r.status());
+    void healthReturnsUpWithBanner() throws Exception {
+        Response r = get("/health");
+        assertEquals(200, r.status());
+        assertEquals("application/json", r.headers().get("Content-Type"));
         JsonNode b = json(r);
-        assertEquals("Not Found", b.get("error").asText());
-        assertEquals("/API/announcements", b.get("path").asText());
-        assertTrue(b.get("timestamp").asText()
-                .matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+00:00$"));
+        assertEquals("UP", b.get("status").asText());
+        assertEquals("legacy-portal", b.get("service").asText());
+        assertEquals("OtterWorks Portal (on-prem) - contact portal-support@otterworks.example",
+                b.get("banner").asText());
+    }
+
+    @Test
+    void actuatorEndpoints() throws Exception {
+        Response h = dispatcher.dispatch(new Request("GET", "/actuator/health", "",
+                headers("accept", "application/json"), new byte[0]));
+        assertEquals(200, h.status());
+        assertEquals("application/json", h.headers().get("Content-Type"));
+        JsonNode b = json(h);
+        assertEquals("UP", b.get("status").asText());
+        assertEquals("[\"liveness\",\"readiness\"]", b.get("groups").toString());
+
+        assertEquals("UP", json(get("/actuator/health/liveness")).get("status").asText());
+        assertEquals("UP", json(get("/actuator/health/readiness")).get("status").asText());
+        assertEquals("{}", json(get("/actuator/info")).toString());
+    }
+
+    @Test
+    void unknownAndWrongCasePathsAre404() throws Exception {
+        for (String p : List.of("/does-not-exist", "/HEALTH", "/Actuator/health", "/API/announcements")) {
+            Response r = get(p);
+            assertEquals(404, r.status(), p);
+            JsonNode b = json(r);
+            assertEquals(404, b.get("status").asInt());
+            assertEquals("Not Found", b.get("error").asText());
+            assertEquals(p, b.get("path").asText());
+            assertTrue(b.get("timestamp").asText()
+                    .matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+00:00$"));
+        }
+    }
+
+    @Test
+    void caseVariantPathsOfOtherContextsAre404() throws Exception {
+        // The $default route forwards every path; other contexts' case variants are
+        // still unknown routes here and must get Spring's 404 with the raw path.
+        for (String p : List.of("/API/preferences/alice", "/api/PREFERENCES/x",
+                "/Api/feedback/average-rating")) {
+            Response r = get(p);
+            assertEquals(404, r.status(), p);
+            JsonNode b = json(r);
+            assertEquals("Not Found", b.get("error").asText());
+            assertEquals(p, b.get("path").asText());
+        }
+        Response r = get("/api/Feedback", "userId=alice");
+        assertEquals(404, r.status());
+        assertEquals("/api/Feedback", json(r).get("path").asText());
     }
 
     @Test
     void nonJsonAcceptIs406() {
-        Response r = call("GET", "/api/announcements", headers("accept", "application/xml"), null);
+        Map<String, String> h = headers("accept", "application/xml");
+        Response r = call("GET", "/health", h, null);
         assertEquals(406, r.status());
         assertEquals("", r.body());
         assertTrue(r.headers().isEmpty());
+
+        Response r2 = call("GET", "/api/announcements", headers("accept", "application/xml"), null);
+        assertEquals(406, r2.status());
     }
 
     @Test
     void wildcardAcceptStillJson() {
         Map<String, String> h = headers("accept",
                 "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-        Response r = call("GET", "/api/announcements", h, null);
+        Response r = call("GET", "/health", h, null);
         assertEquals(200, r.status());
         assertEquals("application/json", r.headers().get("Content-Type"));
-    }
-
-    // ---- AnnouncementCreated events ----
-
-    @Test
-    void createPublishesOneEventPerAnnouncement() throws Exception {
-        Response c = post("/api/announcements", "application/json",
-                "{\"title\": \"Release\", \"body\": \"v1 is out\", \"published\": true}");
-        assertEquals(201, c.status());
-        assertEquals(1, published.size());
-        assertEquals(json(c).get("id").asLong(), published.get(0).getId());
-    }
-
-    @Test
-    void rejectedCreatesAndOtherWritesPublishNothing() {
-        post("/api/announcements", "application/json", "{\"body\": \"no title\"}");
-        post("/api/announcements", "application/json", "{\"title\":");
-        post("/api/announcements", "text/plain", "title=x");
-        call("PUT", "/api/announcements", headers("content-type", "application/json"), "{\"title\": \"x\", \"body\": \"y\"}");
-        assertTrue(published.isEmpty());
-
-        post("/api/announcements", "application/json", "{\"title\": \"Draft\", \"body\": \"coming soon\"}");
-        dispatcher.dispatch(new Request("POST", "/api/announcements/1/publish", "", headers(), new byte[0]));
-        assertEquals(1, published.size());
     }
 
     // ---- announcements routing ----

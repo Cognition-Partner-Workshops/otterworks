@@ -6,6 +6,7 @@ on:
       - "security/deps/**"
       - "services/report-service/**"
       - "services/legacy-portal/**"
+      - "services/legacy-portal-lambda/**"
       - "services/notification-service/**"
       - "services/auth-service/**"
       - "Makefile"
@@ -14,6 +15,7 @@ on:
       - "security/deps/**"
       - "services/report-service/**"
       - "services/legacy-portal/**"
+      - "services/legacy-portal-lambda/**"
       - "services/notification-service/**"
       - "services/auth-service/**"
       - "Makefile"
@@ -26,12 +28,14 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
-      # 17 first so $JAVA_HOME_17_X64 exists for the Gradle modules, then 11 as the
-      # ambient JDK the Maven modules build on.
+      # 21 and 17 first so $JAVA_HOME_21_X64 (the legacy-portal Lambda modules) and
+      # $JAVA_HOME_17_X64 (the Gradle modules) exist, then 11 as the ambient JDK the
+      # other Maven modules build on.
       - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: temurin
           java-version: |
+            21
             17
             11
       # notification-service ships no Gradle wrapper, so the harness invokes the

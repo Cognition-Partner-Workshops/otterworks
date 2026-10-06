@@ -49,9 +49,9 @@ variable "jar_path" {
 }
 
 variable "event_source" {
-  description = "Source field of the AnnouncementCreated events and of the rule's event pattern."
+  description = "Source the rule matches. Must equal EventBridgeAnnouncementEvents.SOURCE in services/legacy-portal-lambda/announcements."
   type        = string
-  default     = "otterworks.legacy-portal.announcements"
+  default     = "otterworks.legacy-portal"
 }
 
 variable "aurora_engine_version" {

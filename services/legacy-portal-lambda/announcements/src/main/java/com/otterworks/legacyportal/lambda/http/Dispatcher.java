@@ -25,12 +25,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.otterworks.legacyportal.lambda.announcements.Announcement;
 import com.otterworks.legacyportal.lambda.announcements.AnnouncementService;
+import com.otterworks.legacyportal.lambda.common.PortalBrandingSettings;
 
 /**
- * Routes the announcements requests API Gateway hands to the function the way the Spring
- * Boot 2.7 monolith did: the same patterns Spring's PathMatcher matches (including the
- * trailing-slash match), the same method/content negotiation, the same error bodies.
- * Every other path stays on the EC2 monolith through the HTTP API's $default route.
+ * Routes API Gateway proxy requests the way the Spring Boot 2.7 monolith did: the same
+ * patterns Spring's PathMatcher matches (including the trailing-slash match), the same
+ * method/content negotiation, the same error bodies.
  */
 public class Dispatcher {
 
@@ -42,14 +42,17 @@ public class Dispatcher {
     }
 
     private static final String JSON = "application/json";
+    private static final String ACTUATOR_JSON = "application/vnd.spring-boot.actuator.v3+json";
     private static final DateTimeFormatter ERROR_TS =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
 
     private final AnnouncementService service;
+    private final PortalBrandingSettings branding;
     private final ObjectMapper mapper;
 
-    public Dispatcher(AnnouncementService service) {
+    public Dispatcher(AnnouncementService service, PortalBrandingSettings branding) {
         this.service = service;
+        this.branding = branding;
         this.mapper = new ObjectMapper();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -57,6 +60,28 @@ public class Dispatcher {
     public Response dispatch(Request req) {
         String method = req.method().toUpperCase(Locale.ROOT);
         String path = req.path();
+
+        // Common plumbing: /health and the actuator endpoints.
+        if (path.equals("/health") || path.equals("/health/")) {
+            return getOnly(req, method, path, () -> json(200, write(healthBody())));
+        }
+        String accept = req.headers().get("accept");
+        if (path.equals("/actuator/health") || path.equals("/actuator/health/")) {
+            return getOnly(req, method, path,
+                    () -> actuator(200, actuatorBody(b -> {
+                        b.put("status", "UP");
+                        b.putArray("groups").add("liveness").add("readiness");
+                    }), accept));
+        }
+        if (path.equals("/actuator/health/liveness") || path.equals("/actuator/health/liveness/")
+                || path.equals("/actuator/health/readiness") || path.equals("/actuator/health/readiness/")) {
+            return getOnly(req, method, path,
+                    () -> actuator(200, actuatorBody(b -> b.put("status", "UP")), accept));
+        }
+        if (path.equals("/actuator/info") || path.equals("/actuator/info/")) {
+            return getOnly(req, method, path, () -> actuator(200, actuatorBody(b -> {
+            }), accept));
+        }
 
         // Announcements context. Spring 2.7's trailing-slash match folds "/x/" onto "/x".
         String normalized = stripTrailingSlash(path);
@@ -99,6 +124,10 @@ public class Dispatcher {
         return error(404, "Not Found", path);
     }
 
+    public Response failedRead(String path) {
+        return error(500, "Internal Server Error", path);
+    }
+
     private static String stripTrailingSlash(String path) {
         return path.endsWith("/") && path.length() > 1 ? path.substring(0, path.length() - 1) : path;
     }
@@ -124,6 +153,13 @@ public class Dispatcher {
             }
         }
         return null;
+    }
+
+    private Response getOnly(Request req, String method, String path, java.util.function.Supplier<Response> ok) {
+        if (!method.equals("GET")) {
+            return error(405, "Method Not Allowed", path);
+        }
+        return negotiated(req, ok);
     }
 
     // ---- announcements endpoints ----
@@ -242,6 +278,20 @@ public class Dispatcher {
 
     // ---- response shapes ----
 
+    private ObjectNode healthBody() {
+        ObjectNode b = mapper.createObjectNode();
+        b.put("status", "UP");
+        b.put("service", "legacy-portal");
+        b.put("banner", branding.bannerText());
+        return b;
+    }
+
+    private ObjectNode actuatorBody(java.util.function.Consumer<ObjectNode> fill) {
+        ObjectNode b = mapper.createObjectNode();
+        fill.accept(b);
+        return b;
+    }
+
     private ObjectNode announcementNode(Announcement a) {
         ObjectNode b = mapper.createObjectNode();
         b.put("id", a.getId());
@@ -283,8 +333,16 @@ public class Dispatcher {
         return new Response(status, headers, body);
     }
 
-    // Negotiation for bodies written by @RestController methods: any range with q>0
-    // compatible with application/json wins, else 406.
+    private Response actuator(int status, ObjectNode body, String accept) {
+        // Actuator negotiates its own media type: an explicit application/json request
+        // gets application/json; anything else json-compatible gets the v3 vendor type.
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("Content-Type", asksForPlainJson(accept) ? JSON : ACTUATOR_JSON);
+        return new Response(status, headers, write(body));
+    }
+
+    // Negotiation for bodies written by @RestController methods (and, here, the actuator
+    // endpoints): any range with q>0 compatible with application/json wins, else 406.
     private Response negotiated(Request req, java.util.function.Supplier<Response> produce) {
         if (!acceptsJson(req.headers().get("accept"))) {
             return new Response(406, new LinkedHashMap<>(), "");
@@ -306,6 +364,19 @@ public class Dispatcher {
             }
             if (media.equals("*/*") || media.equals("application/*")
                     || media.equals("application/json") || media.endsWith("+json")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean asksForPlainJson(String accept) {
+        if (accept == null) {
+            return false;
+        }
+        for (String range : accept.split(",")) {
+            String media = range.split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+            if (media.equals("application/json") && !qZero(range)) {
                 return true;
             }
         }

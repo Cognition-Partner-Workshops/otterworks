@@ -3,7 +3,7 @@
 #   client -> HTTP API --ANY /api/announcements[/{proxy+}]--> Lambda (java21, SnapStart alias "live")
 #                 |                                             |-- RDS Data API --> Aurora Serverless v2
 #                 |                                             '-- PutEvents ----> event bus
-#                 |                                                   rule AnnouncementCreated --> SQS (notifications)
+#                 |                                                   rule announcement.published --> SQS (notifications)
 #                 |                                                                            '--> /aws/events log group
 #                 '--$default (HTTP proxy)--> ALB of the legacy-portal-ec2 run (preferences, feedback, /health, ...)
 locals {
