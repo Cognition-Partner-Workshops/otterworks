@@ -53,6 +53,24 @@ npx cap run android   # build & launch on an Android emulator/device
 npx cap open ios      # open in Xcode to run on an iOS simulator/device
 ```
 
+Build the iOS app for the simulator from the command line (macOS with Xcode):
+
+```bash
+npm ci && npm run build && npx cap sync ios
+xcodebuild -project mobile/ios/App/App.xcodeproj -scheme App -configuration Debug \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath build/ios CODE_SIGNING_ALLOWED=NO build
+```
+
+xcodebuild writes the app to `build/ios/Build/Products/Debug-iphonesimulator/App.app`.
+Install it with `xcrun simctl install booted <path>` and launch it with
+`xcrun simctl launch booted com.otterworks.app`.
+
+The native shells append a token to the WebView User-Agent (`appendUserAgent` in
+`capacitor.config.ts`): `OtterWorksApp/ios` and `OtterWorksApp/android`. The API
+gateway uses it to tag each access log line with `client` (`ios`, `android`, `web`,
+`other`). That field separates app traffic from browser traffic in the edge logs.
+
 Native builds cannot use the same-origin `/api/v1` proxy, so they call the API gateway
 directly. Defaults target local development:
 

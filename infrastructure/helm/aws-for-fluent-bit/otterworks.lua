@@ -64,5 +64,6 @@ function route_record(tag, timestamp, record)
     return -1, 0, 0
   end
   record["cw_namespace"] = namespace
+  record["cw_group"] = namespace .. "/" .. record["cw_container"]
   return 2, timestamp, record
 end

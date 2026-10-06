@@ -51,7 +51,9 @@ cloudWatchLogs:
   region: "us-east-1"
   # Fallback only; every record that survives the Lua filter carries both keys.
   logGroupName: "/otterworks/eks/otterworks-dev/unrouted"
-  logGroupTemplate: "/otterworks/eks/otterworks-dev/$cw_namespace/$cw_container"
+  # Record accessor templates take one key at the end, so the Lua filter joins
+  # <namespace>/<container> into cw_group.
+  logGroupTemplate: "/otterworks/eks/otterworks-dev/$cw_group"
   logStreamPrefix: "fluentbit-"
   logStreamTemplate: "$kubernetes['pod_name']"
   autoCreateGroup: true

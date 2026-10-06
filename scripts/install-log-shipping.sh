@@ -54,7 +54,7 @@ helm upgrade --install aws-for-fluent-bit eks/aws-for-fluent-bit \
   -f "${CHART_DIR}/values.yaml" \
   --set-string "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=${role_arn}" \
   --set-string "cloudWatchLogs.region=${AWS_REGION}" \
-  --set-string "cloudWatchLogs.logGroupTemplate=/otterworks/eks/${EKS_CLUSTER}/\$cw_namespace/\$cw_container" \
+  --set-string "cloudWatchLogs.logGroupTemplate=/otterworks/eks/${EKS_CLUSTER}/\$cw_group" \
   --set-string "cloudWatchLogs.logGroupName=/otterworks/eks/${EKS_CLUSTER}/unrouted" \
   --wait --timeout 5m
 # The Lua script is mounted from a ConfigMap the chart does not own; restart so
