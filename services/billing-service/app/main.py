@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -12,8 +13,17 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    NoRatingSubscriptionError,
+    RatingResultRow,
+    catalog,
+    change_plan,
+    entitlement,
+    finalize_rating,
+    usage_rating,
+    usage_summary,
+)
+from app.repository import PostgresPlansRepository, PostgresRatingRepository
 
 
 @asynccontextmanager
@@ -35,6 +45,25 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class RatingFinalize(BaseModel):
+    period_start: date
+    period_end: date
+
+
+def _amount(value: Decimal | None) -> str | None:
+    return None if value is None else f"{value:.2f}"
+
+
+def _rating_result(row: RatingResultRow) -> dict:
+    return {
+        "used_units": row.used_units,
+        "quota_units": row.quota_units,
+        "rollover_units": row.rollover_units,
+        "billable_units": row.billable_units,
+        "overage_amount": _amount(row.overage_amount),
+    }
 
 
 @app.get("/health")
@@ -127,3 +156,72 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+@app.get("/api/tenants/{tenant_id}/rating")
+def get_usage_rating(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    with connect() as connection:
+        rating = usage_rating(
+            PostgresRatingRepository(connection), tenant_id, period_start, period_end
+        )
+    return {
+        "tenant_id": str(rating.tenant_id),
+        "period_start": rating.period_start.isoformat(),
+        "period_end": rating.period_end.isoformat(),
+        "used_units": rating.used_units,
+        "quota_units": rating.quota_units,
+        "rollover_units": rating.rollover_units,
+        "billable_units": rating.billable_units,
+        "first_tier_units": rating.first_tier_units,
+        "second_tier_units": rating.second_tier_units,
+        "overage_amount": _amount(rating.overage_amount),
+    }
+
+
+@app.get("/api/tenants/{tenant_id}/usage-summary")
+def get_usage_summary(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    with connect() as connection:
+        events = PostgresRatingRepository(connection).list_usage_events(tenant_id)
+    return {
+        "tenant_id": str(tenant_id),
+        "period_start": period_start.isoformat(),
+        "period_end": period_end.isoformat(),
+        "rows": [
+            {"kind": row.kind, "event_count": row.event_count, "units": row.units}
+            for row in usage_summary(events, period_start, period_end)
+        ],
+    }
+
+
+@app.post("/api/tenants/{tenant_id}/rating/finalize")
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingFinalize) -> dict:
+    try:
+        with connect() as connection:
+            results = finalize_rating(
+                PostgresRatingRepository(connection),
+                tenant_id,
+                request.period_start,
+                request.period_end,
+            )
+    except NoRatingSubscriptionError as error:
+        raise HTTPException(
+            status_code=422, detail="no subscription overlaps the rating period"
+        ) from error
+    except psycopg.errors.IntegrityError as error:
+        raise HTTPException(status_code=400, detail="invalid rating finalize") from error
+    rows = [_rating_result(row) for row in results]
+    return {
+        "tenant_id": str(tenant_id),
+        "period_start": request.period_start.isoformat(),
+        "period_end": request.period_end.isoformat(),
+        **(rows[0] if rows else {}),
+        "rating_result": rows,
+    }
