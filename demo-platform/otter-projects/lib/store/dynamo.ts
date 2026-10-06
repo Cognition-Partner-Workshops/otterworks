@@ -14,6 +14,10 @@ import { DISPATCH_LEASE_MS, padNumber, projectKeyOf, ticketNumberOf, type Store 
 
 type Item = Record<string, unknown>;
 
+/** The SDK's defaults are 0 (no timeout); bound every call so a stalled socket fails into the SDK retry path. */
+export const DYNAMO_CONNECTION_TIMEOUT_MS = 2_000;
+export const DYNAMO_REQUEST_TIMEOUT_MS = 5_000;
+
 /** Single-table DynamoDB store; see ./types.ts for the key layout. */
 export class DynamoStore implements Store {
   private readonly doc: DynamoDBDocumentClient;
@@ -22,7 +26,10 @@ export class DynamoStore implements Store {
     private readonly table: string,
     region: string,
   ) {
-    this.doc = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
+    this.doc = DynamoDBDocumentClient.from(new DynamoDBClient({
+        region,
+        requestHandler: { connectionTimeout: DYNAMO_CONNECTION_TIMEOUT_MS, requestTimeout: DYNAMO_REQUEST_TIMEOUT_MS },
+      }), {
       marshallOptions: { removeUndefinedValues: true },
     });
   }
