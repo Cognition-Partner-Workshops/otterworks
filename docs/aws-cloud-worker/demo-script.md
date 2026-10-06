@@ -17,17 +17,17 @@ Everything in this file is already registered: playbook `playbook-5f088350423044
 ## Signing in as the persona
 
 1. Open https://fieldkit.devin.ai and sign in with your magic link.
-2. Open https://partner-workshops.devinenterprise.com/auth/login?redirect=/&reauth=true and choose "Log in with SSO". The Field Kit page asks for an area and a persona.
-3. Pick `Devin-Demo-Cloud` for the Cloud Engineer, or `Devin-Demo-AWS` for the AWS engineer. Both are Members of ViewOnly. The Product Manager is `Devin-Demo-Product`.
+2. Open https://partner-workshops.devinenterprise.com/auth/login?redirect=/&reauth=true and choose "Log in with SSO". Field Kit shows a form with two dropdowns, `Area` and `Identity`. The `Identity` list changes with the `Area`.
+3. Pick the pair from the table below and submit.
 4. Land on the ViewOnly sessions list. If the page shows an org picker, choose Partner Demo - ViewOnly.
 
-To switch persona during the demo, sign out of partner-workshops first and repeat from step 2. The Field Kit cookie stays, so the magic link is not needed twice.
+| Persona | Area dropdown | Identity dropdown | Devin user |
+|---|---|---|---|
+| AWS engineer (act 1 and 4) | ISV and platform | AWS | user-094334530455473bb8c587d207307833 |
+| Cloud engineer (replies in act 2) | Platform and operations | Cloud Engineer | user-3f836342a33f4c759f0edeb2805d6b58 |
+| Product manager (act 3) | Product, leadership and partner | Product Manager | user-f65e35477d3c403aaa0838632f20650b |
 
-| Persona | Field Kit group | Devin user |
-|---|---|---|
-| AWS engineer (act 1 and 4) | Devin-Demo-AWS | user-094334530455473bb8c587d207307833 |
-| Cloud engineer (replies in act 2) | Devin-Demo-Cloud | user-3f836342a33f4c759f0edeb2805d6b58 |
-| Product manager (act 3) | Devin-Demo-Product | user-f65e35477d3c403aaa0838632f20650b |
+All three identities are Members of Partner Demo - ViewOnly already. To switch persona during the demo, sign out of partner-workshops first and repeat from step 2. The Field Kit cookie stays, so the magic link is not needed twice.
 
 ## Pre-flight, 30 minutes before
 
