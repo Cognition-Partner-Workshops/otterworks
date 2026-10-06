@@ -83,5 +83,8 @@ def handler(event, _context):
         code, message = _error(exc)
         print(json.dumps({"op": op, "error": message, "code": code}))
         raise RuntimeError(f"{op} failed: {code} {message}") from None
-    print(json.dumps({"op": op, "database": db.get("dbname"), "result": result}, default=str))
+    logged = result if op == "exec" else {
+        "rows": {name: len(rows) if isinstance(rows, list) else rows for name, rows in result["results"].items()}
+    }
+    print(json.dumps({"op": op, "database": db.get("dbname"), "result": logged}, default=str))
     return json.loads(json.dumps(result, default=str))

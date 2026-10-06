@@ -51,3 +51,9 @@ variable "log_retention_days" {
   type    = number
   default = 7
 }
+
+variable "usage_export_schedule" {
+  description = "EventBridge Scheduler expression (UTC) for the nightly usage export."
+  type        = string
+  default     = "cron(15 2 * * ? *)"
+}

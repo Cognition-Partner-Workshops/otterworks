@@ -23,7 +23,42 @@ So far the root creates:
   call and passes the run's login credentials (read once from the secret) in the payload. `/internal/reset` is
   refused unless the proxy is started with `--allow-internal-reset`.
 
-Phase 3 adds the S3 export, Glue, Athena and EventBridge resources to this root.
+- the nightly usage export (`usage_export.tf`, decision d-export-network = relay): the bucket
+  `<token>-billing-usage-<account id>` (SSE-S3, public access blocked, TLS only, `force_destroy`), the function
+  `<token>-billing-usage-export` **outside** the VPC with the role `otterworks-<token>-usage-export`, and the
+  EventBridge Scheduler schedule `<token>-billing/<token>-billing-usage-export` (`cron(15 2 * * ? *)` UTC, role
+  `otterworks-<token>-usage-scheduler`). Schedules take no tags, so the schedule group `<token>-billing` carries them.
+  The function reads the run's secret, invokes the in-VPC sql-runner with the credential in the payload (never
+  logged), and writes `usage/period=<yyyy-mm>/part-00000.csv.gz`, overwriting the partition on each run.
+
+Phase 3 adds the Glue table and Athena workgroup to this root.
+
+## Usage export
+
+Headerless gzip CSV, one object per month, columns in this order:
+
+| column | type | note |
+| --- | --- | --- |
+| `event_id` | uuid as string | `billing.usage_events.id` |
+| `tenant_id` | uuid as string | |
+| `kind` | string | `api`, `storage`, `compute` |
+| `units` | int | |
+| `occurred_at` | timestamp, UTC | `yyyy-mm-dd hh:mm:ss.ffffff` |
+| `usage_date` | date, UTC | `yyyy-mm-dd`, the `occurred_at::date` that `fn_usage_summary` groups on (session time zone UTC) |
+
+A month belongs to `period=<yyyy-mm>` by its UTC `occurred_at`. A month without usage still gets its partition:
+`part-00000.csv.gz` holding zero rows (a 20-byte empty gzip), so a query over it returns no rows rather than
+failing. Each run also writes `manifests/usage/period=<yyyy-mm>.json` (rows, units, columns), outside the
+`usage/` table location.
+
+The schedule sends `{}`: every month present in `billing.usage_events` plus the previous calendar month (UTC), even
+when it is empty. A manual run can name the months:
+
+```bash
+source <(cloudworker/assume.sh engineer devin-<session id>)
+aws lambda invoke --function-name $TOKEN-billing-usage-export --cli-binary-format raw-in-base64-out \
+  --payload '{"periods": ["2026-02", "2026-09"]}' /dev/stdout
+```
 
 ## Reaching a private instance
 
@@ -64,7 +99,7 @@ source <(../../../cloudworker/assume.sh engineer devin-<session id>)
 terraform init -backend-config="key=otterworks/billing-data/${TOKEN}/terraform.tfstate"
 terraform apply -var run_token=$TOKEN -var expires=$EXPIRES
 terraform output db_evidence
-# teardown: drops the database and role, then removes the functions, secret and security group
+# teardown: drops the database and role, then removes the functions, secret, security group, bucket and schedule
 terraform destroy -var run_token=$TOKEN -var expires=$EXPIRES
 source <(../../../cloudworker/assume.sh observer devin-<session id>)
 ```

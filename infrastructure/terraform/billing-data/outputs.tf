@@ -40,3 +40,17 @@ output "db_evidence" {
   description = "What the db-init function read back after create: the \\l row, the role, its database privileges and a login as the role."
   value       = jsondecode(aws_lambda_invocation.database.result)
 }
+
+output "usage_bucket" {
+  description = "Bucket the nightly export writes usage/period=<yyyy-mm>/part-00000.csv.gz to."
+  value       = aws_s3_bucket.usage.id
+}
+
+output "usage_export_function" {
+  description = "Non-VPC export function; invoke with {} or {\"periods\": [\"yyyy-mm\", ...]}."
+  value       = aws_lambda_function.usage_export.function_name
+}
+
+output "usage_export_schedule" {
+  value = "${aws_scheduler_schedule.usage_export.group_name}/${aws_scheduler_schedule.usage_export.name}"
+}
