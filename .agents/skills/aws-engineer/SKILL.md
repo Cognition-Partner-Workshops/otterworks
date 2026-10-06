@@ -34,7 +34,7 @@ The secrets `AWS_CONSOLE_SIGNIN_URL`, `AWS_CONSOLE_USERNAME` and `AWS_CONSOLE_PA
 
 ## 3. AWS documentation through MCP
 
-The AWS MCP server is available in the session as `aws-agent-toolkit`. Before choosing a service setting that matters (Lambda alias routing, CodeDeploy deployment configurations, API Gateway payload format, Aurora Data API limits, EventBridge input transformers), search the documentation through it and quote the page in the timeline with the decision it informed.
+The AWS MCP server is available in the session as `aws-agent-toolkit`, with `aws___search_documentation` for a search that returns page text and `aws___read_documentation` for a whole page. It starts through `uvx`; if the server fails to connect, install it with `python3 -m pip install --user uv` and make sure `~/.local/bin` is on the path. Before choosing a service setting that matters (Lambda alias routing, CodeDeploy deployment configurations, API Gateway payload format, Aurora Data API limits, EventBridge input transformers), search the documentation through it and quote the page in the timeline with the decision it informed.
 
 ## 4. Tags, tokens and lifetime
 
