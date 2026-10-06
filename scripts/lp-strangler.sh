@@ -216,6 +216,9 @@ cmd_up() {
   tf_init; tf_vars
   tf plan -input=false -no-color "${TF_VARS[@]}" -out="${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
   tf apply -input=false -no-color -auto-approve "${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
+  # A SnapStart version stays Pending while its snapshot is taken; the API answers 500 until it is Active.
+  echo "waiting for ${RUN}-${MODULE}:live to become Active"
+  aws lambda wait function-active-v2 --function-name "${RUN}-${MODULE}" --qualifier live
   echo
   tf output -no-color
   echo
