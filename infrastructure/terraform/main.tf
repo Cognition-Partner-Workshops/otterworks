@@ -102,6 +102,8 @@ module "database" {
   project     = "otterworks"
   db_password = var.db_password
 
+  db_instance_class = "db.t3.small"
+
   vpc_id     = local.vpc_id
   vpc_cidr   = local.vpc_cidr
   subnet_ids = local.private_subnets
