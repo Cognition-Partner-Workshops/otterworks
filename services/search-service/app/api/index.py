@@ -6,7 +6,7 @@ import structlog
 from flask import Blueprint, jsonify, request
 
 from app.api.health import INDEX_COUNT
-from app.services.indexer import Indexer
+from app.services.indexer import Indexer, ReindexSourceError
 from app.services.meilisearch_client import MeiliSearchService
 
 logger = structlog.get_logger()
@@ -88,6 +88,11 @@ def reindex() -> tuple:
         result = indexer.reindex()
         logger.info("api_reindex_triggered")
         return jsonify(result), 200
+    except ReindexSourceError as exc:
+        logger.error("api_reindex_aborted", reason=str(exc))
+        return jsonify({
+            "error": "Reindex aborted: source service unavailable; existing index left intact",
+        }), 502
     except Exception:
         logger.exception("api_reindex_failed")
         return jsonify({"error": "Failed to reindex"}), 500

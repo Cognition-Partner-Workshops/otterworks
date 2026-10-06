@@ -16,6 +16,9 @@ class MeiliSearchConfig:
     files_index: str = field(
         default_factory=lambda: os.getenv("MEILISEARCH_FILES_INDEX", "files")
     )
+    timeout_seconds: int = field(
+        default_factory=lambda: int(os.getenv("MEILISEARCH_TIMEOUT_SECONDS", "10"))
+    )
 
 
 @dataclass(frozen=True)
