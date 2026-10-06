@@ -1,0 +1,104 @@
+name: Deploy legacy-portal strangler modules
+
+# Continuous deployment of the strangler carve-outs (infrastructure/terraform/legacy-portal-strangler).
+# A merged change to that root, to the Lambda code or to the harness runs `scripts/lp-strangler.sh deploy`
+# once per run in the LP_STRANGLER_CD_RUNS repository variable (space separated, e.g.
+# "lp-ann-20261006-a1 lp-pref-20261007-a1"), or for the `run` input of a manual dispatch. Each deploy builds
+# the module's jar and applies the root, which publishes a new version when code or configuration changed.
+# Then it moves the `live` alias through the CodeDeploy canary. CodeDeploy rolls the alias back when the
+# run's 5xx-rate or Lambda errors alarm goes to ALARM, and the job fails unless the deployment succeeds.
+# With no run configured, nothing is deployed. Only lp-ann/lp-pref/lp-fb runs are accepted, so this
+# workflow can never act on a legacy-portal-serverless (lp-<yyyymmdd>-xx) run.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/terraform/legacy-portal-strangler/**'
+      - 'services/legacy-portal-lambda/**'
+      - 'scripts/lp-strangler.sh'
+      - '.github/workflows/cd-lp-strangler.yml'
+  workflow_dispatch:
+    inputs:
+      run:
+        description: Strangler run token to deploy (defaults to every run in LP_STRANGLER_CD_RUNS)
+        type: string
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  targets:
+    runs-on: ubuntu-latest
+    outputs:
+      runs: ${{ steps.runs.outputs.runs }}
+    steps:
+      - name: Resolve the target runs
+        id: runs
+        env:
+          INPUT_RUN: ${{ inputs.run }}
+          CD_RUNS: ${{ vars.LP_STRANGLER_CD_RUNS }}
+        run: |
+          set -euo pipefail
+          runs="${INPUT_RUN:-${CD_RUNS:-}}"
+          for r in $runs; do
+            if [[ ! "$r" =~ ^lp-(ann|pref|fb)-[0-9]{8}-[a-z0-9]{2}$ ]]; then
+              echo "::error::run must look like lp-ann-20261006-a1, lp-pref-... or lp-fb-..., got ${r}"
+              exit 1
+            fi
+          done
+          [ -n "$runs" ] || echo "::notice::LP_STRANGLER_CD_RUNS is not set and no run was given; nothing to deploy"
+          echo "runs=$(printf '%s\n' $runs | jq -Rsc 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: targets
+    if: needs.targets.outputs.runs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.targets.outputs.runs) }}
+    # One deployment per run at a time: CodeDeploy rejects a second deployment while one is in flight.
+    concurrency:
+      group: cd-lp-strangler-${{ matrix.run }}
+      cancel-in-progress: false
+    env:
+      RUN: ${{ matrix.run }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: services/legacy-portal-lambda/*/pom.xml
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build, apply and shift live through the canary
+        run: scripts/lp-strangler.sh deploy
+
+      - name: Upload the transcript
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lp-mod-deploy-${{ matrix.run }}
+          path: .demo/legacy-portal/${{ matrix.run }}/deploy-*.log
+          if-no-files-found: ignore

@@ -2,7 +2,7 @@
 # Harness for carving one bounded context out of the legacy portal (strangler fig): the module on API Gateway,
 # Lambda and Aurora Serverless v2 (announcements also on EventBridge), every other route still on a
 # legacy-portal-ec2 run.
-#   scripts/lp-strangler.sh up|status|reset|replay|events|down|verify-clean
+#   scripts/lp-strangler.sh up|deploy|status|reset|replay|events|down|verify-clean
 # Inputs come from the environment: RUN (lp-<ann|pref|fb>-<yyyymmdd>-<two characters>; the abbreviation picks
 # the module), MODULE (optional, announcements|preferences|feedback, must match RUN), EC2_RUN (the lp-ec2 run
 # whose ALB the $default route forwards to; up only, later commands read it from the state), TARGET (replay:
@@ -65,7 +65,11 @@ tf_init() {
 tf_vars() {
   local dir="${ROOT}/.demo/legacy-portal/${RUN}"
   if [ ! -s "${dir}/expires" ]; then
-    date -u -d "+${EXPIRES_DAYS:-2} days" +%Y-%m-%d > "${dir}/expires"
+    # A fresh checkout (the CD workflow) keeps the Expires tag the run already has.
+    local tagged
+    tagged="$(aws lambda get-function --function-name "${RUN}-${MODULE}" --query Tags.Expires --output text 2>/dev/null || true)"
+    if [[ "$tagged" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then echo "$tagged" > "${dir}/expires"
+    else date -u -d "+${EXPIRES_DAYS:-2} days" +%Y-%m-%d > "${dir}/expires"; fi
   fi
   if [ -n "${EC2_RUN:-}" ]; then
     [[ "$EC2_RUN" =~ ^lp-ec2-[0-9]{8}-[a-z0-9]{2}$ ]] || die "EC2_RUN must look like lp-ec2-20261006-b1, got ${EC2_RUN}"
@@ -220,6 +224,50 @@ cmd_up() {
   tf output -no-color
   echo
   echo "lp-mod-up wall clock: $(elapsed "$t0")"
+}
+
+alarm_state() {
+  aws cloudwatch describe-alarms --alarm-names "$1" --query 'MetricAlarms[0].StateValue' --output text
+}
+
+# Builds the jar and applies the root, which publishes a new version when the code or the configuration
+# changed, then has CodeDeploy shift the live alias to it. The canary rolls back by itself when either
+# alarm goes to ALARM; the command fails unless the deployment succeeds.
+cmd_deploy() {
+  need_run; start_transcript "$RUN"
+  local t0 fn="${RUN}-${MODULE}" current target appspec input id status
+  t0="$(date +%s)"
+  build_jar
+  tf_init; tf_vars
+  tf plan -input=false -no-color "${TF_VARS[@]}" -out="${ROOT}/.demo/legacy-portal/${RUN}/deploy.tfplan"
+  tf apply -input=false -no-color -auto-approve "${ROOT}/.demo/legacy-portal/${RUN}/deploy.tfplan"
+  load_outputs
+  current="$(aws lambda get-alias --function-name "$fn" --name live --query FunctionVersion --output text)"
+  target="$(jq -r .lambda_published_version.value <<<"$OUTPUTS_JSON")"
+  if [ "$current" = "$target" ]; then
+    echo "live already on version ${target}; nothing to deploy"; return 0
+  fi
+  aws lambda wait published-version-active --function-name "$fn" --qualifier "$target"
+  appspec="$(jq -nc --arg fn "$fn" --arg cur "$current" --arg tgt "$target" \
+    '{version: 0.0, Resources: [{live: {Type: "AWS::Lambda::Function", Properties: {Name: $fn, Alias: "live", CurrentVersion: $cur, TargetVersion: $tgt}}}]}')"
+  input="$(jq -nc --arg app "$(jq -r .codedeploy_app.value <<<"$OUTPUTS_JSON")" --arg grp "$(jq -r .deployment_group.value <<<"$OUTPUTS_JSON")" \
+    --arg spec "$appspec" --arg desc "lp-mod-deploy ${MODULE} v${target} $(git -C "$ROOT" rev-parse --short HEAD)" \
+    '{applicationName: $app, deploymentGroupName: $grp, description: $desc, revision: {revisionType: "AppSpecContent", appSpecContent: {content: $spec}}}')"
+  id="$(aws deploy create-deployment --cli-input-json "$input" --query deploymentId --output text)"
+  echo "deployment ${id}: live ${current} -> ${target}, $(jq -r .deployment_config.value <<<"$OUTPUTS_JSON"), rollback on $(jq -r .alarm_5xx_rate.value <<<"$OUTPUTS_JSON") or $(jq -r .alarm_lambda_errors.value <<<"$OUTPUTS_JSON")"
+  while :; do
+    status="$(aws deploy get-deployment --deployment-id "$id" --query deploymentInfo.status --output text)"
+    printf '%s  deploy=%-10s 5xx-rate=%s errors=%s\n' "$(date -u +%H:%M:%S)" "$status" \
+      "$(alarm_state "$(jq -r .alarm_5xx_rate.value <<<"$OUTPUTS_JSON")")" "$(alarm_state "$(jq -r .alarm_lambda_errors.value <<<"$OUTPUTS_JSON")")"
+    case "$status" in Succeeded|Failed|Stopped) break ;; esac
+    sleep 15
+  done
+  aws deploy get-deployment --deployment-id "$id" --output json | jq -r '.deploymentInfo |
+    "\(.deploymentId) \(.status)" + (if .rollbackInfo.rollbackDeploymentId then " rollback=\(.rollbackInfo.rollbackDeploymentId)" else "" end)
+    + (if .errorInformation then " error=\(.errorInformation.code): \(.errorInformation.message)" else "" end)'
+  echo "live -> v$(aws lambda get-alias --function-name "$fn" --name live --query FunctionVersion --output text)"
+  echo "lp-mod-deploy wall clock: $(elapsed "$t0")"
+  [ "$status" = Succeeded ]
 }
 
 cmd_status() {
@@ -389,11 +437,12 @@ cmd_verify_clean() {
 
 case "$CMD" in
   up) cmd_up ;;
+  deploy) cmd_deploy ;;
   status) cmd_status ;;
   reset) cmd_reset ;;
   replay) cmd_replay ;;
   events) cmd_events ;;
   down) cmd_down ;;
   verify-clean) cmd_verify_clean ;;
-  *) die "usage: lp-strangler.sh up|status|reset|replay|events|down|verify-clean (RUN, MODULE, EC2_RUN, TARGET from the environment)" ;;
+  *) die "usage: lp-strangler.sh up|deploy|status|reset|replay|events|down|verify-clean (RUN, MODULE, EC2_RUN, TARGET from the environment)" ;;
 esac

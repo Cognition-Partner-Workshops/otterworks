@@ -1,3 +1,7 @@
+locals {
+  module_routes = ["ANY ${local.m.prefix}", "ANY ${local.m.prefix}/{proxy+}"]
+}
+
 resource "aws_apigatewayv2_api" "this" {
   name          = local.name
   description   = "legacy-portal front door for ${local.name}: ${var.module} on Lambda, everything else on ${var.ec2_run_token}"
@@ -13,6 +17,14 @@ resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.this.id
   name        = "$default"
   auto_deploy = true
+
+  # Per-route metrics feed the canary's 5xx alarm (alarms.tf). The throttling values are the
+  # account-level HTTP API defaults; leaving them unset in this block would send 0.
+  default_route_settings {
+    detailed_metrics_enabled = true
+    throttling_burst_limit   = 5000
+    throttling_rate_limit    = 10000
+  }
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api.arn
@@ -48,7 +60,7 @@ resource "aws_apigatewayv2_integration" "ec2" {
 }
 
 resource "aws_apigatewayv2_route" "module" {
-  for_each  = toset(["ANY ${local.m.prefix}", "ANY ${local.m.prefix}/{proxy+}"])
+  for_each  = toset(local.module_routes)
   api_id    = aws_apigatewayv2_api.this.id
   route_key = each.value
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"

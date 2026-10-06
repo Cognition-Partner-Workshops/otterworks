@@ -63,7 +63,7 @@ resource "aws_lambda_function" "this" { # nosemgrep: terraform.aws.security.aws-
   source_code_hash = filebase64sha256(var.jar_path)
   memory_size      = var.lambda_memory_mb
   timeout          = 29
-  architectures    = ["x86_64"]
+  architectures    = [var.lambda_architecture]
   publish          = true
 
   snap_start {
@@ -85,8 +85,14 @@ resource "aws_lambda_function" "this" { # nosemgrep: terraform.aws.security.aws-
 }
 
 # SnapStart applies to published versions only, so the API invokes this alias, never $LATEST.
+# Terraform points it at the first version; after that CodeDeploy moves it (deploy.tf, lp-ann-deploy).
 resource "aws_lambda_alias" "live" {
   name             = "live"
+  description      = "Traffic-serving version of ${aws_lambda_function.this.function_name}, moved by CodeDeploy"
   function_name    = aws_lambda_function.this.function_name
   function_version = aws_lambda_function.this.version
+
+  lifecycle {
+    ignore_changes = [function_version, routing_config]
+  }
 }
