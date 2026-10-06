@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean
 
 SHELL := /bin/bash
 
@@ -591,3 +591,22 @@ lp-down: ## Destroy the run's legacy-portal serverless stack (RUN=)
 
 lp-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP) verify-clean
+
+# legacy-portal-ec2: Terraform root infrastructure/terraform/legacy-portal-ec2, the EC2 "before" state.
+# One state per run token; transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
+LP_EC2 = RUN=$(RUN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-ec2.sh
+
+lp-ec2-up: ## Build the jar, apply the legacy-portal EC2 stack and wait for a healthy target (RUN=lp-ec2-<yyyymmdd>-<xx>)
+	@$(LP_EC2) up
+
+lp-ec2-status: ## List legacy-portal EC2 runs by tag, or one run's outputs, instance and health (RUN optional)
+	@$(LP_EC2) status
+
+lp-ec2-replay: ## Replay the recorded Java corpus against the run's ALB (RUN=, CTX=<context|all>, STAGE=first|full)
+	@$(LP_EC2) replay
+
+lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
+	@$(LP_EC2) down
+
+lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
+	@$(LP_EC2) verify-clean
