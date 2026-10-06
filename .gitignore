@@ -116,3 +116,6 @@ __pycache__/
 incident/.state/
 incident/reports/
 !infrastructure/helm/tenant-values/**/eventing.env
+
+# legacy-portal replay evidence written by replay.py without --out
+services/legacy-portal/parity/out/
