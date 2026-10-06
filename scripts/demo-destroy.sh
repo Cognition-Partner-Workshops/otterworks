@@ -76,7 +76,11 @@ if az_available; then
     if [ -d "${AZURE_TF_DIR}" ] && [ -n "${TFSTATE_AZ_ACCOUNT:-}" ] && [ -n "${TFSTATE_AZ_RESOURCE_GROUP:-}" ]; then
       tf_init "${TOKEN}" "${AZURE_TF_DIR}" azure_backend_args
       TFVARS="${TRANSCRIPT_DIR}/azure.auto.tfvars.json"
-      DESTROY_ARGS=(-var "namespace=${TOKEN}" -var "run_token=$(token_run "${TOKEN}")" -var "state=$(token_state "${TOKEN}")" -var "expires=$(now_utc)" -var "location=${AZURE_LOCATION:-centralus}")
+      # Without the deploy-time tfvars (e.g. the reaper runner) every variable without a
+      # default still needs a value or destroy stops at "No value for required variable";
+      # these only feed resources being destroyed.
+      DESTROY_ARGS=(-var "namespace=${TOKEN}" -var "run_token=$(token_run "${TOKEN}")" -var "state=$(token_state "${TOKEN}")" -var "expires=$(now_utc)" -var "location=${AZURE_LOCATION:-centralus}"
+        -var 'eks_egress_cidrs=["192.0.2.1/32"]' -var "report_image=unused-on-destroy" -var "audit_image=unused-on-destroy" -var "job_image=unused-on-destroy")
       [ -f "${TFVARS}" ] && DESTROY_ARGS=(-var-file="${TFVARS}")
       export TF_VAR_registry_username="AWS" TF_VAR_registry_password="unused-on-destroy"
       tf "${TOKEN}" "${AZURE_TF_DIR}" destroy -input=false -auto-approve "${DESTROY_ARGS[@]}" || azure_rc=$?
@@ -87,15 +91,23 @@ if az_available; then
     # Belt and braces: whatever Terraform did not track (or if its state is gone).
     if [ "${DRY_RUN}" = "1" ] || [ "$(az group exists -n "${RG}" -o tsv 2>/dev/null)" = "true" ]; then
       run az group delete -n "${RG}" --yes --no-wait -o none || azure_rc=$?
-    fi
-    # Key Vault soft-delete would otherwise keep the name reserved for 90 days.
-    if [ "${DRY_RUN}" != "1" ]; then
-      for kv in $(az keyvault list-deleted --query "[?tags.namespace=='${TOKEN}'].name" -o tsv 2>/dev/null); do
-        run az keyvault purge -n "${kv}" -o none || dwarn "could not purge deleted key vault ${kv}"
-      done
+      # The vault is listed as soft-deleted only once the async group delete finishes.
+      if [ "${DRY_RUN}" != "1" ]; then
+        dlog "waiting for Azure resource group ${RG} deletion before purging Key Vaults..."
+        az group wait -n "${RG}" --deleted --timeout "${AZURE_RG_DELETE_TIMEOUT:-1800}" 2>/dev/null ||
+          { dwarn "resource group ${RG} still deleting; Key Vault purge retried on the next run"; azure_rc=1; }
+      fi
     fi
   else
     dlog "azure: nothing to destroy for ${TOKEN}"
+  fi
+  # A soft-deleted vault keeps its name for soft_delete_retention_days and the provider does not
+  # recover it (recover_soft_deleted_key_vaults = false), so an unpurged one blocks a redeploy of
+  # the token. Runs even when the group is already gone, to finish an earlier partial destroy.
+  if [ "${DRY_RUN}" != "1" ]; then
+    for kv in $(az keyvault list-deleted --query "[?tags.namespace=='${TOKEN}'].name" -o tsv 2>/dev/null); do
+      run az keyvault purge -n "${kv}" -o none || { dwarn "could not purge deleted key vault ${kv}"; azure_rc=1; }
+    done
   fi
 elif [ "$(token_wants_azure "${TOKEN}")" = "true" ]; then
   derr "${TOKEN} is Azure-backed (overlay azure: true or an after-token) but AZURE_* credentials are not set; refusing to certify"
