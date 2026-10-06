@@ -35,7 +35,7 @@ started from empty tables with ids from 1, corpus checksums OK (`SHA256SUMS`), c
 The first `make lp-mod-status` after `up` answered `GET /api/feedback/average-rating` with 500: the API access
 log showed integration status 409, because the freshly published SnapStart version was still `Pending` while
 Lambda took its snapshot. `lp-mod-up` now runs `aws lambda wait function-active-v2 --qualifier live` after the
-apply, so the run is only reported up once the alias can be invoked. After the version became `Active` all
+apply (commit f9808c12 on the base branch), so the run is only reported up once the alias can be invoked. After the version became `Active` all
 four probes returned 200 without any change to Terraform or the Lambda.
 
 ## AWS documentation behind the choices
