@@ -1,9 +1,12 @@
 package com.otterworks.legacyportal.lambda.preferences;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.rdsdata.RdsDataClient;
 import software.amazon.awssdk.services.rdsdata.model.DatabaseResumingException;
@@ -15,14 +18,37 @@ import software.amazon.awssdk.services.rdsdata.model.SqlParameter;
 public final class DataApiPreferenceRepository implements PreferenceRepository {
 
     private static final Pattern VALID_SCHEMA = Pattern.compile("[a-z_][a-z0-9_]*");
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long RETRY_DELAY_MILLIS = 5_000;
+    // Retry window for a paused cluster plus one call must stay under the 29 s Lambda timeout.
+    static final long RETRY_WINDOW_NANOS = 20_000_000_000L;
+    static final Duration API_CALL_TIMEOUT = Duration.ofSeconds(8);
+    static final long BASE_DELAY_MILLIS = 250;
+    static final long MAX_DELAY_MILLIS = 3_000;
+
+    interface RetryClock {
+        long nanoTime();
+
+        void sleep(long nanos) throws InterruptedException;
+    }
+
+    static final RetryClock SYSTEM_CLOCK =
+            new RetryClock() {
+                @Override
+                public long nanoTime() {
+                    return System.nanoTime();
+                }
+
+                @Override
+                public void sleep(long nanos) throws InterruptedException {
+                    Thread.sleep(nanos / 1_000_000L, (int) (nanos % 1_000_000L));
+                }
+            };
 
     private final RdsDataClient client;
     private final String resourceArn;
     private final String secretArn;
     private final String database;
     private final String table;
+    private final RetryClock clock;
 
     public DataApiPreferenceRepository(
             RdsDataClient client,
@@ -30,6 +56,16 @@ public final class DataApiPreferenceRepository implements PreferenceRepository {
             String secretArn,
             String database,
             String schema) {
+        this(client, resourceArn, secretArn, database, schema, SYSTEM_CLOCK);
+    }
+
+    DataApiPreferenceRepository(
+            RdsDataClient client,
+            String resourceArn,
+            String secretArn,
+            String database,
+            String schema,
+            RetryClock clock) {
         if (schema == null || !VALID_SCHEMA.matcher(schema).matches()) {
             throw new IllegalArgumentException("DB_SCHEMA must match [a-z_][a-z0-9_]*");
         }
@@ -38,12 +74,22 @@ public final class DataApiPreferenceRepository implements PreferenceRepository {
         this.secretArn = secretArn;
         this.database = database;
         this.table = schema + ".user_preference";
+        this.clock = clock;
+    }
+
+    /**
+     * Total deadline per ExecuteStatement including SDK retries. No per-attempt timeout, so the
+     * SDK does not add retries of its own on a slow statement.
+     */
+    static ClientOverrideConfiguration clientOverrides() {
+        return ClientOverrideConfiguration.builder().apiCallTimeout(API_CALL_TIMEOUT).build();
     }
 
     public static DataApiPreferenceRepository fromEnvironment() {
         RdsDataClient client =
                 RdsDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
+                        .overrideConfiguration(clientOverrides())
                         .build();
         return new DataApiPreferenceRepository(
                 client,
@@ -124,23 +170,32 @@ public final class DataApiPreferenceRepository implements PreferenceRepository {
                 .build();
     }
 
+    // Reads and the idempotent upsert are both safe to repeat.
     private ExecuteStatementResponse execute(
             Supplier<ExecuteStatementResponse> operation) {
+        long started = clock.nanoTime();
         for (int attempt = 1; ; attempt++) {
             try {
                 return operation.get();
             } catch (RuntimeException exception) {
-                if (attempt >= MAX_ATTEMPTS || !isRetryable(exception)) {
+                long remaining = RETRY_WINDOW_NANOS - (clock.nanoTime() - started);
+                if (remaining <= 0 || !isRetryable(exception)) {
                     throw exception;
                 }
                 try {
-                    Thread.sleep(RETRY_DELAY_MILLIS);
+                    clock.sleep(Math.min(remaining, backoffMillis(attempt) * 1_000_000L));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     throw new IllegalStateException("Interrupted while waiting for database", interrupted);
                 }
             }
         }
+    }
+
+    /** Capped exponential backoff with equal jitter. */
+    static long backoffMillis(int attempt) {
+        long ceiling = Math.min(MAX_DELAY_MILLIS, BASE_DELAY_MILLIS << Math.min(attempt - 1, 20));
+        return ceiling / 2 + ThreadLocalRandom.current().nextLong(ceiling / 2 + 1);
     }
 
     private boolean isRetryable(Throwable exception) {
