@@ -116,9 +116,13 @@ def bola_files(ctx: ScanContext) -> Result:
             },
         ),
     ]
-    refusals = []
-    for method, attempt_path, body in attempts:
-        response = ctx.request(method, attempt_path, identity=ctx.attacker, json=body)
+    # Try every route before judging, so an odd status on one route cannot hide a
+    # breach on another.
+    responses = [
+        (method, attempt_path, ctx.request(method, attempt_path, identity=ctx.attacker, json=body))
+        for method, attempt_path, body in attempts
+    ]
+    for method, attempt_path, response in responses:
         if response.status_code in (200, 201):
             return self.result(
                 Verdict.VULNERABLE,
@@ -126,27 +130,45 @@ def bola_files(ctx: ScanContext) -> Result:
                 "for the victim's file",
                 [Evidence.from_response(response, note=f"victim file {victim_file['id']}")],
             )
-        if response.status_code not in (401, 403, 404):
-            return self.result(
-                Verdict.INCONCLUSIVE,
-                f"unexpected status {response.status_code} on {method} {attempt_path}",
-                [Evidence.from_response(response)],
-            )
-        refusals.append(response)
-
-    # Control request: a route that rejects the owner too is not evidence that
-    # authorization works.
-    if not ctx.owner_can_read(path, ctx.victim):
+    unexpected = [
+        (method, attempt_path, response)
+        for method, attempt_path, response in responses
+        if response.status_code not in (401, 403, 404)
+    ]
+    if unexpected:
         return self.result(
             Verdict.INCONCLUSIVE,
-            "the owner is also refused; the file routes reject every caller, so "
-            "cross-tenant access cannot be assessed",
-            [Evidence.from_response(r) for r in refusals],
+            "unexpected status "
+            + ", ".join(f"{r.status_code} on {m} {p}" for m, p, r in unexpected),
+            [Evidence.from_response(r) for _, _, r in unexpected],
+        )
+    refusals = [response for _, _, response in responses]
+
+    # Control requests: every route the attacker was refused on must still serve the
+    # owner, otherwise a route that rejects every caller would look fixed. The share
+    # control grants the scan's own burner identity read access, never the attacker.
+    controls = [
+        ("GET", path, None),
+        ("GET", f"{path}/download", None),
+        ("POST", f"{path}/share", {"shared_with": ctx.burner.user_id, "permission": "viewer"}),
+    ]
+    owner_refused = []
+    for method, control_path, body in controls:
+        response = ctx.request(method, control_path, identity=ctx.victim, json=body)
+        if response.status_code not in (200, 201):
+            owner_refused.append((method, control_path, response))
+    if owner_refused:
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            "the owner is also refused on "
+            + ", ".join(f"{m} {p} ({r.status_code})" for m, p, r in owner_refused)
+            + "; those routes reject every caller, so cross-tenant access cannot be assessed",
+            [Evidence.from_response(r) for _, _, r in owner_refused],
         )
     return self.result(
         Verdict.SECURE,
-        "the owner can read the file but the attacker was refused on metadata, download, "
-        f"and share ({', '.join(str(r.status_code) for r in refusals)})",
+        "the owner can read, download, and share the file but the attacker was refused on "
+        f"metadata, download, and share ({', '.join(str(r.status_code) for r in refusals)})",
         [Evidence.from_response(r) for r in refusals],
     )
 

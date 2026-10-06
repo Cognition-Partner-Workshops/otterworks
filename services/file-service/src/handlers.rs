@@ -841,9 +841,27 @@ mod tests {
             .to_string()
         }
 
+        fn share_scan(owner: Uuid, grant: Option<Uuid>) -> String {
+            let items: Vec<serde_json::Value> = grant
+                .map(|recipient| {
+                    serde_json::json!({
+                        "id": {"S": Uuid::new_v4().to_string()},
+                        "file_id": {"S": Uuid::new_v4().to_string()},
+                        "shared_with": {"S": recipient.to_string()},
+                        "permission": {"S": "viewer"},
+                        "shared_by": {"S": owner.to_string()},
+                        "created_at": {"S": Utc::now().to_rfc3339()},
+                    })
+                })
+                .into_iter()
+                .collect();
+            serde_json::json!({"Items": items, "Count": items.len(), "ScannedCount": items.len()})
+                .to_string()
+        }
+
         /// A stand-in for DynamoDB/S3 that serves every GetItem as an object owned by
-        /// `owner`, every Scan as empty, and records each call it receives.
-        async fn fake_aws(owner: Uuid) -> (String, Calls) {
+        /// `owner`, every Scan as a share to `grant` (or empty), and records each call.
+        async fn fake_aws(owner: Uuid, grant: Option<Uuid>) -> (String, Calls) {
             let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
             let addr = listener.local_addr().unwrap();
             let calls: Calls = Arc::default();
@@ -881,7 +899,7 @@ mod tests {
                             recorded.lock().unwrap().push(call.clone());
                             let body = match call.as_str() {
                                 GET_ITEM => item_owned_by(owner),
-                                SCAN => r#"{"Items":[],"Count":0,"ScannedCount":0}"#.to_string(),
+                                SCAN => share_scan(owner, grant),
                                 _ => "{}".to_string(),
                             };
                             let resp = format!(
@@ -907,7 +925,11 @@ mod tests {
         }
 
         async fn harness(owner: Uuid) -> Harness {
-            let (endpoint, calls) = fake_aws(owner).await;
+            harness_with_grant(owner, None).await
+        }
+
+        async fn harness_with_grant(owner: Uuid, grant: Option<Uuid>) -> Harness {
+            let (endpoint, calls) = fake_aws(owner, grant).await;
             let creds =
                 aws_sdk_dynamodb::config::Credentials::new("test", "test", None, None, "test");
             let dynamo = aws_sdk_dynamodb::Config::builder()
@@ -1080,6 +1102,42 @@ mod tests {
                 .await;
             assert_eq!(status, StatusCode::OK);
             assert!(body["url"].as_str().unwrap().contains(&owner.to_string()));
+        }
+
+        #[actix_rt::test]
+        async fn share_recipient_may_read_but_not_act_as_owner() {
+            let owner = Uuid::new_v4();
+            let recipient = Uuid::new_v4();
+            let h = harness_with_grant(owner, Some(recipient)).await;
+            let f = format!("/api/v1/files/{}", Uuid::new_v4());
+            let as_recipient =
+                |req: test::TestRequest| req.insert_header(("X-User-ID", recipient.to_string()));
+            for uri in [f.clone(), format!("{f}/download"), format!("{f}/versions")] {
+                let (status, _) = h
+                    .send(as_recipient(test::TestRequest::get().uri(&uri)))
+                    .await;
+                assert_eq!(status, StatusCode::OK, "recipient GET {uri}");
+            }
+            let owner_only = [
+                test::TestRequest::delete().uri(&f),
+                test::TestRequest::post()
+                    .uri(&format!("{f}/share"))
+                    .set_json(
+                        serde_json::json!({"shared_with": recipient, "permission": "editor"}),
+                    ),
+                test::TestRequest::patch()
+                    .uri(&format!("{f}/rename"))
+                    .set_json(serde_json::json!({"name": "pwned"})),
+                test::TestRequest::post().uri(&format!("{f}/trash")),
+            ];
+            h.take_calls();
+            for (i, req) in owner_only.into_iter().enumerate() {
+                let (status, _) = h.send(as_recipient(req)).await;
+                assert_eq!(status, StatusCode::FORBIDDEN, "owner-only request #{i}");
+                for call in h.take_calls() {
+                    assert!(call == GET_ITEM || call == SCAN, "request #{i} made {call}");
+                }
+            }
         }
 
         #[actix_rt::test]
