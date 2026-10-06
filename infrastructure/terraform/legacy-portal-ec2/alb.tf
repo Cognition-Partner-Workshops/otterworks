@@ -2,7 +2,7 @@
 # on-prem deployment is reached today. No TLS listener: the "before" state
 # serves plain HTTP.
 
-resource "aws_lb" "this" {
+resource "aws_lb" "this" { # nosemgrep: terraform.aws.security.aws-elb-access-logs-not-enabled.aws-elb-access-logs-not-enabled
   name               = local.name
   internal           = false
   load_balancer_type = "application"
@@ -33,7 +33,7 @@ resource "aws_lb_target_group_attachment" "app" {
   port             = var.app_port
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "http" { # nosemgrep: terraform.aws.security.insecure-load-balancer-tls-version.insecure-load-balancer-tls-version
   load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
