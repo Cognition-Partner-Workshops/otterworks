@@ -53,10 +53,16 @@ tf_vars() {
   TF_VARS=(-var "run_token=${RUN}" -var "expires=$(cat "$expires_file")")
 }
 
-# Same loader as cloudworker/cw.sh webhook_env. The file stays outside git and the transcripts.
+# Same loader as cloudworker/cw.sh webhook_env, with the org secrets first: LP_WEBHOOK_URL
+# and LP_WEBHOOK_SECRET when both are set, else the file. Neither value is ever printed.
 webhook_env() {
   local file="${LP_WEBHOOK_FILE:-${HOME}/.lp-webhook.json}"
-  if [ -f "$file" ]; then
+  if [ -n "${LP_WEBHOOK_URL:-}" ] && [ -n "${LP_WEBHOOK_SECRET:-}" ]; then
+    TF_VAR_devin_webhook_url="$LP_WEBHOOK_URL"
+    TF_VAR_devin_webhook_secret="$LP_WEBHOOK_SECRET"
+    export TF_VAR_devin_webhook_url TF_VAR_devin_webhook_secret
+    echo "webhook url and secret from LP_WEBHOOK_URL and LP_WEBHOOK_SECRET"
+  elif [ -f "$file" ]; then
     TF_VAR_devin_webhook_url="$(jq -r '.url // empty' "$file")"
     TF_VAR_devin_webhook_secret="$(jq -r '.secret // empty' "$file")"
     if [ -z "$TF_VAR_devin_webhook_url" ] || [ -z "$TF_VAR_devin_webhook_secret" ]; then
@@ -65,7 +71,7 @@ webhook_env() {
     export TF_VAR_devin_webhook_url TF_VAR_devin_webhook_secret
     echo "webhook url and secret from ${file}"
   else
-    echo "no ${file}; the page rule stays disabled"
+    echo "no LP_WEBHOOK_URL/LP_WEBHOOK_SECRET and no ${file}; the page rule stays disabled"
   fi
 }
 
