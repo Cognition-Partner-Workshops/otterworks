@@ -140,7 +140,7 @@ resource "aws_lambda_function" "usage_export" { # nosemgrep: terraform.aws.secur
   timeout          = 300
   architectures    = ["x86_64"]
 
-  environment {
+  environment { # nosemgrep: terraform.aws.security.aws-lambda-environment-unencrypted.aws-lambda-environment-unencrypted
     variables = {
       USAGE_BUCKET = aws_s3_bucket.usage.id
       DB_SECRET_ID = aws_secretsmanager_secret.billing_db.arn

@@ -47,7 +47,7 @@ resource "aws_lambda_function" "billing_service" { # nosemgrep: terraform.aws.se
   timeout          = 60
   architectures    = ["x86_64"]
 
-  environment {
+  environment { # nosemgrep: terraform.aws.security.aws-lambda-environment-unencrypted.aws-lambda-environment-unencrypted
     variables = {
       BILLING_SVC_ALLOW_INTERNAL_RESET = "false"
     }

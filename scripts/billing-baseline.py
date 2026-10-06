@@ -90,7 +90,7 @@ def row_counts(conn: psycopg.Connection, schema: str, expected: tuple[str, ...])
             rows.append((table, "missing"))
             continue
         query = sql.SQL("SELECT count(*) FROM {}.{}").format(sql.Identifier(schema), sql.Identifier(table))
-        rows.append((table, str(conn.execute(query).fetchone()[0])))
+        rows.append((table, str(conn.execute(query).fetchone()[0])))  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     return rows
 
 

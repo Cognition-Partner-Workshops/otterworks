@@ -372,7 +372,7 @@ def usage_summary(
 
 
 def _md5_uuid(value: str) -> UUID:
-    return UUID(hex=hashlib.md5(value.encode()).hexdigest())
+    return UUID(hex=hashlib.md5(value.encode(), usedforsecurity=False).hexdigest())
 
 
 def rating_period_id(tenant_id: UUID, period_start: date) -> UUID:

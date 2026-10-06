@@ -45,6 +45,7 @@ import zlib
 from pathlib import Path
 
 import psycopg
+from psycopg import sql
 
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS_DIR = ROOT / "services" / "billing-service" / "db" / "migrations"
@@ -245,11 +246,11 @@ def legacy_counts(ns: str, offset: int) -> dict[str, str]:
         with psycopg.connect(host="localhost", port=port, dbname=dbname,
                              user=user, password=user, connect_timeout=10) as conn:
             for table in (BILLING_TABLES if schema == "billing" else BILLING_SVC_TABLES):
-                counts[f"{schema}.{table}"] = str(
-                    conn.execute(f"SELECT count(*) FROM {schema}.{table}").fetchone()[0])
+                query = sql.SQL("SELECT count(*) FROM {}.{}").format(sql.Identifier(schema), sql.Identifier(table))
+                counts[f"{schema}.{table}"] = str(conn.execute(query).fetchone()[0])  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             routines = conn.execute(
                 "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace "
-                f"WHERE n.nspname = '{schema}' ORDER BY 1").fetchall()
+                "WHERE n.nspname = %s ORDER BY 1", (schema,)).fetchall()
             counts[f"{schema}.routines"] = ", ".join(r[0] for r in routines) or "(none)"
     return counts
 
