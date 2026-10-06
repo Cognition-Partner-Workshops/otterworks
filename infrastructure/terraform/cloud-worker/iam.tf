@@ -204,6 +204,95 @@ resource "aws_iam_role_policy" "devin_builder" {
   })
 }
 
+resource "aws_iam_role" "devin_engineer" {
+  name                 = "devin-aws-engineer"
+  assume_role_policy   = data.aws_iam_policy_document.devin_trust.json
+  max_session_duration = 14400
+}
+
+resource "aws_iam_role_policy_attachment" "devin_engineer_power_user" {
+  role       = aws_iam_role.devin_engineer.name
+  policy_arn = "arn:${local.partition}:iam::aws:policy/PowerUserAccess"
+}
+
+# PowerUserAccess leaves IAM out. The engineer role may create and wire the roles and
+# policies that its own Terraform runs need, and nothing that touches the Devin roles,
+# the console user or the account's human users.
+resource "aws_iam_role_policy" "devin_engineer_iam" {
+  name = "devin-aws-engineer-iam"
+  role = aws_iam_role.devin_engineer.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:Get*",
+          "iam:List*",
+          "iam:SimulatePrincipalPolicy",
+          "iam:SimulateCustomPolicy",
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:UpdateRole",
+          "iam:UpdateRoleDescription",
+          "iam:UpdateAssumeRolePolicy",
+          "iam:TagRole",
+          "iam:UntagRole",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:PassRole",
+          "iam:CreateInstanceProfile",
+          "iam:DeleteInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:RemoveRoleFromInstanceProfile",
+          "iam:TagInstanceProfile",
+          "iam:CreateServiceLinkedRole",
+        ]
+        Resource = [
+          "arn:${local.partition}:iam::${local.account_id}:role/lp-*",
+          "arn:${local.partition}:iam::${local.account_id}:role/otterworks-*",
+          "arn:${local.partition}:iam::${local.account_id}:role/aws-service-role/*",
+          "arn:${local.partition}:iam::${local.account_id}:instance-profile/lp-*",
+          "arn:${local.partition}:iam::${local.account_id}:instance-profile/otterworks-*",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
+          "iam:CreatePolicy",
+          "iam:DeletePolicy",
+          "iam:CreatePolicyVersion",
+          "iam:DeletePolicyVersion",
+          "iam:SetDefaultPolicyVersion",
+          "iam:TagPolicy",
+          "iam:UntagPolicy",
+        ]
+        Resource = [
+          "arn:${local.partition}:iam::${local.account_id}:policy/lp-*",
+          "arn:${local.partition}:iam::${local.account_id}:policy/otterworks-*",
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"] # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
+        Resource = [aws_iam_role.devin_builder.arn]
+        Condition = {
+          ArnLike = { "iam:PolicyARN" = "arn:${local.partition}:iam::${local.account_id}:policy/lp-*" }
+        }
+      },
+    ]
+  })
+}
+
 resource "aws_iam_user_policy" "devin_reader" {
   name = "devin-cw-reader-assume"
   user = aws_iam_user.devin_reader.name
@@ -216,6 +305,7 @@ resource "aws_iam_user_policy" "devin_reader" {
       Resource = [
         aws_iam_role.devin_observer.arn,
         aws_iam_role.devin_builder.arn,
+        aws_iam_role.devin_engineer.arn,
       ]
     }]
   })

@@ -1,0 +1,22 @@
+# Fluent Bit only needs egress (API server, CloudWatch, STS). Ingress is
+# limited to Prometheus scraping the metrics port from the monitoring namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: aws-for-fluent-bit
+  labels:
+    app.kubernetes.io/name: aws-for-fluent-bit
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aws-for-fluent-bit
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 2020

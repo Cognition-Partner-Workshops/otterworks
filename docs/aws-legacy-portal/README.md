@@ -149,6 +149,34 @@ The functions start on the placeholder at version 1. `lp-deploy` builds the Java
 
 The probe keeps Aurora awake, so a run with the probe on does not pause at 0 ACU. `lp-down` removes the function, layer and log group that Synthetics creates for the probe, and `lp-verify-clean` also looks up the new roles, the bus, table, CodeDeploy application, canary, bucket, rules, connection, destination, queue and alarms by name.
 
+## EC2 before state
+
+`infrastructure/terraform/legacy-portal-ec2/` runs the Java monolith on one EC2 host, so a later session can move it to Lambda while the Java service answers live traffic. The root follows the same conventions as the serverless one: `run_token` is the one required variable (`lp-ec2-<yyyymmdd>-<xx>`), one state object per token under `otterworks/legacy-portal-ec2/<token>/terraform.tfstate` in the same bucket, and the tags `demo=legacy-portal-ec2`, `run_token`, `RunToken`, `Expires` and `ManagedBy=terraform` on every resource.
+
+| Resource | Notes |
+|---|---|
+| `aws_instance` | One `t3.small` Amazon Linux 2023 host in a public subnet (the VPC has no NAT gateway), IMDSv2 required, replaced when user data changes |
+| `aws_security_group` (instance) | Admits only the ALB on port 8095, egress open for dnf, SSM, S3 and CloudWatch; no SSH key pair, so access is `aws ssm start-session --target <id>` |
+| `aws_security_group` (alb) | HTTP 80 from anywhere |
+| `aws_iam_role` and instance profile | AmazonSSMManagedInstanceCore and CloudWatchAgentServerPolicy, plus read on the artifact bucket |
+| `aws_s3_bucket` and object | `<token>-artifacts`, public access blocked, holds the fat jar that `lp-ec2-up` builds with `mvn -q -DskipTests package` |
+| `aws_lb` with target group and listener | Internet-facing, HTTP only, health check on `/health` |
+| `aws_cloudwatch_log_group` | `/otterworks/legacy-portal-ec2/<token>/app`, 7-day retention |
+
+User data installs Amazon Corretto 11 and PostgreSQL 15, creates the database, the login and the three context schemas, downloads the jar, writes the systemd unit with the `postgres` datasource and starts the service. The database lives on the instance on purpose. The before state runs its own PostgreSQL next to the app, with no RDS, no alarms and no autoscaling.
+
+The targets mirror the serverless ones and run `scripts/lp-ec2.sh`, with transcripts in the same `.demo/legacy-portal/<token>/` folder. `Expires` defaults to 72 hours from apply.
+
+| Target | Effect |
+|---|---|
+| `make lp-ec2-up RUN=<token>` | Build the jar, `terraform plan` and `apply`, then poll target health until healthy |
+| `make lp-ec2-status` | EC2 runs by tag; with `RUN=<token>` also the outputs, the instance, the target health and `GET /health` |
+| `make lp-ec2-replay RUN=<token>` | Checksum check, then `replay.py` at stage `full` against the ALB URL |
+| `make lp-ec2-down RUN=<token>` | `terraform destroy` |
+| `make lp-ec2-verify-clean RUN=<token>` | Tagging API in every region for `run_token` and `RunToken`, then lookups of the IAM role and profile, the ALB and target group, the bucket and the log group; exits 1 unless everything is gone |
+
+The recorded corpus is stateful, so one `lp-ec2-replay` fills the tables; a fresh run's database is the seeded state. The live run `lp-ec2-20261006-b1` (Expires `2026-10-09`) is the demo's starting point: instance `i-071dd05b8b26d8f4f` behind `http://lp-ec2-20261006-b1-2053486169.us-east-1.elb.amazonaws.com`, replayed at 95 of 95 identical.
+
 ## Known limits
 
 The placeholder handlers run on Python 3.12 while the demo record asks for Java functions, so each child sets the Java runtime when it deploys its port.
