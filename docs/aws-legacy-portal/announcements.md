@@ -61,6 +61,14 @@ Read through the AWS Documentation MCP server (`aws___search_documentation`, `aw
 | Rule shape | Custom bus, pattern `{"source": [...], "detail-type": ["AnnouncementCreated"]}` | [Event patterns](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html): patterns have the structure of the events they match, arrays of exact values, match on `source`, `detail-type` and `detail`; narrow patterns avoid unwanted matches |
 | Rule targets | SQS queue (+ DLQ) with a queue policy scoped to the rule ARN; CloudWatch Logs group with a log resource policy for `events.amazonaws.com` and `delivery.logs.amazonaws.com` | [EventBridge resource-based policies](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-use-resource-based.html): the console adds the CloudWatch Logs policy itself, the API/Terraform must create it |
 
+## Known limits
+
+- Like `legacy-portal-serverless`, the function has X-Ray tracing off and its environment
+  uses the AWS-managed Lambda key; both are marked `nosemgrep` in `lambda.tf`. The
+  environment holds ARNs and names only; the DB password stays in Secrets Manager.
+- EventBridge publication is best effort: a failed `PutEvents` is logged and the create
+  still returns 201.
+
 ## Parity, run `lp-ann-20261006-a1` in front of `lp-ec2-20261006-b1`
 
 `make lp-ann-replay RUN=lp-ann-20261006-a1 TARGET=both`, 2026-10-06. The corpus checksums matched `SHA256SUMS`, and every replay started from empty tables with ids restarting at 1.
