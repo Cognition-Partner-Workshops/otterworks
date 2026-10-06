@@ -38,13 +38,23 @@ oidc_url="${oidc_url#https://}"
 [ -n "${oidc_url}" ] || { echo "could not resolve OIDC issuer for ${CLUSTER}" >&2; exit 1; }
 
 pattern_prefix="system:serviceaccount:otterworks-*"
+failed=()
 
 for svc in "${SERVICES[@]}"; do
   role="otterworks-${svc}-${ENVIRONMENT}"
   sub="${pattern_prefix}:${svc}"
-  doc="$(aws iam get-role --role-name "${role}" \
-    --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null || echo "")"
-  [ -n "${doc}" ] || { echo "  skip: role ${role} not found"; continue; }
+  # Only NoSuchEntity means "not found". Any other failure (throttling, expired
+  # credentials) leaves the role without the wildcard while deploy-tenant.sh
+  # keeps appending per-tenant statements to it, so it must fail the run.
+  if ! doc="$(aws iam get-role --role-name "${role}" \
+                --query 'Role.AssumeRolePolicyDocument' --output json 2>&1)"; then
+    case "${doc}" in
+      *NoSuchEntity*) echo "  skip: role ${role} not found"; continue ;;
+    esac
+    echo "  FAILED: could not read ${role}: ${doc}" >&2
+    failed+=("${role}")
+    continue
+  fi
 
   # Already has a StringLike wildcard for this sub?
   have="$(echo "${doc}" | jq -r --arg url "${oidc_url}" --arg sub "${sub}" '
@@ -72,4 +82,8 @@ for svc in "${SERVICES[@]}"; do
   echo "  updated: ${role} now trusts ${sub}"
 done
 
+if [ "${#failed[@]}" -gt 0 ]; then
+  echo "could not update ${#failed[@]} role(s): ${failed[*]}; re-run once access recovers." >&2
+  exit 1
+fi
 echo "done."
