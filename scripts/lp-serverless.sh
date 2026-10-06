@@ -235,7 +235,7 @@ cmd_verify_clean() {
   check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"  # runs applied before RDS managed the master secret
   # RDS deletes the secret it manages with the cluster; it carries the cluster ARN in its tags, not the run token.
   n="$(aws secretsmanager list-secrets \
-    --query "length(SecretList[?Tags[?ends_with(Value, ':cluster:${RUN}')]])" --output text)"
+    --query "length(SecretList[?Tags[?ends_with(Value, ':cluster:${RUN}')]])" --output text | awk '{for (i = 1; i <= NF; i++) s += $i} END {print s + 0}')"  # text output prints one count per page
   echo "  RDS-managed secrets of cluster ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
   for role in consumer codedeploy probe eventbridge-invoke; do check_gone aws iam get-role --role-name "${RUN}-${role}"; done
   check_gone aws lambda get-function --function-name "${RUN}-notifications"
