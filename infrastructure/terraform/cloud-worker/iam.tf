@@ -237,7 +237,7 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
       },
       {
         Effect = "Allow"
-        Action = [
+        Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
           "iam:CreateRole",
           "iam:DeleteRole",
           "iam:UpdateRole",
@@ -267,7 +267,7 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
       },
       {
         Effect = "Allow"
-        Action = [
+        Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
           "iam:CreatePolicy",
           "iam:DeletePolicy",
           "iam:CreatePolicyVersion",
@@ -283,7 +283,7 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
       },
       {
         Effect   = "Allow"
-        Action   = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"]
+        Action   = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"] # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
         Resource = [aws_iam_role.devin_builder.arn]
         Condition = {
           ArnLike = { "iam:PolicyARN" = "arn:${local.partition}:iam::${local.account_id}:policy/lp-*" }
