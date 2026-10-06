@@ -68,3 +68,28 @@ output "module" {
 output "route_prefix" {
   value = local.m.prefix
 }
+
+output "lambda_published_version" {
+  description = "Version the last apply published. lp-mod-deploy shifts the live alias to it through CodeDeploy."
+  value       = aws_lambda_function.this.version
+}
+
+output "codedeploy_app" {
+  value = aws_codedeploy_app.this.name
+}
+
+output "deployment_group" {
+  value = aws_codedeploy_deployment_group.this.deployment_group_name
+}
+
+output "deployment_config" {
+  value = var.deployment_config_name
+}
+
+output "alarm_5xx_rate" {
+  value = aws_cloudwatch_metric_alarm.api_5xx_rate.alarm_name
+}
+
+output "alarm_lambda_errors" {
+  value = aws_cloudwatch_metric_alarm.lambda_errors.alarm_name
+}

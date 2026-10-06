@@ -93,6 +93,29 @@ variable "lambda_memory_mb" {
   default     = 1024
 }
 
+variable "lambda_architecture" {
+  description = "Instruction set of the module's function; null takes the module's measured default in main.tf."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.lambda_architecture == null || contains(["x86_64", "arm64"], coalesce(var.lambda_architecture, "x86_64"))
+    error_message = "lambda_architecture must be x86_64 or arm64."
+  }
+}
+
+variable "deployment_config_name" {
+  description = "CodeDeploy configuration that shifts the live alias to a newly published version."
+  type        = string
+  default     = "CodeDeployDefault.LambdaCanary10Percent5Minutes"
+}
+
+variable "alarm_5xx_rate_percent" {
+  description = "5xx share of /api/announcements responses, in percent, above which a one-minute datapoint breaches."
+  type        = number
+  default     = 20
+}
+
 variable "log_retention_days" {
   description = "Retention of the Lambda, API access and event log groups."
   type        = number
