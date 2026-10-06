@@ -71,6 +71,12 @@ Tests: 4 (stored procedures, routes, the Oracle fixture, RDS, S3 and Athena), 5 
 
 What to open: the Migrations page with one request and a short brief, the plan with its ordered phases, one ticket per step, the rating rules ledger with the eight parity-sensitive rules and the presenter's decision (port the behaviour exactly, double rounding included, finance fix as a follow-up), the before and after row counts, the Athena comparison, the console recording, and the single PR.
 
+The board is the entry point, so the worker sessions do not need to appear in the left sidebar. Start on the Issues list, where the board shows 11 of 13 done, one in review and one in the backlog. The backlog item, `Fix rating rounding and proration`, is the finance follow-up you deliberately left out of the migration.
+
+Open the tickets in the order the migration ran. Under Done, begin with `Rating rules ledger`, then open `Port rating into billing-service` and `Flip rating to extracted, prove parity`. Those tickets show the business rules, the code move and the parity gate. Continue through `Terraform root for the billing database`, `Snapshot the legacy baseline`, `Move billing schema and data to RDS`, and `Point billing-service at RDS, rerun parity` for the data phase. Finish the Done column with `Scheduled usage export to S3`, `Glue table and Athena workgroup`, `Athena vs legacy usage summary`, and `AWS evidence: recording and CloudTrail`. The last four tickets show the analytics phase and the read-only AWS proof.
+
+The In review column contains the last stop, `Open the PR and hand over teardown`. Show PR #1822, its green checks and the dry run listing the 36 resources the teardown would remove. Do not run the teardown during the presentation.
+
 The session stops once, to ask a business question (3.06 or 3.05), and your answer is the only human step in the run. Give the answer live if you want a live moment.
 
 ### 4. Well-Architected, cost, and one optimization done end to end
