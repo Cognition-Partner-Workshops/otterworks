@@ -13,6 +13,10 @@ So far the root creates:
   `PUBLIC` loses its access to the new database.
 - the secret `otterworks-<token>/billing-db` (JSON: engine, host, port, dbname, username, password) for that role.
 
+- the `lp-<token>-billing-sql` function, an in-VPC SQL runner that `scripts/billing-to-rds.py` invokes out-of-band
+  (`aws lambda invoke`) to load the billing/billing_svc schemas and data and to run the RDS-side row counts. It sits in
+  the same subnets and shares the db-init security group; credentials travel in the invocation payload.
+
 Phase 3 adds the S3 export, Glue, Athena and EventBridge resources to this root.
 
 ## Reaching a private instance

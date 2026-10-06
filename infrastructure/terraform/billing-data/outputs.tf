@@ -31,6 +31,11 @@ output "db_init_function" {
   value = aws_lambda_function.db_init.function_name
 }
 
+output "sql_function" {
+  description = "In-VPC SQL runner scripts/billing-to-rds.py invokes for the load and RDS-side counts."
+  value       = aws_lambda_function.db_sql.function_name
+}
+
 output "db_evidence" {
   description = "What the db-init function read back after create: the \\l row, the role, its database privileges and a login as the role."
   value       = jsondecode(aws_lambda_invocation.database.result)
