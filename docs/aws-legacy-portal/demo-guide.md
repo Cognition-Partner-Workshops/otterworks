@@ -25,7 +25,7 @@ The on-demand worker shape runs through the whole portfolio. Something happens (
 |---|---|---|
 | Migrate | Getting off the box, the old database and the stored procedures without breaking anything | Billing off the legacy DB (Migrations page), Databricks and MongoDB readiness runs |
 | Modernize | Serverless, event-driven, modern API shape, one module at a time and then the rest | Announcements to API Gateway and Lambda, playbook and fan-out over the other modules, iOS latency, code scans |
-| Operate | Alarms at night, cost nobody looks at, leftovers in the account | Tester and responder pair, Well-Architected and Lambda tuning with canary CD, the TCO dashboard, the monthly reaper |
+| Operate | Alarms at night, reliability nobody has reviewed, cost nobody looks at, leftovers in the account | Tester and responder pair, the reliability review over every module, the file-service authorization fix, the TCO dashboard, the monthly reaper |
 
 ## The sessions in presenting order
 
@@ -79,15 +79,25 @@ The In review column contains the last stop, `Open the PR and hand over teardown
 
 The session stops once, to ask a business question (3.06 or 3.05), and your answer is the only human step in the run. Give the answer live if you want a live moment.
 
-### 4. Well-Architected, cost, and one optimization done end to end
+### 4. The reliability pillar over every module the repository has
 
-Session: https://partner-workshops.devinenterprise.com/sessions/12dfaaa41ab346aba47df46e7b1e0379. PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/1823 (stacked on the branch of #1819).
+Session: https://partner-workshops.devinenterprise.com/sessions/a27281a72f3f460bb78867b7d129ad97 (the workflow runs as the child https://partner-workshops.devinenterprise.com/sessions/6fb4c97887a0436497b4d1284507a594). PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/1828, open and unmerged.
 
-Say first: "Everyone has a Well-Architected review they have not done and a Lambda on the default memory size."
+Say first: "Nobody on the team could say how many services in this repository talk to AWS, and nobody had read all of them against the reliability pillar. We asked Devin to find out and to fix what it could prove."
 
-Tests: 2, 3, 4 (Cost Explorer, Trusted Advisor, EKS, RDS, EC2 and the new stack), 5 (the numbers pick the memory size).
+Tests: 2 (every module gets the same questions about timeouts, retries, dead-letter queues, alarms, multi-AZ and backups), 3 (twenty-two reviews in one evening), 4 (the Well-Architected questions, the AWS documentation through the MCP server, the code and the Terraform, in one place), 5 (a defect counts once it is reproduced, and a fix counts once the test that reproduced it passes).
 
-What to open: the ranked list with a monthly number next to each item, the memory sweep with the parity corpus as load, latency against cost per million requests, x86 against arm64, the Terraform change, the continuous deployment workflow with the CodeDeploy canary and the alarm as the gate, and the console recording of Cost Explorer, Lambda configuration and the CloudWatch duration graphs before and after.
+The request named no module list on purpose. Devin wrote a dynamic workflow whose first agent discovers the inventory, so the count came from the repository: 12 application modules, one shared contracts module and 9 infrastructure modules, with 16 candidates excluded and the reason for each recorded. The workflow then ran the 22 reviews on separate machines, four at a time, gave every shared Terraform edit to a single owner agent, and finished with an integration agent that was allowed two repair rounds.
+
+What to open: the one-paragraph request, the discovery inventory with the exclusions, the workflow graph in the child session, the four module agents running side by side, one module result in full (analytics-service deleted every real producer event unprocessed because the consumer never unwrapped the SNS envelope, reproduced on LocalStack before the fix), the integration step, the sandbox `lp-20261006-rq` where the repaired SQS redrive path was exercised and then destroyed, the read-only console recording with the CloudTrail export, and the final reliability report attached to the parent session.
+
+The numbers to say: 229 findings across the 22 reviews, fixes committed for 18 modules, 127 findings left open with a written reason each (most sit on planted labs or paths the prompt protected), 16 modules accepted at the final verification and 6 still unresolved. PR #1828 shows two SAST findings that appeared after the second repair round, and Devin stopped there because the request allowed two rounds. Show the stop as part of the story, since a bounded workflow that reports what it did not finish is the point.
+
+### 4b. One Lambda tuned end to end
+
+Session: https://partner-workshops.devinenterprise.com/sessions/12dfaaa41ab346aba47df46e7b1e0379. PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/1823 (stacked on the branch of #1819). Open it when someone asks for a cost example, and otherwise skip it; the TCO dashboard in act 8 reuses its measurements.
+
+What to open: the memory sweep with the parity corpus as load, latency against cost per million requests, x86 against arm64, the Terraform change, and the continuous deployment workflow with the CodeDeploy canary and the alarm as the gate.
 
 ### 5. The slow iOS client
 
@@ -108,6 +118,18 @@ Say first: "Before this goes in front of customers we want a security and a perf
 Tests: 1, 2, 3.
 
 What to open: the two scans started from the session, the findings list with severities, the one PR that fixes what matters, the findings Devin chose to leave and the reason for each, and the Devin Review of the PR.
+
+### 6b. The file-service authorization gap and the AWS permissions behind it
+
+Session: https://partner-workshops.devinenterprise.com/sessions/e8ff4d2f77d341009445d4db611e55d9. Scan: https://partner-workshops.devinenterprise.com/code-scan/27e9dd6615ef468f88fd37cb333dbf44/summary (26 findings). PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/1827, open and unmerged, CI green.
+
+Say first: "We asked whether a bug in the application could reach the AWS control plane with permissions the caller never had. It could, and the fix is three ownership checks."
+
+Tests: 4 (the gateway, the Rust file service, its IAM role, the S3 bucket policy and CloudTrail, read together), 5 (the probe has to fail on `main` and pass on the branch before Devin stops).
+
+The gateway copies the JWT subject into an `X-User-ID` header, the file routes accept any file id the caller supplies, and the ownership check was missing on metadata, download and share. A valid token for one user could read another user's metadata, fetch the object through a presigned URL signed by the service's own role, share it and delete it. Nothing was planted for this act; the weakness is on `main` and the planted labs are untouched.
+
+What to open: the scan triage that picked this finding out of 26, the trace from the HTTP request to the S3 call, the IAM policy simulation, the CloudTrail rows showing the service role fetching the object on behalf of the wrong user, the read-only console recording, the before and after run of `make dast-verify` (`main` fails, the branch passes), the service tests (18 of 18) and the probe suite (83 of 83), and the Devin Review on the PR. Devin left `create_folder` accepting a caller-supplied `owner_id` out of the PR and named it as the next finding, so say that Devin chose the scope.
 
 ### 7. The monthly reaper
 
@@ -152,26 +174,25 @@ Both personas stop at readiness: the migration plan, the code and the parity har
 
 ## Cleanup
 
-Everything in the table carries a `run_token` tag and an `Expires` date, and the monthly reaper removes each stack once the date has passed. Run the commands from the repository root with the engineer role (`source <(cloudworker/assume.sh engineer <name>)`), in table order, after the recordings you want are attached to their sessions.
+The account was emptied of the portfolio on 2026-10-06, so the live console shows none of these stacks and the recordings attached to the sessions are the evidence. Every stack carried a `run_token` tag and an `Expires` date, each one was removed with the repository's own teardown path under the engineer role, and each removal ended with the verify-clean check for its token (the tagging API in every region, then the named resources the tagging API never lists). The transcripts live under `.demo/` in the checkout that ran them.
 
-| Run token | What it is | Expires | Remove it |
-|---|---|---|---|
-| `lp-20261006-oc` | Live serverless portal the tester and responder worked on (3 Lambdas, HTTP API, Aurora, alarms, EventBridge rule and API destination, CodeDeploy app) | 2026-10-09 | `make lp-down RUN=lp-20261006-oc && make lp-verify-clean RUN=lp-20261006-oc` |
-| `lp-ann-20261006-a1` | Announcements on the strangler root (PR #1819, #1823 planned against it) | 2026-10-08 | `make lp-mod-down RUN=lp-ann-20261006-a1 && make lp-mod-verify-clean RUN=lp-ann-20261006-a1` |
-| `lp-pref-20261006-a1` | Preferences on the strangler root (PR #1824) | 2026-10-08 | `make lp-mod-down RUN=lp-pref-20261006-a1 && make lp-mod-verify-clean RUN=lp-pref-20261006-a1` |
-| `lp-fb-20261006-a1` | Feedback on the strangler root (PR #1825) | 2026-10-08 | `make lp-mod-down RUN=lp-fb-20261006-a1 && make lp-mod-verify-clean RUN=lp-fb-20261006-a1` |
-| `lp-ec2-20261006-b1` | The Java 11 monolith on EC2 with its ALB, the "before" state every module run strangles. Remove the monolith last, after the module runs above. | 2026-10-09 | `make lp-ec2-down RUN=lp-ec2-20261006-b1 && make lp-ec2-verify-clean RUN=lp-ec2-20261006-b1` |
-| `lp-20261006-bd` | Billing data on RDS, the S3 usage export, Glue and Athena (PR #1822) | 2026-10-10 | The teardown block in PR #1822: `cd infrastructure/terraform/billing-data`, `terraform init -reconfigure -backend-config="key=otterworks/billing-data/lp-20261006-bd/terraform.tfstate"`, `terraform destroy -var run_token=lp-20261006-bd -var expires=2026-10-10T00:00:00Z`, then `make lp-verify-clean RUN=lp-20261006-bd` |
-| `lp-20261005-mp`, `lp-20261005-vo` | Two earlier serverless portal runs from the first round of this work | 2026-10-08, 2026-10-07 | `make lp-down RUN=lp-20261005-mp && make lp-verify-clean RUN=lp-20261005-mp`, then the same for `lp-20261005-vo` |
-| `cw` | The cloud-worker page estate (queues, DLQ, alarm, EventBridge rule, DynamoDB tables). Keep the estate while the on-call act is shown, since the responder automation triggers from it. | none | `make cw-teardown` |
+| What was removed | Tokens or names | How |
+|---|---|---|
+| Serverless portal runs, including the live one the tester and responder worked on and the reliability sandbox | `lp-20261006-oc`, `lp-20261005-mp`, `lp-20261005-vo`, `lp-20261006-rq` | `make lp-down RUN=<token> && make lp-verify-clean RUN=<token>` |
+| Announcements, preferences and feedback on the strangler root | `lp-ann-20261006-a1`, `lp-pref-20261006-a1`, `lp-fb-20261006-a1` | `make lp-mod-down RUN=<token> && make lp-mod-verify-clean RUN=<token>` |
+| The Java 11 monolith on EC2 with its ALB | `lp-ec2-20261006-b1` | `make lp-ec2-down RUN=<token> && make lp-ec2-verify-clean RUN=<token>`, with an empty `services/legacy-portal/target/legacy-portal.jar` staged so Terraform can evaluate the artifact hash during the destroy |
+| Billing data on RDS, the S3 usage export, Glue and Athena | `lp-20261006-bd` | The teardown block in PR #1822, then `make lp-verify-clean RUN=lp-20261006-bd` |
+| The cloud-worker page estate, its tenants, the observer, builder and engineer roles and the reader user | `cw` | Tenant teardowns, the role unmapping, RBAC and key deletion and `terraform destroy` in `infrastructure/terraform/cloud-worker` (the steps of `make cw-teardown`, run without closing the demo PRs) |
+| The shared baseline (the `otterworks-dev` EKS cluster and its nodes, the VPC and NAT, the shared RDS, the ingress NLB, the application buckets, tables and queues) | `otterworks-dev` | `terraform destroy` in `infrastructure/terraform`, then `scripts/teardown-cluster.sh --yes`, which drained the load balancer and waited for AWS to release it before the platform destroy |
+| The ops dashboard and otter-projects roots, the two legacy-data-migration namespaces, orphaned log groups and ECR repositories | `demo-platform`, `d24-before`, `d24-after` | `terraform destroy` per root (targeted where the root reads the deleted cluster), `scripts/demo-destroy.sh <token>`, then the AWS CLI for the orphans |
 
-The reaper never sees untagged resources, so remove this list by hand when the portfolio retires:
+The baseline cost about $390 a month (EKS control plane $70, three nodes about $240, VPC and NAT $34, RDS $17, the NLB $16, KMS and secrets about $15), so it went with the rest. To bring the portfolio back, run `scripts/spinup-dev.sh`, then the `lp-*-up` targets for the acts you want, and let each session record its console pass again.
 
-- IAM roles `devin-cw-observer`, `devin-cw-builder`, `devin-aws-engineer` and the console user `devin-aws-console` (the org secrets hold its password).
-- IAM user `devin-cw-reader` (read-only, used by one tester session for the console).
-- Devin automations in the persona's organization: the on-call responder and `Monthly AWS reaper` (`8b968df2de64412cbe93ad3251eeb140`). Disable the reaper if you want the schedule to stop, and delete the automation when the account is gone.
-- Branches `review-base-lp-strangler`, `migrate/billing-off-legacy` and the `devin/…` branches behind PRs #1819 to #1825, once the PRs are closed.
-- The temporary tuning function `lp-ann-a1-tune` was already deleted by the Well-Architected session, and the iOS tenant `mob-9cb235` was torn down by its session.
+Still in the account on purpose, at about one dollar a month in total: the `otterworks-terraform-state` bucket, the `otterworks.app` hosted zone, the console user `devin-aws-console` (the org secrets hold its password), the secret `otterworks/dev/rds/master` scheduled for deletion on 2026-10-13, and two zero-cost IAM roles from older otterworks demos (`otterworks-servicenow-webhook-lambda-role`, `ow-tp-portal-demo-events-to-devin`).
+
+Still in the account because the portfolio does not own them: the `sf2aws-demo` stack (VPC with NAT, ALB, ECS cluster and RDS, created 2026-10-06 at 08:16 UTC by the IAM user `Devin-PartnerWorkshops-Demo` from the `uc-dw-migration-teradata-to-bigquery` repository), the `devin-outpost-vpc-demo` VPC in us-east-2, whose subnets hold network interfaces owned by account 720561061579 and which the owner of that attachment has to release, and the unrelated timesheet, TraderX and WorkSpaces resources. AWS Transform has no jobs or workspaces left; the September charge was usage before the deletion on 2026-09-24.
+
+Outside AWS, the persona's organization still holds the on-call responder automation and the `Monthly AWS reaper` (`8b968df2de64412cbe93ad3251eeb140`); disable the reaper if you want the schedule to stop. The branches behind PRs #1819 to #1828 stay until the PRs are closed.
 
 ## Known limits
 
@@ -183,4 +204,7 @@ The reaper never sees untagged resources, so remove this list by hand when the p
 - Databricks and MongoDB stop at the credential gate (a working `DATABRICKS_HOST`, `DATABRICKS_TOKEN` and `DATABRICKS_WAREHOUSE_ID`; a `MONGODB_ATLAS_URI`). The Databricks and MongoDB sessions show the plan, the harness and the local rehearsal, and the live run waits for the credentials.
 - The TCO dashboard models the portal's "today" column from its resources at rates reconciled to Cost Explorer, because the cost allocation tags are inactive and the EC2 before-state had not yet reached a billed month. Recovery time without the responder, Graviton energy and the EKS node share are labelled assumptions, and the Pricing Calculator share links expire on 2027-10-06.
 - The monthly reaper has run once, against a planted expired run, and the schedule has not yet fired on its own. The first scheduled run is the first Tuesday of the month at 06:40 UTC.
-- Pull requests #1819, #1820, #1821 and #1822 stay open on purpose. Merging #1819 or #1822 would start a real cutover, and merging #1820 would remove the planted mobile-latency scenario.
+- Pull requests #1819 to #1828 stay open on purpose. Merging #1819 or #1822 would start a real cutover, and merging #1820 would remove the planted mobile-latency scenario.
+- PR #1828 from the reliability workflow is blocked by two SAST findings that appeared after the second repair round, and the workflow stopped there because the request allowed two rounds. The six modules the final verification did not accept are listed in the report with the reason for each.
+- The reliability sandbox proved the repaired SQS redrive path in isolation, and the report records that the live Scala consumer was never run against the sandbox.
+- The AWS account holds none of the portfolio's stacks since 2026-10-06, so the recordings and the pull requests carry the evidence, and a live console pass needs the rebuild in the Cleanup section first.
