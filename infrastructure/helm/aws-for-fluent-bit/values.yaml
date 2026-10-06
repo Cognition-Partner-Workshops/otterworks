@@ -10,7 +10,7 @@
 # default 1, i.e. ~10-20 s of CloudWatch throttling or outage), and memory-only
 # chunks die with the pod. Chunks are buffered under the existing /var/log
 # hostPath instead, so they survive a pod restart, and retried with capped,
-# jittered backoff for ~12 minutes before being dropped.
+# jittered backoff for ~8 minutes (2.5-14) before being dropped.
 service:
   extraService: |
     HTTP_Server  On
