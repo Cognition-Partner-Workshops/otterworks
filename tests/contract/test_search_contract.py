@@ -6,6 +6,10 @@ that a running search-service instance conforms to the documented contract.
 Usage:
     SEARCH_SERVICE_URL=http://localhost:8087 pytest tests/contract/test_search_contract.py -v
 
+Every request carries a (connect, read) timeout so a hung service fails the
+test instead of blocking the run; override the read timeout in seconds with
+CONTRACT_HTTP_TIMEOUT.
+
 Requirements:
     pip install pyyaml jsonschema requests pytest
 """
@@ -23,6 +27,14 @@ from jsonschema import validate
 
 SPEC_PATH = Path(__file__).resolve().parents[2] / "shared" / "openapi" / "search-service.yaml"
 BASE_URL = os.environ.get("SEARCH_SERVICE_URL", "http://localhost:8087")
+CONNECT_TIMEOUT_SECONDS = 3.05
+HTTP_TIMEOUT_SECONDS = float(os.environ.get("CONTRACT_HTTP_TIMEOUT", "10"))
+
+
+def _request(method: str, url: str, **kwargs: Any) -> requests.Response:
+    """Issue an HTTP request that always has a bounded connect and read timeout."""
+    kwargs.setdefault("timeout", (CONNECT_TIMEOUT_SECONDS, HTTP_TIMEOUT_SECONDS))
+    return requests.request(method, url, **kwargs)
 
 
 @pytest.fixture(scope="session")
@@ -72,6 +84,14 @@ def _resolve_schema_refs(spec: dict[str, Any], schema: dict[str, Any]) -> dict[s
 
     resolved = dict(schema)
 
+    # OpenAPI 3.0 `nullable` has no JSON Schema equivalent; jsonschema ignores it.
+    if resolved.pop("nullable", False):
+        if "type" in resolved:
+            types = resolved["type"] if isinstance(resolved["type"], list) else [resolved["type"]]
+            resolved["type"] = [*types, "null"]
+        if "enum" in resolved:
+            resolved["enum"] = [*resolved["enum"], None]
+
     if "properties" in resolved:
         resolved["properties"] = {
             k: _resolve_schema_refs(spec, v)
@@ -117,7 +137,8 @@ class TestSearchEndpoint:
 
     def test_search_requires_query(self, openapi_spec: dict[str, Any]) -> None:
         """Searching without q parameter returns 400."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/",
             headers={"X-User-ID": "test-user-001"},
         )
@@ -128,7 +149,8 @@ class TestSearchEndpoint:
 
     def test_search_invalid_page(self, openapi_spec: dict[str, Any]) -> None:
         """Invalid page parameter returns 400."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/",
             params={"q": "test", "page": "abc"},
             headers={"X-User-ID": "test-user-001"},
@@ -139,7 +161,8 @@ class TestSearchEndpoint:
 
     def test_search_valid_query(self, openapi_spec: dict[str, Any]) -> None:
         """Valid search returns 200 with correct schema."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/",
             params={"q": "test", "page": "1", "size": "10"},
             headers={"X-User-ID": "test-user-001"},
@@ -160,7 +183,8 @@ class TestSuggestEndpoint:
 
     def test_suggest_short_prefix(self, openapi_spec: dict[str, Any]) -> None:
         """Prefix shorter than 2 chars returns empty suggestions."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/suggest",
             params={"q": "a"},
             headers={"X-User-ID": "test-user-001"},
@@ -173,7 +197,8 @@ class TestSuggestEndpoint:
 
     def test_suggest_valid_prefix(self, openapi_spec: dict[str, Any]) -> None:
         """Prefix of 2+ chars returns valid response schema."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/suggest",
             params={"q": "tes"},
             headers={"X-User-ID": "test-user-001"},
@@ -190,7 +215,8 @@ class TestAdvancedSearchEndpoint:
 
     def test_advanced_search_empty_body(self, openapi_spec: dict[str, Any]) -> None:
         """Advanced search with empty body returns 200 (all fields optional)."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/advanced",
             json={},
             headers={"X-User-ID": "test-user-001"},
@@ -201,7 +227,8 @@ class TestAdvancedSearchEndpoint:
 
     def test_advanced_search_with_filters(self, openapi_spec: dict[str, Any]) -> None:
         """Advanced search with filters returns correct schema."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/advanced",
             json={
                 "q": "report",
@@ -222,7 +249,8 @@ class TestAdvancedSearchEndpoint:
 
     def test_advanced_search_invalid_page(self, openapi_spec: dict[str, Any]) -> None:
         """Invalid page in advanced search body returns 400."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/advanced",
             json={"page": "invalid"},
             headers={"X-User-ID": "test-user-001"},
@@ -237,7 +265,7 @@ class TestHealthEndpoints:
 
     def test_health_liveness(self, openapi_spec: dict[str, Any]) -> None:
         """Liveness endpoint returns alive status."""
-        resp = requests.get(f"{BASE_URL}/health")
+        resp = _request("GET", f"{BASE_URL}/health")
         assert resp.status_code == 200
         body = resp.json()
         _validate_response(openapi_spec, body, "/health", "get", "200")
@@ -246,7 +274,7 @@ class TestHealthEndpoints:
 
     def test_health_readiness(self, openapi_spec: dict[str, Any]) -> None:
         """Readiness endpoint returns valid schema (200 or 503)."""
-        resp = requests.get(f"{BASE_URL}/health/ready")
+        resp = _request("GET", f"{BASE_URL}/health/ready")
         assert resp.status_code in (200, 503)
         body = resp.json()
         assert "ready" in body
@@ -264,7 +292,7 @@ class TestMetricsEndpoint:
 
     def test_metrics_returns_prometheus_format(self, openapi_spec: dict[str, Any]) -> None:
         """Metrics endpoint returns text/plain Prometheus data."""
-        resp = requests.get(f"{BASE_URL}/metrics")
+        resp = _request("GET", f"{BASE_URL}/metrics")
         assert resp.status_code == 200
         assert "text/plain" in resp.headers.get("Content-Type", "")
         body = resp.text
@@ -276,7 +304,8 @@ class TestAnalyticsEndpoint:
 
     def test_analytics_response_schema(self, openapi_spec: dict[str, Any]) -> None:
         """Analytics endpoint returns valid schema."""
-        resp = requests.get(
+        resp = _request(
+            "GET",
             f"{BASE_URL}/api/v1/search/analytics",
             headers={"X-User-ID": "test-user-001"},
         )
@@ -296,7 +325,8 @@ class TestIndexEndpoints:
 
     def test_index_document_missing_body(self, openapi_spec: dict[str, Any]) -> None:
         """POST /api/v1/search/index/document without body returns 400."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/index/document",
             headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
         )
@@ -307,7 +337,8 @@ class TestIndexEndpoints:
 
     def test_index_document_missing_id(self, openapi_spec: dict[str, Any]) -> None:
         """POST /api/v1/search/index/document without id returns 400."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/index/document",
             json={"title": "Test Doc"},
             headers={"X-User-ID": "test-user-001"},
@@ -318,7 +349,8 @@ class TestIndexEndpoints:
 
     def test_index_file_missing_body(self, openapi_spec: dict[str, Any]) -> None:
         """POST /api/v1/search/index/file without body returns 400."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/index/file",
             headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
         )
@@ -328,7 +360,8 @@ class TestIndexEndpoints:
 
     def test_index_file_missing_name(self, openapi_spec: dict[str, Any]) -> None:
         """POST /api/v1/search/index/file without name returns 400."""
-        resp = requests.post(
+        resp = _request(
+            "POST",
             f"{BASE_URL}/api/v1/search/index/file",
             json={"id": "file-001"},
             headers={"X-User-ID": "test-user-001"},
