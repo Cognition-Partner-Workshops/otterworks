@@ -1,3 +1,5 @@
 .build/
 .terraform/
 .terraform.lock.hcl.bak
+# Synthetics Node canaries load the script from nodejs/node_modules/.
+!probe/nodejs/node_modules/
