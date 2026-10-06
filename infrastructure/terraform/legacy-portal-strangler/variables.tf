@@ -94,12 +94,12 @@ variable "lambda_memory_mb" {
 }
 
 variable "lambda_architecture" {
-  description = "Instruction set of the module's function."
+  description = "Instruction set of the module's function; null takes the module's measured default in main.tf."
   type        = string
-  default     = "x86_64"
+  default     = null
 
   validation {
-    condition     = contains(["x86_64", "arm64"], var.lambda_architecture)
+    condition     = var.lambda_architecture == null || contains(["x86_64", "arm64"], coalesce(var.lambda_architecture, "x86_64"))
     error_message = "lambda_architecture must be x86_64 or arm64."
   }
 }

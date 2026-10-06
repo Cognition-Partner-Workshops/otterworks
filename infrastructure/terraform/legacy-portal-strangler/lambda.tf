@@ -63,7 +63,7 @@ resource "aws_lambda_function" "this" { # nosemgrep: terraform.aws.security.aws-
   source_code_hash = filebase64sha256(var.jar_path)
   memory_size      = var.lambda_memory_mb
   timeout          = 29
-  architectures    = [var.lambda_architecture]
+  architectures    = [local.lambda_architecture]
   publish          = true
 
   snap_start {
