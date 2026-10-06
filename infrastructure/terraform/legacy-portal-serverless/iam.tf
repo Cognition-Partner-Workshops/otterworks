@@ -21,6 +21,8 @@ data "aws_iam_policy_document" "builder" {
       "lambda:UpdateFunctionConfiguration",
       "lambda:PublishVersion",
       "lambda:ListVersionsByFunction",
+      "lambda:GetAlias",
+      "lambda:ListAliases",
     ]
     resources = ["${local.arn_scope}:lambda:${var.region}:${local.account}:function:${local.name}-*"]
     condition {
@@ -77,6 +79,36 @@ data "aws_iam_policy_document" "builder" {
       variable = "aws:ResourceTag/run_token"
       values   = [var.run_token]
     }
+  }
+
+  statement {
+    sid = "CodeDeployRunApp"
+    actions = [
+      "codedeploy:CreateDeployment",
+      "codedeploy:StopDeployment",
+      "codedeploy:GetDeployment",
+      "codedeploy:GetDeploymentGroup",
+      "codedeploy:UpdateDeploymentGroup",
+      "codedeploy:ListDeployments",
+      "codedeploy:GetApplicationRevision",
+      "codedeploy:RegisterApplicationRevision",
+    ]
+    resources = [
+      aws_codedeploy_app.this.arn,
+      "${local.arn_scope}:codedeploy:${var.region}:${local.account}:deploymentgroup:${aws_codedeploy_app.this.name}/*",
+    ]
+  }
+
+  statement {
+    sid       = "CodeDeployConfigs"
+    actions   = ["codedeploy:GetDeploymentConfig"]
+    resources = ["${local.arn_scope}:codedeploy:${var.region}:${local.account}:deploymentconfig:*"]
+  }
+
+  statement {
+    sid       = "RunProbe"
+    actions   = ["synthetics:StartCanary", "synthetics:StopCanary"]
+    resources = ["${local.arn_scope}:synthetics:${var.region}:${local.account}:canary:${local.probe_name}"]
   }
 
   statement {

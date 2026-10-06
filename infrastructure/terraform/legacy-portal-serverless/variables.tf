@@ -1,9 +1,9 @@
 variable "run_token" {
-  description = "Run token, lp-<yyyymmdd>-<two letters>. Used in every resource name and in the run_token tag."
+  description = "Run token, lp-<yyyymmdd>-<two lowercase letters or digits>. Used in every resource name and in the run_token tag."
   type        = string
 
   validation {
-    condition     = can(regex("^lp-[0-9]{8}-[a-z]{2}$", var.run_token))
+    condition     = can(regex("^lp-[0-9]{8}-[a-z0-9]{2}$", var.run_token))
     error_message = "run_token must look like lp-20261005-rh."
   }
 }
@@ -91,4 +91,35 @@ variable "log_retention_days" {
   description = "Retention for the Lambda and API access log groups."
   type        = number
   default     = 3
+}
+
+variable "deployment_config_name" {
+  description = "CodeDeploy configuration of each context's deployment group."
+  type        = string
+  default     = "CodeDeployDefault.LambdaCanary10Percent5Minutes"
+}
+
+variable "alarm_5xx_rate_percent" {
+  description = "5xx share of HTTP API responses, in percent, above which a one-minute datapoint breaches."
+  type        = number
+  default     = 20
+}
+
+variable "probe_runtime_version" {
+  description = "CloudWatch Synthetics Node runtime of the probe canary."
+  type        = string
+  default     = "syn-nodejs-puppeteer-13.1"
+}
+
+variable "devin_webhook_url" {
+  description = "Devin automation webhook URL the EventBridge API destination posts to. Empty leaves the page rule disabled."
+  type        = string
+  default     = ""
+}
+
+variable "devin_webhook_secret" {
+  description = "Value sent in the X-Webhook-Secret header to the Devin webhook. Empty leaves the page rule disabled."
+  type        = string
+  sensitive   = true
+  default     = ""
 }
