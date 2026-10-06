@@ -28,13 +28,13 @@ python3 replay.py --base <api url> --context feedback --stage first --out /tmp/r
 
 | Resource | Notes |
 |---|---|
-| `aws_apigatewayv2_api` | One HTTP API, stage `$default` with JSON access logs |
+| `aws_apigatewayv2_api` | One HTTP API, stage `$default` with JSON access logs and throttling at 100 requests per second, burst 200 |
 | `aws_apigatewayv2_route` | `ANY <prefix>` and `ANY <prefix>/{proxy+}` per context, and `$default` to the announcements function for the common cases |
 | `aws_lambda_function` | `<token>-announcements`, `<token>-preferences`, `<token>-feedback`, placeholder handler answering 501 |
-| `aws_rds_cluster` | Aurora PostgreSQL 16.13, Serverless v2 at 0 to 1 ACU, pauses after 600 idle seconds, Data API on |
+| `aws_rds_cluster` | Aurora PostgreSQL 16.13, Serverless v2 at 0.5 to 4 ACU (set `aurora_min_acu = 0` to let it pause after 600 idle seconds), Data API on |
 | `aws_db_subnet_group` | The two private subnets of VPC `otterworks-dev` |
 | `aws_security_group` | No inbound rules, because the functions use the Data API |
-| `aws_secretsmanager_secret` | Master credential `<token>/aurora/master`, deleted without a recovery window on destroy |
+| Master secret | Created and rotated by RDS (`manage_master_user_password`), so the password is never in Terraform state; RDS deletes it with the cluster |
 | `aws_cloudwatch_log_group` | One per function and one for the API access logs |
 | `aws_iam_role` | `<token>-lambda`, execution role limited to its log groups, the cluster and the secret |
 | `aws_iam_policy` | `<token>-builder`, attached to `devin-cw-builder` |

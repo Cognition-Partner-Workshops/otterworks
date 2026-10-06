@@ -42,7 +42,7 @@ data "aws_iam_policy_document" "lambda" {
   statement {
     sid       = "ReadDbSecret"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_secretsmanager_secret.db.arn]
+    resources = [aws_rds_cluster.this.master_user_secret[0].secret_arn]
   }
 
   statement {
@@ -87,7 +87,7 @@ resource "aws_lambda_function" "context" { # nosemgrep: terraform.aws.security.a
       DB_SCHEMA   = each.value.schema
       DB_NAME     = aws_rds_cluster.this.database_name
       CLUSTER_ARN = aws_rds_cluster.this.arn
-      SECRET_ARN  = aws_secretsmanager_secret.db.arn
+      SECRET_ARN  = aws_rds_cluster.this.master_user_secret[0].secret_arn
       RUN_TOKEN   = var.run_token
       FAIL_READS  = "0"
     }, each.key == "announcements" ? { EVENT_BUS_NAME = aws_cloudwatch_event_bus.this.name } : {})
