@@ -182,6 +182,20 @@ class PreferenceRouterTest {
         assertFalse(response.headers().isEmpty());
     }
 
+    @Test
+    void failReadsAnswersEveryGetWith500AndLeavesPutAlone() throws Exception {
+        router = new PreferenceRouter(repository, true);
+
+        PreferenceRouter.Response get = route("GET", "/api/preferences/alice", Map.of(), null);
+        PreferenceRouter.Response put =
+                route("PUT", "/api/preferences/alice", jsonHeaders(),
+                        "{\"theme\":\"dark\",\"locale\":\"fr-FR\",\"emailNotifications\":false}");
+
+        assertEquals(500, get.statusCode());
+        assertEquals("Internal Server Error", objectMapper.readTree(get.body()).get("error").asText());
+        assertEquals(200, put.statusCode());
+    }
+
     private PreferenceRouter.Response route(
             String method, String path, Map<String, String> headers, String body) {
         return router.route(method, path, headers, body, false);

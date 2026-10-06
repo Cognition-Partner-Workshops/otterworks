@@ -34,6 +34,8 @@ public final class PreferencesHandler
 
     private static class RouterHolder {
         private static final PreferenceRouter ROUTER =
-                new PreferenceRouter(DataApiPreferenceRepository.fromEnvironment());
+                new PreferenceRouter(
+                        DataApiPreferenceRepository.fromEnvironment(),
+                        "1".equals(System.getenv("FAIL_READS")));
     }
 }

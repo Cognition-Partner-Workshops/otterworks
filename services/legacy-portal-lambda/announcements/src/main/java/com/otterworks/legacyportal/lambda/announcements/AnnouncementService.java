@@ -6,13 +6,21 @@ import java.util.NoSuchElementException;
 public class AnnouncementService {
 
     private final AnnouncementRepository repository;
+    private final AnnouncementEvents events;
 
     public AnnouncementService(AnnouncementRepository repository) {
+        this(repository, AnnouncementEvents.NONE);
+    }
+
+    public AnnouncementService(AnnouncementRepository repository, AnnouncementEvents events) {
         this.repository = repository;
+        this.events = events;
     }
 
     public Announcement create(String title, String body, boolean published) {
-        return repository.save(new Announcement(title, body, published));
+        Announcement saved = repository.save(new Announcement(title, body, published));
+        events.published(saved);
+        return saved;
     }
 
     public List<Announcement> listPublished() {
@@ -31,6 +39,8 @@ public class AnnouncementService {
     public Announcement publish(Long id) {
         Announcement announcement = get(id);
         announcement.setPublished(true);
-        return repository.save(announcement);
+        Announcement saved = repository.save(announcement);
+        events.published(saved);
+        return saved;
     }
 }

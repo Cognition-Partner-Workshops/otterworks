@@ -30,17 +30,23 @@ public final class PreferenceRouter {
                     .withZone(ZoneOffset.UTC);
 
     private final PreferenceService service;
+    private final boolean failReads;
     private final ObjectMapper objectMapper =
             new ObjectMapper()
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, false);
 
     public PreferenceRouter(PreferenceRepository repository) {
-        this(new PreferenceService(repository));
+        this(repository, false);
     }
 
-    PreferenceRouter(PreferenceService service) {
+    public PreferenceRouter(PreferenceRepository repository, boolean failReads) {
+        this(new PreferenceService(repository), failReads);
+    }
+
+    PreferenceRouter(PreferenceService service, boolean failReads) {
         this.service = service;
+        this.failReads = failReads;
     }
 
     public Response route(
@@ -50,6 +56,10 @@ public final class PreferenceRouter {
             String body,
             boolean isBase64Encoded) {
         String requestPath = rawPath == null ? "" : rawPath;
+        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
+        if (failReads && "GET".equals(method)) {
+            return error(500, requestPath);
+        }
         Matcher matcher = ROUTE.matcher(requestPath);
         if (!matcher.matches()) {
             return error(404, requestPath);

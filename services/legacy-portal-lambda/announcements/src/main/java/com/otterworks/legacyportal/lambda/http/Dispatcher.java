@@ -124,6 +124,10 @@ public class Dispatcher {
         return error(404, "Not Found", path);
     }
 
+    public Response failedRead(String path) {
+        return error(500, "Internal Server Error", path);
+    }
+
     private static String stripTrailingSlash(String path) {
         return path.endsWith("/") && path.length() > 1 ? path.substring(0, path.length() - 1) : path;
     }

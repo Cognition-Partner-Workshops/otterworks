@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.otterworks.legacyportal.lambda.announcements.AnnouncementService;
 import com.otterworks.legacyportal.lambda.announcements.DataApiAnnouncementRepository;
+import com.otterworks.legacyportal.lambda.announcements.EventBridgeAnnouncementEvents;
 import com.otterworks.legacyportal.lambda.common.PortalBrandingSettings;
 import com.otterworks.legacyportal.lambda.http.Dispatcher;
 
@@ -31,13 +32,15 @@ public class AnnouncementsHandler implements RequestStreamHandler {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final Dispatcher dispatcher;
+    private final boolean failReads;
 
     public AnnouncementsHandler() {
-        this(defaultDispatcher());
+        this(defaultDispatcher(), "1".equals(System.getenv("FAIL_READS")));
     }
 
-    AnnouncementsHandler(Dispatcher dispatcher) {
+    AnnouncementsHandler(Dispatcher dispatcher, boolean failReads) {
         this.dispatcher = dispatcher;
+        this.failReads = failReads;
     }
 
     private static Dispatcher defaultDispatcher() {
@@ -48,7 +51,8 @@ public class AnnouncementsHandler implements RequestStreamHandler {
                 System.getenv("SECRET_ARN"),
                 System.getenv("DB_NAME"),
                 System.getenv("DB_SCHEMA"));
-        return new Dispatcher(new AnnouncementService(repository), new PortalBrandingSettings());
+        return new Dispatcher(new AnnouncementService(repository, EventBridgeAnnouncementEvents.fromEnvironment()),
+                new PortalBrandingSettings());
     }
 
     @Override
@@ -77,8 +81,10 @@ public class AnnouncementsHandler implements RequestStreamHandler {
             }
         }
 
-        Dispatcher.Response response = dispatcher.dispatch(
-                new Dispatcher.Request(method, path, rawQuery, headers, body));
+        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
+        Dispatcher.Response response = failReads && "GET".equalsIgnoreCase(method)
+                ? dispatcher.failedRead(path)
+                : dispatcher.dispatch(new Dispatcher.Request(method, path, rawQuery, headers, body));
 
         ObjectNode out = MAPPER.createObjectNode();
         out.put("statusCode", response.status());

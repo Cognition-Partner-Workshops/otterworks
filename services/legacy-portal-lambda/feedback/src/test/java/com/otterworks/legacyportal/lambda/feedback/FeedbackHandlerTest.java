@@ -200,6 +200,18 @@ class FeedbackHandlerTest {
         return request("POST", "/api/feedback", null, body, contentType, accept);
     }
 
+    @Test
+    void failReadsAnswersEveryGetWith500AndLeavesPostAlone() throws Exception {
+        handler = new FeedbackHandler(repository, true);
+
+        APIGatewayV2HTTPResponse get = request("GET", "/api/feedback", "userId=u1", null, null, null);
+        APIGatewayV2HTTPResponse post = request("POST", "/api/feedback", null,
+                "{\"userId\":\"u1\",\"rating\":5,\"message\":\"great\"}", "application/json", null);
+
+        assertError(get, 500, "/api/feedback", "Internal Server Error");
+        assertEquals(201, post.getStatusCode());
+    }
+
     private APIGatewayV2HTTPResponse request(
             String method, String path, String rawQuery, String body, String contentType, String accept) {
         return request(method, path, rawQuery, body, contentType, accept, false);

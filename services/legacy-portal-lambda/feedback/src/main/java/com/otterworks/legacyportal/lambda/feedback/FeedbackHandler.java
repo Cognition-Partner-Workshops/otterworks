@@ -32,13 +32,19 @@ public final class FeedbackHandler
                     .withZone(ZoneOffset.UTC);
 
     private final FeedbackService service;
+    private final boolean failReads;
 
     public FeedbackHandler() {
-        this(new DataApiFeedbackRepository());
+        this(new DataApiFeedbackRepository(), "1".equals(System.getenv("FAIL_READS")));
     }
 
     public FeedbackHandler(FeedbackRepository repository) {
+        this(repository, false);
+    }
+
+    public FeedbackHandler(FeedbackRepository repository, boolean failReads) {
         this.service = new FeedbackService(repository);
+        this.failReads = failReads;
     }
 
     @Override
@@ -46,6 +52,10 @@ public final class FeedbackHandler
             APIGatewayV2HTTPEvent event, com.amazonaws.services.lambda.runtime.Context context) {
         String path = event == null || event.getRawPath() == null ? "" : event.getRawPath();
         String method = requestMethod(event);
+        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
+        if (failReads && "GET".equals(method)) {
+            return error(500, path);
+        }
         Route route = route(path);
         if (route == null) {
             return error(404, path);
