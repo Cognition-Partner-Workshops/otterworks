@@ -85,6 +85,7 @@ class StagedRow:
     raw_bytes: bytes
     values: dict[str, TargetValue]
     stg_id: int | None = None
+    batch_no: int = 0  # 1-based insert batch within the range (CONTRACTS.md §9.4.2 batch_id)
 
 
 @dataclass(frozen=True)
