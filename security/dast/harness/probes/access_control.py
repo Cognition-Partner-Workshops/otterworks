@@ -76,6 +76,82 @@ def bola_documents(ctx: ScanContext) -> Result:
 
 
 @probe(
+    finding_id="DAST-BOLA-FILES",
+    title="Broken object-level authorization on /api/v1/files/{id}",
+    severity=Severity.CRITICAL,
+    owasp="API1:2023 Broken Object Level Authorization",
+    cwe="CWE-639",
+    service="file-service",
+    remediation=(
+        "Compare the file's owner_id against the caller identity in the gateway-set "
+        "X-User-ID header on every /api/v1/files/{id} handler, and return 403 on mismatch "
+        "before any S3 or DynamoDB call acts on the object."
+    ),
+)
+def bola_files(ctx: ScanContext) -> Result:
+    """Attacker reads, downloads, and re-shares a file owned by the victim."""
+    self = bola_files.probe
+    victim_file = ctx.victim_file()
+    if victim_file is None:
+        return self.result(Verdict.INCONCLUSIVE, "could not upload a victim-owned file")
+    if str(victim_file.get("owner_id", "")) != ctx.victim.user_id:
+        # A file the upload attributed to someone else is not the victim's, so the
+        # attacker reaching it would prove nothing about cross-tenant access.
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            f"the upload recorded owner {victim_file.get('owner_id')!r}, not the victim",
+        )
+
+    path = f"/api/v1/files/{victim_file['id']}"
+    attempts = [
+        ("GET", path, None),
+        ("GET", f"{path}/download", None),
+        (
+            "POST",
+            f"{path}/share",
+            {
+                "shared_with": ctx.attacker.user_id,
+                "shared_by": ctx.victim.user_id,
+                "permission": "editor",
+            },
+        ),
+    ]
+    refusals = []
+    for method, attempt_path, body in attempts:
+        response = ctx.request(method, attempt_path, identity=ctx.attacker, json=body)
+        if response.status_code in (200, 201):
+            return self.result(
+                Verdict.VULNERABLE,
+                f"the attacker's token got {response.status_code} on {method} {attempt_path} "
+                "for the victim's file",
+                [Evidence.from_response(response, note=f"victim file {victim_file['id']}")],
+            )
+        if response.status_code not in (401, 403, 404):
+            return self.result(
+                Verdict.INCONCLUSIVE,
+                f"unexpected status {response.status_code} on {method} {attempt_path}",
+                [Evidence.from_response(response)],
+            )
+        refusals.append(response)
+
+    # Control request: a route that rejects the owner too is not evidence that
+    # authorization works.
+    if not ctx.owner_can_read(path, ctx.victim):
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            "the owner is also refused; the file routes reject every caller, so "
+            "cross-tenant access cannot be assessed",
+            [Evidence.from_response(r) for r in refusals],
+        )
+    return self.result(
+        Verdict.SECURE,
+        "the owner can read the file but the attacker was refused on metadata, download, "
+        f"and share ({', '.join(str(r.status_code) for r in refusals)})",
+        [Evidence.from_response(r) for r in refusals],
+    )
+
+
+@probe(
     finding_id="DAST-IDENTITY-HEADER-SPOOF",
     title="Client-supplied X-User-ID is trusted downstream of the gateway",
     severity=Severity.CRITICAL,
