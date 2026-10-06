@@ -113,3 +113,7 @@ for the create in the SQS queue and in `/aws/events/lp-ann-20261006-a1-announcem
 own create and `/publish` events in the queue.
 
 Cleanup: `make lp-mod-down RUN=lp-ann-20261006-a1 && make lp-mod-verify-clean RUN=lp-ann-20261006-a1`
+
+### feedback, run `lp-fb-20261006-a1` in front of `lp-ec2-20261006-b1`
+
+95/95 identical against both the EC2 ALB and the HTTP API, Lambda version 1; see [strangler-feedback.md](strangler-feedback.md).
