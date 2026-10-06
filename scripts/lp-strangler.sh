@@ -61,9 +61,10 @@ tf_init() {
   echo "terraform init: state ${STATE_PREFIX}/${RUN}/terraform.tfstate"
 }
 
-# The EC2 run token is fixed at the first apply; destroy and later plans reuse it.
+# The EC2 run token is bound at the first apply; later ups and destroys reuse it. A different EC2_RUN on an
+# existing run would move every $default route, so it needs RETARGET_EC2=1.
 tf_vars() {
-  local dir="${ROOT}/.demo/legacy-portal/${RUN}"
+  local dir="${ROOT}/.demo/legacy-portal/${RUN}" bound
   if [ ! -s "${dir}/expires" ]; then
     # A fresh checkout (the CD workflow) keeps the Expires tag the run already has.
     local tagged
@@ -71,15 +72,17 @@ tf_vars() {
     if [[ "$tagged" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then echo "$tagged" > "${dir}/expires"
     else date -u -d "+${EXPIRES_DAYS:-2} days" +%Y-%m-%d > "${dir}/expires"; fi
   fi
+  bound="$(tf output -raw ec2_run_token 2>/dev/null || true)"
+  [[ "$bound" =~ ^lp-ec2- ]] || bound="$(cat "${dir}/ec2_run" 2>/dev/null || true)"
   if [ -n "${EC2_RUN:-}" ]; then
     [[ "$EC2_RUN" =~ ^lp-ec2-[0-9]{8}-[a-z0-9]{2}$ ]] || die "EC2_RUN must look like lp-ec2-20261006-b1, got ${EC2_RUN}"
-    echo "$EC2_RUN" > "${dir}/ec2_run"
-  elif [ ! -s "${dir}/ec2_run" ]; then
-    local from_state
-    from_state="$(tf output -raw ec2_run_token 2>/dev/null || true)"
-    [ -n "$from_state" ] || die "EC2_RUN is required on the first up, e.g. EC2_RUN=lp-ec2-20261006-b1"
-    echo "$from_state" > "${dir}/ec2_run"
+    if [ -n "$bound" ] && [ "$bound" != "$EC2_RUN" ] && [ "${RETARGET_EC2:-0}" != 1 ]; then
+      die "${RUN} forwards \$default to ${bound}; EC2_RUN=${EC2_RUN} would move every non-${MODULE} route. Drop EC2_RUN, or set RETARGET_EC2=1 to retarget on purpose"
+    fi
+    bound="$EC2_RUN"
   fi
+  [ -n "$bound" ] || die "EC2_RUN is required on the first up, e.g. EC2_RUN=lp-ec2-20261006-b1"
+  echo "$bound" > "${dir}/ec2_run"
   TF_VARS=(-var "run_token=${RUN}" -var "module=${MODULE}" -var "ec2_run_token=$(cat "${dir}/ec2_run")"
     -var "expires=$(cat "${dir}/expires")" -var "jar_path=$(jar_path)")
 }
@@ -173,39 +176,89 @@ reset_aurora() {
   echo "aurora ${RUN}: truncated ${TABLE}, ids restart at 1 ($(data_api "SELECT count(*) FROM ${TABLE}" | jq -r '.records[0][0].longValue') rows)"
 }
 
-# Lock per EC2 run around everything that truncates or replays against the shared box. A lock older than
-# LOCK_STALE_SECONDS is a crashed holder and is broken.
-LOCK_HELD=0
-ec2_lock() {
-  local key="${STATE_PREFIX}/locks/${EC2_RUN_TOKEN}.lock" deadline out holder modified age
-  deadline=$(( $(date +%s) + ${LOCK_WAIT_SECONDS:-2700} ))
+# Lock per EC2 run around everything that truncates or replays against the shared box: an S3 object created with
+# If-None-Match. The holder rewrites it every LOCK_HEARTBEAT_SECONDS with If-Match on its own ETag, so only a lock
+# that has not been refreshed for LOCK_STALE_SECONDS belongs to a crashed holder. Breaking a stale lock and
+# releasing one are both deletes with If-Match on the ETag that was read, so nobody deletes a lock that another run
+# has taken or refreshed in between. A holder whose heartbeat finds the lock gone or changed stops its command.
+LOCK_HELD=0; LOCK_HB_PID=""
+lock_body() { printf '%s %s pid=%s\n' "$RUN" "$(now)" "$$" > "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock"; }
+
+# Runs in the background. TERM from ec2_unlock only ends the wait between refreshes: a refresh already in flight
+# still records its ETag, so the release that follows deletes with the current one and no sleep outlives the hold.
+lock_heartbeat() {
+  local etag_file="$1" main="$2" etag stop=0 nap=""
+  trap 'stop=1; [ -z "$nap" ] || kill "$nap" 2>/dev/null || true' TERM
   while :; do
-    printf '%s %s\n' "$RUN" "$(now)" > "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock"
-    if out="$(aws s3api put-object --bucket "$STATE_BUCKET" --key "$key" \
-        --body "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock" --if-none-match '*' 2>&1)"; then
+    sleep "${LOCK_HEARTBEAT_SECONDS:-60}" & nap=$!
+    wait "$nap" 2>/dev/null || true
+    nap=""
+    [ "$stop" = 0 ] || return 0
+    lock_body
+    if etag="$(aws s3api put-object --bucket "$STATE_BUCKET" --key "$LOCK_KEY" --body "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock" \
+        --if-match "$(cat "$etag_file")" --query ETag --output text 2>&1)"; then
+      echo "$etag" > "$etag_file"
+      [ "$stop" = 0 ] || return 0
+    else
+      echo "ec2 lock: heartbeat failed, the lock is no longer ours (${etag}); stopping ${RUN}" >&2
+      : > "${etag_file}.lost"
+      pkill -TERM -P "$main" 2>/dev/null || true
+      kill -TERM "$main" 2>/dev/null || true
+      return 1
+    fi
+  done
+}
+
+ec2_lock() {
+  local key="${STATE_PREFIX}/locks/${EC2_RUN_TOKEN}.lock" deadline out holder head etag modified age
+  local etag_file="${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock.etag"
+  deadline=$(( $(date +%s) + ${LOCK_WAIT_SECONDS:-2700} ))
+  rm -f "$etag_file" "${etag_file}.lost"
+  while :; do
+    lock_body
+    if out="$(aws s3api put-object --bucket "$STATE_BUCKET" --key "$key" --body "${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock" \
+        --if-none-match '*' --query ETag --output text 2>&1)"; then
       LOCK_HELD=1; LOCK_KEY="$key"
-      echo "ec2 lock taken: s3://${STATE_BUCKET}/${key}"
+      echo "$out" > "$etag_file"
+      lock_heartbeat "$etag_file" "$$" &
+      LOCK_HB_PID=$!
+      echo "ec2 lock taken: s3://${STATE_BUCKET}/${key} (heartbeat every ${LOCK_HEARTBEAT_SECONDS:-60} s)"
       return 0
     fi
     case "$out" in *PreconditionFailed*|*ConditionalRequestConflict*) ;; *) die "ec2 lock: ${out}" ;; esac
+    head="$(aws s3api head-object --bucket "$STATE_BUCKET" --key "$key" --query '[ETag,LastModified]' --output text 2>/dev/null || true)"
+    [ -n "$head" ] || continue
+    etag="${head%%$'\t'*}"; modified="${head#*$'\t'}"
     holder="$(aws s3 cp "s3://${STATE_BUCKET}/${key}" - 2>/dev/null || echo unknown)"
-    modified="$(aws s3api head-object --bucket "$STATE_BUCKET" --key "$key" --query LastModified --output text 2>/dev/null || true)"
-    age=$(( $(date +%s) - $(date -d "${modified:-now}" +%s) ))
-    if [ "$age" -gt "${LOCK_STALE_SECONDS:-1800}" ]; then
-      echo "ec2 lock: breaking a ${age} s old lock held by ${holder}"
-      aws s3api delete-object --bucket "$STATE_BUCKET" --key "$key" >/dev/null
+    age=$(( $(date +%s) - $(date -d "$modified" +%s) ))
+    if [ "$age" -gt "${LOCK_STALE_SECONDS:-900}" ]; then
+      if aws s3api delete-object --bucket "$STATE_BUCKET" --key "$key" --if-match "$etag" >/dev/null 2>&1; then
+        echo "ec2 lock: broke a lock not refreshed for ${age} s, held by ${holder}"
+      else
+        echo "ec2 lock: ${holder} refreshed or released the lock while it was being broken; retrying"
+      fi
       continue
     fi
     [ "$(date +%s)" -lt "$deadline" ] || die "ec2 lock: still held by ${holder} after ${LOCK_WAIT_SECONDS:-2700} s"
-    echo "$(now) ec2 lock held by ${holder} (${age} s), waiting"
+    echo "$(now) ec2 lock held by ${holder} (refreshed ${age} s ago), waiting"
     sleep 20
   done
 }
 
 ec2_unlock() {
   [ "$LOCK_HELD" = 1 ] || return 0
-  aws s3api delete-object --bucket "$STATE_BUCKET" --key "$LOCK_KEY" >/dev/null && echo "ec2 lock released"
+  local etag_file="${ROOT}/.demo/legacy-portal/${RUN}/ec2.lock.etag"
+  [ -z "$LOCK_HB_PID" ] || { kill "$LOCK_HB_PID" 2>/dev/null || true; wait "$LOCK_HB_PID" 2>/dev/null || true; }
   LOCK_HELD=0
+  if [ -e "${etag_file}.lost" ]; then
+    echo "ec2 lock was lost during the hold; results of this command are not valid" >&2
+    return 0
+  fi
+  if aws s3api delete-object --bucket "$STATE_BUCKET" --key "$LOCK_KEY" --if-match "$(cat "$etag_file")" >/dev/null 2>&1; then
+    echo "ec2 lock released"
+  else
+    echo "ec2 lock: not released, the object is no longer the one this run wrote" >&2
+  fi
 }
 
 reset_ec2() {
@@ -220,6 +273,11 @@ cmd_up() {
   tf_init; tf_vars
   tf plan -input=false -no-color "${TF_VARS[@]}" -out="${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
   tf apply -input=false -no-color -auto-approve "${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
+  # Terraform moves live only after the new version is Active (terraform_data.live_ready); this confirms it.
+  echo "waiting for ${RUN}-${MODULE}:live to be Active (SnapStart snapshot)"
+  aws lambda wait function-active-v2 --function-name "${RUN}-${MODULE}" --qualifier live
+  aws lambda get-function-configuration --function-name "${RUN}-${MODULE}" --qualifier live --output text \
+    --query '[FunctionName,Version,State,SnapStart.OptimizationStatus]'
   echo
   tf output -no-color
   echo
@@ -304,8 +362,8 @@ cmd_status() {
 cmd_reset() {
   need_run; start_transcript "$RUN"
   tf_init >/dev/null; load_outputs
-  reset_aurora
   ec2_lock
+  reset_aurora
   reset_ec2
 }
 

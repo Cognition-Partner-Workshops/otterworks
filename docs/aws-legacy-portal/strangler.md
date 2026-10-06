@@ -48,11 +48,33 @@ The EC2 stack is only read (`data "aws_lb"`), never managed, so `lp-mod-down` ca
 ## Shared EC2 box: the replay lock
 
 Every replay needs empty tables on the EC2 box, and all runs in front of one `lp-ec2` run share its Postgres.
-`reset` and `replay` therefore hold `s3://otterworks-terraform-state/otterworks/legacy-portal-strangler/locks/<lp-ec2 run>.lock`,
-created with `put-object --if-none-match '*'` (fails with `PreconditionFailed` while another run holds it) and
-deleted on exit. A waiting run polls every 20 s for up to `LOCK_WAIT_SECONDS` (2700); a lock older than
-`LOCK_STALE_SECONDS` (1800) is taken to belong to a crashed run and is broken. `up`, `status`, `events` and
-`down` take no lock, so builds and applies of different modules run in parallel.
+`reset` and `replay` therefore hold `s3://otterworks-terraform-state/otterworks/legacy-portal-strangler/locks/<lp-ec2 run>.lock`.
+It is created with `put-object --if-none-match '*'`, which fails with `PreconditionFailed` while another run holds it.
+While it is held, a background heartbeat rewrites it every `LOCK_HEARTBEAT_SECONDS` (60) with `--if-match` on
+its own ETag. If that conditional write fails, the lock is no longer this run's, and the heartbeat stops the
+command so its results are not used. A waiting run polls every 20 s for up to `LOCK_WAIT_SECONDS` (2700).
+Only a lock that has not been refreshed for `LOCK_STALE_SECONDS` (900) belongs to a crashed run, however long a
+replay takes. Breaking a stale lock and releasing one are both `delete-object --if-match <ETag>`, so a run never
+deletes a lock that someone else has taken or refreshed in the meantime
+([conditional deletes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-deletes.html)).
+`reset` takes the lock before it truncates the Aurora table too. `up`, `status`, `events` and `down` take no
+lock, so builds and applies of different modules run in parallel.
+
+## Deploys and the EC2 binding
+
+- **New Lambda versions:** `live` keeps the previous version until `terraform_data.live_ready` has seen the new
+  SnapStart version Active (`aws lambda wait function-active-v2`). Requests never reach a Pending version,
+  neither on an update nor on the first deploy.
+- **The EC2 run is fixed at the first `up`.** Later `up`s read it from the Terraform state. A different
+  `EC2_RUN` on an existing run is refused, because it would move every `$default` route. To do that on
+  purpose, use `RETARGET_EC2=1`.
+- **Traffic to the EC2 ALB is still plain HTTP** to the ALB's public DNS name, the same as clients that call
+  the ALB directly today. The lp-ec2 ALB has only a port-80 listener, and this root does not change the EC2
+  stack. A VPC link to that listener was tried and does not work here: with the link `AVAILABLE`, every `$default`
+  request returned 503 after 9 s, so it was rolled back. Encrypting the hop needs a change to `legacy-portal-ec2`:
+  either an HTTPS listener with an ACM certificate on a domain we own (then `https://` in `integration_uri`),
+  or an internal ALB that a VPC link can reach
+  ([private integrations](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-private.html)).
 
 ## Event contract (announcements)
 

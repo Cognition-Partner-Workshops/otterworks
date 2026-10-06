@@ -84,13 +84,29 @@ resource "aws_lambda_function" "this" { # nosemgrep: terraform.aws.security.aws-
   depends_on = [aws_cloudwatch_log_group.lambda, aws_iam_role_policy.lambda, terraform_data.schema]
 }
 
+# A new SnapStart version is Pending while its snapshot is taken and cannot be invoked. live keeps the previous
+# version until this waiter sees the new one Active, so an update never sends API traffic to a Pending version.
+resource "terraform_data" "live_ready" {
+  input            = aws_lambda_function.this.version
+  triggers_replace = [aws_lambda_function.this.version]
+
+  provisioner "local-exec" {
+    command = "aws lambda wait function-active-v2 --function-name \"$FUNCTION\" --qualifier \"$VERSION\""
+    environment = {
+      FUNCTION   = aws_lambda_function.this.function_name
+      VERSION    = aws_lambda_function.this.version
+      AWS_REGION = var.region
+    }
+  }
+}
+
 # SnapStart applies to published versions only, so the API invokes this alias, never $LATEST.
-# Terraform points it at the first version; after that CodeDeploy moves it (deploy.tf, lp-ann-deploy).
+# Terraform points it at the first version; after that CodeDeploy moves it (deploy.tf, lp-mod-deploy).
 resource "aws_lambda_alias" "live" {
   name             = "live"
   description      = "Traffic-serving version of ${aws_lambda_function.this.function_name}, moved by CodeDeploy"
   function_name    = aws_lambda_function.this.function_name
-  function_version = aws_lambda_function.this.version
+  function_version = terraform_data.live_ready.output
 
   lifecycle {
     ignore_changes = [function_version, routing_config]
