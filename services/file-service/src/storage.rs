@@ -14,21 +14,18 @@ pub struct S3Client {
 
 impl S3Client {
     pub async fn new(config: &AwsConfig) -> Self {
-        let mut aws_config_builder = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_config::Region::new(config.region.clone()));
+        let sdk_config = config.sdk_config_loader().load().await;
+        Self::from_sdk_config(&sdk_config, config)
+    }
 
-        if let Some(endpoint) = &config.endpoint_url {
-            aws_config_builder = aws_config_builder.endpoint_url(endpoint);
-        }
-
-        let aws_config = aws_config_builder.load().await;
-        let s3_config = aws_sdk_s3::config::Builder::from(&aws_config)
+    pub fn from_sdk_config(sdk_config: &aws_config::SdkConfig, config: &AwsConfig) -> Self {
+        let s3_config = aws_sdk_s3::config::Builder::from(sdk_config)
             .force_path_style(true)
+            .timeout_config(config.s3_timeout_config())
             .build();
-        let client = aws_sdk_s3::Client::from_conf(s3_config);
 
         Self {
-            client,
+            client: aws_sdk_s3::Client::from_conf(s3_config),
             bucket: config.s3_bucket.clone(),
         }
     }

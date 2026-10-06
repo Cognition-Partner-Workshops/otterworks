@@ -42,6 +42,59 @@ pub async fn metrics() -> HttpResponse {
 
 // -- File Handlers --
 
+const SHARE_ID_NAMESPACE: Uuid = Uuid::from_u128(0x6f74_7465_7277_6f72_6b73_2d73_6861_7265);
+
+/// Deterministic share id so concurrent or retried share requests for the same
+/// file + user collapse onto one item (and one file_shared event).
+fn share_id(file_id: &Uuid, shared_with: &Uuid) -> Uuid {
+    Uuid::new_v5(
+        &SHARE_ID_NAMESPACE,
+        format!("{file_id}:{shared_with}").as_bytes(),
+    )
+}
+
+/// Persist upload metadata after the object is in S3. The version row is
+/// written first and the file row (what list/get expose) last, so a failed
+/// upload never leaves a visible file. On failure the earlier writes are
+/// removed so a client retry does not leave orphans or duplicates behind.
+async fn commit_upload_metadata(
+    s3: &S3Client,
+    meta: &MetadataClient,
+    file: &FileMetadata,
+    version: &FileVersion,
+) -> Result<(), ServiceError> {
+    if let Err(e) = meta.put_version(version).await {
+        discard_object(s3, &file.s3_key).await;
+        return Err(e);
+    }
+    if let Err(e) = meta.put_file(file).await {
+        if let Err(cleanup) = meta.delete_version(&version.file_id, version.version).await {
+            tracing::error!(file_id = %file.id, error = %cleanup, "Failed to remove version row after aborted upload");
+        }
+        discard_object(s3, &file.s3_key).await;
+        return Err(e);
+    }
+    Ok(())
+}
+
+async fn discard_object(s3: &S3Client, key: &str) {
+    if let Err(e) = s3.delete_object(key).await {
+        tracing::error!(key = %key, bucket = %s3.bucket, error = %e, "Failed to remove S3 object after aborted upload");
+    }
+}
+
+/// Delete the S3 object before the metadata row. If the S3 delete fails the
+/// file stays visible and the DELETE can be retried; S3 DeleteObject on a
+/// missing key succeeds, so a retry after a partial failure completes cleanly.
+async fn remove_file_and_object(
+    s3: &S3Client,
+    meta: &MetadataClient,
+    file: &FileMetadata,
+) -> Result<(), ServiceError> {
+    s3.delete_object(&file.s3_key).await?;
+    meta.delete_file(&file.id).await
+}
+
 pub async fn upload_file(
     req: HttpRequest,
     s3: web::Data<S3Client>,
@@ -172,8 +225,6 @@ pub async fn upload_file(
         updated_at: now,
     };
 
-    meta.put_file(&file_meta).await?;
-
     let version = FileVersion {
         file_id,
         version: 1,
@@ -182,9 +233,9 @@ pub async fn upload_file(
         created_by: owner,
         created_at: now,
     };
-    meta.put_version(&version).await?;
+    commit_upload_metadata(&chaos_s3, &meta, &file_meta, &version).await?;
 
-    let _ = events
+    events
         .file_uploaded(
             &file_id,
             &owner,
@@ -343,10 +394,9 @@ pub async fn delete_file(
         .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
 
     let file = meta.get_file(&file_id).await?;
-    meta.delete_file(&file_id).await?;
-    s3.delete_object(&file.s3_key).await?;
+    remove_file_and_object(&s3, &meta, &file).await?;
 
-    let _ = events.file_deleted(&file_id, &file.owner_id).await;
+    events.file_deleted(&file_id, &file.owner_id).await;
 
     tracing::info!(file_id = %file_id, "File deleted");
     Ok(HttpResponse::NoContent().finish())
@@ -384,7 +434,7 @@ pub async fn move_file(
 
     let file = meta.move_file(&file_id, body.folder_id).await?;
 
-    let _ = events
+    events
         .file_moved(&file_id, &file.owner_id, body.folder_id.as_ref())
         .await;
 
@@ -410,7 +460,7 @@ pub async fn rename_file(
 
     let file = meta.rename_file(&file_id, name).await?;
 
-    let _ = events
+    events
         .file_updated(
             &file_id,
             &file.owner_id,
@@ -450,7 +500,7 @@ pub async fn trash_file(
 
     let file = meta.trash_file(&file_id).await?;
 
-    let _ = events.file_trashed(&file_id, &file.owner_id).await;
+    events.file_trashed(&file_id, &file.owner_id).await;
 
     tracing::info!(file_id = %file_id, "File trashed");
     Ok(HttpResponse::Ok().json(file))
@@ -468,7 +518,7 @@ pub async fn restore_file(
 
     let file = meta.restore_file(&file_id).await?;
 
-    let _ = events
+    events
         .file_restored(
             &file_id,
             &file.owner_id,
@@ -521,7 +571,7 @@ pub async fn share_file(
     }
 
     let share = FileShare {
-        id: Uuid::new_v4(),
+        id: share_id(&file_id, &body.shared_with),
         file_id,
         shared_with: body.shared_with,
         permission: body.permission.clone(),
@@ -529,9 +579,15 @@ pub async fn share_file(
         created_at: Utc::now(),
     };
 
-    meta.put_share(&share).await?;
+    if !meta.put_share_if_absent(&share).await? {
+        // A concurrent request for the same file + user won the insert and
+        // already published file_shared.
+        let existing = meta.get_share(&share.id).await?;
+        tracing::info!(file_id = %file_id, shared_with = %body.shared_with, "File already shared");
+        return Ok(HttpResponse::Ok().json(ShareFileResponse { share: existing }));
+    }
 
-    let _ = events
+    events
         .file_shared(&file_id, &file.owner_id, &body.shared_with)
         .await;
 
@@ -710,6 +766,259 @@ pub async fn list_activity(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::SharePermission;
+    use crate::test_support::*;
+
+    async fn clients(
+        respond: impl Fn(&Call) -> (u16, String) + Send + Sync + 'static,
+    ) -> (S3Client, MetadataClient, EventPublisher, Calls) {
+        let cfg = test_aws_config();
+        let (http, calls) = fake_aws(respond);
+        let sdk = sdk_config(&cfg, http).await;
+        (
+            S3Client::from_sdk_config(&sdk, &cfg),
+            MetadataClient::from_sdk_config(&sdk, &cfg),
+            EventPublisher::from_sdk_config(
+                &sdk,
+                Some("arn:aws:sns:us-east-1:000000000000:test".into()),
+            ),
+            calls,
+        )
+    }
+
+    fn sample_upload() -> (FileMetadata, FileVersion) {
+        let id = Uuid::new_v4();
+        let owner = Uuid::new_v4();
+        let now = Utc::now();
+        let key = format!("files/{owner}/{id}");
+        (
+            FileMetadata {
+                id,
+                name: "a.txt".into(),
+                mime_type: "text/plain".into(),
+                size_bytes: 3,
+                s3_key: key.clone(),
+                folder_id: None,
+                owner_id: owner,
+                version: 1,
+                is_trashed: false,
+                created_at: now,
+                updated_at: now,
+            },
+            FileVersion {
+                file_id: id,
+                version: 1,
+                s3_key: key,
+                size_bytes: 3,
+                created_by: owner,
+                created_at: now,
+            },
+        )
+    }
+
+    fn ops(calls: &Calls) -> Vec<String> {
+        calls
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|c| match c.table() {
+                Some(t) => format!("{}:{}:{}", c.service, c.op, t),
+                None => format!("{}:{}", c.service, c.op),
+            })
+            .collect()
+    }
+
+    #[tokio::test]
+    async fn upload_commits_version_before_visible_file_row() {
+        let (s3, meta, _, calls) = clients(|_| ddb_ok()).await;
+        let (file, version) = sample_upload();
+
+        commit_upload_metadata(&s3, &meta, &file, &version)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            ops(&calls),
+            vec!["dynamodb:PutItem:versions", "dynamodb:PutItem:files"]
+        );
+    }
+
+    #[tokio::test]
+    async fn upload_version_write_failure_removes_object_and_writes_no_file_row() {
+        let (s3, meta, _, calls) = clients(|c| match c.table().as_deref() {
+            Some("versions") => ddb_error("ResourceNotFoundException"),
+            _ => (204, String::new()),
+        })
+        .await;
+        let (file, version) = sample_upload();
+
+        let err = commit_upload_metadata(&s3, &meta, &file, &version)
+            .await
+            .unwrap_err();
+
+        assert!(matches!(err, ServiceError::DynamoError(_)));
+        assert_eq!(ops(&calls), vec!["dynamodb:PutItem:versions", "s3:DELETE"]);
+    }
+
+    #[tokio::test]
+    async fn upload_file_row_failure_rolls_back_version_and_object() {
+        let (s3, meta, _, calls) = clients(|c| match (c.op.as_str(), c.table().as_deref()) {
+            ("PutItem", Some("files")) => ddb_error("ResourceNotFoundException"),
+            (_, Some(_)) => ddb_ok(),
+            _ => (204, String::new()),
+        })
+        .await;
+        let (file, version) = sample_upload();
+
+        assert!(commit_upload_metadata(&s3, &meta, &file, &version)
+            .await
+            .is_err());
+
+        assert_eq!(
+            ops(&calls),
+            vec![
+                "dynamodb:PutItem:versions",
+                "dynamodb:PutItem:files",
+                "dynamodb:DeleteItem:versions",
+                "s3:DELETE",
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn delete_keeps_metadata_when_s3_delete_fails() {
+        let (s3, meta, _, calls) = clients(|c| {
+            if c.service == "s3" {
+                s3_access_denied()
+            } else {
+                ddb_ok()
+            }
+        })
+        .await;
+        let (file, _) = sample_upload();
+
+        let err = remove_file_and_object(&s3, &meta, &file).await.unwrap_err();
+
+        assert!(matches!(err, ServiceError::S3Error(_)));
+        // The row is untouched, so the file is still listed and DELETE can be retried.
+        assert_eq!(ops(&calls), vec!["s3:DELETE"]);
+    }
+
+    #[tokio::test]
+    async fn delete_removes_object_then_metadata() {
+        let (s3, meta, _, calls) = clients(|c| {
+            if c.service == "s3" {
+                (204, String::new())
+            } else {
+                ddb_ok()
+            }
+        })
+        .await;
+        let (file, _) = sample_upload();
+
+        remove_file_and_object(&s3, &meta, &file).await.unwrap();
+
+        assert_eq!(ops(&calls), vec!["s3:DELETE", "dynamodb:DeleteItem:files"]);
+    }
+
+    #[test]
+    fn share_id_is_stable_per_file_and_user() {
+        let (f, u) = (Uuid::new_v4(), Uuid::new_v4());
+        assert_eq!(share_id(&f, &u), share_id(&f, &u));
+        assert_ne!(share_id(&f, &u), share_id(&f, &Uuid::new_v4()));
+        assert_ne!(share_id(&f, &u), share_id(&u, &f));
+    }
+
+    fn file_item(file: &FileMetadata) -> String {
+        serde_json::json!({"Item": {
+            "id": {"S": file.id.to_string()},
+            "name": {"S": file.name},
+            "mime_type": {"S": file.mime_type},
+            "size_bytes": {"N": file.size_bytes.to_string()},
+            "s3_key": {"S": file.s3_key},
+            "owner_id": {"S": file.owner_id.to_string()},
+            "version": {"N": "1"},
+            "is_trashed": {"BOOL": false},
+            "created_at": {"S": file.created_at.to_rfc3339()},
+            "updated_at": {"S": file.updated_at.to_rfc3339()},
+        }})
+        .to_string()
+    }
+
+    fn share_item(id: Uuid, file_id: Uuid, with: Uuid, by: Uuid) -> String {
+        serde_json::json!({"Item": {
+            "id": {"S": id.to_string()},
+            "file_id": {"S": file_id.to_string()},
+            "shared_with": {"S": with.to_string()},
+            "permission": {"S": "viewer"},
+            "shared_by": {"S": by.to_string()},
+            "created_at": {"S": Utc::now().to_rfc3339()},
+        }})
+        .to_string()
+    }
+
+    async fn share(
+        put_share_response: (u16, String),
+    ) -> (actix_web::http::StatusCode, Vec<String>, String) {
+        let (file, _) = sample_upload();
+        let with = Uuid::new_v4();
+        let by = file.owner_id;
+        let sid = share_id(&file.id, &with);
+        let file_json = file_item(&file);
+        let share_json = share_item(sid, file.id, with, by);
+        let (_, meta, events, calls) =
+            clients(move |c| match (c.op.as_str(), c.table().as_deref()) {
+                ("GetItem", Some("files")) => (200, file_json.clone()),
+                ("Scan", Some("shares")) => {
+                    (200, r#"{"Items":[],"Count":0,"ScannedCount":0}"#.into())
+                }
+                ("PutItem", Some("shares")) => put_share_response.clone(),
+                ("GetItem", Some("shares")) => (200, share_json.clone()),
+                _ if c.service == "sns" => sns_ok(),
+                _ => ddb_ok(),
+            })
+            .await;
+        let resp = share_file(
+            web::Data::new(meta),
+            web::Data::new(events),
+            web::Path::from(file.id.to_string()),
+            web::Json(ShareFileRequest {
+                shared_with: with,
+                permission: SharePermission::Viewer,
+                shared_by: by,
+            }),
+        )
+        .await
+        .unwrap();
+        let put_body = calls
+            .lock()
+            .unwrap()
+            .iter()
+            .find(|c| c.is("dynamodb", "PutItem"))
+            .map(|c| c.body.clone())
+            .unwrap_or_default();
+        assert!(put_body.contains("attribute_not_exists(id)"));
+        assert!(put_body.contains(&sid.to_string()));
+        (resp.status(), ops(&calls), sid.to_string())
+    }
+
+    #[tokio::test]
+    async fn new_share_is_conditional_and_publishes_once() {
+        let (status, ops, _) = share(ddb_ok()).await;
+        assert_eq!(status, actix_web::http::StatusCode::CREATED);
+        assert_eq!(
+            ops.iter().filter(|o| o.as_str() == "sns:Publish").count(),
+            1
+        );
+    }
+
+    #[tokio::test]
+    async fn concurrent_duplicate_share_returns_existing_without_second_event() {
+        let (status, ops, _) = share(ddb_error("ConditionalCheckFailedException")).await;
+        assert_eq!(status, actix_web::http::StatusCode::OK);
+        assert!(ops.contains(&"dynamodb:GetItem:shares".to_string()));
+        assert!(!ops.iter().any(|o| o == "sns:Publish"));
+    }
 
     #[actix_rt::test]
     async fn test_health_endpoint() {
