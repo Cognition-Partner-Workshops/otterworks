@@ -91,6 +91,7 @@ export function buildRunnerJob(input: RunnerJobInput, epoch: number): k8s.V1Job 
     },
     spec: {
       backoffLimit: 1,
+      activeDeadlineSeconds: env.runnerJobDeadlineSeconds,
       ttlSecondsAfterFinished: 3600,
       template: {
         metadata: {
@@ -108,13 +109,35 @@ export function buildRunnerJob(input: RunnerJobInput, epoch: number): k8s.V1Job 
               image,
               // No command override: the image ENTRYPOINT (entrypoint.sh) runs
               // and dispatches on the OP env var set in buildEnv().
-              env: buildEnv(input),
+              env: [
+                ...buildEnv(input),
+                {
+                  // Leave the runner time to record a timed-out deploy as
+                  // error before the Job deadline kills the pod.
+                  name: "RUNNER_OP_TIMEOUT_SECONDS",
+                  value: String(Math.max(60, env.runnerJobDeadlineSeconds - 300)),
+                },
+              ],
             },
           ],
         },
       },
     },
   };
+}
+
+/**
+ * A Job is finished once it carries a true Complete or Failed condition; this
+ * includes DeadlineExceeded / BackoffLimitExceeded, which may report no
+ * succeeded/failed pod counts while their pods are still being terminated.
+ */
+export function isJobFinished(job: k8s.V1Job): boolean {
+  const conds = job.status?.conditions ?? [];
+  if (conds.some((c) => (c.type === "Complete" || c.type === "Failed") && c.status === "True")) {
+    return true;
+  }
+  if ((job.status?.active ?? 0) > 0) return false;
+  return Boolean(job.status?.succeeded || job.status?.failed);
 }
 
 /**
@@ -136,9 +159,7 @@ export async function activeRunnerJob(
     undefined,
     `demo/tenant-id=${tenantId},demo/action=${action}`,
   );
-  const running = res.body.items.find(
-    (j) => (j.status?.active ?? 0) > 0 || (!j.status?.succeeded && !j.status?.failed),
-  );
+  const running = res.body.items.find((j) => !isJobFinished(j));
   return running?.metadata?.name ?? null;
 }
 
