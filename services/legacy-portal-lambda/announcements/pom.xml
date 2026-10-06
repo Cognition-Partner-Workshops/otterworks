@@ -13,7 +13,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <awssdk.version>2.31.63</awssdk.version>
-        <jackson.version>2.18.2</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
     </properties>
 
     <dependencyManagement>

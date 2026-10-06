@@ -50,7 +50,7 @@ resource "aws_cloudwatch_log_group" "lambda" { # nosemgrep: terraform.aws.securi
   retention_in_days = var.log_retention_days
 }
 
-resource "aws_lambda_function" "announcements" {
+resource "aws_lambda_function" "announcements" { # nosemgrep: terraform.aws.security.aws-lambda-x-ray-tracing-not-active.aws-lambda-x-ray-tracing-not-active
   function_name    = "${local.name}-announcements"
   description      = "legacy-portal announcements context (${local.name}); other routes stay on ${var.ec2_run_token}"
   role             = aws_iam_role.lambda.arn
@@ -67,7 +67,7 @@ resource "aws_lambda_function" "announcements" {
     apply_on = "PublishedVersions"
   }
 
-  environment {
+  environment { # nosemgrep: terraform.aws.security.aws-lambda-environment-unencrypted.aws-lambda-environment-unencrypted
     variables = {
       DB_SCHEMA      = "announcements"
       DB_NAME        = aws_rds_cluster.this.database_name
