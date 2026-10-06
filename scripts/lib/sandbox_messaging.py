@@ -15,6 +15,7 @@ Every call is refused unless the resource name starts with the run token.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -45,9 +46,11 @@ def name_of(url_or_arn: str) -> str:
 
 
 class Sandbox:
-    def __init__(self, outputs: dict[str, Any], session: boto3.session.Session | None = None):
+    def __init__(self, outputs: dict[str, Any], session: boto3.session.Session | None = None,
+                 evidence: str | None = None):
         self.o = outputs
         self.token = outputs["run_token"]
+        self.evidence = evidence
         session = session or boto3.session.Session(region_name=outputs.get("region", "us-east-1"))
         self.sqs = session.client("sqs")
         self.sns = session.client("sns")
@@ -63,6 +66,18 @@ class Sandbox:
             raise SandboxError(f"refusing to touch {resource}: not owned by run token {self.token}")
         return resource
 
+    def record(self, kind: str, **fields: Any) -> None:
+        """Append one JSON line per publish, delivery attempt or redrive to the evidence file."""
+        if not self.evidence:
+            return
+        line = {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "kind": kind, **fields}
+        with open(self.evidence, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(line, sort_keys=True) + "\n")
+
+    @staticmethod
+    def payload_sha256(payload: str) -> str:
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
     # --- producer -----------------------------------------------------------
 
     def publish(self, count: int, batch: str | None = None) -> list[str]:
@@ -72,11 +87,14 @@ class Sandbox:
             event_id = f"{batch}-{i:04d}"
             body = {"eventId": event_id, "eventType": "file_uploaded", "fileId": f"sbx-{event_id}",
                     "occurredAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
-            self.sns.publish(
+            payload = json.dumps(body)
+            resp = self.sns.publish(
                 TopicArn=self.guard(self.o["events_topic_arn"]),
-                Message=json.dumps(body),
+                Message=payload,
                 MessageAttributes={"eventType": {"DataType": "String", "StringValue": "file_uploaded"}},
             )
+            self.record("publish", event_id=event_id, sns_message_id=resp.get("MessageId"),
+                        payload_sha256=self.payload_sha256(payload))
             ids.append(event_id)
         return ids
 
@@ -124,25 +142,40 @@ class Sandbox:
         started = time.monotonic()
         while time.monotonic() - idle_since < idle_seconds and time.monotonic() - started < max_seconds:
             resp = self.sqs.receive_message(QueueUrl=url, MaxNumberOfMessages=10, WaitTimeSeconds=wait_seconds,
-                                            AttributeNames=["ApproximateReceiveCount"])
+                                            AttributeNames=["All"])
             messages = resp.get("Messages", [])
             if not messages:
                 continue
             idle_since = time.monotonic()
             for m in messages:
                 stats["received"] += 1
-                stats["max_receive_count_seen"] = max(stats["max_receive_count_seen"],
-                                                      int(m.get("Attributes", {}).get("ApproximateReceiveCount", "1")))
+                attrs = m.get("Attributes", {})
+                receive_count = int(attrs.get("ApproximateReceiveCount", "1"))
+                stats["max_receive_count_seen"] = max(stats["max_receive_count_seen"], receive_count)
+                attempt = {"queue": name_of(url), "sqs_message_id": m["MessageId"], "receive_count": receive_count,
+                           "sent_timestamp_ms": attrs.get("SentTimestamp"),
+                           "dead_letter_source": attrs.get("DeadLetterQueueSourceArn")}
+                try:
+                    envelope = json.loads(m["Body"])
+                    if isinstance(envelope, dict) and isinstance(envelope.get("Message"), str):
+                        attempt["sns_message_id"] = envelope.get("MessageId")
+                        attempt["payload_sha256"] = self.payload_sha256(envelope["Message"])
+                except ValueError:
+                    pass
                 try:
                     if fault == "ledger":
                         raise SandboxError("injected ledger outage")
                     if fault == "parse":
                         raise ValueError("injected parse failure")
-                    applied = self.apply(self.parse(m))
-                except (SandboxError, ValueError, ClientError):
+                    event = self.parse(m)
+                    attempt["event_id"] = event["eventId"]
+                    applied = self.apply(event)
+                except (SandboxError, ValueError, ClientError) as exc:
                     # Leave it on the queue and make it visible again at once;
                     # the redrive policy decides when it has failed for good.
                     stats["failed"] += 1
+                    code = exc.response["Error"]["Code"] if isinstance(exc, ClientError) else type(exc).__name__
+                    self.record("attempt", outcome="failed", error=code, **attempt)
                     self.sqs.change_message_visibility(QueueUrl=url, ReceiptHandle=m["ReceiptHandle"], VisibilityTimeout=0)
                     continue
                 stats["applied" if applied else "duplicates"] += 1
@@ -150,10 +183,13 @@ class Sandbox:
                     # Crash once per message between the durable write and the ack.
                     crashed.add(m["MessageId"])
                     stats["crashed"] += 1
+                    self.record("attempt", outcome="applied-then-crashed" if applied else "duplicate-then-crashed",
+                                **attempt)
                     self.sqs.change_message_visibility(QueueUrl=url, ReceiptHandle=m["ReceiptHandle"], VisibilityTimeout=0)
                     continue
                 self.sqs.delete_message(QueueUrl=url, ReceiptHandle=m["ReceiptHandle"])
                 stats["deleted"] += 1
+                self.record("attempt", outcome="applied" if applied else "duplicate", deleted=True, **attempt)
         return stats
 
     # --- recovery -----------------------------------------------------------
@@ -180,7 +216,29 @@ class Sandbox:
             task = tasks[0] if tasks else {}
             if task.get("Status") in ("COMPLETED", "FAILED", "CANCELLED") or time.monotonic() >= deadline:
                 task["TaskHandle"] = handle
+                self.record("redrive", **{k: v for k, v in task.items() if isinstance(v, (str, int))})
                 return task
+            time.sleep(poll)
+
+    def probe_ledger(self) -> str:
+        """Write-free check of the ledger dependency: 'allowed', or the error code that blocks writes."""
+        table = self.guard(self.o["ledger_table_name"])
+        try:
+            self.ddb.put_item(TableName=table, Item={"pk": {"S": f"PROBE#{uuid.uuid4().hex}"}},
+                              ConditionExpression="attribute_exists(pk)")
+        except ClientError as exc:
+            code = exc.response["Error"]["Code"]
+            return "allowed" if code == "ConditionalCheckFailedException" else code
+        raise SandboxError("probe item was written; the ledger condition did not hold")
+
+    def wait_probe(self, expect: str, timeout: int = 120, poll: float = 5) -> str:
+        deadline = time.monotonic() + timeout
+        while True:
+            state = self.probe_ledger()
+            matched = state == "allowed" if expect == "allowed" else state != "allowed"
+            if matched or time.monotonic() >= deadline:
+                self.record("probe", expect=expect, state=state, matched=matched)
+                return state
             time.sleep(poll)
 
     def ledger(self) -> tuple[set[str], int]:
@@ -281,6 +339,7 @@ def plan_guard(plan: dict[str, Any], token: str, allow_delete: bool = False) -> 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--outputs", help="terraform output -json of the sandbox root")
+    p.add_argument("--evidence", help="append one JSON line per publish, delivery attempt and redrive here")
     sub = p.add_subparsers(dest="cmd", required=True)
     pg = sub.add_parser("plan-guard", help="refuse a plan that is not confined to this run token")
     pg.add_argument("--plan-json", required=True)
@@ -303,6 +362,9 @@ def main(argv: list[str] | None = None) -> int:
     rd.add_argument("--timeout", type=int, default=600)
     vf = sub.add_parser("verify")
     vf.add_argument("--ids-file", required=True)
+    pr = sub.add_parser("probe", help="write-free check that ledger writes are denied or allowed")
+    pr.add_argument("--expect", choices=["denied", "allowed"], required=True)
+    pr.add_argument("--timeout", type=int, default=120)
     sub.add_parser("reset")
     sub.add_parser("status")
     args = p.parse_args(argv)
@@ -314,7 +376,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if problems else 0
     if not args.outputs:
         p.error("--outputs is required")
-    sb = Sandbox(load_outputs(args.outputs))
+    sb = Sandbox(load_outputs(args.outputs), evidence=args.evidence)
     rc = 0
     if args.cmd == "publish":
         ids = sb.publish(args.count, args.batch)
@@ -339,6 +401,10 @@ def main(argv: list[str] | None = None) -> int:
         with open(args.ids_file, encoding="utf-8") as fh:
             result = sb.verify(json.load(fh))
         rc = 0 if result["exactly_once"] else 1
+    elif args.cmd == "probe":
+        state = sb.wait_probe(args.expect, args.timeout)
+        result = {"expect": args.expect, "ledger_writes": state}
+        rc = 0 if (state == "allowed") == (args.expect == "allowed") else 1
     elif args.cmd == "reset":
         result = sb.reset()
     else:

@@ -23,7 +23,8 @@ there to show the defect; its names carry a `-b` suffix and it has its own state
 
 ## Commands
 
-Tokens look like `rs-<yyyymmdd>-<two letters>`. Use the engineer role for
+Tokens look like `rs-<yyyymmdd>-<two letters>` (drills) or `lp-<yyyymmdd>-<two
+letters>` (recorded live proofs); check the token is unused first. Use the engineer role for
 `up`/`destroy` and the builder role (or engineer) for the drill:
 
 ```bash
@@ -62,6 +63,31 @@ token) and applies exactly that saved plan. `destroy` does the same with
 The DLQ depth alarm should move to `ALARM` within a few minutes of step 2
 (CloudWatch SQS metrics are per minute) and back to `OK` after step 4; check
 with `sbx-status`.
+
+## Live proof with a real dependency outage
+
+`FAULT=ledger` fails inside the consumer. For a recorded proof, fail the real
+dependency instead: `OUTAGE_UNTIL` sets `aws_dynamodb_resource_policy.ledger_outage`,
+a resource policy on the token's ledger that denies `PutItem`/`UpdateItem` to
+every principal while `aws:CurrentTime` is before that time. The consumer gets
+`AccessDeniedException` from DynamoDB, and SQS dead-letters the events by
+itself. Re-applying without `OUTAGE_UNTIL` puts the window back to 1970, which
+ends the outage through IaC. `EVIDENCE` keeps a JSON line per publish, delivery
+attempt and redrive (event id, SNS/SQS message ids, payload sha256, receive count).
+
+```bash
+R=lp-20261006-ab; EV=~/.otterworks-sandbox/$R/attempts.jsonl
+make sbx-up    RUN=$R EXPIRES=2026-10-07T20:00:00Z
+make sbx-up    RUN=$R OUTAGE_UNTIL=$(date -u -d '+30 min' +%Y-%m-%dT%H:%M:%SZ)   # outage on
+make sbx-fail  RUN=$R FAULT=none EVIDENCE=$EV       # waits for denial, publishes, 5 receives each -> DLQ
+make sbx-up    RUN=$R                                # outage off (window back to 1970)
+make sbx-probe RUN=$R EXPECT=allowed
+make sbx-replay RUN=$R EVIDENCE=$EV                  # redrive, crash once per message, verify exactly-once
+```
+
+Resource policy changes are eventually consistent, so `fail` and `probe` poll
+with a write-free conditional `PutItem` (`attribute_exists(pk)` on a random key)
+until the expected state shows.
 
 ## Offline tests
 

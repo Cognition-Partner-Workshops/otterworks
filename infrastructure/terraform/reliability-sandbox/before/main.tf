@@ -6,12 +6,12 @@
 # ------------------------------------------------------------------------------
 
 variable "run_token" {
-  description = "Sandbox run token, rs-<yyyymmdd>-<two letters>."
+  description = "Sandbox run token, rs- or lp-<yyyymmdd>-<two letters>."
   type        = string
 
   validation {
-    condition     = can(regex("^rs-[0-9]{8}-[a-z]{2}$", var.run_token))
-    error_message = "run_token must look like rs-20261006-ab."
+    condition     = can(regex("^(rs|lp)-[0-9]{8}-[a-z]{2}$", var.run_token))
+    error_message = "run_token must look like rs-20261006-ab or lp-20261006-ab."
   }
 }
 

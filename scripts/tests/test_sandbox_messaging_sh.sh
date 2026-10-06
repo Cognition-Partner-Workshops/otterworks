@@ -29,7 +29,7 @@ STUB
 cat > "${WORK}/python" <<'STUB'
 #!/usr/bin/env bash
 echo "python $*" >> "$STUB_LOG"
-case " $* " in *" plan-guard "*) exit "${STUB_GUARD_RC:-0}" ;; esac
+case " $* " in *" plan-guard "*) exit "${STUB_GUARD_RC:-0}" ;; *" probe "*) exit "${STUB_PROBE_RC:-0}" ;; esac
 exit 0
 STUB
 chmod +x "${WORK}/terraform" "${WORK}/aws" "${WORK}/python"
@@ -50,8 +50,32 @@ run "$SCRIPT" plan; rc=$?
 check "plan without RUN is refused" test "$rc" = 2
 check "plan without RUN calls nothing" test ! -s "$LOG"
 
+run RUN=xx-20261006-ab "$SCRIPT" plan; rc=$?
+check "tokens outside rs-/lp- are refused" test "$rc" = 2
+
+run RUN=lp-20261006-ab EXPIRES=2026-10-07T20:00:00Z "$SCRIPT" plan; rc=$?
+check "lp- live-proof tokens are accepted" test "$rc" = 0
+check "lp- tokens get their own state" logged "path=${WORK}/state/lp-20261006-ab/after.tfstate"
+check "no outage variable unless OUTAGE_UNTIL is set" not_logged "ledger_outage_until"
+
 run RUN=lp-20261006-ab "$SCRIPT" plan; rc=$?
-check "legacy-portal tokens are refused" test "$rc" = 2
+check "expiry from the first plan is reused" logged "-var expires=2026-10-07T20:00:00Z"
+
+run RUN=lp-20261006-ab OUTAGE_UNTIL=2026-10-06T22:30:00Z "$SCRIPT" plan; rc=$?
+check "OUTAGE_UNTIL reaches the after root" logged "-var ledger_outage_until=2026-10-06T22:30:00Z"
+
+run RUN=lp-20261006-ab PHASE=before OUTAGE_UNTIL=2026-10-06T22:30:00Z "$SCRIPT" plan; rc=$?
+check "OUTAGE_UNTIL never reaches the before root" not_logged "ledger_outage_until"
+
+run RUN=lp-20261006-ab EVIDENCE="${WORK}/ev.jsonl" "$SCRIPT" status; rc=$?
+check "EVIDENCE is passed to the driver" logged "--evidence ${WORK}/ev.jsonl"
+
+run RUN=lp-20261006-ab "$SCRIPT" probe; rc=$?
+check "probe without EXPECT is refused" test "$rc" != 0
+
+run RUN=lp-20261006-ab FAULT=none STUB_PROBE_RC=1 "$SCRIPT" fail; rc=$?
+check "FAULT=none refuses to publish while ledger writes are allowed" test "$rc" = 2
+check "a refused fail publishes nothing" not_logged " publish "
 
 run RUN=rs-20261006-ab STATE_DIR="${REPO_ROOT}/.sbx-state" "$SCRIPT" plan; rc=$?
 rm -rf "${REPO_ROOT}/.sbx-state"

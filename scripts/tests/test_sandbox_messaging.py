@@ -141,6 +141,45 @@ def test_reset_purges_queues_and_ledger(sandbox):
     assert sb.depth(sb.o["analytics_queue_url"]) == 0
 
 
+def test_evidence_links_publish_failures_redrive_and_apply(sandbox, tmp_path):
+    sb, _ = sandbox
+    sb.evidence = str(tmp_path / "ev.jsonl")
+    ids = sb.publish(2, batch="ev")
+    drain(sb, fault="ledger")
+    sb.sqs = MoveTaskEmulator(sb.sqs, {sb.o["analytics_dlq_arn"]: sb.o["analytics_queue_url"]},
+                              {sb.o["analytics_dlq_arn"]: sb.o["analytics_dlq_url"]})
+    sb.redrive(timeout=5, poll=0.1)
+    drain(sb)
+    lines = [json.loads(x) for x in (tmp_path / "ev.jsonl").read_text().splitlines()]
+    published = {x["payload_sha256"]: x["event_id"] for x in lines if x["kind"] == "publish"}
+    assert sorted(published.values()) == sorted(ids)
+    failed = [x for x in lines if x.get("outcome") == "failed"]
+    assert {x["payload_sha256"] for x in failed} == set(published)
+    assert max(x["receive_count"] for x in failed) == 5
+    applied = [x for x in lines if x.get("outcome") == "applied"]
+    assert {x["payload_sha256"]: x["event_id"] for x in applied} == published
+    assert [x["kind"] for x in lines].count("redrive") == 1
+
+
+def test_probe_reports_allowed_without_writing(sandbox):
+    sb, _ = sandbox
+    assert sb.probe_ledger() == "allowed"
+    assert sb.wait_probe("allowed", timeout=0) == "allowed"
+    assert sb.ledger() == (set(), 0)
+    assert sb.ddb.scan(TableName=sb.o["ledger_table_name"])["Count"] == 0
+
+
+def test_probe_reports_the_denial_code(sandbox, monkeypatch):
+    sb, _ = sandbox
+    from botocore.exceptions import ClientError
+
+    def deny(**_):
+        raise ClientError({"Error": {"Code": "AccessDeniedException", "Message": "denied"}}, "PutItem")
+    monkeypatch.setattr(sb.ddb, "put_item", deny)
+    assert sb.probe_ledger() == "AccessDeniedException"
+    assert sb.wait_probe("denied", timeout=0) == "AccessDeniedException"
+
+
 def test_guard_refuses_foreign_resources(sandbox):
     sb, _ = sandbox
     with pytest.raises(sm.SandboxError):

@@ -45,3 +45,23 @@ resource "aws_dynamodb_table" "ledger" {
     type = "S"
   }
 }
+
+# Injected dependency outage for the drill: until ledger_outage_until every
+# write to this token's ledger is denied by DynamoDB itself, so the consumer
+# fails for real and SQS dead-letters the events. Re-applying with the default
+# ends the outage; the policy never covers anything but this table.
+resource "aws_dynamodb_resource_policy" "ledger_outage" {
+  resource_arn = aws_dynamodb_table.ledger.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "SandboxLedgerOutage"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = ["dynamodb:PutItem", "dynamodb:UpdateItem"]
+      Resource  = aws_dynamodb_table.ledger.arn
+      Condition = { DateLessThan = { "aws:CurrentTime" = var.ledger_outage_until } }
+    }]
+  })
+}

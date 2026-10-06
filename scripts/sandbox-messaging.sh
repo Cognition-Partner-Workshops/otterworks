@@ -4,12 +4,17 @@
 # prove-clean for one run token, using the production module
 # infrastructure/terraform/modules/messaging under new names.
 #
-#   RUN=rs-<yyyymmdd>-<xx> scripts/sandbox-messaging.sh <command>
+#   RUN=rs-<yyyymmdd>-<xx> (or lp-<yyyymmdd>-<xx>) scripts/sandbox-messaging.sh <command>
 #
 #   plan          terraform plan for the token and check it only creates its own resources
-#   up            plan, guard, then apply that exact plan (EXPIRES defaults to +24 h)
-#   drill         after phase: reset, publish COUNT events, fail them all into the DLQ,
-#                 prove the ledger is empty, then replay
+#   up            plan, guard, then apply that exact plan (EXPIRES defaults to +24 h
+#                 on the first up and is reused after that). OUTAGE_UNTIL=<RFC 3339>
+#                 makes DynamoDB deny ledger writes until then; omit it to end the outage
+#   probe         EXPECT=denied|allowed: wait until ledger writes are in that state
+#   fail          after phase: reset, publish COUNT events, fail them all into the DLQ
+#                 and prove the ledger is empty. FAULT=ledger (default) fails in the
+#                 consumer; FAULT=none needs a live OUTAGE_UNTIL outage and fails for real
+#   drill         fail, then replay
 #   replay        redrive the DLQ with StartMessageMoveTask, consume with one crash
 #                 between each write and its ack, verify exactly-once
 #   before-drill  before phase: show a failing event cycling past maxReceiveCount
@@ -22,7 +27,9 @@
 # PHASE=after (default) uses infrastructure/terraform/reliability-sandbox,
 # PHASE=before uses its before/ twin (module pinned at c2332d0e, no DLQs).
 # State and Terraform data live in STATE_DIR (default ~/.otterworks-sandbox),
-# never in the repository. Assume the engineer role first:
+# never in the repository. EVIDENCE=<file> appends one JSON line per publish,
+# delivery attempt and redrive (ids, payload sha256, receive counts). Assume the
+# engineer role first:
 #   source <(cloudworker/assume.sh engineer devin-<session id>)
 # ------------------------------------------------------------------------------
 set -euo pipefail
@@ -43,7 +50,7 @@ log() { echo "[sandbox $(date -u +%H:%M:%SZ)] $*"; }
 
 need_run() {
   [ -n "${RUN:-}" ] || die "RUN=rs-<yyyymmdd>-<xx> is required"
-  [[ "$RUN" =~ ^rs-[0-9]{8}-[a-z]{2}$ ]] || die "RUN must look like rs-20261006-ab (got '${RUN}')"
+  [[ "$RUN" =~ ^(rs|lp)-[0-9]{8}-[a-z]{2}$ ]] || die "RUN must look like rs-20261006-ab or lp-20261006-ab (got '${RUN}')"
   case "$PHASE" in
     after)  TF_DIR="${REPO_ROOT}/infrastructure/terraform/reliability-sandbox" ;;
     before) TF_DIR="${REPO_ROOT}/infrastructure/terraform/reliability-sandbox/before" ;;
@@ -65,11 +72,19 @@ tf() { (cd "$TF_DIR" && "$TERRAFORM" "$@"); }
 tf_init() { tf init -input=false -reconfigure -backend-config="path=${STATE_FILE}" >/dev/null; }
 
 tf_vars() {
+  local saved="${RUN_DIR}/expires"
+  [ -n "${EXPIRES:-}" ] || { [ -s "$saved" ] && EXPIRES="$(cat "$saved")"; } || true
   EXPIRES="${EXPIRES:-$(date -u -d '+24 hours' +%Y-%m-%dT%H:%M:%SZ)}"
+  echo "$EXPIRES" > "$saved"
   TF_VARS=(-var "run_token=${RUN}" -var "expires=${EXPIRES}" -var "aws_region=${AWS_REGION}")
+  if [ "$PHASE" = after ] && [ -n "${OUTAGE_UNTIL:-}" ]; then TF_VARS+=(-var "ledger_outage_until=${OUTAGE_UNTIL}"); fi
 }
 
-driver() { "$PYTHON" "$DRIVER" "$@"; }
+driver() {
+  local ev=()
+  [ -z "${EVIDENCE:-}" ] || ev=(--evidence "$EVIDENCE")
+  "$PYTHON" "$DRIVER" "${ev[@]}" "$@"
+}
 
 guarded_plan() {
   local extra=("$@") plan="${RUN_DIR}/${PHASE}.tfplan" allow=()
@@ -113,21 +128,37 @@ cmd_replay() {
   driver --outputs "$OUTPUTS" verify --ids-file "$IDS"
 }
 
-cmd_drill() {
-  need_run; [ "$PHASE" = after ] || die "drill needs PHASE=after; use before-drill for the before stack"
+cmd_probe() {
+  need_run; [ "$PHASE" = after ] || die "probe needs PHASE=after"
   need_outputs
+  driver --outputs "$OUTPUTS" probe --expect "${EXPECT:?EXPECT=denied|allowed}" --timeout "${PROBE_WAIT_SECONDS:-180}"
+}
+
+cmd_fail() {
+  need_run; [ "$PHASE" = after ] || die "fail needs PHASE=after; use before-drill for the before stack"
+  need_outputs
+  local fault=(--fault ledger)
+  case "${FAULT:-ledger}" in
+    ledger) log "consumer with an in-process ledger fault: every event fails until maxReceiveCount" ;;
+    none)
+      log "real dependency outage: waiting until DynamoDB denies ledger writes"
+      driver --outputs "$OUTPUTS" probe --expect denied --timeout "${PROBE_WAIT_SECONDS:-180}" \
+        || die "ledger writes are still allowed; apply with OUTAGE_UNTIL first"
+      fault=() ;;
+    *) die "FAULT must be ledger or none" ;;
+  esac
   driver --outputs "$OUTPUTS" reset; rm -f "$IDS"
   log "SQS allows one purge per queue per 60 s; waiting before publishing"
   sleep "${PURGE_SETTLE_SECONDS:-60}"
   driver --outputs "$OUTPUTS" publish --count "$COUNT" --ids-file "$IDS"
-  log "consumer with an injected ledger outage: every event fails until maxReceiveCount"
-  driver --outputs "$OUTPUTS" consume --fault ledger --idle-seconds "${IDLE_SECONDS:-30}"
+  driver --outputs "$OUTPUTS" consume "${fault[@]}" --idle-seconds "${IDLE_SECONDS:-30}"
   driver --outputs "$OUTPUTS" wait-depth --queue analytics_dlq_url --expect "$COUNT" --timeout "${DLQ_WAIT_SECONDS:-300}"
   log "before recovery the business outcome is missing (verify is expected to fail here)"
   if driver --outputs "$OUTPUTS" verify --ids-file "$IDS"; then die "verify passed before recovery; the drill did not fail anything"; fi
   driver --outputs "$OUTPUTS" status
-  cmd_replay
 }
+
+cmd_drill() { cmd_fail; cmd_replay; }
 
 cmd_before_drill() {
   [ "$PHASE" = before ] || die "before-drill needs PHASE=before"
@@ -183,6 +214,8 @@ cmd_verify_clean() {
 case "${1:-}" in
   plan) cmd_plan ;;
   up) cmd_up ;;
+  probe) cmd_probe ;;
+  fail) cmd_fail ;;
   drill) cmd_drill ;;
   replay) cmd_replay ;;
   before-drill) cmd_before_drill ;;
@@ -190,5 +223,5 @@ case "${1:-}" in
   status) cmd_status ;;
   destroy) cmd_destroy ;;
   verify-clean) cmd_verify_clean ;;
-  *) sed -n '2,32p' "$0"; exit 2 ;;
+  *) sed -n '2,40p' "$0"; exit 2 ;;
 esac

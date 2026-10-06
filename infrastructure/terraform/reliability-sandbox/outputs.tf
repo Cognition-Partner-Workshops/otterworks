@@ -57,3 +57,7 @@ output "ledger_table_name" {
 output "max_receive_count" {
   value = var.max_receive_count
 }
+
+output "ledger_outage_until" {
+  value = var.ledger_outage_until
+}

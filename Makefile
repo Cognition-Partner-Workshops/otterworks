@@ -255,17 +255,23 @@ tf-destroy: ## Destroy the application layer (CONFIRM=otterworks-<environment>, 
 	@test "$(CONFIRM)" = "otterworks-$${TF_VAR_environment:-dev}" || { echo "refusing: destroying the shared application layer needs CONFIRM=otterworks-$${TF_VAR_environment:-dev}" >&2; exit 2; }
 	cd infrastructure/terraform && terraform destroy -input=false
 
-# --- Messaging reliability sandbox (RUN=rs-<yyyymmdd>-<xx>, PHASE=after|before; see infrastructure/terraform/reliability-sandbox/README.md) ---
+# --- Messaging reliability sandbox (RUN=rs-<yyyymmdd>-<xx> or lp-<yyyymmdd>-<xx>, PHASE=after|before; see infrastructure/terraform/reliability-sandbox/README.md) ---
 
-SBX = RUN="$(RUN)" PHASE="$(PHASE)" COUNT="$(COUNT)" EXPIRES="$(EXPIRES)" CONFIRM="$(CONFIRM)" ./scripts/sandbox-messaging.sh
+SBX = RUN="$(RUN)" PHASE="$(PHASE)" COUNT="$(COUNT)" EXPIRES="$(EXPIRES)" CONFIRM="$(CONFIRM)" OUTAGE_UNTIL="$(OUTAGE_UNTIL)" FAULT="$(FAULT)" EXPECT="$(EXPECT)" EVIDENCE="$(EVIDENCE)" ./scripts/sandbox-messaging.sh
 
-.PHONY: sbx-plan sbx-up sbx-drill sbx-before-drill sbx-replay sbx-reset sbx-status sbx-destroy sbx-verify-clean sbx-test
+.PHONY: sbx-plan sbx-up sbx-probe sbx-fail sbx-drill sbx-before-drill sbx-replay sbx-reset sbx-status sbx-destroy sbx-verify-clean sbx-test
 
 sbx-plan: ## Plan the sandbox for RUN= and check it only creates that token's resources
 	$(SBX) plan
 
 sbx-up: ## Apply the guarded sandbox plan for RUN= (EXPIRES= defaults to +24 h)
 	$(SBX) up
+
+sbx-probe: ## Wait until the ledger dependency is EXPECT=denied|allowed (RUN=)
+	$(SBX) probe
+
+sbx-fail: ## Fail COUNT= events into the analytics DLQ and prove the ledger is empty; FAULT=none uses a live OUTAGE_UNTIL outage (RUN=)
+	$(SBX) fail
 
 sbx-drill: ## Fail COUNT= events into the analytics DLQ, then redrive and verify exactly-once (RUN=)
 	$(SBX) drill
