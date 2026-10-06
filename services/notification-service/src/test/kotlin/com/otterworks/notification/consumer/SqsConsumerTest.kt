@@ -1,9 +1,20 @@
 package com.otterworks.notification.consumer
 
 import aws.sdk.kotlin.services.sqs.SqsClient
+import aws.sdk.kotlin.services.sqs.model.DeleteMessageRequest
+import aws.sdk.kotlin.services.sqs.model.Message
+import aws.sdk.kotlin.services.sqs.model.ReceiveMessageResponse
 import com.otterworks.notification.config.AppConfig
 import com.otterworks.notification.service.NotificationService
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,7 +36,24 @@ class SqsConsumerTest {
         sqsPollIntervalMs = 1000,
         sqsMaxMessages = 10,
         sqsWaitTimeSeconds = 5,
+        sqsMessageProcessingTimeoutMs = 1_000,
     )
+
+    private val directBody = """{"eventType":"file_shared","fileId":"f-1","sharedWithUserId":"user-2","timestamp":"2024-01-01T00:00:00Z"}"""
+
+    private fun snsBody(snsMessageId: String) =
+        """{"Type":"Notification","MessageId":"$snsMessageId","TopicArn":"arn:aws:sns:us-east-1:000000000000:t",""" +
+            """"Message":${Json.encodeToString(String.serializer(), directBody)}}"""
+
+    private fun givenMessages(vararg messages: Message) {
+        coEvery { sqsClient.receiveMessage(any()) } returns ReceiveMessageResponse { this.messages = messages.toList() }
+    }
+
+    private fun sqsMessage(id: String, body: String) = Message {
+        messageId = id
+        receiptHandle = "rh-$id"
+        this.body = body
+    }
 
     private val consumer = SqsConsumer(sqsClient, notificationService, config)
 
@@ -136,5 +164,71 @@ class SqsConsumerTest {
         assertEquals("", event.fileId)
         assertEquals("", event.ownerId)
         assertEquals("", event.sharedWithUserId)
+    }
+
+    @Test
+    fun `pollOnce deletes message only after processing succeeds and keys on SQS message id`() = runTest {
+        givenMessages(sqsMessage("sqs-1", directBody))
+
+        assertEquals(1, consumer.pollOnce())
+
+        coVerify(exactly = 1) { notificationService.processEvent(any(), "sqs-1") }
+        val delete = slot<DeleteMessageRequest>()
+        coVerify(exactly = 1) { sqsClient.deleteMessage(capture(delete)) }
+        assertEquals("rh-sqs-1", delete.captured.receiptHandle)
+    }
+
+    @Test
+    fun `pollOnce keys SNS-wrapped messages on the SNS MessageId`() = runTest {
+        givenMessages(sqsMessage("sqs-2", snsBody("sns-abc")))
+
+        consumer.pollOnce()
+
+        coVerify(exactly = 1) { notificationService.processEvent(any(), "sns-abc") }
+    }
+
+    @Test
+    fun `pollOnce leaves message for redelivery when processing fails`() = runTest {
+        givenMessages(sqsMessage("sqs-3", directBody))
+        coEvery { notificationService.processEvent(any(), any()) } throws RuntimeException("DynamoDB unavailable")
+
+        consumer.pollOnce()
+
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any()) }
+    }
+
+    @Test
+    fun `pollOnce abandons message that exceeds the processing deadline without deleting it`() = runTest {
+        givenMessages(sqsMessage("sqs-4", directBody))
+        coEvery { notificationService.processEvent(any(), any()) } coAnswers { delay(60_000) }
+
+        consumer.pollOnce()
+
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any()) }
+    }
+
+    @Test
+    fun `pollOnce does not delete unparseable messages so they reach the DLQ`() = runTest {
+        givenMessages(sqsMessage("sqs-5", "not json"))
+
+        consumer.pollOnce()
+
+        coVerify(exactly = 0) { notificationService.processEvent(any(), any()) }
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any()) }
+    }
+
+    @Test
+    fun `pollOnce waits for the whole batch before returning`() = runTest {
+        givenMessages(sqsMessage("a", directBody), sqsMessage("b", directBody))
+        val completed = AtomicInteger()
+        coEvery { notificationService.processEvent(any(), any()) } coAnswers {
+            delay(500)
+            completed.incrementAndGet()
+        }
+
+        consumer.pollOnce()
+
+        assertEquals(2, completed.get())
+        coVerify(exactly = 2) { sqsClient.deleteMessage(any()) }
     }
 }
