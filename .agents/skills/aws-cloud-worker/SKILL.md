@@ -17,7 +17,7 @@ The event path runs from `file-service` to SNS topic `otterworks-cw-events`, the
 
 ## 1. Branch
 
-Work from the `demo-cloud-worker` branch for every read and every change, and never check out, branch from, push to or open a pull request against `main`.
+Work from the `demo-cloud-worker` branch for every read and every change, and never check out, branch from, push to or open a pull request against `main`. In the code-cause variant, section 11, the tenant runs an image built from a release branch named `demo-cw-release-<unix ts>-<slug>`; read and branch from that release branch instead.
 
 ```bash
 git fetch origin demo-cloud-worker
@@ -169,3 +169,57 @@ make cw-trail
 - The planted bugs that belong to other labs, such as `services/admin-service/config/environments/production.rb` and the document-service flaws described in `.agents/skills/incident-responder/SKILL.md`.
 - The harness in `cloudworker/`, including `scenario.yaml` and the gates.
 - Terraform, including `infrastructure/terraform/cloud-worker/`, and the alarm, its threshold and the EventBridge rule.
+
+## 11. Code cause: the live config equals git
+
+The operator can arm a second fault with `make cw-arm FAULT=parser`. The config, both tables and the queue attributes then equal git and Terraform, and the alarm still fires, because the tenant runs a `notification-service` image from a release commit whose parser rejects the events. Sections 5 and 8 do not apply: `make cw-apply` restores config that is already right. Everything else on this page still holds.
+
+Check the config first, under the observer role, and write down what it shows:
+
+```bash
+make cw-status   # table live = table git, retention equal to terraform
+```
+
+Read the parse failures and the exception text from the consumer log:
+
+```bash
+kubectl -n otterworks-cloud-worker logs deploy/notification-service --since=30m \
+  | grep -E 'Failed to parse' | head
+kubectl -n otterworks-cloud-worker logs deploy/notification-service --since=30m \
+  | jq -r 'select(.stack_trace) | .stack_trace' | head -5
+```
+
+To read the dead-letter bodies, use a short visibility timeout. A visibility timeout of a few seconds hands each message back to the DLQ soon after you read it, so the redrive still finds all of them. Never delete a dead-letter message.
+
+```bash
+DLQ_URL=$(aws sqs get-queue-url --queue-name otterworks-cw-notifications-dlq --query QueueUrl --output text)
+aws sqs receive-message --queue-url "$DLQ_URL" --max-number-of-messages 10 \
+  --visibility-timeout 5 --attribute-names ApproximateReceiveCount --query 'Messages[].Body' --output json
+```
+
+Map the running image tag, `<branch>-<short sha>`, to its release commit:
+
+```bash
+kubectl -n otterworks-cloud-worker rollout history deploy/notification-service
+kubectl -n otterworks-cloud-worker get deploy notification-service \
+  -o jsonpath='{.spec.template.spec.containers[0].image}'
+git fetch origin '+refs/heads/demo-cw-release-*:refs/remotes/origin/demo-cw-release-*'
+git log -1 --stat <short sha>
+git show <short sha> -- services/notification-service
+```
+
+Post the file, the line, the commit, the exception and the bodies it rejects before you change anything. Then:
+
+1. Branch from the release branch: `git checkout -b "demo-cw-$(date +%s)-<slug>" origin/demo-cw-release-<unix ts>-<slug>`.
+2. Fix the parser in `services/notification-service/src/main/kotlin/com/otterworks/notification/consumer/SqsConsumer.kt` or the model in `.../model/NotificationEvent.kt`. Add a test in `SqsConsumerTest.kt` that feeds `parseMessage` one of the dead-letter bodies exactly as you read it, with only the account number replaced. Run `gradle check --no-daemon` in `services/notification-service`.
+3. Push the branch, then wait for CD to build `otterworks/notification-service:<branch>-<short sha>` before you roll it. CD also deploys the branch to its own tenant `cw-<unix ts>-<slug>`.
+4. Under the builder role, roll that image into the demo tenant. `--reuse-values` keeps the config as it is, so only the image changes:
+
+```bash
+helm -n otterworks-cloud-worker upgrade notification-service infrastructure/helm/notification-service \
+  --reuse-values --set-string image.tag=<branch>-<short sha>
+kubectl -n otterworks-cloud-worker rollout status deploy/notification-service --timeout=240s
+```
+
+5. Redrive as in section 6, then run the after gate as in section 7. Its five checks are the same for both faults.
+6. Open the pull request from your branch against the release branch, so the diff is the fix alone, and switch back to the observer role.

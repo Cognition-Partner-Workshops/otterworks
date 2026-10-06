@@ -27,17 +27,59 @@ event:
   message_attribute:
     demoSource: aws-cloud-worker
 
-fault:
-  planted_by: cw.sh arm
-  release: notification-service
-  key: config.DYNAMODB_TABLE_NOTIFICATIONS
-  git_value: otterworks-cw-notifications
-  live_value: otterworks-cw-notifications-v2
-  mechanism: helm upgrade --reuse-values, then rollout restart
-  events_published: 6
-  symptom: ResourceNotFoundException on PutItem to otterworks-cw-notifications-v2; the preferences GetItem before it succeeds, processEvent throws, and the consumer leaves the message for redelivery
-  requires: otterworks-cw-notification-preferences exists and the notification-service IRSA role can GetItem on it; otherwise every message fails before the fault
-  fix: cw.sh apply, then aws sqs start-message-move-task to redrive the DLQ
+default_fault: table
+
+faults:
+  table:
+    planted_by: cw.sh arm
+    release: notification-service
+    set:
+      config.DYNAMODB_TABLE_NOTIFICATIONS: otterworks-cw-notifications-v2
+    key: config.DYNAMODB_TABLE_NOTIFICATIONS
+    git_value: otterworks-cw-notifications
+    live_value: otterworks-cw-notifications-v2
+    config_vs_git: differs
+    log_pattern: ResourceNotFoundException
+    mechanism: helm upgrade --reuse-values, then rollout restart
+    events_published: 6
+    symptom: ResourceNotFoundException on PutItem to otterworks-cw-notifications-v2; the preferences GetItem before it succeeds, processEvent throws, and the consumer leaves the message for redelivery
+    requires: otterworks-cw-notification-preferences exists and the notification-service IRSA role can GetItem on it; otherwise every message fails before the fault
+    fix: cw.sh apply, then aws sqs start-message-move-task to redrive the DLQ
+    timeline:
+      - now        six file_shared events reach otterworks-cw-notifications; every receive fails with ResourceNotFoundException
+      - ~2 min     after three receives each message moves to otterworks-cw-notifications-dlq
+      - ~3 min     otterworks-cw-notifications-dlq-depth goes to ALARM and EventBridge posts the Devin webhook
+
+  parser:
+    planted_by: cw.sh arm --fault parser
+    release: notification-service
+    image_tag: demo-cw-release-1791186929-strict-parser-14ca29e
+    image_repository: otterworks/notification-service
+    release_branch: demo-cw-release-1791186929-strict-parser
+    release_commit: 14ca29ee46dd7c786f64b735e87f753cfcb9ef5a
+    release_base: demo-cloud-worker
+    set: {}
+    config_vs_git: equals
+    align_queue_with_terraform: true
+    log_pattern: Failed to parse SQS message
+    mechanism: helm upgrade --reuse-values with image.tag set to the release image and the eventing keys from eventing.env, queue retention set to the Terraform value, then rollout restart
+    events_published: 6
+    symptom: every receive logs Failed to parse SQS message; parseMessage returns null, the consumer never deletes the message, and SQS moves it to the DLQ after three receives
+    fix: a code change in SqsConsumer.kt or SqsNotificationMessage with a parser test built from the dead-letter bodies, a demo-cw-* branch cut from the release branch, the CD image rolled into otterworks-cloud-worker, then aws sqs start-message-move-task to redrive the DLQ
+    timeline:
+      - now        six file_shared events reach otterworks-cw-notifications; the strict parser rejects every receive
+      - ~1.5 min   after three receives each message moves to otterworks-cw-notifications-dlq (rehearsal 1m29s)
+      - ~4 min     otterworks-cw-notifications-dlq-depth goes to ALARM and EventBridge posts the Devin webhook (rehearsal 3m59s)
+    answer_key:
+      file: services/notification-service/src/main/kotlin/com/otterworks/notification/consumer/SqsConsumer.kt
+      line: 33
+      line_text: ignoreUnknownKeys = false
+      commit: 14ca29ee46dd7c786f64b735e87f753cfcb9ef5a
+      commit_subject: "notification-service: validate queue events against the declared schema"
+      log_line: Failed to parse SQS message
+      exception: "kotlinx.serialization.json.internal.JsonDecodingException: Unexpected JSON token at offset 447: Encountered an unknown key 'Timestamp' at path: $"
+      rejected: all six; each SQS body is the SNS envelope, whose Timestamp, SignatureVersion, Signature, SigningCertURL, UnsubscribeURL and MessageAttributes keys SnsEnvelope does not declare, and the event inside carries folderId, which SqsNotificationMessage does not declare
+      rehearsed: 2026-10-05, arm 08:03:20Z, first DLQ message 08:04:49Z, ALARM 08:07:19Z, before gate 4/4 08:07:44Z, after gate 5/5 08:13:38Z
 
 drift:
   planted_by: cw.sh up
@@ -59,10 +101,16 @@ thresholds:
 
 gates:
   before:
-    - live DYNAMODB_TABLE_NOTIFICATIONS differs from eventing.env
-    - DLQ depth is at least 1
-    - alarm state is ALARM
-    - at least one ResourceNotFoundException in the last 15 min of notification-service logs
+    table:
+      - live DYNAMODB_TABLE_NOTIFICATIONS differs from eventing.env
+      - DLQ depth is at least 1
+      - alarm state is ALARM
+      - at least one ResourceNotFoundException in the last 15 min of notification-service logs
+    parser:
+      - live DYNAMODB_TABLE_NOTIFICATIONS and DYNAMODB_TABLE_PREFERENCES equal eventing.env, and the queue's MessageRetentionPeriod, VisibilityTimeout and maxReceiveCount equal Terraform
+      - DLQ depth is at least 1
+      - alarm state is ALARM
+      - at least one "Failed to parse SQS message" line in the last 15 min of notification-service logs
   after:
     - live DYNAMODB_TABLE_NOTIFICATIONS equals eventing.env
     - DLQ depth is 0

@@ -110,6 +110,35 @@ make cw-verify EXPECT=after
 
 The gate should print `PASS (5/5)`, and that number is yours to quote; the session's own gate output is its claim.
 
+## Act 2, code-cause variant, 14 minutes
+
+Use this instead of the act 2 above when the story is a bad release. The page, the alarm and the after gate are the same, but the config matches git, so Devin has to find the cause in code. Point the webhook at the code-cause Automation in `automation.md` first.
+
+On the operator machine, off camera:
+
+```bash
+make cw-arm FAULT=parser
+```
+
+The tenant now runs the image built from release commit `14ca29e`, and six `file_shared` events go out. Rehearsal times are from 2026-10-05:
+
+| Minute from `cw-arm` returning | What happens | Show |
+|---|---|---|
+| 0 to 1:30 | the parser rejects each message three times, SQS moves them to the DLQ | dashboard, DLQ depth climbing to 6 |
+| about 4 | alarm `OK` to `ALARM`, EventBridge posts to the automation | alarm history |
+| 4 to 7 | Devin finds the config equal to git, reads `Failed to parse SQS message` and the dead-letter bodies, and posts the cause: `SqsConsumer.kt` line 33, commit `14ca29e`, unknown key `Timestamp` in the SNS envelope, `folderId` in the event | session transcript |
+| 7 onward | fix with a parser test, CD image, rollout under the builder role, redrive of 6, `make cw-verify EXPECT=after` 5/5 | session; the PR link |
+
+While the DLQ is climbing, say: "The config is clean this time. Whatever broke shipped in the last release."
+
+When the cause is posted, say: "Devin went from the alarm to the line and the commit that caused it, and showed the messages that line rejected."
+
+When Devin has posted the fix, the redrive and the gate result, reply as the Cloud Engineer:
+
+```text
+That matches the release notes. Keep the PR against the release branch and leave cloudworker/ alone. Finish with the CloudTrail close (make cw-trail), then post the summary and sign off.
+```
+
 ## Act 3, change, 6 minutes, optional
 
 Sign in as the Product Manager, open a new session on the same repository, and paste:
@@ -150,7 +179,7 @@ make cw-reset
 make cw-status
 ```
 
-`cw-reset` restores the config and the baseline image, purges both queues, sets the alarm to `OK`, closes the `demo-cw-*` PRs and branches, drops the act 3 tenant and re-plants the retention drift. The status should read the same as pre-flight. Do not merge the fix PR; the baseline PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/1793 is the one that merges into `main`.
+`cw-reset` restores the config and the baseline image, including after the parser variant, purges both queues, sets the alarm to `OK`, closes the `demo-cw-*` PRs and branches, drops the act 3 tenant and re-plants the retention drift. The status should read the same as pre-flight. Do not merge the fix PR; the baseline PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/1793 is the one that merges into `main`.
 
 ## Rules for the run
 
