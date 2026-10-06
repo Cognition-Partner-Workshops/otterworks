@@ -233,7 +233,17 @@ def test_plan_guard_rejects_anything_outside_the_token(change, needle):
 def test_plan_guard_allows_delete_only_when_asked():
     plan = {"resource_changes": [_rc("aws_sqs_queue.x", ["delete"], None)]}
     assert sm.plan_guard(plan, TOKEN, allow_delete=True) == []
-    assert sm.plan_guard({"resource_drift": [{}], "resource_changes": []}, TOKEN)
+
+
+def test_plan_guard_tolerates_refresh_drift_on_token_resources_only():
+    own = _rc("module.messaging.aws_sqs_queue.analytics_events", ["update"],
+              {"name": f"{TOKEN}-analytics-events-dev", "tags_all": {"run_token": TOKEN}})
+    assert sm.plan_guard({"resource_drift": [own], "resource_changes": []}, TOKEN) == []
+    foreign = _rc("aws_sqs_queue.x", ["update"], {"name": "otterworks-analytics-events-dev"})
+    gone = _rc("aws_sqs_queue.y", ["delete"], None)
+    problems = sm.plan_guard({"resource_drift": [foreign, gone], "resource_changes": []}, TOKEN)
+    assert any("drift on aws_sqs_queue.x" in p for p in problems), problems
+    assert any("aws_sqs_queue.y: drift ['delete']" in p for p in problems), problems
 
 
 def test_plan_guard_cli(tmp_path):

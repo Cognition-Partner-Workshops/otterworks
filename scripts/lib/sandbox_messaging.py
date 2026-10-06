@@ -315,8 +315,14 @@ SAFE_ACTIONS = {"create", "no-op", "read", "update"}
 def plan_guard(plan: dict[str, Any], token: str, allow_delete: bool = False) -> list[str]:
     """Problems with a `terraform show -json` plan; empty means it only touches this token's resources."""
     problems = []
-    if plan.get("resource_drift"):
-        problems.append("plan reports drift on existing resources")
+    # Refresh drift on this token's own resources (for example a queue's policy
+    # attribute filled in by aws_sqs_queue_policy) is expected on a second apply;
+    # drift that removes something, or that shows anything outside the token, is not.
+    for rd in plan.get("resource_drift", []):
+        actions = set(rd.get("change", {}).get("actions", []))
+        if actions - {"update", "no-op"}:
+            problems.append(f"{rd['address']}: drift {sorted(actions)} on existing resources")
+        problems.extend(_outside_token(rd, token, prefix="drift on "))
     for rc in plan.get("resource_changes", []):
         actions = set(rc.get("change", {}).get("actions", []))
         if rc.get("change", {}).get("importing"):
@@ -325,14 +331,20 @@ def plan_guard(plan: dict[str, Any], token: str, allow_delete: bool = False) -> 
             problems.append(f"{rc['address']}: {sorted(actions)} is not create/update")
         if rc.get("mode") == "data":
             continue
-        values = rc.get("change", {}).get("after") or rc.get("change", {}).get("before") or {}
-        for key in NAME_KEYS:
-            name = values.get(key)
-            if isinstance(name, str) and not name.startswith(token):
-                problems.append(f"{rc['address']}: {key}={name} does not start with {token}")
-        tags = values.get("tags_all") or {}
-        if "tags_all" in values and tags is not None and tags.get("run_token") not in (None, token):
-            problems.append(f"{rc['address']}: run_token tag {tags.get('run_token')} != {token}")
+        problems.extend(_outside_token(rc, token))
+    return problems
+
+
+def _outside_token(rc: dict[str, Any], token: str, prefix: str = "") -> list[str]:
+    problems = []
+    values = rc.get("change", {}).get("after") or rc.get("change", {}).get("before") or {}
+    for key in NAME_KEYS:
+        name = values.get(key)
+        if isinstance(name, str) and not name.startswith(token):
+            problems.append(f"{prefix}{rc['address']}: {key}={name} does not start with {token}")
+    tags = values.get("tags_all") or {}
+    if "tags_all" in values and tags is not None and tags.get("run_token") not in (None, token):
+        problems.append(f"{prefix}{rc['address']}: run_token tag {tags.get('run_token')} != {token}")
     return problems
 
 
