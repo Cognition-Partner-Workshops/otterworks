@@ -31,7 +31,13 @@ So far the root creates:
   The function reads the run's secret, invokes the in-VPC sql-runner with the credential in the payload (never
   logged), and writes `usage/period=<yyyy-mm>/part-00000.csv.gz`, overwriting the partition on each run.
 
-Phase 3 adds the Glue table and Athena workgroup to this root.
+- the usage summary on Athena (`usage_athena.tf`): the Glue database `<token with underscores>_billing` with the
+  table `usage_events` over `s3://<bucket>/usage/` (LazySimpleSerDe CSV, gzip, the columns below), partitioned by
+  `period` through partition projection (`date`, `yyyy-MM`, `2020-01,NOW`, monthly), so no crawler or
+  `MSCK REPAIR`. `manifests/usage/` is outside the table location. The Athena workgroup `<token>-billing`
+  (engine v3, enforced configuration, SSE-S3 results in `s3://<bucket>/athena-results/`, 1 GiB scan cutoff,
+  `force_destroy`) holds the named queries `usage_summary` and `usage_summary_all_tenants`. Glue tables and named
+  queries take no tags; the table carries `run_token` and `Expires` as table parameters.
 
 ## Usage export
 
@@ -58,6 +64,25 @@ when it is empty. A manual run can name the months:
 source <(cloudworker/assume.sh engineer devin-<session id>)
 aws lambda invoke --function-name $TOKEN-billing-usage-export --cli-binary-format raw-in-base64-out \
   --payload '{"periods": ["2026-02", "2026-09"]}' /dev/stdout
+```
+
+## Usage summary on Athena
+
+`usage_summary` is `billing.fn_usage_summary` (`tenant_id = ?`, `CAST(occurred_at AS date) BETWEEN ? AND ?`,
+`GROUP BY kind`, `count(*)`, `coalesce(sum(units), 0)`, `ORDER BY kind`) plus a `period` filter for partition
+pruning. Execution parameters are positional and each `?` is used once, so the period bounds come twice:
+`usage_summary` takes tenant_id, start, end, start, end; `usage_summary_all_tenants` (grouped and ordered by
+tenant_id, kind, for the legacy comparison) takes start, end, start, end. Values are SQL literals:
+
+```bash
+source <(cloudworker/assume.sh engineer devin-<session id>)   # the observer role cannot StartQueryExecution
+python3 - <<'PY'
+import boto3; a = boto3.client("athena", region_name="us-east-1"); wg = "lp-20261006-bd-billing"
+q = next(q for q in a.batch_get_named_query(NamedQueryIds=a.list_named_queries(WorkGroup=wg)["NamedQueryIds"])["NamedQueries"]
+         if q["Name"] == "usage_summary_all_tenants")
+print(a.start_query_execution(WorkGroup=wg, QueryString=q["QueryString"], QueryExecutionContext={"Database": q["Database"]},
+      ExecutionParameters=["'2026-02-01'", "'2026-02-28'", "'2026-02-01'", "'2026-02-28'"])["QueryExecutionId"])
+PY
 ```
 
 ## Reaching a private instance
@@ -99,7 +124,8 @@ source <(../../../cloudworker/assume.sh engineer devin-<session id>)
 terraform init -backend-config="key=otterworks/billing-data/${TOKEN}/terraform.tfstate"
 terraform apply -var run_token=$TOKEN -var expires=$EXPIRES
 terraform output db_evidence
-# teardown: drops the database and role, then removes the functions, secret, security group, bucket and schedule
+# teardown: drops the database and role, then removes the functions, secret, security group, bucket, schedule,
+# Glue database/table and Athena workgroup (with its named queries)
 terraform destroy -var run_token=$TOKEN -var expires=$EXPIRES
 source <(../../../cloudworker/assume.sh observer devin-<session id>)
 ```

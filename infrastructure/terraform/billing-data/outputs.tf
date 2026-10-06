@@ -54,3 +54,21 @@ output "usage_export_function" {
 output "usage_export_schedule" {
   value = "${aws_scheduler_schedule.usage_export.group_name}/${aws_scheduler_schedule.usage_export.name}"
 }
+
+output "usage_glue_table" {
+  description = "Glue table over s3://<bucket>/usage/, partition projection on period (yyyy-mm)."
+  value       = "${aws_glue_catalog_database.billing.name}.${aws_glue_catalog_table.usage_events.name}"
+}
+
+output "athena_workgroup" {
+  description = "Workgroup (enforced configuration) whose results go to s3://<bucket>/athena-results/."
+  value       = aws_athena_workgroup.billing.name
+}
+
+output "usage_summary_named_queries" {
+  description = "Named query ids: usage_summary (tenant, start, end, start, end) and usage_summary_all_tenants (start, end, start, end)."
+  value = {
+    usage_summary             = aws_athena_named_query.usage_summary.id
+    usage_summary_all_tenants = aws_athena_named_query.usage_summary_all_tenants.id
+  }
+}
