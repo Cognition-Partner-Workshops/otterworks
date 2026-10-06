@@ -1,0 +1,334 @@
+#!/usr/bin/env bash
+# Harness for the announcements carve-out of the legacy portal: the announcements context on API Gateway,
+# Lambda, Aurora Serverless v2 and EventBridge, every other route still on a legacy-portal-ec2 run.
+#   scripts/lp-announcements.sh up|status|reset|replay|events|down|verify-clean
+# Inputs come from the environment: RUN (lp-ann-<yyyymmdd>-<two characters>), EC2_RUN (the lp-ec2 run whose
+# ALB the $default route forwards to; up only, later commands read it from the state), TARGET (replay:
+# both|ec2|api), EXPIRES_DAYS. Every command writes a transcript to .demo/legacy-portal/<token>/<command>-<UTC
+# time>.log with the AWS account number replaced by <account>.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TF_ROOT="${ROOT}/infrastructure/terraform/legacy-portal-announcements"
+LAMBDA_SRC="${ROOT}/services/legacy-portal-lambda/announcements"
+PARITY="${ROOT}/services/legacy-portal/parity"
+export AWS_REGION="${AWS_REGION:-us-east-1}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-${AWS_REGION}}"
+export AWS_PAGER="" TF_IN_AUTOMATION=1
+CMD="${1:-}"; shift || true
+
+die() { echo "lp-ann: $*" >&2; exit 2; }
+now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+need_run() {
+  [ -n "${RUN:-}" ] || die "RUN is required, e.g. make lp-ann-${CMD} RUN=lp-ann-$(date -u +%Y%m%d)-a1"
+  [[ "$RUN" =~ ^lp-ann-[0-9]{8}-[a-z0-9]{2}$ ]] || die "RUN must look like lp-ann-20261006-a1, got ${RUN}"
+}
+
+start_transcript() {
+  local dir="${ROOT}/.demo/legacy-portal/${1}"
+  mkdir -p "$dir"
+  TRANSCRIPT="${dir}/${CMD}-$(date -u +%Y%m%dT%H%M%SZ).log"
+  local account
+  account="$(aws sts get-caller-identity --query Account --output text)"
+  exec > >(sed -u -E "s/${account}/<account>/g" | tee "$TRANSCRIPT") 2>&1
+  echo "# lp-ann-${CMD} run=${1} started $(now)"
+  echo "# caller $(aws sts get-caller-identity --query Arn --output text | sed -E 's#:user/.*#:user/<caller>#')"
+  trap 'rc=$?; echo "# lp-ann-${CMD} finished $(now) exit=${rc}"; echo "# transcript ${TRANSCRIPT#"${ROOT}"/}"' EXIT
+}
+
+tf() { TF_DATA_DIR="${ROOT}/.demo/legacy-portal/${RUN}/.terraform" terraform -chdir="$TF_ROOT" "$@"; }
+
+tf_init() {
+  tf init -input=false -reconfigure -no-color \
+    -backend-config="key=otterworks/legacy-portal-announcements/${RUN}/terraform.tfstate" >/dev/null
+  echo "terraform init: state otterworks/legacy-portal-announcements/${RUN}/terraform.tfstate"
+}
+
+# The EC2 run token is fixed at the first apply; destroy and later plans reuse it.
+tf_vars() {
+  local dir="${ROOT}/.demo/legacy-portal/${RUN}"
+  if [ ! -s "${dir}/expires" ]; then
+    date -u -d "+${EXPIRES_DAYS:-2} days" +%Y-%m-%d > "${dir}/expires"
+  fi
+  if [ -n "${EC2_RUN:-}" ]; then
+    [[ "$EC2_RUN" =~ ^lp-ec2-[0-9]{8}-[a-z0-9]{2}$ ]] || die "EC2_RUN must look like lp-ec2-20261006-b1, got ${EC2_RUN}"
+    echo "$EC2_RUN" > "${dir}/ec2_run"
+  elif [ ! -s "${dir}/ec2_run" ]; then
+    local from_state
+    from_state="$(tf output -raw ec2_run_token 2>/dev/null || true)"
+    [ -n "$from_state" ] || die "EC2_RUN is required on the first up, e.g. EC2_RUN=lp-ec2-20261006-b1"
+    echo "$from_state" > "${dir}/ec2_run"
+  fi
+  TF_VARS=(-var "run_token=${RUN}" -var "ec2_run_token=$(cat "${dir}/ec2_run")" -var "expires=$(cat "${dir}/expires")")
+}
+
+elapsed() { awk -v s="$1" -v e="$(date +%s)" 'BEGIN { printf "%d s (%.1f min)", e - s, (e - s) / 60 }'; }
+
+build_jar() {
+  local mvn="mvn"
+  command -v mvn >/dev/null || die "mvn and a JDK 21 are needed to build ${LAMBDA_SRC#"${ROOT}"/}"
+  # Maven Central rate-limits this egress IP (HTTP 429); the Google Cloud Storage mirror carries the same artifacts.
+  local settings="${ROOT}/.demo/legacy-portal/maven-settings.xml"
+  mkdir -p "$(dirname "$settings")"
+  cat >"$settings" <<'XML'
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <mirrors>
+    <mirror>
+      <id>google-maven-central</id>
+      <name>Google Cloud Storage mirror of Maven Central</name>
+      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+</settings>
+XML
+  (cd "$LAMBDA_SRC" && "$mvn" -s "$settings" -q -B package)
+  ls -l "${LAMBDA_SRC}/target/legacy-portal-lambda-announcements-1.0.0.jar"
+}
+
+load_outputs() {
+  local json
+  json="$(tf output -json)"
+  [ "$(jq 'length' <<<"$json")" -gt 0 ] || die "no Terraform outputs for ${RUN}; run make lp-ann-up RUN=${RUN} EC2_RUN=<lp-ec2 run> first"
+  OUTPUTS_JSON="$json"
+  API_URL="$(jq -r .api_url.value <<<"$json")"
+  EC2_URL="$(jq -r .ec2_base_url.value <<<"$json")"
+  EC2_RUN_TOKEN="$(jq -r .ec2_run_token.value <<<"$json")"
+  CLUSTER_ARN="$(jq -r .aurora_cluster_arn.value <<<"$json")"
+  SECRET_ARN="$(jq -r .db_secret_arn.value <<<"$json")"
+  DB_NAME="$(jq -r .db_name.value <<<"$json")"
+}
+
+data_api() {
+  local sql="$1" out attempt
+  for attempt in $(seq 1 30); do
+    if out="$(aws rds-data execute-statement --resource-arn "$CLUSTER_ARN" --secret-arn "$SECRET_ARN" \
+        --database "$DB_NAME" --sql "$sql" --output json 2>&1)"; then
+      printf '%s\n' "$out"; return 0
+    fi
+    case "$out" in
+      *DatabaseResumingException*|*"is not available"*|*"Communications link failure"*)
+        echo "waiting for the cluster to resume (attempt ${attempt})" >&2; sleep 10 ;;
+      *) echo "$out" >&2; return 1 ;;
+    esac
+  done
+  return 1
+}
+
+ec2_instance() {
+  aws ec2 describe-instances \
+    --filters "Name=tag:run_token,Values=${EC2_RUN_TOKEN}" Name=instance-state-name,Values=running \
+    --query 'Reservations[].Instances[].InstanceId' --output text
+}
+
+# Runs one psql statement on the monolith's local Postgres through SSM Run Command (the box has no SSH).
+ec2_psql() {
+  local sql="$1" instance cmd status
+  instance="$(ec2_instance)"
+  [ -n "$instance" ] || die "no running instance tagged run_token=${EC2_RUN_TOKEN}"
+  cmd="$(aws ssm send-command --instance-ids "$instance" --document-name AWS-RunShellScript \
+    --comment "lp-ann ${RUN} reset" \
+    --parameters "$(jq -cn --arg s "$sql" '{commands: ["sudo -u postgres psql -d legacyportal -v ON_ERROR_STOP=1 -Atc " + ($s | @sh)]}')" \
+    --query Command.CommandId --output text)"
+  for _ in $(seq 1 30); do
+    status="$(aws ssm get-command-invocation --command-id "$cmd" --instance-id "$instance" --query Status --output text 2>/dev/null || echo Pending)"
+    case "$status" in
+      Success) aws ssm get-command-invocation --command-id "$cmd" --instance-id "$instance" --query StandardOutputContent --output text; return 0 ;;
+      Failed|Cancelled|TimedOut) aws ssm get-command-invocation --command-id "$cmd" --instance-id "$instance" --query StandardErrorContent --output text >&2; return 1 ;;
+    esac
+    sleep 2
+  done
+  die "SSM command ${cmd} on ${instance} did not finish"
+}
+
+reset_aurora() {
+  data_api "TRUNCATE announcements.announcement RESTART IDENTITY" >/dev/null
+  echo "aurora ${RUN}: truncated announcements.announcement, ids restart at 1 ($(data_api 'SELECT count(*) FROM announcements.announcement' | jq -r '.records[0][0].longValue') rows)"
+}
+
+reset_ec2() {
+  ec2_psql "TRUNCATE announcements.announcement, user_preferences.user_preference, feedback.feedback RESTART IDENTITY" >/dev/null
+  echo "ec2 ${EC2_RUN_TOKEN}: truncated the three context tables, ids restart at 1 (rows: $(ec2_psql 'SELECT (SELECT count(*) FROM announcements.announcement) || chr(47) || (SELECT count(*) FROM user_preferences.user_preference) || chr(47) || (SELECT count(*) FROM feedback.feedback)' | tr -d '\n') announcements/preferences/feedback)"
+}
+
+cmd_up() {
+  need_run; start_transcript "$RUN"
+  local t0; t0="$(date +%s)"
+  build_jar
+  tf_init; tf_vars
+  tf plan -input=false -no-color "${TF_VARS[@]}" -out="${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
+  tf apply -input=false -no-color -auto-approve "${ROOT}/.demo/legacy-portal/${RUN}/up.tfplan"
+  echo
+  tf output -no-color
+  echo
+  echo "lp-ann-up wall clock: $(elapsed "$t0")"
+}
+
+cmd_status() {
+  local scope="${RUN:-all-runs}"
+  [ -z "${RUN:-}" ] || need_run
+  start_transcript "$scope"
+  echo "resources tagged demo=legacy-portal-announcements in ${AWS_REGION}, by run_token:"
+  aws resourcegroupstaggingapi get-resources --tag-filters Key=demo,Values=legacy-portal-announcements --output json \
+    | jq -r '.ResourceTagMappingList[] | [(.Tags[] | select(.Key=="run_token") | .Value), (.ResourceARN | split(":")[2])] | @tsv' \
+    | sort | uniq -c | awk '{ printf "  %-20s %-16s %s\n", $2, $3, $1 }'
+  [ -n "${RUN:-}" ] || { echo "set RUN=<token> for one run's outputs, function, cluster and rule"; return 0; }
+  tf_init >/dev/null
+  if [ "$(tf output -json | jq length)" -eq 0 ]; then echo "no Terraform state with outputs for ${RUN}"; return 0; fi
+  load_outputs
+  echo; echo "outputs:"; tf output -no-color
+  echo; echo "function:"
+  aws lambda get-function-configuration --function-name "${RUN}-announcements" --qualifier live --output text \
+    --query '[FunctionName,Version,Runtime,MemorySize,State,SnapStart.OptimizationStatus]'
+  echo "aurora:"
+  aws rds describe-db-clusters --db-cluster-identifier "$RUN" --output text \
+    --query 'DBClusters[0].[Status,EngineVersion,ServerlessV2ScalingConfiguration.MinCapacity,ServerlessV2ScalingConfiguration.MaxCapacity,HttpEndpointEnabled]'
+  echo "rule:"
+  aws events describe-rule --name "${RUN}-announcement-created" --event-bus-name "otterworks-${RUN}" --output text \
+    --query '[Name,State,EventPattern]'
+  echo "routes of the HTTP API:"
+  curl -s -o /dev/null -w '  GET /health (EC2 via default route)     %{http_code} in %{time_total}s\n' "${API_URL%/}/health" || true
+  curl -s -o /dev/null -w '  GET /api/announcements (Lambda)          %{http_code} in %{time_total}s\n' "${API_URL%/}/api/announcements" || true
+  curl -s -o /dev/null -w '  GET /api/feedback/average-rating (EC2)   %{http_code} in %{time_total}s\n' "${API_URL%/}/api/feedback/average-rating" || true
+}
+
+cmd_reset() {
+  need_run; start_transcript "$RUN"
+  tf_init >/dev/null; load_outputs
+  reset_aurora
+  reset_ec2
+}
+
+replay_one() {
+  local label="$1" base="$2" out="$3" rc=0
+  echo; echo "== replay ${label}: ${base}"
+  python3 "${PARITY}/replay.py" --base "$base" --context all --stage full --out "$out" || rc=$?
+  echo "replay ${label} exit ${rc} (0 all identical, 1 divergences found, 3 corpus checksum mismatch)"
+  return "$rc"
+}
+
+parity_table() {
+  python3 - "$@" <<'PY'
+import json, sys
+from pathlib import Path
+dirs = [(sys.argv[i], Path(sys.argv[i + 1])) for i in range(1, len(sys.argv), 2)]
+ctxs = ["common", "announcements", "preferences", "feedback"]
+served = {"common": "EC2", "announcements": "Lambda + Aurora", "preferences": "EC2", "feedback": "EC2"}
+head = "| Context | Cases | Served by (new) | " + " | ".join(f"{l} identical" for l, _ in dirs) + " |"
+print(head)
+print("|" + "---|" * (3 + len(dirs)))
+tot = [0] * len(dirs); total = 0
+for c in ctxs:
+    res = [json.loads((d / f"{c}.json").read_text()) for _, d in dirs]
+    n = res[0]["casesInCorpus"]; total += n
+    cells = []
+    for i, r in enumerate(res):
+        tot[i] += r["identical"]
+        cells.append(f"{r['identical']}/{r['casesRun']}" + ("" if not r["divergentIds"] else " (" + ", ".join(r["divergentIds"]) + ")"))
+    print(f"| {c} | {n} | {served[c]} | " + " | ".join(cells) + " |")
+print(f"| **total** | **{total}** | | " + " | ".join(f"**{t}/{total}**" for t in tot) + " |")
+PY
+}
+
+cmd_replay() {
+  need_run; start_transcript "$RUN"
+  local target="${TARGET:-both}" stamp out_ec2 out_api rc=0 args=()
+  case "$target" in both|ec2|api) ;; *) die "TARGET must be both, ec2 or api" ;; esac
+  tf_init >/dev/null; load_outputs
+  (cd "$PARITY" && sha256sum -c SHA256SUMS)
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  out_ec2="${ROOT}/.demo/legacy-portal/${RUN}/replay-ec2-${stamp}"
+  out_api="${ROOT}/.demo/legacy-portal/${RUN}/replay-api-${stamp}"
+  # The corpus is ordered and stateful: every replay starts from empty tables with ids from 1.
+  if [ "$target" != api ]; then
+    reset_ec2
+    replay_one "EC2 before (${EC2_RUN_TOKEN} ALB)" "$EC2_URL" "$out_ec2" || rc=1
+    args+=("EC2 (${EC2_RUN_TOKEN})" "$out_ec2")
+  fi
+  if [ "$target" != ec2 ]; then
+    reset_ec2; reset_aurora
+    replay_one "after (${RUN} HTTP API)" "$API_URL" "$out_api" || rc=1
+    args+=("API GW (${RUN})" "$out_api")
+  fi
+  echo; echo "parity against java-reference.json:"; echo
+  parity_table "${args[@]}" | tee "${ROOT}/.demo/legacy-portal/${RUN}/parity-${stamp}.md"
+  return "$rc"
+}
+
+# Creates one announcement through the new front door and shows where the AnnouncementCreated event landed.
+cmd_events() {
+  need_run; start_transcript "$RUN"
+  tf_init >/dev/null; load_outputs
+  local queue log_group start body
+  queue="$(jq -r .notifications_queue_url.value <<<"$OUTPUTS_JSON")"
+  log_group="$(jq -r .events_log_group.value <<<"$OUTPUTS_JSON")"
+  start="$(( $(date +%s) * 1000 ))"
+  body="$(jq -cn --arg t "Event check $(now)" '{title: $t, body: "lp-ann events", published: true}')"
+  echo "POST ${API_URL%/}/api/announcements"
+  curl -s -i -H 'Content-Type: application/json' -d "$body" "${API_URL%/}/api/announcements" | sed -n '1p;/^{/p'
+  echo; echo "notifications queue ${queue##*/}:"
+  aws sqs receive-message --queue-url "$queue" --wait-time-seconds 10 --max-number-of-messages 1 \
+    --query 'Messages[0].Body' --output text | jq -c '{source, "detail-type", detail}'
+  echo; echo "audit log group ${log_group}:"
+  sleep 5
+  aws logs filter-log-events --log-group-name "$log_group" --start-time "$start" \
+    --query 'events[].message' --output text | jq -c '{id, source, "detail-type", detail}'
+}
+
+cmd_down() {
+  need_run; start_transcript "$RUN"
+  local t0; t0="$(date +%s)"
+  tf_init; tf_vars
+  [ -s "${LAMBDA_SRC}/target/legacy-portal-lambda-announcements-1.0.0.jar" ] || build_jar
+  tf destroy -input=false -no-color -auto-approve "${TF_VARS[@]}"
+  echo
+  echo "lp-ann-down wall clock: $(elapsed "$t0")"
+}
+
+cmd_verify_clean() {
+  need_run; start_transcript "$RUN"
+  local deadline=$(( $(date +%s) + ${VERIFY_WAIT_SECONDS:-600} )) left regions problems
+  regions="$(aws ec2 describe-regions --query 'Regions[].RegionName' --output text)"
+  while :; do
+    left=0; problems=()
+    for r in $regions; do
+      for key in run_token RunToken; do
+        n="$(aws resourcegroupstaggingapi get-resources --region "$r" --tag-filters "Key=${key},Values=${RUN}" \
+          --query 'length(ResourceTagMappingList)' --output text 2>/dev/null || echo error)"
+        [ "$n" = 0 ] || { left=1; problems+=("tagging API ${r} ${key}=${RUN}: ${n}"); }
+      done
+    done
+    [ "$left" = 0 ] || [ "$(date +%s)" -ge "$deadline" ] && break
+    echo "$(now) still listed: ${problems[*]}; the tagging API can trail deletes, retrying in 30 s"
+    sleep 30
+  done
+  echo "tagging API, all $(wc -w <<<"$regions") regions, run_token=${RUN} and RunToken=${RUN}: $([ "$left" = 0 ] && echo 0 resources || echo "${problems[*]}")"
+  check_gone() { if "$@" >/dev/null 2>&1; then echo "  still present: ${*: -1}"; left=1; else echo "  absent: ${*: -1}"; fi; }
+  echo "direct lookups:"
+  check_gone aws iam get-role --role-name "${RUN}-lambda"
+  check_gone aws lambda get-function --function-name "${RUN}-announcements"
+  check_gone aws rds describe-db-clusters --db-cluster-identifier "$RUN"
+  check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"
+  check_gone aws events describe-event-bus --name "otterworks-${RUN}"
+  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-created"
+  check_gone aws sqs get-queue-url --queue-name "${RUN}-announcement-created-dlq"
+  n="$(aws apigatewayv2 get-apis --query "length(Items[?Name=='${RUN}'])" --output text)"
+  echo "  HTTP APIs named ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
+  n="$(aws logs describe-log-groups --log-group-name-pattern "$RUN" --query 'length(logGroups)' --output text)"
+  echo "  log groups matching ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
+  n="$(aws logs describe-resource-policies --query "length(resourcePolicies[?policyName=='${RUN}-announcement-created'])" --output text)"
+  echo "  log resource policies named ${RUN}-announcement-created: ${n}"; [ "$n" = 0 ] || left=1
+  if [ "$left" = 0 ]; then echo "CLEAN: nothing tagged or named ${RUN} remains"; else echo "NOT CLEAN"; return 1; fi
+}
+
+case "$CMD" in
+  up) cmd_up ;;
+  status) cmd_status ;;
+  reset) cmd_reset ;;
+  replay) cmd_replay ;;
+  events) cmd_events ;;
+  down) cmd_down ;;
+  verify-clean) cmd_verify_clean ;;
+  *) die "usage: lp-announcements.sh up|status|reset|replay|events|down|verify-clean (RUN, EC2_RUN, TARGET from the environment)" ;;
+esac
