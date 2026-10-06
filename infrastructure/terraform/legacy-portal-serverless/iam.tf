@@ -54,14 +54,10 @@ data "aws_iam_policy_document" "builder" {
   }
 
   statement {
-    sid       = "ReadRunDbSecret"
-    actions   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
-    resources = [aws_secretsmanager_secret.db.arn]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:ResourceTag/run_token"
-      values   = [var.run_token]
-    }
+    sid     = "ReadRunDbSecret"
+    actions = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+    # The secret is created by RDS, not Terraform, so it does not carry the run_token tag; its ARN is unique to the cluster.
+    resources = [aws_rds_cluster.this.master_user_secret[0].secret_arn]
   }
 
   statement {

@@ -194,7 +194,11 @@ cmd_verify_clean() {
     echo "  not attached to devin-cw-builder: ${RUN}-builder"
   fi
   for fn in announcements preferences feedback; do check_gone aws lambda get-function --function-name "${RUN}-${fn}"; done
-  check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"
+  check_gone aws secretsmanager describe-secret --secret-id "${RUN}/aurora/master"  # runs applied before RDS managed the master secret
+  # RDS deletes the secret it manages with the cluster; it carries the cluster ARN in its tags, not the run token.
+  n="$(aws secretsmanager list-secrets --filters Key=owning-service,Values=rds \
+    --query "length(SecretList[?Tags[?ends_with(Value, ':cluster:${RUN}')]])" --output text)"
+  echo "  RDS-managed secrets of cluster ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
   n="$(aws logs describe-log-groups --log-group-name-pattern "$RUN" --query 'length(logGroups)' --output text)"
   echo "  log groups matching ${RUN}: ${n}"; [ "$n" = 0 ] || left=1
   if [ "$left" = 0 ]; then echo "CLEAN: nothing tagged or named ${RUN} remains"; else echo "NOT CLEAN"; return 1; fi
