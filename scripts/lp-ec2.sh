@@ -93,8 +93,9 @@ wait_healthy() {
   local deadline=$(( $(date +%s) + ${HEALTH_WAIT_SECONDS:-900} )) state
   echo "waiting for the ALB health check on ${TG_ARN##*:targetgroup/} (up to $(( ${HEALTH_WAIT_SECONDS:-900} / 60 )) min)"
   while :; do
+    # A throttled or failed call is retried on the next poll instead of aborting after the apply.
     state="$(aws elbv2 describe-target-health --target-group-arn "$TG_ARN" \
-      --query 'TargetHealthDescriptions[0].TargetHealth.State' --output text)"
+      --query 'TargetHealthDescriptions[0].TargetHealth.State' --output text 2>&1)" || state="lookup failed: ${state##*$'\n'}"
     echo "$(now) target health: ${state}"
     [ "$state" = healthy ] && return 0
     [ "$(date +%s)" -lt "$deadline" ] || die "target still ${state} after the wait window"
@@ -138,7 +139,7 @@ cmd_status() {
   aws elbv2 describe-target-health --target-group-arn "$TG_ARN" --output table \
     --query 'TargetHealthDescriptions[0].{target:Target.Id,port:Target.Port,state:TargetHealth.State,reason:TargetHealth.Reason}'
   echo "health of the ALB:"
-  curl -s -o /dev/null -w '  GET /health %{http_code} in %{time_total}s\n' "${BASE_URL%/}/health" || true
+  curl -s --connect-timeout 5 --max-time 20 -o /dev/null -w '  GET /health %{http_code} in %{time_total}s\n' "${BASE_URL%/}/health" || true
 }
 
 cmd_replay() {
@@ -158,6 +159,13 @@ cmd_down() {
   need_run; start_transcript "$RUN"
   local t0; t0="$(date +%s)"
   tf_init; tf_vars
+  # filemd5() on the jar is evaluated during destroy too; without a built jar
+  # (fresh checkout, mvn clean) point it at an empty stand-in under .demo.
+  if [ ! -f "${TF_ROOT}/../../../services/legacy-portal/target/legacy-portal.jar" ]; then
+    : >"${ROOT}/.demo/legacy-portal/${RUN}/destroy-placeholder.jar"
+    TF_VARS+=(-var "jar_path=../../../.demo/legacy-portal/${RUN}/destroy-placeholder.jar")
+    echo "no built jar; destroying with an empty stand-in for the jar's checksum"
+  fi
   tf destroy -input=false -no-color -auto-approve "${TF_VARS[@]}"
   echo
   echo "lp-ec2-down wall clock: $(elapsed "$t0")"
@@ -182,17 +190,24 @@ cmd_verify_clean() {
   done
   echo "tagging API, all $(wc -w <<<"$regions") regions, run_token=${RUN} and RunToken=${RUN}: $([ "$left" = 0 ] && echo 0 resources || echo "${problems[*]}")"
   if [ "$left" = 1 ]; then
-    aws resourcegroupstaggingapi get-resources --tag-filters "Key=run_token,Values=${RUN}" --query 'ResourceTagMappingList[].ResourceARN' --output text
+    aws resourcegroupstaggingapi get-resources --tag-filters "Key=run_token,Values=${RUN}" --query 'ResourceTagMappingList[].ResourceARN' --output text || true
   fi
   # IAM is global and the tagging API does not list every resource type, so check the run's named objects directly.
-  check_gone() { if "$@" >/dev/null 2>&1; then echo "  still present: ${*: -1}"; left=1; else echo "  absent: ${*: -1}"; fi; }
+  # Only the service's not-found error proves absence; AccessDenied, throttling, a 403 from
+  # HeadBucket or an unreachable endpoint leave the object unknown, which is not clean.
+  check_gone() {
+    local notfound="$1" err; shift
+    if err="$("$@" 2>&1 >/dev/null)"; then echo "  still present: ${*: -1}"; left=1
+    elif grep -qE "$notfound" <<<"$err"; then echo "  absent: ${*: -1}"
+    else echo "  unknown: ${*: -1} ($(tr -s '\n' ' ' <<<"$err"))"; left=1; fi
+  }
   echo "direct lookups:"
-  check_gone aws iam get-role --role-name "${RUN}-instance"
-  check_gone aws iam get-instance-profile --instance-profile-name "${RUN}-instance"
-  check_gone aws elbv2 describe-load-balancers --names "$RUN"
-  check_gone aws elbv2 describe-target-groups --names "${RUN}-app"
-  check_gone aws s3api head-bucket --bucket "${RUN}-artifacts"
-  n="$(aws logs describe-log-groups --log-group-name-prefix "/otterworks/legacy-portal-ec2/${RUN}" --query 'length(logGroups)' --output text)"
+  check_gone '\(NoSuchEntity\)' aws iam get-role --role-name "${RUN}-instance"
+  check_gone '\(NoSuchEntity\)' aws iam get-instance-profile --instance-profile-name "${RUN}-instance"
+  check_gone '\(LoadBalancerNotFound\)' aws elbv2 describe-load-balancers --names "$RUN"
+  check_gone '\(TargetGroupNotFound\)' aws elbv2 describe-target-groups --names "${RUN}-app"
+  check_gone '\((404|NoSuchBucket)\)' aws s3api head-bucket --bucket "${RUN}-artifacts"
+  n="$(aws logs describe-log-groups --log-group-name-prefix "/otterworks/legacy-portal-ec2/${RUN}" --query 'length(logGroups)' --output text 2>/dev/null || echo error)"
   echo "  log groups matching /otterworks/legacy-portal-ec2/${RUN}: ${n}"; [ "$n" = 0 ] || left=1
   if [ "$left" = 0 ]; then echo "CLEAN: nothing tagged or named ${RUN} remains"; else echo "NOT CLEAN"; return 1; fi
 }
