@@ -116,13 +116,11 @@ def bola_files(ctx: ScanContext) -> Result:
             },
         ),
     ]
-    # Try every route before judging, so an odd status on one route cannot hide a
-    # breach on another.
-    responses = [
-        (method, attempt_path, ctx.request(method, attempt_path, identity=ctx.attacker, json=body))
-        for method, attempt_path, body in attempts
-    ]
-    for method, attempt_path, response in responses:
+    # A breach is reported as soon as it is seen; an odd status on one route is set
+    # aside so it cannot hide a breach on a later one.
+    responses = []
+    for method, attempt_path, body in attempts:
+        response = ctx.request(method, attempt_path, identity=ctx.attacker, json=body)
         if response.status_code in (200, 201):
             return self.result(
                 Verdict.VULNERABLE,
@@ -130,6 +128,7 @@ def bola_files(ctx: ScanContext) -> Result:
                 "for the victim's file",
                 [Evidence.from_response(response, note=f"victim file {victim_file['id']}")],
             )
+        responses.append((method, attempt_path, response))
     unexpected = [
         (method, attempt_path, response)
         for method, attempt_path, response in responses

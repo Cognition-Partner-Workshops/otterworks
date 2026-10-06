@@ -841,12 +841,23 @@ mod tests {
             .to_string()
         }
 
-        fn share_scan(owner: Uuid, grant: Option<Uuid>) -> String {
+        /// A share `(file, recipient)`, returned only if it matches the Scan's `:fid` / `:uid` filter.
+        fn share_scan(owner: Uuid, grant: Option<(Uuid, Uuid)>, body: &[u8]) -> String {
+            let req: serde_json::Value = serde_json::from_slice(body).unwrap_or_default();
+            let filter = |key: &str| {
+                req["ExpressionAttributeValues"][key]["S"]
+                    .as_str()
+                    .map(str::to_string)
+            };
             let items: Vec<serde_json::Value> = grant
-                .map(|recipient| {
+                .filter(|(file, recipient)| {
+                    filter(":fid").is_none_or(|f| f == file.to_string())
+                        && filter(":uid").is_none_or(|u| u == recipient.to_string())
+                })
+                .map(|(file, recipient)| {
                     serde_json::json!({
                         "id": {"S": Uuid::new_v4().to_string()},
-                        "file_id": {"S": Uuid::new_v4().to_string()},
+                        "file_id": {"S": file.to_string()},
                         "shared_with": {"S": recipient.to_string()},
                         "permission": {"S": "viewer"},
                         "shared_by": {"S": owner.to_string()},
@@ -860,8 +871,8 @@ mod tests {
         }
 
         /// A stand-in for DynamoDB/S3 that serves every GetItem as an object owned by
-        /// `owner`, every Scan as a share to `grant` (or empty), and records each call.
-        async fn fake_aws(owner: Uuid, grant: Option<Uuid>) -> (String, Calls) {
+        /// `owner`, every Scan as the matching `grant` share (or empty), and records each call.
+        async fn fake_aws(owner: Uuid, grant: Option<(Uuid, Uuid)>) -> (String, Calls) {
             let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
             let addr = listener.local_addr().unwrap();
             let calls: Calls = Arc::default();
@@ -892,14 +903,15 @@ mod tests {
                                     Ok(n) => buf.extend_from_slice(&chunk[..n]),
                                 }
                             }
-                            buf.drain(..header_end + len);
+                            let body: Vec<u8> =
+                                buf.drain(..header_end + len).skip(header_end).collect();
                             let call = header(&head, "x-amz-target").unwrap_or_else(|| {
                                 head.lines().next().unwrap_or_default().to_string()
                             });
                             recorded.lock().unwrap().push(call.clone());
                             let body = match call.as_str() {
                                 GET_ITEM => item_owned_by(owner),
-                                SCAN => share_scan(owner, grant),
+                                SCAN => share_scan(owner, grant, &body),
                                 _ => "{}".to_string(),
                             };
                             let resp = format!(
@@ -928,7 +940,7 @@ mod tests {
             harness_with_grant(owner, None).await
         }
 
-        async fn harness_with_grant(owner: Uuid, grant: Option<Uuid>) -> Harness {
+        async fn harness_with_grant(owner: Uuid, grant: Option<(Uuid, Uuid)>) -> Harness {
             let (endpoint, calls) = fake_aws(owner, grant).await;
             let creds =
                 aws_sdk_dynamodb::config::Credentials::new("test", "test", None, None, "test");
@@ -1108,15 +1120,24 @@ mod tests {
         async fn share_recipient_may_read_but_not_act_as_owner() {
             let owner = Uuid::new_v4();
             let recipient = Uuid::new_v4();
-            let h = harness_with_grant(owner, Some(recipient)).await;
-            let f = format!("/api/v1/files/{}", Uuid::new_v4());
+            let shared = Uuid::new_v4();
+            let h = harness_with_grant(owner, Some((shared, recipient))).await;
+            let f = format!("/api/v1/files/{shared}");
+            let unshared = format!("/api/v1/files/{}", Uuid::new_v4());
             let as_recipient =
                 |req: test::TestRequest| req.insert_header(("X-User-ID", recipient.to_string()));
-            for uri in [f.clone(), format!("{f}/download"), format!("{f}/versions")] {
+            for suffix in ["", "/download", "/versions"] {
+                let uri = format!("{f}{suffix}");
                 let (status, _) = h
                     .send(as_recipient(test::TestRequest::get().uri(&uri)))
                     .await;
                 assert_eq!(status, StatusCode::OK, "recipient GET {uri}");
+                // The grant covers one file only; the owner's other files stay private.
+                let uri = format!("{unshared}{suffix}");
+                let (status, _) = h
+                    .send(as_recipient(test::TestRequest::get().uri(&uri)))
+                    .await;
+                assert_eq!(status, StatusCode::FORBIDDEN, "recipient GET {uri}");
             }
             let owner_only = [
                 test::TestRequest::delete().uri(&f),

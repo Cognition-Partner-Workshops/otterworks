@@ -88,5 +88,18 @@ def test_unexpected_status_on_an_earlier_route_does_not_hide_a_later_breach() ->
     assert bola_files(ctx).verdict is Verdict.VULNERABLE
 
 
+def test_a_breach_is_reported_before_a_later_request_can_fail() -> None:
+    ctx = StubContext({f"GET {BASE}": 200})
+    original = ctx.request
+
+    def request(method, path, **kwargs):
+        if path.endswith("/download"):
+            raise httpx.ReadTimeout("timed out")
+        return original(method, path, **kwargs)
+
+    ctx.request = request
+    assert bola_files(ctx).verdict is Verdict.VULNERABLE
+
+
 def test_no_seeded_file_is_inconclusive() -> None:
     assert bola_files(StubContext({}, uploaded=False)).verdict is Verdict.INCONCLUSIVE
