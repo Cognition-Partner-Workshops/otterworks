@@ -17,6 +17,12 @@ So far the root creates:
   (`aws lambda invoke`) to load the billing/billing_svc schemas and data and to run the RDS-side row counts. It sits in
   the same subnets and shares the db-init security group; credentials travel in the invocation payload.
 
+- the `lp-<token>-billing-service` function: `services/billing-service` itself, unchanged, run through Mangum in
+  the same subnets with the db-init security group. It has no function URL, API Gateway or ingress rule;
+  `scripts/billing-service-proxy.py` serves it on `127.0.0.1` by turning each HTTP request into a `lambda:Invoke`
+  call and passes the run's login credentials (read once from the secret) in the payload. `/internal/reset` is
+  refused unless the proxy is started with `--allow-internal-reset`.
+
 Phase 3 adds the S3 export, Glue, Athena and EventBridge resources to this root.
 
 ## Reaching a private instance
@@ -33,6 +39,19 @@ security group has no ingress and allows egress only to the VPC CIDR on 5432. Te
 The master credential is read from `otterworks/dev/rds/master` and passed in the invocation payload, so the function
 needs no Secrets Manager endpoint. The function never logs credentials.
 
+## billing-service on the run database and parity
+
+The harness resets the target before grading, so parity runs against the run database itself and the move
+script reloads it afterwards (decision d-parity-reset):
+
+```bash
+source <(cloudworker/assume.sh engineer devin-<session id>)
+uv run scripts/billing-service-proxy.py --token $TOKEN --port 18097 --allow-internal-reset &
+make procs-parity NS=dev MODULE=rating BILLING_SVC_URL=http://127.0.0.1:18097
+kill %1
+uv run scripts/billing-to-rds.py --ns dev --token $TOKEN   # reload, then the legacy vs RDS count table
+```
+
 ## Apply and destroy
 
 Use the engineer role for apply and destroy, then switch back to the observer role (`.agents/skills/aws-engineer/SKILL.md`).
@@ -45,7 +64,7 @@ source <(../../../cloudworker/assume.sh engineer devin-<session id>)
 terraform init -backend-config="key=otterworks/billing-data/${TOKEN}/terraform.tfstate"
 terraform apply -var run_token=$TOKEN -var expires=$EXPIRES
 terraform output db_evidence
-# teardown: drops the database and role, then removes the function, secret and security group
+# teardown: drops the database and role, then removes the functions, secret and security group
 terraform destroy -var run_token=$TOKEN -var expires=$EXPIRES
 source <(../../../cloudworker/assume.sh observer devin-<session id>)
 ```
