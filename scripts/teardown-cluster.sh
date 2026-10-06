@@ -27,6 +27,8 @@ DRAIN_TIMEOUT="${DRAIN_TIMEOUT:-300}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TF_DIR="${REPO_ROOT}/platform/terraform"
+TF_VAR_FILE="environments/dev.tfvars"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 log()  { echo -e "${GREEN}[teardown]${NC} $*"; }
@@ -46,6 +48,24 @@ done
 command -v aws >/dev/null 2>&1     || { err "aws CLI not found"; exit 1; }
 command -v kubectl >/dev/null 2>&1 || { err "kubectl not found"; exit 1; }
 
+# The drain below acts on EKS_CLUSTER but the destroy acts on whatever cluster
+# the var-file names. If they differ, one cluster is drained and a different,
+# undrained one is destroyed -- every load balancer and node it owns orphaned.
+if [ "${SKIP_TERRAFORM}" != true ]; then
+  tf_cluster="$(sed -n 's/^[[:space:]]*cluster_name[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' \
+                  "${TF_DIR}/${TF_VAR_FILE}" | head -n 1)"
+  if [ "${tf_cluster}" != "${EKS_CLUSTER}" ]; then
+    err "EKS_CLUSTER=${EKS_CLUSTER} but ${TF_VAR_FILE} destroys cluster '${tf_cluster}'."
+    err "Refusing to drain one cluster and destroy another. Use --skip-terraform"
+    err "to drain ${EKS_CLUSTER} only."
+    exit 1
+  fi
+fi
+
+# Classic and v2 load balancers report a load balancer deleted between the
+# list and the tag lookup this way; that is the drain succeeding, not an error.
+lb_gone() { case "$1" in *LoadBalancerNotFound*) return 0 ;; *) return 1 ;; esac; }
+
 # Count AWS load balancers still tagged as owned by this cluster.
 #
 # This number is the sole evidence that destroying the cluster is safe, so it
@@ -63,9 +83,14 @@ cluster_lb_count() {
     return 1
   }
   for lb in ${out}; do
-    aws elb describe-tags --region "${AWS_REGION}" --load-balancer-names "${lb}" \
-      --query "TagDescriptions[0].Tags[?Key=='kubernetes.io/cluster/${EKS_CLUSTER}']" \
-      --output text 2>/dev/null | grep -q . && n=$((n + 1))
+    if ! tags="$(aws elb describe-tags --region "${AWS_REGION}" --load-balancer-names "${lb}" \
+                   --query "TagDescriptions[0].Tags[?Key=='kubernetes.io/cluster/${EKS_CLUSTER}']" \
+                   --output text 2>&1)"; then
+      lb_gone "${tags}" && continue
+      err "could not read tags of Classic ELB ${lb}: ${tags}"
+      return 1
+    fi
+    if [ -n "${tags}" ]; then n=$((n + 1)); fi
   done
 
   out="$(aws elbv2 describe-load-balancers --region "${AWS_REGION}" \
@@ -74,12 +99,32 @@ cluster_lb_count() {
     return 1
   }
   for arn in ${out}; do
-    aws elbv2 describe-tags --region "${AWS_REGION}" --resource-arns "${arn}" \
-      --query "TagDescriptions[0].Tags[?Key=='kubernetes.io/cluster/${EKS_CLUSTER}']" \
-      --output text 2>/dev/null | grep -q . && n=$((n + 1))
+    if ! tags="$(aws elbv2 describe-tags --region "${AWS_REGION}" --resource-arns "${arn}" \
+                   --query "TagDescriptions[0].Tags[?Key=='kubernetes.io/cluster/${EKS_CLUSTER}']" \
+                   --output text 2>&1)"; then
+      lb_gone "${tags}" && continue
+      err "could not read tags of ${arn}: ${tags}"
+      return 1
+    fi
+    if [ -n "${tags}" ]; then n=$((n + 1)); fi
   done
 
   echo "${n}"
+}
+
+# Count live Karpenter instances for this cluster. Same rule as above: a failed
+# describe is not "none left".
+karpenter_instance_count() {
+  local out
+  out="$(aws ec2 describe-instances --region "${AWS_REGION}" \
+           --filters "Name=tag-key,Values=karpenter.sh/nodepool" \
+                     "Name=tag-key,Values=kubernetes.io/cluster/${EKS_CLUSTER}" \
+                     "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+           --query 'length(Reservations[].Instances[])' --output text 2>&1)" || {
+    err "could not list Karpenter instances: ${out}"
+    return 1
+  }
+  echo "${out}"
 }
 
 if [ "${ASSUME_YES}" != true ]; then
@@ -90,12 +135,14 @@ fi
 
 # ---------- Step 1: drain LoadBalancer Services while the controller lives ----
 
+CLUSTER_REACHABLE=false
 log "Configuring kubectl for ${EKS_CLUSTER}..."
 if ! aws eks update-kubeconfig --name "${EKS_CLUSTER}" --region "${AWS_REGION}" >/dev/null 2>&1; then
   warn "cluster ${EKS_CLUSTER} is not reachable; skipping drain."
   warn "Any load balancers it owned are already orphaned -- run:"
   warn "  DRY_RUN=false demo-platform/reaper/infra-sweep.sh"
 else
+  CLUSTER_REACHABLE=true
   before="$(cluster_lb_count)" || {
     err "cannot inventory this cluster's load balancers, so cannot tell whether"
     err "the teardown would strand them. Fix the AWS access above and re-run."
@@ -152,15 +199,38 @@ fi
 # owner, which is the load balancer story again at instance prices.
 #
 # Deleting the NodeClaims makes Karpenter drain and terminate them while it can
-# still see them. Nothing here is fatal: if Karpenter is not installed there is
-# nothing to do, and if the drain fails the sweep in step 5 reports what is left.
+# still see them. While the cluster is reachable the destroy waits until EC2
+# agrees they are gone: infra-sweep.sh only reclaims instances whose cluster no
+# longer exists, so anything left running here is reclaimed by nothing until
+# that sweep happens to run. An unreachable cluster cannot drain anything, so
+# its instances are left to the sweep as before.
 if kubectl get nodeclaims >/dev/null 2>&1; then
   claims="$(kubectl get nodeclaims -o name 2>/dev/null | wc -l | tr -d ' ')"
   if [ "${claims}" != "0" ]; then
     log "Returning ${claims} Karpenter node(s) before the cluster goes away..."
     kubectl delete nodeclaims --all --timeout="${DRAIN_TIMEOUT}s" >/dev/null 2>&1 || \
-      warn "not all NodeClaims drained; infra-sweep.sh will reclaim the instances"
+      warn "not all NodeClaims drained yet; waiting for EC2 to confirm"
   fi
+fi
+
+if [ "${CLUSTER_REACHABLE}" = true ]; then
+  log "Waiting up to ${DRAIN_TIMEOUT}s for Karpenter instances to terminate..."
+  deadline=$(( $(date +%s) + DRAIN_TIMEOUT ))
+  while :; do
+    if ! running="$(karpenter_instance_count)"; then
+      running="unknown"
+    elif [ "${running}" = "0" ]; then
+      log "no Karpenter instances remain."
+      break
+    fi
+    if [ "$(date +%s)" -ge "${deadline}" ]; then
+      err "Karpenter instances for ${EKS_CLUSTER} still running after ${DRAIN_TIMEOUT}s: ${running}."
+      err "Destroying the cluster now would leave them with no controller. Re-run with a"
+      err "longer DRAIN_TIMEOUT, or terminate them and re-run."
+      exit 1
+    fi
+    sleep 10
+  done
 fi
 
 # ---------- Step 3: release the load balancers' security groups ---------------
@@ -190,10 +260,14 @@ done
 if [ "${SKIP_TERRAFORM}" = true ]; then
   log "Skipping terraform destroy (--skip-terraform)."
 else
-  log "Destroying platform infrastructure (EKS, node groups, VPC)..."
-  terraform -chdir="${REPO_ROOT}/platform/terraform" init -input=false >/dev/null
-  terraform -chdir="${REPO_ROOT}/platform/terraform" destroy \
-    -var-file=environments/dev.tfvars -auto-approve -input=false
+  # Only the cluster module. The VPC is still occupied by the application
+  # layer's RDS/ElastiCache, and the ECR repositories are force_delete in dev,
+  # so a whole-root destroy would delete every image and then fail on the VPC.
+  # `scripts/teardown-dev.sh --all` removes the rest in dependency order.
+  log "Destroying the EKS cluster (control plane, node group, Karpenter AWS resources)..."
+  terraform -chdir="${TF_DIR}" init -input=false >/dev/null
+  terraform -chdir="${TF_DIR}" destroy -target=module.eks \
+    -var-file="${TF_VAR_FILE}" -auto-approve -input=false
 fi
 
 # ---------- Step 5: verify ----------------------------------------------------
@@ -212,14 +286,14 @@ fi
 
 vols="$(aws ec2 describe-volumes --region "${AWS_REGION}" \
           --filters Name=status,Values=available "Name=tag-key,Values=kubernetes.io/cluster/${EKS_CLUSTER}" \
-          --query 'length(Volumes)' --output text 2>/dev/null || echo 0)"
+          --query 'length(Volumes)' --output text 2>/dev/null || echo unknown)"
 [ "${vols}" != "0" ] && warn "${vols} unattached EBS volume(s) tagged for ${EKS_CLUSTER}; infra-sweep.sh will reclaim them."
 
-nodes="$(aws ec2 describe-instances --region "${AWS_REGION}" \
-           --filters "Name=tag-key,Values=karpenter.sh/nodepool" \
-                     "Name=tag-key,Values=kubernetes.io/cluster/${EKS_CLUSTER}" \
-                     "Name=instance-state-name,Values=pending,running,stopping,stopped" \
-           --query 'length(Reservations[].Instances[])' --output text 2>/dev/null || echo 0)"
+nodes="$(karpenter_instance_count)" || {
+  err "could not verify that no Karpenter instances survived. Check by hand:"
+  err "  DRY_RUN=true demo-platform/reaper/infra-sweep.sh"
+  exit 1
+}
 if [ "${nodes}" != "0" ]; then
   err "${nodes} Karpenter instance(s) survived the teardown -- these bill until terminated."
   err "Run: DRY_RUN=false demo-platform/reaper/infra-sweep.sh"
