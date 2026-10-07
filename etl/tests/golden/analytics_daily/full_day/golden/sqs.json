@@ -1,0 +1,18 @@
+{
+  "otterworks-analytics": {
+    "in_flight": 3,
+    "visible": 0
+  },
+  "otterworks-audit-events-queue": {
+    "in_flight": 0,
+    "visible": 0
+  },
+  "otterworks-notifications": {
+    "in_flight": 0,
+    "visible": 0
+  },
+  "otterworks-search-events": {
+    "in_flight": 0,
+    "visible": 0
+  }
+}

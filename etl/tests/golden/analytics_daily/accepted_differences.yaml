@@ -1,0 +1,172 @@
+# Reviewed accepted differences between the legacy goldens and the DAG for analytics_daily
+# (etl/tests/golden/README.md, "DAG parity"). Every check not listed here must be identical;
+# a listed one must show exactly these before/after values.
+#
+# Only the two scenarios the plan accepted differ (s3.1): sqs_non_object_body (events staged
+# before the SQS delete survive the crash) and postgres_unavailable (PostgresHook fails the
+# task instead of swallowing the error). Pandas instead of PySpark is a design limitation,
+# not an output difference; it is documented in the PR, not here.
+script: analytics_daily
+accepted:
+- scenario: postgres_unavailable
+  check: result.json exit_code
+  before: 0
+  after: 1
+  reason: 'Planned fix (PostgresHook): legacy logs and swallows the upsert error and exits 0 with no row.
+    update_postgres_aggregates fails the task, so the DagRun fails and alerts. A rejected credential (SQLSTATE
+    28P01/28000) raises AirflowFailException with no retry; other errors retry with the default backoff.'
+- scenario: postgres_unavailable
+  check: s3.json s3://otterworks-data-lake/reports/analytics/daily/2026-03-15/report.json
+  before:
+    body:
+      document_metrics:
+        comments: 0
+        created: 1
+        edited: 0
+      file_metrics:
+        bytes_uploaded: 300
+        deleted: 0
+        shared: 0
+        uploaded: 2
+      generated_at: <normalized:generated_at>
+      highlights:
+        most_active_users:
+        - user-bob
+        - user-alice
+        peak_hour:
+          event_count: 2
+          hour: '01'
+      report_date: '2026-03-15'
+      report_type: daily_analytics
+      summary:
+        active_documents: 1
+        active_files: 2
+        active_users: 2
+        bytes_uploaded: 300
+        comments_added: 0
+        documents_created: 1
+        documents_edited: 0
+        files_deleted: 0
+        files_shared: 0
+        files_uploaded: 2
+        total_events: 3
+    content_encoding: null
+    content_type: binary/octet-stream
+    format: json
+    gzip: false
+    metadata: {}
+    storage_class: STANDARD
+  after_absent: true
+  reason: 'Consequence of the PostgresHook fix: generate_report runs after both load_to_data_lake and
+    update_postgres_aggregates (task graph per the ETL guide), so it is upstream_failed and the report
+    is not written for a run that failed. The data lake objects are written and identical; clearing the
+    run after the credential is fixed writes the report.'
+- scenario: postgres_unavailable
+  check: s3.json s3://otterworks-data-lake/airflow-staging/otterworks_analytics_etl/manual__2026-03-15T02_00_00_00_00/extract_from_sqs/batch-00000.json.gz
+  before_absent: true
+  after:
+    body:
+    - documentId: doc-1
+      eventType: document_created
+      ownerId: user-alice
+      timestamp: '2026-03-15T00:05:00Z'
+    - eventType: file_uploaded
+      fileId: file-1
+      ownerId: user-bob
+      sizeBytes: 100
+      timestamp: '2026-03-15T01:05:00Z'
+    - eventType: file_uploaded
+      fileId: file-2
+      ownerId: user-bob
+      sizeBytes: 200
+      timestamp: '2026-03-15T01:06:00Z'
+    content_encoding: null
+    content_type: binary/octet-stream
+    format: json
+    gzip: true
+    metadata: {}
+    storage_class: STANDARD
+  reason: 'Consequence of the PostgresHook fix: a failed run keeps its staged intermediates (cleanup_staging
+    runs only when nothing failed), so clearing update_postgres_aggregates after the credential is fixed
+    resumes from them without re-reading SQS, whose messages are already deleted.'
+- scenario: postgres_unavailable
+  check: s3.json s3://otterworks-data-lake/airflow-staging/otterworks_analytics_etl/manual__2026-03-15T02_00_00_00_00/transform_events/aggregates.json.gz
+  before_absent: true
+  after:
+    body:
+      document_metrics:
+        comments: 0
+        created: 1
+        edited: 0
+      file_metrics:
+        bytes_uploaded: 300
+        deleted: 0
+        shared: 0
+        uploaded: 2
+      hourly_breakdown:
+        '00':
+          document_created: 1
+        '01':
+          file_uploaded: 2
+      summary:
+        active_documents: 1
+        active_files: 2
+        active_users: 2
+        bytes_uploaded: 300
+        comments_added: 0
+        documents_created: 1
+        documents_edited: 0
+        files_deleted: 0
+        files_shared: 0
+        files_uploaded: 2
+        total_events: 3
+      top_users:
+      - actions:
+          file_uploaded: 2
+        total: 2
+        user_id: user-bob
+      - actions:
+          document_created: 1
+        total: 1
+        user_id: user-alice
+    content_encoding: null
+    content_type: binary/octet-stream
+    format: json
+    gzip: true
+    metadata: {}
+    storage_class: STANDARD
+  reason: 'Consequence of the PostgresHook fix: a failed run keeps its staged intermediates (cleanup_staging
+    runs only when nothing failed), so clearing update_postgres_aggregates after the credential is fixed
+    resumes from them without re-reading SQS, whose messages are already deleted.'
+- scenario: sqs_non_object_body
+  check: s3.json s3://otterworks-data-lake/airflow-staging/otterworks_analytics_etl/manual__2026-03-15T02_00_00_00_00/extract_from_sqs/batch-00000.json.gz
+  before_absent: true
+  after:
+    body:
+    - documentId: doc-1
+      eventType: document_created
+      ownerId: user-alice
+      timestamp: '2026-03-15T00:05:00Z'
+    - eventType: file_uploaded
+      fileId: file-1
+      ownerId: user-bob
+      sizeBytes: 100
+      timestamp: '2026-03-15T01:05:00Z'
+    - eventType: file_uploaded
+      fileId: file-2
+      ownerId: user-bob
+      sizeBytes: 200
+      timestamp: '2026-03-15T01:06:00Z'
+    - 42
+    content_encoding: null
+    content_type: binary/octet-stream
+    format: json
+    gzip: true
+    metadata: {}
+    storage_class: STANDARD
+  reason: 'Planned fix (staging before delete): legacy deletes the batch, then pandas.DataFrame raises
+    on the non-object body 42 and the three valid events are lost. The DAG stages the batch to S3 before
+    deleting it, so after transform_events fails (AirflowFailException, a data error retrying cannot fix)
+    the events, 42 included, survive under airflow-staging/ for repair and a re-run; exit code and queue
+    counts match legacy.'
+variants: []

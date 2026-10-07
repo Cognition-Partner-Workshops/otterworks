@@ -11,12 +11,16 @@ until their DAGs are ported; this directory only provides the image, local stack
 | `otterworks_etl/` | Shared ETL package, built as a wheel and installed into the image |
 | `dags/` | DAGs baked into the image; `otterworks_platform_check` imports every provider hook |
 | `scripts/check-stack.sh` | Gate: webserver + scheduler healthy, expected DAG parsed, zero import errors |
+| `CONFIG.md` | Airflow Connections and Variables that replace `etl/config.ini`, old key to new key |
+| `.env.example` | Local `AIRFLOW_CONN_*` / `AIRFLOW_VAR_*` (dev values only), copied to the untracked `.env` |
+| `scripts/check_config.py` | Config check: static (docs, decided defaults, no `config.ini` credentials) and live (resolve + probe) |
 
 ## Local stack
 
 ```bash
 make airflow-up     # infra (postgres, localstack, meilisearch) + Airflow, waits for healthy, runs the gate
 make airflow-check  # re-run the gate
+make airflow-config-check  # Connections/Variables resolve and reach postgres, localstack, meilisearch
 make airflow-down   # stop Airflow (keeps its metadata volume; infra stays up)
 ```
 

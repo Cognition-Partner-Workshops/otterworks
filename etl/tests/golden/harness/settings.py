@@ -57,7 +57,7 @@ S3_CONFIG = {
 
 # infra.reset() empties every bucket, table, queue and index it can reach. It only
 # runs when every endpoint is one of these hosts and the caller opted in
-# (`make etl-golden` sets RESET_OPT_IN_ENV=1).
+# (`make etl-golden` and `make etl-parity` set RESET_OPT_IN_ENV=1).
 RESET_ALLOWED_HOSTS = frozenset(
     {"localhost", "127.0.0.1", "::1", "localstack", "postgres", "meilisearch"}
 )

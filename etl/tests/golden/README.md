@@ -68,7 +68,11 @@ keys, 2-space indent):
 | `meilisearch.json` | every index: primary key, settings, stats and all documents sorted by primary key |
 
 Container output goes to `.runs/<script>/<scenario>/run-N.log` (gitignored),
-not into the golden.
+not into the golden. Each run also leaves its normalized snapshot in
+`.runs/<script>/<scenario>/snapshot-N/`, and a failing `check` or `repeat`
+writes the diff it printed to `.runs/<script>/<scenario>/diff.txt`. CI
+(`.github/workflows/etl-golden.yml`) uploads the run logs on every run and the
+snapshots and diffs when a step fails.
 
 ## Normalizer
 
@@ -81,6 +85,88 @@ compared byte for byte:
   the database clock), when it parses as ISO-8601.
 
 A value of the wrong shape is left as is so it shows up as a diff.
+
+## DAG parity
+
+`make etl-parity SCRIPT=<script>` runs the same committed scenarios through an
+Airflow DAG instead of the legacy script and diffs them with the goldens
+(`harness/parity.py`):
+
+```bash
+make etl-parity SCRIPT=audit_archive_weekly                                    # every scenario, the DAG from parity/dags.yaml
+make etl-parity SCRIPT=audit_archive_weekly SCENARIO=smoke                     # one scenario
+make etl-parity SCRIPT=audit_archive_weekly DAG=parity_wrong__audit_archive_weekly EXPECT=failed
+make etl-parity SCRIPT=storage_cleanup_daily VARIANT=reference_mismatches_normalize_keys
+```
+
+1. **Same seed, snapshot and normalizer**: each scenario goes through
+   `cli.run_scenario` exactly like a golden run (reset, seed, HTTP stub,
+   generated `config.ini`); only the step that runs the code differs.
+2. **`airflow dags test <dag_id> <frozen_time>`** runs in a throwaway
+   container of the Airflow image (`otterworks/etl-airflow:local`, built from
+   `etl/airflow` by the make target) with its own SQLite metadata DB
+   (`harness/airflow_container.py`). It joins the harness's Docker network;
+   every Connection in `etl/airflow/.env.example` is pointed at the same
+   LocalStack, Postgres (`otterworks_etl_golden`) and MeiliSearch, and the
+   document/file-service Connections at the scenario's HTTP stub. Variables
+   are the committed defaults from `.env.example` plus the scenario's
+   overrides, as `AIRFLOW_VAR_*` env on that `docker exec ... airflow dags
+   test` only (env Variables take precedence over `airflow variables set`, so
+   a `set` would silently do nothing). The container's secrets backend
+   (`parity/parity_secrets.py`) logs every Variable the DAG reads, and each
+   override adds a check `Airflow Variable <key> as read by the DAG`: failed
+   unless the DAG read it, with the override value. `--conf {"run_date": <frozen date>}` pins the legacy run date. The
+   DAG run's state (success/failed) becomes `result.json` `exit_code` 0/1,
+   which is what the legacy goldens hold (0 or 1).
+3. **Report** (`harness/differences.py`): golden and DAG snapshots are split
+   into one check per compared thing (exit code, each bucket and S3 object,
+   DynamoDB key schema and each item by primary key, each SQS queue, each
+   Postgres table's columns and rows, each MeiliSearch index's settings/stats
+   and each document). Each row of
+   `.runs/parity/<dag_id>/<script>/<all|scenario|variant>/report.md` says what was compared, the
+   golden (before) and DAG (after) value, and the result: `identical`,
+   `accepted difference: <reason>` or `failed`. `report.json` has the full
+   values. The run passes only with no failed row.
+
+### Accepted differences and flag-on variants
+
+`<script>/accepted_differences.yaml` is the reviewed list of differences a DAG
+may have. An entry names a check and its exact `before` (golden) and `after`
+(DAG) values, or `before_absent` / `after_absent`, plus the reason. A check
+that differs and is not listed fails; a listed difference that does not occur
+or occurs with other values fails too. Nothing is rounded up.
+
+- `accepted` applies to runs with every Variable at its default. Both decided
+  flags (`audit_archive_delete_enabled`, `storage_cleanup_normalize_keys`)
+  default to `false`, which matches the legacy goldens, so it is empty for
+  every script (`tests/test_parity.py` enforces it).
+- `variants` are flag-on runs: a committed scenario's seed with per-scenario
+  Variable overrides and the reviewed expected differences.
+  `audit_archive_weekly/smoke_delete_enabled` (the corrected delete by `id`)
+  and `storage_cleanup_daily/reference_mismatches_normalize_keys` (leading
+  slash and `s3://bucket/` keys protect their objects; case is not folded).
+  Their `before` values are checked against the committed goldens.
+
+### Which DAG
+
+`parity/dags.yaml` maps each script to the DAG under parity; CI's
+`etl-parity` matrix is its `scripts` keys. Until a script's Phase 2 port
+lands, its entry is the pass-through toy DAG in `parity/dags/`
+(`parity_passthrough__<script>`), which runs the unchanged legacy script with
+its legacy pins: a `DockerOperator` in the Airflow container starts the
+pinned Python 3.9 legacy image with the golden shim, using the mounts,
+environment and `run.sh` command from `harness/runner.py`, on the same
+network. The parity container mounts the Docker socket and installs
+`apache-airflow-providers-docker` (`parity/requirements-airflow.txt`) against
+the image's Airflow constraints for this. The pass-through ignores Variables,
+so `variants: false`; run against it, a flag-on variant fails (its listed
+differences do not occur). A port replaces the entry with its own `dag_id`,
+`dag_folder: image` and `variants: true`.
+
+`parity_wrong__audit_archive_weekly` is the negative control: the
+pass-through plus one stray S3 object written through the Amazon provider
+hook. CI runs it with `EXPECT=failed`, which passes only when a check fails
+without a harness error.
 
 ## Adding a scenario
 

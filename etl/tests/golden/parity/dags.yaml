@@ -1,0 +1,43 @@
+# Scripts that have a DAG under parity. CI's etl-parity matrix is the keys of `scripts`.
+#
+#   dag_id      the DAG `airflow dags test` runs
+#   dag_folder  toy:   etl/tests/golden/parity/dags (toy DAGs, never shipped in the image)
+#               image: the Airflow image's own /opt/airflow/dags
+#   variants    run the flag-on variants from <script>/accepted_differences.yaml. Only for a
+#               DAG that reads the Variables; the pass-through ignores them (it runs legacy).
+#
+# Until a script's Phase 2 port lands its entry is the pass-through toy DAG, which wraps the
+# unchanged legacy script and must report identical; the port then replaces the entry with
+# its own dag_id, `dag_folder: image` and `variants: true`.
+scripts:
+  analytics_daily:
+    dag_id: otterworks_analytics_etl
+    dag_folder: image
+    variants: true
+  audit_archive_weekly:
+    dag_id: otterworks_audit_archive
+    dag_folder: image
+    variants: true
+  search_reindex_weekly:
+    dag_id: parity_passthrough__search_reindex_weekly
+    dag_folder: toy
+    variants: false
+  storage_cleanup_daily:
+    dag_id: parity_passthrough__storage_cleanup_daily
+    dag_folder: toy
+    variants: false
+  user_activity_daily:
+    dag_id: parity_passthrough__user_activity_daily
+    dag_folder: toy
+    variants: false
+
+# Toy DAGs that exist to prove the gate fails: `make etl-parity ... EXPECT=failed`.
+# parity_passthrough__audit_archive_weekly stays a control once its port lands: it runs
+# legacy and deletes nothing, so a flag-on variant run against it must fail.
+controls:
+  parity_passthrough__audit_archive_weekly:
+    script: audit_archive_weekly
+    dag_folder: toy
+  parity_wrong__audit_archive_weekly:
+    script: audit_archive_weekly
+    dag_folder: toy

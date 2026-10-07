@@ -1,0 +1,59 @@
+{
+  "analytics_daily_summary": {
+    "columns": [
+      {
+        "name": "report_date",
+        "type": "date"
+      },
+      {
+        "name": "active_users",
+        "type": "integer"
+      },
+      {
+        "name": "active_documents",
+        "type": "integer"
+      },
+      {
+        "name": "active_files",
+        "type": "integer"
+      },
+      {
+        "name": "total_events",
+        "type": "integer"
+      },
+      {
+        "name": "documents_created",
+        "type": "integer"
+      },
+      {
+        "name": "documents_edited",
+        "type": "integer"
+      },
+      {
+        "name": "comments_added",
+        "type": "integer"
+      },
+      {
+        "name": "files_uploaded",
+        "type": "integer"
+      },
+      {
+        "name": "files_shared",
+        "type": "integer"
+      },
+      {
+        "name": "files_deleted",
+        "type": "integer"
+      },
+      {
+        "name": "bytes_uploaded",
+        "type": "bigint"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "rows": []
+  }
+}

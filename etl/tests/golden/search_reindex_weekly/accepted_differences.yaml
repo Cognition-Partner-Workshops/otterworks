@@ -1,0 +1,7 @@
+# Reviewed accepted differences between the legacy goldens and the DAG for search_reindex_weekly
+# (etl/tests/golden/README.md, "DAG parity"). Every check not listed here must be identical;
+# a listed one must show exactly these before/after values. Add an entry only with a reviewed
+# reason, in the PR that introduces the difference.
+script: search_reindex_weekly
+accepted: []
+variants: []

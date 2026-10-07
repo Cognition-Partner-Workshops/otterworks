@@ -1,0 +1,5 @@
+{
+  "description": "No analytics_daily_summary rows and no top_users objects: the report still lands at the dated key and latest/ with zero trends (avg_daily_events is int 0), empty daily_summaries/user_summaries/top_users, and user_summaries.jsonl is not written. Exit 0.",
+  "frozen_time": "2026-03-15T05:00:00Z",
+  "seed": {}
+}

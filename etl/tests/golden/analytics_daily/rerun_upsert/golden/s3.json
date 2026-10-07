@@ -1,0 +1,128 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "analytics/daily/year=2026/month=03/day=15/extra_from_earlier_run.json": {
+      "body": {
+        "stale": true
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=03/day=15/hourly_breakdown.json.gz": {
+      "body": {
+        "00": {
+          "document_created": 1
+        },
+        "01": {
+          "file_uploaded": 2
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=03/day=15/summary.json.gz": {
+      "body": {
+        "active_documents": 1,
+        "active_files": 2,
+        "active_users": 2,
+        "bytes_uploaded": 300,
+        "comments_added": 0,
+        "documents_created": 1,
+        "documents_edited": 0,
+        "files_deleted": 0,
+        "files_shared": 0,
+        "files_uploaded": 2,
+        "total_events": 3
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz": {
+      "body": [
+        {
+          "actions": {
+            "file_uploaded": 2
+          },
+          "total": 2,
+          "user_id": "user-bob"
+        },
+        {
+          "actions": {
+            "document_created": 1
+          },
+          "total": 1,
+          "user_id": "user-alice"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD",
+      "trailing_newline": true
+    },
+    "reports/analytics/daily/2026-03-15/report.json": {
+      "body": {
+        "document_metrics": {
+          "comments": 0,
+          "created": 1,
+          "edited": 0
+        },
+        "file_metrics": {
+          "bytes_uploaded": 300,
+          "deleted": 0,
+          "shared": 0,
+          "uploaded": 2
+        },
+        "generated_at": "<normalized:generated_at>",
+        "highlights": {
+          "most_active_users": [
+            "user-bob",
+            "user-alice"
+          ],
+          "peak_hour": {
+            "event_count": 2,
+            "hour": "01"
+          }
+        },
+        "report_date": "2026-03-15",
+        "report_type": "daily_analytics",
+        "summary": {
+          "active_documents": 1,
+          "active_files": 2,
+          "active_users": 2,
+          "bytes_uploaded": 300,
+          "comments_added": 0,
+          "documents_created": 1,
+          "documents_edited": 0,
+          "files_deleted": 0,
+          "files_shared": 0,
+          "files_uploaded": 2,
+          "total_events": 3
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}

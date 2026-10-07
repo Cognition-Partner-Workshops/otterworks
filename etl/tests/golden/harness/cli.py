@@ -15,23 +15,39 @@ import difflib
 import hashlib
 import sys
 import time
+from collections.abc import Callable
+from pathlib import Path
 
 from . import config_ini, infra, normalize, runner, scenario, settings, snapshot
 from .stub_http import ServiceStub
 
 SHIM_BANNER = "[golden-shim] endpoint="
 SHIM_FAILURE_EXIT_CODE = 97
+DIFF_FILE = "diff.txt"
 
 
 class HarnessError(RuntimeError):
     pass
 
 
+Run = Callable[[Path, str], runner.RunResult]
+
+
 def run_scenario(
-    scn: scenario.Scenario, image: str, attempt: int
+    scn: scenario.Scenario,
+    image: str,
+    attempt: int,
+    run: Run | None = None,
+    run_dir: Path | None = None,
 ) -> tuple[dict[str, str], int, int]:
-    """Reset, seed, run the legacy script once; return (rendered files, exit code, replaced)."""
-    run_dir = settings.RUNS_DIR / scn.script / scn.name
+    """Reset, seed, run once; return (rendered files, exit code, replaced).
+
+    By default the legacy script runs in the pinned image and its log must
+    carry the shim banner. The DAG parity runner passes ``run`` (called with
+    the generated config.ini and the HTTP stub URL) and its own ``run_dir``;
+    seeding, snapshot and normalization stay exactly the same.
+    """
+    run_dir = run_dir or settings.RUNS_DIR / scn.script / scn.name
     run_dir.mkdir(parents=True, exist_ok=True)
     infra.reset()
     infra.ensure_resources()
@@ -41,15 +57,22 @@ def run_scenario(
         config_path.write_text(config_ini.render(stub.url, scn.config_overrides))
         config_path.chmod(0o644)
         started = time.monotonic()
-        result = runner.run(image, scn.script, scn.frozen_time, config_path)
+        if run is None:
+            result = runner.run(image, scn.script, scn.frozen_time, config_path)
+        else:
+            result = run(config_path, stub.url)
         elapsed = time.monotonic() - started
     log_path = run_dir / ("run-%d.log" % attempt)
     log_path.write_text(result.output)
-    if result.exit_code == SHIM_FAILURE_EXIT_CODE or SHIM_BANNER not in result.output:
+    if run is None and (
+        result.exit_code == SHIM_FAILURE_EXIT_CODE or SHIM_BANNER not in result.output
+    ):
         raise HarnessError(
             "%s: sitecustomize shim did not load; see %s" % (scn.label, log_path)
         )
     files, replaced = normalize.normalize(snapshot.capture(result.exit_code))
+    rendered = snapshot.render(files)
+    write_files(run_dir / ("snapshot-%d" % attempt), rendered)
     print(
         "  run %d: exit=%d in %.1fs, %d volatile value(s) normalized, log %s"
         % (
@@ -60,7 +83,7 @@ def run_scenario(
             log_path.relative_to(settings.REPO_ROOT),
         )
     )
-    return snapshot.render(files), result.exit_code, replaced
+    return rendered, result.exit_code, replaced
 
 
 def digest(files: dict[str, str]) -> str:
@@ -99,17 +122,28 @@ def read_golden(scn: scenario.Scenario) -> dict[str, str]:
     return {p.name: p.read_text() for p in sorted(scn.golden_dir.glob("*.json"))}
 
 
-def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
-    scn.golden_dir.mkdir(exist_ok=True)
-    for stale in scn.golden_dir.glob("*.json"):
+def write_files(directory: Path, files: dict[str, str]) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    for stale in directory.glob("*.json"):
         if stale.name not in files:
             stale.unlink()
     for name, content in files.items():
-        (scn.golden_dir / name).write_text(content)
+        (directory / name).write_text(content)
+
+
+def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
+    write_files(scn.golden_dir, files)
+
+
+def report_diff(scn: scenario.Scenario, lines: list[str]) -> None:
+    """Print a diff and keep it next to the run logs for the CI artifact."""
+    sys.stdout.writelines(lines)
+    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).write_text("".join(lines))
 
 
 def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
     print("== %s [%s] frozen_time=%s" % (scn.label, mode, scn.frozen_time))
+    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).unlink(missing_ok=True)
     files, exit_code, _ = run_scenario(scn, image, 1)
     if mode == "record":
         write_golden(scn, files)
@@ -120,14 +154,14 @@ def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
             return False, "no golden recorded (run MODE=record)"
         delta = diff(golden, files)
         if delta:
-            sys.stdout.writelines(delta)
+            report_diff(scn, delta)
             return False, "differs from golden"
         return True, "identical to golden sha256=%s" % digest(files)[:16]
     second, _, _ = run_scenario(scn, image, 2)
     first_digest, second_digest = digest(files), digest(second)
     print("  run 1 sha256=%s\n  run 2 sha256=%s" % (first_digest, second_digest))
     if files != second:
-        sys.stdout.writelines(diff(files, second))
+        report_diff(scn, diff(files, second))
         return False, "runs differ"
     return True, "byte-identical across 2 runs sha256=%s" % first_digest[:16]
 
