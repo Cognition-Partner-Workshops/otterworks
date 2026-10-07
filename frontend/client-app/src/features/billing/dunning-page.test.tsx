@@ -116,4 +116,12 @@ describe("Billing dunning", () => {
     fireEvent.change(screen.getByLabelText("As of"), { target: { value: "2026-03-01" } });
     expect(screen.queryByText("1 tenants suspended.")).not.toBeInTheDocument();
   });
+
+  it("locks the date while a billing run is in flight", async () => {
+    billingServer.use(http.post(`${BASE}/schedule`, () => new Promise<Response>(() => {})));
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Schedule dunning" }));
+    expect(await screen.findByRole("button", { name: "Scheduling…" })).toBeDisabled();
+    expect(screen.getByLabelText("As of")).toBeDisabled();
+  });
 });

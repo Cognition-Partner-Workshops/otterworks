@@ -48,12 +48,10 @@ export default function BillingDunningPage() {
   };
 
   const changeAsOf = (value: string) => {
-    requestVersion.current += 1;
     setAsOf(value);
     setAccounts(null);
     setSchedule(null);
     setSuspension(null);
-    setPending(null);
     setError("");
   };
 
@@ -74,6 +72,7 @@ export default function BillingDunningPage() {
             id="dunning-as-of"
             type="date"
             value={asOf}
+            disabled={pending !== null}
             onChange={(event) => changeAsOf(event.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2"
           />
