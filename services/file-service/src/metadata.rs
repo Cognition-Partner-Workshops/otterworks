@@ -904,10 +904,11 @@ mod parse_tests {
             .collect()
     }
 
-    fn assert_dynamo_err<T: std::fmt::Debug>(r: Result<T, ServiceError>, needle: &str) {
+    fn assert_dynamo_err<T>(r: Result<T, ServiceError>, needle: &str) {
         match r {
             Err(ServiceError::DynamoError(msg)) => assert!(msg.contains(needle), "{msg}"),
-            other => panic!("expected DynamoError containing {needle:?}, got {other:?}"),
+            Err(e) => panic!("expected DynamoError containing {needle:?}, got {e}"),
+            Ok(_) => panic!("expected DynamoError containing {needle:?}, got Ok"),
         }
     }
 
