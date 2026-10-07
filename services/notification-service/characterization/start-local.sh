@@ -47,5 +47,10 @@ for _ in $(seq 1 60); do
   [[ "$(docker inspect -f '{{.State.Health.Status}}' "$name")" == healthy ]] && break
   sleep 2
 done
-docker inspect -f '{{.State.Health.Status}}' "$name"
+status="$(docker inspect -f '{{.State.Health.Status}}' "$name")"
+echo "$status"
+if [[ "$status" != healthy ]]; then
+  docker logs --tail 50 "$name" >&2 || true
+  exit 1
+fi
 docker exec "$name" java -version 2>&1 | head -1
