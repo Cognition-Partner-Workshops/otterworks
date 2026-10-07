@@ -11,8 +11,10 @@ Observable behaviour of the legacy job, all reproduced here:
    file, stdout "finance report lock present, running anyway"; the run carries
    on. The lock is then (re)created empty with `open(L, ">$LOCKFILE")`, errors
    ignored, and never removed.
-3. `mkdir -p $PARSED $REPORTS 2>/dev/null` through /bin/sh (word splitting
-   included); failure is ignored.
+3. Creates parsed/ and reports/ (like `mkdir -p`); failure is ignored.
+   Accepted difference: legacy runs `mkdir -p $PARSED $REPORTS` through
+   /bin/sh, so a root with spaces, glob or shell metacharacters is split,
+   expanded or executed. The port uses the root as one literal path.
 4. stdout "<scalar(localtime)> finance_excel_report starting". Stamps are
    Perl's scalar(localtime) format, no zone ("Thu Jan 15 00:00:00 2026").
 5. readdir(parsed): entries matching /^CUSTBILL.*\\.psv$/ (`.` excludes "\\n",
@@ -32,8 +34,8 @@ Observable behaviour of the legacy job, all reproduced here:
    UNKNOWN(<rt>); Perl prints inf/nan as Inf, -Inf, NaN. On an empty root the
    report is header-only and the job still exits 0. If the CSV cannot be
    opened: die "cannot write $csv: $!" at line 65, exit code errno.
-8. `cp $csv $xls 2>/dev/null` through /bin/sh: the .xls is a byte copy of the
-   CSV; failure is ignored.
+8. The .xls is a byte copy of the CSV (like `cp`); failure is ignored. Same
+   accepted difference as 3: legacy runs `cp $csv $xls` through /bin/sh.
 9. stdout "<stamp> wrote <root>/reports/finance_billing_<stamp>.xls".
 10. If /usr/sbin/sendmail is executable, pipe a To/Subject/body message to
     `/usr/sbin/sendmail -t 2>/dev/null` (SIGPIPE ignored); otherwise nothing,
@@ -47,6 +49,7 @@ from __future__ import annotations
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -111,9 +114,19 @@ def touch_lock(path: Path) -> None:
         pass
 
 
-def shell(cmd: str) -> None:
-    sys.stdout.flush()
-    subprocess.run(cmd, shell=True, check=False)
+def make_dirs(*dirs: Path) -> None:
+    for d in dirs:
+        try:
+            os.makedirs(d, exist_ok=True)
+        except OSError:
+            pass
+
+
+def copy_report(src: Path, dst: Path) -> None:
+    try:
+        shutil.copyfile(src, dst)
+    except OSError:
+        pass
 
 
 def list_parsed(parsed: Path) -> list[bytes]:
@@ -183,7 +196,7 @@ def run() -> int:
     reports = root / "reports"
 
     touch_lock(cc.lock_path(LOCK_NAME))
-    shell(f"mkdir -p {parsed} {reports} 2>/dev/null")
+    make_dirs(parsed, reports)
     print(cc.perl_localtime_stamp(cc.now_epoch()), "finance_excel_report starting")
 
     tot, cnt = accumulate(parsed, list_parsed(parsed))
@@ -197,7 +210,7 @@ def run() -> int:
     except OSError as exc:
         raise LegacyDie(f"cannot write {csv}: {os.strerror(exc.errno)}", 65, exc.errno) from exc
 
-    shell(f"cp {csv} {xls} 2>/dev/null")
+    copy_report(csv, xls)
     print(cc.perl_localtime_stamp(cc.now_epoch()), f"wrote {xls}")
 
     send_mail(MAILTO[profile], stamp, xls)

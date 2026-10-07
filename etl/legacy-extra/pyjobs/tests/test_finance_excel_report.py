@@ -205,3 +205,19 @@ def test_edge_rows_match_legacy_perl(tmp_path):
     assert legacy.returncode == 0
     for suffix in (".csv", ".xls"):
         assert (roots["python"] / f"{REPORT}{suffix}").read_bytes() == (roots["legacy"] / f"{REPORT}{suffix}").read_bytes()
+
+
+@pytest.mark.parametrize("name", ["with space", "glob*[x]", "x;touch INJECTED;y", "$(touch INJECTED)"])
+def test_root_is_one_literal_path_never_shell_expanded(tmp_path, monkeypatch, name):
+    monkeypatch.chdir(tmp_path)
+    root = tmp_path / name
+    monkeypatch.setenv("OTTERWORKS_LEGACY_ROOT", str(root))
+    monkeypatch.setenv("CUSTBILL_LOCK_DIR", str(tmp_path))
+    monkeypatch.setenv("CUSTBILL_NOW", "2026-01-15 00:00:00")
+    monkeypatch.setattr(fer, "SENDMAIL", str(tmp_path / "no-sendmail"))
+    assert fer.main() == 0
+    csv = root / f"{REPORT}.csv"
+    assert (root / "parsed").is_dir()
+    assert (root / f"{REPORT}.xls").read_bytes() == csv.read_bytes() == b"Currency,RecordType,RecordCount,TotalAmount\n"
+    assert not list(tmp_path.rglob("INJECTED"))
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted([name.split("/")[0], "finance_report.lock"])
