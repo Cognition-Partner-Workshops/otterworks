@@ -1,0 +1,74 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [
+      {
+        "id": {
+          "S": "meta-1"
+        },
+        "owner_id": {
+          "S": "user-alice"
+        },
+        "s3_key": {
+          "S": "files/user-alice/gone-1.pdf"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-2"
+        },
+        "owner_id": {
+          "S": "user-bob"
+        },
+        "s3_key": {
+          "S": "files/user-bob/gone-2.pdf"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

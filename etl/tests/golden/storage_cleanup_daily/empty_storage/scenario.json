@@ -1,0 +1,15 @@
+{
+  "description": "No objects under files/ at all (only one outside the prefix) while metadata still references two keys: zero inventory, no copies, and the report with orphan_percentage taken from the total_objects == 0 branch.",
+  "frozen_time": "2026-07-01T02:30:00Z",
+  "seed": {
+    "s3": [
+      {"bucket": "otterworks-file-storage", "key": "thumbnails/x.png", "body": "outside the files/ prefix", "format": "text"}
+    ],
+    "dynamodb": {
+      "otterworks-file-metadata": [
+        {"id": "meta-1", "s3_key": "files/user-alice/gone-1.pdf", "owner_id": "user-alice"},
+        {"id": "meta-2", "s3_key": "files/user-bob/gone-2.pdf", "owner_id": "user-bob"}
+      ]
+    }
+  }
+}

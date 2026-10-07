@@ -1,0 +1,31 @@
+{
+  "description": "Exact-string matching of s3_key against object keys: a files/ folder marker, case, leading-slash and s3:// URI variants of a key all count as orphans; keys with spaces, '&', '+' and non-ASCII are copied correctly; files-archive/ is outside the files/ prefix; a quarantine copy already at the same <prefix>/<ds>/<key> is overwritten. Metadata rows without s3_key, with an empty or numeric s3_key, and two rows sharing one key.",
+  "frozen_time": "2026-06-01T02:30:00Z",
+  "seed": {
+    "s3": [
+      {"bucket": "otterworks-file-storage", "key": "files/", "body": "", "format": "text"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-alice/Report.PDF", "body": "upper-case key", "format": "text", "content_type": "application/pdf"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-bob/leading.txt", "body": "referenced with a leading slash", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-carol/uri.txt", "body": "referenced as an s3:// URI", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-dan/with space & plus+.txt", "body": "special characters in key", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-dan/ünïcode.txt", "body": "non-ascii key, referenced", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-dan/shared.txt", "body": "referenced by two metadata rows", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-erin/dup.txt", "body": "today's orphan body", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files-archive/old.txt", "body": "outside the files/ prefix", "format": "text"},
+      {"bucket": "otterworks-file-quarantine", "key": "quarantined/2026-06-01/files/user-erin/dup.txt", "body": "earlier copy at the same quarantine key", "format": "text", "content_type": "text/plain"}
+    ],
+    "dynamodb": {
+      "otterworks-file-metadata": [
+        {"id": "meta-case", "s3_key": "files/user-alice/report.pdf", "owner_id": "user-alice"},
+        {"id": "meta-slash", "s3_key": "/files/user-bob/leading.txt", "owner_id": "user-bob"},
+        {"id": "meta-uri", "s3_key": "s3://otterworks-file-storage/files/user-carol/uri.txt", "owner_id": "user-carol"},
+        {"id": "meta-unicode", "s3_key": "files/user-dan/ünïcode.txt", "owner_id": "user-dan"},
+        {"id": "meta-shared-1", "s3_key": "files/user-dan/shared.txt", "owner_id": "user-dan"},
+        {"id": "meta-shared-2", "s3_key": "files/user-dan/shared.txt", "owner_id": "user-dan"},
+        {"id": "meta-no-key", "owner_id": "user-frank", "name": "no s3_key attribute"},
+        {"id": "meta-empty-key", "s3_key": "", "owner_id": "user-frank"},
+        {"id": "meta-numeric-key", "s3_key": 42, "owner_id": "user-frank"}
+      ]
+    }
+  }
+}

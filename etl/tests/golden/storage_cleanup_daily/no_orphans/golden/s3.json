@@ -1,0 +1,92 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "reports/storage-cleanup/2026-05-10/report.json": {
+      "body": {
+        "cleanup": {
+          "objects_failed": 0,
+          "objects_quarantined": 0,
+          "quarantine_bucket": "otterworks-file-quarantine"
+        },
+        "generated_at": "<normalized:generated_at>",
+        "inventory": {
+          "total_objects": 3,
+          "total_size_bytes": 54,
+          "total_size_gb": 0.0
+        },
+        "orphans": {
+          "orphan_percentage": 0.0,
+          "orphaned_bytes": 0,
+          "orphaned_objects": 0,
+          "orphaned_size_gb": 0.0
+        },
+        "report_date": "2026-05-10",
+        "report_type": "storage_cleanup",
+        "savings": {
+          "estimated_monthly_savings_usd": 0.0,
+          "storage_freed_gb": 0.0
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {
+    "quarantined/2026-05-09/files/user-erin/old.txt": {
+      "body": "quarantined yesterday",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-storage": {
+    "files/user-alice/a.pdf": {
+      "body": "alice pdf body",
+      "content_encoding": null,
+      "content_type": "application/pdf",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "files/user-bob/b.csv": {
+      "body": "id,name\n1,bob\n",
+      "content_encoding": null,
+      "content_type": "text/csv",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "files/user-carol/nested/deep/c.json": {
+      "body": {
+        "nested": {
+          "deep": true
+        }
+      },
+      "content_encoding": null,
+      "content_type": "application/json",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "uploads/tmp.bin": {
+      "body": "unreferenced but outside files/",
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-files": {}
+}
