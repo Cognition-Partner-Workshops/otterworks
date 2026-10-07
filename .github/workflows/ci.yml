@@ -556,6 +556,8 @@ jobs:
       - if: steps.changes.outputs.airflow == 'true'
         run: make airflow-up AIRFLOW_INFRA_SERVICES=postgres
       - if: steps.changes.outputs.airflow == 'true'
+        run: make airflow-config-check AIRFLOW_INFRA_SERVICES=postgres
+      - if: steps.changes.outputs.airflow == 'true'
         run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow exec -T airflow-scheduler airflow dags test otterworks_platform_check
       - if: failure() && steps.changes.outputs.airflow == 'true'
         run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs --no-color
