@@ -118,7 +118,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 | CUSTBILL month-end extract `tools/oracle_custbill_extract.py` (via `make tp-month-end`, not cron) | `etl/legacy-extra/tools` | TP only (**in scope**) | Python (`oracledb`) | None | **N/A** | Oracle `OW_BILLING` invoices, written as fixed-width CUSTBILL input for the parse + finance-report stages |
 | Oracle `JOB_NIGHTLY_DUNNING` (DBMS_SCHEDULER, 02:00 daily) | `services/legacy-billing/db/oracle/schema/04_jobs.sql` | TP only (**in scope**) | Oracle DBMS_SCHEDULER | `pkg_dunning.sp_schedule_dunning` + `sp_suspend_overdue` | **Tied to the Oracle licence** | `OW_BILLING` |
 | Oracle `JOB_PURGE_AUDIT_LOG` (DBMS_SCHEDULER, 03:30 daily) | same | TP only (**in scope**) | Oracle DBMS_SCHEDULER | 90-day `billing_audit_log` delete, `EXCEPTION WHEN OTHERS THEN NULL` | **Tied to the Oracle licence** | `OW_BILLING` |
-| Analytics `usage-rollup` CronJob (`0 2 * * *`, `Forbid`) | `infrastructure/helm/analytics-service/templates/cronjob.yaml` | both | JVM 17 (analytics image) | `com.otterworks.analytics.batch.UsageRollupJob` (Scala 3.4 / Akka stack) | **No** (inherits analytics-service status) | Reads usage events (`usage-events.ndjson` / S3). Writes a JSON report to an `emptyDir` volume, so the output is discarded with the pod |
+| Analytics `usage-rollup` CronJob (`0 2 * * *`, `Forbid`) | `infrastructure/helm/analytics-service/templates/cronjob.yaml` | both | JVM 17 (analytics image) | `com.otterworks.analytics.batch.UsageRollupJob` (Scala 3.4 / Akka stack) | **No** (inherits analytics-service status) | Reads `ROLLUP_INPUT`, which defaults to the deterministic seed `/seed/usage-events.ndjson` bundled in the image (`values.yaml` `cronjob.input`), not live events. Writes a JSON report to an `emptyDir` volume, so the output is discarded with the pod |
 | LDM migration job | `migration/job` + `migration-job` chart | M only | Python 3.12 (`python:3.12-slim-bookworm`) | Pydantic 2, PyYAML 6, ibm_db 3.2 (optional), Spark local mode | **Yes** | Db2 / Oracle source, PostgreSQL / Azure SQL target |
 | Demo reaper (`reaper-cronjob`) / tenant runner | `demo-platform/reaper`, `demo-platform/runner` | both | Bash on `alpine:3.20` (runner image) | kubectl, helm, terraform | **No.** Alpine 3.20 EOL Apr 2026 | EKS, Terraform state |
 | Otter Projects poller | `demo-platform/otter-projects/helm/.../poller-cronjob.yaml` | both | Node 20 | Next.js app code | **No** (Node 20) | Otter Projects DB |
@@ -268,7 +268,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 ### Wave 3: Remaining data and batch estate
 
 - Legacy ETL: replatform the 5 Python cron scripts onto the orchestrator chosen in Wave 1 Track B. Decommission the cron host
-- `usage-rollup`: first persist the nightly batch report (it is written to an `emptyDir` today), so there is a baseline to compare against. Then replace the CronJob with event-driven processing
+- `usage-rollup`: first point `cronjob.input` at a real production event source (it defaults to the bundled seed) and persist the nightly report (it is written to an `emptyDir` today), so there is a live baseline. Then replace the CronJob with event-driven processing
 - LDM: run the Db2 (and Oracle archive) migrations to PostgreSQL / Azure SQL, then purge and retire the archives
 - Insurance commission PL/SQL: extract the packages and migrate the commission OLTP/OLAP data. LDM does not cover this, because its Oracle overlay (`o27-*`) moves the document-retention tables only, so the data move needs its own mapping and reconciliation (a fixture today, not a production estate)
 - Windows desktop: retire in favour of Electron after a usage check
@@ -278,7 +278,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 - Cron entries on the ETL host (`etl/crontab`): 0
 - Batch success rate ≥ 99% over 30 days, every failure alerted (no silent `except: pass`), and every job safe to re-run (idempotency test)
 - LDM reconciliation: row counts and hashes match for every migrated table, with rejects triaged to 0 unexplained before purge
-- usage-rollup: daily aggregates from the event-driven path match the persisted batch reports for 14 consecutive days. Data freshness goes from up to 24 h to under 15 min
+- usage-rollup: daily aggregates from the event-driven path match the persisted batch reports, computed from the same production events, for 14 consecutive days. Data freshness goes from up to 24 h to under 15 min
 - Legacy stores (Db2 archive, Oracle archive, insurance Oracle) still serving reads: 0
 - Active Windows desktop installs (telemetry or gateway user-agent): 0 before removal
 
