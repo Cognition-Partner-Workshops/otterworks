@@ -10,8 +10,10 @@ service:
   port: 8087
   targetPort: 8087
 
+# search-service is internal: it is reached only through api-gateway, never
+# through its own public Ingress.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -44,8 +46,10 @@ monitoring:
 
 networkPolicy:
   enabled: true
-  ingressNamespace: ingress-nginx
   monitoringNamespace: monitoring
+  # Pods in the release namespace allowed to call search-service (the gateway).
+  allowedPodLabels:
+    app.kubernetes.io/name: api-gateway
 
 serviceAccount:
   roleArn: ""

@@ -67,6 +67,8 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	defaultDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		defaultDirector(req)
+		// Never forward a client-supplied identity; only the verified token sets it.
+		req.Header.Del("X-User-ID")
 		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
