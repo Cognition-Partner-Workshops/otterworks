@@ -6,7 +6,7 @@
   "source_schema": "OW_BILLING",
   "recorded_at": "2026-10-07T07:20:24Z",
   "ticket": "UNT7-9",
-  "confirmed": false,
+  "confirmed": true,
   "plugin_head": "ce82133329740dbfd3c11c2655619b46395c7904",
   "plugin_tree": "6f1b121812e3de4c60ddabd203878c7bc4f06fe6",
   "plugin_base": {
@@ -56,13 +56,17 @@
         "DUNNING_ATTEMPTS",
         "NOTIFICATIONS",
         "SUBSCRIPTIONS",
+        "SUBSCRIPTIONS_HIST",
         "TENANTS"
       ],
       "disposition": "stays_on_oracle",
       "mongo_equivalent": false,
       "reason": "no Mongo equivalent is built in this run; the dunning/suspension sweep keeps running against Oracle. The ops handbook (ops/OPERATIONS_HANDBOOK.doc.txt:27,49) notes it can overlap the CUSTBILL load; its writes to TENANTS/SUBSCRIPTIONS/DUNNING_ATTEMPTS/NOTIFICATIONS are a parallel-run drift source to reconcile.",
       "scanner_saw_it": false,
-      "finding": "F29"
+      "finding": "F29",
+      "trigger_cascade_writes": [
+        "SUBSCRIPTIONS_HIST"
+      ]
     },
     {
       "id": "dep-job-purge-audit-log",
@@ -146,7 +150,10 @@
       "disposition": "application_level_decision",
       "reason": "sequence-fed surrogate (seq_billing_audit_log -> LOG_ID); becomes the document _id / an ObjectId, no versioning decision",
       "scanner_saw_it": false,
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": [
+        "pkg_ow_util.log_msg"
+      ]
     },
     {
       "name": "TRG_SUBSCRIPTIONS_HIST",
@@ -167,7 +174,16 @@
       "disposition": "application_level_decision",
       "reason": "full-row :OLD copy into SUBSCRIPTIONS_HIST on every update/delete; application-level versioning decision in the model (embedded version array vs. separate history collection vs. drop) \u2014 s3.1",
       "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": [
+        "pkg_plans.sp_change_plan",
+        "pkg_dunning.sp_suspend_overdue"
+      ],
+      "pattern_ids": [
+        "ap-1bdc6a5070",
+        "ap-a4604667e7",
+        "ap-bdfdef0db0"
+      ]
     },
     {
       "name": "TRG_SUB_NO_UNCANCEL",
@@ -185,9 +201,13 @@
       },
       "classification": "state_rule",
       "disposition": "application_level_decision",
-      "reason": "cancelled (30) subscriptions cannot change status_cd; no SQL \u2014 becomes an application-level state-machine validation",
+      "reason": "cancelled (30) subscriptions silently keep status_cd 30 on any UPDATE OF status_cd (IF :OLD.status_cd = 30 THEN :NEW.status_cd := 30); no RAISE, no SQL \u2014 becomes an application-level \"cancelled is terminal\" state rule applied silently, not a validation error (UNT7-10 correction of the F28 description)",
       "scanner_saw_it": false,
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": [
+        "pkg_plans.sp_change_plan",
+        "pkg_dunning.sp_suspend_overdue"
+      ]
     },
     {
       "name": "TRG_USAGE_EVENTS_CHECK",
@@ -205,9 +225,10 @@
       },
       "classification": "validation",
       "disposition": "application_level_decision",
-      "reason": "units > 0 and kind_cd must exist in CODES (USAGE_KIND); becomes schema validation / enum in the model",
+      "reason": "units > 0 and kind_cd must exist in CODES (USAGE_KIND); becomes schema validation / enum in the model; no PL/SQL routine inserts USAGE_EVENTS \u2014 fired only by the application tier",
       "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": []
     },
     {
       "name": "TRG_CUSTOMER_MASTER_SEQ",
@@ -225,7 +246,7 @@
       },
       "classification": "identity",
       "disposition": "application_level_decision",
-      "reason": "sequence-fed CUST_SEQ_NO when null; identity, no versioning decision",
+      "reason": "sequence-fed CUST_SEQ_NO when null, plus derived-column maintenance: CUST_NAME_UPPER := UPPER(CUST_NAME) and ROW_VERSION_NO defaulted to 1 on every insert (UNT7-10 correction: not identity-only; the upper-case shadow column and the version seed must be reproduced by the writer or dropped in the model)",
       "scanner_saw_it": false,
       "finding": "F27/F28"
     },
@@ -246,9 +267,10 @@
       },
       "classification": "history_shadow",
       "disposition": "application_level_decision",
-      "reason": "155-column :OLD copy into CUSTOMER_MASTER_HIST; application-level versioning decision in the model \u2014 s3.1",
+      "reason": "155-column :OLD copy into CUSTOMER_MASTER_HIST; application-level versioning decision in the model \u2014 s3.1; no routine or job in the estate updates CUSTOMER_MASTER",
       "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": []
     },
     {
       "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
@@ -268,7 +290,8 @@
       "disposition": "application_level_decision",
       "reason": "sequence-fed EAV_ID when null; identity, no versioning decision",
       "scanner_saw_it": false,
-      "finding": "F27/F28"
+      "finding": "F27/F28",
+      "fired_by": []
     }
   ],
   "excluded": [
@@ -397,6 +420,9 @@
       "schedule_hint": null,
       "pattern_ids": [
         "ap-779ce5b5b7"
+      ],
+      "triggers_fired": [
+        "TRG_BILLING_AUDIT_LOG_ID"
       ]
     },
     {
@@ -498,14 +524,23 @@
       ],
       "transitive_reads": [],
       "transitive_writes": [
-        "BILLING_AUDIT_LOG"
+        "BILLING_AUDIT_LOG",
+        "SUBSCRIPTIONS_HIST"
       ],
       "invoked_by": [],
       "schedule_hint": null,
       "pattern_ids": [
         "ap-781940a6e5",
         "ap-a7af1a6156",
-        "ap-875f85e898"
+        "ap-875f85e898",
+        "ap-1bdc6a5070"
+      ],
+      "trigger_cascade_writes": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "triggers_fired": [
+        "TRG_SUB_NO_UNCANCEL",
+        "TRG_SUBSCRIPTIONS_HIST"
       ]
     },
     {
@@ -818,7 +853,8 @@
         "ap-75910aef55",
         "ap-b259650bfe",
         "ap-7a575dfc2d"
-      ]
+      ],
+      "triggers_fired": []
     },
     {
       "routine": "pkg_dunning.fn_overdue_accounts",
@@ -928,7 +964,8 @@
       ],
       "transitive_reads": [],
       "transitive_writes": [
-        "BILLING_AUDIT_LOG"
+        "BILLING_AUDIT_LOG",
+        "SUBSCRIPTIONS_HIST"
       ],
       "invoked_by": [
         {
@@ -944,7 +981,15 @@
         "ap-d3754b6b8a",
         "ap-7692fe1e9a",
         "ap-cd2440f5ed",
-        "ap-d0e6a55401"
+        "ap-d0e6a55401",
+        "ap-a4604667e7"
+      ],
+      "trigger_cascade_writes": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "triggers_fired": [
+        "TRG_SUB_NO_UNCANCEL",
+        "TRG_SUBSCRIPTIONS_HIST"
       ]
     }
   ],
@@ -978,6 +1023,22 @@
     ],
     "pkg_rating.sp_finalize_rating": [
       "pkg_invoicing.sp_issue_invoice"
+    ]
+  },
+  "review": {
+    "ticket": "UNT7-10",
+    "reviewed_at": "2026-10-07T07:39:14Z",
+    "verified": [
+      "2 scheduler jobs: names, PLSQL_BLOCK actions, schedules FREQ=DAILY;BYHOUR=2 / BYHOUR=3;BYMINUTE=30, enabled => FALSE (04_jobs.sql:10-17, 21-28)",
+      "19 routines: direct reads/writes/joins/outer joins, cursor loops, dynamic SQL, calls, transitive closure and callers_of against packages/01-05 (transitive_* lists exclude tables the routine touches directly)",
+      "7 triggers: table, timing, events and source lines against 01_tables.sql / 02_horror.sql",
+      "excluded Postgres procs are not Oracle callers; not_registered entries stand (application tier unknown; CUSTBILL feed only in the handbook; fixture bootstrap)"
+    ],
+    "corrections": [
+      "TRG_SUB_NO_UNCANCEL: coerces :NEW.status_cd back to 30 silently, does not RAISE (-20003 in F28 was wrong)",
+      "TRG_CUSTOMER_MASTER_SEQ: also maintains CUST_NAME_UPPER and ROW_VERSION_NO, not identity-only",
+      "trigger cascade missing from the write matrix: sp_change_plan and sp_suspend_overdue (and therefore JOB_NIGHTLY_DUNNING) write SUBSCRIPTIONS_HIST through TRG_SUBSCRIPTIONS_HIST \u2014 added as trigger_cascade_writes / transitive_writes and triggers_fired / fired_by (F39)",
+      "no error found in reads, joins, outer_joins, cursor_loops, dynamic_sql, calls or callers_of"
     ]
   }
 }

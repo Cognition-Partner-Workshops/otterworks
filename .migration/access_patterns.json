@@ -21,8 +21,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
         "lines": [
@@ -32,7 +32,9 @@
       },
       "statement": "SELECT code_desc FROM codes WHERE code_type = :? AND code_val = :?",
       "routine": "pkg_ow_util.f_code_desc",
-      "note": "F30: pkg_ow_util.f_code_desc has no caller anywhere in packages/ or schema/ (all packages resolve *_CD with inline DECODE); CODES lookups from the application tier are unknown (static analysis cannot see callers outside the schema)"
+      "note": "F30: pkg_ow_util.f_code_desc has no caller anywhere in packages/ or schema/ (all packages resolve *_CD with inline DECODE); CODES lookups from the application tier are unknown (static analysis cannot see callers outside the schema)",
+      "caller_class": "unknown",
+      "review_note": "UNT7-10 CONFIRMED against 01_pkg_util.sql:40-40 — tables, predicates, join edges and direction match. Frequency: no PL/SQL caller anywhere in the estate (F30): every package decodes *_CD inline, so this CODES lookup is reached only if the application tier calls f_code_desc directly; no in-estate call rate exists, cold is the conservative default. Extended-reference candidate for the model step only if the app tier confirms the call."
     },
     {
       "id": "ap-779ce5b5b7",
@@ -44,8 +46,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
         "lines": [
@@ -55,7 +57,9 @@
       },
       "statement": "INSERT INTO billing_audit_log (module, message) VALUES (SUBSTR(p_module, ?, ?), SUBSTR(p_message, ?, ?))",
       "routine": "pkg_ow_util.log_msg",
-      "note": "F30: PRAGMA AUTONOMOUS_TRANSACTION + COMMIT \u2014 this write commits independently of the caller's transaction; reached from 7 call sites (see the source.customer BILLING_AUDIT_LOG entries)"
+      "note": "F30: PRAGMA AUTONOMOUS_TRANSACTION + COMMIT — this write commits independently of the caller's transaction; reached from 7 call sites (see the source.customer BILLING_AUDIT_LOG entries)",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 01_pkg_util.sql:70-71 — tables, predicates, join edges and direction match. Frequency: autonomous-transaction audit write reached from every entrypoint incl. the read_hot fn_list_plans; commits independently of the caller."
     },
     {
       "id": "ap-0dbfc6c730",
@@ -67,19 +71,21 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
           23,
           23
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_plans.fn_list_plans",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:23-23 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-33e1dc2584",
@@ -100,8 +106,8 @@
         "PLANS.MONTHLY_FEE",
         "PLANS.CODE"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -110,7 +116,9 @@
         ]
       },
       "statement": "SELECT id AS plan_id, code, DECODE(tier_cd, ?, ?, ?, ?, ?, ?, ?) AS tier, monthly_fee, included_units, overage_rate FROM plans WHERE NVL(active_yn, ?) = ? ORDER BY monthly_fee, code",
-      "routine": "pkg_plans.fn_list_plans"
+      "routine": "pkg_plans.fn_list_plans",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:25-31 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-df26fbfed9",
@@ -142,8 +150,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -158,7 +166,9 @@
           "PLANS",
           "SUBSCRIPTIONS"
         ]
-      ]
+      ],
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:41-47 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-60ec05ff91",
@@ -198,8 +208,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -214,7 +224,9 @@
           "PLANS",
           "SUBSCRIPTIONS"
         ]
-      ]
+      ],
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:53-68 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-95a0f9e481",
@@ -256,8 +268,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -273,7 +285,9 @@
           "SUBSCRIPTIONS"
         ]
       ],
-      "nested_in": "ap-60ec05ff91"
+      "nested_in": "ap-60ec05ff91",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:54-68 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-781940a6e5",
@@ -298,8 +312,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -309,7 +323,9 @@
       },
       "statement": "SELECT id, status_cd FROM subscriptions WHERE tenant_id = p_tenant_id AND ends_on IS NULL AND starts_on < p_effective_on FOR UPDATE",
       "routine": "pkg_plans.sp_change_plan",
-      "note": "F33: explicit cursor c_open_subs with FOR UPDATE (row locks held across the loop), driver of the sp_change_plan loop (02_pkg_plans.sql:88-95)"
+      "note": "F33: explicit cursor c_open_subs with FOR UPDATE (row locks held across the loop), driver of the sp_change_plan loop (02_pkg_plans.sql:88-95)",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:75-80 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-c9bce80bbe",
@@ -321,19 +337,22 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
           84,
           85
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_plans.sp_change_plan",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "txn_group": "sp_change_plan: UPDATE subscriptions (per open row) + INSERT subscriptions + TRG_SUBSCRIPTIONS_HIST rows, one transaction (audit via autonomous log_msg is separate)",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:84-85 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-a7af1a6156",
@@ -358,21 +377,24 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
           91,
           94
         ],
-        "customer": "UPDATE ... WHERE CURRENT OF c_open_subs (02_pkg_plans.sql:88-95) inside the cursor loop; effective predicate is the cursor's (02_pkg_plans.sql:75-80: tenant_id = :p, ends_on IS NULL, starts_on < :p_effective_on, FOR UPDATE row lock) \u2014 filter supplied by hand; closes every open subscription of the tenant"
+        "customer": "UPDATE ... WHERE CURRENT OF c_open_subs (02_pkg_plans.sql:88-95) inside the cursor loop; effective predicate is the cursor's (02_pkg_plans.sql:75-80: tenant_id = :p, ends_on IS NULL, starts_on < :p_effective_on, FOR UPDATE row lock) — filter supplied by hand; closes every open subscription of the tenant"
       },
       "statement": "UPDATE subscriptions SET ends_on = p_effective_on - ?, status_cd = DECODE(r.status_cd, ?, ?, ?) WHERE CURRENT OF c_open_subs",
       "routine": "pkg_plans.sp_change_plan",
       "in_loop": true,
       "pinned": true,
-      "note": "F33: scanner said routine='pkg_plans.sp_change_plan' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm"
+      "note": "F33: scanner said routine='pkg_plans.sp_change_plan' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm",
+      "caller_class": "transactional",
+      "txn_group": "sp_change_plan: UPDATE subscriptions (per open row) + INSERT subscriptions + TRG_SUBSCRIPTIONS_HIST rows, one transaction (audit via autonomous log_msg is separate)",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:91-94 — tables, predicates, join edges and direction match. WHERE CURRENT OF c_open_subs: effective predicate is the FOR UPDATE cursor at :75-80 (pinned, F33c). Every row updated here also fires TRG_SUBSCRIPTIONS_HIST and TRG_SUB_NO_UNCANCEL (cascade entry added, F39)."
     },
     {
       "id": "ap-875f85e898",
@@ -384,8 +406,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -395,7 +417,10 @@
       },
       "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, status_cd)",
       "routine": "pkg_plans.sp_change_plan",
-      "note": "F33: dynamic SQL assembled from two concatenated literals (02_pkg_plans.sql:101-103); scanner captured only the first fragment, VALUES (:1,:2,:3,:4,10) and the f_md5_uuid-derived id are not in `statement`; executed once per sp_change_plan call after the loop"
+      "note": "F33: dynamic SQL assembled from two concatenated literals (02_pkg_plans.sql:101-103); scanner captured only the first fragment, VALUES (:1,:2,:3,:4,10) and the f_md5_uuid-derived id are not in `statement`; executed once per sp_change_plan call after the loop",
+      "caller_class": "transactional",
+      "txn_group": "sp_change_plan: UPDATE subscriptions (per open row) + INSERT subscriptions + TRG_SUBSCRIPTIONS_HIST rows, one transaction (audit via autonomous log_msg is separate)",
+      "review_note": "UNT7-10 CONFIRMED against 02_pkg_plans.sql:101-101 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-22fec4f2aa",
@@ -424,8 +449,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -434,7 +459,9 @@
         ]
       },
       "statement": "SELECT id, status_cd, suspended_on, plan_id INTO v_sub_id, v_sub_status, v_suspended_on, v_plan_id FROM (SELECT s.id, s.status_cd, s.suspended_on, s.plan_id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORD",
-      "routine": "pkg_rating.compute_rating"
+      "routine": "pkg_rating.compute_rating",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:55-63 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional)."
     },
     {
       "id": "ap-1fe02141ee",
@@ -465,8 +492,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -476,7 +503,9 @@
       },
       "statement": "SELECT s.id, s.status_cd, s.suspended_on, s.plan_id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
       "routine": "pkg_rating.compute_rating",
-      "nested_in": "ap-22fec4f2aa"
+      "nested_in": "ap-22fec4f2aa",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:57-62 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional)."
     },
     {
       "id": "ap-cd877ffc6d",
@@ -493,8 +522,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -503,7 +532,9 @@
         ]
       },
       "statement": "SELECT included_units, overage_rate INTO v_included, v_rate FROM plans WHERE id = v_plan_id",
-      "routine": "pkg_rating.compute_rating"
+      "routine": "pkg_rating.compute_rating",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:69-70 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional)."
     },
     {
       "id": "ap-61c2839e36",
@@ -525,20 +556,22 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
           77,
           78
         ],
-        "customer": "cursor-loop driver (row-by-row over the tenant's USAGE_EVENTS); the period predicate is applied in PL/SQL (03_pkg_rating.sql:79-80, TO_CHAR(occurred_at,'YYYYMMDD') between period bounds), so the SQL fetches the whole tenant history \u2014 filter extended by hand"
+        "customer": "cursor-loop driver (row-by-row over the tenant's USAGE_EVENTS); the period predicate is applied in PL/SQL (03_pkg_rating.sql:79-80, TO_CHAR(occurred_at,'YYYYMMDD') between period bounds), so the SQL fetches the whole tenant history — filter extended by hand"
       },
       "statement": "SELECT u.units, u.occurred_at FROM usage_events u WHERE u.tenant_id = p_tenant_id)",
       "routine": "pkg_rating.compute_rating",
       "pinned": true,
-      "note": "F33: scanner said routine='pkg_rating.compute_rating' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm"
+      "note": "F33: scanner said routine='pkg_rating.compute_rating' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:77-78 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional). SQL-level filter is tenant_id only; the OCCURRED_AT range in `filter` is the PL/SQL IF at :79-80 (pinned, F33b) — the read is a full tenant usage history scan."
     },
     {
       "id": "ap-81929b0d21",
@@ -565,8 +598,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -576,7 +609,9 @@
       },
       "statement": "SELECT rr.rollover_units FROM rating_results rr, rating_periods rp WHERE rp.id = rr.period_id AND rp.tenant_id = p_tenant_id AND rp.period_start < p_period_start AND rp.period_start >= ADD_MONTHS(p_period_start, -?))",
       "routine": "pkg_rating.compute_rating",
-      "note": "F33: cursor-loop driver (row-by-row over prior-period RATING_RESULTS, 3-month rollover window)"
+      "note": "F33: cursor-loop driver (row-by-row over prior-period RATING_RESULTS, 3-month rollover window)",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:87-92 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional)."
     },
     {
       "id": "ap-338ce19a87",
@@ -588,19 +623,21 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
           117,
           119
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_rating.compute_rating",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:117-119 — tables, predicates, join edges and direction match. Frequency: hottest caller is a read_hot refcursor (fn_usage_rating / fn_invoice_preview via compute_preview); also reached by sp_finalize_rating (transactional)."
     },
     {
       "id": "ap-286ed36e25",
@@ -625,8 +662,8 @@
       ],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -637,7 +674,9 @@
       },
       "statement": null,
       "routine": "pkg_rating.fn_usage_rating",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:126-126 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-2b3995792f",
@@ -659,8 +698,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -669,7 +708,9 @@
         ]
       },
       "statement": "SELECT DECODE(u.kind_cd, ?, ?, ?, ?, ?, ?, ?) AS kind, COUNT(*) AS event_count, NVL(SUM(u.units), ?) AS units FROM usage_events u WHERE u.tenant_id = p_tenant_id AND TO_CHAR(u.occurred_at, ?) BETWEEN TO_CHAR(p_period_start, ?) AND TO_CHAR(p_period_end, ?) GROUP BY DECODE(u.kind_cd, ?, ?, ?, ?, ?, ?,",
-      "routine": "pkg_rating.fn_usage_summary"
+      "routine": "pkg_rating.fn_usage_summary",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:147-158 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-b6d8685d76",
@@ -698,8 +739,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -708,7 +749,9 @@
         ]
       },
       "statement": "SELECT id INTO v_sub_id FROM (SELECT s.id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC) WHERE ROWNUM <= ?",
-      "routine": "pkg_rating.sp_finalize_rating"
+      "routine": "pkg_rating.sp_finalize_rating",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:172-178 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-2cc202a47e",
@@ -739,8 +782,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -750,7 +793,9 @@
       },
       "statement": "SELECT s.id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
       "routine": "pkg_rating.sp_finalize_rating",
-      "nested_in": "ap-b6d8685d76"
+      "nested_in": "ap-b6d8685d76",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:173-177 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-8e58932397",
@@ -762,8 +807,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -773,7 +818,10 @@
       },
       "statement": "INSERT INTO rating_periods (id, tenant_id, period_start, period_end) VALUES (v_period_id, p_tenant_id, p_period_start, p_period_end)",
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F33: INSERT half of a DUP_VAL_ON_INDEX upsert on RATING_PERIODS (03_pkg_rating.sql:184-193); the UPDATE at :189-192 is the same logical write"
+      "note": "F33: INSERT half of a DUP_VAL_ON_INDEX upsert on RATING_PERIODS (03_pkg_rating.sql:184-193); the UPDATE at :189-192 is the same logical write",
+      "caller_class": "transactional",
+      "txn_group": "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:185-186 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-8ee13949bc",
@@ -794,8 +842,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -805,7 +853,10 @@
       },
       "statement": "UPDATE rating_periods SET period_end = p_period_end WHERE tenant_id = p_tenant_id AND period_start = p_period_start",
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F33: UPDATE half of the RATING_PERIODS upsert (see :185)"
+      "note": "F33: UPDATE half of the RATING_PERIODS upsert (see :185)",
+      "caller_class": "transactional",
+      "txn_group": "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:189-192 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-6b30ea3439",
@@ -830,8 +881,8 @@
       ],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -842,7 +893,9 @@
       },
       "statement": null,
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:195-195 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-d7af986eeb",
@@ -854,8 +907,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -865,7 +918,10 @@
       },
       "statement": "INSERT INTO rating_results ( id, period_id, subscription_id, used_units, quota_units, rollover_units, billable_units, overage_amount, created_at ) VALUES ( v_result_id, v_period_id, v_sub_id, g_used_units, g_quota_units, GREATEST(g_quota_units - g_used_units, ?), g_billable_units, g_overage_amount, ",
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F33: INSERT half of a DUP_VAL_ON_INDEX upsert on RATING_RESULTS (03_pkg_rating.sql:198-215); the UPDATE at :209-214 is the same logical write"
+      "note": "F33: INSERT half of a DUP_VAL_ON_INDEX upsert on RATING_RESULTS (03_pkg_rating.sql:198-215); the UPDATE at :209-214 is the same logical write",
+      "caller_class": "transactional",
+      "txn_group": "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:199-206 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-76af3595e0",
@@ -882,8 +938,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -893,7 +949,10 @@
       },
       "statement": "UPDATE rating_results SET used_units = g_used_units, rollover_units = GREATEST(g_quota_units - g_used_units, ?), billable_units = g_billable_units, overage_amount = g_overage_amount WHERE id = v_result_id",
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F33: UPDATE half of the RATING_RESULTS upsert (see :199)"
+      "note": "F33: UPDATE half of the RATING_RESULTS upsert (see :199)",
+      "caller_class": "transactional",
+      "txn_group": "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:209-214 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-3e8d25fd0a",
@@ -905,19 +964,22 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
           216,
           216
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_rating.sp_finalize_rating",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "txn_group": "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "review_note": "UNT7-10 CONFIRMED against 03_pkg_rating.sql:216-216 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-ee373ebbd1",
@@ -952,8 +1014,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -962,7 +1024,9 @@
         ]
       },
       "statement": "SELECT code, monthly_fee INTO g_plan_code, g_plan_fee FROM (SELECT p.code, p.monthly_fee FROM subscriptions s, plans p WHERE p.id = s.plan_id AND s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC) WHERE ROWNUM <",
-      "routine": "pkg_invoicing.compute_preview"
+      "routine": "pkg_invoicing.compute_preview",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:35-43 — tables, predicates, join edges and direction match. Frequency: only caller is fn_invoice_preview (read_hot refcursor; consumed again inside sp_issue_invoice)."
     },
     {
       "id": "ap-160686ae25",
@@ -999,8 +1063,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1010,7 +1074,9 @@
       },
       "statement": "SELECT p.code, p.monthly_fee FROM subscriptions s, plans p WHERE p.id = s.plan_id AND s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
       "routine": "pkg_invoicing.compute_preview",
-      "nested_in": "ap-ee373ebbd1"
+      "nested_in": "ap-ee373ebbd1",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:36-42 — tables, predicates, join edges and direction match. Frequency: only caller is fn_invoice_preview (read_hot refcursor; consumed again inside sp_issue_invoice)."
     },
     {
       "id": "ap-08afdeda17",
@@ -1035,8 +1101,8 @@
       ],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1047,7 +1113,9 @@
       },
       "statement": null,
       "routine": "pkg_invoicing.compute_preview",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:48-48 — tables, predicates, join edges and direction match. Frequency: only caller is fn_invoice_preview (read_hot refcursor; consumed again inside sp_issue_invoice)."
     },
     {
       "id": "ap-2e59f9675d",
@@ -1068,8 +1136,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1079,7 +1147,9 @@
       },
       "statement": "SELECT remaining_amount FROM credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ?)",
       "routine": "pkg_invoicing.compute_preview",
-      "note": "F33: cursor-loop driver (row-by-row sum of open CREDIT_NOTES; could be one SUM)"
+      "note": "F33: cursor-loop driver (row-by-row sum of open CREDIT_NOTES; could be one SUM)",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:53-54 — tables, predicates, join edges and direction match. Frequency: only caller is fn_invoice_preview (read_hot refcursor; consumed again inside sp_issue_invoice)."
     },
     {
       "id": "ap-41de3e5203",
@@ -1096,8 +1166,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1106,7 +1176,9 @@
         ]
       },
       "statement": "SELECT NVL(tax_exempt_yn, ?) INTO v_exempt FROM tenants WHERE id = p_tenant_id",
-      "routine": "pkg_invoicing.compute_preview"
+      "routine": "pkg_invoicing.compute_preview",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:59-60 — tables, predicates, join edges and direction match. Frequency: only caller is fn_invoice_preview (read_hot refcursor; consumed again inside sp_issue_invoice)."
     },
     {
       "id": "ap-738112c48d",
@@ -1133,8 +1205,8 @@
       ],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1145,7 +1217,9 @@
       },
       "statement": null,
       "routine": "pkg_invoicing.fn_invoice_preview",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:77-77 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-620d0a2057",
@@ -1164,8 +1238,8 @@
       "sort": [
         "INVOICE_LINES.LINE_NO"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1174,7 +1248,9 @@
         ]
       },
       "statement": "SELECT line_no, line_type, description, amount FROM invoice_lines WHERE invoice_id = p_invoice_id ORDER BY line_no",
-      "routine": "pkg_invoicing.fn_invoice_lines"
+      "routine": "pkg_invoicing.fn_invoice_lines",
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:106-109 — tables, predicates, join edges and direction match. Reads the transactional INVOICE_LINES (FK to INVOICES ON DELETE CASCADE, orphans impossible), not the bulk INVOICE_LINE table that carries the 37 planted orphans; no package or trigger reads INVOICE_LINE / INVOICE_HEADER / CUSTOMER_MASTER / ENTITY_ATTR_VALUE (F38)."
     },
     {
       "id": "ap-6f4b58d333",
@@ -1187,19 +1263,22 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
           134,
           134
         ],
-        "customer": "transitive writes via pkg_rating.sp_finalize_rating (03_pkg_rating.sql:162-217): DUP_VAL_ON_INDEX upserts of the period and its rating result before the invoice is written \u2014 one issue_invoice call spans RATING_PERIODS, RATING_RESULTS, INVOICES, INVOICE_LINES, CREDIT_NOTES and BILLING_AUDIT_LOG in a single transaction (audit log excepted)"
+        "customer": "transitive writes via pkg_rating.sp_finalize_rating (03_pkg_rating.sql:162-217): DUP_VAL_ON_INDEX upserts of the period and its rating result before the invoice is written — one issue_invoice call spans RATING_PERIODS, RATING_RESULTS, INVOICES, INVOICE_LINES, CREDIT_NOTES and BILLING_AUDIT_LOG in a single transaction (audit log excepted)"
       },
       "statement": null,
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:134-134 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-c026ebf3a8",
@@ -1211,8 +1290,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1221,7 +1300,10 @@
         ]
       },
       "statement": "INSERT INTO invoices ( id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd ) VALUES ( v_invoice_id, p_tenant_id, v_period_id, CAST(p_period_end AS TIMESTAMP), ?, ?, ?, ? )",
-      "routine": "pkg_invoicing.sp_issue_invoice"
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:137-142 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-c43f1f14dc",
@@ -1238,8 +1320,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1248,7 +1330,10 @@
         ]
       },
       "statement": "UPDATE invoices SET status_cd = ? WHERE id = v_invoice_id",
-      "routine": "pkg_invoicing.sp_issue_invoice"
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:145-145 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-5c6c87e418",
@@ -1265,8 +1350,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1276,7 +1361,10 @@
       },
       "statement": "DELETE FROM invoice_lines WHERE invoice_id = :?",
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "note": "F33: dynamic DELETE (EXECUTE IMMEDIATE) rebuilding the INVOICE_LINES child set before the loop INSERT at :157-163; invoice lines are fully owned by the invoice (embed candidate)"
+      "note": "F33: dynamic DELETE (EXECUTE IMMEDIATE) rebuilding the INVOICE_LINES child set before the loop INSERT at :157-163; invoice lines are fully owned by the invoice (embed candidate)",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:150-150 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-4f5ea36ffb",
@@ -1303,8 +1391,8 @@
       ],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1315,7 +1403,9 @@
       },
       "statement": null,
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:152-152 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-56d46b7c81",
@@ -1327,8 +1417,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1339,7 +1429,10 @@
       "statement": "INSERT INTO invoice_lines ( id, invoice_id, line_no, line_type, description, amount ) VALUES ( pkg_ow_util.f_md5_uuid(v_invoice_id || TO_CHAR(v_line_no)), v_invoice_id, v_line_no, v_line_type, v_descr, DECODE(v_line_type, ?, v_line_total, v_amount) )",
       "routine": "pkg_invoicing.sp_issue_invoice",
       "in_loop": true,
-      "note": "F33: INSERT per fetched row of the fn_invoice_preview refcursor (04_pkg_invoicing.sql:152-166, EXIT WHEN NOTFOUND); the loop driver is a function result, not a table cursor"
+      "note": "F33: INSERT per fetched row of the fn_invoice_preview refcursor (04_pkg_invoicing.sql:152-166, EXIT WHEN NOTFOUND); the loop driver is a function result, not a table cursor",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:157-163 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-75910aef55",
@@ -1356,8 +1449,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1366,7 +1459,10 @@
         ]
       },
       "statement": "UPDATE invoices SET subtotal = ROUND(v_subtotal, ?), tax = ROUND(v_tax, ?), total = v_total WHERE id = v_invoice_id",
-      "routine": "pkg_invoicing.sp_issue_invoice"
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:175-178 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-b259650bfe",
@@ -1390,8 +1486,8 @@
         "CREDIT_NOTES.ISSUED_ON",
         "CREDIT_NOTES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1401,7 +1497,9 @@
       },
       "statement": "SELECT id, remaining_amount FROM credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ? ORDER BY issued_on, id)",
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "note": "F33: cursor-loop driver (oldest-first CREDIT_NOTES consumption, ORDER BY issued_at) feeding the UPDATE at :186-188"
+      "note": "F33: cursor-loop driver (oldest-first CREDIT_NOTES consumption, ORDER BY issued_at) feeding the UPDATE at :186-188",
+      "caller_class": "transactional",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:182-184 — tables, predicates, join edges and direction match. Note typo: the scanner note says ORDER BY issued_at; the column and the sort field are ISSUED_ON (04_pkg_invoicing.sql:184)."
     },
     {
       "id": "ap-7a575dfc2d",
@@ -1418,8 +1516,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1429,7 +1527,10 @@
       },
       "statement": "UPDATE credit_notes SET remaining_amount = GREATEST(remaining_amount - v_credit, ?) WHERE id = r.id",
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "in_loop": true
+      "in_loop": true,
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:186-188 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-c432f753ad",
@@ -1441,19 +1542,22 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
           192,
           193
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_invoicing.sp_issue_invoice",
-      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm"
+      "note": "F30: added by hand (UNT7-9), not emitted by access_scan.py; reviewer to confirm",
+      "caller_class": "transactional",
+      "txn_group": "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "review_note": "UNT7-10 CONFIRMED against 04_pkg_invoicing.sql:192-193 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-46a8eb988b",
@@ -1484,8 +1588,8 @@
         "INVOICES.ISSUED_AT",
         "INVOICES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1500,7 +1604,9 @@
           "TENANTS",
           "INVOICES"
         ]
-      ]
+      ],
+      "caller_class": "read_hot",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:21-29 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-644c102b12",
@@ -1520,8 +1626,8 @@
         "INVOICES.ISSUED_AT",
         "INVOICES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1540,7 +1646,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:40-42 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-37287a11b5",
@@ -1557,8 +1665,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1578,7 +1686,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:43-44 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-68fdfcc880",
@@ -1590,8 +1700,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1611,7 +1721,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_schedule_dunning: INSERT dunning_attempts per overdue invoice; explicit COMMIT at :69",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:53-58 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-db58f57ad1",
@@ -1623,15 +1736,15 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
           66,
           68
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call"
       },
       "statement": null,
       "routine": "pkg_dunning.sp_schedule_dunning",
@@ -1642,7 +1755,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_schedule_dunning: INSERT dunning_attempts per overdue invoice; explicit COMMIT at :69",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:66-68 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-eb72a29af5",
@@ -1664,8 +1780,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1684,7 +1800,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:74-77 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-c089416cd9",
@@ -1705,8 +1823,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1726,7 +1844,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:78-79 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-8e4baaa9a0",
@@ -1743,8 +1863,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1764,7 +1884,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:81-81 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-d3754b6b8a",
@@ -1785,8 +1908,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1806,7 +1929,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:82-84 — tables, predicates, join edges and direction match. Every row updated here also fires TRG_SUBSCRIPTIONS_HIST and TRG_SUB_NO_UNCANCEL (cascade entry added, F39)."
     },
     {
       "id": "ap-7692fe1e9a",
@@ -1831,8 +1957,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1852,7 +1978,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:86-94 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-cd2440f5ed",
@@ -1877,8 +2006,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1899,7 +2028,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:87-94 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-d0e6a55401",
@@ -1924,8 +2055,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1946,7 +2077,9 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:92-94 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-fcd0dc0474",
@@ -1958,15 +2091,15 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
           96,
           96
         ],
-        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) \u2014 one audit row per call; inside the per-tenant loop"
+        "customer": "transitive write via pkg_ow_util.log_msg (01_pkg_util.sql:66-77, PRAGMA AUTONOMOUS_TRANSACTION, commits on its own) — one audit row per call; inside the per-tenant loop"
       },
       "statement": null,
       "routine": "pkg_dunning.sp_suspend_overdue",
@@ -1978,7 +2111,10 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99",
+      "review_note": "UNT7-10 CONFIRMED against 05_pkg_dunning.sql:96-96 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-f1cd68c5b3",
@@ -1990,7 +2126,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
@@ -2002,7 +2138,9 @@
       },
       "statement": "INSERT INTO codes VALUES (?, ?, ?)",
       "pinned": true,
-      "note": "F27: scanner said routine='trg_billing_audit_log_id' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm"
+      "note": "F27: scanner said routine='trg_billing_audit_log_id' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-bdfdef0db0",
@@ -2014,15 +2152,15 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
           213,
           222
         ],
-        "customer": "body of trg_subscriptions_hist (01_tables.sql:206-226): AFTER UPDATE OR DELETE ON subscriptions, full-row :OLD copy into SUBSCRIPTIONS_HIST \u2014 trigger-driven history shadow"
+        "customer": "body of trg_subscriptions_hist (01_tables.sql:206-226): AFTER UPDATE OR DELETE ON subscriptions, full-row :OLD copy into SUBSCRIPTIONS_HIST — trigger-driven history shadow"
       },
       "statement": "INSERT INTO subscriptions_hist ( hist_id, hist_dt, hist_op, id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on ) VALUES ( seq_subscriptions_hist.NEXTVAL, TO_CHAR(SYSDATE, ?), v_op, :OLD.id, :OLD.tenant_id, :OLD.plan_id, :OLD.starts_on, :OLD.ends_on, :OLD.status_cd, :OLD.suspended_on",
       "routine": "trg_subscriptions_hist",
@@ -2034,7 +2172,9 @@
           "update",
           "delete"
         ]
-      }
+      },
+      "caller_class": "trigger",
+      "review_note": "UNT7-10 CONFIRMED against 01_tables.sql:213-222 — tables, predicates, join edges and direction match. Frequency: fires on every SUBSCRIPTIONS UPDATE/DELETE: pkg_plans.sp_change_plan (transactional, ap-a7af1a6156) and pkg_dunning.sp_suspend_overdue (batch, ap-d3754b6b8a); hottest firing path decides."
     },
     {
       "id": "ap-f0f920bfd1",
@@ -2046,15 +2186,15 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
           228,
           237
         ],
-        "customer": "BEFORE UPDATE OF status_cd ON subscriptions: :OLD.status_cd = 30 (cancelled) AND :NEW.status_cd <> 30 -> RAISE -20003; a state-machine rule with no SQL, invisible to the scanner; becomes an application-level validation in the Mongo model"
+        "customer": "UNT7-10 review: trg_sub_no_uncancel (01_tables.sql:228-237) is a BEFORE UPDATE OF status_cd ON subscriptions FOR EACH ROW rule: IF :OLD.status_cd = 30 THEN :NEW.status_cd := 30 — a cancelled subscription silently KEEPS status 30 on any update; no RAISE_APPLICATION_ERROR, no SQL. Mirrors the CASE in the Postgres sp_change_plan (comment at :226-227). Model-side: state-machine rule \"cancelled is terminal\", applied silently, not a validation error."
       },
       "statement": null,
       "routine": "trg_sub_no_uncancel",
@@ -2064,7 +2204,9 @@
         "events": [
           "update"
         ]
-      }
+      },
+      "caller_class": "trigger",
+      "review_note": "UNT7-10 CONFIRMED against 01_tables.sql:228-237 — tables, predicates, join edges and direction match. Frequency: fires on every UPDATE OF status_cd on SUBSCRIPTIONS: sp_change_plan (transactional) and sp_suspend_overdue (batch). CORRECTION: the UNT7-9 hand entry (and F28 text) described this trigger as RAISE_APPLICATION_ERROR(-20003); the source has no RAISE — it coerces :NEW.status_cd back to 30 silently. Both in-estate updaters already avoid the case (sp_change_plan DECODE(r.status_cd,30,30,10); sp_suspend_overdue filters status_cd = 10), so the rule only bites application-tier updates."
     },
     {
       "id": "ap-fe087c4e0c",
@@ -2085,8 +2227,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
@@ -2104,7 +2246,9 @@
         "events": [
           "insert"
         ]
-      }
+      },
+      "caller_class": "trigger",
+      "review_note": "UNT7-10 CONFIRMED against 01_tables.sql:248-249 — tables, predicates, join edges and direction match. Frequency: fires on every USAGE_EVENTS INSERT; no PL/SQL routine in the estate inserts usage events, so the inserter is the application tier (usage ingest, the highest-volume write of a metering system)."
     },
     {
       "id": "ap-89ac1728cb",
@@ -2116,7 +2260,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
@@ -2128,7 +2272,9 @@
       },
       "statement": "INSERT INTO codes VALUES (?, ?, ?)",
       "pinned": true,
-      "note": "F27: scanner said routine='trg_customer_master_seq' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm"
+      "note": "F27: scanner said routine='trg_customer_master_seq' trigger=None invoked_by=None; corrected by hand (UNT7-9), reviewer to confirm",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-dbf1b410e9",
@@ -2140,15 +2286,15 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
         "lines": [
           365,
           372
         ],
-        "customer": "body of trg_customer_master_hist (02_horror.sql:358-389): AFTER UPDATE OR DELETE ON customer_master, 155-column :OLD copy into CUSTOMER_MASTER_HIST \u2014 trigger-driven history shadow"
+        "customer": "body of trg_customer_master_hist (02_horror.sql:358-389): AFTER UPDATE OR DELETE ON customer_master, 155-column :OLD copy into CUSTOMER_MASTER_HIST — trigger-driven history shadow"
       },
       "statement": "INSERT INTO customer_master_hist ( hist_id, hist_dt, hist_op, cust_id, cust_seq_no, tenant_id, cust_no, cust_name, cust_name_upper, legal_name, dba_name, addr_line_1, addr_line_2, addr_line_3, addr_line_4, addr_line_5, addr_line_6, city, state_cd, zip, zip4, country_cd, mail_addr_line_1, mail_addr_l",
       "routine": "trg_customer_master_hist",
@@ -2160,7 +2306,9 @@
           "update",
           "delete"
         ]
-      }
+      },
+      "caller_class": "trigger",
+      "review_note": "UNT7-10 CONFIRMED against 02_horror.sql:365-372 — tables, predicates, join edges and direction match. Frequency: fires on CUSTOMER_MASTER UPDATE/DELETE; no routine or job in the estate writes CUSTOMER_MASTER — only the seed/upgrade scripts and the external CUSTBILL feed named in ops/OPERATIONS_HANDBOOK.doc.txt, so no in-estate call rate exists."
     },
     {
       "id": "ap-872aee5734",
@@ -2172,7 +2320,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2182,7 +2330,9 @@
         ]
       },
       "statement": "INSERT INTO tenants (id, name, tax_exempt_yn, status_cd) VALUES (?, ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-1a85100836",
@@ -2194,7 +2344,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2204,7 +2354,9 @@
         ]
       },
       "statement": "INSERT INTO plans (id, code, tier_cd, monthly_fee, included_units, overage_rate) VALUES (?, ?, ?, ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-453b668254",
@@ -2216,7 +2368,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2226,7 +2378,9 @@
         ]
       },
       "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (?, ?, ?, DATE ?, NULL, ?, NULL)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-0f6d62e335",
@@ -2238,7 +2392,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2248,7 +2402,9 @@
         ]
       },
       "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (?, ?, ?, DATE ?, NULL, ?, DATE ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-27ea66fd68",
@@ -2260,7 +2416,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2270,7 +2426,9 @@
         ]
       },
       "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) VALUES (?, ?, TIMESTAMP ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-7649d6dea9",
@@ -2282,7 +2440,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2292,7 +2450,9 @@
         ]
       },
       "statement": "INSERT INTO rating_periods (id, tenant_id, period_start, period_end) VALUES (?, ?, DATE ?, DATE ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-0b78397fa9",
@@ -2304,7 +2464,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2314,7 +2474,9 @@
         ]
       },
       "statement": "INSERT INTO rating_results (id, period_id, subscription_id, used_units, quota_units, rollover_units, billable_units, overage_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, TIMESTAMP ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-844e62d756",
@@ -2326,7 +2488,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2336,7 +2498,9 @@
         ]
       },
       "statement": "INSERT INTO invoices (id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd) VALUES (?, ?, ?, TIMESTAMP ?, ?, ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-341289571e",
@@ -2348,7 +2512,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2358,7 +2522,9 @@
         ]
       },
       "statement": "INSERT INTO credit_notes (id, tenant_id, issued_on, amount, remaining_amount) VALUES (?, ?, DATE ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-e803d14e41",
@@ -2370,7 +2536,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2380,7 +2546,9 @@
         ]
       },
       "statement": "INSERT INTO dunning_attempts (id, tenant_id, invoice_id, attempt_no, scheduled_for, status_cd) VALUES (?, ?, ?, ?, DATE ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-088632b48d",
@@ -2392,7 +2560,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2402,7 +2570,9 @@
         ]
       },
       "statement": "INSERT INTO notifications (id, tenant_id, kind_cd, sent_at) VALUES (?, ?, ?, TIMESTAMP ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-184e8ac3a5",
@@ -2414,7 +2584,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2424,7 +2594,9 @@
         ]
       },
       "statement": "INSERT INTO invoice_lines (id, invoice_id, line_no, line_type, description, amount) VALUES (?, ?, ?, ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-c103a40ece",
@@ -2436,7 +2608,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2446,7 +2618,9 @@
         ]
       },
       "statement": "INSERT INTO customer_master ( cust_id, tenant_id, cust_no, cust_name, legal_name, addr_line_1, city, state_cd, zip, country_cd, phone1, phone1_type_cd, email_1, signup_dt, last_activity_dt, status_cd, sub_status_cd, cust_type_cd, segment_cd, region_cd, tax_exempt_yn, credit_hold_yn, dunning_exempt_y",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-35915eb1a1",
@@ -2458,7 +2632,7 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
@@ -2468,7 +2642,9 @@
         ]
       },
       "statement": "INSERT INTO entity_attr_value (eav_id, entity_type, entity_id, attr_name, attr_value, attr_type, created_dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 03_seed_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-e7b18e81b8",
@@ -2485,8 +2661,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
         "lines": [
@@ -2505,7 +2681,9 @@
           "line": 24
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "review_note": "UNT7-10 CONFIRMED against 04_jobs.sql:24-24 — tables, predicates, join edges and direction match."
     },
     {
       "id": "ap-d3eff9b330",
@@ -2522,7 +2700,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2532,7 +2710,9 @@
         ]
       },
       "statement": "INSERT INTO tenants (id, name, tax_exempt_yn, status_cd) SELECT ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM tenants WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-b677615447",
@@ -2549,7 +2729,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2559,7 +2739,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM tenants WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-b7ac51a068",
@@ -2576,7 +2758,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2586,7 +2768,9 @@
         ]
       },
       "statement": "SELECT ? FROM tenants WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-1bee089176",
@@ -2603,7 +2787,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2613,7 +2797,9 @@
         ]
       },
       "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) SELECT ?, ?, ?, DATE ?, NULL, ?, NULL FROM dual WHERE NOT EXISTS ( SELECT ? FROM subscriptions WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-a4daf98db8",
@@ -2630,7 +2816,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2640,7 +2826,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, DATE ?, NULL, ?, NULL FROM dual WHERE NOT EXISTS ( SELECT ? FROM subscriptions WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-3a5adbe5c3",
@@ -2657,7 +2845,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2667,7 +2855,9 @@
         ]
       },
       "statement": "SELECT ? FROM subscriptions WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-5fa2aaf612",
@@ -2684,7 +2874,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2694,7 +2884,9 @@
         ]
       },
       "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) SELECT ?, ?, TIMESTAMP ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM usage_events WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-715ae84f5c",
@@ -2711,7 +2903,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2721,7 +2913,9 @@
         ]
       },
       "statement": "SELECT ?, ?, TIMESTAMP ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM usage_events WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-d8883e3f4e",
@@ -2738,7 +2932,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2748,7 +2942,9 @@
         ]
       },
       "statement": "SELECT ? FROM usage_events WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-221108f1cd",
@@ -2765,7 +2961,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2775,7 +2971,9 @@
         ]
       },
       "statement": "INSERT INTO invoices (id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd) SELECT ?, ?, ?, TIMESTAMP ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoices WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-a9871b1c76",
@@ -2792,7 +2990,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2802,7 +3000,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, TIMESTAMP ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoices WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-f90dc6039b",
@@ -2819,7 +3019,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2829,7 +3029,9 @@
         ]
       },
       "statement": "SELECT ? FROM invoices WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-dc751cd646",
@@ -2846,7 +3048,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2856,7 +3058,9 @@
         ]
       },
       "statement": "INSERT INTO invoice_lines (id, invoice_id, line_no, line_type, description, amount) SELECT ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoice_lines WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-7c75941f35",
@@ -2873,7 +3077,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2883,7 +3087,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoice_lines WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-b5322959c5",
@@ -2900,7 +3106,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2910,7 +3116,9 @@
         ]
       },
       "statement": "SELECT ? FROM invoice_lines WHERE id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-06d2eaab32",
@@ -2927,7 +3135,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2937,7 +3145,9 @@
         ]
       },
       "statement": "INSERT INTO customer_master ( cust_id, tenant_id, cust_no, cust_name, legal_name, addr_line_1, city, state_cd, zip, country_cd, phone1, phone1_type_cd, email_1, signup_dt, last_activity_dt, status_cd, sub_status_cd, cust_type_cd, segment_cd, region_cd, tax_exempt_yn, credit_hold_yn, dunning_exempt_y",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-c319c7a52f",
@@ -2954,7 +3164,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2964,7 +3174,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, DATE ?, ?, DATE ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM customer_master WHERE cust_id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-194d488a17",
@@ -2981,7 +3193,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -2991,7 +3203,9 @@
         ]
       },
       "statement": "SELECT ? FROM customer_master WHERE cust_id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-a82c763f48",
@@ -3008,7 +3222,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -3018,7 +3232,9 @@
         ]
       },
       "statement": "INSERT INTO entity_attr_value (eav_id, entity_type, entity_id, attr_name, attr_value, attr_type, created_dt) SELECT ?, ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-da65b8b5be",
@@ -3035,7 +3251,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -3045,7 +3261,9 @@
         ]
       },
       "statement": "SELECT ?, ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-371ccaac0d",
@@ -3062,7 +3280,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -3072,7 +3290,9 @@
         ]
       },
       "statement": "SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern; reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
     },
     {
       "id": "ap-f84584cd2a",
@@ -3089,7 +3309,7 @@
         }
       ],
       "sort": [],
-      "frequency": null,
+      "frequency": "cold",
       "confirmed": false,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
@@ -3099,7 +3319,117 @@
         ]
       },
       "statement": "MERGE INTO fixture_meta target USING (SELECT ? AS marker, ? AS value FROM dual) source ON (target.marker = source.marker) WHEN MATCHED THEN UPDATE SET target.value = source.value WHEN NOT MATCHED THEN INSERT (marker, value, initialized_at) VALUES (source.marker, source.value, SYSTIMESTAMP)",
-      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern (FIXTURE_META is fixture bookkeeping created by startup/00_init.sh, outside OW_BILLING's application scope); reviewer to drop or keep as frequency=cold seed evidence"
+      "note": "F32: deploy-time static seed/upgrade DML in 04_upgrade_static.sql, applied on boot by the fixture, not an application access pattern (FIXTURE_META is fixture bookkeeping created by startup/00_init.sh, outside OW_BILLING's application scope); reviewer to drop or keep as frequency=cold seed evidence",
+      "caller_class": "deploy",
+      "review_note": "UNT7-10 REJECTED: deploy-time seed/upgrade DML (F32) run once per release by the SQL*Plus deploy, not an application access pattern; statement text matches the cited line but there is no runtime caller. Kept in the file for traceability; the proposer ignores unconfirmed entries. frequency=cold is nominal (one run per deploy)."
+    },
+    {
+      "id": "ap-1bdc6a5070",
+      "kind": "trigger_cascade",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": "warm",
+      "confirmed": true,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          91,
+          94
+        ],
+        "customer": "UNT7-10 review (added): TRG_SUBSCRIPTIONS_HIST (01_tables.sql:206-226, AFTER UPDATE OR DELETE ON subscriptions FOR EACH ROW) writes one :OLD row copy into SUBSCRIPTIONS_HIST for every row pkg_plans.sp_change_plan updates with UPDATE … WHERE CURRENT OF c_open_subs (ap-a7af1a6156); same transaction as the plan change. Not in the scan: the scanner has no statement→trigger cascade (F39)."
+      },
+      "statement": "INSERT INTO subscriptions_hist (hist_id, hist_dt, hist_op, id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (seq_subscriptions_hist.NEXTVAL, SYSTIMESTAMP, :op, :OLD.*)",
+      "routine": "pkg_plans.sp_change_plan",
+      "trigger": {
+        "on": "SUBSCRIPTIONS",
+        "events": [
+          "update"
+        ]
+      },
+      "via_trigger": "TRG_SUBSCRIPTIONS_HIST",
+      "cascade_of": "ap-a7af1a6156",
+      "in_loop": true,
+      "caller_class": "transactional",
+      "txn_group": "sp_change_plan: UPDATE subscriptions (per open row) + INSERT subscriptions + TRG_SUBSCRIPTIONS_HIST rows, one transaction (audit via autonomous log_msg is separate)",
+      "review_note": "UNT7-10 ADDED: trigger-cascade write missing from the scan and from dependency_register (F39); verified against 01_tables.sql:206-226 and 02_pkg_plans.sql:88-95."
+    },
+    {
+      "id": "ap-a4604667e7",
+      "kind": "trigger_cascade",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": "cold",
+      "confirmed": true,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          82,
+          84
+        ],
+        "customer": "UNT7-10 review (added): TRG_SUBSCRIPTIONS_HIST writes one :OLD row copy into SUBSCRIPTIONS_HIST for every active subscription pkg_dunning.sp_suspend_overdue suspends (UPDATE subscriptions SET status_cd = 20 … WHERE tenant_id = :t AND status_cd = 10, ap-d3754b6b8a) inside the per-tenant loop of the nightly JOB_NIGHTLY_DUNNING sweep; part of the same multi-document transaction as the TENANTS update and the NOTIFICATIONS insert. Not in the scan (F39)."
+      },
+      "statement": "INSERT INTO subscriptions_hist (hist_id, hist_dt, hist_op, id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (seq_subscriptions_hist.NEXTVAL, SYSTIMESTAMP, :op, :OLD.*)",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "trigger": {
+        "on": "SUBSCRIPTIONS",
+        "events": [
+          "update"
+        ]
+      },
+      "via_trigger": "TRG_SUBSCRIPTIONS_HIST",
+      "cascade_of": "ap-d3754b6b8a",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "path": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "caller_class": "batch",
+      "txn_group": "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99",
+      "review_note": "UNT7-10 ADDED: trigger-cascade write missing from the scan and from dependency_register (F39); verified against 01_tables.sql:206-226 and 05_pkg_dunning.sql:82-84."
     }
-  ]
+  ],
+  "review": {
+    "ticket": "UNT7-10",
+    "plan_step": "s2.2b-review-patterns",
+    "reviewed_at": "2026-10-07T07:38:39Z",
+    "method": "static source review; no scan rerun (F34), no live Oracle, no Atlas",
+    "frequency_rule": {
+      "note": "plan-step vocabulary (batch / transactional / read_hot) is not in the validator enum null|hot|warm|cold and model_proposal.py reasons only on hot/warm/cold (F37); the plan class is kept in caller_class and mapped:",
+      "read_hot": "hot — refcursor reporting entrypoints (fn_list_plans, fn_entitlement, fn_usage_summary, fn_usage_rating, fn_invoice_preview, fn_invoice_lines, fn_overdue_accounts) and the routines they reach (compute_rating, compute_preview, log_msg)",
+      "transactional": "warm — per-plan-change / per-invoice-issue (sp_change_plan, sp_finalize_rating, sp_issue_invoice)",
+      "batch": "cold — JOB_NIGHTLY_DUNNING (sp_schedule_dunning, sp_suspend_overdue) and JOB_PURGE_AUDIT_LOG, daily, both disabled in the fixture",
+      "trigger": "frequency of the hottest in-estate firing path; cold when no routine in the estate fires it",
+      "deploy": "rejected (confirmed: false); cold nominal",
+      "unknown": "cold — no in-estate caller (f_code_desc)"
+    },
+    "deploy_dml_decision": "rejected: 38 candidates (03_seed_static.sql 14, 04_upgrade_static.sql 22, CODES seed 01_tables.sql:17 and 02_horror.sql:9) set confirmed: false with review_note; they are release-time DML, not application access, and confirming them as cold would feed the proposer co-write evidence on every table from a path that never runs in production",
+    "counts": {
+      "reviewed": 100,
+      "confirmed": 64,
+      "rejected": 38,
+      "added": 2,
+      "corrected_customer_entries": 1,
+      "total": 102
+    },
+    "transactions": [
+      "sp_change_plan: UPDATE subscriptions (per open row) + INSERT subscriptions + TRG_SUBSCRIPTIONS_HIST rows, one transaction (audit via autonomous log_msg is separate)",
+      "sp_finalize_rating: upsert RATING_PERIODS + upsert RATING_RESULTS, one transaction; nested inside sp_issue_invoice",
+      "sp_issue_invoice: RATING_PERIODS/RATING_RESULTS (via sp_finalize_rating) + INVOICES insert/update + INVOICE_LINES delete/insert + CREDIT_NOTES updates, one transaction; no COMMIT inside, caller commits",
+      "sp_schedule_dunning: INSERT dunning_attempts per overdue invoice; explicit COMMIT at :69",
+      "sp_suspend_overdue per tenant: UPDATE tenants + UPDATE subscriptions (+ TRG_SUBSCRIPTIONS_HIST rows) + INSERT notifications, one multi-document write; log_msg is autonomous (separate), explicit COMMIT at :99"
+    ]
+  }
 }
