@@ -9,7 +9,6 @@
 # TODO ETL-145: Use connection pooling for requests (deferred Q3 2020)
 # TODO ETL-188: Add timeout handling everywhere (never done)
 
-import configparser
 import json
 import sys
 import time
@@ -17,18 +16,19 @@ from datetime import datetime
 
 import requests
 
+from etl_config import load_config
+
 
 def main():
     print("[%s] search_reindex_weekly.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
+    config = load_config()
 
     document_service_url = config.get("services", "document_service_url")
     file_service_url = config.get("services", "file_service_url")
     meilisearch_url = config.get("services", "meilisearch_url")
-    meilisearch_api_key = config.get("services", "meilisearch_api_key")
+    meilisearch_api_key = config.get("services", "meilisearch_api_key", required=False)
 
     documents_index = "documents"
     files_index = "files"
