@@ -1,0 +1,85 @@
+{
+  "description": "Empty SQS queue; only DynamoDB events (snake_case event_type), for the run date and for other dates. event_type is copied to eventType here, so the metrics that full_day loses are counted.",
+  "frozen_time": "2026-03-15T23:55:00Z",
+  "seed": {
+    "dynamodb": {
+      "otterworks-analytics-events": [
+        {
+          "event_id": "dd-01",
+          "event_date": "2026-03-15",
+          "event_type": "file_uploaded",
+          "userId": "user-kim",
+          "fileId": "file-40",
+          "sizeBytes": 300,
+          "timestamp": "2026-03-15T03:00:00Z"
+        },
+        {
+          "event_id": "dd-02",
+          "event_date": "2026-03-15",
+          "event_type": "file_uploaded",
+          "userId": "user-kim",
+          "fileId": "file-41",
+          "sizeBytes": 10.5,
+          "timestamp": "2026-03-15T03:30:00Z"
+        },
+        {
+          "event_id": "dd-03",
+          "event_date": "2026-03-15",
+          "event_type": "file_deleted",
+          "deletedBy": "user-kim",
+          "fileId": "file-40",
+          "timestamp": "2026-03-15T04:00:00Z"
+        },
+        {
+          "event_id": "dd-04",
+          "event_date": "2026-03-15",
+          "event_type": "document_created",
+          "ownerId": "user-kim",
+          "documentId": "doc-40",
+          "timestamp": "2026-03-15T21:00:00Z"
+        },
+        {
+          "event_id": "dd-05",
+          "event_date": "2026-03-15T21:30:00Z",
+          "event_type": "document_edited",
+          "editedBy": "user-lee",
+          "documentId": "doc-40",
+          "timestamp": "2026-03-15T21:30:00Z"
+        },
+        {
+          "event_id": "dd-06",
+          "event_date": "2026-03-15",
+          "event_type": "comment_added",
+          "authorId": "user-lee",
+          "documentId": "doc-40",
+          "timestamp": "2026-03-15T22:00:00Z"
+        },
+        {
+          "event_id": "dx-01",
+          "event_date": "2026-03-14",
+          "event_type": "file_uploaded",
+          "userId": "user-old",
+          "fileId": "file-90",
+          "sizeBytes": 123456,
+          "timestamp": "2026-03-14T23:59:59Z"
+        },
+        {
+          "event_id": "dx-02",
+          "event_date": "2026-03-16",
+          "event_type": "document_created",
+          "ownerId": "user-new",
+          "documentId": "doc-90",
+          "timestamp": "2026-03-16T00:00:01Z"
+        },
+        {
+          "event_id": "dx-03",
+          "event_date": "2026-02-15",
+          "event_type": "comment_added",
+          "authorId": "user-old",
+          "documentId": "doc-90",
+          "timestamp": "2026-02-15T12:00:00Z"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "analytics/daily/year=2026/month=03/day=15/hourly_breakdown.json.gz": {
+      "body": {
+        "00": {
+          "document_edited": 2,
+          "file_shared": 1
+        },
+        "03": {
+          "NaN": 2
+        },
+        "04": {
+          "NaN": 1
+        },
+        "08": {
+          "document_created": 1,
+          "document_edited": 1
+        },
+        "09": {
+          "document_edited": 2
+        },
+        "10": {
+          "document_edited": 1,
+          "file_shared": 1,
+          "file_uploaded": 1
+        },
+        "11": {
+          "document_edited": 1
+        },
+        "13": {
+          "document_created": 1,
+          "file_deleted": 1,
+          "file_uploaded": 2,
+          "page_view": 1
+        },
+        "14": {
+          "comment_added": 1
+        },
+        "16": {
+          "comment_added": 2
+        },
+        "17": {
+          "NaN": 1
+        },
+        "18": {
+          "NaN": 1
+        },
+        "21": {
+          "NaN": 2
+        },
+        "22": {
+          "NaN": 1,
+          "document_created": 1
+        },
+        "23": {
+          "page_view": 2
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=03/day=15/summary.json.gz": {
+      "body": {
+        "active_documents": 4,
+        "active_files": 4,
+        "active_users": 8,
+        "bytes_uploaded": 1052672,
+        "comments_added": 3,
+        "documents_created": 3,
+        "documents_edited": 7,
+        "files_deleted": 1,
+        "files_shared": 2,
+        "files_uploaded": 3,
+        "total_events": 30
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz": {
+      "body": [
+        {
+          "actions": {
+            "comment_added": 1,
+            "document_created": 1,
+            "document_edited": 3,
+            "file_shared": 1,
+            "file_uploaded": 1
+          },
+          "total": 7,
+          "user_id": "user-erin"
+        },
+        {
+          "actions": {
+            "document_created": 1,
+            "file_deleted": 1,
+            "file_uploaded": 2,
+            "page_view": 1
+          },
+          "total": 5,
+          "user_id": "user-frank"
+        },
+        {
+          "actions": {
+            "document_edited": 4
+          },
+          "total": 4,
+          "user_id": "user-gina"
+        },
+        {
+          "actions": {
+            "NaN": 4
+          },
+          "total": 4,
+          "user_id": "user-kim"
+        },
+        {
+          "actions": {
+            "NaN": 1,
+            "comment_added": 2
+          },
+          "total": 3,
+          "user_id": "user-hank"
+        },
+        {
+          "actions": {
+            "NaN": 1,
+            "file_shared": 1
+          },
+          "total": 2,
+          "user_id": "user-ivy"
+        },
+        {
+          "actions": {
+            "page_view": 2
+          },
+          "total": 2,
+          "user_id": "unknown"
+        },
+        {
+          "actions": {
+            "NaN": 2
+          },
+          "total": 2,
+          "user_id": "user-lee"
+        },
+        {
+          "actions": {
+            "document_created": 1
+          },
+          "total": 1,
+          "user_id": "user-jack"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD",
+      "trailing_newline": true
+    },
+    "reports/analytics/daily/2026-03-15/report.json": {
+      "body": {
+        "document_metrics": {
+          "comments": 3,
+          "created": 3,
+          "edited": 7
+        },
+        "file_metrics": {
+          "bytes_uploaded": 1052672,
+          "deleted": 1,
+          "shared": 2,
+          "uploaded": 3
+        },
+        "generated_at": "<normalized:generated_at>",
+        "highlights": {
+          "most_active_users": [
+            "user-erin",
+            "user-frank",
+            "user-gina",
+            "user-kim",
+            "user-hank"
+          ],
+          "peak_hour": {
+            "event_count": 5,
+            "hour": "13"
+          }
+        },
+        "report_date": "2026-03-15",
+        "report_type": "daily_analytics",
+        "summary": {
+          "active_documents": 4,
+          "active_files": 4,
+          "active_users": 8,
+          "bytes_uploaded": 1052672,
+          "comments_added": 3,
+          "documents_created": 3,
+          "documents_edited": 7,
+          "files_deleted": 1,
+          "files_shared": 2,
+          "files_uploaded": 3,
+          "total_events": 30
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}
