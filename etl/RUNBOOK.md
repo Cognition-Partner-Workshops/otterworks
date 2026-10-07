@@ -90,6 +90,10 @@ All must hold before the cutover window. Record the evidence in the cutover tick
       goldens for every scenario of the script; every row is *identical* or *accepted
       difference* with a reason. The legacy side is still green:
       `make etl-golden SCRIPT=<script-without-.py> MODE=check`.
+      "Every scenario" means the full list in [§7](#7-accepted-differences-and-parity-reports),
+      not `smoke` alone. The harness on this branch (from #1909/#1879) records only `smoke`; the
+      edge-case goldens come with #1904 and must be on the branch the parity report runs from.
+      A report that covers only `smoke` does not meet this precondition.
 - [ ] **DAG unit and integrity tests green** on the DAG PR's CI and locally:
       `etl/airflow/scripts/run-tests.sh` (DAG bag import, no cycles, `dag_id`, `schedule` equal
       to `LEGACY_SCHEDULES[dag_id]`, `catchup=False`, `max_active_runs=1`, failure callback set),
@@ -451,25 +455,35 @@ in the next report.
 `quarantined`). Do this with the flag already `true`, otherwise the next run moves them again.
 
 ```bash
-# 1. References that only match after normalization (the wrongly quarantined set)
+# 1. References that only match after normalization (the wrongly quarantined set).
+#    The CLI follows the scan's 1 MB pages itself, so this reads the whole table.
 $AWS dynamodb scan --table-name otterworks-file-metadata --projection-expression s3_key \
   | jq -r '.Items[].s3_key.S // empty' | grep -E '^(/|s3://)' \
   | sed -E 's#^s3://[^/]+/##; s#^/+##' | sort -u > keys_to_restore
-# 2. Find each key's quarantine copy <prefix>/<ds>/<key> (newest <ds> wins) and copy it back
+# 2. List the quarantine prefix once. The CLI follows continuation tokens (1000 keys per page)
+#    unless --max-items or --no-paginate is given; the two counts must be equal.
 P=quarantined
 $AWS s3api list-objects-v2 --bucket otterworks-file-quarantine --prefix "$P/" \
   | jq -r '.Contents[]?.Key' > quarantined_keys
-while IFS= read -r KEY; do
-  SRC=$(awk -v p="$P/" -v k="$KEY" 'index($0, p) == 1 && substr($0, length(p) + 12) == k' quarantined_keys | sort | tail -1)
-  [ -n "$SRC" ] || { echo "NOT QUARANTINED: $KEY"; continue; }
+wc -l < quarantined_keys; $AWS s3 ls --recursive "s3://otterworks-file-quarantine/$P/" | wc -l
+# 3. Plan in one pass: the newest <prefix>/<ds>/<key> for each key. Review it before copying:
+#    line count, a sample, and the NOT QUARANTINED keys printed on stderr.
+awk -v p="$P/" '
+  NR == FNR { if (index($0, p) == 1) { k = substr($0, length(p) + 12); if (!(k in src) || $0 > src[k]) src[k] = $0 }; next }
+  ($0 in src) { print src[$0] "\t" $0; next }
+  { print "NOT QUARANTINED: " $0 > "/dev/stderr" }' quarantined_keys keys_to_restore > restore_plan
+wc -l < restore_plan; head restore_plan
+# 4. Copy back, two API calls per key; never over a newer upload. Rerunning is safe: restored
+#    keys are skipped.
+while IFS=$'\t' read -r SRC KEY; do
   if $AWS s3api head-object --bucket otterworks-file-storage --key "$KEY" >/dev/null 2>&1; then
     echo "SKIP exists in file storage: $KEY"; continue      # never overwrite a newer upload
   fi
   $AWS s3api copy-object --bucket otterworks-file-storage --key "$KEY" \
     --copy-source "otterworks-file-quarantine/$SRC" --metadata-directive COPY >/dev/null \
     && echo "RESTORED $SRC -> $KEY"
-done < keys_to_restore
-# 3. Verify: ContentLength/ETag equal on both sides; keep the quarantine copy until the next
+done < restore_plan | tee restore_log
+# 5. Verify: ContentLength/ETag equal on both sides; keep the quarantine copy until the next
 #    cleanup report no longer lists the key, then it may be removed.
 ```
 
@@ -542,7 +556,8 @@ database. That includes app data.
 Rehearse in the order of [§1](#1-cutover-order): cut analytics over, roll it back, cut it over
 again; then audit archive with the flag `false`; then the other three. For 6.1 and 6.2 seed the
 `cutoff_boundary` / `reference_mismatches` scenarios (`make etl-golden ... SCENARIO=`) and run the
-pre-check and restore commands against LocalStack.
+pre-check and restore commands against LocalStack. Those scenarios come with the #1904 goldens;
+they are not on a branch that has only `smoke`.
 
 ## 9. Retirement after one weekly cycle
 
