@@ -9,7 +9,8 @@ The user-preferences bounded context, extracted from the
 |---|---|
 | `GET /api/preferences/{userId}` | stored preferences, or defaults `light` / `en-US` / `emailNotifications: true` |
 | `PUT /api/preferences/{userId}` | `theme` and `locale` required, non-blank, max 20 chars; omitted `emailNotifications` is `false` |
-| `GET /health` | `{"status":"UP","service":"preferences-service"}`; used by the image `HEALTHCHECK` and the chart probes |
+| `GET /health` | `{"status":"UP","service":"preferences-service"}`, no database check; used by the image `HEALTHCHECK` and the chart liveness probe |
+| `GET /actuator/health/readiness` | readiness state plus the database check, 503 while PostgreSQL is unreachable; used by the chart readiness probe |
 
 ## Strangler route
 
@@ -62,3 +63,16 @@ The service starts with an empty database. Existing rows can be copied from the 
 pg_dump --data-only --table=user_preferences.user_preference "$LEGACY_PORTAL_DB_URL" \
   | psql "$PREFERENCES_DB_URL"
 ```
+
+Stop preference writes on the monolith before the copy, and don't switch the edge until this
+row-count gate passes. It exits non-zero unless both tables hold the same number of rows:
+
+```bash
+count() { psql "$1" -tAc 'SELECT count(*) FROM user_preferences.user_preference'; }
+legacy=$(count "$LEGACY_PORTAL_DB_URL"); copied=$(count "$PREFERENCES_DB_URL")
+echo "legacy-portal: $legacy rows, preferences-service: $copied rows"
+[ "$legacy" -eq "$copied" ] || { echo "row counts differ: do not cut over" >&2; exit 1; }
+```
+
+The target table must be empty before the copy (a fresh `preferences-db`); rows already there
+make the `pg_dump` load fail on the primary key.

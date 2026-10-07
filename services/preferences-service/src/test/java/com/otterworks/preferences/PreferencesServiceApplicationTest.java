@@ -35,6 +35,11 @@ class PreferencesServiceApplicationTest {
     }
 
     @Test
+    void readinessIsUpWithTheDatabase() throws Exception {
+        mockMvc.perform(get("/actuator/health/readiness")).andExpect(status().isOk());
+    }
+
+    @Test
     void unknownUserGetsDefaults() throws Exception {
         mockMvc.perform(get("/api/preferences/newuser"))
                 .andExpect(status().isOk())

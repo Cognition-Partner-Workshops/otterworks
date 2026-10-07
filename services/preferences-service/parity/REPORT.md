@@ -9,7 +9,8 @@ After: this branch, `docker-compose.portal.yml` with empty databases. `parity/ru
 same corpus with `services/legacy-portal/parity/replay.py --stage full --strict-media-type`
 through the strangler edge (`localhost:8095`) and compares status, media type and body against
 the transcript. Timestamps are normalised by `replay.py`, nothing else. Run at 2026-10-07T13:35Z and re-run at
-2026-10-07T13:45Z after the review follow-ups (edge no longer forwards the client `Host`); same result.
+2026-10-07T13:45Z after the review follow-ups (edge no longer forwards the client `Host`), and again
+after the readiness change (image rebuilt); same result each time.
 
 Local builds pulled Maven artifacts from Google's Maven Central mirror because Maven Central was
 rate-limiting this host (HTTP 429). The Dockerfiles are otherwise the committed ones.
@@ -23,7 +24,7 @@ rate-limiting this host (HTTP 429). The Dockerfiles are otherwise the committed 
 | common cases, replayed through the edge | 10 responses recorded from the monolith on `main` | 10/10 identical, 0 different | identical |
 | announcements cases, replayed through the edge | 36 responses recorded from the monolith on `main` | 36/36 identical, 0 different | identical |
 | feedback cases, replayed through the edge | 29 responses recorded from the monolith on `main` | 29/29 identical, 0 different | identical |
-| `preferences-service` `mvn verify` (Java 21, Temurin) | n/a (new service) | 8 run, 0 failed | identical |
+| `preferences-service` `mvn verify` (Java 21, Temurin) | n/a (new service) | 11 run, 0 failed | identical |
 | `legacy-portal` `mvn verify` | `main`: 16 run, 1 failed (`AnnouncementServiceTest.listPublishedReturnsOnlyPublishedNewestFirst`) | 14 run, 1 failed (same test; the 2 `UserPreferenceServiceTest` cases moved to preferences-service) | failed (fails the same way on `main`: `LegacyPortalApplicationTest` commits a published "Release" announcement into the shared in-memory H2 before this test runs; not changed here) |
 | `helm lint --strict` (with `image.tag` and `config.SPRING_DATASOURCE_URL` set) | n/a | 1 chart linted, 0 failed | identical |
 | `helm template \| kubeconform -strict`, chart defaults (ingress off) | n/a | 4 resources, 4 valid | identical |
@@ -31,6 +32,9 @@ rate-limiting this host (HTTP 429). The Dockerfiles are otherwise the committed 
 | chart with `service.type=LoadBalancer` | n/a | render refused | identical |
 | chart with the postgres profile and no `config.SPRING_DATASOURCE_URL` | n/a | render refused | identical |
 | image runtime user and `HEALTHCHECK` | legacy-portal: uid 1001, `curl -f /health` | preferences-service: uid 1001, `curl -f http://localhost:8098/health` | identical |
+| chart probes | legacy-portal chart n/a; `report-service` chart: liveness and readiness both on `/health` | liveness `/health`, readiness `/actuator/health/readiness` (readiness state + `db`) | accepted difference: requested so a database outage takes pods out of the Service without restarting them |
+| Compose stack, `preferences-db` stopped | n/a | `/health` 200, `/actuator/health/liveness` 200, `/actuator/health/readiness` 503 (after the 30 s Hikari connection timeout; kubelet already counts the probe's timeout as a failure); 200 again once the database is back | identical to the intended behaviour |
+| README cutover: `pg_dump` copy, then the row-count gate, legacy-portal-db seeded with 3 rows | n/a | copy loads 3 rows, gate passes (3 = 3), copied row served through the edge; with a 4th legacy row added the gate prints `row counts differ` and exits 1 | identical to the intended behaviour |
 
 ## Which upstream answered
 

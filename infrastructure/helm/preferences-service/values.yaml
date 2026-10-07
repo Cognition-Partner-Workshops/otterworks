@@ -43,8 +43,11 @@ resources:
     cpu: 100m
     memory: 256Mi
 
+# Liveness stays on the static /health (same as the image HEALTHCHECK); readiness uses the
+# actuator readiness group, which includes the database check.
 healthCheck:
-  path: /health
+  livenessPath: /health
+  readinessPath: /actuator/health/readiness
   initialDelaySeconds: 30
   periodSeconds: 15
 

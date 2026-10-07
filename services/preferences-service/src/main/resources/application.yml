@@ -23,6 +23,12 @@ management:
     health:
       probes:
         enabled: true
+      # Readiness includes the database, so a pod stops taking traffic while PostgreSQL is
+      # unreachable. Liveness (and /health) deliberately does not: a database outage must not
+      # restart every pod.
+      group:
+        readiness:
+          include: readinessState,db
 
 ---
 # Container / cluster profile: the service's own PostgreSQL database. No other service
