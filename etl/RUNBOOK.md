@@ -500,6 +500,7 @@ no cloud endpoints: `aws` only ever talks to `http://localhost:4566` (LocalStack
 | --- | --- |
 | infra | `docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch` |
 | Airflow up / health | `make airflow-up` (UI `http://localhost:8280`), `make airflow-check`, `make airflow-config-check` |
+| document-service / file-service (`search_reindex_weekly`) | `make etl-search-stub-up` (serves `ETL_SEARCH_STUB_SCENARIO`, default `search_reindex_weekly/smoke`, at `http://etl-search-stub:8089`); set `LEGACY_CRON_DOCUMENT_SERVICE_URL=http://etl-search-stub:8089/document-service`, `LEGACY_CRON_FILE_SERVICE_URL=http://etl-search-stub:8089/file-service` for `make legacy-cron-up`, and the `otterworks_document_service` / `otterworks_file_service` Connections in `etl/airflow/.env` to `{"conn_type": "http", "host": "http://etl-search-stub:8089/<service>"}` before `make airflow-up` |
 | cron running `etl/crontab` | `make legacy-cron-up` (renders a dev-only `config.ini`; the committed `etl/config.ini` is not used) |
 | `crontab /opt/etl/crontab` after removing/restoring a line | edit `etl/crontab` (or point `LEGACY_ETL_CRONTAB` at a copy), then `make legacy-cron-reload` |
 | `/opt/etl/run.sh <script>` once | `make legacy-cron-run SCRIPT=<script-without-.py>` (exit 3 if its line was removed: cut over) |
@@ -512,8 +513,8 @@ seeds below): each scenario starts with `infra.reset()`, which empties every S3 
 table, SQS queue and MeiliSearch index it can reach, and every table in the golden Postgres
 database. That includes app data.
 
-- The harness refuses to reset unless `GOLDEN_ALLOW_RESET=1` (set only by `make etl-golden`,
-  which CI uses) **and** every endpoint (`GOLDEN_LOCALSTACK_URL`, `GOLDEN_MEILI_URL`,
+- The harness refuses to reset unless `GOLDEN_ALLOW_RESET=1` (set only by `make etl-golden` and
+  `make etl-parity`, which CI uses) **and** every endpoint (`GOLDEN_LOCALSTACK_URL`, `GOLDEN_MEILI_URL`,
   `GOLDEN_PG_HOST`) is `localhost`, `127.0.0.1`, `::1` or the Compose service name `localstack`,
   `meilisearch` or `postgres`. It cannot reach AWS or any other remote host.
 - The guard cannot tell a disposable stack from one holding data. Run the harness only on a

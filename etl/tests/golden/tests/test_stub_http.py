@@ -41,3 +41,14 @@ def test_files_page_size_and_injected_errors():
         with pytest.raises(HTTPError) as err:
             urlopen(stub.url + "/file-service/api/v1/files?page=2&page_size=3")
         assert err.value.code == 500
+
+
+def test_scenario_http_reads_the_committed_seed():
+    from harness import stub_http
+
+    data = stub_http.scenario_http("search_reindex_weekly/smoke")
+    assert [d.get("document_id") or d.get("id") for d in data["documents"]] == [
+        "doc-1",
+        "doc-2",
+    ]
+    assert [f["file_id"] for f in data["files"]] == ["file-1"]

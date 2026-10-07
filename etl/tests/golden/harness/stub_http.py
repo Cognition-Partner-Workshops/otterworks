@@ -5,14 +5,23 @@ search_reindex_weekly.py pages through GET {document_service_url}/api/v1/documen
 stub serves the scenario's seed.http lists with the same paging so the script
 runs unchanged. seed.http.errors maps {kind: {page: status}} to make a page
 answer with that HTTP status instead.
+
+Standalone, for the local cutover rehearsal (etl/RUNBOOK.md §8), serving one
+committed scenario's seed.http to the cron container and the Airflow Connections:
+
+  python -m harness.stub_http --scenario search_reindex_weekly/smoke --host 0.0.0.0 --port 8089
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+GOLDEN_DIR = Path(__file__).resolve().parent.parent
 
 ROUTES = {
     "/document-service/api/v1/documents": "documents",
@@ -21,7 +30,7 @@ ROUTES = {
 
 
 class ServiceStub:
-    def __init__(self, data: dict | None):
+    def __init__(self, data: dict | None, host: str = "127.0.0.1", port: int = 0):
         self.data = data or {}
         self.requests: list[str] = []
         stub = self
@@ -55,7 +64,7 @@ class ServiceStub:
             def log_message(self, *_args):
                 pass
 
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server = ThreadingHTTPServer((host, port), Handler)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
 
     @property
@@ -70,3 +79,41 @@ class ServiceStub:
     def __exit__(self, *_exc):
         self.server.shutdown()
         self.server.server_close()
+
+
+def scenario_http(name: str) -> dict:
+    """seed.http of <script>/<scenario>/scenario.json under the golden directory."""
+    path = GOLDEN_DIR / name / "scenario.json"
+    return json.loads(path.read_text())["seed"].get("http") or {}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="python -m harness.stub_http")
+    parser.add_argument("--scenario", required=True, help="<script>/<scenario>")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8089)
+    args = parser.parse_args(argv)
+    data = scenario_http(args.scenario)
+    stub = ServiceStub(data, args.host, args.port)
+    print(
+        "stub_http: %s on %s:%d (%d documents, %d files)"
+        % (
+            args.scenario,
+            args.host,
+            stub.server.server_address[1],
+            len(data.get("documents", [])),
+            len(data.get("files", [])),
+        ),
+        flush=True,
+    )
+    try:
+        stub.server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        stub.server.server_close()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
