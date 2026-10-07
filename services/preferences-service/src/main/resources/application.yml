@@ -28,7 +28,7 @@ management:
 
 ---
 # Container / cluster profile: the service's own PostgreSQL database. No other service
-# reads or writes it.
+# reads or writes it. There is no default password: startup fails unless one is supplied.
 spring:
   config:
     activate:
@@ -36,5 +36,5 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/preferences}
     username: ${SPRING_DATASOURCE_USERNAME:preferences}
-    password: ${SPRING_DATASOURCE_PASSWORD:preferences}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver

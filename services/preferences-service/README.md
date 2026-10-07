@@ -20,8 +20,11 @@ to this service; everything else, announcements and feedback included, still goe
   [`services/legacy-portal/strangler/nginx.conf`](../legacy-portal/strangler/nginx.conf). Every
   response carries `X-Served-By: legacy-portal` or `X-Served-By: preferences-service`.
 - Kubernetes: [`infrastructure/helm/preferences-service`](../../infrastructure/helm/preferences-service)
-  adds an Ingress for the `/api/preferences` prefix on the portal host. The chart's Service is
-  ClusterIP and the chart refuses any other type.
+  has an optional Ingress (`ingress.enabled`, off by default) for the `/api/preferences` prefix on
+  the portal host; enable it only once the rest of the portal host is routed through the same
+  ingress controller. The Service is ClusterIP and the chart refuses any other type. The render
+  also fails without `config.SPRING_DATASOURCE_URL`, and the postgres profile has no default
+  password, so the database credentials have to be supplied at deploy time.
 
 ```bash
 docker compose -f docker-compose.portal.yml up --build --wait     # from the repo root

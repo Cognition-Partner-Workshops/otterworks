@@ -1,3 +1,6 @@
+{{- if eq (.Values.config.SPRING_PROFILES_ACTIVE | default "") "postgres" }}
+{{- $_ := required "config.SPRING_DATASOURCE_URL must point at the preferences-service database" .Values.config.SPRING_DATASOURCE_URL }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

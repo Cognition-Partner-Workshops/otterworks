@@ -16,9 +16,12 @@ service:
 
 # Strangler slice: only the extracted context's paths are routed here. Prefix matching is by
 # path element, so /api/preferences and /api/preferences/** match and /api/preferencesX does not.
-# The rest of the portal host stays with legacy-portal.
+# Off by default: legacy-portal is not on this cluster, so enable it only once the rest of the
+# portal host is also routed through the shared ingress controller (otherwise every other portal
+# path would get an ingress 404). Until then the Compose edge (docker-compose.portal.yml) is the
+# strangler route.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -62,8 +65,9 @@ securityContext:
   allowPrivilegeEscalation: false
 
 # Non-sensitive service configuration rendered into {{ .Release.Name }}-config
-# and injected via envFrom. SPRING_DATASOURCE_URL and SPRING_DATASOURCE_USERNAME point at the
-# service's own database and are populated at deploy time (e.g. from Terraform outputs).
+# and injected via envFrom. SPRING_DATASOURCE_URL (required with the postgres profile; the
+# render fails without it) and SPRING_DATASOURCE_USERNAME point at the service's own database and
+# are populated at deploy time (e.g. from Terraform outputs).
 config:
   SPRING_PROFILES_ACTIVE: postgres
 

@@ -8,7 +8,8 @@ Before: the monolith built from `main` at `af476560` (image `sha256:f78d918bd015
 After: this branch, `docker-compose.portal.yml` with empty databases. `parity/run.sh` replays the
 same corpus with `services/legacy-portal/parity/replay.py --stage full --strict-media-type`
 through the strangler edge (`localhost:8095`) and compares status, media type and body against
-the transcript. Timestamps are normalised by `replay.py`, nothing else. Run at 2026-10-07T13:35Z.
+the transcript. Timestamps are normalised by `replay.py`, nothing else. Run at 2026-10-07T13:35Z and re-run at
+2026-10-07T13:45Z after the review follow-ups (edge no longer forwards the client `Host`); same result.
 
 Local builds pulled Maven artifacts from Google's Maven Central mirror because Maven Central was
 rate-limiting this host (HTTP 429). The Dockerfiles are otherwise the committed ones.
@@ -24,10 +25,11 @@ rate-limiting this host (HTTP 429). The Dockerfiles are otherwise the committed 
 | feedback cases, replayed through the edge | 29 responses recorded from the monolith on `main` | 29/29 identical, 0 different | identical |
 | `preferences-service` `mvn verify` (Java 21, Temurin) | n/a (new service) | 8 run, 0 failed | identical |
 | `legacy-portal` `mvn verify` | `main`: 16 run, 1 failed (`AnnouncementServiceTest.listPublishedReturnsOnlyPublishedNewestFirst`) | 14 run, 1 failed (same test; the 2 `UserPreferenceServiceTest` cases moved to preferences-service) | failed (fails the same way on `main`: `LegacyPortalApplicationTest` commits a published "Release" announcement into the shared in-memory H2 before this test runs; not changed here) |
-| `helm lint --strict` | n/a | 1 chart linted, 0 failed | identical |
-| `helm template \| kubeconform -strict` | n/a | 5 resources, 5 valid | identical |
-| same, with `--api-versions monitoring.coreos.com/v1` (adds ServiceMonitor, CRD schema) | n/a | 6 resources, 6 valid | identical |
+| `helm lint --strict` (with `image.tag` and `config.SPRING_DATASOURCE_URL` set) | n/a | 1 chart linted, 0 failed | identical |
+| `helm template \| kubeconform -strict`, chart defaults (ingress off) | n/a | 4 resources, 4 valid | identical |
+| same, with `ingress.enabled=true` and `--api-versions monitoring.coreos.com/v1` (adds Ingress and ServiceMonitor, CRD schema) | n/a | 6 resources, 6 valid | identical |
 | chart with `service.type=LoadBalancer` | n/a | render refused | identical |
+| chart with the postgres profile and no `config.SPRING_DATASOURCE_URL` | n/a | render refused | identical |
 | image runtime user and `HEALTHCHECK` | legacy-portal: uid 1001, `curl -f /health` | preferences-service: uid 1001, `curl -f http://localhost:8098/health` | identical |
 
 ## Which upstream answered
