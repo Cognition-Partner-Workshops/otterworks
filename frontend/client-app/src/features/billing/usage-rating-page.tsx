@@ -22,11 +22,11 @@ export default function BillingUsageRatingPage() {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-  const currentTenant = useRef(tenantId);
+  const finalizeRequest = useRef(0);
 
   useEffect(() => {
     let mounted = true;
-    currentTenant.current = tenantId;
+    finalizeRequest.current += 1;
     setIsFinalizing(false);
     setError("");
     setRating(null);
@@ -64,8 +64,8 @@ export default function BillingUsageRatingPage() {
     if (!tenantId || isFinalizing) return;
     setError("");
     setIsFinalizing(true);
-    const requestTenant = tenantId;
-    const isCurrent = () => currentTenant.current === requestTenant;
+    const request = ++finalizeRequest.current;
+    const isCurrent = () => finalizeRequest.current === request;
     billingApi
       .finalizeRating(tenantId, PERIOD_START, PERIOD_END)
       .then((value) => {
