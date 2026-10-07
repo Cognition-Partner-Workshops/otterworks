@@ -1,0 +1,4 @@
+Thu Jan 15 00:00:00 UTC 2026 parse_custbill starting
+Thu Jan 15 00:00:00 UTC 2026 parsed CUSTBILL_QA_001: 50 records (trailer says 50)
+Thu Jan 15 00:00:00 UTC 2026 parsed CUSTBILL_QA_002: 50 records (trailer says 50)
+Thu Jan 15 00:00:00 UTC 2026 parse_custbill done
