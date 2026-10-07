@@ -170,5 +170,6 @@
  "refreshed_from": "ed1747e90f6e",
  "refreshed_by": "UNT7-25",
  "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
- "merge_eligible": true
+ "merge_eligible": true,
+ "refresh_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
 }

@@ -3238,5 +3238,5 @@
   "capability_preflight": "see preflight_grade",
   "tp_smoke": "see commit / PR body"
  },
- "pr_url": null
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
 }

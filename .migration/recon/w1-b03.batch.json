@@ -141,5 +141,6 @@
  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
  "refreshed_from": "ed1747e90f6e",
  "refreshed_by": "UNT7-25",
- "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after"
+ "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+ "refresh_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
 }
