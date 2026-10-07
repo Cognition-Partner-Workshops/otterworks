@@ -43,7 +43,7 @@ def test_leaves_everything_else_verbatim():
 
 
 def test_malformed_volatile_values_are_not_hidden():
-    body = {"generated_at": "yesterday", "duration_seconds": "fast"}
+    body = {"generated_at": "2026-03-15", "duration_seconds": "fast"}
     out, replaced = normalize(s3_files(body))
     assert replaced == 0
     assert out["s3.json"]["bucket"]["key"]["body"] == body
@@ -91,3 +91,8 @@ def test_does_not_mutate_input_and_is_idempotent():
     )
     again, replaced = normalize(out)
     assert again == out and replaced == 0
+
+
+def test_unparseable_generated_at_is_not_hidden():
+    out, replaced = normalize(s3_files({"generated_at": "yesterday"}))
+    assert replaced == 0

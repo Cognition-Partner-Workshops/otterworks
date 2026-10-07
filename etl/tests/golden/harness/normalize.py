@@ -30,7 +30,8 @@ def placeholder(name: str) -> str:
 
 
 def _is_iso_timestamp(value) -> bool:
-    if not isinstance(value, str):
+    # A full date-time only: a bare date is a different shape and must diff.
+    if not isinstance(value, str) or "T" not in value:
         return False
     try:
         datetime.fromisoformat(value.replace("Z", "+00:00"))

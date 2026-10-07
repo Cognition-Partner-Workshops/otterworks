@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import subprocess
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -64,7 +65,11 @@ def ensure_image() -> str:
 
 
 def docker_command(
-    image: str, script: str, frozen_time: str, config_path: Path
+    image: str,
+    script: str,
+    frozen_time: str,
+    config_path: Path,
+    name: str = "otterworks-etl-golden",
 ) -> list[str]:
     def mount(src: Path, dst: str) -> list[str]:
         return ["--mount", "type=bind,source=%s,target=%s,readonly" % (src, dst)]
@@ -73,6 +78,8 @@ def docker_command(
         "docker",
         "run",
         "--rm",
+        "--name",
+        name,
         "--network",
         settings.DOCKER_NETWORK,
         "-e",
@@ -92,11 +99,18 @@ def docker_command(
 
 
 def run(image: str, script: str, frozen_time: str, config_path: Path) -> RunResult:
-    proc = subprocess.run(
-        docker_command(image, script, frozen_time, config_path),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        timeout=settings.CONTAINER_TIMEOUT_SECONDS,
-    )
+    name = "otterworks-etl-golden-%s" % uuid.uuid4().hex[:12]
+    try:
+        proc = subprocess.run(
+            docker_command(image, script, frozen_time, config_path, name),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=settings.CONTAINER_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        # Killing the docker client does not stop the container; remove it
+        # so a stuck script cannot keep writing to the local stack.
+        subprocess.run(["docker", "rm", "-f", name], capture_output=True)
+        raise
     return RunResult(exit_code=proc.returncode, output=proc.stdout)

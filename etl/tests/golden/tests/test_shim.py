@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -6,6 +7,7 @@ import sys
 import boto3
 import pytest
 from botocore.awsrequest import AWSResponse
+from urllib.parse import urlsplit
 
 from harness import settings
 
@@ -81,11 +83,11 @@ def test_endpoint_injection_and_sqs_rewrite(monkeypatch):
 
     sqs.meta.events.register("before-send", capture)
     sqs.get_queue_attributes(QueueUrl=REAL_SQS_URL, AttributeNames=["All"])
-    assert sent[0].url.startswith("http://localstack.test:4566")
+    assert urlsplit(sent[0].url).netloc == "localstack.test:4566"
     assert (
-        b"http://localstack.test:4566/000000000000/otterworks-analytics" in sent[0].body
+        json.loads(sent[0].body)["QueueUrl"]
+        == "http://localstack.test:4566/000000000000/otterworks-analytics"
     )
-    assert b"amazonaws.com" not in sent[0].body
 
 
 def run_python(code, **env):

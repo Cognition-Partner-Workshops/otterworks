@@ -22,6 +22,7 @@ def test_runs_like_the_crontab_with_read_only_mounts():
     assert "source=%s," % (settings.ETL_DIR / "config.ini") not in " ".join(mounts)
     assert "source=/tmp/x/config.ini," in targets["/opt/etl/config.ini"]
     assert "GOLDEN_FROZEN_TIME=2026-03-15T02:00:00Z" in cmd
+    assert cmd[cmd.index("--name") + 1] == "otterworks-etl-golden"
 
 
 def test_image_tag_tracks_legacy_pins():
