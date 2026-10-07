@@ -12,8 +12,9 @@ docker run -d --name rs-pg --network rs-char -e POSTGRES_DB=otterworks_reports \
   -e POSTGRES_USER=otterworks -e POSTGRES_PASSWORD=otterworks_dev postgres:15-alpine
 docker build -t report-service:local services/report-service
 docker run -d --name rs --network rs-char -p 18091:8091 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://rs-pg:5432/otterworks_reports \
-  -e SPRING_DATASOURCE_USERNAME=otterworks -e SPRING_DATASOURCE_PASSWORD=otterworks_dev \
+  --read-only --tmpfs /tmp --security-opt no-new-privileges:true \
+  -e DB_HOST=rs-pg -e DB_PORT=5432 -e DB_NAME=otterworks_reports \
+  -e DB_USER=otterworks -e DB_PASSWORD=otterworks_dev -e REPORT_OUTPUT_DIR=/tmp/reports -e TZ=UTC \
   report-service:local
 
 REPORT_SERVICE_URL=http://localhost:18091 services/report-service/characterization/run.sh
