@@ -1,0 +1,151 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [
+      {
+        "id": {
+          "S": "meta-case"
+        },
+        "owner_id": {
+          "S": "user-alice"
+        },
+        "s3_key": {
+          "S": "files/user-alice/report.pdf"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-empty-key"
+        },
+        "owner_id": {
+          "S": "user-frank"
+        },
+        "s3_key": {
+          "S": ""
+        }
+      },
+      {
+        "id": {
+          "S": "meta-no-key"
+        },
+        "name": {
+          "S": "no s3_key attribute"
+        },
+        "owner_id": {
+          "S": "user-frank"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-numeric-key"
+        },
+        "owner_id": {
+          "S": "user-frank"
+        },
+        "s3_key": {
+          "N": "42"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-shared-1"
+        },
+        "owner_id": {
+          "S": "user-dan"
+        },
+        "s3_key": {
+          "S": "files/user-dan/shared.txt"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-shared-2"
+        },
+        "owner_id": {
+          "S": "user-dan"
+        },
+        "s3_key": {
+          "S": "files/user-dan/shared.txt"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-slash"
+        },
+        "owner_id": {
+          "S": "user-bob"
+        },
+        "s3_key": {
+          "S": "/files/user-bob/leading.txt"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-unicode"
+        },
+        "owner_id": {
+          "S": "user-dan"
+        },
+        "s3_key": {
+          "S": "files/user-dan/ünïcode.txt"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-uri"
+        },
+        "owner_id": {
+          "S": "user-carol"
+        },
+        "s3_key": {
+          "S": "s3://otterworks-file-storage/files/user-carol/uri.txt"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "description": "Every object under files/ is referenced by metadata, so nothing is copied or deleted; the report is still written with zero orphans. Covers a metadata row without an object, an unreferenced object outside the prefix, and an older quarantine copy that must stay untouched.",
+  "frozen_time": "2026-05-10T02:30:00Z",
+  "seed": {
+    "s3": [
+      {"bucket": "otterworks-file-storage", "key": "files/user-alice/a.pdf", "body": "alice pdf body", "format": "text", "content_type": "application/pdf"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-bob/b.csv", "body": "id,name\n1,bob\n", "format": "text", "content_type": "text/csv"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-carol/nested/deep/c.json", "body": {"nested": {"deep": true}}, "format": "json", "content_type": "application/json"},
+      {"bucket": "otterworks-file-storage", "key": "uploads/tmp.bin", "body": "unreferenced but outside files/", "format": "text"},
+      {"bucket": "otterworks-file-quarantine", "key": "quarantined/2026-05-09/files/user-erin/old.txt", "body": "quarantined yesterday", "format": "text", "content_type": "text/plain"}
+    ],
+    "dynamodb": {
+      "otterworks-file-metadata": [
+        {"id": "meta-a", "s3_key": "files/user-alice/a.pdf", "owner_id": "user-alice", "size": 14},
+        {"id": "meta-b", "s3_key": "files/user-bob/b.csv", "owner_id": "user-bob", "size": 15},
+        {"id": "meta-c", "s3_key": "files/user-carol/nested/deep/c.json", "owner_id": "user-carol", "size": 26},
+        {"id": "meta-d", "s3_key": "files/user-dave/gone.bin", "owner_id": "user-dave", "size": 99}
+      ]
+    }
+  }
+}
