@@ -32,6 +32,7 @@ jobs:
       analytics-service: ${{ steps.changes.outputs.analytics-service }}
       admin-service: ${{ steps.changes.outputs.admin-service }}
       audit-service: ${{ steps.changes.outputs.audit-service }}
+      windows-desktop: ${{ steps.changes.outputs.windows-desktop }}
       web-app: ${{ steps.changes.outputs.web-app }}
       admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
       demo-platform: ${{ steps.changes.outputs.demo-platform }}
@@ -65,6 +66,8 @@ jobs:
               - 'services/admin-service/**'
             audit-service:
               - 'services/audit-service/**'
+            windows-desktop:
+              - 'clients/windows-desktop/**'
             web-app:
               - 'frontend/client-app/**'
             admin-dashboard:
@@ -287,6 +290,22 @@ jobs:
       - run: dotnet restore
       - run: dotnet build --no-restore
       - run: dotnet test --no-build
+
+  # C# / WPF - Windows desktop client (.NET 8)
+  windows-desktop:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.windows-desktop == 'true'
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: clients/windows-desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore OtterWorks.Desktop.sln
+      - run: dotnet build OtterWorks.Desktop.sln -c Release --no-restore
 
   # React/Next.js - Web App
   web-app:

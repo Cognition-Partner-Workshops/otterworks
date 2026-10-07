@@ -11,7 +11,7 @@ namespace OtterWorks.Desktop.ViewModels
     {
         private readonly OtterWorksApiClient _api;
         private readonly SessionState _session;
-        private ObservableObject _currentViewModel;
+        private ObservableObject? _currentViewModel;
 
         public MainViewModel(OtterWorksApiClient api, SessionState session)
         {
@@ -28,7 +28,7 @@ namespace OtterWorks.Desktop.ViewModels
             }
         }
 
-        public ObservableObject CurrentViewModel
+        public ObservableObject? CurrentViewModel
         {
             get => _currentViewModel;
             private set => SetProperty(ref _currentViewModel, value);
@@ -36,7 +36,7 @@ namespace OtterWorks.Desktop.ViewModels
 
         public bool IsAuthenticated => _session.IsAuthenticated;
 
-        public string CurrentUserName => _session.User?.DisplayName ?? _session.User?.Email;
+        public string? CurrentUserName => _session.User?.DisplayName ?? _session.User?.Email;
 
         public void ShowLogin()
         {
