@@ -9,7 +9,7 @@
   "mmp_rt_b3_oracle.invoiceHeader",
   "mmp_rt_b3_oracle.customerMasterHist"
  ],
- "pr_url": "",
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
  "branch": "devin/1791365757-w1-b03-load",
  "failure_class": "harness_cannot_grade_obligation",
  "one_line_summary": "invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines written to invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand), customerMasterHist 0/0 PASS merge_eligible; harness verdict for invoiceHeader is FAIL at Tier 1 (embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463) because the F47 remainder collection is ungradable in any spec shape (F69: without overflow Tier 1 fails, with overflow Tier 3 reports 74 embed_orphan_child); loader gained the ORPHAN_SINKS hook + --extra-write-targets; nothing dropped, b01/b02 collections unchanged.",

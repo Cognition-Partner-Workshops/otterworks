@@ -475,7 +475,7 @@
   "extra_collection_blocked": false,
   "note": "database-level allowlist; invoice_lines_orphaned written without a guard block. The org dbx guard rejected one command that cd'd into the checkout (F4/F9), rerun via the wrapper"
  },
- "pr_url": "",
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
  "pre_pr_self_check": {
   "null_missing": "NULL root/orphan key refused by the loader; NULL non-key fields written as null or omitted under null_missing_equiv per the spec rules the harness grades; 0 INVOICE_LINE rows with NULL invoice_id (owner-side)",
   "namespace_scope": "writes only to mmp_rt_b3_oracle.{invoiceHeader,customerMasterHist} (wave write_targets) + mmp_rt_b3_oracle.invoice_lines_orphaned (units.json extra_write_targets_ungraded, passed as --extra-write-targets); loader refuses any target outside --target-db; the generic checklist's ow_tp prefix rule does not apply to this run's allowlisted db (as b01/b02)",
