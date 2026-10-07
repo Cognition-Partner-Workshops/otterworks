@@ -104,6 +104,8 @@ before the cutoff instant: the legacy string filter archives same-instant spelli
 Legacy defines `bulk_batch_size` but sends each fetched page as one batch; the DAG splits a
 page into batches of at most `search_reindex_bulk_batch_size`, which is the same while it is at
 least `search_reindex_api_page_size`. A polling timeout fails the task (legacy carried on).
+`search_reindex_api_page_size` must be at most 100, which is the limit of both upstream list endpoints. Timeouts must be
+positive and finite. Invalid values fail before `clear_indices` touches an index.
 The MeiliSearch index settings stay in code (`otterworks_etl.search_reindex.mapping`).
 
 ### `otterworks_storage_cleanup` (`storage_cleanup_daily.py`)

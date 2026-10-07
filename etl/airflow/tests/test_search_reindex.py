@@ -128,9 +128,13 @@ def test_parse_config():
     config = parse_config(CONFIG)
     assert config.indices == {"documents": "documents", "files": "files"}
     assert (config.api_page_size, config.bulk_batch_size) == (100, 500)
+    assert parse_config({**CONFIG, "search_reindex_api_page_size": "100"}).api_page_size == 100
     assert (config.task_timeout, config.bulk_task_timeout) == (60.0, 120.0)
     for key, bad in [
         ("search_reindex_api_page_size", "ten"),
+        ("search_reindex_api_page_size", "101"),
+        ("search_reindex_task_timeout_seconds", "nan"),
+        ("search_reindex_bulk_task_timeout_seconds", "inf"),
         ("search_reindex_bulk_batch_size", "0"),
         ("search_reindex_task_timeout_seconds", "-1"),
         ("search_reindex_files_index", "documents"),

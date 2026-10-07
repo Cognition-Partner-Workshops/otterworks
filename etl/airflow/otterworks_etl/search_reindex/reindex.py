@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -64,6 +65,9 @@ INT_VARIABLES = {
     "api_page_size": "search_reindex_api_page_size",
     "bulk_batch_size": "search_reindex_bulk_batch_size",
 }
+# document-service rejects size > 100 (422); file-service caps page_size at 100, which would
+# look like a short last page and stop paging early.
+MAX_API_PAGE_SIZE = 100
 TIMEOUT_VARIABLES = {
     "task_timeout": "search_reindex_task_timeout_seconds",
     "bulk_task_timeout": "search_reindex_bulk_task_timeout_seconds",
@@ -94,6 +98,11 @@ def parse_config(values: Mapping[str, str]) -> ReindexConfig:
         numbers[field] = _number(key, values[key], int)
     for field, key in TIMEOUT_VARIABLES.items():
         numbers[field] = _number(key, values[key], float)
+    if numbers["api_page_size"] > MAX_API_PAGE_SIZE:
+        raise ValueError(
+            f"Variable {INT_VARIABLES['api_page_size']}={numbers['api_page_size']} "
+            f"exceeds the upstream page limit {MAX_API_PAGE_SIZE}"
+        )
     return ReindexConfig(indices=indices, **numbers)
 
 
@@ -102,8 +111,8 @@ def _number(key: str, raw: str, kind: type) -> Any:
         value = kind(raw)
     except (TypeError, ValueError):
         raise ValueError(f"Variable {key}={raw!r} is not a {kind.__name__}") from None
-    if value <= 0:
-        raise ValueError(f"Variable {key}={raw!r} must be positive")
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"Variable {key}={raw!r} must be a positive finite number")
     return value
 
 
