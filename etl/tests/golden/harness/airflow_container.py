@@ -181,6 +181,9 @@ def run_environment(
         PARITY_CONFIG_PATH=str(config_path),
         PARITY_FROZEN_TIME=frozen_time,
         PARITY_LEGACY_IMAGE=legacy_image,
+        # `airflow dags test` (Airflow 2.8 dag.test) never increments try_number, so a task
+        # with retries is retried forever; one attempt also matches the legacy cron run.
+        OTTERWORKS_ETL_TASK_RETRIES="0",
     )
     return env
 

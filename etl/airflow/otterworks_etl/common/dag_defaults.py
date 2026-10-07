@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from datetime import timedelta
 from typing import Any
 
@@ -9,6 +10,10 @@ from otterworks_etl.common.callbacks import log_task_failure
 
 DEFAULT_OWNER = "otterworks-data"
 DEFAULT_TAG = "otterworks"
+DEFAULT_TASK_RETRIES = 3
+# Test-only: the parity runner sets 0 because `airflow dags test` (Airflow 2.8 `dag.test()`)
+# never increments try_number, so a failing task with retries is retried forever.
+TASK_RETRIES_ENV = "OTTERWORKS_ETL_TASK_RETRIES"
 
 # Legacy cron expressions from etl/crontab, keyed by target DAG id. Keeping the same wall-clock
 # times preserves the legacy run date (see run_date.legacy_run_date).
@@ -21,8 +26,14 @@ LEGACY_SCHEDULES: dict[str, str] = {
 }
 
 
+def task_retries() -> int:
+    return int(os.environ.get(TASK_RETRIES_ENV, str(DEFAULT_TASK_RETRIES)))
+
+
 def default_args(**overrides: Any) -> dict[str, Any]:
     """Task defaults: 3 retries backing off exponentially from 5 to at most 30 minutes.
+
+    ``OTTERWORKS_ETL_TASK_RETRIES`` (read at DAG parse time, test-only) overrides the retry count.
 
     Email/Slack/PagerDuty alerting needs real endpoints; until they exist the only failure
     callback is the structured log event. Add notifiers by passing a list, e.g.
@@ -31,7 +42,7 @@ def default_args(**overrides: Any) -> dict[str, Any]:
     args: dict[str, Any] = {
         "owner": DEFAULT_OWNER,
         "depends_on_past": False,
-        "retries": 3,
+        "retries": task_retries(),
         "retry_delay": timedelta(minutes=5),
         "retry_exponential_backoff": True,
         "max_retry_delay": timedelta(minutes=30),

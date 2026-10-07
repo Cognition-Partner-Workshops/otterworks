@@ -134,6 +134,18 @@ matching; that is an accepted difference from the goldens, opt-in only.
 The per-day partitions it reads are under `analytics_prefix` (legacy hardcodes `analytics/daily`,
 the same value).
 
+## Test-only environment
+
+| Variable | Default | Set by |
+| --- | --- | --- |
+| `OTTERWORKS_ETL_TASK_RETRIES` | `3` | the parity runner (`etl/tests/golden/harness/airflow_container.py`), to `0` |
+
+Plain environment variable, read when the DAG file is parsed (`otterworks_etl.common.default_args`);
+not an Airflow Variable, and never set in the image, chart or `.env.example`. It exists because
+`airflow dags test` on Airflow 2.8 (`dag.test()`) runs tasks through `_run_raw_task` without
+incrementing `try_number`, so a failing task with retries is retried forever. With `0` a parity run
+makes one attempt per task, like the legacy cron job. Retry behaviour is covered by DAG tests.
+
 ## Stays in code
 
 Output contracts the parity goldens pin, not tunables: object names inside a prefix

@@ -40,6 +40,20 @@ def test_task_graph_and_schedule(dagbag):
     assert {"search", "otterworks"} <= set(dag.tags)
 
 
+def test_tasks_retry_three_times_unless_the_parity_override_is_set(dagbag, monkeypatch):
+    assert {t.retries for t in dagbag.dags[DAG_ID].tasks} == {3}
+    monkeypatch.setenv("OTTERWORKS_ETL_TASK_RETRIES", "0")
+    from airflow.models import DagBag
+
+    with (
+        mock.patch.object(BaseHook, "get_connection", side_effect=AssertionError),
+        mock.patch.object(Variable, "get", side_effect=AssertionError),
+    ):
+        parsed = DagBag(dag_folder=str(DAG_FILE), include_examples=False, read_dags_from_db=False)
+    assert not parsed.import_errors
+    assert {t.retries for t in parsed.dags[DAG_ID].tasks} == {0}
+
+
 def test_uses_http_hook_only():
     sources = [DAG_FILE, *sorted(PACKAGE.glob("*.py"))]
     for path in sources:
