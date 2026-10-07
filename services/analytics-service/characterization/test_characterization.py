@@ -16,16 +16,19 @@ deterministic endpoints to, so two runs (before/after) can be diffed.
 """
 
 import datetime
+import http.client
 import json
 import os
 import re
 import sys
 import unittest
-import urllib.error
-import urllib.request
+import urllib.parse
 import uuid
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:18088").rstrip("/")
+_BASE = urllib.parse.urlsplit(BASE_URL)
+if _BASE.scheme not in ("http", "https") or not _BASE.netloc:
+    sys.exit(f"BASE_URL must be an http(s) URL, got {BASE_URL!r}")
 SNAPSHOT_DIR = os.environ.get("SNAPSHOT_DIR")
 RUN = uuid.uuid4().hex[:10]
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
@@ -61,12 +64,15 @@ def call(method, path, body=None, content_type="application/json"):
     if body is not None:
         data = body if isinstance(body, bytes) else json.dumps(body).encode()
         headers["Content-Type"] = content_type
-    req = urllib.request.Request(BASE_URL + path, data=data, method=method, headers=headers)
+    headers["Connection"] = "close"
+    conn_cls = http.client.HTTPSConnection if _BASE.scheme == "https" else http.client.HTTPConnection
+    conn = conn_cls(_BASE.netloc, timeout=30)
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return Resp(r.status, r.headers, r.read())
-    except urllib.error.HTTPError as e:
-        return Resp(e.code, e.headers, e.read())
+        conn.request(method, _BASE.path + path, body=data, headers=headers)
+        r = conn.getresponse()
+        return Resp(r.status, r.headers, r.read())
+    finally:
+        conn.close()
 
 
 def snapshot(name, value):
