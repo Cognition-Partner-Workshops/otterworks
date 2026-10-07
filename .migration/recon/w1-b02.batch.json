@@ -1,156 +1,175 @@
 {
-  "batch": "w1-b02",
-  "status": "PASS",
-  "recon_results": [
-    ".migration/recon/ratingPeriods/result.json",
-    ".migration/recon/creditNotes/result.json",
-    ".migration/recon/usageEvents/result.json",
-    ".migration/recon/notifications/result.json",
-    ".migration/recon/subscriptions/result.json"
-  ],
-  "write_targets": [
-    "mmp_rt_b3_oracle.ratingPeriods",
-    "mmp_rt_b3_oracle.creditNotes",
-    "mmp_rt_b3_oracle.usageEvents",
-    "mmp_rt_b3_oracle.notifications",
-    "mmp_rt_b3_oracle.subscriptions"
-  ],
-  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
-  "branch": "devin/1791364935-w1-b02-load",
-  "failure_class": "",
-  "one_line_summary": "all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
-  "per_unit": {
-    "ratingPeriods": {
-      "live_verdict": "PASS",
-      "live_merge_eligible": true,
-      "tiers": [
-        {
-          "tier": 1,
-          "passed": true,
-          "checks_run": 3,
-          "findings": 0
-        },
-        {
-          "tier": 2,
-          "passed": true,
-          "checks_run": 2,
-          "findings": 0
-        },
-        {
-          "tier": 3,
-          "passed": true,
-          "checks_run": 3,
-          "findings": 0
-        }
-      ],
-      "fixture_verdict": "PASS",
-      "mapping_version": "map-draft-3"
+ "batch": "w1-b02",
+ "status": "PASS",
+ "recon_results": [
+  ".migration/recon/ratingPeriods/result.json",
+  ".migration/recon/creditNotes/result.json",
+  ".migration/recon/usageEvents/result.json",
+  ".migration/recon/notifications/result.json",
+  ".migration/recon/subscriptions/result.json"
+ ],
+ "write_targets": [
+  "mmp_rt_b3_oracle.ratingPeriods",
+  "mmp_rt_b3_oracle.creditNotes",
+  "mmp_rt_b3_oracle.usageEvents",
+  "mmp_rt_b3_oracle.notifications",
+  "mmp_rt_b3_oracle.subscriptions"
+ ],
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+ "branch": "devin/1791370818-w1-recon-refresh",
+ "failure_class": "",
+ "one_line_summary": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): ratingPeriods PASS, creditNotes PASS, usageEvents PASS, notifications PASS, subscriptions PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
+ "per_unit": {
+  "ratingPeriods": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
     },
-    "creditNotes": {
-      "live_verdict": "PASS",
-      "live_merge_eligible": true,
-      "tiers": [
-        {
-          "tier": 1,
-          "passed": true,
-          "checks_run": 3,
-          "findings": 0
-        },
-        {
-          "tier": 2,
-          "passed": true,
-          "checks_run": 3,
-          "findings": 0
-        },
-        {
-          "tier": 3,
-          "passed": true,
-          "checks_run": 5,
-          "findings": 0
-        }
-      ],
-      "fixture_verdict": "PASS",
-      "mapping_version": "map-draft-3"
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
     },
-    "usageEvents": {
-      "live_verdict": "PASS",
-      "live_merge_eligible": true,
-      "tiers": [
-        {
-          "tier": 1,
-          "passed": true,
-          "checks_run": 2,
-          "findings": 0
-        },
-        {
-          "tier": 2,
-          "passed": true,
-          "checks_run": 3,
-          "findings": 0
-        },
-        {
-          "tier": 3,
-          "passed": true,
-          "checks_run": 103,
-          "findings": 0
-        }
-      ],
-      "fixture_verdict": "PASS",
-      "mapping_version": "map-draft-3"
-    },
-    "notifications": {
-      "live_verdict": "PASS",
-      "live_merge_eligible": true,
-      "tiers": [
-        {
-          "tier": 1,
-          "passed": true,
-          "checks_run": 2,
-          "findings": 0
-        },
-        {
-          "tier": 2,
-          "passed": true,
-          "checks_run": 2,
-          "findings": 0
-        },
-        {
-          "tier": 3,
-          "passed": true,
-          "checks_run": 1,
-          "findings": 0
-        }
-      ],
-      "fixture_verdict": "PASS",
-      "mapping_version": "map-draft-3"
-    },
-    "subscriptions": {
-      "live_verdict": "PASS",
-      "live_merge_eligible": true,
-      "tiers": [
-        {
-          "tier": 1,
-          "passed": true,
-          "checks_run": 4,
-          "findings": 0
-        },
-        {
-          "tier": 2,
-          "passed": true,
-          "checks_run": 2,
-          "findings": 0
-        },
-        {
-          "tier": 3,
-          "passed": true,
-          "checks_run": 30,
-          "findings": 0
-        }
-      ],
-      "fixture_verdict": "PASS",
-      "mapping_version": "map-draft-3"
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
     }
+   ],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "fixture_mapping_version": "map-draft-4",
+   "refreshed": true
   },
-  "mapping_version": "map-draft-3",
-  "manifest_sha": "ed1747e90f6e"
+  "creditNotes": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 5,
+     "findings": 0
+    }
+   ],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "fixture_mapping_version": "map-draft-4",
+   "refreshed": true
+  },
+  "usageEvents": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 103,
+     "findings": 0
+    }
+   ],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "fixture_mapping_version": "map-draft-4",
+   "refreshed": true
+  },
+  "notifications": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 1,
+     "findings": 0
+    }
+   ],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "fixture_mapping_version": "map-draft-4",
+   "refreshed": true
+  },
+  "subscriptions": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 4,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 30,
+     "findings": 0
+    }
+   ],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "fixture_mapping_version": "map-draft-4",
+   "refreshed": true
+  }
+ },
+ "mapping_version": "map-draft-4",
+ "manifest_sha": "b11c0e7b2f31",
+ "load_branch": "devin/1791364935-w1-b02-load",
+ "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "refreshed_from": "ed1747e90f6e",
+ "refreshed_by": "UNT7-25",
+ "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+ "merge_eligible": true,
+ "refresh_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
 }

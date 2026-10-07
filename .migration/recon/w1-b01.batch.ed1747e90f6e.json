@@ -1,0 +1,156 @@
+{
+  "batch": "w1-b01",
+  "status": "PASS",
+  "recon_results": [
+    ".migration/recon/codes/result.json",
+    ".migration/recon/tenants/result.json",
+    ".migration/recon/plans/result.json",
+    ".migration/recon/customerMaster/result.json",
+    ".migration/recon/billingAuditLog/result.json"
+  ],
+  "write_targets": [
+    "mmp_rt_b3_oracle.codes",
+    "mmp_rt_b3_oracle.tenants",
+    "mmp_rt_b3_oracle.plans",
+    "mmp_rt_b3_oracle.customerMaster",
+    "mmp_rt_b3_oracle.billingAuditLog"
+  ],
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+  "branch": "devin/1791363491-w1-b01-load",
+  "failure_class": "",
+  "one_line_summary": "all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3 after the s3.3 spec correction: customerMaster 271/271 Tier-3 checks (0 findings; was 44 under map-draft-2 \u2014 F61 dirty SIGNUP_DT fixed by the scoped unparseable=null alias F65, F62 duplicate (ENTITY_ID, ATTR_NAME) fixed by the [ATTR_NAME, EAV_ID] element key F66); loader unchanged, obligations recomputed on the target: tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201, attributes 70/70 with eavId.",
+  "per_unit": {
+    "codes": {
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 0,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 32,
+          "findings": 0
+        }
+      ],
+      "fixture_verdict_map_draft_2": "PASS",
+      "mapping_version": "map-draft-3"
+    },
+    "tenants": {
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 15,
+          "findings": 0
+        }
+      ],
+      "fixture_verdict_map_draft_2": "PASS",
+      "mapping_version": "map-draft-3"
+    },
+    "plans": {
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 5,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        }
+      ],
+      "fixture_verdict_map_draft_2": "PASS",
+      "mapping_version": "map-draft-3"
+    },
+    "customerMaster": {
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 15,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 271,
+          "findings": 0
+        }
+      ],
+      "fixture_verdict_map_draft_2": "FAIL",
+      "mapping_version": "map-draft-3"
+    },
+    "billingAuditLog": {
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 1,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 1,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 0,
+          "findings": 0
+        }
+      ],
+      "fixture_verdict_map_draft_2": "PASS",
+      "mapping_version": "map-draft-3"
+    }
+  },
+  "mapping_version": "map-draft-3",
+  "manifest_sha": "ed1747e90f6e"
+}

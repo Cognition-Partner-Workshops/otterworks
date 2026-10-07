@@ -1,0 +1,3242 @@
+{
+ "kind": "recon-refresh-evidence",
+ "ticket": "UNT7-25",
+ "plan_step": "s4.1.r",
+ "decision": "d-stale-evidence = refresh-artifacts",
+ "run_branch_base": "903dbed9 (tp-run/mongodb-20261007T062215Z, after PR #1867)",
+ "branch": "devin/1791370818-w1-recon-refresh",
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1 (devin/1791335937-app-aware-modeling-next; cherry-pick 865b105d applied, patch-id e102025d)",
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "manifest_sha": "b11c0e7b2f31",
+ "what_ran": {
+  "units_refreshed": [
+   "codes",
+   "tenants",
+   "plans",
+   "customerMaster",
+   "billingAuditLog",
+   "ratingPeriods",
+   "creditNotes",
+   "usageEvents",
+   "notifications",
+   "subscriptions",
+   "customerMasterHist"
+  ],
+  "untouched": [
+   "invoiceHeader (already map-draft-4)",
+   "all b04/b05 artifacts",
+   "wave-1/ verifier artifacts"
+  ],
+  "per_unit_sequence": "recon_unit.sh <unit> fixture --out .migration/recon/<unit>/fixture (F74), then exactly one recon_unit.sh <unit> live, concurrency 1",
+  "reload": false,
+  "atlas_writes": false,
+  "source": "MMP_RT_SRC_DSN (OW_BILLING_RO, F60 logon trigger), fixture-owner session",
+  "window_utc": "2026-10-07 11:00:49 \u2013 11:03:04"
+ },
+ "per_unit_compare": {
+  "codes": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ],
+     [
+      32,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ],
+     [
+      32,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ],
+     [
+      32,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "tenants": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "plans": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "customerMaster": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      271,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      271,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      271,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "billingAuditLog": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "ratingPeriods": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "creditNotes": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      5,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "usageEvents": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      103,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      103,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      103,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "notifications": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      1,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "subscriptions": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      4,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      30,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      4,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      30,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      4,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      30,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "invoiceHeader": {
+   "new": [
+    "PASS",
+    false,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2463,
+      true,
+      0
+     ]
+    ],
+    [
+     "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+    ]
+   ],
+   "verifier": [
+    "PASS",
+    false,
+    "map-draft-4",
+    [
+     [
+      3,
+      true,
+      0
+     ],
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      2463,
+      true,
+      0
+     ]
+    ],
+    [
+     "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+    ]
+   ],
+   "old": null,
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  },
+  "customerMasterHist": {
+   "new": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "verifier": [
+    "PASS",
+    true,
+    "map-draft-4",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "old": [
+    "PASS",
+    true,
+    "map-draft-3",
+    [
+     [
+      2,
+      true,
+      0
+     ],
+     [
+      15,
+      true,
+      0
+     ],
+     [
+      0,
+      true,
+      0
+     ]
+    ],
+    []
+   ],
+   "same_as_verifier": true,
+   "same_as_old_except_mapping": true,
+   "fixture": [
+    "PASS",
+    "map-draft-4",
+    false
+   ]
+  }
+ },
+ "all_11_same_as_verifier_run": true,
+ "all_11_same_as_previous_except_mapping_version": true,
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "uri_secret": "MONGODB_ATLAS_URI",
+  "dbstats_before": {
+   "collections": 16,
+   "objects": 1423,
+   "dataSize": 1458565,
+   "storageSize": 2064384,
+   "indexes": 37,
+   "indexSize": 1523712
+  },
+  "dbstats_after": {
+   "collections": 16,
+   "objects": 1423,
+   "dataSize": 1458565,
+   "storageSize": 2064384,
+   "indexes": 37,
+   "indexSize": 1523712
+  },
+  "counts_before": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "dunningAttempts": 1,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "counts_after": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "dunningAttempts": 1,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "content_hashes_sampled_before": {
+   "invoiceHeader": "9b12e3c81df10990",
+   "invoice_lines_orphaned": "824135b20aed42f6",
+   "customerMasterHist": "e3b0c44298fc1c14"
+  },
+  "content_hashes_sampled_after": {
+   "invoiceHeader": "9b12e3c81df10990",
+   "invoice_lines_orphaned": "824135b20aed42f6",
+   "customerMasterHist": "e3b0c44298fc1c14"
+  },
+  "identical": true
+ },
+ "batch_json_repin": {
+  "files": [
+   "w1-b01.batch.json",
+   "w1-b02.batch.json",
+   "w1-b03.batch.json"
+  ],
+  "kept_as": [
+   "w1-b01.batch.ed1747e90f6e.json",
+   "w1-b02.batch.ed1747e90f6e.json",
+   "w1-b03.batch.ed1747e90f6e.json"
+  ],
+  "fields": "mapping_version map-draft-4, mapping_sha256, tolerance_sha256, manifest_sha b11c0e7b2f31, recon_results, per_unit refreshed, status/merge_eligible recomputed from the refreshed result.json files, refreshed_from ed1747e90f6e, refreshed_by UNT7-25",
+  "branch_field": "set to devin/1791370818-w1-recon-refresh (where the refreshed result.json files are committed); the original load branch and PR kept as load_branch / load_pr_url, pr_url kept as the original batch PR \u2014 see F79 for why the ticket-literal shape (branch = original load branch) cannot grade PASS"
+ },
+ "preflight_grade": {
+  "invocation": "GIT_DIR=<repo>/.git python3 <plugin>/skills/wave-preflight/preflight.py --wave <repo>/.migration/waves/wave-1.json --root <repo> --grade <repo>/.migration/recon/w1-b0{1..5}.batch.json --verify <repo>/.migration/recon/wave-1/verify-result.json --run-id ticket-cf5c46af9c3345b98534ff860bb73f38 (from $HOME; without GIT_DIR the grader's plain `git fetch origin \u2026` runs in $HOME and fails)",
+  "before_refresh": {
+   "auto_merge": false,
+   "batches": [
+    {
+     "batch": "w1-b01",
+     "branch": "devin/1791363491-w1-b01-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "manifest_sha": "ed1747e90f6e",
+     "mapping_version": "map-draft-3",
+     "merge_eligible": false,
+     "one_line_summary": "PASS downgraded: .migration/recon/codes/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3 after the s3.3 spec correction: customerMaster 271/271 Tier-3 checks (0 findings; was 44 under map-draft-2 \u2014 F61 dirty SIGNUP_DT fixed by the scoped unparseable=null alias F65, F62 duplicate (ENTITY_ID, ATTR_NAME) fixed by the [ATTR_NAME, EAV_ID] element key F66); loader unchanged, obligations recomputed on the target: tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201, attributes 70/70 with eavId.",
+     "per_unit": {
+      "billingAuditLog": {
+       "fixture_verdict_map_draft_2": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "codes": {
+       "fixture_verdict_map_draft_2": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 32,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "customerMaster": {
+       "fixture_verdict_map_draft_2": "FAIL",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 271,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "plans": {
+       "fixture_verdict_map_draft_2": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "tenants": {
+       "fixture_verdict_map_draft_2": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/codes/result.json",
+      ".migration/recon/tenants/result.json",
+      ".migration/recon/plans/result.json",
+      ".migration/recon/customerMaster/result.json",
+      ".migration/recon/billingAuditLog/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "status": "FAIL",
+     "target_class": null,
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.codes",
+      "mmp_rt_b3_oracle.tenants",
+      "mmp_rt_b3_oracle.plans",
+      "mmp_rt_b3_oracle.customerMaster",
+      "mmp_rt_b3_oracle.billingAuditLog"
+     ]
+    },
+    {
+     "batch": "w1-b02",
+     "branch": "devin/1791364935-w1-b02-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "manifest_sha": "ed1747e90f6e",
+     "mapping_version": "map-draft-3",
+     "merge_eligible": false,
+     "one_line_summary": "PASS downgraded: .migration/recon/ratingPeriods/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
+     "per_unit": {
+      "creditNotes": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "notifications": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingPeriods": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptions": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 4,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 30,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "usageEvents": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 103,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/ratingPeriods/result.json",
+      ".migration/recon/creditNotes/result.json",
+      ".migration/recon/usageEvents/result.json",
+      ".migration/recon/notifications/result.json",
+      ".migration/recon/subscriptions/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "status": "FAIL",
+     "target_class": null,
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.ratingPeriods",
+      "mmp_rt_b3_oracle.creditNotes",
+      "mmp_rt_b3_oracle.usageEvents",
+      "mmp_rt_b3_oracle.notifications",
+      "mmp_rt_b3_oracle.subscriptions"
+     ]
+    },
+    {
+     "batch": "w1-b03",
+     "branch": "devin/1791365757-w1-b03-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "loader_obligations": {
+      "ob-invoice-lines-orphaned": {
+       "embedded": 1463,
+       "expected_rows": 37,
+       "finding": "F47",
+       "graded_by_harness": false,
+       "holds": true,
+       "orphan_flag_true": 37,
+       "orphan_lineId_also_embedded": 0,
+       "orphan_pointer_resolves_to_header": 0,
+       "owner_side_not_child_where_count": 37,
+       "scoped_embed_remainder_record": {
+        "array_path": "lines",
+        "child": "INVOICE_LINE",
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "evidence": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0",
+        "kind": "scoped_embed_remainder",
+        "note": "rows where NOT (INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)) are in no collection after this embed; embed them elsewhere, or keep invoiceLine as a collection with root_where",
+        "parent": "invoiceHeader",
+        "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69)."
+       },
+       "sum": 1500,
+       "write_target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+       "written": 37
+      }
+     },
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": false,
+     "merge_eligible_blocker": "F72: invoiceHeader live PASS but merge_eligible false \u2014 harness warning 'embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked' (any warning blocks merge eligibility, report.py:66); customerMasterHist merge_eligible true",
+     "one_line_summary": "PASS downgraded: .migration/recon/customerMasterHist/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
+     "per_unit": {
+      "customerMasterHist": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-3",
+       "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4",
+       "tier1_findings": [],
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "invoiceHeader": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": false,
+       "live_verdict": "PASS",
+       "live_warnings": [
+        "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+       ],
+       "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+       "mapping_version": "map-draft-4",
+       "scoped_embed": {
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "graded_child_rows": 1463,
+        "remainder_not_graded": 37,
+        "source_child_rows_total": 1500,
+        "target_where": "{}"
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embed_extras_unchecked": [
+         "invoiceHeader.lines"
+        ],
+        "embeds_graded": {
+         "invoiceHeader.lines": 1463
+        },
+        "invoiceHeader": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1000
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 2463,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/invoiceHeader/result.json",
+      ".migration/recon/customerMasterHist/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "status": "FAIL",
+     "superseded_result": {
+      "failure_class": "harness_cannot_grade_obligation",
+      "manifest_sha": "ed1747e90f6e",
+      "mapping_version": "map-draft-3",
+      "note": "original b03 run (PR #1864 before UNT7-24); invoiceHeader Tier 1 embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463 (F69)",
+      "status": "FAIL"
+     },
+     "target_class": null,
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoiceHeader",
+      "mmp_rt_b3_oracle.customerMasterHist"
+     ]
+    },
+    {
+     "batch": "w1-b04",
+     "branch": "devin/1791367911-w1-b04-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
+     "per_unit": {
+      "invoices": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 4,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embeds_graded": {
+         "invoices.lines": 4
+        },
+        "invoices": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 4
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 12,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingResults": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 3,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "ratingResults": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 3
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 6,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptionsHist": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "0-row unit: PASS verifies nothing (F70/F73); SUBSCRIPTIONS_HIST trigger cascade never fired in the fixture",
+       "population": 0,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "subscriptionsHist": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 0
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/invoices/result.json",
+      ".migration/recon/subscriptionsHist/result.json",
+      ".migration/recon/ratingResults/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoices",
+      "mmp_rt_b3_oracle.subscriptionsHist",
+      "mmp_rt_b3_oracle.ratingResults"
+     ]
+    },
+    {
+     "batch": "w1-b05",
+     "branch": "devin/1791368621-w1-b05-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "dunningAttempts 1/1 live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31 (Tier 1 2 / Tier 2 3 / Tier 3 1 checks, 0 findings, no warnings), one live run, concurrency 1; references resolve on both sides (invoiceId -> invoices 1/1, tenantId -> tenants 1/1, 0 dangling; DUNNING_ATTEMPTS has no subscription column); loader unchanged, second load identical hash, nothing dropped, b01-b04 collections unchanged; F74 (fixture-first artifact overwritten by the live run at the default per-unit path).",
+     "per_unit": {
+      "dunningAttempts": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "1-row unit: Tier 3 keyed diff covers a single document; thin evidence in the F70 sense, but the row exists and every field rule ran once",
+       "population": 1,
+       "references": {
+        "invoiceId->invoices._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        },
+        "invoiceId_vs_legacy_invoiceHeader": "0 of 1 resolve against invoiceHeader._id (legacy INVOICE_HEADER key space); the FK is to INVOICES, so this is expected, not dangling",
+        "subscriptions": "no SUBSCRIPTION_ID column on DUNNING_ATTEMPTS (FKs: TENANT_ID->TENANTS.ID, INVOICE_ID->INVOICES.ID); the dispatch text named a subscriptions reference that does not exist in the schema or the spec",
+        "tenantId->tenants._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        }
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "dunningAttempts": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/dunningAttempts/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.dunningAttempts"
+     ]
+    }
+   ],
+   "manifest_sha": "b11c0e7b2f31",
+   "mergeable_prs": [
+    "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+    "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866"
+   ],
+   "verify_problems": [],
+   "wave": 1
+  },
+  "after_refresh_committed_shape": {
+   "auto_merge": false,
+   "batches": [
+    {
+     "batch": "w1-b01",
+     "branch": "devin/1791370818-w1-recon-refresh",
+     "failure_class": "",
+     "harness_merge_eligible": true,
+     "load_branch": "devin/1791363491-w1-b01-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): codes PASS, tenants PASS, plans PASS, customerMaster PASS, billingAuditLog PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3 after the s3.3 spec correction: customerMaster 271/271 Tier-3 checks (0 findings; was 44 under map-draft-2 \u2014 F61 dirty SIGNUP_DT fixed by the scoped unparseable=null alias F65, F62 duplicate (ENTITY_ID, ATTR_NAME) fixed by the [ATTR_NAME, EAV_ID] element key F66); loader unchanged, obligations recomputed on the target: tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201, attributes 70/70 with eavId.",
+     "per_unit": {
+      "billingAuditLog": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "codes": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 32,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "customerMaster": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 271,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "plans": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "tenants": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/codes/result.json",
+      ".migration/recon/tenants/result.json",
+      ".migration/recon/plans/result.json",
+      ".migration/recon/customerMaster/result.json",
+      ".migration/recon/billingAuditLog/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.codes",
+      "mmp_rt_b3_oracle.tenants",
+      "mmp_rt_b3_oracle.plans",
+      "mmp_rt_b3_oracle.customerMaster",
+      "mmp_rt_b3_oracle.billingAuditLog"
+     ]
+    },
+    {
+     "batch": "w1-b02",
+     "branch": "devin/1791370818-w1-recon-refresh",
+     "failure_class": "",
+     "harness_merge_eligible": true,
+     "load_branch": "devin/1791364935-w1-b02-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): ratingPeriods PASS, creditNotes PASS, usageEvents PASS, notifications PASS, subscriptions PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
+     "per_unit": {
+      "creditNotes": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "notifications": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingPeriods": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptions": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 4,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 30,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "usageEvents": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 103,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/ratingPeriods/result.json",
+      ".migration/recon/creditNotes/result.json",
+      ".migration/recon/usageEvents/result.json",
+      ".migration/recon/notifications/result.json",
+      ".migration/recon/subscriptions/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.ratingPeriods",
+      "mmp_rt_b3_oracle.creditNotes",
+      "mmp_rt_b3_oracle.usageEvents",
+      "mmp_rt_b3_oracle.notifications",
+      "mmp_rt_b3_oracle.subscriptions"
+     ]
+    },
+    {
+     "batch": "w1-b03",
+     "branch": "devin/1791370818-w1-recon-refresh",
+     "failure_class": null,
+     "harness_merge_eligible": false,
+     "load_branch": "devin/1791365757-w1-b03-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+     "loader_obligations": {
+      "ob-invoice-lines-orphaned": {
+       "embedded": 1463,
+       "expected_rows": 37,
+       "finding": "F47",
+       "graded_by_harness": false,
+       "holds": true,
+       "orphan_flag_true": 37,
+       "orphan_lineId_also_embedded": 0,
+       "orphan_pointer_resolves_to_header": 0,
+       "owner_side_not_child_where_count": 37,
+       "scoped_embed_remainder_record": {
+        "array_path": "lines",
+        "child": "INVOICE_LINE",
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "evidence": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0",
+        "kind": "scoped_embed_remainder",
+        "note": "rows where NOT (INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)) are in no collection after this embed; embed them elsewhere, or keep invoiceLine as a collection with root_where",
+        "parent": "invoiceHeader",
+        "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69)."
+       },
+       "sum": 1500,
+       "write_target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+       "written": 37
+      }
+     },
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": false,
+     "merge_eligible_blocker": "invoiceHeader merge_eligible false (F72, scoped-embed warning; accepted by d-orphan-grading)",
+     "one_line_summary": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): invoiceHeader PASS (not merge_eligible), customerMasterHist PASS; original load: s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
+     "per_unit": {
+      "customerMasterHist": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4",
+       "refreshed": true,
+       "tier1_findings": [],
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "invoiceHeader": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": false,
+       "live_verdict": "PASS",
+       "live_warnings": [
+        "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+       ],
+       "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+       "mapping_version": "map-draft-4",
+       "refreshed": false,
+       "scoped_embed": {
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "graded_child_rows": 1463,
+        "remainder_not_graded": 37,
+        "source_child_rows_total": 1500,
+        "target_where": "{}"
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embed_extras_unchecked": [
+         "invoiceHeader.lines"
+        ],
+        "embeds_graded": {
+         "invoiceHeader.lines": 1463
+        },
+        "invoiceHeader": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1000
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 2463,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/invoiceHeader/result.json",
+      ".migration/recon/customerMasterHist/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "PASS",
+     "superseded_result": {
+      "failure_class": "harness_cannot_grade_obligation",
+      "manifest_sha": "ed1747e90f6e",
+      "mapping_version": "map-draft-3",
+      "note": "original b03 run (PR #1864 before UNT7-24); invoiceHeader Tier 1 embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463 (F69)",
+      "status": "FAIL"
+     },
+     "target_class": "migration_cluster",
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoiceHeader",
+      "mmp_rt_b3_oracle.customerMasterHist"
+     ]
+    },
+    {
+     "batch": "w1-b04",
+     "branch": "devin/1791367911-w1-b04-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
+     "per_unit": {
+      "invoices": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 4,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embeds_graded": {
+         "invoices.lines": 4
+        },
+        "invoices": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 4
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 12,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingResults": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 3,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "ratingResults": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 3
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 6,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptionsHist": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "0-row unit: PASS verifies nothing (F70/F73); SUBSCRIPTIONS_HIST trigger cascade never fired in the fixture",
+       "population": 0,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "subscriptionsHist": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 0
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/invoices/result.json",
+      ".migration/recon/subscriptionsHist/result.json",
+      ".migration/recon/ratingResults/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoices",
+      "mmp_rt_b3_oracle.subscriptionsHist",
+      "mmp_rt_b3_oracle.ratingResults"
+     ]
+    },
+    {
+     "batch": "w1-b05",
+     "branch": "devin/1791368621-w1-b05-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "dunningAttempts 1/1 live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31 (Tier 1 2 / Tier 2 3 / Tier 3 1 checks, 0 findings, no warnings), one live run, concurrency 1; references resolve on both sides (invoiceId -> invoices 1/1, tenantId -> tenants 1/1, 0 dangling; DUNNING_ATTEMPTS has no subscription column); loader unchanged, second load identical hash, nothing dropped, b01-b04 collections unchanged; F74 (fixture-first artifact overwritten by the live run at the default per-unit path).",
+     "per_unit": {
+      "dunningAttempts": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "1-row unit: Tier 3 keyed diff covers a single document; thin evidence in the F70 sense, but the row exists and every field rule ran once",
+       "population": 1,
+       "references": {
+        "invoiceId->invoices._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        },
+        "invoiceId_vs_legacy_invoiceHeader": "0 of 1 resolve against invoiceHeader._id (legacy INVOICE_HEADER key space); the FK is to INVOICES, so this is expected, not dangling",
+        "subscriptions": "no SUBSCRIPTION_ID column on DUNNING_ATTEMPTS (FKs: TENANT_ID->TENANTS.ID, INVOICE_ID->INVOICES.ID); the dispatch text named a subscriptions reference that does not exist in the schema or the spec",
+        "tenantId->tenants._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        }
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "dunningAttempts": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/dunningAttempts/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.dunningAttempts"
+     ]
+    }
+   ],
+   "manifest_sha": "b11c0e7b2f31",
+   "mergeable_prs": [],
+   "verify_problems": [
+    "verifier output invalid: missing verdicts for w1-b01, w1-b02, w1-b03",
+    "verifier output invalid: verdict for w1-b01 is None",
+    "verifier output invalid: verdict for w1-b02 is None",
+    "verifier output invalid: verdict for w1-b03 is None"
+   ],
+   "wave": 1
+  },
+  "after_refresh_committed_shape_exit": 1,
+  "after_refresh_ticket_literal_shape_branch_original": {
+   "auto_merge": false,
+   "batches": [
+    {
+     "batch": "w1-b01",
+     "branch": "devin/1791363491-w1-b01-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "load_branch": "devin/1791363491-w1-b01-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": false,
+     "one_line_summary": "PASS downgraded: .migration/recon/codes/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): codes PASS, tenants PASS, plans PASS, customerMaster PASS, billingAuditLog PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3 after the s3.3 spec correction: customerMaster 271/271 Tier-3 checks (0 findings; was 44 under map-draft-2 \u2014 F61 dirty SIGNUP_DT fixed by the scoped unparseable=null alias F65, F62 duplicate (ENTITY_ID, ATTR_NAME) fixed by the [ATTR_NAME, EAV_ID] element key F66); loader unchanged, obligations recomputed on the target: tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201, attributes 70/70 with eavId.",
+     "per_unit": {
+      "billingAuditLog": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "codes": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 32,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "customerMaster": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 271,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "plans": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "tenants": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/codes/result.json",
+      ".migration/recon/tenants/result.json",
+      ".migration/recon/plans/result.json",
+      ".migration/recon/customerMaster/result.json",
+      ".migration/recon/billingAuditLog/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "FAIL",
+     "target_class": null,
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.codes",
+      "mmp_rt_b3_oracle.tenants",
+      "mmp_rt_b3_oracle.plans",
+      "mmp_rt_b3_oracle.customerMaster",
+      "mmp_rt_b3_oracle.billingAuditLog"
+     ]
+    },
+    {
+     "batch": "w1-b02",
+     "branch": "devin/1791364935-w1-b02-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "load_branch": "devin/1791364935-w1-b02-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": false,
+     "one_line_summary": "PASS downgraded: .migration/recon/ratingPeriods/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): ratingPeriods PASS, creditNotes PASS, usageEvents PASS, notifications PASS, subscriptions PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
+     "per_unit": {
+      "creditNotes": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "notifications": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingPeriods": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptions": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 4,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 30,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "usageEvents": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "refreshed": true,
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 103,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/ratingPeriods/result.json",
+      ".migration/recon/creditNotes/result.json",
+      ".migration/recon/usageEvents/result.json",
+      ".migration/recon/notifications/result.json",
+      ".migration/recon/subscriptions/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "FAIL",
+     "target_class": null,
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.ratingPeriods",
+      "mmp_rt_b3_oracle.creditNotes",
+      "mmp_rt_b3_oracle.usageEvents",
+      "mmp_rt_b3_oracle.notifications",
+      "mmp_rt_b3_oracle.subscriptions"
+     ]
+    },
+    {
+     "batch": "w1-b03",
+     "branch": "devin/1791365757-w1-b03-load",
+     "failure_class": "insufficient_evidence",
+     "harness_merge_eligible": false,
+     "load_branch": "devin/1791365757-w1-b03-load",
+     "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+     "loader_obligations": {
+      "ob-invoice-lines-orphaned": {
+       "embedded": 1463,
+       "expected_rows": 37,
+       "finding": "F47",
+       "graded_by_harness": false,
+       "holds": true,
+       "orphan_flag_true": 37,
+       "orphan_lineId_also_embedded": 0,
+       "orphan_pointer_resolves_to_header": 0,
+       "owner_side_not_child_where_count": 37,
+       "scoped_embed_remainder_record": {
+        "array_path": "lines",
+        "child": "INVOICE_LINE",
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "evidence": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0",
+        "kind": "scoped_embed_remainder",
+        "note": "rows where NOT (INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)) are in no collection after this embed; embed them elsewhere, or keep invoiceLine as a collection with root_where",
+        "parent": "invoiceHeader",
+        "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69)."
+       },
+       "sum": 1500,
+       "write_target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+       "written": 37
+      }
+     },
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": false,
+     "merge_eligible_blocker": "invoiceHeader merge_eligible false (F72, scoped-embed warning; accepted by d-orphan-grading)",
+     "one_line_summary": "PASS downgraded: .migration/recon/customerMasterHist/result.json graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1; refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): invoiceHeader PASS (not merge_eligible), customerMasterHist PASS; original load: s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
+     "per_unit": {
+      "customerMasterHist": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "mapping_version": "map-draft-4",
+       "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4",
+       "refreshed": true,
+       "tier1_findings": [],
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 15,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "invoiceHeader": {
+       "fixture_mapping_version": "map-draft-4",
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": false,
+       "live_verdict": "PASS",
+       "live_warnings": [
+        "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+       ],
+       "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+       "mapping_version": "map-draft-4",
+       "refreshed": false,
+       "scoped_embed": {
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "graded_child_rows": 1463,
+        "remainder_not_graded": 37,
+        "source_child_rows_total": 1500,
+        "target_where": "{}"
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embed_extras_unchecked": [
+         "invoiceHeader.lines"
+        ],
+        "embeds_graded": {
+         "invoiceHeader.lines": 1463
+        },
+        "invoiceHeader": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1000
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 2463,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+     "recon_mode": null,
+     "recon_results": [
+      ".migration/recon/invoiceHeader/result.json",
+      ".migration/recon/customerMasterHist/result.json"
+     ],
+     "recon_verdict": "NOT_RUN",
+     "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
+     "refreshed_by": "UNT7-25",
+     "refreshed_from": "ed1747e90f6e",
+     "status": "FAIL",
+     "superseded_result": {
+      "failure_class": "harness_cannot_grade_obligation",
+      "manifest_sha": "ed1747e90f6e",
+      "mapping_version": "map-draft-3",
+      "note": "original b03 run (PR #1864 before UNT7-24); invoiceHeader Tier 1 embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463 (F69)",
+      "status": "FAIL"
+     },
+     "target_class": null,
+     "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoiceHeader",
+      "mmp_rt_b3_oracle.customerMasterHist"
+     ]
+    },
+    {
+     "batch": "w1-b04",
+     "branch": "devin/1791367911-w1-b04-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
+     "per_unit": {
+      "invoices": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 4,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "embeds_graded": {
+         "invoices.lines": 4
+        },
+        "invoices": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 4
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 5,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 12,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "ratingResults": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "population": 3,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "ratingResults": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 3
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 6,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      },
+      "subscriptionsHist": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "0-row unit: PASS verifies nothing (F70/F73); SUBSCRIPTIONS_HIST trigger cascade never fired in the fixture",
+       "population": 0,
+       "tier1_findings": [],
+       "tier3_stats": {
+        "subscriptionsHist": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 0
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 0,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/invoices/result.json",
+      ".migration/recon/subscriptionsHist/result.json",
+      ".migration/recon/ratingResults/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.invoices",
+      "mmp_rt_b3_oracle.subscriptionsHist",
+      "mmp_rt_b3_oracle.ratingResults"
+     ]
+    },
+    {
+     "batch": "w1-b05",
+     "branch": "devin/1791368621-w1-b05-load",
+     "failure_class": null,
+     "harness_merge_eligible": true,
+     "loader_obligations": {},
+     "manifest_sha": "b11c0e7b2f31",
+     "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+     "mapping_version": "map-draft-4",
+     "merge_eligible": true,
+     "one_line_summary": "dunningAttempts 1/1 live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31 (Tier 1 2 / Tier 2 3 / Tier 3 1 checks, 0 findings, no warnings), one live run, concurrency 1; references resolve on both sides (invoiceId -> invoices 1/1, tenantId -> tenants 1/1, 0 dangling; DUNNING_ATTEMPTS has no subscription column); loader unchanged, second load identical hash, nothing dropped, b01-b04 collections unchanged; F74 (fixture-first artifact overwritten by the live run at the default per-unit path).",
+     "per_unit": {
+      "dunningAttempts": {
+       "fixture_verdict": "PASS",
+       "live_merge_eligible": true,
+       "live_verdict": "PASS",
+       "live_warnings": [],
+       "mapping_version": "map-draft-4",
+       "note": "1-row unit: Tier 3 keyed diff covers a single document; thin evidence in the F70 sense, but the row exists and every field rule ran once",
+       "population": 1,
+       "references": {
+        "invoiceId->invoices._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        },
+        "invoiceId_vs_legacy_invoiceHeader": "0 of 1 resolve against invoiceHeader._id (legacy INVOICE_HEADER key space); the FK is to INVOICES, so this is expected, not dangling",
+        "subscriptions": "no SUBSCRIPTION_ID column on DUNNING_ATTEMPTS (FKs: TENANT_ID->TENANTS.ID, INVOICE_ID->INVOICES.ID); the dispatch text named a subscriptions reference that does not exist in the schema or the spec",
+        "tenantId->tenants._id": {
+         "dangling": 0,
+         "null": 0,
+         "pointers": 1,
+         "resolved_distinct": 1
+        }
+       },
+       "tier1_findings": [],
+       "tier3_stats": {
+        "dunningAttempts": {
+         "duplicate_source_key_count": 0,
+         "mode": "full_diff",
+         "population": 1
+        }
+       },
+       "tiers": [
+        {
+         "checks_run": 2,
+         "findings": 0,
+         "passed": true,
+         "tier": 1
+        },
+        {
+         "checks_run": 3,
+         "findings": 0,
+         "passed": true,
+         "tier": 2
+        },
+        {
+         "checks_run": 1,
+         "findings": 0,
+         "passed": true,
+         "tier": 3
+        }
+       ]
+      }
+     },
+     "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+     "recon_mode": "live",
+     "recon_results": [
+      ".migration/recon/dunningAttempts/result.json"
+     ],
+     "recon_verdict": "PASS",
+     "status": "PASS",
+     "target_class": "migration_cluster",
+     "undeclared_write_targets": [],
+     "write_targets": [
+      "mmp_rt_b3_oracle.dunningAttempts"
+     ]
+    }
+   ],
+   "manifest_sha": "b11c0e7b2f31",
+   "wave": 1
+  },
+  "after_refresh_ticket_literal_shape_exit": 0
+ },
+ "findings": [
+  "F78",
+  "F79"
+ ],
+ "pre_pr_self_check": {
+  "null_missing": "n/a \u2014 recon-only, no load",
+  "namespace_scope": "no writes; harness reads mmp_rt_b3_oracle only; dbStats + sampled content hashes identical before/after",
+  "ddl": "none; Oracle untouched (ro principal)",
+  "rerun": "n/a (no load); every refreshed result.json is a fresh harness run",
+  "evidence_retained": "previous batch JSONs kept as *.batch.ed1747e90f6e.json; previous result.json files remain in git history (run branch 903dbed9); fixture runs retained under recon/<unit>/fixture/",
+  "secrets": "fragment + pattern scan over all new/changed artifacts clean; secrets by name",
+  "tolerances": "tolerances 1 unchanged, mapping map-draft-4 unchanged, wave-1.json unchanged, connectivity.json / allowed_targets.json unchanged",
+  "recon_recomputed": "11 live + 11 fixture harness runs recomputed against the loaded target",
+  "unverified": "billingAuditLog, customerMasterHist 0 rows (F70); invoiceHeader not refreshed (already current)",
+  "capability_preflight": "see preflight_grade",
+  "tp_smoke": "see commit / PR body"
+ },
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
+}

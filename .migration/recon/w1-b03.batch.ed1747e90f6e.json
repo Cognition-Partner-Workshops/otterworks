@@ -10,9 +10,9 @@
   "mmp_rt_b3_oracle.customerMasterHist"
  ],
  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
- "branch": "devin/1791370818-w1-recon-refresh",
+ "branch": "devin/1791365757-w1-b03-load",
  "failure_class": null,
- "one_line_summary": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): invoiceHeader PASS (not merge_eligible), customerMasterHist PASS; original load: s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
+ "one_line_summary": "s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
  "per_unit": {
   "invoiceHeader": {
    "live_verdict": "PASS",
@@ -63,9 +63,7 @@
     "graded_child_rows": 1463,
     "source_child_rows_total": 1500,
     "remainder_not_graded": 37
-   },
-   "fixture_mapping_version": "map-draft-4",
-   "refreshed": false
+   }
   },
   "customerMasterHist": {
    "live_verdict": "PASS",
@@ -92,10 +90,8 @@
    ],
    "tier1_findings": [],
    "fixture_verdict": "PASS",
-   "mapping_version": "map-draft-4",
-   "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4",
-   "fixture_mapping_version": "map-draft-4",
-   "refreshed": true
+   "mapping_version": "map-draft-3",
+   "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4"
   }
  },
  "loader_obligations": {
@@ -127,7 +123,7 @@
  "mapping_version": "map-draft-4",
  "manifest_sha": "b11c0e7b2f31",
  "merge_eligible": false,
- "merge_eligible_blocker": "invoiceHeader merge_eligible false (F72, scoped-embed warning; accepted by d-orphan-grading)",
+ "merge_eligible_blocker": "F72: invoiceHeader live PASS but merge_eligible false \u2014 harness warning 'embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked' (any warning blocks merge eligibility, report.py:66); customerMasterHist merge_eligible true",
  "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
  "superseded_result": {
   "status": "FAIL",
@@ -135,12 +131,5 @@
   "mapping_version": "map-draft-3",
   "manifest_sha": "ed1747e90f6e",
   "note": "original b03 run (PR #1864 before UNT7-24); invoiceHeader Tier 1 embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463 (F69)"
- },
- "load_branch": "devin/1791365757-w1-b03-load",
- "load_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
- "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
- "refreshed_from": "ed1747e90f6e",
- "refreshed_by": "UNT7-25",
- "refresh_kind": "recon-only re-run under the current wave pin; no reload, no Atlas write; dbStats identical before/after",
- "refresh_pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868"
+ }
 }

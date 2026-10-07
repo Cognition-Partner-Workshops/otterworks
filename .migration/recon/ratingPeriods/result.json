@@ -2,8 +2,8 @@
   "unit": "ratingPeriods",
   "mode": "live",
   "target_class": "migration_cluster",
-  "mapping_version": "map-draft-3",
-  "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+  "mapping_version": "map-draft-4",
+  "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
   "tolerance_version": "1",
   "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
   "collections": [
@@ -12,7 +12,7 @@
   "seed": 1,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-07T09:26:01.349578+00:00",
+  "generated_at": "2026-10-07T11:02:13.877125+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [

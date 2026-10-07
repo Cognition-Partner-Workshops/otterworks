@@ -3,11 +3,11 @@
 - **Verdict: PASS** (values redacted)
 - Mode: `live`
 - Merge eligible: yes (fixture/continuous evidence never merges)
-- Mapping version: `map-draft-3` (sha256 `38bd108c0284`)
+- Mapping version: `map-draft-4` (sha256 `f5f8df83ed10`)
 - Tolerance version: `1` (sha256 `1a8ebb6c4c57`)
 - Collections: `creditNotes`
 - Seed: `1`
-- Generated: 2026-10-07T09:26:03.527319+00:00
+- Generated: 2026-10-07T11:02:18.280637+00:00
 - 4 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 1 string fields: min/max/distinct deferred to Tier 3
 
