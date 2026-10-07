@@ -1,5 +1,5 @@
 {
-  "version": "map-v1",
+  "version": "map-v1.1",
   "source_family": "oracle",
   "collections": [
     {
@@ -8270,7 +8270,7 @@
     }
   ],
   "canonicalization": {
-    "version": "map-v1-canon",
+    "version": "map-v1.1-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -11224,6 +11224,203 @@
           "quote": "DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90"
         },
         "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql: [d-audit-detached] DELETE ... WHERE logged_at < SYSDATE - 90 daily 03:30",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 1/11: empty string IS NULL",
+        "decision": "HIT by construction: Oracle stores '' as NULL in every VARCHAR2 column (census.json: 20 tables, 434 columns; no app/package/seed code compares to '' \u2014 grep of services/legacy-billing/app, db/oracle/packages, testdata/legacy returns no '' literal). Decision unchanged from s4.2: d-empty-string-policy = null (canonicalization rule empty_string_is_null, map-v1-canon); the loader never writes '' and recon treats null and missing as equivalent (null_missing_equiv). No new mapping change.",
+        "evidence": {
+          "file": ".migration/design_decisions.json",
+          "lines": "201",
+          "note": "[d-known-incompat-empty-string] Oracle VARCHAR2 '' == NULL; policy already pinned in map-v1"
+        },
+        "cited": ".migration/design_decisions.json: [d-known-incompat-empty-string] Oracle VARCHAR2 '' == NULL; policy already pinned in map-v1",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 2/11: sequences / NEXTVAL",
+        "decision": "HIT: census.json sequences = 5 (SEQ_BILLING_AUDIT_LOG, SEQ_SUBSCRIPTIONS_HIST, SEQ_CUSTOMER_MASTER, SEQ_CUSTOMER_MASTER_HIST, SEQ_ENTITY_ATTR_VALUE), each consumed by exactly one BEFORE INSERT trigger (01_tables.sql:184,217; 02_horror.sql:351,369,396). All 5 are RETIRED: every root keeps its source natural key via set_key (d-natural-keys, 15 set_key decisions in s4.2), sequence-generated values are loaded verbatim as the key/field they already populate, and no counter collection or NEXTVAL emulation is created. The replacement generator for post-cutover inserts is a port-time decision outside this run's stop point (writes are not ported; parity is graded on loaded values only). Per-sequence notes follow.",
+        "evidence": {
+          "file": ".migration/census.json",
+          "lines": "4955-4981",
+          "note": "[d-known-incompat-sequences] 5 sequences, 5 trigger consumers, 0 app-side NEXTVAL (access_patterns.json: only ap-bdfdef0db0 / ap-f1cd68c5b3 / ap-89ac1728cb / ap-dbf1b410e9 trigger bodies)"
+        },
+        "cited": ".migration/census.json: [d-known-incompat-sequences] 5 sequences, 5 trigger consumers, 0 app-side NEXTVAL (access_patterns.json: only ap-bdfdef0db0 / ap-f1cd68c5b3 / ap-89ac1728cb / ap-dbf1b410e9 trigger bodies)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "retired sequence SEQ_BILLING_AUDIT_LOG",
+        "collection": "billingAuditLog",
+        "decision": "RETIRED. 01_tables.sql:177 CREATE SEQUENCE seq_billing_audit_log START WITH 1 INCREMENT BY 1 NOCACHE; consumer TRG_BILLING_AUDIT_LOG_ID (01_tables.sql:184: SELECT seq_billing_audit_log.NEXTVAL INTO :NEW.log_id). LOG_ID is the natural key (set_key -> billingAuditLog._id) and is loaded verbatim; new audit rows are not written in this run (d-audit-detached).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "177-186",
+          "note": "[d-seq-billing-audit-log] NEXTVAL only inside the trigger"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: [d-seq-billing-audit-log] NEXTVAL only inside the trigger",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "retired sequence SEQ_SUBSCRIPTIONS_HIST",
+        "collection": "subscriptionsHist",
+        "decision": "RETIRED. 01_tables.sql:204 CREATE SEQUENCE seq_subscriptions_hist START WITH 1 INCREMENT BY 1 NOCACHE; consumer TRG_SUBSCRIPTIONS_HIST (01_tables.sql:213-222, ap-bdfdef0db0: INSERT ... seq_subscriptions_hist.NEXTVAL). HIST_ID is the natural key (set_key -> subscriptionsHist._id) and is loaded verbatim; the history pre-image write moves to the application per d-sub-hist-edge, not ported in this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "204-222",
+          "note": "[d-seq-subscriptions-hist] NEXTVAL only inside the trigger"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: [d-seq-subscriptions-hist] NEXTVAL only inside the trigger",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "retired sequence SEQ_CUSTOMER_MASTER",
+        "collection": "customerMaster",
+        "decision": "RETIRED. 02_horror.sql:343 CREATE SEQUENCE seq_customer_master START WITH 100000 INCREMENT BY 1 NOCACHE; consumer TRG_CUSTOMER_MASTER_SEQ (02_horror.sql:350-351) fills CUST_SEQ_NO, which is NOT the key (CUST_ID is, set_key -> customerMaster._id) but the hot sort column (facade.py:125,287 ORDER BY cust_seq_no; ap-bd510b9356, ap-e45fe9768e). CUST_SEQ_NO is loaded verbatim as custSeqNo under the planned index {tenantId:1, custSeqNo:1}; no generator is emulated in this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "343-356",
+          "note": "[d-seq-customer-master] feeds the ordering column, not the primary key"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: [d-seq-customer-master] feeds the ordering column, not the primary key",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "retired sequence SEQ_CUSTOMER_MASTER_HIST",
+        "collection": "customerMasterHist",
+        "decision": "RETIRED. 02_horror.sql:344 CREATE SEQUENCE seq_customer_master_hist START WITH 1 INCREMENT BY 1 NOCACHE; consumer TRG_CUSTOMER_MASTER_HIST (02_horror.sql:360-375, ap-dbf1b410e9) fills HIST_ID of the AFTER UPDATE pre-image row. HIST_ID is the natural key (set_key -> customerMasterHist._id), loaded verbatim; the history write moves to the application per d-cust-hist-trigger, not ported in this run.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "344-375",
+          "note": "[d-seq-customer-master-hist] NEXTVAL only inside the trigger"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: [d-seq-customer-master-hist] NEXTVAL only inside the trigger",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "retired sequence SEQ_ENTITY_ATTR_VALUE",
+        "collection": "customerMaster",
+        "decision": "RETIRED. 02_horror.sql:389 CREATE SEQUENCE seq_entity_attr_value START WITH 1 INCREMENT BY 1 CACHE 1000 (gaps expected on instance restart; gaps are data, not a defect); consumer TRG_ENTITY_ATTR_VALUE_SEQ (02_horror.sql:392-398) fills EAV_ID. ENTITY_ATTR_VALUE is embedded as customerMaster.attributes with element key [ATTR_NAME, EAV_ID] -> [k, eavId] (d-eav-embed); EAV_ID is loaded verbatim as eavId and keeps the read order ORDER BY eav_id (facade.py:296, ap-6c1786cb2d).",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "389-398",
+          "note": "[d-seq-entity-attr-value] surrogate survives only as the embed element key"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: [d-seq-entity-attr-value] surrogate survives only as the embed element key",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 3/11: ROWID-based access",
+        "decision": "NOT HIT: census.json inputs.rowid_usage has 0 live rows; grep for ROWID/UROWID/CHARTOROWID over services/legacy-billing/app, db/oracle/packages, db/oracle/schema and all 105 access_patterns.json statements returns none. ROWNUM / FETCH FIRST pagination (ap-3fbad6ec1e, ap-0a1051eac3, ap-b720c4157e, ap-bd510b9356, ap-e45fe9768e, ap-df26fbfed9, ap-b6d8685d76, ap-ee373ebbd1) is row limiting, not ROWID addressing. Decision: no ROWID surrogate is carried; comparison keys are the natural keys (d-natural-keys).",
+        "evidence": {
+          "file": ".migration/census.json",
+          "lines": "50",
+          "note": "[d-known-incompat-rowid] census.json inputs rowid_usage rows=0; no ROWID literal anywhere in the estate"
+        },
+        "cited": ".migration/census.json: [d-known-incompat-rowid] census.json inputs rowid_usage rows=0; no ROWID literal anywhere in the estate",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 4/11: PL/SQL packages, triggers, materialized views, scheduler jobs",
+        "decision": "HIT: census.json plsql_units = 10 (5 packages pkg_ow_util/pkg_plans/pkg_rating/pkg_invoicing/pkg_dunning, spec+body), triggers = 7 (TRG_BILLING_AUDIT_LOG_ID, TRG_SUBSCRIPTIONS_HIST, TRG_SUB_NO_UNCANCEL, TRG_USAGE_EVENTS_CHECK, TRG_CUSTOMER_MASTER_SEQ, TRG_CUSTOMER_MASTER_HIST, TRG_ENTITY_ATTR_VALUE_SEQ), scheduler_jobs = 2 (JOB_NIGHTLY_DUNNING, JOB_PURGE_AUDIT_LOG; 04_jobs.sql:8-28), materialized_views = 0, views = 0. Disposition: out of scope for this run; access evidence only \u2014 this run loads data and verifies parity and stops before parallel-run; the PL/SQL is NOT ported here and a missing port is not an omission. Access evidence is pinned per unit in access_patterns.json (02_pkg_plans 7, 03_pkg_rating 12, 04_pkg_invoicing 12, 05_pkg_dunning 11, 01_pkg_util 2 patterns; trigger bodies ap-f1cd68c5b3/ap-bdfdef0db0/ap-fe087c4e0c/ap-89ac1728cb/ap-dbf1b410e9; job ap-e7b18e81b8) and in 02_dependency_register.md; the target-shape intent for the eventual port is the s4.2 d-plsql-pkg-*, d-trg-*, d-job-nightly-dunning, d-audit-detached decisions. Loaded data reflects the triggers' past effects (sequence values, history rows, cust_name_upper) verbatim.",
+        "evidence": {
+          "file": ".migration/census.json",
+          "lines": "4982-5098",
+          "note": "[d-known-incompat-plsql] census.json triggers/materialized_views/plsql_units/scheduler_jobs: 7 / 0 / 10 / 2; port deferred past this run's stop point"
+        },
+        "cited": ".migration/census.json: [d-known-incompat-plsql] census.json triggers/materialized_views/plsql_units/scheduler_jobs: 7 / 0 / 10 / 2; port deferred past this run's stop point",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 5/11: CONNECT BY",
+        "decision": "NOT HIT: no CONNECT BY / START WITH / PRIOR / SYS_CONNECT_BY_PATH / LEVEL in any access_patterns.json statement or in services/legacy-billing/app, db/oracle/packages, db/oracle/schema. The only hierarchy-shaped data is CUSTOMER_MASTER.RELATED_ACCT_IDS / CHILD_ACCT_IDS CSV text (02_horror.sql), which no query walks. Decision: no $graphLookup or materialized-path modeling; the CSV columns load as the strings they are.",
+        "evidence": {
+          "file": ".migration/access_patterns.json",
+          "lines": "4",
+          "note": "[d-known-incompat-connect-by] access_patterns.json patterns[*].statement: 105 patterns, 0 hierarchical queries"
+        },
+        "cited": ".migration/access_patterns.json: [d-known-incompat-connect-by] access_patterns.json patterns[*].statement: 105 patterns, 0 hierarchical queries",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 6/11: MERGE",
+        "decision": "HIT in fixture plumbing only: the single MERGE is MERGE INTO fixture_meta (04_upgrade_static.sql:170-177, ap-f84584cd2a; repeated by startup/00_init.sh:52,155). FIXTURE_META is in modeling.excluded_tables and no application or package statement uses MERGE (04_pkg_invoicing.sql:171-176 does DELETE + INSERT for invoice_lines). Decision: the fixture MERGE does not change the migration model; no upsert emulation is needed for the loaded collections. If a writer with MERGE semantics is ever ported it becomes one updateOne/bulkWrite upsert per row.",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+          "lines": "170-177",
+          "note": "[d-known-incompat-merge] ap-f84584cd2a, table FIXTURE_META (excluded)"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql: [d-known-incompat-merge] ap-f84584cd2a, table FIXTURE_META (excluded)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 7/11: analytic / window functions",
+        "decision": "NOT HIT: no OVER(), ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, FIRST_VALUE, LAST_VALUE, LISTAGG or PIVOT in any access_patterns.json statement or in services/legacy-billing/app, db/oracle/packages, db/oracle/schema. Aggregates are plain GROUP BY (reports.py:42-81, ap-6167f9171f/ap-89c88ad4c6/ap-c9b3d38c2c; pkg_rating ap-61c2839e36 etc.) and top-N uses ORDER BY + ROWNUM/FETCH FIRST. Decision: no $setWindowFields modeling required; recon Tier 2 aggregates are the only grouped computations in this run.",
+        "evidence": {
+          "file": ".migration/access_patterns.json",
+          "lines": "4",
+          "note": "[d-known-incompat-analytic] access_patterns.json patterns[*].statement: 0 analytic functions; GROUP BY / ROWNUM only"
+        },
+        "cited": ".migration/access_patterns.json: [d-known-incompat-analytic] access_patterns.json patterns[*].statement: 0 analytic functions; GROUP BY / ROWNUM only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 8/11: DATE arithmetic",
+        "decision": "HIT in query paths and package logic: facade.py:220 TO_DATE(:3,'YYYY-MM-DD') + 1 (ap-3fbad6ec1e, hot, exclusive upper bound = next day); 02_pkg_plans.sql:92 ends_on = p_effective_on - 1 (ap-a7af1a6156); 05_pkg_dunning.sql:22 TRUNC(p_as_of) - TRUNC(CAST(i.issued_at AS DATE)) AS days_overdue (ap-46a8eb988b) and :77 TRUNC(p_as_of) - 14 (ap-eb72a29af5); 03_pkg_rating.sql:87,92 ADD_MONTHS (ap-81929b0d21) and :111-112 (p_period_end - v_suspended_on + 1) proration; 04_jobs.sql:24 logged_at < SYSDATE - 90 (ap-e7b18e81b8). Decision: DATE columns load as UTC BSON dates (canonicalization datetime_utc_truncate_ms; Oracle DATE carries no zone, the estate sets no session TZ), date-typed business dates stay midnight-truncated, and day arithmetic is the application's job at port time ($dateAdd/$dateDiff in day units, never epoch-seconds math); nothing in this run's load or recon performs date arithmetic. Dirty text dates stay on d-dirty-dates.",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py",
+          "lines": "220",
+          "note": "[d-known-incompat-date-arith] 6 sites: facade.py:220, 02_pkg_plans.sql:92, 03_pkg_rating.sql:87-92,111-112, 05_pkg_dunning.sql:22,77, 04_jobs.sql:24"
+        },
+        "cited": "services/legacy-billing/app/facade.py: [d-known-incompat-date-arith] 6 sites: facade.py:220, 02_pkg_plans.sql:92, 03_pkg_rating.sql:87-92,111-112, 05_pkg_dunning.sql:22,77, 04_jobs.sql:24",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 9/11: NLS / case-insensitive comparison",
+        "decision": "HIT in one explicit site: facade.py:396 LOWER(code_desc) = LOWER(:1) against CODES('USAGE_KIND') (ap-6470faec0f). No NLS_COMP/NLS_SORT setting exists anywhere (grep over app, startup/00_init.sh, setup/01_users.sql: none), so Oracle compares BINARY everywhere else; the estate's own workaround is the shadow column CUSTOMER_MASTER.CUST_NAME_UPPER maintained by TRG_CUSTOMER_MASTER_SEQ (02_horror.sql:28,353), which no query reads. Decision: codes is a small cached lookup (d-codes-cached), so the lowercase match is done in the application on the cached codeDesc at port time; no case-insensitive collation is declared on any collection or index in map-v1.1; custNameUpper is loaded verbatim as data (its derivation moves with the trigger port, out of scope). Explicit NLS_DATE_LANGUAGE=ENGLISH in pkg_ow_util f_dt2str/f_str2dt (01_pkg_util.sql:52,57) is covered by d-dirty-dates.",
+        "evidence": {
+          "file": "services/legacy-billing/app/facade.py",
+          "lines": "394-396",
+          "note": "[d-known-incompat-nls-case] ap-6470faec0f; shadow column cust_name_upper 02_horror.sql:28,353"
+        },
+        "cited": "services/legacy-billing/app/facade.py: [d-known-incompat-nls-case] ap-6470faec0f; shadow column cust_name_upper 02_horror.sql:28,353",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 10/11: heap-table row order",
+        "decision": "HIT by construction (every table is a heap; no ORGANIZATION INDEX in 01_tables.sql / 02_horror.sql) and DISPOSITIONED: every embed element key in the patcher output sorts deterministically and is unique within its parent \u2014 invoices.lines key LINE_NO -> lineNo (UNIQUE uq_invoice_lines (invoice_id, line_no) 01_tables.sql:131; reader ORDER BY line_no 04_pkg_invoicing.sql:109, ap-620d0a2057); invoices.dunningAttempts key ID -> id (PK VARCHAR2(36); readers ORDER BY scheduled_for DESC, id DESC facade.py:346, ap-0a1051eac3); tenants.creditNotes key ID -> id (PK; reader ORDER BY issued_on, id 04_pkg_invoicing.sql:184, ap-b259650bfe); customerMaster.attributes key [ATTR_NAME, EAV_ID] -> [k, eavId] (EAV_ID is the PK; reader ORDER BY eav_id facade.py:296, ap-6c1786cb2d). Decision: the loader writes each embedded array sorted ascending by the element key, so a reload of the same source rows is byte-identical (idempotent) and never depends on Oracle heap scan order; the recon harness grades embed elements by element key, not position (tiers.py _grade_embeds). Root reads that relied on heap order without ORDER BY (05_pkg_dunning.sql:43-44, ap-37287a11b5; 04_pkg_invoicing.sql:59-60, ap-41de3e5203) are single-row aggregates and have no order dependency.",
+        "evidence": {
+          "file": ".migration/mapping_spec.json",
+          "lines": "2419-5851",
+          "note": "[d-known-incompat-heap-order] mapping_spec.json collections[*].embeds[*].key: 4 embeds (lines, dunningAttempts, creditNotes, attributes), 4 deterministic unique element keys"
+        },
+        "cited": ".migration/mapping_spec.json: [d-known-incompat-heap-order] mapping_spec.json collections[*].embeds[*].key: 4 embeds (lines, dunningAttempts, creditNotes, attributes), 4 deterministic unique element keys",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known incompatibility 11/11: numbers rendered as text",
+        "decision": "HIT in the read facades: reports.py:45,64-65,85-86 TO_CHAR(SUM(...),'FM999999999999990.00') and NVL(st.code_desc,'UNKNOWN('||TO_CHAR(h.status_cd)||')') (ap-6167f9171f, ap-89c88ad4c6, ap-c9b3d38c2c), reports.py:250 f\"{total_amount:.2f}\", backends/oracle.py:19-20 str(Decimal) with oracledb fetch_decimals=True (oracle_conn.py:5); in packages TO_CHAR(NVL(p_val,-1)) 01_pkg_util.sql:45 and TO_CHAR of line/attempt counters feeding f_md5_uuid (04_pkg_invoicing.sql:160, 05_pkg_dunning.sql:56). Decision: amounts load as Decimal128 at the declared scale (canonicalization decimal_round, numeric_abs_tol 0 in recon_tolerances.json) and counts/codes as int \u2014 never as strings or doubles; text rendering stays an application-tier concern at port time (format from the Decimal, FM...0.00 == two fixed decimals, integral NUMBER as str(int)). Recon compares numbers numerically on both sides, so no text-vs-number mismatch can be graded as parity.",
+        "evidence": {
+          "file": "services/legacy-billing/app/reports.py",
+          "lines": "42-86",
+          "note": "[d-known-incompat-num-text] TO_CHAR FM999999999999990.00 x4, f'{:.2f}' x1, str(Decimal) in backends/oracle.py:19-20"
+        },
+        "cited": "services/legacy-billing/app/reports.py: [d-known-incompat-num-text] TO_CHAR FM999999999999990.00 x4, f'{:.2f}' x1, str(Decimal) in backends/oracle.py:19-20",
         "status": "PROPOSED"
       }
     ],
