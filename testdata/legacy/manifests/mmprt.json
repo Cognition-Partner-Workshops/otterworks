@@ -1,0 +1,64 @@
+{
+  "generated_at": "2026-08-01T00:00:00Z",
+  "generator_version": "1",
+  "namespace": "mmprt",
+  "planted_anomalies": [
+    {
+      "count": 23,
+      "kind": "malformed_csv_lists",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS"
+    },
+    {
+      "count": 41,
+      "kind": "dirty_dates",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT"
+    },
+    {
+      "count": 37,
+      "kind": "orphaned_rows",
+      "target": "oracle.OW_BILLING.INVOICE_LINE"
+    }
+  ],
+  "seed": 2443531857,
+  "seed_legacy_params": {
+    "oracle.OW_BILLING.CUSTOMER_MASTER": {
+      "batch_no": 14531857,
+      "scale": "mini"
+    },
+    "oracle.OW_BILLING.ENTITY_ATTR_VALUE": {
+      "batch_no": 14531857,
+      "scale": "mini"
+    },
+    "oracle.OW_BILLING.INVOICE_HEADER": {
+      "batch_no": 14531857,
+      "scale": "mini"
+    },
+    "oracle.OW_BILLING.INVOICE_LINE": {
+      "batch_no": 14531857,
+      "scale": "mini"
+    },
+    "oracle.OW_BILLING.TENANTS": {
+      "batch_no": 14531857,
+      "scale": "mini"
+    }
+  },
+  "targets": {
+    "oracle.OW_BILLING.CUSTOMER_MASTER": {
+      "checksum": "8fb3e04ad0c4aa65870241b877889753",
+      "rows": 200
+    },
+    "oracle.OW_BILLING.ENTITY_ATTR_VALUE": {
+      "rows": 66
+    },
+    "oracle.OW_BILLING.INVOICE_HEADER": {
+      "rows": 1000
+    },
+    "oracle.OW_BILLING.INVOICE_LINE": {
+      "checksum": "4e9f3611fd52dfc2e58f1216c10627e3",
+      "rows": 1500
+    },
+    "oracle.OW_BILLING.TENANTS": {
+      "rows": 5
+    }
+  }
+}
