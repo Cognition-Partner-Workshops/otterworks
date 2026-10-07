@@ -1,0 +1,1632 @@
+{
+  "kind": "recon-report",
+  "unit": "legacy-billing-oracle-to-postgres",
+  "namespace": "demo",
+  "generated_at": "2026-10-07T13:52:49Z",
+  "run_mode": "live",
+  "summary": {
+    "total": 167,
+    "passed": 167,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "codes.columns",
+      "table": "codes",
+      "check": "columns",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.CODES",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "codes.row_count",
+      "table": "codes",
+      "check": "row_count",
+      "expected": "32",
+      "actual": 32,
+      "source_of_truth": "oracle:OW_BILLING.CODES",
+      "result": "pass"
+    },
+    {
+      "id": "codes.key_coverage(code_type, code_val)",
+      "table": "codes",
+      "check": "key_coverage(code_type, code_val)",
+      "expected": 32,
+      "actual": 32,
+      "source_of_truth": "oracle:OW_BILLING.CODES",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "codes.row_checksum(all columns)",
+      "table": "codes",
+      "check": "row_checksum(all columns)",
+      "expected": "94a8fd1b348545452b6661a80dbf1c3b",
+      "actual": "94a8fd1b348545452b6661a80dbf1c3b",
+      "source_of_truth": "oracle:OW_BILLING.CODES",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "tenants.columns",
+      "table": "tenants",
+      "check": "columns",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.TENANTS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "tenants.row_count",
+      "table": "tenants",
+      "check": "row_count",
+      "expected": "70",
+      "actual": 70,
+      "source_of_truth": "oracle:OW_BILLING.TENANTS",
+      "result": "pass"
+    },
+    {
+      "id": "tenants.key_coverage(id)",
+      "table": "tenants",
+      "check": "key_coverage(id)",
+      "expected": 70,
+      "actual": 70,
+      "source_of_truth": "oracle:OW_BILLING.TENANTS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "tenants.row_checksum(all columns)",
+      "table": "tenants",
+      "check": "row_checksum(all columns)",
+      "expected": "fe2e277cda859075735fd283df0c0750",
+      "actual": "fe2e277cda859075735fd283df0c0750",
+      "source_of_truth": "oracle:OW_BILLING.TENANTS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "plans.columns",
+      "table": "plans",
+      "check": "columns",
+      "expected": 7,
+      "actual": 7,
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "plans.row_count",
+      "table": "plans",
+      "check": "row_count",
+      "expected": "3",
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass"
+    },
+    {
+      "id": "plans.sum(monthly_fee)",
+      "table": "plans",
+      "check": "sum(monthly_fee)",
+      "expected": "697",
+      "actual": "697",
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass"
+    },
+    {
+      "id": "plans.sum(overage_rate)",
+      "table": "plans",
+      "check": "sum(overage_rate)",
+      "expected": "0.11",
+      "actual": "0.11",
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass"
+    },
+    {
+      "id": "plans.key_coverage(id)",
+      "table": "plans",
+      "check": "key_coverage(id)",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "plans.row_checksum(all columns)",
+      "table": "plans",
+      "check": "row_checksum(all columns)",
+      "expected": "254b37df2fc03818e980ab9976d98f12",
+      "actual": "254b37df2fc03818e980ab9976d98f12",
+      "source_of_truth": "oracle:OW_BILLING.PLANS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "subscriptions.columns",
+      "table": "subscriptions",
+      "check": "columns",
+      "expected": 7,
+      "actual": 7,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "subscriptions.row_count",
+      "table": "subscriptions",
+      "check": "row_count",
+      "expected": "70",
+      "actual": 70,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass"
+    },
+    {
+      "id": "subscriptions.key_coverage(id)",
+      "table": "subscriptions",
+      "check": "key_coverage(id)",
+      "expected": 70,
+      "actual": 70,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "subscriptions.row_checksum(all columns)",
+      "table": "subscriptions",
+      "check": "row_checksum(all columns)",
+      "expected": "55e44e6e5e5d37600762064af9991b61",
+      "actual": "55e44e6e5e5d37600762064af9991b61",
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "usage_events.columns",
+      "table": "usage_events",
+      "check": "columns",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "oracle:OW_BILLING.USAGE_EVENTS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "usage_events.row_count",
+      "table": "usage_events",
+      "check": "row_count",
+      "expected": "817",
+      "actual": 817,
+      "source_of_truth": "oracle:OW_BILLING.USAGE_EVENTS",
+      "result": "pass"
+    },
+    {
+      "id": "usage_events.key_coverage(id)",
+      "table": "usage_events",
+      "check": "key_coverage(id)",
+      "expected": 817,
+      "actual": 817,
+      "source_of_truth": "oracle:OW_BILLING.USAGE_EVENTS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "usage_events.row_checksum(all columns)",
+      "table": "usage_events",
+      "check": "row_checksum(all columns)",
+      "expected": "bddeb68d3146be6f2adf06de193d231a",
+      "actual": "bddeb68d3146be6f2adf06de193d231a",
+      "source_of_truth": "oracle:OW_BILLING.USAGE_EVENTS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "rating_periods.columns",
+      "table": "rating_periods",
+      "check": "columns",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.RATING_PERIODS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "rating_periods.row_count",
+      "table": "rating_periods",
+      "check": "row_count",
+      "expected": "3",
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.RATING_PERIODS",
+      "result": "pass"
+    },
+    {
+      "id": "rating_periods.key_coverage(id)",
+      "table": "rating_periods",
+      "check": "key_coverage(id)",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.RATING_PERIODS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "rating_periods.row_checksum(all columns)",
+      "table": "rating_periods",
+      "check": "row_checksum(all columns)",
+      "expected": "32b590aa74a6e006ebff022e4cd6125c",
+      "actual": "32b590aa74a6e006ebff022e4cd6125c",
+      "source_of_truth": "oracle:OW_BILLING.RATING_PERIODS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "rating_results.columns",
+      "table": "rating_results",
+      "check": "columns",
+      "expected": 9,
+      "actual": 9,
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "rating_results.row_count",
+      "table": "rating_results",
+      "check": "row_count",
+      "expected": "3",
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass"
+    },
+    {
+      "id": "rating_results.sum(overage_amount)",
+      "table": "rating_results",
+      "check": "sum(overage_amount)",
+      "expected": "0",
+      "actual": "0",
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass"
+    },
+    {
+      "id": "rating_results.key_coverage(id)",
+      "table": "rating_results",
+      "check": "key_coverage(id)",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "rating_results.row_checksum(all columns)",
+      "table": "rating_results",
+      "check": "row_checksum(all columns)",
+      "expected": "f71df407c308b436fa761cbd82fe2b8f",
+      "actual": "f71df407c308b436fa761cbd82fe2b8f",
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "invoices.columns",
+      "table": "invoices",
+      "check": "columns",
+      "expected": 8,
+      "actual": 8,
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "invoices.row_count",
+      "table": "invoices",
+      "check": "row_count",
+      "expected": "4",
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass"
+    },
+    {
+      "id": "invoices.sum(subtotal)",
+      "table": "invoices",
+      "check": "sum(subtotal)",
+      "expected": "496",
+      "actual": "496",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass"
+    },
+    {
+      "id": "invoices.sum(tax)",
+      "table": "invoices",
+      "check": "sum(tax)",
+      "expected": "40.91",
+      "actual": "40.91",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass"
+    },
+    {
+      "id": "invoices.sum(total)",
+      "table": "invoices",
+      "check": "sum(total)",
+      "expected": "536.91",
+      "actual": "536.91",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass"
+    },
+    {
+      "id": "invoices.key_coverage(id)",
+      "table": "invoices",
+      "check": "key_coverage(id)",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "invoices.row_checksum(all columns)",
+      "table": "invoices",
+      "check": "row_checksum(all columns)",
+      "expected": "ab8a9983f4772297abbe6e88e9726820",
+      "actual": "ab8a9983f4772297abbe6e88e9726820",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "invoice_lines.columns",
+      "table": "invoice_lines",
+      "check": "columns",
+      "expected": 6,
+      "actual": 6,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "invoice_lines.row_count",
+      "table": "invoice_lines",
+      "check": "row_count",
+      "expected": "4",
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_lines.sum(amount)",
+      "table": "invoice_lines",
+      "check": "sum(amount)",
+      "expected": "322.58",
+      "actual": "322.58",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_lines.key_coverage(id)",
+      "table": "invoice_lines",
+      "check": "key_coverage(id)",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "invoice_lines.row_checksum(all columns)",
+      "table": "invoice_lines",
+      "check": "row_checksum(all columns)",
+      "expected": "1bf2c82721c9b8744f6e20db0a22ec2b",
+      "actual": "1bf2c82721c9b8744f6e20db0a22ec2b",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "credit_notes.columns",
+      "table": "credit_notes",
+      "check": "columns",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "credit_notes.row_count",
+      "table": "credit_notes",
+      "check": "row_count",
+      "expected": "5",
+      "actual": 5,
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass"
+    },
+    {
+      "id": "credit_notes.sum(amount)",
+      "table": "credit_notes",
+      "check": "sum(amount)",
+      "expected": "145",
+      "actual": "145",
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass"
+    },
+    {
+      "id": "credit_notes.sum(remaining_amount)",
+      "table": "credit_notes",
+      "check": "sum(remaining_amount)",
+      "expected": "145",
+      "actual": "145",
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass"
+    },
+    {
+      "id": "credit_notes.key_coverage(id)",
+      "table": "credit_notes",
+      "check": "key_coverage(id)",
+      "expected": 5,
+      "actual": 5,
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "credit_notes.row_checksum(all columns)",
+      "table": "credit_notes",
+      "check": "row_checksum(all columns)",
+      "expected": "d119e52221ba300353a601f8f0dbaba1",
+      "actual": "d119e52221ba300353a601f8f0dbaba1",
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "dunning_attempts.columns",
+      "table": "dunning_attempts",
+      "check": "columns",
+      "expected": 6,
+      "actual": 6,
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "dunning_attempts.row_count",
+      "table": "dunning_attempts",
+      "check": "row_count",
+      "expected": "1",
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass"
+    },
+    {
+      "id": "dunning_attempts.key_coverage(id)",
+      "table": "dunning_attempts",
+      "check": "key_coverage(id)",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "dunning_attempts.row_checksum(all columns)",
+      "table": "dunning_attempts",
+      "check": "row_checksum(all columns)",
+      "expected": "6c197afb3d4529093b4cc18ddb3d4763",
+      "actual": "6c197afb3d4529093b4cc18ddb3d4763",
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "notifications.columns",
+      "table": "notifications",
+      "check": "columns",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.NOTIFICATIONS",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "notifications.row_count",
+      "table": "notifications",
+      "check": "row_count",
+      "expected": "1",
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING.NOTIFICATIONS",
+      "result": "pass"
+    },
+    {
+      "id": "notifications.key_coverage(id)",
+      "table": "notifications",
+      "check": "key_coverage(id)",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING.NOTIFICATIONS",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "notifications.row_checksum(all columns)",
+      "table": "notifications",
+      "check": "row_checksum(all columns)",
+      "expected": "f0936e34843640b37d792fe9034e96ce",
+      "actual": "f0936e34843640b37d792fe9034e96ce",
+      "source_of_truth": "oracle:OW_BILLING.NOTIFICATIONS",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "billing_audit_log.columns",
+      "table": "billing_audit_log",
+      "check": "columns",
+      "expected": 4,
+      "actual": 4,
+      "source_of_truth": "oracle:OW_BILLING.BILLING_AUDIT_LOG",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "billing_audit_log.row_count",
+      "table": "billing_audit_log",
+      "check": "row_count",
+      "expected": "0",
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.BILLING_AUDIT_LOG",
+      "result": "pass"
+    },
+    {
+      "id": "billing_audit_log.key_coverage(log_id)",
+      "table": "billing_audit_log",
+      "check": "key_coverage(log_id)",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.BILLING_AUDIT_LOG",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "billing_audit_log.row_checksum(all columns)",
+      "table": "billing_audit_log",
+      "check": "row_checksum(all columns)",
+      "expected": "00000000000000000000000000000000",
+      "actual": "00000000000000000000000000000000",
+      "source_of_truth": "oracle:OW_BILLING.BILLING_AUDIT_LOG",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "subscriptions_hist.columns",
+      "table": "subscriptions_hist",
+      "check": "columns",
+      "expected": 10,
+      "actual": 10,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS_HIST",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "subscriptions_hist.row_count",
+      "table": "subscriptions_hist",
+      "check": "row_count",
+      "expected": "0",
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "subscriptions_hist.key_coverage(hist_id)",
+      "table": "subscriptions_hist",
+      "check": "key_coverage(hist_id)",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS_HIST",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "subscriptions_hist.row_checksum(all columns)",
+      "table": "subscriptions_hist",
+      "check": "row_checksum(all columns)",
+      "expected": "00000000000000000000000000000000",
+      "actual": "00000000000000000000000000000000",
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS_HIST",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "fixture_meta.columns",
+      "table": "fixture_meta",
+      "check": "columns",
+      "expected": 3,
+      "actual": 3,
+      "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "fixture_meta.row_count",
+      "table": "fixture_meta",
+      "check": "row_count",
+      "expected": "2",
+      "actual": 2,
+      "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
+      "result": "pass"
+    },
+    {
+      "id": "fixture_meta.key_coverage(marker)",
+      "table": "fixture_meta",
+      "check": "key_coverage(marker)",
+      "expected": 2,
+      "actual": 2,
+      "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "fixture_meta.row_checksum(all columns)",
+      "table": "fixture_meta",
+      "check": "row_checksum(all columns)",
+      "expected": "5e3bec4d69243ec7399f245b09a8fbf3",
+      "actual": "5e3bec4d69243ec7399f245b09a8fbf3",
+      "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "customer_master.columns",
+      "table": "customer_master",
+      "check": "columns",
+      "expected": 155,
+      "actual": 155,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "customer_master.row_count",
+      "table": "customer_master",
+      "check": "row_count",
+      "expected": "25001",
+      "actual": 25001,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(cur_bal_amt)",
+      "table": "customer_master",
+      "check": "sum(cur_bal_amt)",
+      "expected": "39799599.31",
+      "actual": "39799599.31",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(past_due_amt)",
+      "table": "customer_master",
+      "check": "sum(past_due_amt)",
+      "expected": "7330214.66",
+      "actual": "7330214.66",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(ytd_billed_amt)",
+      "table": "customer_master",
+      "check": "sum(ytd_billed_amt)",
+      "expected": "208213120.84",
+      "actual": "208213120.84",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(ltd_billed_amt)",
+      "table": "customer_master",
+      "check": "sum(ltd_billed_amt)",
+      "expected": "149",
+      "actual": "149",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(ytd_paid_amt)",
+      "table": "customer_master",
+      "check": "sum(ytd_paid_amt)",
+      "expected": "149",
+      "actual": "149",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(credit_limit_amt)",
+      "table": "customer_master",
+      "check": "sum(credit_limit_amt)",
+      "expected": "330006000",
+      "actual": "330006000",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_01)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_01)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_02)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_02)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_03)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_03)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_04)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_04)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_05)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_05)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_06)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_06)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_07)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_07)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_08)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_08)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_09)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_09)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.sum(udf_amt_10)",
+      "table": "customer_master",
+      "check": "sum(udf_amt_10)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.key_coverage(cust_id)",
+      "table": "customer_master",
+      "check": "key_coverage(cust_id)",
+      "expected": 25001,
+      "actual": 25001,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "customer_master.row_checksum(all columns)",
+      "table": "customer_master",
+      "check": "row_checksum(all columns)",
+      "expected": "99050de06edc89347b7d36b12e08660f",
+      "actual": "99050de06edc89347b7d36b12e08660f",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "customer_master_hist.columns",
+      "table": "customer_master_hist",
+      "check": "columns",
+      "expected": 158,
+      "actual": 158,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "customer_master_hist.row_count",
+      "table": "customer_master_hist",
+      "check": "row_count",
+      "expected": "0",
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(cur_bal_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(cur_bal_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(past_due_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(past_due_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(ytd_billed_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(ytd_billed_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(ltd_billed_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(ltd_billed_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(ytd_paid_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(ytd_paid_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(credit_limit_amt)",
+      "table": "customer_master_hist",
+      "check": "sum(credit_limit_amt)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_01)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_01)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_02)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_02)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_03)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_03)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_04)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_04)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_05)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_05)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_06)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_06)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_07)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_07)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_08)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_08)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_09)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_09)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.sum(udf_amt_10)",
+      "table": "customer_master_hist",
+      "check": "sum(udf_amt_10)",
+      "expected": "NULL",
+      "actual": "NULL",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master_hist.key_coverage(hist_id)",
+      "table": "customer_master_hist",
+      "check": "key_coverage(hist_id)",
+      "expected": 0,
+      "actual": 0,
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "customer_master_hist.row_checksum(all columns)",
+      "table": "customer_master_hist",
+      "check": "row_checksum(all columns)",
+      "expected": "00000000000000000000000000000000",
+      "actual": "00000000000000000000000000000000",
+      "source_of_truth": "oracle:OW_BILLING.CUSTOMER_MASTER_HIST",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "entity_attr_value.columns",
+      "table": "entity_attr_value",
+      "check": "columns",
+      "expected": 7,
+      "actual": 7,
+      "source_of_truth": "oracle:OW_BILLING.ENTITY_ATTR_VALUE",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "entity_attr_value.row_count",
+      "table": "entity_attr_value",
+      "check": "row_count",
+      "expected": "8337",
+      "actual": 8337,
+      "source_of_truth": "oracle:OW_BILLING.ENTITY_ATTR_VALUE",
+      "result": "pass"
+    },
+    {
+      "id": "entity_attr_value.key_coverage(eav_id)",
+      "table": "entity_attr_value",
+      "check": "key_coverage(eav_id)",
+      "expected": 8337,
+      "actual": 8337,
+      "source_of_truth": "oracle:OW_BILLING.ENTITY_ATTR_VALUE",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "entity_attr_value.row_checksum(all columns)",
+      "table": "entity_attr_value",
+      "check": "row_checksum(all columns)",
+      "expected": "2a24c321d4a7b27f25bc3105e3838618",
+      "actual": "2a24c321d4a7b27f25bc3105e3838618",
+      "source_of_truth": "oracle:OW_BILLING.ENTITY_ATTR_VALUE",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "invoice_header.columns",
+      "table": "invoice_header",
+      "check": "columns",
+      "expected": 9,
+      "actual": 9,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "invoice_header.row_count",
+      "table": "invoice_header",
+      "check": "row_count",
+      "expected": "18750",
+      "actual": 18750,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_header.sum(total_amt)",
+      "table": "invoice_header",
+      "check": "sum(total_amt)",
+      "expected": "187618458.58",
+      "actual": "187618458.58",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_header.key_coverage(invoice_id)",
+      "table": "invoice_header",
+      "check": "key_coverage(invoice_id)",
+      "expected": 18750,
+      "actual": 18750,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "invoice_header.row_checksum(all columns)",
+      "table": "invoice_header",
+      "check": "row_checksum(all columns)",
+      "expected": "2e8324c8beaa1bf8a0063c3e2b2c7032",
+      "actual": "2e8324c8beaa1bf8a0063c3e2b2c7032",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row"
+    },
+    {
+      "id": "invoice_line.columns",
+      "table": "invoice_line",
+      "check": "columns",
+      "expected": 20,
+      "actual": 20,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "same column names on both sides"
+    },
+    {
+      "id": "invoice_line.row_count",
+      "table": "invoice_line",
+      "check": "row_count",
+      "expected": "150000",
+      "actual": 150000,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "150000 = 149963 + 37 (invoice_line + invoice_line_orphan)"
+    },
+    {
+      "id": "invoice_line.sum(qty)",
+      "table": "invoice_line",
+      "check": "sum(qty)",
+      "expected": "37559773",
+      "actual": "37559773",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "37551539 + 8234"
+    },
+    {
+      "id": "invoice_line.sum(unit_price)",
+      "table": "invoice_line",
+      "check": "sum(unit_price)",
+      "expected": "7412636.4387",
+      "actual": "7412636.4387",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "7410996.6001 + 1639.8386"
+    },
+    {
+      "id": "invoice_line.sum(amount)",
+      "table": "invoice_line",
+      "check": "sum(amount)",
+      "expected": "1855870025.91",
+      "actual": "1855870025.91",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "1855479906.85 + 390119.06"
+    },
+    {
+      "id": "invoice_line.sum(tax_amt)",
+      "table": "invoice_line",
+      "check": "sum(tax_amt)",
+      "expected": "153109280.16",
+      "actual": "153109280.16",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "153077095.36 + 32184.8"
+    },
+    {
+      "id": "invoice_line.key_coverage(line_id)",
+      "table": "invoice_line",
+      "check": "key_coverage(line_id)",
+      "expected": 150000,
+      "actual": 150000,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "missing=0 extra=0 in-both-tables=0"
+    },
+    {
+      "id": "invoice_line.row_checksum(all columns)",
+      "table": "invoice_line",
+      "check": "row_checksum(all columns)",
+      "expected": "86b10023d30cd9bae24bf1fea18f1707",
+      "actual": "86b10023d30cd9bae24bf1fea18f1707",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "order-independent md5 over every column of every row (orphan rows without quarantine_reason)"
+    },
+    {
+      "id": "invoice_line_orphan.row_count",
+      "table": "invoice_line_orphan",
+      "check": "row_count",
+      "expected": "37",
+      "actual": 37,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE (no matching INVOICE_HEADER)",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line_orphan.sum(amount)",
+      "table": "invoice_line_orphan",
+      "check": "sum(amount)",
+      "expected": "390119.06",
+      "actual": "390119.06",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE (no matching INVOICE_HEADER)",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line_orphan.sum(tax_amt)",
+      "table": "invoice_line_orphan",
+      "check": "sum(tax_amt)",
+      "expected": "32184.8",
+      "actual": "32184.8",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE (no matching INVOICE_HEADER)",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line_orphan.key_coverage(line_id)",
+      "table": "invoice_line_orphan",
+      "check": "key_coverage(line_id)",
+      "expected": 37,
+      "actual": 37,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE (no matching INVOICE_HEADER)",
+      "result": "pass",
+      "detail": "missing=0 extra=0"
+    },
+    {
+      "id": "invoice_line_orphan.quarantine_reason populated",
+      "table": "invoice_line_orphan",
+      "check": "quarantine_reason populated",
+      "expected": "37",
+      "actual": 37,
+      "source_of_truth": "migration rule: every quarantined row carries a reason",
+      "result": "pass",
+      "detail": "no INVOICE_HEADER row for invoice_id (Oracle had no FK); held for Finance review x37"
+    },
+    {
+      "id": "invoice_line.valid rows (with header)",
+      "table": "invoice_line",
+      "check": "valid rows (with header)",
+      "expected": "149963",
+      "actual": 149963,
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE joined to INVOICE_HEADER",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line.valid sum(amount)",
+      "table": "invoice_line",
+      "check": "valid sum(amount)",
+      "expected": "1855479906.85",
+      "actual": "1855479906.85",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE joined to INVOICE_HEADER",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line.valid sum(tax_amt)",
+      "table": "invoice_line",
+      "check": "valid sum(tax_amt)",
+      "expected": "153077095.36",
+      "actual": "153077095.36",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE joined to INVOICE_HEADER",
+      "result": "pass"
+    },
+    {
+      "id": "credit_notes.ref_coverage(tenant_id -> tenants.id)",
+      "table": "credit_notes",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "5/5",
+      "actual": "5/5",
+      "source_of_truth": "oracle:OW_BILLING.CREDIT_NOTES",
+      "result": "pass",
+      "detail": "FK fk_cn_tenant; oracle 5/5 covered, postgres 5/5"
+    },
+    {
+      "id": "dunning_attempts.ref_coverage(invoice_id -> invoices.id)",
+      "table": "dunning_attempts",
+      "check": "ref_coverage(invoice_id -> invoices.id)",
+      "expected": "1/1",
+      "actual": "1/1",
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass",
+      "detail": "FK fk_da_invoice; oracle 1/1 covered, postgres 1/1"
+    },
+    {
+      "id": "dunning_attempts.ref_coverage(tenant_id -> tenants.id)",
+      "table": "dunning_attempts",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "1/1",
+      "actual": "1/1",
+      "source_of_truth": "oracle:OW_BILLING.DUNNING_ATTEMPTS",
+      "result": "pass",
+      "detail": "FK fk_da_tenant; oracle 1/1 covered, postgres 1/1"
+    },
+    {
+      "id": "invoice_line.ref_coverage(invoice_id -> invoice_header.invoice_id)",
+      "table": "invoice_line",
+      "check": "ref_coverage(invoice_id -> invoice_header.invoice_id)",
+      "expected": "149963 covered + 37 uncovered",
+      "actual": "149963 in invoice_line + 37 in invoice_line_orphan",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "FK fk_invoice_line_header; oracle 149963/150000 covered, postgres 149963/149963; invoice_line_orphan 0/37 covered (quarantined because uncovered)"
+    },
+    {
+      "id": "invoice_lines.ref_coverage(invoice_id -> invoices.id)",
+      "table": "invoice_lines",
+      "check": "ref_coverage(invoice_id -> invoices.id)",
+      "expected": "4/4",
+      "actual": "4/4",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINES",
+      "result": "pass",
+      "detail": "FK fk_il_invoice; oracle 4/4 covered, postgres 4/4"
+    },
+    {
+      "id": "invoices.ref_coverage(period_id -> rating_periods.id)",
+      "table": "invoices",
+      "check": "ref_coverage(period_id -> rating_periods.id)",
+      "expected": "4/4",
+      "actual": "4/4",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass",
+      "detail": "FK fk_inv_period; oracle 4/4 covered, postgres 4/4"
+    },
+    {
+      "id": "invoices.ref_coverage(tenant_id -> tenants.id)",
+      "table": "invoices",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "4/4",
+      "actual": "4/4",
+      "source_of_truth": "oracle:OW_BILLING.INVOICES",
+      "result": "pass",
+      "detail": "FK fk_inv_tenant; oracle 4/4 covered, postgres 4/4"
+    },
+    {
+      "id": "notifications.ref_coverage(tenant_id -> tenants.id)",
+      "table": "notifications",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "1/1",
+      "actual": "1/1",
+      "source_of_truth": "oracle:OW_BILLING.NOTIFICATIONS",
+      "result": "pass",
+      "detail": "FK fk_notif_tenant; oracle 1/1 covered, postgres 1/1"
+    },
+    {
+      "id": "rating_periods.ref_coverage(tenant_id -> tenants.id)",
+      "table": "rating_periods",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "3/3",
+      "actual": "3/3",
+      "source_of_truth": "oracle:OW_BILLING.RATING_PERIODS",
+      "result": "pass",
+      "detail": "FK fk_rp_tenant; oracle 3/3 covered, postgres 3/3"
+    },
+    {
+      "id": "rating_results.ref_coverage(period_id -> rating_periods.id)",
+      "table": "rating_results",
+      "check": "ref_coverage(period_id -> rating_periods.id)",
+      "expected": "3/3",
+      "actual": "3/3",
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass",
+      "detail": "FK fk_rr_period; oracle 3/3 covered, postgres 3/3"
+    },
+    {
+      "id": "rating_results.ref_coverage(subscription_id -> subscriptions.id)",
+      "table": "rating_results",
+      "check": "ref_coverage(subscription_id -> subscriptions.id)",
+      "expected": "3/3",
+      "actual": "3/3",
+      "source_of_truth": "oracle:OW_BILLING.RATING_RESULTS",
+      "result": "pass",
+      "detail": "FK fk_rr_sub; oracle 3/3 covered, postgres 3/3"
+    },
+    {
+      "id": "subscriptions.ref_coverage(plan_id -> plans.id)",
+      "table": "subscriptions",
+      "check": "ref_coverage(plan_id -> plans.id)",
+      "expected": "70/70",
+      "actual": "70/70",
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass",
+      "detail": "FK fk_sub_plan; oracle 70/70 covered, postgres 70/70"
+    },
+    {
+      "id": "subscriptions.ref_coverage(tenant_id -> tenants.id)",
+      "table": "subscriptions",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "70/70",
+      "actual": "70/70",
+      "source_of_truth": "oracle:OW_BILLING.SUBSCRIPTIONS",
+      "result": "pass",
+      "detail": "FK fk_sub_tenant; oracle 70/70 covered, postgres 70/70"
+    },
+    {
+      "id": "usage_events.ref_coverage(tenant_id -> tenants.id)",
+      "table": "usage_events",
+      "check": "ref_coverage(tenant_id -> tenants.id)",
+      "expected": "817/817",
+      "actual": "817/817",
+      "source_of_truth": "oracle:OW_BILLING.USAGE_EVENTS",
+      "result": "pass",
+      "detail": "FK fk_usage_tenant; oracle 817/817 covered, postgres 817/817"
+    },
+    {
+      "id": "invoice_line.ref_coverage(cust_id -> customer_master.cust_id)",
+      "table": "invoice_line",
+      "check": "ref_coverage(cust_id -> customer_master.cust_id)",
+      "expected": "150000/150000",
+      "actual": "150000/150000",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_LINE",
+      "result": "pass",
+      "detail": "logical ref (not enforced); oracle 150000/150000 covered, postgres 150000/150000 (invoice_line + invoice_line_orphan)"
+    },
+    {
+      "id": "invoice_header.ref_coverage(cust_id -> customer_master.cust_id)",
+      "table": "invoice_header",
+      "check": "ref_coverage(cust_id -> customer_master.cust_id)",
+      "expected": "18750/18750",
+      "actual": "18750/18750",
+      "source_of_truth": "oracle:OW_BILLING.INVOICE_HEADER",
+      "result": "pass",
+      "detail": "logical ref (not enforced); oracle 18750/18750 covered, postgres 18750/18750"
+    },
+    {
+      "id": "entity_attr_value.ref_coverage(entity_id -> customer_master.cust_id)",
+      "table": "entity_attr_value",
+      "check": "ref_coverage(entity_id -> customer_master.cust_id)",
+      "expected": "8337/8337",
+      "actual": "8337/8337",
+      "source_of_truth": "oracle:OW_BILLING.ENTITY_ATTR_VALUE",
+      "result": "pass",
+      "detail": "logical ref (not enforced); oracle 8337/8337 covered, postgres 8337/8337"
+    },
+    {
+      "id": "seq_billing_audit_log.next_value",
+      "table": "seq_billing_audit_log",
+      "check": "next_value",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING USER_SEQUENCES.LAST_NUMBER",
+      "result": "pass"
+    },
+    {
+      "id": "seq_subscriptions_hist.next_value",
+      "table": "seq_subscriptions_hist",
+      "check": "next_value",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING USER_SEQUENCES.LAST_NUMBER",
+      "result": "pass"
+    },
+    {
+      "id": "seq_customer_master.next_value",
+      "table": "seq_customer_master",
+      "check": "next_value",
+      "expected": 125001,
+      "actual": 125001,
+      "source_of_truth": "oracle:OW_BILLING USER_SEQUENCES.LAST_NUMBER",
+      "result": "pass"
+    },
+    {
+      "id": "seq_customer_master_hist.next_value",
+      "table": "seq_customer_master_hist",
+      "check": "next_value",
+      "expected": 1,
+      "actual": 1,
+      "source_of_truth": "oracle:OW_BILLING USER_SEQUENCES.LAST_NUMBER",
+      "result": "pass"
+    },
+    {
+      "id": "seq_entity_attr_value.next_value",
+      "table": "seq_entity_attr_value",
+      "check": "next_value",
+      "expected": 11001,
+      "actual": 11001,
+      "source_of_truth": "oracle:OW_BILLING USER_SEQUENCES.LAST_NUMBER",
+      "result": "pass"
+    },
+    {
+      "id": "(schema).named constraints carried over",
+      "table": "(schema)",
+      "check": "named constraints carried over",
+      "expected": 38,
+      "actual": 38,
+      "source_of_truth": "oracle:OW_BILLING USER_CONSTRAINTS",
+      "result": "pass",
+      "detail": "missing=none; added in Postgres=['fk_invoice_line_header', 'pk_invoice_line_orphan', 'pk_migration_baseline']"
+    },
+    {
+      "id": "customer_master.seed rows (ns=demo)",
+      "table": "customer_master",
+      "check": "seed rows (ns=demo)",
+      "expected": 25000,
+      "actual": 25000,
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "entity_attr_value.seed rows (ns=demo)",
+      "table": "entity_attr_value",
+      "check": "seed rows (ns=demo)",
+      "expected": 8333,
+      "actual": 8333,
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_header.seed rows (ns=demo)",
+      "table": "invoice_header",
+      "check": "seed rows (ns=demo)",
+      "expected": 18750,
+      "actual": 18750,
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line.seed rows (ns=demo)",
+      "table": "invoice_line",
+      "check": "seed rows (ns=demo)",
+      "expected": 150000,
+      "actual": 150000,
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "tenants.seed rows (ns=demo)",
+      "table": "tenants",
+      "check": "seed rows (ns=demo)",
+      "expected": 60,
+      "actual": 60,
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "customer_master.seed checksum(cust_id, cur_bal_amt) (ns=demo)",
+      "table": "customer_master",
+      "check": "seed checksum(cust_id, cur_bal_amt) (ns=demo)",
+      "expected": "4f92feef2ad58dbab30e289957931928",
+      "actual": "4f92feef2ad58dbab30e289957931928",
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass"
+    },
+    {
+      "id": "invoice_line.seed checksum(line_id, amount) (ns=demo)",
+      "table": "invoice_line",
+      "check": "seed checksum(line_id, amount) (ns=demo)",
+      "expected": "88a66751f0b08b476b492105a2efc537",
+      "actual": "88a66751f0b08b476b492105a2efc537",
+      "source_of_truth": "manifest:testdata/legacy/manifests/demo.json",
+      "result": "pass",
+      "detail": "over invoice_line + invoice_line_orphan"
+    },
+    {
+      "id": "invoice_line.anomaly orphaned_rows (ns=demo)",
+      "table": "invoice_line",
+      "check": "anomaly orphaned_rows (ns=demo)",
+      "expected": "37",
+      "actual": 37,
+      "source_of_truth": "oracle:OW_BILLING (same detector)",
+      "result": "pass",
+      "detail": "oracle.OW_BILLING.INVOICE_LINE"
+    },
+    {
+      "id": "customer_master.anomaly dirty_dates (ns=demo)",
+      "table": "customer_master",
+      "check": "anomaly dirty_dates (ns=demo)",
+      "expected": "50",
+      "actual": 50,
+      "source_of_truth": "oracle:OW_BILLING (same detector)",
+      "result": "pass",
+      "detail": "oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT"
+    },
+    {
+      "id": "customer_master.anomaly malformed_csv_lists (ns=demo)",
+      "table": "customer_master",
+      "check": "anomaly malformed_csv_lists (ns=demo)",
+      "expected": "31",
+      "actual": 31,
+      "source_of_truth": "oracle:OW_BILLING (same detector)",
+      "result": "pass",
+      "detail": "oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=91f8d80e20bb82f4"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50",
+      "malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31",
+      "orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37"
+    ],
+    "actual_set": [
+      "dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50",
+      "malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31",
+      "orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "pkg_ow_util.log_msg: Oracle wrote BILLING_AUDIT_LOG in an autonomous transaction; on Postgres the log row commits or rolls back with the caller. Only the commit path is exercised by the parity run.",
+    "pkg_jobs.job_nightly_dunning / job_purge_audit_log: the DBMS_SCHEDULER jobs were created DISABLED in Oracle and never ran; the Postgres procedure bodies exist but no scheduler is wired and they were not executed.",
+    "Concurrent writers: Oracle row-lock behaviour (SELECT ... FOR UPDATE in sp_change_plan) is ported but not exercised under concurrency.",
+    "Scales other than demo (SCALE=ci/full) were not migrated or reconciled."
+  ]
+}

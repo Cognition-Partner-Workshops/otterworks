@@ -8,15 +8,42 @@ This service is the current system of record for billing. An extraction
 effort toward a modern service is in progress; the extraction target and the
 modern client are separate components and are not part of this service.
 
+## OW_BILLING estate on PostgreSQL (takeout from Oracle)
+
+The connected-estate overlay (`docker-compose.tp.yml`) now runs the OW_BILLING
+estate on PostgreSQL 15 with `BILLING_BACKEND=ow_billing_pg`: database
+`ow_tp_billing`, schema `ow_billing`, in its own container
+(`docker-compose.billing-postgres.yml`, `localhost:55433`), separate from the
+shared infra Postgres. DDL and the PL/pgSQL ports of the `PKG_*` packages are
+in `db/postgres/initdb/`; the backend is `app/backends/ow_billing_pg.py`.
+
+```bash
+make billing-pg-up                    # Postgres target
+make billing-pg-migrate               # reload every table from Oracle (idempotent)
+make billing-pg-recon NS=demo         # counts, money sums, key coverage -> docs/tech-partnerships/recon/
+make billing-char-capture URL=http://127.0.0.1:8096   # replay the characterization scenario
+make billing-char-parity NS=demo      # grade it against tests/characterization/golden/oracle.json
+```
+
+Invoice lines whose header does not exist in Oracle (37 `DEMO-GHOST-*` lines
+in `NS=demo`) are kept unchanged in `invoice_line_orphan` with a
+`quarantine_reason`, held for Finance review; `invoice_line` carries a real
+foreign key to `invoice_header`. Month-end totals exclude them exactly as the
+Oracle inner join did. `GET /api/reports/reconciliation` on Postgres
+recomputes its checks against the Oracle figures captured at migration time
+in `migration_baseline`.
+
+`BILLING_BACKEND=oracle` remains the rollback path while the Oracle estate
+exists.
+
 ## Oracle backend and billing facade
 
-The optional connected-estate overlay selects the Oracle backend with
-`BILLING_BACKEND=oracle`. In that mode the API gateway routes
+`BILLING_BACKEND=oracle` selects the Oracle backend. In either estate mode the API gateway routes
 `/api/v1/billing` here and supplies trusted `X-User-ID`, `X-User-Email`, and
 `X-User-Roles` identity headers. The facade exposes plans, the signed-in
 tenant, entitlement, plan changes, usage, invoices, customer fields, and admin
-overdue/dunning views under `/api/v1/billing`. Oracle failures return the
-estate-unavailable response rather than falling back to Postgres. After
+overdue/dunning views under `/api/v1/billing`. Estate failures return the
+estate-unavailable response rather than falling back to another backend. After
 `make tp-month-end NS=<ns>`, the batch-derived finance result is available at
 `GET /api/reports/finance?ns=<ns>`.
 

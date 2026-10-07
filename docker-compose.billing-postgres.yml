@@ -1,0 +1,42 @@
+# PostgreSQL 15 target for the OW_BILLING Oracle takeout.
+#
+# Separate from the shared infra Postgres in docker-compose.infra.yml (port
+# 5432) and from the procs stack (55432): this database only holds the
+# migrated billing estate that services/legacy-billing reads when
+# BILLING_BACKEND=ow_billing_pg.
+#
+#   make billing-pg-up        # start + build schema from db/postgres/initdb
+#   make billing-pg-migrate   # copy OW_BILLING out of Oracle (idempotent)
+#   make billing-pg-recon NS=demo
+#   make billing-pg-down      # stop and drop the volume
+#
+# The database is created with LC_COLLATE=C so ORDER BY / GROUP BY on text
+# match Oracle's BINARY sort; the schema refuses to build otherwise.
+name: otterworks-billing-pg
+
+services:
+  billing-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ow_tp_billing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${BILLING_PG_ADMIN_PASSWORD:-postgres_dev}
+      POSTGRES_INITDB_ARGS: --locale=C --encoding=UTF8
+      BILLING_PG_APP_PASSWORD: ${BILLING_PG_PASSWORD:-ow_billing}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "${BILLING_PG_BIND:-127.0.0.1}:${BILLING_PG_PORT:-55433}:5432"
+    volumes:
+      - ./services/legacy-billing/db/postgres/initdb:/docker-entrypoint-initdb.d:ro
+      - billing-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # -h forces TCP: the entrypoint's temporary init server only listens on
+      # the unix socket, so this stays unhealthy until the schema is built.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ow_tp_billing"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+volumes:
+  billing-postgres-data:
