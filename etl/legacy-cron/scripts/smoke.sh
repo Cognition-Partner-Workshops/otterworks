@@ -59,3 +59,20 @@ reload "$PWD/$BASE"
 logs | grep "job(s) scheduled"
 "${COMPOSE[@]}" exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run "$SCRIPT" | tail -2
 echo "PASS: line restored, ${SCRIPT} runs again"
+
+step "deployed: etl/crontab as committed (empty once every script has cut over)"
+reload ""
+ACTIVE=$(grep -cvE '^[[:space:]]*(#|$)' etl/crontab || true)
+logs | grep -q "\] ${ACTIVE} job(s) scheduled from /opt/etl/crontab" \
+  || { echo "FAIL: want ${ACTIVE} job(s) scheduled from etl/crontab" >&2; logs | tail -20 >&2; exit 1; }
+"${COMPOSE[@]}" exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py healthcheck \
+  || { echo "FAIL: healthcheck with etl/crontab" >&2; exit 1; }
+grep -oE 'run\.sh [a-z_]+\.py' "$BASE" | cut -d' ' -f2 | while read -r s; do
+  grep -qF " ${s} " etl/crontab && continue
+  set +e
+  "${COMPOSE[@]}" exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run "$s" </dev/null 2>/dev/null
+  rc=$?
+  set -e
+  [ "$rc" -eq 3 ] || { echo "FAIL: run ${s} exited $rc with its line cut over, want 3" >&2; exit 1; }
+done
+echo "PASS: starts healthy with ${ACTIVE} job(s) from etl/crontab; every cut-over script exits 3"
