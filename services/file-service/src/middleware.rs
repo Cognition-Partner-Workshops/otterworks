@@ -114,3 +114,64 @@ where
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, web, App, HttpResponse};
+
+    fn request_count(method: &str, path: &str, status: &str) -> u64 {
+        HTTP_REQUESTS_TOTAL
+            .with_label_values(&[method, path, status])
+            .get()
+    }
+
+    #[actix_rt::test]
+    async fn records_request_metrics_by_route_pattern() {
+        let app = test::init_service(App::new().wrap(RequestId).route(
+            "/mw-test/{id}",
+            web::get().to(|| async { HttpResponse::Ok().finish() }),
+        ))
+        .await;
+        let before = request_count("GET", "/mw-test/{id}", "200");
+        let resp = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/mw-test/123")
+                .insert_header(("x-request-id", "req-1"))
+                .to_request(),
+        )
+        .await;
+        assert_eq!(resp.status(), 200);
+        assert_eq!(request_count("GET", "/mw-test/{id}", "200"), before + 1);
+        assert!(
+            HTTP_REQUEST_DURATION
+                .with_label_values(&["GET", "/mw-test/{id}"])
+                .get_sample_count()
+                >= 1
+        );
+    }
+
+    #[actix_rt::test]
+    async fn unmatched_routes_share_one_label() {
+        let app = test::init_service(App::new().wrap(RequestId)).await;
+        let before = request_count("DELETE", "unmatched", "404");
+        let resp = test::call_service(
+            &app,
+            test::TestRequest::delete().uri("/nope/xyz").to_request(),
+        )
+        .await;
+        assert_eq!(resp.status(), 404);
+        assert_eq!(request_count("DELETE", "unmatched", "404"), before + 1);
+    }
+
+    #[actix_rt::test]
+    async fn render_metrics_exposes_prometheus_text() {
+        HTTP_REQUESTS_TOTAL
+            .with_label_values(&["GET", "/render-test", "200"])
+            .inc();
+        let text = render_metrics();
+        assert!(text.contains("# TYPE http_requests_total counter"));
+        assert!(text.contains("path=\"/render-test\""));
+    }
+}
