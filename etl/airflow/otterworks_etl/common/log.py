@@ -18,10 +18,19 @@ EVENT_ATTR = "otterworks_event"
 
 _RESERVED = frozenset(vars(logging.makeLogRecord({}))) | {"message", "asctime", EVENT_ATTR}
 
+# Record metadata the formatter owns; a payload field with one of these names is kept as
+# ``field_<name>`` instead of replacing it.
+ENVELOPE_KEYS = frozenset({"timestamp", "level", "logger"})
+
 
 def get_logger(name: str) -> logging.Logger:
     """Return the named logger; call as ``get_logger(__name__)``."""
     return logging.getLogger(name)
+
+
+def _merge(payload: dict[str, Any], fields: dict[str, Any]) -> None:
+    for key, value in fields.items():
+        payload[f"field_{key}" if key in ENVELOPE_KEYS else key] = value
 
 
 def _dumps(payload: dict[str, Any]) -> str:
@@ -45,10 +54,10 @@ class StructuredFormatter(logging.Formatter):
         }
         event = getattr(record, EVENT_ATTR, None)
         if isinstance(event, dict):
-            payload.update(event)
+            _merge(payload, event)
         else:
             payload["message"] = record.getMessage()
-        payload.update({k: v for k, v in vars(record).items() if k not in _RESERVED})
+        _merge(payload, {k: v for k, v in vars(record).items() if k not in _RESERVED})
         if record.exc_info:
             payload["exc_info"] = self.formatException(record.exc_info)
         return _dumps(payload)

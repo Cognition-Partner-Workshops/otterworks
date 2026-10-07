@@ -72,3 +72,43 @@ def test_flags_missing_schedule():
 def test_good_dag_passes():
     assert top_level_hook_calls(GOOD) == []
     assert dag_calls_without_schedule(GOOD) == []
+
+
+DELEGATED = textwrap.dedent(
+    """
+    from airflow.decorators import dag, task
+    from airflow.models import Variable
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+    def _bucket():
+        return Variable.get("bucket")
+
+    def _rows():
+        return _count() + _rows()
+
+    def _count():
+        return PostgresHook().get_records("select 1")
+
+    def _only_in_task():
+        return Variable.get("fine")
+
+    BUCKET = _bucket()
+
+    @dag(schedule=None)
+    def delegated():
+        _rows()
+
+        @task
+        def extract():
+            return _only_in_task()
+
+        extract()
+
+    delegated()
+    """
+)
+
+
+def test_follows_module_helpers_called_at_parse_time():
+    problems = top_level_hook_calls(DELEGATED)
+    assert [p.split(":")[0] for p in problems] == ["line 7", "line 13", "line 13"]
