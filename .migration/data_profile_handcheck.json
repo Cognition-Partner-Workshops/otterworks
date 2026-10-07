@@ -1,0 +1,406 @@
+{
+ "kind": "data-profile-handcheck",
+ "run": "mmp_rt_b3_oracle",
+ "plan_step": "s2.5-data-profile",
+ "profile": {
+  "file": ".migration/data_profile.json",
+  "census_sha256": "8218c3b20cc35739078b92768352b90ff7e4a14d117b854b1cddc40dd3d1935a",
+  "as_of": "2026-10-07T07:09:09.563136+00:00",
+  "stats_total": 136,
+  "status": {
+   "ok": 136,
+   "skipped": 0,
+   "failed": 0
+  },
+  "by_query_id": {
+   "fanout": 13,
+   "fk_integrity": 13,
+   "embed_bytes": 13,
+   "row_bytes": 20,
+   "value_domain": 46,
+   "text_shapes": 16,
+   "pointer_resolve": 7,
+   "csv_elements": 7,
+   "eav_shape": 1
+  },
+  "principal": "OW_BILLING_RO (not widened)",
+  "concurrency": 1,
+  "wall_seconds": 0.95,
+  "note": "mini fixture (~200 customers / 1,000 headers / 1,500 lines / 5 core tenants): every max/p99 below is a fixture snapshot, not a bound"
+ },
+ "handcheck_principal": "OW_BILLING (owner) via sqlplus inside otterworks-oracle-billing-oracle-billing-1; read-only SELECTs only",
+ "checks": [
+  {
+   "id": "HC1",
+   "stat": "pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICES",
+   "tool": {
+    "non_null": 1500,
+    "unresolved": 1500,
+    "resolve_rate": 0.0
+   },
+   "sql": "SELECT COUNT(*) total_lines, SUM(CASE WHEN h.invoice_id IS NULL THEN 1 ELSE 0 END) orphans FROM invoice_line l LEFT JOIN invoice_header h ON h.invoice_id = l.invoice_id",
+   "result": {
+    "total_lines": 1500,
+    "orphans": 37
+   },
+   "verdict": "MISMEASURED \u2014 wrong target table (INVOICES, 4 rows) instead of INVOICE_HEADER; truth 37/1500 orphans = fixture_counts.orphans_total (F19)"
+  },
+  {
+   "id": "HC1b",
+   "stat": "same stat, tool's own join reproduced",
+   "sql": "SELECT COUNT(*) non_null, SUM(CASE WHEN i.id IS NULL THEN 1 ELSE 0 END) unresolved FROM invoice_line l LEFT JOIN invoices i ON i.id = l.invoice_id WHERE l.invoice_id IS NOT NULL",
+   "result": {
+    "non_null": 1500,
+    "unresolved": 1500
+   },
+   "verdict": "tool executed its query correctly; the query answers the wrong question"
+  },
+  {
+   "id": "HC2",
+   "stat": "fanout INVOICE_HEADER->INVOICE_LINE (not produced by the tool \u2014 F18)",
+   "sql": "SELECT MIN(n), MEDIAN(n) p50, PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY n) p99, MAX(n), COUNT(*) parents, SUM(CASE WHEN n=0 THEN 1 ELSE 0 END) zero FROM (SELECT h.invoice_id, COUNT(l.invoice_id) n FROM invoice_header h LEFT JOIN invoice_line l ON l.invoice_id=h.invoice_id GROUP BY h.invoice_id)",
+   "result": {
+    "min": 0,
+    "p50": 1,
+    "p99": 5,
+    "max": 6,
+    "parents": 1000,
+    "parents_zero": 232
+   },
+   "verdict": "MANUAL \u2014 no FK, so data_profile.py never planned the stat"
+  },
+  {
+   "id": "HC3",
+   "stat": "text_shapes:CUSTOMER_MASTER.SIGNUP_DT conformance %d-%b-%y",
+   "tool": {
+    "conformance_d_b_y": 0.845771,
+    "implied_dirty": 31
+   },
+   "sql": "SELECT COUNT(*) non_null, SUM(1-VALIDATE_CONVERSION(signup_dt AS DATE,'DD-MON-YY')) dirty FROM customer_master WHERE signup_dt IS NOT NULL",
+   "result": {
+    "non_null": 201,
+    "dirty": 41,
+    "dirty_values": {
+     "00-XXX-00": 7,
+     "N/A": 6,
+     "12-13-201": 6,
+     "  -   -  ": 6,
+     "31-FEB-24": 6,
+     "29-FEB-23": 4,
+     "1/1/1900": 4,
+     "99-999-99": 2
+    }
+   },
+   "verdict": "MISMEASURED by 10 rows \u2014 shape match passes calendar-impossible 31-FEB-24 / 29-FEB-23; true dirty fraction 41/201 = 20.4% (fixture_counts.dirty_signup_dt = 41) vs tool 15.4% (F21)"
+  },
+  {
+   "id": "HC4",
+   "stat": "row_bytes:INVOICE_HEADER",
+   "tool": {
+    "rows_seen": 1000,
+    "avg_bytes": 152.481,
+    "max_bytes": 153
+   },
+   "sql": "SELECT COUNT(*), AVG(<sum NVL(VSIZE(col),0) over 9 cols>), MAX(<same>) FROM invoice_header",
+   "result": {
+    "rows_seen": 1000,
+    "avg_bytes": 152.481,
+    "max_bytes": 153
+   },
+   "verdict": "MATCH"
+  },
+  {
+   "id": "HC5",
+   "stat": "eav:ENTITY_ATTR_VALUE (entity_cols=[EAV_ID])",
+   "tool": {
+    "entities": 70,
+    "max_attrs_per_entity": 1,
+    "p99_attrs_per_entity": 1,
+    "distinct_attrs": 8
+   },
+   "sql": "SELECT n attrs, COUNT(*) entities FROM (SELECT entity_type, entity_id, COUNT(DISTINCT attr_name) n FROM entity_attr_value GROUP BY entity_type, entity_id) GROUP BY n ORDER BY n",
+   "result": {
+    "attrs_per_entity": {
+     "1": 50,
+     "2": 6,
+     "3": 1,
+     "4": 1
+    },
+    "entities": 58,
+    "max": 4,
+    "entity_types": {
+     "CUSTOMER": {
+      "rows": 70,
+      "entities": 58,
+      "attr_names": 8
+     }
+    },
+    "attr_names": {
+     "COLLECTIONS_NOTE": 11,
+     "FAX_OPTOUT": 10,
+     "LEGACY_TIER": 8,
+     "PORTAL_THEME": 12,
+     "SAP_EXPORT_FLAG": 9,
+     "TAX_REGION_OVERRIDE": 11,
+     "Y2K_VERIFIED": 8,
+     "tax_region_override": 1
+    },
+    "attr_type": "all STR",
+    "entity_id_unresolved_in_CUSTOMER_MASTER": 0
+   },
+   "verdict": "MISMEASURED \u2014 grouped by the surrogate PK, so every row is its own entity (70 x 1 attr); truth 58 entities, max 4 attrs; 8 distinct names include a case-variant duplicate (F20)"
+  },
+  {
+   "id": "HC6",
+   "stat": "fanout TENANTS->SUBSCRIPTIONS / TENANTS->USAGE_EVENTS (tool)",
+   "tool": {
+    "TENANTS->SUBSCRIPTIONS": {
+     "p50": 1,
+     "p99": 1,
+     "max": 1,
+     "parents": 15
+    },
+    "TENANTS->USAGE_EVENTS": {
+     "p50": 1,
+     "p99": 24,
+     "max": 24,
+     "parents": 15
+    }
+   },
+   "sql": "SELECT table_name, column_name FROM user_tab_columns WHERE table_name IN ('USAGE_EVENTS','SUBSCRIPTIONS')",
+   "result": {
+    "USAGE_EVENTS": [
+     "ID",
+     "TENANT_ID",
+     "OCCURRED_AT",
+     "UNITS",
+     "KIND_CD"
+    ],
+    "SUBSCRIPTIONS": [
+     "ID",
+     "TENANT_ID",
+     "PLAN_ID",
+     "STARTS_ON",
+     "ENDS_ON",
+     "STATUS_CD",
+     "SUSPENDED_ON"
+    ]
+   },
+   "verdict": "SUBSCRIPTIONS->USAGE_EVENTS does not exist in the schema (USAGE_EVENTS has no SUBSCRIPTION_ID); the chain is TENANTS->SUBSCRIPTIONS (1:1 in fixture) and TENANTS->USAGE_EVENTS (max 24); tool values accepted"
+  }
+ ],
+ "manual_stats": {
+  "fanout_pointer_chains": {
+   "CUSTOMER_MASTER->INVOICE_HEADER(CUST_ID)": {
+    "min": 0,
+    "p50": 0,
+    "p99": 26,
+    "max": 29,
+    "parents": 201,
+    "parents_zero": 116,
+    "child_rows_without_parent": 0
+   },
+   "CUSTOMER_MASTER->INVOICE_LINE(CUST_ID)": {
+    "min": 0,
+    "p50": 1,
+    "p99": 37,
+    "max": 48,
+    "parents": 201,
+    "parents_zero": 96,
+    "child_rows_without_parent": 0
+   },
+   "INVOICE_HEADER->INVOICE_LINE(INVOICE_ID)": {
+    "min": 0,
+    "p50": 1,
+    "p99": 5,
+    "max": 6,
+    "parents": 1000,
+    "parents_zero": 232,
+    "child_rows_without_parent": 37,
+    "child_rows_null_fk": 0
+   },
+   "parent->_HIST": {
+    "CUSTOMER_MASTER_HIST": 0,
+    "SUBSCRIPTIONS_HIST": 0,
+    "BILLING_AUDIT_LOG": 0,
+    "note": "all three history/audit tables are empty in the fixture (triggers only fire on UPDATE/DELETE; seeder inserts) \u2014 fan-out 0, embed bytes unmeasurable"
+   }
+  },
+  "embed_bytes_pointer_chains": {
+   "INVOICE_HEADER->INVOICE_LINE": {
+    "p50": 525,
+    "p99": 1346.65,
+    "max": 1612,
+    "parents_with_children": 768,
+    "sql": "SUM over 20 INVOICE_LINE cols of NVL(VSIZE(c),0) per invoice_header.invoice_id"
+   },
+   "CUSTOMER_MASTER->INVOICE_HEADER": {
+    "p50": 1527,
+    "p99": 4167,
+    "max": 4419,
+    "parents_with_children": 85,
+    "sql": "SUM over 9 INVOICE_HEADER cols of NVL(VSIZE(c),0) per customer_master.cust_id"
+   },
+   "CUSTOMER_MASTER->INVOICE_HEADER+INVOICE_LINE (derived)": {
+    "max_upper_bound": "4419 + 48*291 = 18,387 B",
+    "note": "worst case: max header bytes + max line count x max line bytes; all far below 16 MB at mini scale"
+   }
+  },
+  "row_bytes_key_tables": {
+   "CUSTOMER_MASTER": {
+    "rows": 201,
+    "avg": 333.79,
+    "max": 373,
+    "columns": 155,
+    "note": "most of the 155 columns are NULL in the fixture (TERRITORY_CD/CHANNEL_CD/RATE_CLASS_CD/PHONE3/4 all null)"
+   },
+   "INVOICE_HEADER": {
+    "rows": 1000,
+    "avg": 152.48,
+    "max": 153
+   },
+   "INVOICE_LINE": {
+    "rows": 1500,
+    "avg": 268.06,
+    "max": 291
+   },
+   "ENTITY_ATTR_VALUE": {
+    "rows": 70,
+    "avg": 76.07,
+    "max": 93
+   }
+  },
+  "tenant_pointer_truth": {
+   "INVOICE_HEADER.TENANT_ID in TENANTS.ID": "0/1000 (11 distinct tenant ids, none in TENANTS)",
+   "CUSTOMER_MASTER.TENANT_ID in TENANTS.ID": "1/201",
+   "INVOICE_LINE.TENANT_ID in TENANTS.ID": "0/1500",
+   "verdict": "tool values are correct here \u2014 the horror estate carries its own tenant ids; TENANT_ID is not a usable join to the core TENANTS table"
+  },
+  "csv_columns": {
+   "CUSTOMER_MASTER.RELATED_ACCT_IDS": {
+    "non_null": 160,
+    "with_comma": 129,
+    "with_semicolon": 4,
+    "with_pipe": 0,
+    "sample": " , 99 ,",
+    "tool": {
+     "max_elements": 4,
+     "avg_elements": 2.594
+    }
+   },
+   "CUSTOMER_MASTER.CHILD_ACCT_IDS": {
+    "non_null": 0,
+    "tool": {
+     "max_elements": null,
+     "avg_elements": null
+    }
+   },
+   "CUSTOMER_MASTER.PROMO_CODES_CSV": {
+    "non_null": 141,
+    "with_comma": 67,
+    "sample": "CONV2011",
+    "tool": {
+     "max_elements": 2,
+     "avg_elements": 1.475
+    }
+   },
+   "INVOICE_LINE.GL_ACCT_CSV": {
+    "non_null": 1500,
+    "with_comma": 1021,
+    "sample": "40021",
+    "tool": {
+     "max_elements": 3,
+     "avg_elements": 2.042
+    }
+   }
+  },
+  "codes_domain": {
+   "CODES": {
+    "columns": [
+     "CODE_TYPE",
+     "CODE_VAL",
+     "CODE_DESC"
+    ],
+    "rows": 32,
+    "code_types": {
+     "CUST_STATUS": [
+      1,
+      2,
+      3,
+      99
+     ],
+     "CUST_TYPE": [
+      1,
+      2,
+      3
+     ],
+     "DUN_STATUS": [
+      10,
+      20,
+      30
+     ],
+     "INV_STATUS": [
+      10,
+      20,
+      30,
+      40
+     ],
+     "NOTIF_KIND": [
+      1,
+      2,
+      3
+     ],
+     "PHONE_TYPE": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "PLAN_TIER": [
+      1,
+      2,
+      3
+     ],
+     "SUB_STATUS": [
+      10,
+      20,
+      30
+     ],
+     "TENANT_STATUS": [
+      10,
+      20
+     ],
+     "USAGE_KIND": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "column_to_code_type": {
+    "CUSTOMER_MASTER.STATUS_CD": "CUST_STATUS (99 = conversion-limbo, 2 rows)",
+    "CUSTOMER_MASTER.CUST_TYPE_CD": "CUST_TYPE",
+    "CUSTOMER_MASTER.PHONE*_TYPE_CD": "PHONE_TYPE",
+    "INVOICE_HEADER.STATUS_CD": "INV_STATUS (values 20/30/40 seen; 10 unused)",
+    "INVOICES.STATUS_CD": "INV_STATUS",
+    "SUBSCRIPTIONS.STATUS_CD": "SUB_STATUS",
+    "TENANTS.STATUS_CD": "TENANT_STATUS",
+    "PLANS.TIER_CD": "PLAN_TIER",
+    "USAGE_EVENTS.KIND_CD": "USAGE_KIND",
+    "DUNNING_ATTEMPTS.STATUS_CD": "DUN_STATUS",
+    "NOTIFICATIONS.KIND_CD": "NOTIF_KIND",
+    "INVOICE_LINE.LINE_TYPE_CD": "NONE \u2014 values 1/2/3/9 (9 = 256 rows) have no CODES type",
+    "CUSTOMER_MASTER.SUB_STATUS_CD/SEGMENT_CD/REGION_CD": "NONE in CODES (SEGMENT 1-9, REGION 1-12, SUB_STATUS 1-2 + 66 null)"
+   }
+  },
+  "dirty_text_dates": {
+   "CUSTOMER_MASTER.SIGNUP_DT": "41/201 fail DD-MON-YY (20.4%)",
+   "CUSTOMER_MASTER.LAST_ACTIVITY_DT": "0/201",
+   "INVOICE_HEADER.INVOICE_DT": "0/1000",
+   "INVOICE_HEADER.DUE_DT": "0/1000",
+   "INVOICE_LINE.INVOICE_DT": "0/1500",
+   "ENTITY_ATTR_VALUE.CREATED_DT": "0/70",
+   "CUSTOMER_MASTER.LAST_INVOICE_DT/LAST_PAYMENT_DT/TERMINATE_DT": "all NULL"
+  }
+ }
+}
