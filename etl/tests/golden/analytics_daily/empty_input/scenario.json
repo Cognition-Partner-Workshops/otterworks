@@ -1,0 +1,4 @@
+{
+  "description": "Nothing seeded: legacy logs 'No events found' and exits 0 before any S3 or Postgres write.",
+  "frozen_time": "2026-03-15T02:00:00Z"
+}

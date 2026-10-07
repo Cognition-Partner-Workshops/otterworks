@@ -1,0 +1,90 @@
+{
+  "analytics_daily_summary": {
+    "columns": [
+      {
+        "name": "report_date",
+        "type": "date"
+      },
+      {
+        "name": "active_users",
+        "type": "integer"
+      },
+      {
+        "name": "active_documents",
+        "type": "integer"
+      },
+      {
+        "name": "active_files",
+        "type": "integer"
+      },
+      {
+        "name": "total_events",
+        "type": "integer"
+      },
+      {
+        "name": "documents_created",
+        "type": "integer"
+      },
+      {
+        "name": "documents_edited",
+        "type": "integer"
+      },
+      {
+        "name": "comments_added",
+        "type": "integer"
+      },
+      {
+        "name": "files_uploaded",
+        "type": "integer"
+      },
+      {
+        "name": "files_shared",
+        "type": "integer"
+      },
+      {
+        "name": "files_deleted",
+        "type": "integer"
+      },
+      {
+        "name": "bytes_uploaded",
+        "type": "bigint"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "rows": [
+      {
+        "active_documents": 99,
+        "active_files": 99,
+        "active_users": 7,
+        "bytes_uploaded": 7000,
+        "comments_added": 9,
+        "documents_created": 9,
+        "documents_edited": 9,
+        "files_deleted": 9,
+        "files_shared": 9,
+        "files_uploaded": 9,
+        "report_date": "2026-03-14",
+        "total_events": 70,
+        "updated_at": "<normalized:updated_at>"
+      },
+      {
+        "active_documents": 1,
+        "active_files": 2,
+        "active_users": 2,
+        "bytes_uploaded": 300,
+        "comments_added": 0,
+        "documents_created": 1,
+        "documents_edited": 0,
+        "files_deleted": 0,
+        "files_shared": 0,
+        "files_uploaded": 2,
+        "report_date": "2026-03-15",
+        "total_events": 3,
+        "updated_at": "<normalized:updated_at>"
+      }
+    ]
+  }
+}

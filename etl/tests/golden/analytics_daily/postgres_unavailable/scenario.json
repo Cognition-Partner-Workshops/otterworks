@@ -1,0 +1,35 @@
+{
+  "description": "Wrong database password: the upsert fails, the error is logged and swallowed, S3 outputs and the report are still written and the run exits 0 with no Postgres row.",
+  "frozen_time": "2026-03-15T02:00:00Z",
+  "config_overrides": {
+    "database": {
+      "password": "wrong-password"
+    }
+  },
+  "seed": {
+    "sqs": {
+      "otterworks-analytics": [
+        {
+          "eventType": "document_created",
+          "ownerId": "user-alice",
+          "documentId": "doc-1",
+          "timestamp": "2026-03-15T00:05:00Z"
+        },
+        {
+          "eventType": "file_uploaded",
+          "ownerId": "user-bob",
+          "fileId": "file-1",
+          "sizeBytes": 100,
+          "timestamp": "2026-03-15T01:05:00Z"
+        },
+        {
+          "eventType": "file_uploaded",
+          "ownerId": "user-bob",
+          "fileId": "file-2",
+          "sizeBytes": 200,
+          "timestamp": "2026-03-15T01:06:00Z"
+        }
+      ]
+    }
+  }
+}
