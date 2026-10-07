@@ -1,0 +1,115 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "audit-1"
+        },
+        "id": {
+          "S": "audit-1"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-01T10:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "document.share"
+        },
+        "actor_id": {
+          "S": "user-bob"
+        },
+        "bytes": {
+          "N": "42"
+        },
+        "event_id": {
+          "S": "audit-2"
+        },
+        "id": {
+          "S": "audit-2"
+        },
+        "resource_id": {
+          "S": "doc-1"
+        },
+        "timestamp": {
+          "S": "2025-12-14T23:59:59Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.upload"
+        },
+        "actor_id": {
+          "S": "user-carol"
+        },
+        "event_id": {
+          "S": "audit-3"
+        },
+        "id": {
+          "S": "audit-3"
+        },
+        "resource_id": {
+          "S": "file-2"
+        },
+        "timestamp": {
+          "S": "2026-03-01T08:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}
