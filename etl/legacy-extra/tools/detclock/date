@@ -1,0 +1,8 @@
+#!/bin/sh
+# date(1) shim for parity runs: when CUSTBILL_NOW is set ("YYYY-MM-DD HH:MM:SS",
+# local time), every `date` call in the legacy shell jobs reports that instant.
+# Used instead of libfaketime because ksh93 segfaults under its LD_PRELOAD.
+if [ -n "${CUSTBILL_NOW:-}" ]; then
+    exec /bin/date -d "$CUSTBILL_NOW" "$@"
+fi
+exec /bin/date "$@"
