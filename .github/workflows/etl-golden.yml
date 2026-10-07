@@ -55,8 +55,10 @@ jobs:
         with:
           name: etl-golden-snapshots
           path: |
-            etl/tests/golden/.runs/**/snapshot-*/*.json
-            etl/tests/golden/.runs/**/diff.txt
+            etl/tests/golden/.runs/*/*/check/snapshot-*/*.json
+            etl/tests/golden/.runs/*/*/check/diff.txt
+            etl/tests/golden/.runs/*/*/repeat/snapshot-*/*.json
+            etl/tests/golden/.runs/*/*/repeat/diff.txt
           include-hidden-files: true
       - if: always()
         run: docker compose -f docker-compose.infra.yml down -v
