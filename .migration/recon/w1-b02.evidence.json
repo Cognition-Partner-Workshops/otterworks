@@ -1,0 +1,520 @@
+{
+ "kind": "w1-b02-load-evidence",
+ "ticket": "UNT7-19",
+ "plan_step": "s4.1.b02",
+ "wave_manifest": ".migration/waves/wave-1.json",
+ "manifest_sha": "ed1747e90f6e",
+ "run_branch_base": "e321db1c",
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+ "mapping_version": "map-draft-3",
+ "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "source": {
+  "principal": "OW_BILLING_RO (SELECT only via the F60 logon trigger; unchanged since b01)",
+  "dsn_env": "MMP_RT_SRC_DSN",
+  "concurrency": 1,
+  "fixture_counts_recheck": "owner-side COUNT(*) RATING_PERIODS 3, CREDIT_NOTES 5, USAGE_EVENTS 103, NOTIFICATIONS 1, SUBSCRIPTIONS 15 == .migration/fixture_counts.json before the load"
+ },
+ "loader": {
+  "script": "services/legacy-billing/migration/mongodb/load_units.py",
+  "recon_wrapper": "services/legacy-billing/migration/mongodb/recon_unit.sh",
+  "interpreter": "/home/ubuntu/.venvs/recon/bin/python",
+  "reload_semantics": "delete_many({}) on the unit's own collection then insert_many; nothing dropped",
+  "changes_this_batch": [
+   "copied_fields (extended_reference) support: parent table read once per copied_fields entry, joined local==remote in memory, fields written at the dotted target path (plan.code \u2026); NULL join key or missing parent row writes nothing (recon grades absent)",
+   "set_path(): dotted field targets written as nested subdocuments",
+   "indexes created unique-first; a second declaration with the same key list is skipped on MongoDB code 85/86 and recorded in the load report as index_conflicts (F67)"
+  ],
+  "attempt_1_aborted": {
+   "what": "first full load: ratingPeriods loaded (3 docs, unique index), then create_index for the duplicate non-unique [tenantId, periodStart] declaration raised IndexKeySpecsConflict (code 86) and the loader exited; creditNotes/usageEvents/notifications/subscriptions were never loaded",
+   "live_recon_on_unloaded_units": {
+    "ratingPeriods": {
+     "verdict": "PASS",
+     "tiers": [
+      {
+       "tier": 1,
+       "passed": true,
+       "checks_run": 3,
+       "findings": 0
+      },
+      {
+       "tier": 2,
+       "passed": true,
+       "checks_run": 2,
+       "findings": 0
+      },
+      {
+       "tier": 3,
+       "passed": true,
+       "checks_run": 3,
+       "findings": 0
+      }
+     ],
+     "tier1_findings": []
+    },
+    "creditNotes": {
+     "verdict": "FAIL",
+     "tiers": [
+      {
+       "tier": 1,
+       "passed": false,
+       "checks_run": 3,
+       "findings": 3
+      }
+     ],
+     "tier1_findings": [
+      "root_count",
+      "index_missing",
+      "index_missing"
+     ]
+    },
+    "usageEvents": {
+     "verdict": "FAIL",
+     "tiers": [
+      {
+       "tier": 1,
+       "passed": false,
+       "checks_run": 2,
+       "findings": 2
+      }
+     ],
+     "tier1_findings": [
+      "root_count",
+      "index_missing"
+     ]
+    },
+    "notifications": {
+     "verdict": "FAIL",
+     "tiers": [
+      {
+       "tier": 1,
+       "passed": false,
+       "checks_run": 2,
+       "findings": 2
+      }
+     ],
+     "tier1_findings": [
+      "root_count",
+      "index_missing"
+     ]
+    },
+    "subscriptions": {
+     "verdict": "FAIL",
+     "tiers": [
+      {
+       "tier": 1,
+       "passed": false,
+       "checks_run": 4,
+       "findings": 4
+      }
+     ],
+     "tier1_findings": [
+      "root_count",
+      "index_missing",
+      "index_missing",
+      "index_missing"
+     ]
+    }
+   },
+   "artifacts": "not committed (superseded); kept locally under ~/mmp_rt_scratch/b02/attempt1 for the session"
+  },
+  "loads": [
+   {
+    "kind": "load-report",
+    "spec_version": "map-draft-3",
+    "target_db": "mmp_rt_b3_oracle",
+    "dry_run": false,
+    "started_at": "2026-10-07T09:25:41.052900+00:00",
+    "units": {
+     "ratingPeriods": {
+      "root_table": "RATING_PERIODS",
+      "source_rows": 3,
+      "documents_written": 3,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_periodStart_1"
+      ],
+      "index_conflicts": [
+       {
+        "keys": [
+         [
+          "tenantId",
+          1
+         ],
+         [
+          "periodStart",
+          1
+         ]
+        ],
+        "unique": false,
+        "error": "An existing index has the same name as the requested index. When index names are not specified, they are auto generated and can cause conflicts. Please refer to our documentation. Requested index: { v: 2, key: { tenantId: 1, periodStart: 1 }, name: \"tenantId_1_periodStart_1\" }, existing index: { v: 2, unique: true, key: { tenantId: 1, periodStart: 1 }, name: \"tenantId_1_periodStart_1\" }"
+       }
+      ],
+      "elapsed_s": 0.854
+     },
+     "creditNotes": {
+      "root_table": "CREDIT_NOTES",
+      "source_rows": 5,
+      "documents_written": 5,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_remainingAmount_1",
+       "tenantId_1_issuedOn_1__id_1_remainingAmount_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.406
+     },
+     "usageEvents": {
+      "root_table": "USAGE_EVENTS",
+      "source_rows": 103,
+      "documents_written": 103,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_occurredAt_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 1.229
+     },
+     "notifications": {
+      "root_table": "NOTIFICATIONS",
+      "source_rows": 1,
+      "documents_written": 1,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_kindCd_1_sentAt_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.292
+     },
+     "subscriptions": {
+      "root_table": "SUBSCRIPTIONS",
+      "source_rows": 15,
+      "documents_written": 15,
+      "embeds": {},
+      "copied_fields": {
+       "plan": {
+        "from_table": "PLANS",
+        "joined": 15,
+        "null_join_key": 0,
+        "orphan_rows": 0
+       }
+      },
+      "derived": {},
+      "indexes": [
+       "tenantId_1_endsOn_1_startsOn_1",
+       "endsOn_1_startsOn_1",
+       "planId_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.547
+     }
+    },
+    "source_queries": 6,
+    "source_concurrency": 1,
+    "finished_at": "2026-10-07T09:25:44.382049+00:00"
+   },
+   {
+    "kind": "load-report",
+    "spec_version": "map-draft-3",
+    "target_db": "mmp_rt_b3_oracle",
+    "dry_run": false,
+    "started_at": "2026-10-07T09:25:56.231831+00:00",
+    "units": {
+     "ratingPeriods": {
+      "root_table": "RATING_PERIODS",
+      "source_rows": 3,
+      "documents_written": 3,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_periodStart_1"
+      ],
+      "index_conflicts": [
+       {
+        "keys": [
+         [
+          "tenantId",
+          1
+         ],
+         [
+          "periodStart",
+          1
+         ]
+        ],
+        "unique": false,
+        "error": "An existing index has the same name as the requested index. When index names are not specified, they are auto generated and can cause conflicts. Please refer to our documentation. Requested index: { v: 2, key: { tenantId: 1, periodStart: 1 }, name: \"tenantId_1_periodStart_1\" }, existing index: { v: 2, unique: true, key: { tenantId: 1, periodStart: 1 }, name: \"tenantId_1_periodStart_1\" }"
+       }
+      ],
+      "elapsed_s": 0.941
+     },
+     "creditNotes": {
+      "root_table": "CREDIT_NOTES",
+      "source_rows": 5,
+      "documents_written": 5,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_remainingAmount_1",
+       "tenantId_1_issuedOn_1__id_1_remainingAmount_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.348
+     },
+     "usageEvents": {
+      "root_table": "USAGE_EVENTS",
+      "source_rows": 103,
+      "documents_written": 103,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_occurredAt_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 1.083
+     },
+     "notifications": {
+      "root_table": "NOTIFICATIONS",
+      "source_rows": 1,
+      "documents_written": 1,
+      "embeds": {},
+      "copied_fields": {},
+      "derived": {},
+      "indexes": [
+       "tenantId_1_kindCd_1_sentAt_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.251
+     },
+     "subscriptions": {
+      "root_table": "SUBSCRIPTIONS",
+      "source_rows": 15,
+      "documents_written": 15,
+      "embeds": {},
+      "copied_fields": {
+       "plan": {
+        "from_table": "PLANS",
+        "joined": 15,
+        "null_join_key": 0,
+        "orphan_rows": 0
+       }
+      },
+      "derived": {},
+      "indexes": [
+       "tenantId_1_endsOn_1_startsOn_1",
+       "endsOn_1_startsOn_1",
+       "planId_1"
+      ],
+      "index_conflicts": [],
+      "elapsed_s": 0.459
+     }
+    },
+    "source_queries": 6,
+    "source_concurrency": 1,
+    "finished_at": "2026-10-07T09:25:59.313000+00:00"
+   }
+  ],
+  "idempotency": "load 2 (same command) reproduced every count of load 1; live recon ran against load 2"
+ },
+ "recon": {
+  "fixture_first": {
+   "ratingPeriods": "PASS",
+   "creditNotes": "PASS",
+   "usageEvents": "PASS",
+   "notifications": "PASS",
+   "subscriptions": "PASS"
+  },
+  "live_once": {
+   "ratingPeriods": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "generated_at": "2026-10-07T09:26:01.349578+00:00"
+   },
+   "creditNotes": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "generated_at": "2026-10-07T09:26:03.527319+00:00"
+   },
+   "usageEvents": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "generated_at": "2026-10-07T09:26:05.741367+00:00"
+   },
+   "notifications": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "generated_at": "2026-10-07T09:26:07.756294+00:00"
+   },
+   "subscriptions": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "generated_at": "2026-10-07T09:26:10.183628+00:00"
+   }
+  },
+  "redaction": "RECON_REDACT_SALT unset -> unsalted hashes (harness warning, F63)",
+  "subscriptions_copied_fields": "Tier 3 30 checks = 15 keyed rows + 15 copied_fields joins (plan.code, plan.tierCd, plan.monthlyFee, plan.includedUnits), 0 findings",
+  "null_missing_equiv": "endsOn missing 15/15, suspendedOn missing 14/15 on the target (loader omits NULL under null_missing_equiv); harness equated"
+ },
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "dbStats_before": {
+   "when": "before_w1_b02_load",
+   "db": "mmp_rt_b3_oracle",
+   "collections": 4,
+   "objects": 251,
+   "dataSize": 231841,
+   "storageSize": 393216,
+   "indexes": 9,
+   "indexSize": 364544,
+   "collections_list": [
+    "codes",
+    "customerMaster",
+    "plans",
+    "tenants"
+   ]
+  },
+  "dbStats_after": {
+   "when": "after_w1_b02_load",
+   "db": "mmp_rt_b3_oracle",
+   "collections": 9,
+   "objects": 378,
+   "dataSize": 253303,
+   "storageSize": 499712,
+   "indexes": 22,
+   "indexSize": 651264,
+   "collections_list": [
+    "codes",
+    "creditNotes",
+    "customerMaster",
+    "notifications",
+    "plans",
+    "ratingPeriods",
+    "subscriptions",
+    "tenants",
+    "usageEvents"
+   ],
+   "counts": {
+    "codes": 32,
+    "creditNotes": 5,
+    "customerMaster": 201,
+    "notifications": 1,
+    "plans": 3,
+    "ratingPeriods": 3,
+    "subscriptions": 15,
+    "tenants": 15,
+    "usageEvents": 103
+   },
+   "indexes_by_collection": {
+    "ratingPeriods": [
+     [
+      "tenantId_1_periodStart_1",
+      true
+     ]
+    ],
+    "creditNotes": [
+     [
+      "tenantId_1_remainingAmount_1",
+      false
+     ],
+     [
+      "tenantId_1_issuedOn_1__id_1_remainingAmount_1",
+      false
+     ]
+    ],
+    "usageEvents": [
+     [
+      "tenantId_1_occurredAt_1",
+      false
+     ]
+    ],
+    "notifications": [
+     [
+      "tenantId_1_kindCd_1_sentAt_1",
+      true
+     ]
+    ],
+    "subscriptions": [
+     [
+      "tenantId_1_endsOn_1_startsOn_1",
+      false
+     ],
+     [
+      "endsOn_1_startsOn_1",
+      false
+     ],
+     [
+      "planId_1",
+      false
+     ]
+    ]
+   },
+   "subscriptions_checks": {
+    "plan_present": 15,
+    "endsOn_missing": 15,
+    "suspendedOn_missing": 14,
+    "sample": {
+     "startsOn": "2026-01-01 00:00:00",
+     "statusCd": 10,
+     "plan": {
+      "code": "STARTER",
+      "tierCd": 1,
+      "monthlyFee": "49",
+      "includedUnits": 100
+     }
+    }
+   }
+  },
+  "listDatabases_names_after": [
+   "admin",
+   "local",
+   "mmp_rt_b1_mysql",
+   "mmp_rt_b1_tsql",
+   "mmp_rt_b2_tsql",
+   "mmp_rt_b3_oracle",
+   "ow_billing_migration",
+   "ow_tp_billing_20261001T233613Z",
+   "ow_tp_mmp_live"
+  ],
+  "written_collections": [
+   "ratingPeriods",
+   "creditNotes",
+   "usageEvents",
+   "notifications",
+   "subscriptions"
+  ],
+  "size_budget_bytes": 10485760,
+  "storageSize_after": 499712,
+  "untouched": "codes/tenants/plans/customerMaster counts unchanged (32/15/3/201); no other database written; connectivity.json unchanged"
+ },
+ "mongo_guard": {
+  "MONGO_GUARD_BASE_REF": "origin/tp-run/mongodb-20261007T062215Z",
+  "note": "exported for every command; the active PreToolUse hook is the org dbx guard (F4/F9)"
+ },
+ "pr_url": "",
+ "pre_pr_self_check": {
+  "null_missing": "NULL key refused by the loader; NULL non-key fields written as null, or omitted under null_missing_equiv (endsOn, suspendedOn) \u2014 both attributed by the spec rules the harness grades",
+  "namespace_scope": "writes only to the five w1-b02 write_targets in mmp_rt_b3_oracle (allowed_targets.json); the ow_tp prefix rule of the generic checklist does not apply to this run's allowlisted db (recorded since b01)",
+  "ddl": "no drop/replace/alter; Oracle untouched (ro principal)",
+  "rerun": "load 2 == load 1 counts; delete_many + insert_many on own collections only",
+  "evidence_retained": "attempt-1 verdicts recorded in loader.attempt_1_aborted; b01 artifacts untouched",
+  "secrets": "grep for URI/password over all new artifacts clean; secrets by name",
+  "tolerances": "tolerances 1 (1a8ebb6c\u2026) unchanged, mapping map-draft-3 unchanged",
+  "recon_recomputed": "every result.json is a fresh harness run against the target; dbStats read live",
+  "unverified": "none for the five units; attempt-1 live runs on unloaded collections superseded (F68)",
+  "recon_schema": "harness result.json schema (not the *.recon.json schema), as in b01",
+  "capability_preflight": "wave preflight OK (ed1747e90f6e); connectivity.json stays blocked (target principal over-scoped, UNT7-4)",
+  "tp_smoke": "6 passed"
+ }
+}

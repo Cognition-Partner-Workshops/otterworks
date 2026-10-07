@@ -128,14 +128,22 @@ class Converter:
         return value, extras
 
 
+def set_path(doc: dict, path: str, value: Any) -> None:
+    """Write a dotted target (`plan.code`) as nested subdocuments, as recon's get_path reads it."""
+    parts = path.split(".")
+    for part in parts[:-1]:
+        doc = doc.setdefault(part, {})
+    doc[parts[-1]] = value
+
+
 def put(doc: dict, field: dict, value: Any, conv: Converter) -> None:
     bson_value, extras = conv.convert(value, field)
     doc.update(extras)
     if bson_value is None:
         if "null_missing_equiv" not in [conv.base(r) for r in field.get("rules") or []]:
-            doc[field["target"]] = None
+            set_path(doc, field["target"], None)
         return
-    doc[field["target"]] = bson_value
+    set_path(doc, field["target"], bson_value)
 
 
 # ---- loader-side obligations the mapping spec cannot express (units.json loader_obligations)
@@ -190,6 +198,7 @@ def main() -> int:
     import oracledb
     from bson.int64 import Int64
     from pymongo import ASCENDING, DESCENDING, MongoClient
+    from pymongo.errors import OperationFailure
 
     oracledb.defaults.fetch_decimals = True
     s = json.loads(secret(args.source_dsn_secret))
@@ -213,8 +222,10 @@ def main() -> int:
         key_fields = {k["source"]: k for k in c.get("decision", {}).get("key_fields", [])}
         fields = c.get("fields", [])
         embeds = [e for e in c.get("embeds", []) if e.get("parent_key") and e.get("key")]
+        copied = c.get("copied_fields", [])
         cols = list(dict.fromkeys(key_src + [ident(f["source"]) for f in fields]
-                                  + [ident(x) for e in embeds for x in e.get("parent_ref") or key_src]))
+                                  + [ident(x) for e in embeds for x in e.get("parent_ref") or key_src]
+                                  + [ident(x) for cf in copied for x in cf["join"]["local"]]))
         cur.execute(f"SELECT {', '.join(cols)} FROM {ident(c['root_table'])}")
         source_queries += 1
         rows: dict[Any, dict] = {}
@@ -271,25 +282,67 @@ def main() -> int:
                 attached += 1
             embed_stats[e["array_path"]] = {"child_table": e["child_table"], "elements": attached,
                                             "orphan_child_rows": orphans}
+        copied_stats = {}
+        for cf in copied:
+            # extended_reference: copy parent fields joined local == remote (unit-migration skill, step 4);
+            # a NULL join key or a missing parent row writes nothing, which recon grades as absent.
+            local = [ident(x) for x in cf["join"]["local"]]
+            remote = [ident(x) for x in cf["join"]["remote"]]
+            cfields = cf.get("fields", [])
+            ccols = list(dict.fromkeys(remote + [ident(f["source"]) for f in cfields]))
+            cur.execute(f"SELECT {', '.join(ccols)} FROM {ident(cf['from_table'])}")
+            source_queries += 1
+            parents = {}
+            for rec in cur:
+                prow = dict(zip(ccols, rec))
+                pv = tuple(prow[x] for x in remote)
+                parents[pv[0] if len(pv) == 1 else pv] = prow
+            joined = null_key = orphans = 0
+            for d, row in zip(docs, rows.values()):
+                lv = tuple(row[x] for x in local)
+                if any(v is None for v in lv):
+                    null_key += 1
+                    continue
+                prow = parents.get(lv[0] if len(lv) == 1 else lv)
+                if prow is None:
+                    orphans += 1
+                    continue
+                for f in cfields:
+                    put(d, f, prow[f["source"]], conv)
+                joined += 1
+            copied_stats[cf["path"]] = {"from_table": cf["from_table"], "joined": joined,
+                                        "null_join_key": null_key, "orphan_rows": orphans}
         derived = DERIVED[u](u, docs, rows, cur) if u in DERIVED else {}
         if u in DERIVED:
             source_queries += 1
         written = 0
         index_names: list[str] = []
+        index_conflicts: list[dict] = []
         if not args.dry_run:
             coll = db[u]
             coll.delete_many({})
             for i in range(0, len(docs), BATCH):
                 if docs[i:i + BATCH]:
                     written += len(coll.insert_many(docs[i:i + BATCH], ordered=True).inserted_ids)
-            for ix in c.get("indexes", []):
+            # unique first: a spec may declare the same key list twice (access + natural_key);
+            # MongoDB holds one index per key pattern, and recon accepts a unique index for a
+            # non-unique declaration, so the duplicate is skipped and recorded, never retried.
+            for ix in sorted(c.get("indexes", []), key=lambda ix: not ix.get("unique")):
                 keys = [(k, ASCENDING if d == 1 else DESCENDING) for k, d in ix["keys"]]
-                index_names.append(coll.create_index(keys, unique=bool(ix.get("unique"))))
+                try:
+                    index_names.append(coll.create_index(keys, unique=bool(ix.get("unique"))))
+                except OperationFailure as exc:
+                    if exc.code not in (85, 86):  # IndexOptionsConflict, IndexKeySpecsConflict
+                        raise
+                    index_conflicts.append({"keys": ix["keys"], "unique": bool(ix.get("unique")),
+                                            "error": str(exc.details.get("errmsg", exc))})
         report["units"][u] = {"root_table": c["root_table"], "source_rows": len(docs),
                               "documents_written": written, "embeds": embed_stats,
-                              "derived": derived, "indexes": index_names,
+                              "copied_fields": copied_stats, "derived": derived,
+                              "indexes": index_names, "index_conflicts": index_conflicts,
                               "elapsed_s": round(time.time() - t0, 3)}
-        print(f"{u}: {len(docs)} rows -> {written} docs; embeds {embed_stats or '-'}; derived {derived or '-'}; indexes {index_names}")
+        print(f"{u}: {len(docs)} rows -> {written} docs; embeds {embed_stats or '-'}; copied {copied_stats or '-'}; "
+              f"derived {derived or '-'}; indexes {index_names}; index_conflicts {len(index_conflicts)}")
     report["source_queries"] = source_queries
     report["source_concurrency"] = 1
     report["finished_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
