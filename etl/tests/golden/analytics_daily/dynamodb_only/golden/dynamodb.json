@@ -1,0 +1,241 @@
+{
+  "otterworks-analytics-events": {
+    "items": [
+      {
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "dd-01"
+        },
+        "event_type": {
+          "S": "file_uploaded"
+        },
+        "fileId": {
+          "S": "file-40"
+        },
+        "sizeBytes": {
+          "N": "300"
+        },
+        "timestamp": {
+          "S": "2026-03-15T03:00:00Z"
+        },
+        "userId": {
+          "S": "user-kim"
+        }
+      },
+      {
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "dd-02"
+        },
+        "event_type": {
+          "S": "file_uploaded"
+        },
+        "fileId": {
+          "S": "file-41"
+        },
+        "sizeBytes": {
+          "N": "10.5"
+        },
+        "timestamp": {
+          "S": "2026-03-15T03:30:00Z"
+        },
+        "userId": {
+          "S": "user-kim"
+        }
+      },
+      {
+        "deletedBy": {
+          "S": "user-kim"
+        },
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "dd-03"
+        },
+        "event_type": {
+          "S": "file_deleted"
+        },
+        "fileId": {
+          "S": "file-40"
+        },
+        "timestamp": {
+          "S": "2026-03-15T04:00:00Z"
+        }
+      },
+      {
+        "documentId": {
+          "S": "doc-40"
+        },
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "dd-04"
+        },
+        "event_type": {
+          "S": "document_created"
+        },
+        "ownerId": {
+          "S": "user-kim"
+        },
+        "timestamp": {
+          "S": "2026-03-15T21:00:00Z"
+        }
+      },
+      {
+        "documentId": {
+          "S": "doc-40"
+        },
+        "editedBy": {
+          "S": "user-lee"
+        },
+        "event_date": {
+          "S": "2026-03-15T21:30:00Z"
+        },
+        "event_id": {
+          "S": "dd-05"
+        },
+        "event_type": {
+          "S": "document_edited"
+        },
+        "timestamp": {
+          "S": "2026-03-15T21:30:00Z"
+        }
+      },
+      {
+        "authorId": {
+          "S": "user-lee"
+        },
+        "documentId": {
+          "S": "doc-40"
+        },
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "dd-06"
+        },
+        "event_type": {
+          "S": "comment_added"
+        },
+        "timestamp": {
+          "S": "2026-03-15T22:00:00Z"
+        }
+      },
+      {
+        "event_date": {
+          "S": "2026-03-14"
+        },
+        "event_id": {
+          "S": "dx-01"
+        },
+        "event_type": {
+          "S": "file_uploaded"
+        },
+        "fileId": {
+          "S": "file-90"
+        },
+        "sizeBytes": {
+          "N": "123456"
+        },
+        "timestamp": {
+          "S": "2026-03-14T23:59:59Z"
+        },
+        "userId": {
+          "S": "user-old"
+        }
+      },
+      {
+        "documentId": {
+          "S": "doc-90"
+        },
+        "event_date": {
+          "S": "2026-03-16"
+        },
+        "event_id": {
+          "S": "dx-02"
+        },
+        "event_type": {
+          "S": "document_created"
+        },
+        "ownerId": {
+          "S": "user-new"
+        },
+        "timestamp": {
+          "S": "2026-03-16T00:00:01Z"
+        }
+      },
+      {
+        "authorId": {
+          "S": "user-old"
+        },
+        "documentId": {
+          "S": "doc-90"
+        },
+        "event_date": {
+          "S": "2026-02-15"
+        },
+        "event_id": {
+          "S": "dx-03"
+        },
+        "event_type": {
+          "S": "comment_added"
+        },
+        "timestamp": {
+          "S": "2026-02-15T12:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}
