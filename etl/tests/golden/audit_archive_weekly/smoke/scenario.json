@@ -1,0 +1,13 @@
+{
+  "description": "Harness smoke: two audit events older than the 90-day cutoff and one newer, in the otterworks-audit-events table as created by scripts/localstack-init.sh; exercises the GLACIER archive, the DynamoDB delete pass and the compliance report.",
+  "frozen_time": "2026-03-15T03:00:00Z",
+  "seed": {
+    "dynamodb": {
+      "otterworks-audit-events": [
+        {"id": "audit-1", "event_id": "audit-1", "timestamp": "2025-11-01T10:00:00Z", "action": "file.download", "actor_id": "user-alice", "resource_id": "file-1"},
+        {"id": "audit-2", "event_id": "audit-2", "timestamp": "2025-12-14T23:59:59Z", "action": "document.share", "actor_id": "user-bob", "resource_id": "doc-1", "bytes": 42},
+        {"id": "audit-3", "event_id": "audit-3", "timestamp": "2026-03-01T08:00:00Z", "action": "file.upload", "actor_id": "user-carol", "resource_id": "file-2"}
+      ]
+    }
+  }
+}

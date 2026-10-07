@@ -1,0 +1,22 @@
+{
+  "description": "Harness smoke: SQS (incl. one malformed body) + DynamoDB events for the run date, one DynamoDB event outside it; exercises the queue-URL rewrite, frozen ds, S3 gzip outputs and the Postgres upsert.",
+  "frozen_time": "2026-03-15T02:00:00Z",
+  "seed": {
+    "sqs": {
+      "otterworks-analytics": [
+        {"eventType": "document_created", "ownerId": "user-alice", "documentId": "doc-1", "timestamp": "2026-03-15T00:05:00Z"},
+        {"eventType": "document_edited", "editedBy": "user-bob", "documentId": "doc-1", "timestamp": "2026-03-15T00:40:00Z"},
+        {"eventType": "comment_added", "authorId": "user-bob", "documentId": "doc-1", "timestamp": "2026-03-15T01:10:00Z"},
+        {"eventType": "file_uploaded", "ownerId": "user-alice", "fileId": "file-1", "sizeBytes": 2048, "timestamp": "2026-03-15T01:15:00Z"},
+        "this is not json"
+      ]
+    },
+    "dynamodb": {
+      "otterworks-analytics-events": [
+        {"event_id": "ev-1", "event_date": "2026-03-15", "event_type": "file_shared", "userId": "user-carol", "fileId": "file-1", "timestamp": "2026-03-15T01:30:00Z"},
+        {"event_id": "ev-2", "event_date": "2026-03-15", "event_type": "file_uploaded", "userId": "user-carol", "fileId": "file-2", "sizeBytes": 512, "timestamp": "2026-03-15T01:45:00Z"},
+        {"event_id": "ev-3", "event_date": "2026-03-14", "event_type": "file_deleted", "userId": "user-dave", "fileId": "file-9", "timestamp": "2026-03-14T23:59:00Z"}
+      ]
+    }
+  }
+}

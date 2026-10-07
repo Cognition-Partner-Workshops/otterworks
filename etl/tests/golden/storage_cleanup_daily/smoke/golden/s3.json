@@ -1,0 +1,81 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "reports/storage-cleanup/2026-03-15/report.json": {
+      "body": {
+        "cleanup": {
+          "objects_failed": 0,
+          "objects_quarantined": 2,
+          "quarantine_bucket": "otterworks-file-quarantine"
+        },
+        "generated_at": "<normalized:generated_at>",
+        "inventory": {
+          "total_objects": 3,
+          "total_size_bytes": 54,
+          "total_size_gb": 0.0
+        },
+        "orphans": {
+          "orphan_percentage": 66.67,
+          "orphaned_bytes": 34,
+          "orphaned_objects": 2,
+          "orphaned_size_gb": 0.0
+        },
+        "report_date": "2026-03-15",
+        "report_type": "storage_cleanup",
+        "savings": {
+          "estimated_monthly_savings_usd": 0.0,
+          "storage_freed_gb": 0.0
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {
+    "quarantined/2026-03-15/files/user-bob/orphan.json": {
+      "body": {
+        "orphan": true
+      },
+      "content_encoding": null,
+      "content_type": "application/json",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-03-15/files/user-bob/orphan.txt": {
+      "body": "orphaned file body",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-storage": {
+    "files/user-alice/report.pdf": {
+      "body": "referenced file body",
+      "content_encoding": null,
+      "content_type": "application/pdf",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "thumbnails/report.png": {
+      "body": "outside the files/ prefix",
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-files": {}
+}

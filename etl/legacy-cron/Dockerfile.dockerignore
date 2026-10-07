@@ -1,0 +1,6 @@
+# Build context is etl/; send only what the Dockerfile copies.
+*
+!requirements.txt
+!tests/golden/legacy/constraints.txt
+!tests/golden/legacy/requirements-shim.txt
+!legacy-cron/legacy_cron.py
