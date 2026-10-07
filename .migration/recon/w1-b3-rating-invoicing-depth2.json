@@ -51,7 +51,7 @@
   "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
   "source_access": "live",
   "target_access": "migration_cluster",
-  "pr_url": "",
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1937",
   "branch": "devin/1791403512-s5-1-w1-b3-rating-invoicing-depth2",
   "failure_class": "",
   "load_summary": {
