@@ -1,0 +1,129 @@
+{
+  "batch": "w1-b3-rating-invoicing-depth2",
+  "wave": 1,
+  "units": [
+    "u03-rating",
+    "u04-invoices"
+  ],
+  "status": "PASS",
+  "status_basis": "worker status per preflight.py BATCH_STATUS (PASS/FAIL/BLOCKED): every load completed and every tier of every unit passed; the grader derives recon_verdict/merge_eligible from the committed result.json files",
+  "recon_verdict_worst": "PASS",
+  "merge_eligible_units": [
+    "u03-rating",
+    "u04-invoices"
+  ],
+  "unverified_units": [],
+  "recon_results": [
+    ".migration/recon/u03-rating/result.json",
+    ".migration/recon/u04-invoices/result.json"
+  ],
+  "recon_verdicts": {
+    "u03-rating": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "collections": [
+        "ratingPeriods",
+        "ratingResults"
+      ],
+      "findings": 0,
+      "warnings": []
+    },
+    "u04-invoices": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "collections": [
+        "invoices"
+      ],
+      "findings": 0,
+      "warnings": []
+    }
+  },
+  "write_targets": [
+    "mmp_rt_b4_oracle.ratingPeriods",
+    "mmp_rt_b4_oracle.ratingResults",
+    "mmp_rt_b4_oracle.invoices"
+  ],
+  "manifest_sha": "55e68257b3f9",
+  "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1937",
+  "branch": "devin/1791403512-s5-1-w1-b3-rating-invoicing-depth2",
+  "failure_class": "",
+  "load_summary": {
+    "u03-rating": {
+      "ratingPeriods": {
+        "root_table": "RATING_PERIODS",
+        "source_rows": 8,
+        "docs_inserted": 8,
+        "embeds": {},
+        "indexes_created": [
+          "tenantId_1_periodStart_1"
+        ],
+        "collStats": {
+          "count": 8,
+          "size": 1136,
+          "storageSize": 4096,
+          "totalIndexSize": 24576,
+          "nindexes": 2
+        }
+      },
+      "ratingResults": {
+        "root_table": "RATING_RESULTS",
+        "source_rows": 8,
+        "docs_inserted": 8,
+        "embeds": {},
+        "indexes_created": [
+          "periodId_1"
+        ],
+        "collStats": {
+          "count": 8,
+          "size": 2352,
+          "storageSize": 4096,
+          "totalIndexSize": 24576,
+          "nindexes": 2
+        }
+      }
+    },
+    "u04-invoices": {
+      "invoices": {
+        "root_table": "INVOICES",
+        "source_rows": 9,
+        "docs_inserted": 9,
+        "embeds": {
+          "lines": {
+            "child_table": "INVOICE_LINES",
+            "elements": 29
+          },
+          "dunningAttempts": {
+            "child_table": "DUNNING_ATTEMPTS",
+            "elements": 5
+          }
+        },
+        "indexes_created": [
+          "tenantId_1_issuedAt_1__id_1",
+          "_id_1_tenantId_1",
+          "dunningAttempts.scheduledFor_1",
+          "lines.lineNo_1",
+          "statusCd_1_issuedAt_1__id_1",
+          "periodId_1"
+        ],
+        "collStats": {
+          "count": 9,
+          "size": 7529,
+          "storageSize": 4096,
+          "totalIndexSize": 126976,
+          "nindexes": 7
+        }
+      }
+    }
+  },
+  "unverified_paths": [
+    "RECON_REDACT_SALT unset: live result.json values use unsalted hashes"
+  ],
+  "one_line_summary": "u03-rating: live PASS, 0 findings; u04-invoices: live PASS, 0 findings"
+}
