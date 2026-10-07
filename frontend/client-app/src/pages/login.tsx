@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <main className="public-page min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -56,13 +56,13 @@ export default function LoginPage() {
             <Logo size={40} />
             <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
           </Link>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <h1 className="text-[13.5px] font-normal text-gray-500 mt-2">Sign in to your account</h1>
         </div>
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
               {error}
             </div>
           )}
@@ -78,12 +78,15 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 {...register("email")}
-                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
                 placeholder="you@example.com"
               />
               {errors.email && (
-                <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+                <p id="email-error" className="text-xs text-red-700 mt-1">{errors.email.message}</p>
               )}
             </div>
 
@@ -98,20 +101,25 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
                   {...register("password")}
-                  className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-controls="password"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                <p id="password-error" className="text-xs text-red-700 mt-1">{errors.password.message}</p>
               )}
             </div>
 
@@ -136,12 +144,12 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link
             to="/register"
-            className="text-otter-600 hover:text-otter-700 font-medium"
+            className="text-otter-600 hover:text-otter-700 font-medium underline underline-offset-2"
           >
             Create one
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

@@ -48,6 +48,8 @@ node_modules/
 .turbo/
 coverage/
 *.tsbuildinfo
+frontend/client-app/a11y-results/
+frontend/client-app/playwright-report/
 
 # --- Kotlin ---
 services/notification-service/build/

@@ -5,7 +5,7 @@ import { COMPANY } from "@/lib/corporate";
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-otter-50 flex flex-col">
+    <main className="public-page min-h-screen bg-otter-50 flex flex-col">
       <header className="bg-white border-b border-gray-300">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
@@ -16,7 +16,7 @@ export default function TermsPage() {
       </header>
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Terms of Service</h1>
-        <p className="text-xs text-gray-400 mb-6">
+        <p className="text-xs text-gray-600 mb-6">
           Fictional legal document — {COMPANY.disclaimer}
         </p>
         <div className="bg-white border border-gray-300 rounded p-6 space-y-4 text-sm text-gray-600 leading-relaxed">
