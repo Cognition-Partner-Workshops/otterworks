@@ -1,0 +1,1547 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "0"
+        },
+        "event_id": {
+          "S": "m-000"
+        },
+        "id": {
+          "S": "m-000"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-01T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "1"
+        },
+        "event_id": {
+          "S": "m-001"
+        },
+        "id": {
+          "S": "m-001"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-02T01:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "2"
+        },
+        "event_id": {
+          "S": "m-002"
+        },
+        "id": {
+          "S": "m-002"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-03T02:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "3"
+        },
+        "event_id": {
+          "S": "m-003"
+        },
+        "id": {
+          "S": "m-003"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-04T03:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "4"
+        },
+        "event_id": {
+          "S": "m-004"
+        },
+        "id": {
+          "S": "m-004"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-05T04:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "5"
+        },
+        "event_id": {
+          "S": "m-005"
+        },
+        "id": {
+          "S": "m-005"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-06T05:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "6"
+        },
+        "event_id": {
+          "S": "m-006"
+        },
+        "id": {
+          "S": "m-006"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-07T06:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "7"
+        },
+        "event_id": {
+          "S": "m-007"
+        },
+        "id": {
+          "S": "m-007"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-08T07:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "8"
+        },
+        "event_id": {
+          "S": "m-008"
+        },
+        "id": {
+          "S": "m-008"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-09T08:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "9"
+        },
+        "event_id": {
+          "S": "m-009"
+        },
+        "id": {
+          "S": "m-009"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-10T09:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "10"
+        },
+        "event_id": {
+          "S": "m-010"
+        },
+        "id": {
+          "S": "m-010"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-11T10:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "11"
+        },
+        "event_id": {
+          "S": "m-011"
+        },
+        "id": {
+          "S": "m-011"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-12T11:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "12"
+        },
+        "event_id": {
+          "S": "m-012"
+        },
+        "id": {
+          "S": "m-012"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-13T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "13"
+        },
+        "event_id": {
+          "S": "m-013"
+        },
+        "id": {
+          "S": "m-013"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-14T13:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "14"
+        },
+        "event_id": {
+          "S": "m-014"
+        },
+        "id": {
+          "S": "m-014"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-15T14:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "15"
+        },
+        "event_id": {
+          "S": "m-015"
+        },
+        "id": {
+          "S": "m-015"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-16T15:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "16"
+        },
+        "event_id": {
+          "S": "m-016"
+        },
+        "id": {
+          "S": "m-016"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-17T16:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "17"
+        },
+        "event_id": {
+          "S": "m-017"
+        },
+        "id": {
+          "S": "m-017"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-18T17:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "18"
+        },
+        "event_id": {
+          "S": "m-018"
+        },
+        "id": {
+          "S": "m-018"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-19T18:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "19"
+        },
+        "event_id": {
+          "S": "m-019"
+        },
+        "id": {
+          "S": "m-019"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-20T19:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "20"
+        },
+        "event_id": {
+          "S": "m-020"
+        },
+        "id": {
+          "S": "m-020"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-21T20:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "21"
+        },
+        "event_id": {
+          "S": "m-021"
+        },
+        "id": {
+          "S": "m-021"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-22T21:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "22"
+        },
+        "event_id": {
+          "S": "m-022"
+        },
+        "id": {
+          "S": "m-022"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-23T22:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "23"
+        },
+        "event_id": {
+          "S": "m-023"
+        },
+        "id": {
+          "S": "m-023"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-24T23:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "24"
+        },
+        "event_id": {
+          "S": "m-024"
+        },
+        "id": {
+          "S": "m-024"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-25T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "25"
+        },
+        "event_id": {
+          "S": "m-025"
+        },
+        "id": {
+          "S": "m-025"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-26T01:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "26"
+        },
+        "event_id": {
+          "S": "m-026"
+        },
+        "id": {
+          "S": "m-026"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-27T02:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "27"
+        },
+        "event_id": {
+          "S": "m-027"
+        },
+        "id": {
+          "S": "m-027"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-09-28T03:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "28"
+        },
+        "event_id": {
+          "S": "m-028"
+        },
+        "id": {
+          "S": "m-028"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-01T04:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "29"
+        },
+        "event_id": {
+          "S": "m-029"
+        },
+        "id": {
+          "S": "m-029"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-02T05:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "30"
+        },
+        "event_id": {
+          "S": "m-030"
+        },
+        "id": {
+          "S": "m-030"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-03T06:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "31"
+        },
+        "event_id": {
+          "S": "m-031"
+        },
+        "id": {
+          "S": "m-031"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-04T07:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "32"
+        },
+        "event_id": {
+          "S": "m-032"
+        },
+        "id": {
+          "S": "m-032"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-05T08:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "33"
+        },
+        "event_id": {
+          "S": "m-033"
+        },
+        "id": {
+          "S": "m-033"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-06T09:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "34"
+        },
+        "event_id": {
+          "S": "m-034"
+        },
+        "id": {
+          "S": "m-034"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-07T10:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "35"
+        },
+        "event_id": {
+          "S": "m-035"
+        },
+        "id": {
+          "S": "m-035"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-08T11:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "36"
+        },
+        "event_id": {
+          "S": "m-036"
+        },
+        "id": {
+          "S": "m-036"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-09T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "37"
+        },
+        "event_id": {
+          "S": "m-037"
+        },
+        "id": {
+          "S": "m-037"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-10T13:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "38"
+        },
+        "event_id": {
+          "S": "m-038"
+        },
+        "id": {
+          "S": "m-038"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-11T14:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "39"
+        },
+        "event_id": {
+          "S": "m-039"
+        },
+        "id": {
+          "S": "m-039"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-12T15:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "40"
+        },
+        "event_id": {
+          "S": "m-040"
+        },
+        "id": {
+          "S": "m-040"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-13T16:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "41"
+        },
+        "event_id": {
+          "S": "m-041"
+        },
+        "id": {
+          "S": "m-041"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-14T17:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "42"
+        },
+        "event_id": {
+          "S": "m-042"
+        },
+        "id": {
+          "S": "m-042"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-15T18:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "43"
+        },
+        "event_id": {
+          "S": "m-043"
+        },
+        "id": {
+          "S": "m-043"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-16T19:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "44"
+        },
+        "event_id": {
+          "S": "m-044"
+        },
+        "id": {
+          "S": "m-044"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-17T20:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "45"
+        },
+        "event_id": {
+          "S": "m-045"
+        },
+        "id": {
+          "S": "m-045"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-18T21:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "46"
+        },
+        "event_id": {
+          "S": "m-046"
+        },
+        "id": {
+          "S": "m-046"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-19T22:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "47"
+        },
+        "event_id": {
+          "S": "m-047"
+        },
+        "id": {
+          "S": "m-047"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-20T23:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "48"
+        },
+        "event_id": {
+          "S": "m-048"
+        },
+        "id": {
+          "S": "m-048"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-21T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "49"
+        },
+        "event_id": {
+          "S": "m-049"
+        },
+        "id": {
+          "S": "m-049"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-22T01:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "50"
+        },
+        "event_id": {
+          "S": "m-050"
+        },
+        "id": {
+          "S": "m-050"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-23T02:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "51"
+        },
+        "event_id": {
+          "S": "m-051"
+        },
+        "id": {
+          "S": "m-051"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-24T03:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "52"
+        },
+        "event_id": {
+          "S": "m-052"
+        },
+        "id": {
+          "S": "m-052"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-25T04:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "53"
+        },
+        "event_id": {
+          "S": "m-053"
+        },
+        "id": {
+          "S": "m-053"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-26T05:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "54"
+        },
+        "event_id": {
+          "S": "m-054"
+        },
+        "id": {
+          "S": "m-054"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-27T06:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "55"
+        },
+        "event_id": {
+          "S": "m-055"
+        },
+        "id": {
+          "S": "m-055"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-28T07:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "56"
+        },
+        "event_id": {
+          "S": "m-056"
+        },
+        "id": {
+          "S": "m-056"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-01T08:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "57"
+        },
+        "event_id": {
+          "S": "m-057"
+        },
+        "id": {
+          "S": "m-057"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-02T09:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "58"
+        },
+        "event_id": {
+          "S": "m-058"
+        },
+        "id": {
+          "S": "m-058"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-03T10:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "59"
+        },
+        "event_id": {
+          "S": "m-059"
+        },
+        "id": {
+          "S": "m-059"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-04T11:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "0"
+        },
+        "event_id": {
+          "S": "m-new-0"
+        },
+        "id": {
+          "S": "m-new-0"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-02-01T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "1"
+        },
+        "event_id": {
+          "S": "m-new-1"
+        },
+        "id": {
+          "S": "m-new-1"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-02-02T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "2"
+        },
+        "event_id": {
+          "S": "m-new-2"
+        },
+        "id": {
+          "S": "m-new-2"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-02-03T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "3"
+        },
+        "event_id": {
+          "S": "m-new-3"
+        },
+        "id": {
+          "S": "m-new-3"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-02-04T12:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "4"
+        },
+        "event_id": {
+          "S": "m-new-4"
+        },
+        "id": {
+          "S": "m-new-4"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-02-05T12:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}
