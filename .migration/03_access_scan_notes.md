@@ -401,24 +401,25 @@ still the two `04_jobs.sql` scheduler edges). Cause, in the pinned scanner:
 `cursor.callproc` (`oracle.py:48, 76`) are never matched. Scanner miss
 (unconfirmed). The app→package call graph the JSON does not show:
 
-| `oracle.py` line | Package routine | Facade endpoint(s) that call it |
+| `oracle.py` line | Package routine | HTTP route(s) that reach it (`facade.py` blueprint, or `app.py` legacy routes via `get_backend()`) |
 |---|---|---|
 | 57 | `pkg_plans.fn_list_plans` | `GET /api/v1/billing/plans` (`facade.py:90`), `POST /plan-change` (`:177`) |
 | 61 | `pkg_plans.fn_entitlement` | `GET /me` (`:109`), `GET /entitlement` (`:149`), `POST /plan-change` (`:187`) |
 | 77 | `pkg_plans.sp_change_plan` | `POST /plan-change` (`:180`) — after the direct `UPDATE subscriptions`, same connection, one `commit` (`oracle.py:66-80`) |
 | 85 | `pkg_rating.fn_usage_rating` | `GET /usage` (`:210`) |
 | 92 | `pkg_rating.fn_usage_summary` | `GET /usage` (`:209`) |
-| 99 | `pkg_rating.sp_finalize_rating` | no facade caller in `facade.py` (`finalize_rating` is exported by the backend only) |
-| 106 | `pkg_invoicing.fn_invoice_preview` | no facade caller in `facade.py` |
-| 113 | `pkg_invoicing.sp_issue_invoice` | no facade caller in `facade.py` |
-| 119 | `pkg_invoicing.fn_invoice_lines` | `GET /invoices/<id>/lines` (`:272`) |
-| 123 | `pkg_dunning.fn_overdue_accounts` | `GET /admin/overdue` (`:314`) |
-| 127 | `pkg_dunning.sp_schedule_dunning` | no facade caller in `facade.py` |
-| 131 | `pkg_dunning.sp_suspend_overdue` | no facade caller in `facade.py` |
+| 99 | `pkg_rating.sp_finalize_rating` | `POST /api/rating/finalize` (`app.py:53`, via `get_backend()`) |
+| 106 | `pkg_invoicing.fn_invoice_preview` | `GET /api/invoices/<tenant_id>/preview` (`app.py:59`) |
+| 113 | `pkg_invoicing.sp_issue_invoice` | `POST /api/invoices/<tenant_id>/issue` (`app.py:68`) |
+| 119 | `pkg_invoicing.fn_invoice_lines` | `GET /invoices/<id>/lines` (`facade.py:272`), `GET /api/invoices/<invoice_id>/lines` (`app.py:78`) |
+| 123 | `pkg_dunning.fn_overdue_accounts` | `GET /admin/overdue` (`facade.py:314`), `GET /api/dunning/overdue` (`app.py:83`) |
+| 127 | `pkg_dunning.sp_schedule_dunning` | `POST /api/dunning/schedule` (`app.py:88`) |
+| 131 | `pkg_dunning.sp_suspend_overdue` | `POST /api/dunning/suspend` (`app.py:94`) |
 
-Consequence for the reviewer: the `pkg_plans` / `pkg_rating` /
-`pkg_dunning.fn_overdue_accounts` candidates run per HTTP request, not only
-from the nightly jobs, and nothing in the JSON says so. `ensure_tenant`
+Consequence for the reviewer: every package routine — including
+`sp_schedule_dunning` / `sp_suspend_overdue`, which the JSON attributes only to
+the nightly scheduler jobs — is also reachable per HTTP request, and nothing in
+the JSON says so. `ensure_tenant`
 (`ap-e8dc34dca7`, `ap-578c31b26d`, `ap-b720c4157e`, `ap-4de28fdf15`) runs on
 **every** tenant-scoped facade call via `_ensure` (`facade.py:43-49, 108, 148,
 179, 207, 238, 265, 285`) and from the usage ingest (`facade.py:391`).
