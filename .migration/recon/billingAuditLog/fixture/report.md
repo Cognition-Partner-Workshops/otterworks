@@ -3,11 +3,11 @@
 - **Verdict: PASS** (values redacted)
 - Mode: `fixture` (fixture data: NOT a merge verdict, run live once before merging)
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping version: `map-draft-2` (sha256 `232efbd7d88b`)
+- Mapping version: `map-draft-4` (sha256 `f5f8df83ed10`)
 - Tolerance version: `1` (sha256 `1a8ebb6c4c57`)
 - Collections: `billingAuditLog`
 - Seed: `1`
-- Generated: 2026-10-07T08:53:23.235642+00:00
+- Generated: 2026-10-07T11:02:07.936733+00:00
 - 3 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 2 string fields: min/max/distinct deferred to Tier 3
 
