@@ -78,11 +78,14 @@ no account id or region is baked into config.
 | `audit_archive_storage_class` | `StorageClass="GLACIER"` (also reported as `archive_storage_class`) | `GLACIER` |
 | `audit_archive_report_prefix` | literal `reports/compliance/audit-archive` | `reports/compliance/audit-archive` |
 | `audit_archive_delete_batch_size` | `dynamodb_batch_size = 25` | `25` |
-| `audit_archive_delete_enabled` | *new* (legacy always deletes archived events from DynamoDB) | `false` |
+| `audit_archive_delete_enabled` | *new* (legacy deletes nothing: it deletes by `{event_id, timestamp}`, the table is keyed on `id`, every delete fails and it logs `Deleted 0 events`) | `false` |
 
 `audit_archive_delete_enabled` (decided default `false`): while false the DAG archives and reports
-but leaves the source items in DynamoDB. Set it to `true` to restore the legacy delete pass; parity
-runs against the legacy goldens need `true`.
+but leaves the source items in DynamoDB, which is what legacy does in effect (its deletes all fail,
+`events_deleted_from_source` is 0). `false` is identical to the legacy goldens, and parity against
+them runs with `false`. `true` enables the new, correct delete by `id`, limited to keys verified in
+the uploaded archive: an accepted difference, tested in its own flag-on scenario, and enabling it
+needs compliance sign-off.
 
 ### `otterworks_search_reindex` (`search_reindex_weekly.py`)
 
