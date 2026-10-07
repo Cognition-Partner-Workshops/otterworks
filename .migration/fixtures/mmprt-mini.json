@@ -1,0 +1,54 @@
+{
+  "source": "oracle",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-10-07T16:43:32Z",
+  "produced_by": {
+    "wrapper": "testdata/legacy/mmp_rt_mini_seed.py",
+    "wrapper_blob_sha": "34a1ccf2774ad5cf4fede3a2e2624db3b126281a",
+    "seeder": "testdata/legacy/oracle_billing_seed.py",
+    "seeder_blob_sha": "9bcb225b878d0e4bcaf6fc110efb10528a0d2273",
+    "seeder_last_commit": "ecf8cc83431c2e3900ccb889231a6ab1e597b1b9",
+    "exercise": "testdata/legacy/mmp_rt_exercise.sql",
+    "run_branch_head": "a0477e2e",
+    "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f"
+  },
+  "namespace": "mmprt",
+  "scale": {
+    "name": "mini",
+    "customers": 200,
+    "invoice_lines": 1500,
+    "core_tenants": 5
+  },
+  "seed_manifest": "testdata/legacy/manifests/mmprt.json",
+  "schema": "OW_BILLING",
+  "row_counts": {
+    "BILLING_AUDIT_LOG": 73,
+    "CODES": 32,
+    "CREDIT_NOTES": 5,
+    "CUSTOMER_MASTER": 201,
+    "CUSTOMER_MASTER_HIST": 0,
+    "DUNNING_ATTEMPTS": 5,
+    "ENTITY_ATTR_VALUE": 70,
+    "FIXTURE_META": 2,
+    "INVOICES": 9,
+    "INVOICE_HEADER": 1000,
+    "INVOICE_LINE": 1500,
+    "INVOICE_LINES": 29,
+    "NOTIFICATIONS": 2,
+    "PLANS": 3,
+    "RATING_PERIODS": 8,
+    "RATING_RESULTS": 8,
+    "SUBSCRIPTIONS": 20,
+    "SUBSCRIPTIONS_HIST": 6,
+    "TENANTS": 15,
+    "USAGE_EVENTS": 103
+  },
+  "row_counts_basis": "live COUNT(*) from catalog_census.py --count-rows (.migration/census.json), after the one-time package exercise",
+  "notes": [
+    "Fixture and live source are the same database in this run: the local Oracle Free container seeded by the mini wrapper is both the engagement fixture and the live source behind MMP_RT_SRC_DSN.",
+    "Row counts include the static seed (03_seed_static.sql / 04_upgrade_static.sql) plus the mmprt mini seed plus rows produced by the one-time package exercise (SUBSCRIPTIONS_HIST, BILLING_AUDIT_LOG, RATING_*, INVOICES, INVOICE_LINES, DUNNING_ATTEMPTS, NOTIFICATIONS).",
+    "CUSTOMER_MASTER_HIST is 0: no package/job/ops path updates CUSTOMER_MASTER; left at 0 by manager decision (UNT8-2), grades UNVERIFIED.",
+    "Planted anomalies from the seed manifest: 23 malformed CSV lists (CUSTOMER_MASTER.RELATED_ACCT_IDS), 41 dirty dates (CUSTOMER_MASTER.SIGNUP_DT), 37 orphaned INVOICE_LINE rows."
+  ]
+}
