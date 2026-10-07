@@ -77,8 +77,11 @@ module Api
         end
 
         def verify_chaos_secret
-          expected = ENV.fetch('CHAOS_SECRET', nil)
-          return if expected.nil? || expected.empty? # secret not configured → allow (dev mode)
+          expected = ENV.fetch('CHAOS_SECRET', nil).to_s
+          if expected.empty?
+            Rails.logger.error('CHAOS_SECRET is not configured; rejecting chaos request')
+            return render json: { error: 'Chaos injection not configured' }, status: :service_unavailable
+          end
 
           provided = request.headers['X-Chaos-Secret']
           return if ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected)

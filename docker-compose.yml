@@ -372,7 +372,9 @@ services:
       SECRET_KEY_BASE: dev-secret-key-base-otterworks-change-in-production
       DEVIN_API_KEY: ${DEVIN_API_KEY:-}
       DEVIN_ORG_ID: ${DEVIN_ORG_ID:-}
-      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET:-demo-alert-secret}
+      # Required (set in .env, see .env.example); admin-service rejects alert
+      # webhooks / chaos requests while they are empty.
+      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET:-}
       CHAOS_SECRET: ${CHAOS_SECRET:-}
     depends_on:
       postgres:
@@ -518,6 +520,8 @@ services:
     - 4200:4200
     environment:
       API_URL: http://localhost:8080
+      # nginx adds this as X-Chaos-Secret on /api/v1/admin/chaos (server-side only)
+      CHAOS_SECRET: ${CHAOS_SECRET:-}
     depends_on:
     - api-gateway
     security_opt:

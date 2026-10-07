@@ -31,6 +31,13 @@ GOLDEN_HOST_SUFFIX="${GOLDEN_HOST_SUFFIX:-otterworks.app}"
 JWT_SECRET="${JWT_SECRET:-$(openssl rand -hex 32)}"
 # Rails (admin-service) session key. Stable value recommended across redeploys.
 SECRET_KEY_BASE="${SECRET_KEY_BASE:-$(openssl rand -hex 64)}"
+# Shared secrets admin-service requires (it rejects the request when unset):
+#   ALERT_WEBHOOK_SECRET  Grafana -> POST /api/v1/admin/alerts/ingest (Bearer)
+#   CHAOS_SECRET          admin-dashboard nginx -> /api/v1/admin/chaos (X-Chaos-Secret)
+# Taken from the environment, else reused from the cluster, else generated
+# (see resolve_admin_shared_secrets).
+ALERT_WEBHOOK_SECRET="${ALERT_WEBHOOK_SECRET:-}"
+CHAOS_SECRET="${CHAOS_SECRET:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -261,6 +268,24 @@ add_secret() { SECRET_KV+=("$1" "$2"); }
 # contain @ : / # % ? in a connection string). Uses jq's @uri filter.
 urlencode() { jq -rn --arg s "$1" '$s|@uri'; }
 
+# Reuse the value already stored in a release's Secret so a redeploy doesn't
+# rotate it out from under its peer (Grafana, admin-dashboard). Prints nothing
+# when the Secret or key does not exist yet.
+existing_secret_value() {
+  kubectl -n "${NAMESPACE}" get secret "$1" -o jsonpath="{.data.$2}" 2>/dev/null | base64 -d 2>/dev/null || true
+}
+
+resolve_admin_shared_secrets() {
+  [ -n "${ALERT_WEBHOOK_SECRET}" ] || ALERT_WEBHOOK_SECRET="$(existing_secret_value admin-service-secrets ALERT_WEBHOOK_SECRET)"
+  if [ -z "${ALERT_WEBHOOK_SECRET}" ]; then
+    ALERT_WEBHOOK_SECRET="$(openssl rand -hex 32)"
+    warn "Generated ALERT_WEBHOOK_SECRET; give Grafana's webhook contact point the same value"
+    warn "(kubectl -n ${NAMESPACE} get secret admin-service-secrets -o jsonpath='{.data.ALERT_WEBHOOK_SECRET}' | base64 -d)."
+  fi
+  [ -n "${CHAOS_SECRET}" ] || CHAOS_SECRET="$(existing_secret_value admin-service-secrets CHAOS_SECRET)"
+  [ -n "${CHAOS_SECRET}" ] || CHAOS_SECRET="$(openssl rand -hex 32)"
+}
+
 # Public hostname for a golden-app service on the shared ingress.
 golden_host() {
   case "$1" in
@@ -312,6 +337,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string 'ingress.hosts[0].paths[0].pathType=Prefix')
       EXTRA_ARGS+=(--set 'ingress.tls=null')
       EXTRA_ARGS+=(--set-string config.API_GATEWAY_URL=http://api-gateway:8080)
+      [ "$service" = admin-dashboard ] && add_secret CHAOS_SECRET "${CHAOS_SECRET}"
       return 0 ;;
     api-gateway)
       EXTRA_ARGS+=(--set service.type=ClusterIP)
@@ -396,7 +422,9 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${DB_USER}")
       EXTRA_ARGS+=(--set-string "config.RAILS_ENV=production" --set-string "config.RAILS_LOG_TO_STDOUT=true")
       add_secret DATABASE_PASSWORD "${DB_PASSWORD}"
-      add_secret SECRET_KEY_BASE "${SECRET_KEY_BASE}" ;;
+      add_secret SECRET_KEY_BASE "${SECRET_KEY_BASE}"
+      add_secret ALERT_WEBHOOK_SECRET "${ALERT_WEBHOOK_SECRET}"
+      add_secret CHAOS_SECRET "${CHAOS_SECRET}" ;;
     audit-service)
       EXTRA_ARGS+=(--set-string "config.Aws__Region=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.Aws__DynamoDbTable=${DDB_AUDIT}")
@@ -558,6 +586,8 @@ DB_PASSWORD="${DB_PASSWORD:?ERROR: DB_PASSWORD must be set (exported or via Terr
 
 deploy_redis
 deploy_meilisearch
+
+resolve_admin_shared_secrets
 
 log "Deploying services to EKS..."
 FAILED=()
