@@ -89,6 +89,9 @@ initialize: |
   for i in $(seq 1 60); do docker exec otterworks-postgres pg_isready -q 2>/dev/null && break; sleep 2; done
   # auth-service must win the shared Flyway history race (several JVM services migrate version 1
   # into otterworks/public.flyway_schema_history; whichever runs first wins) since seeding logs in.
+  # The bootstrap admin is hashed at startup from ADMIN_SEED_PASSWORD (no hash in the repo).
+  export ADMIN_SEED_EMAIL="${OTTERWORKS_WEB_LOGIN_EMAIL:-admin@otterworks.dev}"
+  export ADMIN_SEED_PASSWORD="${OTTERWORKS_WEB_LOGIN_PASSWORD:-}"
   $COMPOSE up -d --build auth-service
   for i in $(seq 1 90); do [ "$(docker inspect -f '{{.State.Health.Status}}' otterworks-auth-service 2>/dev/null)" = healthy ] && break; sleep 2; done
   $COMPOSE up -d --build
