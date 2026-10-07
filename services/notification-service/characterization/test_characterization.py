@@ -13,6 +13,7 @@ Environment:
 """
 
 import base64
+import http.client as httpclient
 import json
 import os
 import re
@@ -20,9 +21,7 @@ import socket
 import struct
 import time
 import unittest
-import urllib.error
 import urllib.parse
-import urllib.request
 import uuid
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8086").rstrip("/")
@@ -63,18 +62,28 @@ class Resp:
         return self.headers.get(name)
 
 
+def raw_request(base, method, path, data=None, headers=None):
+    """One HTTP(S) request; only http/https base URLs are accepted."""
+    u = urllib.parse.urlsplit(base)
+    if u.scheme not in ("http", "https") or not u.hostname:
+        raise ValueError(f"unsupported base URL: {base!r}")
+    cls = httpclient.HTTPSConnection if u.scheme == "https" else httpclient.HTTPConnection
+    conn = cls(u.hostname, u.port, timeout=30)
+    try:
+        conn.request(method, u.path + path, body=data, headers=dict(headers or {}))
+        r = conn.getresponse()
+        return Resp(r.status, r.headers, r.read().decode())
+    finally:
+        conn.close()
+
+
 def http(method, path, body=None, headers=None, base=BASE_URL):
     data = None
     hdrs = dict(headers or {})
     if body is not None:
         data = body if isinstance(body, bytes) else json.dumps(body).encode()
         hdrs.setdefault("Content-Type", JSON_CT)
-    req = urllib.request.Request(base + path, data=data, method=method, headers=hdrs)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return Resp(r.status, r.headers, r.read().decode())
-    except urllib.error.HTTPError as e:
-        return Resp(e.code, e.headers, e.read().decode())
+    return raw_request(base, method, path, data, hdrs)
 
 
 def sqs_send(message_body):
@@ -87,14 +96,12 @@ def sqs_send(message_body):
 
 def aws_query(service, params):
     """AWS query-protocol call against LocalStack (signatures are not verified)."""
-    req = urllib.request.Request(AWS_ENDPOINT + "/", data=urllib.parse.urlencode(params).encode(),
-                                 method="POST", headers={
+    r = raw_request(AWS_ENDPOINT, "POST", "/", urllib.parse.urlencode(params).encode(), {
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": f"AWS4-HMAC-SHA256 Credential=test/20240101/us-east-1/{service}/aws4_request, "
                          "SignedHeaders=host, Signature=0",
     })
-    with urllib.request.urlopen(req, timeout=30) as r:
-        assert r.status == 200, r.status
+    assert r.status == 200, (r.status, r.body)
 
 
 def setUpModule():
@@ -105,8 +112,7 @@ def setUpModule():
 
 
 def ses_messages_to(address):
-    with urllib.request.urlopen(AWS_ENDPOINT + "/_aws/ses", timeout=30) as r:
-        msgs = json.loads(r.read().decode()).get("messages", [])
+    msgs = raw_request(AWS_ENDPOINT, "GET", "/_aws/ses").json().get("messages", [])
     return [m for m in msgs if address in (m.get("Destination", {}).get("ToAddresses") or [])]
 
 
@@ -321,15 +327,9 @@ class T04Validation(unittest.TestCase):
         self.assertEqual(r.json(), INTERNAL)
 
     def test_preferences_without_content_type_is_415(self):
-        req = urllib.request.Request(BASE_URL + "/api/v1/preferences", method="PUT",
-                                     data=b'{"userId":"x","eventType":"file_shared","channels":[]}')
-        req.remove_header("Content-type")
-        try:
-            urllib.request.urlopen(req, timeout=30)
-            status = 200
-        except urllib.error.HTTPError as e:
-            status, body = e.code, e.read().decode()
-        self.assertEqual(status, 415)
+        r = raw_request(BASE_URL, "PUT", "/api/v1/preferences",
+                        b'{"userId":"x","eventType":"file_shared","channels":[]}')
+        self.assertEqual(r.status, 415)
 
 
 class T05EmptyUser(unittest.TestCase):
