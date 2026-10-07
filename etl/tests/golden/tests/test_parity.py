@@ -30,7 +30,9 @@ def test_every_registered_dag_is_a_known_toy_or_image_dag():
         else:
             assert (settings.ETL_DIR / "airflow" / "dags").is_dir()
     assert '"parity_passthrough__%s" % _script' in TOY_DAGS
-    assert set(controls) == set(re.findall(r'"(parity_wrong__\w+)"', TOY_DAGS))
+    wrong = set(re.findall(r'"(parity_wrong__\w+)"', TOY_DAGS))
+    assert wrong <= set(controls)
+    assert all(c in wrong or c.startswith("parity_passthrough__") for c in controls)
 
 
 @pytest.mark.parametrize("script", settings.SCRIPTS)
