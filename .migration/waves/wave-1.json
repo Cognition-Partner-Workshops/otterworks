@@ -22,8 +22,8 @@
       ],
       "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
       "recon_tolerances_version": "1",
-      "mapping_version": "map-draft-3",
-      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "mapping_version": "map-draft-4",
+      "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
       "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
       "loader_obligations": [
         {
@@ -60,8 +60,8 @@
       ],
       "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
       "recon_tolerances_version": "1",
-      "mapping_version": "map-draft-3",
-      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "mapping_version": "map-draft-4",
+      "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
       "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
     },
     {
@@ -76,8 +76,8 @@
       ],
       "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
       "recon_tolerances_version": "1",
-      "mapping_version": "map-draft-3",
-      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "mapping_version": "map-draft-4",
+      "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
       "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
       "loader_obligations": [
         {
@@ -103,8 +103,8 @@
       ],
       "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
       "recon_tolerances_version": "1",
-      "mapping_version": "map-draft-3",
-      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "mapping_version": "map-draft-4",
+      "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
       "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
     },
     {
@@ -117,8 +117,8 @@
       ],
       "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
       "recon_tolerances_version": "1",
-      "mapping_version": "map-draft-3",
-      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "mapping_version": "map-draft-4",
+      "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
       "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
     }
   ]

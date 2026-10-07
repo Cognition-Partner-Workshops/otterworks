@@ -1,0 +1,104 @@
+{
+  "unit": "invoiceHeader",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-draft-4",
+  "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+  "tolerance_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "collections": [
+    "invoiceHeader"
+  ],
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T10:01:08.992295+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "invoiceHeader": 1000
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoiceHeader.invoiceNo",
+          "invoiceHeader.custId",
+          "invoiceHeader.tenantId",
+          "invoiceHeader.invoiceDt",
+          "invoiceHeader.dueDt",
+          "invoiceHeader.statusCd",
+          "invoiceHeader.totalAmt",
+          "invoiceHeader.batchNo"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "invoiceHeader.invoiceNo",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "invoiceHeader.custId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "invoiceHeader.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 6
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 2463,
+      "stats": {
+        "invoiceHeader": {
+          "mode": "full_diff",
+          "population": 1000,
+          "duplicate_source_key_count": 0
+        },
+        "embed_extras_unchecked": [
+          "invoiceHeader.lines"
+        ],
+        "embeds_graded": {
+          "invoiceHeader.lines": 1463
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [
+    "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+  ],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
