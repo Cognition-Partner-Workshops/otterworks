@@ -13,6 +13,8 @@ from fastapi import FastAPI
 from starlette.types import ASGIApp
 
 from app.api.health import router as health_router
+from app.api.index import router as index_router
+from app.api.search import router as search_router
 from app.config import AppConfig
 from app.errors import register_exception_handlers
 from app.middleware.auth import AuthMiddleware
@@ -102,6 +104,8 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
     app.add_middleware(AuthMiddleware, auth_config=config.auth)
 
     app.include_router(health_router)
+    app.include_router(search_router)
+    app.include_router(index_router)
 
     return app
 

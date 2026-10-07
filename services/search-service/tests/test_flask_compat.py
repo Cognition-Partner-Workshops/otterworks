@@ -1,7 +1,8 @@
 """Auth middleware, error handlers, routing and Flask helpers vs. the Flask transcript.
 
-Search/index routers are not ported yet, so a stub router with the Flask
-blueprints' rule table (paths, methods, ``strict_slashes``) stands in for them.
+A stub router with the Flask blueprints' rule table (paths, methods,
+``strict_slashes``) replaces the real search/index routes, so these cases need
+no MeiliSearch; the real routes are covered by the parity harness.
 """
 
 from __future__ import annotations
@@ -100,6 +101,7 @@ def make_client(**auth: Any) -> Iterator[TestClient]:
     config = AppConfig(auth=AuthConfig(**{"service_token": TOKEN, "require_auth": True, **auth}))
     with patch("app.services.meilisearch_client.meilisearch.Client"):
         app = create_app(config)
+        app.router.routes[:] = [r for r in app.router.routes if not getattr(r, "path", "").startswith(PREFIX)]
         app.include_router(stub)
         with TestClient(app, base_url="http://localhost", raise_server_exceptions=False) as client:
             yield client

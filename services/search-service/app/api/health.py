@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import structlog
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse, Response
 from prometheus_client import (
     Counter,
     Histogram,
     generate_latest,
 )
+from starlette.responses import Response
+
+from app.flask_compat import jsonify
 
 logger = structlog.get_logger()
 
@@ -38,26 +42,26 @@ INDEX_COUNT = Counter(
 
 
 @router.get("/health")
-def health() -> JSONResponse:
+async def health() -> Response:
     """Liveness check — returns 200 if the process is running."""
-    return JSONResponse({"status": "alive", "service": "search-service"}, status_code=200)
+    return jsonify({"status": "alive", "service": "search-service"}, 200)
 
 
 @router.get("/health/ready")
-def readiness(request: Request) -> JSONResponse:
+async def readiness(request: Request) -> Response:
     """Readiness check — returns 503 if MeiliSearch is unreachable."""
     search_service = getattr(request.app.state, "search_service", None)
 
     healthy = False
     if search_service:
-        healthy = search_service.ping()
+        healthy = await asyncio.to_thread(search_service.ping)
 
     if healthy:
-        return JSONResponse({"ready": True}, status_code=200)
-    return JSONResponse({"ready": False, "reason": "meilisearch_unavailable"}, status_code=503)
+        return jsonify({"ready": True}, 200)
+    return jsonify({"ready": False, "reason": "meilisearch_unavailable"}, 503)
 
 
 @router.get("/metrics")
-def metrics() -> Response:
+async def metrics() -> Response:
     """Prometheus metrics endpoint."""
-    return Response(generate_latest(), status_code=200, media_type="text/plain; charset=utf-8")
+    return Response(generate_latest(), status_code=200, headers={"Content-Type": "text/plain; charset=utf-8"})
