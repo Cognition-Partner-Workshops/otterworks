@@ -37,7 +37,8 @@ def _parse_time_children(node: ast.AST) -> Iterator[ast.AST]:
     """Yield the children of ``node`` that run while the DagBag imports the file.
 
     Bodies of plain and ``@task`` functions are deferred to task run time; a ``@dag`` function
-    body runs at parse time, as do class bodies, decorators and default values.
+    body runs at parse time, as do class bodies, decorators and default values. A plain
+    module-level helper's body is followed by ``_walk_parse_time`` when parse-time code calls it.
     """
     if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
         yield from node.decorator_list
@@ -49,12 +50,29 @@ def _parse_time_children(node: ast.AST) -> Iterator[ast.AST]:
         yield from ast.iter_child_nodes(node)
 
 
-def _walk_parse_time(tree: ast.AST) -> Iterator[ast.AST]:
-    stack = [tree]
+def _module_helpers(tree: ast.Module) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Undecorated module-level functions: their bodies run at parse time when called there."""
+    return {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and not node.decorator_list
+    }
+
+
+def _walk_parse_time(tree: ast.Module) -> Iterator[ast.AST]:
+    """Walk parse-time code, following calls into this module's own helper functions."""
+    helpers = _module_helpers(tree)
+    followed: set[str] = set()
+    stack: list[ast.AST] = [tree]
     while stack:
         node = stack.pop()
         yield node
         stack.extend(_parse_time_children(node))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            helper = helpers.get(node.func.id)
+            if helper is not None and helper.name not in followed:
+                followed.add(helper.name)
+                stack.extend(helper.body)
 
 
 def top_level_hook_calls(source: str) -> list[str]:
