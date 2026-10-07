@@ -39,7 +39,7 @@ ACCEPTED_FILE = "accepted_differences.yaml"
 
 class _Absent:
     def __repr__(self) -> str:
-        return "<absent>"
+        return "(absent)"
 
 
 ABSENT = _Absent()
@@ -124,7 +124,7 @@ def checks(files: dict[str, object]) -> dict[str, object]:
 
 def canon(value) -> str:
     if value is ABSENT:
-        return "<absent>"
+        return "(absent)"
     return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
