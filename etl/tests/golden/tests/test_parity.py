@@ -94,9 +94,11 @@ def test_variant_before_values_are_the_committed_golden(script, variant):
 def test_variant_case_reuses_the_base_scenario_seed():
     entry = parity.resolve_dag("audit_archive_weekly", None)
     default_cases = parity.cases("audit_archive_weekly", entry, None, None)
-    assert all(c.variables == {} for c in default_cases), (
-        "pass-through runs no variants"
-    )
+    names = {s.name for s in scenario.discover("audit_archive_weekly")}
+    assert all(c.variables == {} for c in default_cases if c.scn.name in names)
+    assert {c.scn.name for c in default_cases} - names == {
+        v.name for v in differences.load("audit_archive_weekly").variants
+    }, "a ported DAG runs its flag-on variants with the default cases"
     (case,) = parity.cases("audit_archive_weekly", entry, None, "smoke_delete_enabled")
     base = next(iter(scenario.discover("audit_archive_weekly", "smoke")))
     assert case.scn.seed == base.seed and case.scn.golden_dir == base.golden_dir
