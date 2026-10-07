@@ -1,0 +1,150 @@
+{
+  "batch": "w1-b2-tenant-children-depth1",
+  "wave": 1,
+  "units": [
+    "u01-subscriptions",
+    "u02-usage-events",
+    "u05-notifications"
+  ],
+  "status": "PASS",
+  "status_basis": "worker status per preflight.py BATCH_STATUS (PASS/FAIL/BLOCKED): every load completed and every tier of every unit passed; the grader derives recon_verdict/merge_eligible from the committed result.json files",
+  "recon_verdict_worst": "PASS",
+  "merge_eligible_units": [
+    "u01-subscriptions",
+    "u02-usage-events",
+    "u05-notifications"
+  ],
+  "unverified_units": [],
+  "recon_results": [
+    ".migration/recon/u01-subscriptions/result.json",
+    ".migration/recon/u02-usage-events/result.json",
+    ".migration/recon/u05-notifications/result.json"
+  ],
+  "recon_verdicts": {
+    "u01-subscriptions": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "collections": [
+        "subscriptions",
+        "subscriptionsHist"
+      ],
+      "findings": 0,
+      "warnings": []
+    },
+    "u02-usage-events": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "collections": [
+        "usageEvents"
+      ],
+      "findings": 0,
+      "warnings": []
+    },
+    "u05-notifications": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "collections": [
+        "notifications"
+      ],
+      "findings": 0,
+      "warnings": []
+    }
+  },
+  "write_targets": [
+    "mmp_rt_b4_oracle.subscriptions",
+    "mmp_rt_b4_oracle.subscriptionsHist",
+    "mmp_rt_b4_oracle.usageEvents",
+    "mmp_rt_b4_oracle.notifications"
+  ],
+  "manifest_sha": "55e68257b3f9",
+  "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "pr_url": "",
+  "branch": "devin/1791402912-s5-1-w1-b2-tenant-children-depth1",
+  "failure_class": "",
+  "load_summary": {
+    "u01-subscriptions": {
+      "subscriptions": {
+        "root_table": "SUBSCRIPTIONS",
+        "source_rows": 20,
+        "docs_inserted": 20,
+        "embeds": {},
+        "indexes_created": [
+          "tenantId_1_endsOn_1_startsOn_1",
+          "endsOn_1_startsOn_1",
+          "planId_1"
+        ],
+        "collStats": {
+          "count": 20,
+          "size": 4216,
+          "storageSize": 4096,
+          "totalIndexSize": 65536,
+          "nindexes": 4
+        }
+      },
+      "subscriptionsHist": {
+        "root_table": "SUBSCRIPTIONS_HIST",
+        "source_rows": 6,
+        "docs_inserted": 6,
+        "embeds": {},
+        "indexes_created": [
+          "id_1__id_1"
+        ],
+        "collStats": {
+          "count": 6,
+          "size": 1716,
+          "storageSize": 4096,
+          "totalIndexSize": 24576,
+          "nindexes": 2
+        }
+      }
+    },
+    "u02-usage-events": {
+      "usageEvents": {
+        "root_table": "USAGE_EVENTS",
+        "source_rows": 103,
+        "docs_inserted": 103,
+        "embeds": {},
+        "indexes_created": [
+          "tenantId_1_occurredAt_1"
+        ],
+        "collStats": {
+          "count": 103,
+          "size": 15759,
+          "storageSize": 4096,
+          "totalIndexSize": 24576,
+          "nindexes": 2
+        }
+      }
+    },
+    "u05-notifications": {
+      "notifications": {
+        "root_table": "NOTIFICATIONS",
+        "source_rows": 2,
+        "docs_inserted": 2,
+        "embeds": {},
+        "indexes_created": [
+          "tenantId_1_kindCd_1_sentAt_1"
+        ],
+        "collStats": {
+          "count": 2,
+          "size": 268,
+          "storageSize": 4096,
+          "totalIndexSize": 24576,
+          "nindexes": 2
+        }
+      }
+    }
+  },
+  "unverified_paths": [
+    "RECON_REDACT_SALT unset: live result.json values use unsalted hashes"
+  ],
+  "one_line_summary": "u01-subscriptions: live PASS, 0 findings; u02-usage-events: live PASS, 0 findings; u05-notifications: live PASS, 0 findings"
+}
