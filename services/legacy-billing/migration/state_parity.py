@@ -52,13 +52,22 @@ def compare(ora, pg, table: estate.Table) -> dict:
         if oc.hexdigest() != pc.hexdigest():
             row["columns"].append(col)
     allowed = WALL_CLOCK.get(table.name, {})
-    if o.count == p.count and row["columns"] and all(c in allowed for c in row["columns"]):
+    if (o.count == p.count and row["columns"] and all(c in allowed for c in row["columns"])
+            and _rows_match(ora, pg, table, [c for c in cols if c not in allowed])):
         row["result"] = "accepted difference with reason"
         row["reason"] = "; ".join(f"{c}: {allowed[c]}" for c in row["columns"])
     else:
         row["result"] = "failed"
         row["reason"] = _row_diff(ora, pg, table, [c for c in cols if c not in allowed])
     return row
+
+
+def _rows_match(ora, pg, table: estate.Table, cols: list[str]) -> bool:
+    """Whole-row checksum over the non-wall-clock columns: per-column checksums
+    alone would accept values swapped between rows."""
+    o = checksum_rows(ora_rows(ora, f"SELECT {', '.join(cols)} FROM {table.name}"))
+    p = _pg_checksum(pg, table, cols)
+    return o.count == p.count and o.hexdigest() == p.hexdigest()
 
 
 def _row_diff(ora, pg, table: estate.Table, cols: list[str]) -> str:
