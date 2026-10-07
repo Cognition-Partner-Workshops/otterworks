@@ -5,7 +5,6 @@
   "wave_verdict": "PASS",
   "unit_verdicts": {
     "w1-b0-reference": "PASS",
-    "w1-b1-detached-depth0": "PASS",
     "w1-b2-tenant-children-depth1": "PASS",
     "w1-b3-rating-invoicing-depth2": "PASS"
   },
@@ -93,7 +92,9 @@
     "all batches: the verifier shared the fixture host with the batch worker (same machine, same Oracle fixture volume, same MMP_RT_SRC_DSN export, same Atlas principal, same ~/mmp and ~/.venvs/mmp); independence holds at the working-tree and process level (fresh clone at 7e66c71a, no loader run, read-only harness, sha256-verified spec bytes) but not at the host level.",
     "w1-b2-tenant-children-depth1: usageEvents carries no subscriptionId in map-v1.1 (USAGE_EVENTS has none), so the subscription pointer check applies to ratingResults.subscriptionId (8/8 resolve) and subscriptionsHist.id (6/6 resolve) only.",
     "cluster: mmp_rt_b4_oracle holds one empty collection outside the mapping, _connectivity_probe (0 docs, left by the UNT8-4 connectivity round-trip); no other unexpected collection or database write was observed.",
-    "all batches: the plugin's fixed verifier branch name recon/wave-1 collides across runs on the same repo (origin/recon/wave-1 already held another run's wave-1 evidence at 36873379, off 32baffd8, manifest b11c0e7b2f31), so this run's evidence lives on recon/wave-1-UNT8-18 by manager decision instead of force-pushing or merging foreign .migration/ content (to 05_decisions.md \u00a75)."
+    "all batches: the plugin's fixed verifier branch name recon/wave-1 collides across runs on the same repo (origin/recon/wave-1 already held another run's wave-1 evidence at 36873379, off 32baffd8, manifest b11c0e7b2f31), so this run's evidence lives on recon/wave-1-UNT8-18 by manager decision instead of force-pushing or merging foreign .migration/ content (to 05_decisions.md \u00a75).",
+    "w1-b1-detached-depth0: the pinned grader (preflight.py --grade) grades this batch FAIL/insufficient_evidence because u08-customer-master-hist is UNVERIFIED, so unit_verdicts carries only the grader's PASS set (w1-b0, w1-b2, w1-b3) and the verifier's PASS for w1-b1 (three live-PASS units, u08 UNVERIFIED) is reported in verifier_batch_verdicts.",
+    "all batches: the pinned preflight.py --verify hard-codes branch recon/wave-1 in verify_report_path with no --report-branch override, so under the manager's option B (evidence on recon/wave-1-UNT8-18) it reports every result path and the report as \"not committed on origin/recon/wave-1\" \u2014 expected under the branch-name collision, recorded, not fixed."
   ],
   "report_path": "recon/wave-1-UNT8-18:.migration/recon/wave-1/verify-report.md",
   "branch": "recon/wave-1-UNT8-18",
@@ -119,5 +120,13 @@
     "matched": 27,
     "mismatched": [],
     "note": "27 ops replayed from .migration/ops/*.json: source_sql on Oracle (CURRENT_SCHEMA=OW_BILLING, read-only), target_pipeline on mmp_rt_b4_oracle, both canonicalized (decimal_round 2dp, UTC ms truncation, empty_string_is_null, null_missing_equiv) and compared as sorted multisets"
-  }
+  },
+  "verifier_batch_verdicts": {
+    "w1-b0-reference": "PASS",
+    "w1-b1-detached-depth0": "PASS",
+    "w1-b2-tenant-children-depth1": "PASS",
+    "w1-b3-rating-invoicing-depth2": "PASS"
+  },
+  "verifier_batch_verdicts_note": "verifier's own verdict for all four batches from its re-runs; w1-b1-detached-depth0 PASS rests on the three live-PASS units (u06, u07, u09) with u08-customer-master-hist UNVERIFIED (0 source rows), merged under plan decision d-unverified-batch-merge",
+  "unit_verdicts_note": "keyed on exactly the pinned grader's PASS set (preflight.py --grade grades w1-b1-detached-depth0 FAIL/insufficient_evidence because u08 is UNVERIFIED); w1-b1 is carried in verifier_batch_verdicts"
 }
