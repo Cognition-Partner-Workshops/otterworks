@@ -89,8 +89,8 @@ legacy-cron-up: ## Start legacy-etl-cron (etl/crontab via etl/run.sh, golden shi
 		uv run --quiet --python 3.11 --with-requirements requirements.txt python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
 	$(LEGACY_CRON_COMPOSE) up -d --build --wait legacy-etl-cron
 
-etl-search-stub-up: ## Serve a golden scenario's seed.http as document-service/file-service at http://etl-search-stub:8089 (ETL_SEARCH_STUB_SCENARIO=<script>/<scenario>)
-	$(AIRFLOW_COMPOSE) --profile search-stub up -d --wait etl-search-stub
+etl-search-stub-up: airflow-env ## Serve a golden scenario's seed.http as document-service/file-service at http://etl-search-stub:8089 (ETL_SEARCH_STUB_SCENARIO=<script>/<scenario>)
+	$(AIRFLOW_COMPOSE) --profile search-stub up -d --build --wait etl-search-stub
 
 etl-search-stub-down: ## Stop the rehearsal search stub
 	$(AIRFLOW_COMPOSE) --profile search-stub rm -sf etl-search-stub

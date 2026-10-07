@@ -43,6 +43,17 @@ def test_files_page_size_and_injected_errors():
         assert err.value.code == 500
 
 
+@pytest.mark.parametrize(
+    "name",
+    ["../../legacy-cron/x", "search_reindex_weekly/../../../x", "/etc/passwd", "a/b/c"],
+)
+def test_scenario_http_rejects_names_outside_the_golden_tree(name):
+    from harness import stub_http
+
+    with pytest.raises(ValueError):
+        stub_http.scenario_http(name)
+
+
 def test_scenario_http_reads_the_committed_seed():
     from harness import stub_http
 

@@ -114,6 +114,8 @@ services:
   etl-search-stub:
     profiles:
     - search-stub
+    build:
+      context: ./etl/airflow
     image: otterworks/etl-airflow:local
     entrypoint:
     - python

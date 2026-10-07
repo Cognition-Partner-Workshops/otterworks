@@ -83,7 +83,11 @@ class ServiceStub:
 
 def scenario_http(name: str) -> dict:
     """seed.http of <script>/<scenario>/scenario.json under the golden directory."""
-    path = GOLDEN_DIR / name / "scenario.json"
+    path = (GOLDEN_DIR / name / "scenario.json").resolve()
+    if not path.is_relative_to(GOLDEN_DIR) or len(Path(name).parts) != 2:
+        raise ValueError(
+            "scenario must be <script>/<scenario> under %s: %r" % (GOLDEN_DIR, name)
+        )
     return json.loads(path.read_text())["seed"].get("http") or {}
 
 
