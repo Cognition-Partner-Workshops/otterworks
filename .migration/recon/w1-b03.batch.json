@@ -1,6 +1,6 @@
 {
  "batch": "w1-b03",
- "status": "FAIL",
+ "status": "PASS",
  "recon_results": [
   ".migration/recon/invoiceHeader/result.json",
   ".migration/recon/customerMasterHist/result.json"
@@ -11,25 +11,59 @@
  ],
  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
  "branch": "devin/1791365757-w1-b03-load",
- "failure_class": "harness_cannot_grade_obligation",
- "one_line_summary": "invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines written to invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand), customerMasterHist 0/0 PASS merge_eligible; harness verdict for invoiceHeader is FAIL at Tier 1 (embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463) because the F47 remainder collection is ungradable in any spec shape (F69: without overflow Tier 1 fails, with overflow Tier 3 reports 74 embed_orphan_child); loader gained the ORPHAN_SINKS hook + --extra-write-targets; nothing dropped, b01/b02 collections unchanged.",
+ "failure_class": null,
+ "one_line_summary": "s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
  "per_unit": {
   "invoiceHeader": {
-   "live_verdict": "FAIL",
+   "live_verdict": "PASS",
    "live_merge_eligible": false,
+   "live_warnings": [
+    "embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked"
+   ],
    "tiers": [
     {
      "tier": 1,
-     "passed": false,
+     "passed": true,
      "checks_run": 3,
-     "findings": 1
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 2463,
+     "findings": 0
     }
    ],
-   "tier1_findings": [
-    "embed_cardinality: rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463"
-   ],
-   "fixture_verdict": "FAIL",
-   "mapping_version": "map-draft-3"
+   "tier1_findings": [],
+   "tier3_stats": {
+    "invoiceHeader": {
+     "mode": "full_diff",
+     "population": 1000,
+     "duplicate_source_key_count": 0
+    },
+    "embed_extras_unchecked": [
+     "invoiceHeader.lines"
+    ],
+    "embeds_graded": {
+     "invoiceHeader.lines": 1463
+    }
+   },
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+   "scoped_embed": {
+    "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+    "target_where": "{}",
+    "graded_child_rows": 1463,
+    "source_child_rows_total": 1500,
+    "remainder_not_graded": 37
+   }
   },
   "customerMasterHist": {
    "live_verdict": "PASS",
@@ -56,7 +90,8 @@
    ],
    "tier1_findings": [],
    "fixture_verdict": "PASS",
-   "mapping_version": "map-draft-3"
+   "mapping_version": "map-draft-3",
+   "note": "result.json as committed in the original b03 run (map-draft-3 / 38bd108c\u2026), not re-run (UNT7-24 scope); wave now pinned to map-draft-4"
   }
  },
  "loader_obligations": {
@@ -68,9 +103,33 @@
    "embedded": 1463,
    "sum": 1500,
    "holds": true,
-   "graded_by_harness": false
+   "graded_by_harness": false,
+   "orphan_flag_true": 37,
+   "orphan_pointer_resolves_to_header": 0,
+   "orphan_lineId_also_embedded": 0,
+   "owner_side_not_child_where_count": 37,
+   "scoped_embed_remainder_record": {
+    "kind": "scoped_embed_remainder",
+    "parent": "invoiceHeader",
+    "child": "INVOICE_LINE",
+    "array_path": "lines",
+    "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+    "note": "rows where NOT (INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)) are in no collection after this embed; embed them elsewhere, or keep invoiceLine as a collection with root_where",
+    "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69).",
+    "evidence": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0"
+   }
   }
  },
- "mapping_version": "map-draft-3",
- "manifest_sha": "ed1747e90f6e"
+ "mapping_version": "map-draft-4",
+ "manifest_sha": "b11c0e7b2f31",
+ "merge_eligible": false,
+ "merge_eligible_blocker": "F72: invoiceHeader live PASS but merge_eligible false \u2014 harness warning 'embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked' (any warning blocks merge eligibility, report.py:66); customerMasterHist merge_eligible true",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "superseded_result": {
+  "status": "FAIL",
+  "failure_class": "harness_cannot_grade_obligation",
+  "mapping_version": "map-draft-3",
+  "manifest_sha": "ed1747e90f6e",
+  "note": "original b03 run (PR #1864 before UNT7-24); invoiceHeader Tier 1 embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463 (F69)"
+ }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "map-draft-3",
+  "version": "map-draft-4",
   "source_family": "oracle",
   "collections": [
     {
@@ -4495,13 +4495,15 @@
           "basis_sources": [
             "ddl"
           ],
-          "evidence": "unenforced pointer (no FK in DDL) ['INVOICE_ID']; .migration/data_profile_handcheck.json: HC1/HC2: INVOICE_HEADER->INVOICE_LINE by the unenforced INVOICE_ID pointer: fan-out p50 1 / p99 5 / max 6, embedded bytes p99 1,347 / max 1,612; 232 of 1,000 headers line-less; 37 of 1,500 lines orphaned. <plugin>/skills/schema-modeling/design/fundamental-embed-vs-reference.md:30 'Order -> Line Items 1:few (1-50), always together -> embed array'. No application reader/writer (F38), so the basis is structure + data, not access",
+          "evidence": "unenforced pointer (no FK in DDL) ['INVOICE_ID']; .migration/data_profile_handcheck.json: HC1/HC2: INVOICE_HEADER->INVOICE_LINE by the unenforced INVOICE_ID pointer: fan-out p50 1 / p99 5 / max 6, embedded bytes p99 1,347 / max 1,612; 232 of 1,000 headers line-less; 37 of 1,500 lines orphaned. <plugin>/skills/schema-modeling/design/fundamental-embed-vs-reference.md:30 'Order -> Line Items 1:few (1-50), always together -> embed array'. No application reader/writer (F38), so the basis is structure + data, not access; .migration/recon/w1-b03.evidence.json: d-orphan-grading = child-where (s3.4-orphan-scope, F69): the harness grades the embed against the whole INVOICE_LINE table (Tier 1 embed_cardinality rows=1500 vs sum(len(lines))=1463) and has no gradable shape for the 37 rows whose INVOICE_ID matches no INVOICE_HEADER row (HC1: 37 of 1,500, all invoice_no LIKE 'MMPRT-GHOST-%'). Scope the embed to lines with a header; target_where {} because every invoiceHeader document is in scope. The remainder (NOT child_where) is the F47 loader obligation: written to mmp_rt_b3_oracle.invoice_lines_orphaned with orphan: true + raw invoiceId, proven by hand (1463 + 37 = 1500), never dropped, never embedded; the harness does not grade it.",
           "shape": "array",
           "parent_ref": [
             "INVOICE_ID"
           ],
           "child_references": [],
-          "child_open_questions": []
+          "child_open_questions": [],
+          "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+          "target_where": "{}"
         }
       ],
       "decision": {
@@ -6797,7 +6799,7 @@
     }
   ],
   "canonicalization": {
-    "version": "map-draft-3-canon",
+    "version": "map-draft-4-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -9085,6 +9087,60 @@
         },
         "cited": ".migration/recon/customerMaster/result.json: F61/F65 41 date_string_to_date!unconverted on the dirty SIGNUP_DT rows",
         "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "INVOICE_LINE",
+        "into": "invoiceHeader",
+        "array_path": "lines",
+        "cardinality": "1:N",
+        "parent_key": [
+          "INVOICE_ID"
+        ],
+        "basis": "derived",
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "target_where": {},
+        "evidence": {
+          "file": ".migration/recon/w1-b03.evidence.json",
+          "kind": "recon",
+          "note": "d-orphan-grading = child-where (s3.4-orphan-scope, F69): the harness grades the embed against the whole INVOICE_LINE table (Tier 1 embed_cardinality rows=1500 vs sum(len(lines))=1463) and has no gradable shape for the 37 rows whose INVOICE_ID matches no INVOICE_HEADER row (HC1: 37 of 1,500, all invoice_no LIKE 'MMPRT-GHOST-%'). Scope the embed to lines with a header; target_where {} because every invoiceHeader document is in scope. The remainder (NOT child_where) is the F47 loader obligation: written to mmp_rt_b3_oracle.invoice_lines_orphaned with orphan: true + raw invoiceId, proven by hand (1463 + 37 = 1500), never dropped, never embedded; the harness does not grade it."
+        },
+        "cited": ".migration/recon/w1-b03.evidence.json: d-orphan-grading = child-where (s3.4-orphan-scope, F69): the harness grades the embed against the whole INVOICE_LINE table (Tier 1 embed_cardinality rows=1500 vs sum(len(lines))=1463) and has no gradable shape for the 37 rows whose INVOICE_ID matches no INVOICE_HEADER row (HC1: 37 of 1,500, all invoice_no LIKE 'MMPRT-GHOST-%'). Scope the embed to lines with a header; target_where {} because every invoiceHeader document is in scope. The remainder (NOT child_where) is the F47 loader obligation: written to mmp_rt_b3_oracle.invoice_lines_orphaned with orphan: true + raw invoiceId, proven by hand (1463 + 37 = 1500), never dropped, never embedded; the harness does not grade it.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scoped_embed_remainder",
+          "parent": "invoiceHeader",
+          "child": "INVOICE_LINE",
+          "array_path": "lines"
+        },
+        "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69).",
+        "evidence": {
+          "file": ".migration/recon/w1-b03.evidence.json",
+          "kind": "recon",
+          "note": "recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0"
+        },
+        "cited": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "embed_unbounded",
+          "parent": "invoiceHeader",
+          "child": "INVOICE_LINE",
+          "array_path": "lines"
+        },
+        "resolution": "Re-opened by the patcher when the embed decision was repeated to add child_where (F71); already resolved for map-draft-2: fan-out measured p50 1 / p99 5 / max 6 lines per header, embedded bytes max 1,612 (HC1/HC2), far below 16 MB; bounded, no bucket/reference.",
+        "evidence": {
+          "file": ".migration/data_profile_handcheck.json",
+          "kind": "recon",
+          "note": "HC1/HC2: INVOICE_HEADER->INVOICE_LINE fan-out p50 1 / p99 5 / max 6; embedded bytes p99 1,347 / max 1,612"
+        },
+        "cited": ".migration/data_profile_handcheck.json: HC1/HC2: INVOICE_HEADER->INVOICE_LINE fan-out p50 1 / p99 5 / max 6; embedded bytes p99 1,347 / max 1,612",
+        "status": "PROPOSED"
       }
     ],
     "resolved": [
@@ -9280,6 +9336,25 @@
         "proposal": "name the columns that identify a row (set_key) or accept load-order only",
         "resolution": "collection excluded",
         "evidence": ".migration/census_dispositions.json: diff_dispositions: FIXTURE_META 'fixture bookkeeping \u2026 Out of migration scope; exclude from the mapping spec' (F45: the proposer has no dispositions input)"
+      },
+      {
+        "kind": "scoped_embed_remainder",
+        "parent": "invoiceHeader",
+        "child": "INVOICE_LINE",
+        "array_path": "lines",
+        "child_where": "INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)",
+        "note": "rows where NOT (INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER)) are in no collection after this embed; embed them elsewhere, or keep invoiceLine as a collection with root_where",
+        "resolution": "The remainder (INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER row; 37 of 1,500 in the fixture, all invoice_no LIKE 'MMPRT-GHOST-%') is the F47 loader obligation ob-invoice-lines-orphaned (units.json): written by load_units.py ORPHAN_SINKS to mmp_rt_b3_oracle.invoice_lines_orphaned as its own documents (_id = lineId, mapped line fields, orphan: true, raw invoiceId), never dropped, never embedded; proven by hand count(invoiceHeader.lines[]) + count(invoice_lines_orphaned) = 1463 + 37 = 1500 and re-checked by the independent verifier. Not a mapping-spec collection: the harness cannot grade it (F57/F69).",
+        "evidence": ".migration/recon/w1-b03.evidence.json: recon.orphan_obligation_hand_proof: embedded_lines 1463, orphaned_docs 37, sum 1500, holds true, orphan_pointer_resolves_to_header 0, orphan_lineId_also_embedded 0"
+      },
+      {
+        "kind": "embed_unbounded",
+        "parent": "invoiceHeader",
+        "child": "INVOICE_LINE",
+        "array_path": "lines",
+        "note": "1:N embed: confirm the fan-out bound and document size (16 MB) against data, or bucket/reference",
+        "resolution": "Re-opened by the patcher when the embed decision was repeated to add child_where (F71); already resolved for map-draft-2: fan-out measured p50 1 / p99 5 / max 6 lines per header, embedded bytes max 1,612 (HC1/HC2), far below 16 MB; bounded, no bucket/reference.",
+        "evidence": ".migration/data_profile_handcheck.json: HC1/HC2: INVOICE_HEADER->INVOICE_LINE fan-out p50 1 / p99 5 / max 6; embedded bytes p99 1,347 / max 1,612"
       }
     ],
     "excluded": [
