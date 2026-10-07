@@ -1,0 +1,542 @@
+{
+ "kind": "batch-evidence",
+ "ticket": "UNT7-21",
+ "plan_step": "s4.1.b04",
+ "batch": "w1-b04",
+ "wave_manifest": ".migration/waves/wave-1.json",
+ "manifest_sha": "b11c0e7b2f31",
+ "run_branch_base": "3fcd57cf (tp-run/mongodb-20261007T062215Z, after PR #1864)",
+ "branch": "devin/1791367911-w1-b04-load",
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1 (devin/1791335937-app-aware-modeling-next; cherry-pick 865b105d applied, patch-id e102025d)",
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "source": {
+  "dsn_secret": "MMP_RT_SRC_DSN",
+  "principal": "OW_BILLING_RO (CURRENT_SCHEMA=OW_BILLING via logon trigger, F60)",
+  "concurrency": 1,
+  "fixture_counts_recheck_owner_side": {
+   "INVOICES": 4,
+   "INVOICE_LINES": 4,
+   "INVOICE_LINES_without_header": 0,
+   "INVOICES_without_tenant": 0,
+   "INVOICES_null_tenant_id": 0,
+   "RATING_RESULTS": 3,
+   "RATING_RESULTS_without_period": 0,
+   "RATING_RESULTS_without_subscription": 0,
+   "SUBSCRIPTIONS_HIST": 0,
+   "SUBSCRIPTIONS": 15,
+   "TRG_SUBSCRIPTIONS_HIST_enabled": 1,
+   "matches_fixture_counts_json": true
+  },
+  "trigger_cascade": {
+   "trigger": "TRG_SUBSCRIPTIONS_HIST AFTER UPDATE OR DELETE ON subscriptions (01_tables.sql:206)",
+   "rows_written_in_fixture": 0,
+   "why": "mmp_rt_mini_seed.py never touches SUBSCRIPTIONS; oracle_billing_seed.py:108-110 deletes subscriptions (fires trigger) then deletes subscriptions_hist (removes the cascade rows)",
+   "finding": "F73"
+  }
+ },
+ "loader": {
+  "script": "services/legacy-billing/migration/mongodb/load_units.py",
+  "recon_wrapper": "services/legacy-billing/migration/mongodb/recon_unit.sh",
+  "interpreter": "/home/ubuntu/.venvs/recon/bin/python",
+  "changes_this_batch": [],
+  "reload_semantics": "delete_many({}) on the unit's own collection then insert_many; create_index per spec; nothing dropped",
+  "command": "load_units.py --spec .migration/mapping_spec.json --allowed-targets .migration/allowed_targets.json --units invoices,subscriptionsHist,ratingResults --write-targets mmp_rt_b3_oracle.invoices,mmp_rt_b3_oracle.subscriptionsHist,mmp_rt_b3_oracle.ratingResults --source-dsn-secret MMP_RT_SRC_DSN --target-uri-secret MONGODB_ATLAS_URI --target-db mmp_rt_b3_oracle --report <scratch>",
+  "dry_run_first": true,
+  "load1": {
+   "kind": "load-report",
+   "spec_version": "map-draft-4",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": false,
+   "started_at": "2026-10-07T10:13:20.712185+00:00",
+   "units": {
+    "invoices": {
+     "root_table": "INVOICES",
+     "source_rows": 4,
+     "documents_written": 4,
+     "embeds": {
+      "lines": {
+       "child_table": "INVOICE_LINES",
+       "elements": 4,
+       "orphan_child_rows": 0,
+       "orphan_sink": null
+      }
+     },
+     "copied_fields": {
+      "tenant": {
+       "from_table": "TENANTS",
+       "joined": 4,
+       "null_join_key": 0,
+       "orphan_rows": 0
+      }
+     },
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "lines.lineNo_1",
+      "statusCd_1_issuedAt_1__id_1",
+      "tenantId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 1.096
+    },
+    "subscriptionsHist": {
+     "root_table": "SUBSCRIPTIONS_HIST",
+     "source_rows": 0,
+     "documents_written": 0,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "id_1_histId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.172
+    },
+    "ratingResults": {
+     "root_table": "RATING_RESULTS",
+     "source_rows": 3,
+     "documents_written": 3,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "periodId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.281
+    }
+   },
+   "source_queries": 5,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T10:13:22.261533+00:00"
+  },
+  "load2_after_live_recon": {
+   "kind": "load-report",
+   "spec_version": "map-draft-4",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": false,
+   "started_at": "2026-10-07T10:13:42.470975+00:00",
+   "units": {
+    "invoices": {
+     "root_table": "INVOICES",
+     "source_rows": 4,
+     "documents_written": 4,
+     "embeds": {
+      "lines": {
+       "child_table": "INVOICE_LINES",
+       "elements": 4,
+       "orphan_child_rows": 0,
+       "orphan_sink": null
+      }
+     },
+     "copied_fields": {
+      "tenant": {
+       "from_table": "TENANTS",
+       "joined": 4,
+       "null_join_key": 0,
+       "orphan_rows": 0
+      }
+     },
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "lines.lineNo_1",
+      "statusCd_1_issuedAt_1__id_1",
+      "tenantId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.964
+    },
+    "subscriptionsHist": {
+     "root_table": "SUBSCRIPTIONS_HIST",
+     "source_rows": 0,
+     "documents_written": 0,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "id_1_histId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.154
+    },
+    "ratingResults": {
+     "root_table": "RATING_RESULTS",
+     "source_rows": 3,
+     "documents_written": 3,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "periodId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.217
+    }
+   },
+   "source_queries": 5,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T10:13:43.806340+00:00"
+  },
+  "content_hashes_load1": {
+   "invoices": {
+    "count": 4,
+    "hash": "19bdefd15e981310",
+    "indexes": [
+     "_id_",
+     "lines.lineNo_1",
+     "statusCd_1_issuedAt_1__id_1",
+     "tenantId_1"
+    ]
+   },
+   "subscriptionsHist": {
+    "count": 0,
+    "hash": "4f53cda18c2baa0c",
+    "indexes": [
+     "_id_",
+     "id_1_histId_1"
+    ]
+   },
+   "ratingResults": {
+    "count": 3,
+    "hash": "b8810c80f8f03a58",
+    "indexes": [
+     "_id_",
+     "periodId_1"
+    ]
+   }
+  },
+  "content_hashes_load2": {
+   "invoices": {
+    "count": 4,
+    "hash": "19bdefd15e981310",
+    "indexes": [
+     "_id_",
+     "lines.lineNo_1",
+     "statusCd_1_issuedAt_1__id_1",
+     "tenantId_1"
+    ]
+   },
+   "subscriptionsHist": {
+    "count": 0,
+    "hash": "4f53cda18c2baa0c",
+    "indexes": [
+     "_id_",
+     "id_1_histId_1"
+    ]
+   },
+   "ratingResults": {
+    "count": 3,
+    "hash": "b8810c80f8f03a58",
+    "indexes": [
+     "_id_",
+     "periodId_1"
+    ]
+   }
+  },
+  "idempotent": true
+ },
+ "recon": {
+  "fixture_first": {
+   "invoices": {
+    "verdict": "PASS",
+    "merge_eligible": false,
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 2,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 5,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 12,
+      "findings": 0
+     }
+    ],
+    "path": ".migration/recon/invoices/fixture/result.json"
+   },
+   "subscriptionsHist": {
+    "verdict": "PASS",
+    "merge_eligible": false,
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 0,
+      "findings": 0
+     }
+    ],
+    "path": ".migration/recon/subscriptionsHist/fixture/result.json"
+   },
+   "ratingResults": {
+    "verdict": "PASS",
+    "merge_eligible": false,
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 6,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 3,
+      "findings": 0
+     }
+    ],
+    "path": ".migration/recon/ratingResults/fixture/result.json"
+   }
+  },
+  "live_one_run_per_unit": {
+   "invoices": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "target_class": "migration_cluster",
+    "warnings": [],
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 5,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 5,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 12,
+      "findings": 0
+     }
+    ],
+    "tier3_stats": {
+     "invoices": {
+      "mode": "full_diff",
+      "population": 4,
+      "duplicate_source_key_count": 0
+     },
+     "embeds_graded": {
+      "invoices.lines": 4
+     }
+    },
+    "path": ".migration/recon/invoices/result.json",
+    "runs": 1
+   },
+   "subscriptionsHist": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "target_class": "migration_cluster",
+    "warnings": [],
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 2,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 0,
+      "findings": 0
+     }
+    ],
+    "tier3_stats": {
+     "subscriptionsHist": {
+      "mode": "full_diff",
+      "population": 0,
+      "duplicate_source_key_count": 0
+     }
+    },
+    "path": ".migration/recon/subscriptionsHist/result.json",
+    "runs": 1
+   },
+   "ratingResults": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "target_class": "migration_cluster",
+    "warnings": [],
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 2,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 6,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 3,
+      "findings": 0
+     }
+    ],
+    "tier3_stats": {
+     "ratingResults": {
+      "mode": "full_diff",
+      "population": 3,
+      "duplicate_source_key_count": 0
+     }
+    },
+    "path": ".migration/recon/ratingResults/result.json",
+    "runs": 1
+   }
+  },
+  "hand_checks_on_target": {
+   "invoices_docs": 4,
+   "invoice_lines_source": 4,
+   "embedded_lines": 4,
+   "tenant_statusCd_copied_matches_source": true,
+   "tenant_copied_n": 4,
+   "ratingResults_docs": 3,
+   "RATING_RESULTS_rows": 3,
+   "subscriptionsHist_docs": 0,
+   "SUBSCRIPTIONS_HIST_rows": 0,
+   "SUBSCRIPTIONS_rows": 15,
+   "trg_subscriptions_hist_enabled": true,
+   "subscriptionsHist_indexes": [
+    "_id_",
+    "id_1_histId_1"
+   ],
+   "queries": [
+    "db.invoices.aggregate([{$project:{n:{$size:{$ifNull:['$lines',[]]}}}},{$group:{_id:null,t:{$sum:'$n'}}}])",
+    "SELECT i.ID, t.STATUS_CD FROM INVOICES i JOIN TENANTS t ON t.ID=i.TENANT_ID vs db.invoices.find({},{'tenant.statusCd':1})",
+    "SELECT COUNT(*) FROM SUBSCRIPTIONS_HIST",
+    "SELECT COUNT(*) FROM ALL_TRIGGERS WHERE OWNER='OW_BILLING' AND TRIGGER_NAME='TRG_SUBSCRIPTIONS_HIST' AND STATUS='ENABLED'"
+   ]
+  }
+ },
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "uri_secret": "MONGODB_ATLAS_URI",
+  "write_targets": [
+   "mmp_rt_b3_oracle.invoices",
+   "mmp_rt_b3_oracle.subscriptionsHist",
+   "mmp_rt_b3_oracle.ratingResults"
+  ],
+  "dbstats_before": {
+   "collections": 12,
+   "objects": 1415,
+   "dataSize": 1455726,
+   "storageSize": 1949696,
+   "indexes": 27,
+   "indexSize": 1220608
+  },
+  "counts_before": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "subscriptions": 15,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "dbstats_after": {
+   "collections": 15,
+   "objects": 1422,
+   "dataSize": 1458352,
+   "storageSize": 1994752,
+   "indexes": 35,
+   "indexSize": 1351680
+  },
+  "counts_after": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "new_collections": [
+   "invoices",
+   "ratingResults",
+   "subscriptionsHist"
+  ],
+  "b01_b03_collections_unchanged": true,
+  "under_10mb": true,
+  "dropped": []
+ },
+ "mongo_guard": {
+  "base_ref": "origin/tp-run/mongodb-20261007T062215Z",
+  "blocked": false,
+  "note": "all commands from $HOME via absolute paths / wrapper (F4/F9)"
+ },
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+ "pre_pr_self_check": {
+  "null_missing": "NULL root key refused by the loader; NULL non-key fields written per spec rules the harness grades; 0 NULL TENANT_ID / 0 orphan child or reference rows owner-side",
+  "namespace_scope": "writes only to the three wave write_targets in mmp_rt_b3_oracle; loader refuses any target outside --target-db; the generic checklist's ow_tp prefix rule does not apply to this run's allowlisted db (as b01-b03)",
+  "ddl": "no drop/replace/alter; create_index only on the three unit collections; Oracle untouched (ro principal)",
+  "rerun": "load 2 after the live recons: identical content hashes on all three collections",
+  "evidence_retained": "fixture-first runs in recon/<unit>/fixture/, live verdicts in recon/<unit>/result.json, dbStats before/after + hand checks here; b01-b03 artifacts untouched",
+  "secrets": "fragment + pattern scan over all new/changed artifacts clean; secrets by name",
+  "tolerances": "tolerances 1 (1a8ebb6c\u2026) unchanged, mapping map-draft-4 unchanged",
+  "recon_recomputed": "all result.json files are fresh harness runs against the loaded target; hand checks recomputed on the target",
+  "unverified": "subscriptionsHist: 0 rows, history_copy shape / composite key / histDt rule unexercised (F73); fixture-mode runs are not merge evidence by design",
+  "capability_preflight": "preflight.py OK on wave-1 (manifest_sha b11c0e7b2f31, recorded in s3.4); connectivity.json stays blocked: true by human decision d-target-principal",
+  "tp_smoke": "see commit / PR body"
+ }
+}
