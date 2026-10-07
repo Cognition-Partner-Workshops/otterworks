@@ -109,6 +109,12 @@ pub struct DownloadResponse {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct DownloadQuery {
+    /// `attachment` signs the URL so the browser saves the file instead of rendering it.
+    pub disposition: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct ListFilesQuery {
     pub folder_id: Option<Uuid>,
     pub owner_id: Option<Uuid>,

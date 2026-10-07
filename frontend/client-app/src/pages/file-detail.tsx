@@ -152,7 +152,7 @@ function FileDetailContent() {
         <div className="flex items-center gap-2">
           <DownloadButton
             fileName={file.name}
-            getDownloadUrl={() => filesApi.getDownloadUrl(file.id)}
+            getDownloadUrl={() => filesApi.getDownloadUrl(file.id, { attachment: true })}
           />
           <button
             onClick={() => setShowShareDialog(true)}

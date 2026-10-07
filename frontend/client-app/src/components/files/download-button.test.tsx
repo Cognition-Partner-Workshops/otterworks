@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DownloadButton, getDownloadErrorMessage } from "./download-button";
 import { billingServer as server } from "../../test-setup";
 
-const STORAGE_URL = "http://storage.test/bucket/report.txt";
+const STORAGE_URL = "http://storage.test/bucket/report.txt?response-content-disposition=attachment";
 
 function renderButton(getDownloadUrl: () => Promise<string> = async () => STORAGE_URL) {
   return render(
@@ -18,11 +18,15 @@ function renderButton(getDownloadUrl: () => Promise<string> = async () => STORAG
 
 describe("DownloadButton", () => {
   let clickSpy: ReturnType<typeof vi.spyOn>;
+  let clickedLinks: HTMLAnchorElement[];
 
   beforeEach(() => {
-    clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
-    URL.createObjectURL = vi.fn(() => "blob:report");
-    URL.revokeObjectURL = vi.fn();
+    clickedLinks = [];
+    clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        clickedLinks.push(this);
+      });
     window.matchMedia ??= vi.fn(() => ({ matches: false }) as unknown as MediaQueryList);
   });
 
@@ -30,11 +34,11 @@ describe("DownloadButton", () => {
     clickSpy.mockRestore();
   });
 
-  it("shows progress while downloading, then a done state that resets", async () => {
+  it("shows progress, then a done state that resets", async () => {
     server.use(
-      http.get(STORAGE_URL, async () => {
+      http.get("http://storage.test/bucket/report.txt", async () => {
         await delay(50);
-        return new HttpResponse("hello", { headers: { "Content-Type": "text/plain" } });
+        return new HttpResponse("hello");
       })
     );
     renderButton();
@@ -45,48 +49,41 @@ describe("DownloadButton", () => {
     expect(busy).toHaveAttribute("aria-busy", "true");
     expect(await screen.findByText("Downloading report.txt...")).toBeInTheDocument();
 
-    const done = await screen.findByRole("button", { name: "Downloaded" });
+    const done = await screen.findByRole("button", { name: "Download started" });
     expect(done).toHaveAttribute("data-status", "done");
     // toast + polite live region
-    expect(await screen.findAllByText("Downloaded report.txt")).toHaveLength(2);
-    expect(clickSpy).toHaveBeenCalledTimes(1);
-    expect(URL.createObjectURL).toHaveBeenCalled();
+    expect(await screen.findAllByText("Download of report.txt started")).toHaveLength(2);
+    expect(clickedLinks).toHaveLength(1);
+    expect(clickedLinks[0].href).toBe(STORAGE_URL);
+    expect(clickedLinks[0].download).toBe("report.txt");
 
     expect(
       await screen.findByRole("button", { name: "Download" }, { timeout: 4000 })
     ).toBeEnabled();
   });
 
-  it("shows a failed state with the storage error and allows retry", async () => {
-    server.use(http.get(STORAGE_URL, () => new HttpResponse(null, { status: 403, statusText: "Forbidden" })));
-    renderButton();
+  it("shows a failed state with the API error and allows retry", async () => {
+    const apiError = Object.assign(new Error("Request failed with status code 404"), {
+      response: { data: { error: "file not found" } },
+    });
+    const getUrl = vi.fn().mockRejectedValueOnce(apiError).mockResolvedValue(STORAGE_URL);
+    server.use(http.get("http://storage.test/bucket/report.txt", () => new HttpResponse("hello")));
+    renderButton(getUrl);
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
 
     const retry = await screen.findByRole("button", { name: "Retry download" });
     expect(retry).toHaveAttribute("data-status", "error");
-    expect(retry).toHaveAttribute("title", "Download failed: Storage responded with 403 Forbidden");
-    expect(
-      await screen.findAllByText("Download failed: Storage responded with 403 Forbidden")
-    ).toHaveLength(2);
-    expect(clickSpy).not.toHaveBeenCalled();
-    expect(retry).toBeEnabled();
+    expect(retry).toHaveAttribute("title", "Download failed: file not found");
+    expect(await screen.findAllByText("Download failed: file not found")).toHaveLength(2);
+    expect(clickedLinks).toHaveLength(0);
+
+    fireEvent.click(retry);
+    expect(await screen.findByRole("button", { name: "Download started" })).toBeInTheDocument();
+    expect(clickedLinks).toHaveLength(1);
   });
 
-  it("surfaces the API error message when the download URL cannot be fetched", async () => {
-    const apiError = Object.assign(new Error("Request failed with status code 404"), {
-      response: { data: { error: "file not found" } },
-    });
-    renderButton(() => Promise.reject(apiError));
-    fireEvent.click(screen.getByRole("button", { name: "Download" }));
-
-    expect(await screen.findByRole("button", { name: "Retry download" })).toHaveAttribute(
-      "title",
-      "Download failed: file not found"
-    );
-  });
-
-  it("reports unreachable storage as a failure", async () => {
-    server.use(http.get(STORAGE_URL, () => HttpResponse.error()));
+  it("reports unreachable storage as a failure without starting a download", async () => {
+    server.use(http.get("http://storage.test/bucket/report.txt", () => HttpResponse.error()));
     renderButton();
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
 
@@ -94,28 +91,7 @@ describe("DownloadButton", () => {
       "title",
       "Download failed: Could not reach file storage"
     );
-    expect(clickSpy).not.toHaveBeenCalled();
-  });
-
-  it("hands off to the browser when storage is reachable but blocks CORS reads", async () => {
-    const realFetch = globalThis.fetch;
-    const fetchSpy = vi
-      .spyOn(globalThis, "fetch")
-      .mockImplementation((input, init) =>
-        init?.mode === "no-cors"
-          ? Promise.resolve(new Response(null, { status: 200 }))
-          : Promise.reject(new TypeError("Failed to fetch"))
-      );
-    try {
-      renderButton();
-      fireEvent.click(screen.getByRole("button", { name: "Download" }));
-      expect(await screen.findByRole("button", { name: "Downloaded" })).toBeInTheDocument();
-      expect(await screen.findByText("Download of report.txt started")).toBeInTheDocument();
-      expect(clickSpy).toHaveBeenCalledTimes(1);
-    } finally {
-      fetchSpy.mockRestore();
-      globalThis.fetch = realFetch;
-    }
+    expect(clickedLinks).toHaveLength(0);
   });
 });
 

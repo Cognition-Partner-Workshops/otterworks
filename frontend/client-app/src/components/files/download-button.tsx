@@ -20,7 +20,7 @@ const STATUS_CLASS: Record<DownloadStatus, string> = {
 const STATUS_LABEL: Record<DownloadStatus, string> = {
   idle: "Download",
   downloading: "Downloading...",
-  done: "Downloaded",
+  done: "Download started",
   error: "Retry download",
 };
 
@@ -43,14 +43,8 @@ function clickLink(href: string, fileName: string) {
   a.remove();
 }
 
-function saveBlob(blob: Blob, fileName: string) {
-  const objectUrl = URL.createObjectURL(blob);
-  clickLink(objectUrl, fileName);
-  URL.revokeObjectURL(objectUrl);
-}
-
-// An opaque no-cors request only rejects when the storage host is unreachable, which
-// separates "storage is down" from "storage does not send CORS headers".
+// Presigned storage URLs are cross-origin without CORS, so the response can't be read.
+// An opaque no-cors request still rejects when the storage host is unreachable.
 async function isStorageReachable(url: string): Promise<boolean> {
   const controller = new AbortController();
   try {
@@ -63,28 +57,9 @@ async function isStorageReachable(url: string): Promise<boolean> {
   }
 }
 
-type DownloadOutcome = "saved" | "handed-off";
-
-async function downloadFile(url: string, fileName: string): Promise<DownloadOutcome> {
-  let response: Response;
-  try {
-    response = await fetch(url);
-  } catch {
-    if (!(await isStorageReachable(url))) {
-      throw new Error("Could not reach file storage");
-    }
-    clickLink(url, fileName);
-    return "handed-off";
-  }
-  if (!response.ok) {
-    throw new Error(`Storage responded with ${response.status} ${response.statusText}`.trim());
-  }
-  saveBlob(await response.blob(), fileName);
-  return "saved";
-}
-
 interface DownloadButtonProps {
   fileName: string;
+  /** Must resolve to a URL signed with an attachment Content-Disposition. */
   getDownloadUrl: () => Promise<string>;
 }
 
@@ -102,11 +77,12 @@ export function DownloadButton({ fileName, getDownloadUrl }: Readonly<DownloadBu
     const toastId = toast.loading(`Downloading ${fileName}...`);
     try {
       const url = await getDownloadUrl();
-      const outcome = await downloadFile(url, fileName);
-      toast.success(
-        outcome === "saved" ? `Downloaded ${fileName}` : `Download of ${fileName} started`,
-        { id: toastId }
-      );
+      if (!(await isStorageReachable(url))) {
+        throw new Error("Could not reach file storage");
+      }
+      // The URL is signed with an attachment disposition, so this saves without navigating.
+      clickLink(url, fileName);
+      toast.success(`Download of ${fileName} started`, { id: toastId });
       setStatus("done");
       resetTimer.current = setTimeout(() => setStatus("idle"), DONE_RESET_MS);
     } catch (error) {
@@ -140,7 +116,7 @@ export function DownloadButton({ fileName, getDownloadUrl }: Readonly<DownloadBu
       </button>
       <span role="status" aria-live="polite" className="sr-only">
         {status === "downloading" && `Downloading ${fileName}`}
-        {status === "done" && `Downloaded ${fileName}`}
+        {status === "done" && `Download of ${fileName} started`}
         {status === "error" && `Download failed: ${errorMessage}`}
       </span>
     </>
