@@ -1,0 +1,1103 @@
+[
+  {
+    "op": "date_format",
+    "collection": "invoiceLine",
+    "field": "INVOICE_DT",
+    "format": "%d-%b-%y",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_LINE.INVOICE_DT",
+      "note": "measured conformance 1.0 to DD-MON-YY over 1,500 values (F44: the proposer measured it and still left it 'assumed')"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "date_format_proposal",
+      "column": "INVOICE_DT"
+    },
+    "resolution": "applied as date_format %d-%b-%y (decision above); the proposer's own measurement",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_LINE.INVOICE_DT",
+      "note": "conformance 1.0"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "INVOICE_ID: embedded into invoiceHeader by the unenforced pointer (embed decision below); 1,463/1,500 resolve to INVOICE_HEADER.INVOICE_ID, the 37 orphans go to invoice_lines_orphaned (orphan: true) at load, never dropped. TENANT_ID: keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC1 pointer_resolve INVOICE_LINE.INVOICE_ID -> INVOICE_HEADER: 1463 resolve / 37 orphan; tenant_pointer_truth 0/1500"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep LINE_TYPE_CD numeric: values {1,2,3,9} have NO CODES type (CODES holds CUST_STATUS/CUST_TYPE/PHONE_TYPE/INV_STATUS/SUB_STATUS/TENANT_STATUS/PLAN_TIER/USAGE_KIND/DUN_STATUS/NOTIF_KIND only); nothing to look up, label lives in the application",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "value_domain:INVOICE_LINE.LINE_TYPE_CD",
+      "note": "domain {1,2,3,9}; hand-check codes_domain lists no LINE_TYPE code type"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "GL_ACCT_CSV -> typed array via csv_to_array as proposed (comma-only, max 3 elements, no padding measured); no change",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "csv_elements:INVOICE_LINE.GL_ACCT_CSV",
+      "note": "comma delimiter, <= 3 elements"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "INVOICE_ID"
+    },
+    "resolution": "false alarm from the tool: pointer_resolve measured INVOICE_LINE.INVOICE_ID against the core INVOICES table (F19) \u2014 1500/1500 'unresolved'. Against INVOICE_HEADER (the DDL comment's target) 1,463 resolve and 37 are orphans; orphan handling = invoice_lines_orphaned collection, orphan: true, exact-count recon sees them",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC1: INVOICE_LINE.INVOICE_ID -> INVOICE_HEADER 1463 resolve / 37 orphans; 232 of 1000 headers have no lines"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "tenant_pointer_truth: INVOICE_LINE.TENANT_ID 0/1500 resolve to TENANTS"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "invoiceHeader",
+    "field": "INVOICE_DT",
+    "format": "%d-%b-%y",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_HEADER.INVOICE_DT",
+      "note": "measured conformance 1.0 to DD-MON-YY over 1,000 values (F44)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "date_format_proposal",
+      "column": "INVOICE_DT"
+    },
+    "resolution": "applied as date_format %d-%b-%y (decision above)",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_HEADER.INVOICE_DT",
+      "note": "conformance 1.0"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "invoiceHeader",
+    "field": "DUE_DT",
+    "format": "%d-%b-%y",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_HEADER.DUE_DT",
+      "note": "measured conformance 1.0 to DD-MON-YY over 1,000 values (F44)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "date_format_proposal",
+      "column": "DUE_DT"
+    },
+    "resolution": "applied as date_format %d-%b-%y (decision above)",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:INVOICE_HEADER.DUE_DT",
+      "note": "conformance 1.0"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "tenant_pointer_truth: INVOICE_HEADER.TENANT_ID 0/1000"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric; its domain is CODES type INV_STATUS (10 draft/20 issued/30 paid/40 overdue), served from the `codes` reference_data collection (decision below); no inline copy because no reader of INVOICE_HEADER exists (F38)",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "codes_domain: INVOICE_HEADER.STATUS_CD -> INV_STATUS"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS",
+      "note": "0/1000 resolve \u2014 the tool is right here; hand-check agrees"
+    }
+  },
+  {
+    "op": "embed",
+    "child_table": "INVOICE_LINE",
+    "into": "invoiceHeader",
+    "array_path": "lines",
+    "cardinality": "1:N",
+    "parent_key": [
+      "INVOICE_ID"
+    ],
+    "basis": "derived",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC1/HC2: INVOICE_HEADER->INVOICE_LINE by the unenforced INVOICE_ID pointer: fan-out p50 1 / p99 5 / max 6, embedded bytes p99 1,347 / max 1,612; 232 of 1,000 headers line-less; 37 of 1,500 lines orphaned. <plugin>/skills/schema-modeling/design/fundamental-embed-vs-reference.md:30 'Order -> Line Items 1:few (1-50), always together -> embed array'. No application reader/writer (F38), so the basis is structure + data, not access"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "embed_unbounded",
+      "parent": "invoiceHeader",
+      "child": "INVOICE_LINE"
+    },
+    "resolution": "bounded in data: fan-out p99 5 / max 6 at mini scale, max embedded 1,612 B; lines per invoice is a product bound (one line per rated item), not an event stream; fixture snapshot, re-measure at full scale before cutover",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC2 fanout INVOICE_HEADER->INVOICE_LINE p99 5 max 6; embed_bytes max 1612"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "embed_null_pointer_rows",
+      "table": "INVOICE_LINE",
+      "column": "INVOICE_ID"
+    },
+    "resolution": "0 rows with INVOICE_ID NULL (hand-check child_rows_null_fk 0); the 37 non-null rows that resolve to no header are the orphans -> invoice_lines_orphaned collection with orphan: true, written by the loader (no model_patch.py op creates a remainder collection, F47); exact-count recon reconciles 1,463 embedded + 37 orphaned = 1,500",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC1: child_rows_null_fk 0, orphan_child_rows 37"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "invoiceHeader",
+    "subject": "INVOICE_LINE orphans",
+    "decision": "the 37 INVOICE_LINE rows whose INVOICE_ID matches no INVOICE_HEADER are loaded into `invoice_lines_orphaned` (same field mapping as the embedded element, plus orphan: true) rather than dropped; model_patch.py has no op to declare that collection, so map-draft-2 does not list it (F47)",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC1 orphan_child_rows 37"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "customerMaster",
+    "child_table": "INVOICE_HEADER",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC2 fanout CUSTOMER_MASTER->INVOICE_HEADER p99 26 / max 29, 116 customers without headers, worst-case full chain ~18.4 KB: size would allow a customer-centric document, but headers are batch-written (BATCH_NO) and grow per billing cycle while the customer row is a master record; <plugin>/skills/schema-modeling/design/fundamental-embed-vs-reference.md:18-21 'reference when \u2026 array growth is unbounded'. Three collections (customerMaster, invoiceHeader+lines, codes) it is"
+    }
+  },
+  {
+    "op": "index",
+    "collection": "invoiceHeader",
+    "keys": [
+      [
+        "custId",
+        1
+      ]
+    ],
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC2: CUSTOMER_MASTER->INVOICE_HEADER is the only join path into headers (CUST_ID, unenforced); p99 26 headers per customer \u2014 the index that makes the reference usable"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "entityAttrValue",
+    "field": "CREATED_DT",
+    "format": "%d-%b-%y",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:ENTITY_ATTR_VALUE.CREATED_DT",
+      "note": "measured conformance 1.0 over 70 values (F44)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "entityAttrValue",
+    "match": {
+      "kind": "date_format_proposal",
+      "column": "CREATED_DT"
+    },
+    "resolution": "applied as date_format %d-%b-%y (decision above)",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:ENTITY_ATTR_VALUE.CREATED_DT",
+      "note": "conformance 1.0"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "entityAttrValue",
+    "match": {
+      "kind": "polymorphic_pointer"
+    },
+    "resolution": "not polymorphic in data: ENTITY_TYPE domain is {CUSTOMER} only (70/70) and every ENTITY_ID resolves to CUSTOMER_MASTER.CUST_ID (hand-check HC5 entity_id_unresolved 0); the owner is known, so the rows become the attribute array of customerMaster (embed below). If another ENTITY_TYPE ever appears it needs its own owner decision; entityType is kept on the element so the case is visible",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "value_domain:ENTITY_ATTR_VALUE.ENTITY_TYPE",
+      "note": "{CUSTOMER} only; HC5: 58 entities, max 4 attrs, all resolve"
+    }
+  },
+  {
+    "op": "rename",
+    "collection": "entityAttrValue",
+    "field": "ATTR_TYPE",
+    "to": "type",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "378-389",
+      "note": "attribute pattern element shape {k, v, type}: ATTR_TYPE is the value's declared type"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "entityAttrValue",
+    "columns": [
+      "ENTITY_ID",
+      "ATTR_NAME"
+    ],
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "forced by `pattern attribute`, which refuses any element key other than parent_key + [name_col] (F46): the surrogate EAV_ID stays as an element field. Hand-check HC5 arithmetic: 70 rows but sum of distinct ATTR_NAME per entity = 69 (50x1 + 6x2 + 1x3 + 1x4) -> exactly one (ENTITY_ID, ATTR_NAME) pair is duplicated and will collide on this key; also one case-variant name 'tax_region_override' (1 row) vs 'TAX_REGION_OVERRIDE' (11). Both are data-quality items for the load step, not reasons to keep a 70-row table as a collection"
+    }
+  },
+  {
+    "op": "embed",
+    "child_table": "ENTITY_ATTR_VALUE",
+    "into": "customerMaster",
+    "array_path": "attributes",
+    "cardinality": "1:few",
+    "parent_key": [
+      "ENTITY_ID"
+    ],
+    "shape": "array",
+    "basis": "derived",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "HC5: 70 rows / 58 entities / max 4 attributes per entity, 8 distinct names \u2014 bounded by the attribute vocabulary, not by time; all 70 ENTITY_ID resolve to CUSTOMER_MASTER. <plugin>/skills/schema-modeling/design/pattern-attribute.md:10 'If documents have many optional fields, move them into a key-value array'. No application reader/writer of ENTITY_ATTR_VALUE (F38)"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "attribute",
+    "collection": "customerMaster",
+    "child_table": "ENTITY_ATTR_VALUE",
+    "name_col": "ATTR_NAME",
+    "value_col": "ATTR_VALUE",
+    "array_path": "attributes",
+    "detail": "customerMaster.attributes: [{k: ATTR_NAME, v: ATTR_VALUE, type: ATTR_TYPE, entityType, eavId, createdDt}] with the multikey index {attributes.k, attributes.v}",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "378-400",
+      "note": "ENTITY_ATTR_VALUE is the textbook EAV table ('because someone read about EAV once'); <plugin>/skills/schema-modeling/design/pattern-attribute.md:40-49 attribute array + single multikey index"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "LAST_ACTIVITY_DT",
+    "format": "%d-%b-%y",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:CUSTOMER_MASTER.LAST_ACTIVITY_DT",
+      "note": "measured conformance 1.0 over 201 values (F44)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "date_format_proposal",
+      "column": "LAST_ACTIVITY_DT"
+    },
+    "resolution": "applied as date_format %d-%b-%y (decision above)",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:CUSTOMER_MASTER.LAST_ACTIVITY_DT",
+      "note": "conformance 1.0"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "SIGNUP_DT"
+    },
+    "resolution": "dirty text date: 41 of 201 values are not DD-MON-YY ('N/A', blanks, impossible dates, other layouts \u2014 hand-check HC6). Step default = keep the raw string + parsed signupDt + flag for the unparseable; model_patch.py has no op for 'string plus parsed field' (date_format converts the field in place and would make the harness fail 41 rows as unconverted), so the spec is left as the tool left it (bson date, family default) and the raw+parsed+flag shape is a loader rule recorded here (F49). Do NOT apply date_format %d-%b-%y: the measured conformance is 0.796, not 1.0",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "text_shapes:CUSTOMER_MASTER.SIGNUP_DT",
+      "note": "conformance < 1.0; HC6 dirty_dates 41/201 invalid"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "LAST_INVOICE_DT"
+    },
+    "resolution": "zero non-null rows in the fixture (LAST_INVOICE_DT is NULL in all 201 rows, triage 'genuinely open'): stays a string, no parsed field, no format assumed \u2014 nothing can be measured and the family default DD-MON-YY is an unverifiable guess. No model_patch.py op reverts a text-date column to string (F49), so the spec keeps the tool's bson date + date_string_to_date; with zero rows the harness has nothing to fail",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER.LAST_INVOICE_DT all NULL, genuinely open; 02_horror.sql:3-6 'text dates'"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "LAST_PAYMENT_DT"
+    },
+    "resolution": "zero non-null rows in the fixture (LAST_PAYMENT_DT is NULL in all 201 rows, triage 'genuinely open'): stays a string, no parsed field, no format assumed \u2014 nothing can be measured and the family default DD-MON-YY is an unverifiable guess. No model_patch.py op reverts a text-date column to string (F49), so the spec keeps the tool's bson date + date_string_to_date; with zero rows the harness has nothing to fail",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER.LAST_PAYMENT_DT all NULL, genuinely open; 02_horror.sql:3-6 'text dates'"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "TERMINATE_DT"
+    },
+    "resolution": "zero non-null rows in the fixture (TERMINATE_DT is NULL in all 201 rows, triage 'genuinely open'): stays a string, no parsed field, no format assumed \u2014 nothing can be measured and the family default DD-MON-YY is an unverifiable guess. No model_patch.py op reverts a text-date column to string (F49), so the spec keeps the tool's bson date + date_string_to_date; with zero rows the harness has nothing to fail",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER.TERMINATE_DT all NULL, genuinely open; 02_horror.sql:3-6 'text dates'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "repeating_group"
+    },
+    "resolution": "kept flat (1:1 columns) in map-draft-2. Step default = grouped subdocuments by DDL column-prefix group (address, mail address, phone1-4, email, flags, UDF\u2026); model_patch.py has no group/collapse op \u2014 the only route is ~130 per-field `rename` decisions to dotted targets ('address.line1'), whose loader semantics are unverified (the recon harness identifier regex admits dots but no fixture exercises nested targets). Deferred to a later draft behind a `group` op (F50); no application reads these columns (F38), so nothing breaks today",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "22-180",
+      "note": "CUSTOMER_MASTER: ADDR_LINE_1..6, MAIL_ADDR_LINE_1..6, PHONE1..4(+_TYPE_CD), EMAIL_1..3, FLAG_*, UDF_* series"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "tenant_pointer_truth: CUSTOMER_MASTER.TENANT_ID 1/201 resolve"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep every *_CD numeric; `codes` is a reference_data collection (decision below). Code types per hand-check codes_domain: STATUS_CD->CUST_STATUS (1,2,3,99), CUST_TYPE_CD->CUST_TYPE, PHONE1..4_TYPE_CD->PHONE_TYPE; SUB_STATUS_CD, SEGMENT_CD, REGION_CD, TERRITORY_CD, CHANNEL_CD, RATE_CLASS_CD have no CODES type at all (magic numbers with no lookup) \u2014 labels, if any, live in the application. No extended reference: nothing reads these columns (F38) and pkg_ow_util.f_code_desc has no caller (F30)",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "codes_domain: which CUSTOMER_MASTER *_CD columns have a CODES type"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "typed arrays via csv_to_array as proposed for PROMO_CODES_CSV and CHILD_ACCT_IDS (all NULL). RELATED_ACCT_IDS is not clean CSV: 4 rows use ';' and some elements are space-padded (' , 99 ,'); csv_to_array has no delimiter/trim parameter and model_patch.py has no op to set one (F51), so those 4 rows load as one-element arrays unless the loader normalises; recorded, spec left as the tool left it",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "csv_elements:CUSTOMER_MASTER.RELATED_ACCT_IDS",
+      "note": "hand-check csv_shapes: 129 comma / 4 semicolon / padded elements"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "keep tenantId as the raw source string, no reference to `tenants`: hand-check tenant_pointer_truth \u2014 INVOICE_HEADER 0/1000, INVOICE_LINE 0/1500, CUSTOMER_MASTER 1/201 resolve to TENANTS.ID; a reference the recon harness would fail on 99.5%+ of rows is not a model. The 'resolved: bool' flag the step default asks for has no model_patch.py op (F48); it is a loader-side derived field, recorded here, not in the spec.",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS",
+      "note": "200/201 unresolved \u2014 tool and hand-check agree"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "computed",
+    "collection": "customerMaster",
+    "detail": "TRG_CUSTOMER_MASTER_SEQ (BEFORE INSERT): CUST_SEQ_NO := seq NEXTVAL (identity), CUST_NAME_UPPER := UPPER(CUST_NAME), ROW_VERSION_NO := 1. Loaded as-is from the source (recon parity); after cutover the writer derives custNameUpper and rowVersionNo \u2014 a case-insensitive collation index could replace custNameUpper later, but no reader of it exists (F38) so nothing decides that today",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "346-356",
+      "note": "trg_customer_master_seq body"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "customerMaster",
+    "subject": "dangling TENANT_ID: raw id + resolved flag",
+    "decision": "tenantId stays the raw source string on customerMaster, invoiceHeader and invoiceHeader.lines; a `tenantResolved: bool` (true iff the id exists in `tenants`) is a loader-derived field \u2014 model_patch.py has no op that adds a derived/flag field (F48), so it is not in map-draft-2 and the recon harness must treat it as target-only",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "tenant_pointer_truth: 1/201, 0/1000, 0/1500 resolve"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_BILLING_AUDIT_LOG_ID"
+    },
+    "resolution": "sequence_trigger_identity, not business logic: IF :NEW.log_id IS NULL THEN seq_billing_audit_log.NEXTVAL. Target: billingAuditLog._id = LOG_ID loaded as-is; the writer allocates ids after cutover. The DDL census had this trap and model_proposal.py never merged it (F43)",
+    "evidence": {
+      "file": ".migration/census_ddl.json",
+      "note": "traps: BILLING_AUDIT_LOG sequence_trigger_identity 'trigger TRG_BILLING_AUDIT_LOG_ID assigns NEXTVAL' (01_tables.sql:179-187)"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_ENTITY_ATTR_VALUE_SEQ"
+    },
+    "resolution": "sequence_trigger_identity, not business logic: EAV_ID := seq NEXTVAL. EAV_ID survives as the eavId element field inside customerMaster.attributes (the element key is attributes.k by the attribute pattern) \u2014 F43",
+    "evidence": {
+      "file": ".migration/census_ddl.json",
+      "note": "traps: ENTITY_ATTR_VALUE sequence_trigger_identity 'trigger TRG_ENTITY_ATTR_VALUE_SEQ assigns NEXTVAL' (02_horror.sql:391-400)"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_CUSTOMER_MASTER_SEQ"
+    },
+    "resolution": "sequence_trigger_identity for CUST_SEQ_NO plus two derived columns (CUST_NAME_UPPER = UPPER(CUST_NAME), ROW_VERSION_NO = 1): recorded as the `computed` pattern on customerMaster (decision above); not business logic \u2014 F43",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "346-356",
+      "note": "trg_customer_master_seq"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_SUBSCRIPTIONS_HIST"
+    },
+    "resolution": "d-hist (decided): history stays a separate collection subscriptionsHist, document_versioning pattern (decision below). The trigger copies :OLD on every UPDATE/DELETE of SUBSCRIPTIONS, including the sp_change_plan cascade (ap-1bdc6a5070), so the post-cutover writer must write the history document in the same transaction; it is not a validation rule",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-bdfdef0db0",
+      "note": "warm; full-row :OLD copy into SUBSCRIPTIONS_HIST (01_tables.sql:206-224)"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_CUSTOMER_MASTER_HIST"
+    },
+    "resolution": "d-hist (decided): separate customerMasterHist collection, document_versioning pattern (decision below); 155-column :OLD copy on UPDATE/DELETE of CUSTOMER_MASTER, no caller in the estate (cold), writer-side copy after cutover",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-dbf1b410e9",
+      "note": "cold; trg_customer_master_hist (02_horror.sql:358-389)"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_SUB_NO_UNCANCEL"
+    },
+    "resolution": "application state-machine rule, not data: IF :OLD.status_cd = 30 THEN :NEW.status_cd := 30 \u2014 'cancelled is terminal', applied silently (no RAISE; F40). Moves into the subscription service's update path; nothing in the document model changes",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-f0f920bfd1",
+      "note": "trigger_rule on SUBSCRIPTIONS, 01_tables.sql:228-237"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_USAGE_EVENTS_CHECK"
+    },
+    "resolution": "application validation, not data: units > 0 and KIND_CD must exist in CODES('USAGE_KIND') (RAISE -20001/-20002). The existence check is the one HOT read of CODES in the estate, so `codes` is reference_data loaded before any usage write (decision below); no extended reference \u2014 the read checks existence, not CODE_DESC",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-fe087c4e0c",
+      "note": "hot CODES existence check in trg_usage_events_check, 01_tables.sql:239-253"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "document_versioning",
+    "collection": "subscriptionsHist",
+    "key_columns": [
+      "ID",
+      "HIST_ID"
+    ],
+    "version_col": "HIST_ID",
+    "detail": "one document per (subscription id, hist_id) version; hist_id is the monotonic sequence the trigger assigns; separate collection because the trigger writes on every update/delete and history grows unboundedly",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "190-224",
+      "note": "subscriptions_hist + trg_subscriptions_hist; <plugin>/skills/schema-modeling/design/pattern-document-versioning.md:10 'store full document history in a separate revisions collection'"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "nullable_comparison_key",
+      "collection": "subscriptionsHist"
+    },
+    "resolution": "ID is nullable in the DDL but every row is written by trg_subscriptions_hist from :OLD.id, the NOT NULL primary key of SUBSCRIPTIONS; no other writer exists. Key [ID, HIST_ID] cannot have a NULL part in practice (0 rows today)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "206-224",
+      "note": "trigger writes :OLD.id; SUBSCRIPTIONS.id is the PK"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "document_versioning",
+    "collection": "customerMasterHist",
+    "key_columns": [
+      "CUST_ID",
+      "HIST_ID"
+    ],
+    "version_col": "HIST_ID",
+    "detail": "one document per (cust_id, hist_id) version of the 155-column customer row; separate collection (d-hist)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "358-389",
+      "note": "trg_customer_master_hist; <plugin>/skills/schema-modeling/design/pattern-document-versioning.md:10"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "nullable_comparison_key",
+      "collection": "customerMasterHist"
+    },
+    "resolution": "CUST_ID is nullable in the DDL but written only by trg_customer_master_hist from :OLD.cust_id, the PK of CUSTOMER_MASTER; 0 rows today",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "358-389",
+      "note": "trigger writes :OLD.cust_id"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "TENANT_ID / PLAN_ID on the history row are frozen copies of the base row at write time, kept as raw values; no reference edge (a history snapshot must not re-resolve). The parent-key reference to subscriptions is the ID key part; model_patch.py's `reference` op only re-labels an existing census relationship and cannot add a new edge, so none is recorded (F52)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "206-224",
+      "note": ":OLD.tenant_id, :OLD.plan_id copied"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric (CODES type SUB_STATUS 10/20/30), snapshot value; `codes` reference_data",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "19-21",
+      "note": "SUB_STATUS seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "date_as_string"
+    },
+    "resolution": "HIST_DT stays a string with no parsed field: 0 rows, and the trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS') (18 chars) \u2014 the family default %d-%b-%y would be wrong even when rows exist; nothing to measure, nothing to convert",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "213-222",
+      "note": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') into hist_dt"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "SUBSCRIPTIONS_HIST",
+      "column": "HIST_DT"
+    },
+    "resolution": "zero rows; stays string, no parsed field. The assumed %d-%b-%y is provably wrong: the only writer formats 'DD-MON-YY HH24:MI:SS'. No op reverts the tool's bson date (F49); recorded",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "190-224",
+      "note": "hist_dt VARCHAR2(20); trigger TO_CHAR format"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "HIST_DT"
+    },
+    "resolution": "zero rows; stays string, no parsed field. Written by trg_customer_master_hist as TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'), not %d-%b-%y. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "358-389",
+      "note": "trg_customer_master_hist hist_dt"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "SIGNUP_DT"
+    },
+    "resolution": "zero rows (CUSTOMER_MASTER_HIST is empty \u2014 no update/delete has ever fired the trigger): SIGNUP_DT stays a string, no parsed field, no format assumed; it will carry whatever the base row's text was at copy time, including SIGNUP_DT's 20% garbage. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER_HIST.SIGNUP_DT 0 rows, genuinely open"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_ACTIVITY_DT"
+    },
+    "resolution": "zero rows (CUSTOMER_MASTER_HIST is empty \u2014 no update/delete has ever fired the trigger): LAST_ACTIVITY_DT stays a string, no parsed field, no format assumed; it will carry whatever the base row's text was at copy time, including SIGNUP_DT's 20% garbage. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT 0 rows, genuinely open"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_INVOICE_DT"
+    },
+    "resolution": "zero rows (CUSTOMER_MASTER_HIST is empty \u2014 no update/delete has ever fired the trigger): LAST_INVOICE_DT stays a string, no parsed field, no format assumed; it will carry whatever the base row's text was at copy time, including SIGNUP_DT's 20% garbage. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER_HIST.LAST_INVOICE_DT 0 rows, genuinely open"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_PAYMENT_DT"
+    },
+    "resolution": "zero rows (CUSTOMER_MASTER_HIST is empty \u2014 no update/delete has ever fired the trigger): LAST_PAYMENT_DT stays a string, no parsed field, no format assumed; it will carry whatever the base row's text was at copy time, including SIGNUP_DT's 20% garbage. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT 0 rows, genuinely open"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "TERMINATE_DT"
+    },
+    "resolution": "zero rows (CUSTOMER_MASTER_HIST is empty \u2014 no update/delete has ever fired the trigger): TERMINATE_DT stays a string, no parsed field, no format assumed; it will carry whatever the base row's text was at copy time, including SIGNUP_DT's 20% garbage. No op reverts the tool's bson date (F49)",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "unresolved_triage: CUSTOMER_MASTER_HIST.TERMINATE_DT 0 rows, genuinely open"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "repeating_group"
+    },
+    "resolution": "kept flat, same decision and reason as customerMaster (F50); the history row must mirror the base row 1:1",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "181-345",
+      "note": "customer_master_hist mirrors customer_master columns"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "TENANT_ID is a frozen copy of the base row's raw value; no reference (1/201 would resolve); see customerMaster",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "tenant_pointer_truth CUSTOMER_MASTER.TENANT_ID 1/201"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "same as customerMaster: numeric codes kept, `codes` reference_data, six columns have no CODES type",
+    "evidence": {
+      "file": ".migration/data_profile_handcheck.json",
+      "note": "codes_domain"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "date_as_string"
+    },
+    "resolution": "all six text-date columns stay strings with no parsed field (zero rows; HIST_DT format is 'DD-MON-YY HH24:MI:SS')",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "181-200",
+      "note": "hist_dt and the copied *_DT columns"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "typed arrays via csv_to_array as for customerMaster; RELATED_ACCT_IDS carries the same ';'/padding defect (F51)",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "csv_elements:CUSTOMER_MASTER_HIST.PROMO_CODES_CSV",
+      "note": "0 rows measured"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "reference_data",
+    "collection": "codes",
+    "detail": "32 seed rows, 10 code types, written only by the schema scripts; loaded once before any collection that validates against it (trg_usage_events_check reads it hot). Labels for *_CD columns are resolved from `codes` by the application; no extended reference of CODE_DESC anywhere because no estate code reads CODE_DESC with a row (pkg_ow_util.f_code_desc has no caller, F30) and every package DECODEs inline",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "10-36",
+      "note": "codes table + 20 core seed rows; 02_horror.sql:9-20 adds CUST_STATUS/CUST_TYPE/PHONE_TYPE"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "extended_reference",
+    "collection": "invoices",
+    "from_table": "TENANTS",
+    "join": {
+      "local": [
+        "TENANT_ID"
+      ],
+      "remote": [
+        "ID"
+      ]
+    },
+    "fields": [
+      "STATUS_CD"
+    ],
+    "path": "tenant",
+    "detail": "invoices.tenant.statusCd: fn_overdue_accounts reads DECODE(t.status_cd) with every overdue invoice (hot, outer join); TENANTS.STATUS_CD changes only via sp_suspend_overdue (cold)",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-46a8eb988b",
+      "note": "hot read INVOICES x TENANTS, copies t.status_cd (05_pkg_dunning.sql:21-29); <plugin>/skills/schema-modeling/design/pattern-extended-reference.md:10"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoices",
+    "match": {
+      "kind": "extended_reference_candidate",
+      "parent": "TENANTS"
+    },
+    "resolution": "applied: extended_reference TENANTS.STATUS_CD -> invoices.tenant.statusCd (decision above)",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-46a8eb988b",
+      "note": "the one hot INVOICES<-TENANTS read"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "extended_reference",
+    "collection": "subscriptions",
+    "from_table": "PLANS",
+    "join": {
+      "local": [
+        "PLAN_ID"
+      ],
+      "remote": [
+        "ID"
+      ]
+    },
+    "fields": [
+      "CODE",
+      "TIER_CD",
+      "MONTHLY_FEE",
+      "INCLUDED_UNITS"
+    ],
+    "path": "plan",
+    "detail": "subscriptions.plan.{code, tierCd, monthlyFee, includedUnits}: the fields fn_entitlement / fn_plan_for / rating read from PLANS with every subscription row (8 confirmed patterns); PLANS has no hot/warm writer",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-60ec05ff91",
+      "note": "SELECT p.code, p.tier_cd, p.monthly_fee, p.included_units \u2026 FROM tenants t, subscriptions s, plans p; <plugin>/skills/schema-modeling/design/pattern-extended-reference.md:10"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptions",
+    "match": {
+      "kind": "extended_reference_candidate",
+      "parent": "PLANS"
+    },
+    "resolution": "applied: extended_reference PLANS.{CODE,TIER_CD,MONTHLY_FEE,INCLUDED_UNITS} -> subscriptions.plan (decision above)",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-60ec05ff91",
+      "note": "plus ap-08afdeda17, ap-286ed36e25, ap-4f5ea36ffb, ap-6b30ea3439, ap-738112c48d, ap-df26fbfed9, ap-ee373ebbd1"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptions",
+    "match": {
+      "kind": "extended_reference_candidate",
+      "parent": "TENANTS"
+    },
+    "resolution": "no extended reference: the only TENANTS<-SUBSCRIPTIONS read (ap-60ec05ff91) projects t.id alone, which subscriptions.tenantId already holds; nothing to copy",
+    "evidence": {
+      "file": ".migration/access_patterns.json",
+      "kind": "access_pattern",
+      "ref": "ap-60ec05ff91",
+      "note": "SELECT t.id AS tenant_id \u2026 \u2014 no other tenant column read"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoices",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric; domain = CODES type INV_STATUS; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "28-31",
+      "note": "INV_STATUS seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "tenants",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric; domain = CODES type TENANT_STATUS; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "17-18",
+      "note": "TENANT_STATUS seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "plans",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep TIER_CD numeric; domain = CODES type PLAN_TIER; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "22-24",
+      "note": "PLAN_TIER seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptions",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric; domain = CODES type SUB_STATUS; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "19-21",
+      "note": "SUB_STATUS seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "usageEvents",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep KIND_CD numeric; domain = CODES type USAGE_KIND; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "25-27",
+      "note": "USAGE_KIND seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "dunningAttempts",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep STATUS_CD numeric; domain = CODES type DUN_STATUS; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "32-34",
+      "note": "DUN_STATUS seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "notifications",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "keep KIND_CD numeric; domain = CODES type NOTIF_KIND; labels come from the `codes` reference_data collection or the inline DECODEs the packages already carry (F30: f_code_desc has no caller). An extended reference of CODE_DESC is not expressible anyway: CODES' unique key is (CODE_TYPE, CODE_VAL) and `pattern extended_reference` cannot bind CODE_TYPE to a constant (F53)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "35-36",
+      "note": "NOTIF_KIND seed rows"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "plans",
+    "match": {
+      "kind": "single_valued_index_key"
+    },
+    "resolution": "keep the access-derived index: ACTIVE_YN has one value ('Y') in the mini fixture because the seeder never deactivates a plan; fn_plan_for filters on it (confirmed access pattern), so the index stays and is re-checked on the real estate",
+    "evidence": {
+      "file": ".migration/data_profile.json",
+      "kind": "data_profile",
+      "ref": "value_domain:PLANS.ACTIVE_YN",
+      "note": "{Y} only at mini scale"
+    }
+  },
+  {
+    "op": "exclude",
+    "collection": "fixtureMeta",
+    "evidence": {
+      "file": ".migration/census_dispositions.json",
+      "note": "diff_dispositions: FIXTURE_META 'fixture bookkeeping \u2026 Out of migration scope; exclude from the mapping spec' (F45: the proposer has no dispositions input)"
+    }
+  },
+  {
+    "op": "note",
+    "subject": "horror tables: no application evidence behind these decisions",
+    "decision": "CUSTOMER_MASTER, CUSTOMER_MASTER_HIST, INVOICE_HEADER, INVOICE_LINE and ENTITY_ATTR_VALUE have no confirmed access pattern (F38: none of the 64 confirmed patterns touches them, F41). Every embed/reference/attribute decision above for them cites DDL structure, data_profile_handcheck.json and the vendored pattern guidance only; the 'app-aware' proposer had no app evidence for exactly these tables, and the first application reader to appear re-opens them",
+    "evidence": {
+      "file": ".migration/model_proposal_triage.json",
+      "note": "horror_tables_without_access_evidence: 5 tables, 0 patterns"
+    }
+  }
+]
