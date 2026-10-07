@@ -158,3 +158,16 @@ Identified by collection / `kind` / column(s) as the proposer emitted them (`04_
 9. **Record-only patterns leave no trace in the shape.** `ttl`, `document_versioning`-as-revisions and the detached-audit semantics can only be carried as `note`/`resolve` text; downstream steps (loader, cutover) must read `modeling.decisions`, not just `collections`.
 
 Legacy source (`services/legacy-billing/db/oracle/`, `testdata/legacy/oracle_billing_seed.py`) and the plugin clone were not modified. No database connection was used in this step; no secret value appears in any artifact.
+
+## 6. Pre-PR self-check (`.agents/skills/tp-pre-pr-self-check`)
+
+| check | result |
+|---|---|
+| `model_patch.py --check` on `map-v1` | exit 0 — `open items: 0 modeling.unresolved, 0 collection open_questions`, `check OK (124 decisions, 251 evidence refs)` |
+| `make tp-smoke` | `tp-smoke: all checks passed`, exit 0 (after `mise trust` of the repo's `mise.toml` on this VM — environment, not a repo change) |
+| generated JSON edited by hand | no — `mapping_spec.json` is the patcher's output of the single command above; `design_decisions.json` is the only hand-written input |
+| legacy estate untouched | `git diff --stat` touches only `.migration/design_decisions.json`, `.migration/mapping_spec.json`, `.migration/05_decisions.md` |
+| secrets | none referenced; `MONGODB_ATLAS_URI` not used (no database access in this step) |
+| NULL/missing attribution, unit namespace `ow_tp`/`ow-tp-`, shared-table DDL, rerun retention, recon report, capability preflight, parity tolerance | not applicable to this step (modeling artifacts only; no load, no target writes); recorded, not claimed |
+| unverified paths | loader behaviour named in the `d-orphan-*`, `d-dirty-dates` and `d-eav-embed` decisions is a contract for the load step, not yet executed |
+| previous run branch | `tp-run/mongodb-20261007T062215Z` not read |
