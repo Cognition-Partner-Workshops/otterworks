@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otterworks-etl"
+version = "0.1.0"
+description = "Shared code for the OtterWorks ETL Airflow DAGs"
+requires-python = ">=3.11,<3.12"
+
+[tool.setuptools]
+packages = ["otterworks_etl"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["otterworks_etl"]

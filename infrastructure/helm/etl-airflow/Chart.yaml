@@ -1,0 +1,6 @@
+apiVersion: v2
+name: etl-airflow
+description: OtterWorks ETL on Apache Airflow 2.8 (webserver + scheduler, LocalExecutor). Validated in CI, not deployed.
+type: application
+version: 0.1.0
+appVersion: "2.8.4"

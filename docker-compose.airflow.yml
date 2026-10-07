@@ -1,0 +1,115 @@
+# OtterWorks ETL on Apache Airflow 2.8 (LocalExecutor). Start with `make airflow-up`,
+# which first brings up the infra services the DAGs talk to (docker-compose.infra.yml)
+# so the shared otterworks-network exists. Airflow keeps its metadata in its own
+# Postgres container on a private network and never touches the app's otterworks DB.
+x-airflow-common: &airflow-common
+  build:
+    context: ./etl/airflow
+  image: otterworks/etl-airflow:local
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@airflow-postgres:5432/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET_KEY:-otterworks-local-dev}
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+  volumes:
+  - airflow_logs:/opt/airflow/logs
+  networks:
+  - airflow
+  - otterworks
+  security_opt:
+  - no-new-privileges:true
+
+services:
+  airflow-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD:-airflow}
+      POSTGRES_DB: airflow
+    volumes:
+    - airflow_postgres_data:/var/lib/postgresql/data
+    networks:
+    - airflow
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U airflow -d airflow
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    tmpfs:
+    - /tmp
+    - /var/run/postgresql
+
+  airflow-init:
+    <<: *airflow-common
+    command: version
+    environment:
+      <<: *airflow-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USER:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-airflow}
+    healthcheck:
+      disable: true
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+    - ${AIRFLOW_WEB_PORT:-8280}:8080
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - --fail
+      - --silent
+      - http://localhost:8080/health
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+      retries: 10
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - --fail
+      - --silent
+      - http://localhost:8974/health
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+      retries: 10
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+networks:
+  airflow: {}
+  otterworks:
+    name: otterworks-network
+    external: true
+
+volumes:
+  airflow_postgres_data: null
+  airflow_logs: null

@@ -516,3 +516,48 @@ jobs:
           --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
           --set pv.volumeName=pv-ci
           --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci
+
+  # ETL on Airflow (etl/airflow): ruff, helm lint + helm template | kubeconform for the chart (never
+  # deployed), then build the image and bring the Compose stack to healthy with zero DAG import
+  # errors via `make airflow-up`. Self-contained path filter so the existing detect-changes job is untouched.
+  etl-airflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            airflow:
+              - 'etl/airflow/**'
+              - 'docker-compose.airflow.yml'
+              - 'infrastructure/helm/etl-airflow/**'
+              - 'Makefile'
+      - if: steps.changes.outputs.airflow == 'true'
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - if: steps.changes.outputs.airflow == 'true'
+        run: uvx ruff@0.6.9 check . && uvx ruff@0.6.9 format --check .
+        working-directory: etl/airflow
+      - if: steps.changes.outputs.airflow == 'true'
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - if: steps.changes.outputs.airflow == 'true'
+        name: Install kubeconform
+        run: |
+          curl -sSfL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz -o /tmp/kubeconform.tar.gz
+          echo "95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73  /tmp/kubeconform.tar.gz" | sha256sum -c -
+          sudo tar xz -C /usr/local/bin -f /tmp/kubeconform.tar.gz kubeconform
+      - if: steps.changes.outputs.airflow == 'true'
+        run: helm lint infrastructure/helm/etl-airflow --strict --set image.tag=ci
+      - if: steps.changes.outputs.airflow == 'true'
+        run: >
+          helm template ci infrastructure/helm/etl-airflow --set image.tag=ci
+          --set secrets.AIRFLOW__CORE__FERNET_KEY=ci --set config.AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+          | kubeconform -strict -summary -kubernetes-version 1.29.0
+      - if: steps.changes.outputs.airflow == 'true'
+        run: make airflow-up AIRFLOW_INFRA_SERVICES=postgres
+      - if: steps.changes.outputs.airflow == 'true'
+        run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow exec -T airflow-scheduler airflow dags test otterworks_platform_check
+      - if: failure() && steps.changes.outputs.airflow == 'true'
+        run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs --no-color
+      - if: always() && steps.changes.outputs.airflow == 'true'
+        run: make airflow-down
