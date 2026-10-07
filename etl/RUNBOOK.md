@@ -615,11 +615,15 @@ used ([§10](#10-human-follow-ups) item 2): its credentials back no Airflow Conn
   RETIRE=$(git log -n1 --format=%H -- etl/scripts/$SCRIPT)   # the retirement commit
   mkdir -p etl/scripts                                       # gone with the last script
   git show "$RETIRE^:etl/scripts/$SCRIPT" > etl/scripts/$SCRIPT
-  test -f etl/run.sh || git show "$(git log -n1 --format=%H -- etl/run.sh)^:etl/run.sh" > etl/run.sh
-  chmod +x etl/run.sh
+  RESTORED_RUN_SH=                                           # set only if run.sh is gone too
+  if [ ! -f etl/run.sh ]; then
+    git show "$(git log -n1 --format=%H -- etl/run.sh)^:etl/run.sh" > etl/run.sh
+    chmod +x etl/run.sh; RESTORED_RUN_SH=1
+  fi
   make etl-golden SCRIPT=${SCRIPT%.py} MODE=record
   git add etl/tests/golden/${SCRIPT%.py}       # commit the goldens only
-  rm etl/scripts/$SCRIPT; git checkout -- etl/run.sh 2>/dev/null || rm -f etl/run.sh
+  rm etl/scripts/$SCRIPT
+  [ -z "$RESTORED_RUN_SH" ] || rm etl/run.sh   # a tracked run.sh (and its local edits) is left alone
   ```
   Then `make etl-parity SCRIPT=${SCRIPT%.py}` against the new goldens.
 
