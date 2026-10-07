@@ -85,7 +85,10 @@ but leaves the source items in DynamoDB, which is what legacy does in effect (it
 `events_deleted_from_source` is 0). `false` is identical to the legacy goldens, and parity against
 them runs with `false`. `true` enables the new, correct delete by `id`, limited to keys verified in
 the uploaded archive: an accepted difference, tested in its own flag-on scenario, and enabling it
-needs compliance sign-off.
+needs compliance sign-off. With `true` an archived event is also kept unless its `timestamp` is
+before the cutoff instant: the legacy string filter archives same-instant spellings (`.000Z`,
+`+00:00`, date only) and offsets after the cutoff, and those stay in the table (logged as
+`kept_within_retention`). Events without `id` are skipped and logged as `skipped_without_id`.
 
 ### `otterworks_search_reindex` (`search_reindex_weekly.py`)
 
