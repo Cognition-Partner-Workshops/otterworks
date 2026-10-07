@@ -20,7 +20,7 @@ until their DAGs are ported; this directory only provides the image, local stack
 ```bash
 make airflow-up     # infra (postgres, localstack, meilisearch) + Airflow, waits for healthy, runs the gate
 make airflow-check  # re-run the gate
-make airflow-config-check  # Connections/Variables resolve and reach postgres, localstack, meilisearch
+make airflow-config-check  # every Connection and required Variable resolves; reaches postgres, localstack (named buckets/queues/tables exist), meilisearch
 make airflow-down   # stop Airflow (keeps its metadata volume; infra stays up)
 ```
 

@@ -15,6 +15,15 @@ make airflow-up             # creates etl/airflow/.env from .env.example if miss
 make airflow-config-check   # resolves every Connection/Variable in the scheduler and calls LocalStack, Postgres, MeiliSearch
 ```
 
+`make airflow-config-check` fails if a Connection or a required Variable (the `VARIABLES` list in
+`scripts/check_config.py`, equal to `.env.example`) does not resolve, and if a bucket, queue or
+table that a Variable names (`*_bucket`, `*_queue_name`, `*_table`) is missing from LocalStack.
+`scripts/localstack-init.sh` does not create `otterworks-analytics`, `otterworks-analytics-events`,
+`otterworks-file-storage` or `otterworks-file-quarantine`, so on a fresh stack the check fails
+until the ETL golden harness has created them: `make etl-golden SCRIPT=<script>` runs
+`harness.infra.ensure_resources()` against the same LocalStack (PR #1891; it also resets the local
+stack's contents for its scenario).
+
 Edit `etl/airflow/.env` (never `.env.example`) to point a local run elsewhere, then
 `make airflow-up` again to recreate the containers. `etl/airflow/scripts/check_config.py static`
 keeps this file, `.env.example` and the legacy scripts in step (run in CI).
