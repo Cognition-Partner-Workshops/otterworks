@@ -1,0 +1,3 @@
+# Only addition to the legacy runtime: freezegun, used by sitecustomize.py to
+# freeze the clock at the scenario's run date.
+freezegun==1.2.2

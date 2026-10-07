@@ -1,0 +1,7 @@
+# Host-side golden harness (Python 3.11). The legacy scripts themselves run in
+# the container built from legacy/Dockerfile with the pins in etl/requirements.txt.
+boto3==1.35.36
+freezegun==1.5.1
+psycopg2-binary==2.9.9
+pytest==8.3.5
+requests==2.32.3
