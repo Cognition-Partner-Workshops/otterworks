@@ -55,6 +55,16 @@ npx cap open ios      # open in Xcode to run on an iOS simulator/device
 
 Build the iOS app for the simulator from the command line (macOS with Xcode):
 
+The iOS shell targets **iOS 17.0** in both Xcode configurations and the generated
+Swift package. Capacitor 8 requires Xcode 26+ and iOS 15+, while the Xcode 27 SDK
+recommends iOS 17. The explicit target keeps `npx cap sync ios` compatible (the CLI
+reads the numeric project target to generate `CapApp-SPM/Package.swift`).
+The shell uses a single UIKit scene, loading the existing `Main` storyboard;
+`SceneDelegate` forwards launch and running-scene URLs/activities to Capacitor.
+
+For an alternate installed Xcode, set `DEVELOPER_DIR` on each `xcodebuild`/`xcrun`
+command rather than changing the machine-wide `xcode-select` setting.
+
 ```bash
 npm ci && npm run build && npx cap sync ios
 xcodebuild -project mobile/ios/App/App.xcodeproj -scheme App -configuration Debug \
