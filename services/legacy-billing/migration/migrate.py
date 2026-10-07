@@ -7,6 +7,11 @@ Idempotent: every run truncates the target tables and reloads them in one
 transaction, so a rerun leaves byte-identical table contents (recon.py
 proves this by fingerprinting the target before and after a second run).
 
+After cutover Postgres is the system of record, so a reload must not erase
+writes the app made there. Each load records a fingerprint of the target;
+a later run refuses to truncate when the target no longer matches it,
+unless --force is given.
+
 Bulk INVOICE_LINE rows whose invoice_id has no INVOICE_HEADER row are not
 loaded into invoice_line (which now has a real FK). They are copied
 unchanged into invoice_line_orphan with a quarantine_reason, so nothing is
@@ -26,6 +31,57 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import estate  # noqa: E402
 
 FETCH = 5000
+LOAD_MARK = (0, "target-fingerprint")
+
+
+class TargetDiverged(RuntimeError):
+    pass
+
+
+def target_fingerprint(pg, include_baseline: bool = True) -> dict:
+    """Content fingerprint of every target table (all columns) + sequences."""
+    names = [t.name for t in estate.TABLES] + [estate.ORPHAN_TABLE]
+    if include_baseline:
+        names.append(estate.BASELINE_TABLE)
+    fp = {}
+    for name in names:
+        cols = [r[0] for r in pg.execute(
+            "SELECT column_name FROM information_schema.columns"
+            " WHERE table_schema = 'ow_billing' AND table_name = %s"
+            " ORDER BY ordinal_position", (name,))]
+        ck = estate.SetChecksum()
+        for row in pg.execute(f"SELECT {', '.join(cols)} FROM {name}"):
+            ck.add_row(row)
+        fp[name] = f"{ck.count}:{ck.hexdigest()}"
+    for seq in estate.SEQUENCES:
+        last, called = pg.execute(f"SELECT last_value, is_called FROM {seq}").fetchone()
+        fp[seq] = str(last + 1 if called else last)
+    return fp
+
+
+def _load_digest(pg) -> str:
+    fp = target_fingerprint(pg, include_baseline=False)
+    return hashlib.sha256(repr(sorted(fp.items())).encode()).hexdigest()
+
+
+def check_reloadable(pg) -> None:
+    """Raise TargetDiverged if the target holds writes made since the last load."""
+    populated = any(
+        pg.execute(f"SELECT EXISTS (SELECT 1 FROM {t.name})").fetchone()[0]
+        for t in estate.TABLES
+    )
+    if not populated:
+        return
+    row = pg.execute(
+        f"SELECT expected FROM {estate.BASELINE_TABLE} WHERE batch_no = %s AND check_name = %s",
+        LOAD_MARK,
+    ).fetchone()
+    if row is None or row[0] != _load_digest(pg):
+        raise TargetDiverged(
+            "the Postgres target has changed since the last migration load "
+            "(app writes after cutover); reloading from Oracle would erase them. "
+            "Rerun with --force (make billing-pg-migrate FORCE=1) only if that is intended."
+        )
 
 
 def _converter(column: estate.Column):
@@ -156,10 +212,12 @@ def capture_baseline(ora) -> list[tuple[int, str, str | None]]:
     return out
 
 
-def migrate(verbose: bool = True) -> dict:
+def migrate(verbose: bool = True, force: bool = False) -> dict:
     started = time.monotonic()
     summary: dict = {"tables": {}, "sequences": {}}
     with estate.oracle_connect() as ora, estate.pg_connect() as pg:
+        if not force:
+            check_reloadable(pg)
         all_tables = [t.name for t in estate.TABLES] + [estate.ORPHAN_TABLE, estate.BASELINE_TABLE]
         pg.execute("TRUNCATE " + ", ".join(all_tables))
         # Row triggers (sequence fillers, history copies, usage checks) must
@@ -190,6 +248,10 @@ def migrate(verbose: bool = True) -> dict:
         summary["baseline_rows"] = len(baseline)
         for name in all_tables:
             pg.execute(f"ALTER TABLE {name} ENABLE TRIGGER USER")
+        pg.execute(
+            f"INSERT INTO {estate.BASELINE_TABLE} (batch_no, check_name, expected) VALUES (%s, %s, %s)",
+            (*LOAD_MARK, _load_digest(pg)),
+        )
         pg.commit()
         pg.autocommit = True
         pg.execute("ANALYZE")
@@ -201,8 +263,15 @@ def migrate(verbose: bool = True) -> dict:
 
 
 def main() -> int:
-    argparse.ArgumentParser(description=__doc__.splitlines()[0]).parse_args()
-    migrate()
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--force", action="store_true",
+                    help="reload even if Postgres has writes since the last load (erases them)")
+    args = ap.parse_args()
+    try:
+        migrate(force=args.force)
+    except TargetDiverged as exc:
+        print(f"[migrate] refused: {exc}", file=sys.stderr)
+        return 2
     return 0
 
 

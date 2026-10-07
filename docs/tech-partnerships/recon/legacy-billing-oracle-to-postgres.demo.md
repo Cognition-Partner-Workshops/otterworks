@@ -1,6 +1,6 @@
 # Reconciliation: legacy-billing-oracle-to-postgres (ns=demo)
 
-Generated 2026-10-07T13:52:49Z, run mode `live`. Expected values are read live from Oracle `OW_BILLING` (FREEPDB1) or the seed manifest; actual values are recomputed from the PostgreSQL 15 target `ow_tp_billing.ow_billing`.
+Generated 2026-10-07T14:12:22Z, run mode `live`. Expected values are read live from Oracle `OW_BILLING` (FREEPDB1) or the seed manifest; actual values are recomputed from the PostgreSQL 15 target `ow_tp_billing.ow_billing`.
 
 **Result: 167/167 checks pass.**
 
@@ -74,7 +74,7 @@ Generated 2026-10-07T13:52:49Z, run mode `live`. Expected values are read live f
 | `fixture_meta` | columns | 3 | 3 | pass | same column names on both sides |
 | `fixture_meta` | row_count | 2 | 2 | pass |  |
 | `fixture_meta` | key_coverage(marker) | 2 | 2 | pass | missing=0 extra=0 |
-| `fixture_meta` | row_checksum(all columns) | 5e3bec4d69243ec7399f245b09a8fbf3 | 5e3bec4d69243ec7399f245b09a8fbf3 | pass | order-independent md5 over every column of every row |
+| `fixture_meta` | row_checksum(all columns) | 9a7513320595ce4d494445cfb1244953 | 9a7513320595ce4d494445cfb1244953 | pass | order-independent md5 over every column of every row |
 | `customer_master` | columns | 155 | 155 | pass | same column names on both sides |
 | `customer_master` | row_count | 25001 | 25001 | pass |  |
 | `customer_master` | sum(cur_bal_amt) | 39799599.31 | 39799599.31 | pass |  |
@@ -174,7 +174,7 @@ Generated 2026-10-07T13:52:49Z, run mode `live`. Expected values are read live f
 | `customer_master` | anomaly dirty_dates (ns=demo) | 50 | 50 | pass | oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT |
 | `customer_master` | anomaly malformed_csv_lists (ns=demo) | 31 | 31 | pass | oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS |
 
-**Idempotency rerun:** pass. migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=91f8d80e20bb82f4
+**Idempotency rerun:** pass. migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=165b8642747d1aae
 
 **Planted anomalies** (manifest vs detected on Postgres): expected ['dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50', 'malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31', 'orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37'], detected ['dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50', 'malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31', 'orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37'], missing none, unexpected none.
 

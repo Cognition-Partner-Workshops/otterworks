@@ -26,7 +26,10 @@ services:
       TZ: UTC
       PGTZ: UTC
     ports:
-      - "${BILLING_PG_BIND:-127.0.0.1}:${BILLING_PG_PORT:-55433}:5432"
+      # Bound to all interfaces by default (like the Oracle estate) so the TP
+      # stack containers reach it via host.docker.internal; set
+      # BILLING_PG_BIND=127.0.0.1 to keep it host-local.
+      - "${BILLING_PG_BIND:-0.0.0.0}:${BILLING_PG_PORT:-55433}:5432"
     volumes:
       - ./services/legacy-billing/db/postgres/initdb:/docker-entrypoint-initdb.d:ro
       - billing-postgres-data:/var/lib/postgresql/data

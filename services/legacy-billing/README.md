@@ -19,7 +19,8 @@ in `db/postgres/initdb/`; the backend is `app/backends/ow_billing_pg.py`.
 
 ```bash
 make billing-pg-up                    # Postgres target
-make billing-pg-migrate               # reload every table from Oracle (idempotent)
+make billing-pg-migrate               # reload every table from Oracle (idempotent; refuses once the app
+                                      # has written to Postgres after cutover, FORCE=1 overrides)
 make billing-pg-recon NS=demo         # counts, money sums, key coverage -> docs/tech-partnerships/recon/
 make billing-char-capture URL=http://127.0.0.1:8096   # replay the characterization scenario
 make billing-char-parity NS=demo      # grade it against tests/characterization/golden/oracle.json

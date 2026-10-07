@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "legacy-billing-oracle-to-postgres",
   "namespace": "demo",
-  "generated_at": "2026-10-07T13:52:49Z",
+  "generated_at": "2026-10-07T14:12:22Z",
   "run_mode": "live",
   "summary": {
     "total": 167,
@@ -670,8 +670,8 @@
       "id": "fixture_meta.row_checksum(all columns)",
       "table": "fixture_meta",
       "check": "row_checksum(all columns)",
-      "expected": "5e3bec4d69243ec7399f245b09a8fbf3",
-      "actual": "5e3bec4d69243ec7399f245b09a8fbf3",
+      "expected": "9a7513320595ce4d494445cfb1244953",
+      "actual": "9a7513320595ce4d494445cfb1244953",
       "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
       "result": "pass",
       "detail": "order-independent md5 over every column of every row"
@@ -1607,7 +1607,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=91f8d80e20bb82f4"
+    "evidence": "migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=165b8642747d1aae"
   },
   "planted_anomaly_detections": {
     "expected_set": [

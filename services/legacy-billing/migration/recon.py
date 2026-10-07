@@ -7,7 +7,8 @@ Every value on the Postgres side is recomputed from the target tables; every
 expected value is read live from Oracle (or, for the seed checks, from the
 seed manifest). Before the checks run, migrate.py is executed a second time
 and the target is fingerprinted before and after to prove the load is
-idempotent.
+idempotent. Once the app has written to Postgres after cutover the rerun is
+refused and recon exits without a report, so it never erases those writes.
 
 Writes <out>/<unit>.<ns>.recon.json (recon-report.schema.json) and a
 Markdown table with one row per table and check.
@@ -107,28 +108,12 @@ def checksum_rows(rows) -> estate.SetChecksum:
     return ck
 
 
-def target_fingerprint(pg) -> dict:
-    """Content fingerprint of every target table (all columns) + sequences."""
-    fp = {}
-    for name in [t.name for t in estate.TABLES] + [estate.ORPHAN_TABLE, estate.BASELINE_TABLE]:
-        cols = [r[0] for r in pg.execute(
-            "SELECT column_name FROM information_schema.columns"
-            " WHERE table_schema = 'ow_billing' AND table_name = %s"
-            " ORDER BY ordinal_position", (name,))]
-        ck = checksum_rows(pg.execute(f"SELECT {', '.join(cols)} FROM {name}"))
-        fp[name] = f"{ck.count}:{ck.hexdigest()}"
-    for seq in estate.SEQUENCES:
-        last, called = pg_one(pg, f"SELECT last_value, is_called FROM {seq}")
-        fp[seq] = str(last + 1 if called else last)
-    return fp
-
-
 def idempotency_rerun() -> dict:
     with estate.pg_connect() as pg:
-        before = target_fingerprint(pg)
+        before = migrate.target_fingerprint(pg)
     migrate.migrate(verbose=False)
     with estate.pg_connect() as pg:
-        after = target_fingerprint(pg)
+        after = migrate.target_fingerprint(pg)
     changed = sorted(k for k in before if before[k] != after.get(k))
     populated = any(not v.startswith("0:") for v in before.values())
     ok = populated and not changed
@@ -435,7 +420,11 @@ def main() -> int:
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args()
 
-    rerun = idempotency_rerun()
+    try:
+        rerun = idempotency_rerun()
+    except migrate.TargetDiverged as exc:
+        print(f"[recon] refused, no report written: {exc}", file=sys.stderr)
+        return 2
     report = Report()
     with estate.oracle_connect() as ora, estate.pg_connect() as pg:
         for table in estate.TABLES:
