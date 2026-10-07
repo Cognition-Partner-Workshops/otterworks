@@ -1,4 +1,3 @@
 # OtterWorks ETL schedules — managed manually
 # Contact: data-team@otterworks.dev (Jake left in 2020, ask Sarah)
 0 4 * * 0 /opt/etl/run.sh search_reindex_weekly.py >> /var/log/etl/search.log 2>&1
-0 5 * * * /opt/etl/run.sh user_activity_daily.py >> /var/log/etl/activity.log 2>&1
