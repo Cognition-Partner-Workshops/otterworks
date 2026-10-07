@@ -1,0 +1,113 @@
+# Reviewed accepted differences between the legacy goldens and the DAG for audit_archive_weekly
+# (etl/tests/golden/README.md, "DAG parity"). Every check not listed here must be identical;
+# a listed one must show exactly these before/after values. Add an entry only with a reviewed
+# reason, in the PR that introduces the difference.
+#
+# accepted: runs with every Variable at its committed default (etl/airflow/.env.example).
+#   Both decided flags default to false, which matches the legacy goldens: nothing accepted.
+# variants: flag-on runs, a committed scenario's seed with per-scenario Variable overrides.
+#   `before` is the committed golden value (tests/test_parity.py checks it), `after` the
+#   reviewed expected DAG output. Run with: make etl-parity SCRIPT=audit_archive_weekly VARIANT=<name>
+script: audit_archive_weekly
+accepted: []
+variants:
+- name: smoke_delete_enabled
+  scenario: smoke
+  variables:
+    audit_archive_delete_enabled: true
+  decision: etl/airflow/CONFIG.md audit_archive_delete_enabled (decided default false = legacy goldens;
+    true is opt-in)
+  accepted:
+  - check: dynamodb.json otterworks-audit-events[id=audit-1]
+    before:
+      action:
+        S: file.download
+      actor_id:
+        S: user-alice
+      event_id:
+        S: audit-1
+      id:
+        S: audit-1
+      resource_id:
+        S: file-1
+      timestamp:
+        S: '2025-11-01T10:00:00Z'
+    after_absent: true
+    reason: 'audit_archive_delete_enabled=true: the corrected delete by `id` removes the archived event
+      from the source table (legacy deletes by {event_id, timestamp}, every delete fails); decision in
+      etl/airflow/CONFIG.md, needs compliance sign-off'
+  - check: dynamodb.json otterworks-audit-events[id=audit-2]
+    before:
+      action:
+        S: document.share
+      actor_id:
+        S: user-bob
+      bytes:
+        N: '42'
+      event_id:
+        S: audit-2
+      id:
+        S: audit-2
+      resource_id:
+        S: doc-1
+      timestamp:
+        S: '2025-12-14T23:59:59Z'
+    after_absent: true
+    reason: 'audit_archive_delete_enabled=true: the corrected delete by `id` removes the archived event
+      from the source table (legacy deletes by {event_id, timestamp}, every delete fails); decision in
+      etl/airflow/CONFIG.md, needs compliance sign-off'
+  - check: s3.json s3://otterworks-audit-archive/reports/compliance/audit-archive/2026-03-15/report.json
+    before:
+      body:
+        compliance:
+          data_encrypted_at_rest: true
+          data_encrypted_in_transit: true
+          gdpr_compliant: true
+          soc2_compliant: true
+        execution_date: '2026-03-15'
+        generated_at: <normalized:generated_at>
+        report_type: audit_archive_compliance
+        results:
+          archive_location: s3://otterworks-audit-archive/audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz
+          archive_storage_class: GLACIER
+          compressed_size_bytes: 182
+          events_archived: 2
+          events_deleted_from_source: 0
+          events_scanned: 2
+        retention_policy:
+          cutoff_date: '2025-12-15T00:00:00Z'
+          retention_days: 90
+      content_encoding: null
+      content_type: binary/octet-stream
+      format: json
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    after:
+      body:
+        compliance:
+          data_encrypted_at_rest: true
+          data_encrypted_in_transit: true
+          gdpr_compliant: true
+          soc2_compliant: true
+        execution_date: '2026-03-15'
+        generated_at: <normalized:generated_at>
+        report_type: audit_archive_compliance
+        results:
+          archive_location: s3://otterworks-audit-archive/audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz
+          archive_storage_class: GLACIER
+          compressed_size_bytes: 182
+          events_archived: 2
+          events_deleted_from_source: 2
+          events_scanned: 2
+        retention_policy:
+          cutoff_date: '2025-12-15T00:00:00Z'
+          retention_days: 90
+      content_encoding: null
+      content_type: binary/octet-stream
+      format: json
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    reason: 'audit_archive_delete_enabled=true: the compliance report counts the 2 events actually deleted
+      (legacy reports 0)'

@@ -1,0 +1,115 @@
+# Reviewed accepted differences between the legacy goldens and the DAG for storage_cleanup_daily
+# (etl/tests/golden/README.md, "DAG parity"). Every check not listed here must be identical;
+# a listed one must show exactly these before/after values. Add an entry only with a reviewed
+# reason, in the PR that introduces the difference.
+#
+# accepted: runs with every Variable at its committed default (etl/airflow/.env.example).
+#   Both decided flags default to false, which matches the legacy goldens: nothing accepted.
+# variants: flag-on runs, a committed scenario's seed with per-scenario Variable overrides.
+#   `before` is the committed golden value (tests/test_parity.py checks it), `after` the
+#   reviewed expected DAG output. Run with: make etl-parity SCRIPT=storage_cleanup_daily VARIANT=<name>
+script: storage_cleanup_daily
+accepted: []
+variants:
+- name: reference_mismatches_normalize_keys
+  scenario: reference_mismatches
+  variables:
+    storage_cleanup_normalize_keys: true
+  decision: etl/airflow/CONFIG.md storage_cleanup_normalize_keys (decided default false = legacy goldens;
+    true is opt-in)
+  accepted:
+  - check: s3.json s3://otterworks-file-quarantine/quarantined/2026-06-01/files/user-bob/leading.txt
+    before: &id001
+      body: referenced with a leading slash
+      content_encoding: null
+      content_type: text/plain
+      format: text
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    after_absent: true
+    reason: 'storage_cleanup_normalize_keys=true: the metadata s3_key `/files/...` (leading slash) is
+      normalized to the object key, so the object is referenced, not an orphan; case is not folded (S3
+      keys are case-sensitive); decision in etl/airflow/CONFIG.md; it is not quarantined'
+  - check: s3.json s3://otterworks-file-storage/files/user-bob/leading.txt
+    before_absent: true
+    after: *id001
+    reason: 'storage_cleanup_normalize_keys=true: the metadata s3_key `/files/...` (leading slash) is
+      normalized to the object key, so the object is referenced, not an orphan; case is not folded (S3
+      keys are case-sensitive); decision in etl/airflow/CONFIG.md; it stays in file storage'
+  - check: s3.json s3://otterworks-file-quarantine/quarantined/2026-06-01/files/user-carol/uri.txt
+    before: &id002
+      body: referenced as an s3:// URI
+      content_encoding: null
+      content_type: text/plain
+      format: text
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    after_absent: true
+    reason: 'storage_cleanup_normalize_keys=true: the metadata s3_key `s3://otterworks-file-storage/files/...`
+      is normalized to the object key, so the object is referenced, not an orphan; case is not folded
+      (S3 keys are case-sensitive); decision in etl/airflow/CONFIG.md; it is not quarantined'
+  - check: s3.json s3://otterworks-file-storage/files/user-carol/uri.txt
+    before_absent: true
+    after: *id002
+    reason: 'storage_cleanup_normalize_keys=true: the metadata s3_key `s3://otterworks-file-storage/files/...`
+      is normalized to the object key, so the object is referenced, not an orphan; case is not folded
+      (S3 keys are case-sensitive); decision in etl/airflow/CONFIG.md; it stays in file storage'
+  - check: s3.json s3://otterworks-data-lake/reports/storage-cleanup/2026-06-01/report.json
+    before:
+      body:
+        cleanup:
+          objects_failed: 0
+          objects_quarantined: 6
+          quarantine_bucket: otterworks-file-quarantine
+        generated_at: <normalized:generated_at>
+        inventory:
+          total_objects: 8
+          total_size_bytes: 171
+          total_size_gb: 0.0
+        orphans:
+          orphan_percentage: 75.0
+          orphaned_bytes: 115
+          orphaned_objects: 6
+          orphaned_size_gb: 0.0
+        report_date: '2026-06-01'
+        report_type: storage_cleanup
+        savings:
+          estimated_monthly_savings_usd: 0.0
+          storage_freed_gb: 0.0
+      content_encoding: null
+      content_type: binary/octet-stream
+      format: json
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    after:
+      body:
+        cleanup:
+          objects_failed: 0
+          objects_quarantined: 4
+          quarantine_bucket: otterworks-file-quarantine
+        generated_at: <normalized:generated_at>
+        inventory:
+          total_objects: 8
+          total_size_bytes: 171
+          total_size_gb: 0.0
+        orphans:
+          orphan_percentage: 50.0
+          orphaned_bytes: 58
+          orphaned_objects: 4
+          orphaned_size_gb: 0.0
+        report_date: '2026-06-01'
+        report_type: storage_cleanup
+        savings:
+          estimated_monthly_savings_usd: 0.0
+          storage_freed_gb: 0.0
+      content_encoding: null
+      content_type: binary/octet-stream
+      format: json
+      gzip: false
+      metadata: {}
+      storage_class: STANDARD
+    reason: 'storage_cleanup_normalize_keys=true: 4 orphans (58 bytes, 50%) quarantined instead of 6;
+      the case-mismatch, folder-marker, special-character and duplicate-quarantine orphans are unchanged'

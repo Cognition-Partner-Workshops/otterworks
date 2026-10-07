@@ -60,3 +60,66 @@ jobs:
           include-hidden-files: true
       - if: always()
         run: docker compose -f docker-compose.infra.yml down -v
+
+  parity-scripts:
+    runs-on: ubuntu-latest
+    outputs:
+      scripts: ${{ steps.registry.outputs.scripts }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - id: registry
+        name: Scripts that have a DAG (etl/tests/golden/parity/dags.yaml)
+        run: |
+          scripts=$(uv run --quiet --python 3.11 --with PyYAML==6.0.2 python -c \
+            'import json, yaml; print(json.dumps(sorted(yaml.safe_load(open("etl/tests/golden/parity/dags.yaml"))["scripts"])))')
+          echo "scripts=$scripts" >> "$GITHUB_OUTPUT"
+          echo "$scripts"
+
+  etl-parity:
+    name: etl-parity (${{ matrix.script }})
+    needs: parity-scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        script: ${{ fromJSON(needs.parity-scripts.outputs.scripts) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch
+      - name: DAG parity against the goldens
+        run: make etl-parity SCRIPT=${{ matrix.script }}
+      - name: Negative controls (the gate must fail)
+        if: ${{ !cancelled() && matrix.script == 'audit_archive_weekly' }}
+        run: |
+          make etl-parity SCRIPT=audit_archive_weekly SCENARIO=smoke DAG=parity_wrong__audit_archive_weekly EXPECT=failed
+          make etl-parity SCRIPT=audit_archive_weekly VARIANT=smoke_delete_enabled EXPECT=failed
+          make etl-parity SCRIPT=audit_archive_weekly VARIANT=smoke_delete_enabled DAG=parity_wrong__audit_archive_weekly EXPECT=failed
+      - name: Parity report
+        if: ${{ !cancelled() }}
+        run: |
+          found=
+          for report in etl/tests/golden/.runs/parity/*/${{ matrix.script }}/*/report.md; do
+            [ -f "$report" ] || continue
+            found=1
+            { cat "$report"; echo; } >> "$GITHUB_STEP_SUMMARY"
+          done
+          [ -n "$found" ] || echo "no parity report written" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: etl-parity-${{ matrix.script }}
+          path: |
+            etl/tests/golden/.runs/parity/**/*.log
+            etl/tests/golden/.runs/parity/**/report.*
+            etl/tests/golden/.runs/parity/**/snapshot-*/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+      - if: always()
+        run: docker compose -f docker-compose.infra.yml down -v

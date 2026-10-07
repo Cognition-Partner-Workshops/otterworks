@@ -1,0 +1,4 @@
+# Installed into the throwaway parity Airflow container only (harness/airflow_container.py),
+# against the image's own Airflow constraints file, like etl/airflow/tests/requirements.txt.
+# The pass-through toy DAG starts the pinned legacy container with DockerOperator.
+apache-airflow-providers-docker

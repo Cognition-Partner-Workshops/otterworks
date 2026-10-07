@@ -15,6 +15,7 @@ import difflib
 import hashlib
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 from . import config_ini, infra, normalize, runner, scenario, settings, snapshot
@@ -29,11 +30,24 @@ class HarnessError(RuntimeError):
     pass
 
 
+Run = Callable[[Path, str], runner.RunResult]
+
+
 def run_scenario(
-    scn: scenario.Scenario, image: str, attempt: int
+    scn: scenario.Scenario,
+    image: str,
+    attempt: int,
+    run: Run | None = None,
+    run_dir: Path | None = None,
 ) -> tuple[dict[str, str], int, int]:
-    """Reset, seed, run the legacy script once; return (rendered files, exit code, replaced)."""
-    run_dir = settings.RUNS_DIR / scn.script / scn.name
+    """Reset, seed, run once; return (rendered files, exit code, replaced).
+
+    By default the legacy script runs in the pinned image and its log must
+    carry the shim banner. The DAG parity runner passes ``run`` (called with
+    the generated config.ini and the HTTP stub URL) and its own ``run_dir``;
+    seeding, snapshot and normalization stay exactly the same.
+    """
+    run_dir = run_dir or settings.RUNS_DIR / scn.script / scn.name
     run_dir.mkdir(parents=True, exist_ok=True)
     infra.reset()
     infra.ensure_resources()
@@ -43,11 +57,16 @@ def run_scenario(
         config_path.write_text(config_ini.render(stub.url, scn.config_overrides))
         config_path.chmod(0o644)
         started = time.monotonic()
-        result = runner.run(image, scn.script, scn.frozen_time, config_path)
+        if run is None:
+            result = runner.run(image, scn.script, scn.frozen_time, config_path)
+        else:
+            result = run(config_path, stub.url)
         elapsed = time.monotonic() - started
     log_path = run_dir / ("run-%d.log" % attempt)
     log_path.write_text(result.output)
-    if result.exit_code == SHIM_FAILURE_EXIT_CODE or SHIM_BANNER not in result.output:
+    if run is None and (
+        result.exit_code == SHIM_FAILURE_EXIT_CODE or SHIM_BANNER not in result.output
+    ):
         raise HarnessError(
             "%s: sitecustomize shim did not load; see %s" % (scn.label, log_path)
         )
