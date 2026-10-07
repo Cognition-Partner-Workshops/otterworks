@@ -6,7 +6,9 @@ from harness.differences import ABSENT, ACCEPTED, FAILED, IDENTICAL, Accepted
 GOLDEN = {
     "result.json": {"exit_code": 0},
     "s3.json": {
-        "lake": {"reports/r.json": {"body": {"count": 1, "ok": True}, "format": "json"}},
+        "lake": {
+            "reports/r.json": {"body": {"count": 1, "ok": True}, "format": "json"}
+        },
         "empty": {},
     },
     "dynamodb.json": {
@@ -110,7 +112,12 @@ def test_accepted_difference_needs_the_exact_before_and_after():
 
 def test_accepted_difference_with_wrong_before_or_unknown_check_fails():
     accepted = (
-        Accepted("sqs.json q", {"visible": 9, "in_flight": 0}, {"visible": 1, "in_flight": 0}, "r"),
+        Accepted(
+            "sqs.json q",
+            {"visible": 9, "in_flight": 0},
+            {"visible": 1, "in_flight": 0},
+            "r",
+        ),
         Accepted("sqs.json nope", ABSENT, {"visible": 1}, "r"),
     )
     actual = copy(GOLDEN)
@@ -126,7 +133,9 @@ def test_unexpected_surface_shape_is_compared_whole():
     actual = copy(GOLDEN)
     actual["sqs.json"] = ["not", "a", "mapping"]
     rows = d.classify("s/x", GOLDEN, actual)
-    assert any(r.check == "sqs.json (unexpected shape)" and r.result == FAILED for r in rows)
+    assert any(
+        r.check == "sqs.json (unexpected shape)" and r.result == FAILED for r in rows
+    )
 
 
 def test_markdown_row_shows_leaf_values_and_escapes_pipes():
@@ -134,10 +143,16 @@ def test_markdown_row_shows_leaf_values_and_escapes_pipes():
     actual["s3.json"]["lake"]["reports/r.json"]["body"]["count"] = 2
     actual["sqs.json"]["q|x"] = actual["sqs.json"].pop("q")
     text = d.markdown(d.classify("s/x", GOLDEN, actual))
-    assert "| s/x | `s3.json s3://lake/reports/r.json` | body.count=1 | body.count=2 | **failed**:" in text
+    assert (
+        "| s/x | `s3.json s3://lake/reports/r.json` | body.count=1 | body.count=2 | **failed**:"
+        in text
+    )
     assert "`sqs.json q\\|x`" in text
     header = text.splitlines()[0]
-    assert header == "| Scenario | What was compared | Before (legacy golden) | After (DAG) | Result |"
+    assert (
+        header
+        == "| Scenario | What was compared | Before (legacy golden) | After (DAG) | Result |"
+    )
 
 
 def write(tmp_path, text):
@@ -179,8 +194,16 @@ def test_load_valid(tmp_path):
 @pytest.mark.parametrize(
     "old, new, message",
     [
-        ("  after: {visible: 1}\n  reason: r", "  after: {visible: 1}\n  reason: ''", "reason is required"),
-        ("  after: {visible: 1}", "  after: {visible: 1}\n  after_absent: true", "exactly one"),
+        (
+            "  after: {visible: 1}\n  reason: r",
+            "  after: {visible: 1}\n  reason: ''",
+            "reason is required",
+        ),
+        (
+            "  after: {visible: 1}",
+            "  after: {visible: 1}\n  after_absent: true",
+            "exactly one",
+        ),
         ("  after: {visible: 1}", "  after: {visible: 0}", "nothing to accept"),
         ("  reason: r\n", "  reason: r\n  rounded: true\n", "unknown keys"),
         ("script: audit_archive_weekly", "script: analytics_daily", "script must be"),

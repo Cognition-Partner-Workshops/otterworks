@@ -112,7 +112,8 @@ def checks(files: dict[str, object]) -> dict[str, object]:
     out: dict[str, object] = {}
     order = list(SPLITTERS)
     for name, value in sorted(
-        files.items(), key=lambda kv: (order.index(kv[0]) if kv[0] in order else len(order), kv[0])
+        files.items(),
+        key=lambda kv: (order.index(kv[0]) if kv[0] in order else len(order), kv[0]),
     ):
         split = SPLITTERS.get(name)
         try:
@@ -173,7 +174,9 @@ VARIANT_KEYS = {"name", "scenario", "variables", "decision", "accepted"}
 def _side(entry: dict, side: str, where: str):
     has_value, absent = side in entry, entry.get("%s_absent" % side) is True
     if has_value == absent:
-        raise ValueError("%s: give exactly one of %s / %s_absent: true" % (where, side, side))
+        raise ValueError(
+            "%s: give exactly one of %s / %s_absent: true" % (where, side, side)
+        )
     return ABSENT if absent else entry[side]
 
 
@@ -221,7 +224,9 @@ def load(script: str, path: Path | None = None) -> AcceptedDifferences:
     for i, raw in enumerate(data.get("variants") or []):
         loc = "%s variants[%d]" % (path, i)
         if set(raw) - VARIANT_KEYS:
-            raise ValueError("%s: unknown keys %s" % (loc, sorted(set(raw) - VARIANT_KEYS)))
+            raise ValueError(
+                "%s: unknown keys %s" % (loc, sorted(set(raw) - VARIANT_KEYS))
+            )
         for required in ("name", "scenario", "variables", "decision"):
             if not raw.get(required):
                 raise ValueError("%s: %s is required" % (loc, required))
@@ -272,24 +277,42 @@ def classify(
                 rows.append(Row(case, check, b, a, IDENTICAL))
             else:
                 rows.append(
-                    Row(case, check, b, a, FAILED,
-                        "listed accepted difference did not occur (%s)" % entry.reason)
+                    Row(
+                        case,
+                        check,
+                        b,
+                        a,
+                        FAILED,
+                        "listed accepted difference did not occur (%s)" % entry.reason,
+                    )
                 )
         elif entry is not None and entry.matches(b, a):
             rows.append(Row(case, check, b, a, ACCEPTED, entry.reason))
         elif entry is not None:
             detail = "before" if canon(b) != canon(entry.before) else "after"
             rows.append(
-                Row(case, check, b, a, FAILED,
-                    "differs from the reviewed accepted difference (%s value)" % detail)
+                Row(
+                    case,
+                    check,
+                    b,
+                    a,
+                    FAILED,
+                    "differs from the reviewed accepted difference (%s value)" % detail,
+                )
             )
         else:
             rows.append(Row(case, check, b, a, FAILED, "not an accepted difference"))
     for check, entry in by_check.items():
         rows.append(
-            Row(case, check, ABSENT, ABSENT, FAILED,
+            Row(
+                case,
+                check,
+                ABSENT,
+                ABSENT,
+                FAILED,
                 "listed accepted difference did not occur, check absent in both runs (%s)"
-                % entry.reason)
+                % entry.reason,
+            )
         )
     return rows
 
@@ -308,11 +331,17 @@ def leaf_differences(before, after, path: str = "") -> list[tuple[str, object, o
         for key in sorted(set(before) | set(after), key=str):
             out.extend(
                 leaf_differences(
-                    before.get(key, ABSENT), after.get(key, ABSENT), "%s.%s" % (path, key)
+                    before.get(key, ABSENT),
+                    after.get(key, ABSENT),
+                    "%s.%s" % (path, key),
                 )
             )
         return out
-    if isinstance(before, list) and isinstance(after, list) and len(before) == len(after):
+    if (
+        isinstance(before, list)
+        and isinstance(after, list)
+        and len(before) == len(after)
+    ):
         out = []
         for i, (b, a) in enumerate(zip(before, after)):
             out.extend(leaf_differences(b, a, "%s[%d]" % (path, i)))

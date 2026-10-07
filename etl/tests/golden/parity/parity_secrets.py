@@ -24,6 +24,8 @@ class ParityVariableLog(BaseSecretsBackend):
 
     def get_variable(self, key: str) -> str | None:
         value = os.environ.get("AIRFLOW_VAR_%s" % key.upper())
-        sys.__stdout__.write("%s%s\n" % (MARKER, json.dumps({"key": key, "value": value})))
+        sys.__stdout__.write(
+            "%s%s\n" % (MARKER, json.dumps({"key": key, "value": value}))
+        )
         sys.__stdout__.flush()
         return value

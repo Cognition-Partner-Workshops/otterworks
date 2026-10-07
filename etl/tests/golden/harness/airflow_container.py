@@ -63,7 +63,12 @@ def connection_ids(path: Path = ENV_EXAMPLE) -> set[str]:
 
 def _http(url: str, **extra) -> dict:
     scheme, _, rest = url.partition("://")
-    host, _, port = rest.split("/", 1)[0].partition(":")
+    authority, slash, path = rest.partition("/")
+    if slash and path:
+        # HttpHook uses a host containing "://" as its whole base_url, which keeps the
+        # stub's /document-service and /file-service route prefixes.
+        return {"conn_type": "http", "host": url.rstrip("/"), **extra}
+    host, _, port = authority.partition(":")
     conn = {"conn_type": "http", "host": host, "schema": scheme, **extra}
     if port:
         conn["port"] = int(port)
@@ -90,10 +95,54 @@ def connections(services_url: str) -> dict[str, dict]:
             "login": settings.PG_USER,
             "password": settings.PG_PASSWORD,
         },
-        "otterworks_meilisearch": _http(settings.MEILI_URL, password=settings.MEILI_API_KEY),
+        "otterworks_meilisearch": _http(
+            settings.MEILI_URL, password=settings.MEILI_API_KEY
+        ),
         "otterworks_document_service": _http("%s/document-service" % services_url),
         "otterworks_file_service": _http("%s/file-service" % services_url),
     }
+
+
+# Scenario config_overrides (config.ini) -> the Airflow input a DAG reads instead.
+CONFIG_CONNECTION_FIELDS = {
+    ("database", "host"): ("otterworks_postgres", "host"),
+    ("database", "port"): ("otterworks_postgres", "port"),
+    ("database", "database"): ("otterworks_postgres", "schema"),
+    ("database", "user"): ("otterworks_postgres", "login"),
+    ("database", "password"): ("otterworks_postgres", "password"),
+}
+CONFIG_VARIABLES = {("s3", key): key for key in settings.S3_CONFIG}
+
+
+def config_inputs(config_overrides: dict) -> tuple[dict[str, dict], dict[str, str]]:
+    """({conn_id: {field: value}}, {variable: value}) equivalent to a scenario's config_overrides.
+
+    A DAG reads Connections and Variables, not config.ini, so a scenario that breaks the legacy
+    config (wrong password, missing bucket) must break the same input for the DAG. Overrides with
+    no Airflow equivalent are an error, never silently dropped.
+    """
+    conns: dict[str, dict] = {}
+    variables: dict[str, str] = {}
+    unmapped = []
+    for section, values in (config_overrides or {}).items():
+        for key, value in (values or {None: None}).items():
+            if value is None:
+                unmapped.append("%s.%s removed" % (section, key or "*"))
+            elif (section, key) in CONFIG_CONNECTION_FIELDS:
+                conn_id, field = CONFIG_CONNECTION_FIELDS[section, key]
+                conns.setdefault(conn_id, {})[field] = (
+                    int(value) if field == "port" else str(value)
+                )
+            elif (section, key) in CONFIG_VARIABLES:
+                variables[CONFIG_VARIABLES[section, key]] = str(value)
+            else:
+                unmapped.append("%s.%s" % (section, key))
+    if unmapped:
+        raise AirflowError(
+            "config_overrides %s have no Airflow Connection/Variable mapping in %s"
+            % (unmapped, Path(__file__).name)
+        )
+    return conns, variables
 
 
 def variable_value(value) -> str:
@@ -102,20 +151,31 @@ def variable_value(value) -> str:
 
 
 def run_environment(
-    services_url: str, overrides: dict, config_path: Path, frozen_time: str, legacy_image: str
+    services_url: str,
+    overrides: dict,
+    config_path: Path,
+    frozen_time: str,
+    legacy_image: str,
+    config_overrides: dict | None = None,
 ) -> dict[str, str]:
-    defaults = default_variables()
+    conn_patches, config_variables = config_inputs(config_overrides or {})
+    defaults = {**default_variables(), **config_variables}
     unknown = set(overrides) - set(defaults)
     if unknown:
         raise AirflowError(
-            "Variable override(s) %s are not defined in %s" % (sorted(unknown), ENV_EXAMPLE)
+            "Variable override(s) %s are not defined in %s"
+            % (sorted(unknown), ENV_EXAMPLE)
         )
     env = {
         "AIRFLOW_VAR_%s" % k.upper(): v
-        for k, v in {**defaults, **{k: variable_value(v) for k, v in overrides.items()}}.items()
+        for k, v in {
+            **defaults,
+            **{k: variable_value(v) for k, v in overrides.items()},
+        }.items()
     }
     env.update(
-        ("AIRFLOW_CONN_%s" % k.upper(), json.dumps(v)) for k, v in connections(services_url).items()
+        ("AIRFLOW_CONN_%s" % k.upper(), json.dumps({**v, **conn_patches.get(k, {})}))
+        for k, v in connections(services_url).items()
     )
     env.update(
         PARITY_CONFIG_PATH=str(config_path),
@@ -126,7 +186,9 @@ def run_environment(
 
 
 def ensure_image(image: str = AIRFLOW_IMAGE) -> str:
-    if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode:
+    if subprocess.run(
+        ["docker", "image", "inspect", image], capture_output=True
+    ).returncode:
         raise AirflowError(
             "Airflow image %s not found; build it with "
             "`docker build -t %s etl/airflow` (make etl-parity does)" % (image, image)
@@ -158,6 +220,7 @@ class AirflowContainer:
             "-e", "PYTHONDONTWRITEBYTECODE=1",
             "-e", "PYTHONPATH=%s" % PARITY_DIR,
             "-e", "AIRFLOW__SECRETS__BACKEND=parity_secrets.ParityVariableLog",
+            "-e", "PARITY_CONTAINER_PREFIX=%s" % self.name,
             *[
                 arg
                 for key in ("GOLDEN_DOCKER_NETWORK", "GOLDEN_LOCALSTACK_URL", "GOLDEN_CONTAINER_TIMEOUT")
@@ -176,11 +239,22 @@ class AirflowContainer:
         )
         proc = self.exec(["bash", "-c", setup], {})
         if proc.returncode:
-            raise AirflowError("parity Airflow container setup failed:\n%s" % proc.stdout[-4000:])
+            raise AirflowError(
+                "parity Airflow container setup failed:\n%s" % proc.stdout[-4000:]
+            )
         self.version = "Airflow %s" % proc.stdout.strip().splitlines()[-1].strip()
 
     def stop(self) -> None:
-        subprocess.run(["docker", "rm", "-f", self.name], capture_output=True)
+        # Also the legacy containers its DockerOperator tasks started (container_name
+        # "<this name>-<script>"), which outlive a timed-out `dags test`.
+        siblings = subprocess.run(
+            ["docker", "ps", "-aq", "--filter", "name=%s-" % self.name],
+            capture_output=True,
+            text=True,
+        ).stdout.split()
+        subprocess.run(
+            ["docker", "rm", "-f", self.name, *siblings], capture_output=True
+        )
 
     def __enter__(self) -> AirflowContainer:
         try:
@@ -227,9 +301,12 @@ class AirflowContainer:
             )
         if (last == "success") != (proc.returncode == 0):
             raise AirflowError(
-                "%s: dags test exit %d disagrees with DagRun state %s" % (dag_id, proc.returncode, last)
+                "%s: dags test exit %d disagrees with DagRun state %s"
+                % (dag_id, proc.returncode, last)
             )
-        return runner.RunResult(exit_code=0 if last == "success" else 1, output=proc.stdout)
+        return runner.RunResult(
+            exit_code=0 if last == "success" else 1, output=proc.stdout
+        )
 
 
 def variables_read(output: str) -> dict[str, list]:

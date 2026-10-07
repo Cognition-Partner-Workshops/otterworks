@@ -42,6 +42,8 @@ def legacy_task(script: str) -> DockerOperator:
     return DockerOperator(
         task_id="run_legacy_%s" % script,
         image=LEGACY_IMAGE,
+        container_name="%s-%s"
+        % (os.environ.get("PARITY_CONTAINER_PREFIX", "parity"), script),
         # One string, not a list: DockerOperator renders list items ending in .sh as Jinja
         # template files. The Docker SDK splits it like a shell would.
         command=" ".join(runner.legacy_command(script)),

@@ -54,15 +54,22 @@ class Case:
     accepted: tuple
 
 
-def load_registry(path: Path = REGISTRY) -> tuple[dict[str, DagEntry], dict[str, DagEntry]]:
+def load_registry(
+    path: Path = REGISTRY,
+) -> tuple[dict[str, DagEntry], dict[str, DagEntry]]:
     data = yaml.safe_load(path.read_text())
     scripts, controls = {}, {}
     for script, raw in (data.get("scripts") or {}).items():
-        scripts[script] = DagEntry(script, raw["dag_id"], raw["dag_folder"], bool(raw["variants"]))
+        scripts[script] = DagEntry(
+            script, raw["dag_id"], raw["dag_folder"], bool(raw["variants"])
+        )
     for dag_id, raw in (data.get("controls") or {}).items():
         controls[dag_id] = DagEntry(raw["script"], dag_id, raw["dag_folder"], False)
     for entry in [*scripts.values(), *controls.values()]:
-        if entry.script not in settings.SCRIPTS or entry.dag_folder not in ("toy", "image"):
+        if entry.script not in settings.SCRIPTS or entry.dag_folder not in (
+            "toy",
+            "image",
+        ):
             raise ValueError("%s: bad entry %s" % (path, entry))
     return scripts, controls
 
@@ -76,7 +83,9 @@ def resolve_dag(script: str, dag_id: str | None) -> DagEntry:
     for entry in [*scripts.values(), *controls.values()]:
         if entry.dag_id == dag_id and entry.script == script:
             return entry
-    raise SystemExit("DAG %s is not registered for %s in %s" % (dag_id, script, REGISTRY))
+    raise SystemExit(
+        "DAG %s is not registered for %s in %s" % (dag_id, script, REGISTRY)
+    )
 
 
 def cases(
@@ -99,11 +108,16 @@ def cases(
                 script,
                 v.name,
                 v.scenario,
-                ", ".join("%s=%s" % (k, airflow_container.variable_value(x)) for k, x in v.variables.items()),
+                ", ".join(
+                    "%s=%s" % (k, airflow_container.variable_value(x))
+                    for k, x in v.variables.items()
+                ),
             )
             out.append(Case(scn, label, v.variables, v.accepted))
         if only_variant is not None and not out:
-            raise SystemExit("no variant %r in %s" % (only_variant, differences.ACCEPTED_FILE))
+            raise SystemExit(
+                "no variant %r in %s" % (only_variant, differences.ACCEPTED_FILE)
+            )
     return out
 
 
@@ -115,19 +129,30 @@ def run_case(
 
     def run(config_path: Path, services_url: str) -> runner.RunResult:
         env = airflow_container.run_environment(
-            services_url, case.variables, config_path, case.scn.frozen_time, legacy_image
+            services_url,
+            case.variables,
+            config_path,
+            case.scn.frozen_time,
+            legacy_image,
+            case.scn.config_overrides,
         )
-        result = container.dags_test(entry.dag_id, case.scn.frozen_time, env, entry.subdir)
+        result = container.dags_test(
+            entry.dag_id, case.scn.frozen_time, env, entry.subdir
+        )
         meta["variables"] = airflow_container.variables_read(result.output)
         return result
 
     golden = {k: json.loads(v) for k, v in cli.read_golden(case.scn).items()}
     if not golden:
         raise cli.HarnessError("%s: no golden recorded" % case.label)
-    rendered, exit_code, _ = cli.run_scenario(case.scn, legacy_image, 1, run=run, run_dir=run_dir)
+    rendered, exit_code, _ = cli.run_scenario(
+        case.scn, legacy_image, 1, run=run, run_dir=run_dir
+    )
     log = (run_dir / "run-1.log").read_text()
     if entry.dag_folder == "toy" and cli.SHIM_BANNER not in log:
-        raise cli.HarnessError("%s: legacy shim banner missing from the DAG run log" % case.label)
+        raise cli.HarnessError(
+            "%s: legacy shim banner missing from the DAG run log" % case.label
+        )
     actual = {k: json.loads(v) for k, v in rendered.items()}
     meta["exit_code"] = exit_code
     rows = override_rows(case, meta["variables"])
@@ -144,7 +169,11 @@ def override_rows(case: Case, read: dict[str, list]) -> list[Row]:
         if seen and all(v == want for v in seen):
             rows.append(Row(case.label, check, want, want, differences.IDENTICAL))
         else:
-            after = " / ".join(sorted({str(v) for v in seen})) if seen else differences.ABSENT
+            after = (
+                " / ".join(sorted({str(v) for v in seen}))
+                if seen
+                else differences.ABSENT
+            )
             reason = (
                 "the DAG read a different value than the per-scenario override"
                 if seen
@@ -155,7 +184,10 @@ def override_rows(case: Case, read: dict[str, list]) -> list[Row]:
 
 
 def report(
-    script: str, entry: DagEntry, image_info: str, results: list[tuple[Case, list[Row], dict]]
+    script: str,
+    entry: DagEntry,
+    image_info: str,
+    results: list[tuple[Case, list[Row], dict]],
 ) -> str:
     rows = [r for _, case_rows, _ in results for r in case_rows]
     totals = differences.summary(rows)
@@ -168,7 +200,13 @@ def report(
         % (image_info, script, differences.ACCEPTED_FILE),
         "",
         "**%s: %d checks, %d identical, %d accepted difference, %d failed.**"
-        % (verdict, len(rows), totals[differences.IDENTICAL], totals[differences.ACCEPTED], totals[FAILED]),
+        % (
+            verdict,
+            len(rows),
+            totals[differences.IDENTICAL],
+            totals[differences.ACCEPTED],
+            totals[FAILED],
+        ),
         "",
         "| Scenario | Variable overrides | Checks | identical | accepted difference | failed |",
         "|---|---|---|---|---|---|",
@@ -177,13 +215,21 @@ def report(
         t = differences.summary(case_rows)
         overrides = (
             ", ".join(
-                "`%s=%s`" % (k, airflow_container.variable_value(v)) for k, v in case.variables.items()
+                "`%s=%s`" % (k, airflow_container.variable_value(v))
+                for k, v in case.variables.items()
             )
             or "none"
         )
         lines.append(
             "| %s | %s | %d | %d | %d | %d |"
-            % (case.label, overrides, len(case_rows), t[differences.IDENTICAL], t[differences.ACCEPTED], t[FAILED])
+            % (
+                case.label,
+                overrides,
+                len(case_rows),
+                t[differences.IDENTICAL],
+                t[differences.ACCEPTED],
+                t[FAILED],
+            )
         )
     lines += ["", "### Checks", "", differences.markdown(rows)]
     return "\n".join(lines)
@@ -196,10 +242,16 @@ def main(argv: list[str] | None = None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--script", required=True, choices=settings.SCRIPTS)
-    parser.add_argument("--dag", help="DAG id (default: the script's entry in parity/dags.yaml)")
+    parser.add_argument(
+        "--dag", help="DAG id (default: the script's entry in parity/dags.yaml)"
+    )
     parser.add_argument("--scenario", help="only this committed scenario")
-    parser.add_argument("--variant", help="only this flag-on variant from accepted_differences.yaml")
-    parser.add_argument("--expect", choices=("identical", "failed"), default="identical")
+    parser.add_argument(
+        "--variant", help="only this flag-on variant from accepted_differences.yaml"
+    )
+    parser.add_argument(
+        "--expect", choices=("identical", "failed"), default="identical"
+    )
     args = parser.parse_args(argv)
 
     entry = resolve_dag(args.script, args.dag)
@@ -217,20 +269,43 @@ def main(argv: list[str] | None = None) -> int:
     airflow_image = airflow_container.ensure_image()
     (out_dir / "airflow.log").write_text("")
     results = []
-    with airflow_container.AirflowContainer(airflow_image, out_dir / "airflow.log") as container:
-        image_info = "Airflow image `%s` (`airflow dags test`, %s), legacy image `%s`" % (
-            airflow_image,
-            container.version,
-            legacy_image,
+    with airflow_container.AirflowContainer(
+        airflow_image, out_dir / "airflow.log"
+    ) as container:
+        image_info = (
+            "Airflow image `%s` (`airflow dags test`, %s), legacy image `%s`"
+            % (
+                airflow_image,
+                container.version,
+                legacy_image,
+            )
         )
         for case in selected:
-            print("== %s [dag %s] frozen_time=%s" % (case.label, entry.dag_id, case.scn.frozen_time))
+            print(
+                "== %s [dag %s] frozen_time=%s"
+                % (case.label, entry.dag_id, case.scn.frozen_time)
+            )
             try:
                 rows, meta = run_case(case, entry, container, legacy_image, out_dir)
             except (cli.HarnessError, airflow_container.AirflowError) as exc:
-                rows, meta = [Row(case.label, "run", "", "", FAILED, "%s: %s" % (HARNESS_ERROR, exc))], {}
+                rows, meta = (
+                    [
+                        Row(
+                            case.label,
+                            "run",
+                            "",
+                            "",
+                            FAILED,
+                            "%s: %s" % (HARNESS_ERROR, exc),
+                        )
+                    ],
+                    {},
+                )
             t = differences.summary(rows)
-            print("  %d checks: %d identical, %d accepted, %d failed" % (len(rows), *t.values()))
+            print(
+                "  %d checks: %d identical, %d accepted, %d failed"
+                % (len(rows), *t.values())
+            )
             results.append((case, rows, meta))
 
     text = report(args.script, entry, image_info, results)
@@ -261,7 +336,10 @@ def main(argv: list[str] | None = None) -> int:
     harness_errors = [r for r in failed if r.reason.startswith(HARNESS_ERROR)]
     if args.expect == "failed":
         ok = bool(failed) and not harness_errors
-        print("expect failed: %s" % ("OK, the gate failed as it must" if ok else "NOT MET"))
+        print(
+            "expect failed: %s"
+            % ("OK, the gate failed as it must" if ok else "NOT MET")
+        )
         return 0 if ok else 1
     return 0 if not failed else 1
 
