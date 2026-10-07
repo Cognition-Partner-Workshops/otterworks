@@ -1,0 +1,448 @@
+{
+  "kind": "model-proposal-triage",
+  "run": "mmp_rt_b3_oracle",
+  "plan_step": "s3.1-model-proposal",
+  "recorded_at": "2026-10-07T08:05:00Z",
+  "plugin_head": "b4be2f3a8f95fc7a5b2485c5281af9d79c123d8d",
+  "plugin_base": {
+    "branch": "devin/1791335937-app-aware-modeling-next",
+    "branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+    "cherry_pick": "865b105d695090615d1efa908fd9621e7bbd7bff",
+    "cherry_pick_patch_id_stable": "e102025d"
+  },
+  "run_branch_tip_before_pr": "bb386cd85a66a1077d9a58843d555c1b9965c873",
+  "command": "python3 <plugin>/skills/schema-modeling/model_proposal.py --census .migration/census.json --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json --ddl-census .migration/census_ddl.json --out .migration/mapping_spec.json --version map-draft-1",
+  "summary_line": "mapping spec written to .migration/mapping_spec.json: collections=19 embeds=1 unresolved=24 (basis: assumed=7 derived=6)",
+  "spec_sha256_inputs": {
+    "data_profile": "2f348238d76afb863ec5290e5d211a1c1289b2c6994ce204aa4850f3ee5bbdf1",
+    "access_patterns": "e98745481ec2fd65af9dd83f34e6a5bcac7ce46c51c18e0b628faadcad2ad8ed",
+    "ddl_census": "2520fc63d106d242b16876602fcdd3d0a1025ff2ffaacc49dffbce22ce8e72d3"
+  },
+  "collections": [
+    "ratingPeriods",
+    "subscriptionsHist",
+    "invoices",
+    "creditNotes",
+    "codes",
+    "tenants",
+    "plans",
+    "subscriptions",
+    "usageEvents",
+    "dunningAttempts",
+    "notifications",
+    "customerMaster",
+    "entityAttrValue",
+    "fixtureMeta",
+    "invoiceHeader",
+    "invoiceLine",
+    "billingAuditLog",
+    "customerMasterHist",
+    "ratingResults"
+  ],
+  "embeds": [
+    {
+      "parent": "INVOICES",
+      "child": "INVOICE_LINES",
+      "basis": "derived",
+      "basis_sources": [
+        "ddl",
+        "data"
+      ],
+      "rule": "ownership"
+    }
+  ],
+  "references": [
+    {
+      "parent": "TENANTS",
+      "child": "RATING_PERIODS",
+      "basis": "assumed",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "RATING_PERIODS",
+      "child": "INVOICES",
+      "basis": "assumed",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "INVOICES",
+      "basis": "assumed",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "CREDIT_NOTES",
+      "basis": "derived",
+      "rule": "child_read_alone"
+    },
+    {
+      "parent": "PLANS",
+      "child": "SUBSCRIPTIONS",
+      "basis": "derived",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "SUBSCRIPTIONS",
+      "basis": "derived",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "USAGE_EVENTS",
+      "basis": "derived",
+      "rule": "child_read_alone"
+    },
+    {
+      "parent": "INVOICES",
+      "child": "DUNNING_ATTEMPTS",
+      "basis": "assumed",
+      "rule": "default"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "DUNNING_ATTEMPTS",
+      "basis": "derived",
+      "rule": "lookup_reference"
+    },
+    {
+      "parent": "TENANTS",
+      "child": "NOTIFICATIONS",
+      "basis": "assumed",
+      "rule": "default"
+    },
+    {
+      "parent": "RATING_PERIODS",
+      "child": "RATING_RESULTS",
+      "basis": "assumed",
+      "rule": "shared_child"
+    },
+    {
+      "parent": "SUBSCRIPTIONS",
+      "child": "RATING_RESULTS",
+      "basis": "assumed",
+      "rule": "shared_child"
+    }
+  ],
+  "horror_tables_without_access_evidence": {
+    "tables": [
+      "CUSTOMER_MASTER",
+      "CUSTOMER_MASTER_HIST",
+      "INVOICE_HEADER",
+      "INVOICE_LINE",
+      "ENTITY_ATTR_VALUE"
+    ],
+    "rationale_rows": 0,
+    "embeds": 0,
+    "references": 0,
+    "indexes": 0,
+    "gap_flagged_by_proposer": false,
+    "finding": "F41"
+  },
+  "handcheck_divergences_finding": "F42",
+  "unresolved_total": 24,
+  "triage_summary": {
+    "genuinely_open": 11,
+    "needs_design_decision": 5,
+    "answerable_from_evidence": 8
+  },
+  "unresolved_triage": [
+    {
+      "n": 1,
+      "kind": "date_format_assumed",
+      "table": "SUBSCRIPTIONS_HIST",
+      "column": "HIST_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:SUBSCRIPTIONS_HIST.HIST_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 2,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "SIGNUP_DT",
+      "format": "%d-%b-%y",
+      "triage": "needs_design_decision",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER.SIGNUP_DT",
+        "handcheck text_shapes:CUSTOMER_MASTER.SIGNUP_DT (F21)"
+      ],
+      "triage_note": "format is `%d-%b-%y` (shape conformance 0.845771, 170/201), but 41 of 201 values are invalid dates (31 by shape, 41 by VALIDATE_CONVERSION: `N/A`, blanks, `9/9/9999`, `31-FEB-24`, `29-FEB-23`); converting in place quarantines 20.4 % of customers — decide raw+parsed dual field vs reject-to-quarantine (next step)"
+    },
+    {
+      "n": 3,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "LAST_ACTIVITY_DT",
+      "format": "%d-%b-%y",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER.LAST_ACTIVITY_DT"
+      ],
+      "triage_note": "measured conformance 1.0 to `%d-%b-%y` on 201 values; the proposer itself emits a `date_format_proposal` for this column in the collection's open_questions — the unresolved item is a duplicate of a measured fact (F44)"
+    },
+    {
+      "n": 4,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "LAST_INVOICE_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER.LAST_INVOICE_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the column is NULL in every row; keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 5,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "LAST_PAYMENT_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER.LAST_PAYMENT_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the column is NULL in every row; keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 6,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER",
+      "column": "TERMINATE_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER.TERMINATE_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the column is NULL in every row; keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 7,
+      "kind": "date_format_assumed",
+      "table": "ENTITY_ATTR_VALUE",
+      "column": "CREATED_DT",
+      "format": "%d-%b-%y",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "text_shapes:ENTITY_ATTR_VALUE.CREATED_DT"
+      ],
+      "triage_note": "measured conformance 1.0 to `%d-%b-%y` on 70 values; the proposer itself emits a `date_format_proposal` for this column in the collection's open_questions — the unresolved item is a duplicate of a measured fact (F44)"
+    },
+    {
+      "n": 8,
+      "kind": "no_comparison_key",
+      "table": "FIXTURE_META",
+      "proposal": "name the columns that identify a row (set_key) or accept load-order only",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "census_dispositions.json objects FIXTURE_META (out of scope)"
+      ],
+      "triage_note": "FIXTURE_META is fixture bookkeeping created by startup/00_init.sh, excluded by the census dispositions; the answer is to drop the collection from the spec (model_patch exclude), not to name a key (F45)"
+    },
+    {
+      "n": 9,
+      "kind": "date_format_assumed",
+      "table": "INVOICE_HEADER",
+      "column": "INVOICE_DT",
+      "format": "%d-%b-%y",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "text_shapes:INVOICE_HEADER.INVOICE_DT"
+      ],
+      "triage_note": "measured conformance 1.0 to `%d-%b-%y` on 1000 values; the proposer itself emits a `date_format_proposal` for this column in the collection's open_questions — the unresolved item is a duplicate of a measured fact (F44)"
+    },
+    {
+      "n": 10,
+      "kind": "date_format_assumed",
+      "table": "INVOICE_HEADER",
+      "column": "DUE_DT",
+      "format": "%d-%b-%y",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "text_shapes:INVOICE_HEADER.DUE_DT"
+      ],
+      "triage_note": "measured conformance 1.0 to `%d-%b-%y` on 1000 values; the proposer itself emits a `date_format_proposal` for this column in the collection's open_questions — the unresolved item is a duplicate of a measured fact (F44)"
+    },
+    {
+      "n": 11,
+      "kind": "date_format_assumed",
+      "table": "INVOICE_LINE",
+      "column": "INVOICE_DT",
+      "format": "%d-%b-%y",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "text_shapes:INVOICE_LINE.INVOICE_DT"
+      ],
+      "triage_note": "measured conformance 1.0 to `%d-%b-%y` on 1500 values; the proposer itself emits a `date_format_proposal` for this column in the collection's open_questions — the unresolved item is a duplicate of a measured fact (F44)"
+    },
+    {
+      "n": 12,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "HIST_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.HIST_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 13,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "SIGNUP_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.SIGNUP_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 14,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_ACTIVITY_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 15,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_INVOICE_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.LAST_INVOICE_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 16,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "LAST_PAYMENT_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 17,
+      "kind": "date_format_assumed",
+      "table": "CUSTOMER_MASTER_HIST",
+      "column": "TERMINATE_DT",
+      "format": "%d-%b-%y",
+      "triage": "genuinely_open",
+      "evidence": [
+        "text_shapes:CUSTOMER_MASTER_HIST.TERMINATE_DT"
+      ],
+      "triage_note": "no non-NULL values in the mini fixture (0 rows shaped); format cannot be measured here; the _HIST table is empty (triggers fire on UPDATE/DELETE only, nothing in the estate updates the base table); keep the family default `%d-%b-%y` as an explicit assumption and re-measure on a populated source"
+    },
+    {
+      "n": 18,
+      "kind": "trigger_business_logic",
+      "table": "BILLING_AUDIT_LOG",
+      "name": "TRG_BILLING_AUDIT_LOG_ID",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "census_ddl.json traps sequence_trigger_identity BILLING_AUDIT_LOG.LOG_ID",
+        "F15"
+      ],
+      "triage_note": "identity-only: assigns SEQ NEXTVAL to LOG_ID; the DDL census already classifies it `sequence_trigger_identity` and the proposer ignored that input (F43); no business rule to port"
+    },
+    {
+      "n": 19,
+      "kind": "trigger_business_logic",
+      "table": "SUBSCRIPTIONS",
+      "name": "TRG_SUBSCRIPTIONS_HIST",
+      "triage": "needs_design_decision",
+      "evidence": [
+        "dependency_register.json triggers TRG_SUBSCRIPTIONS_HIST",
+        "access_patterns ap-bdfdef0db0 (trigger_cascade)",
+        "F39"
+      ],
+      "triage_note": "history copy on UPDATE/DELETE fired by sp_change_plan (warm) and sp_suspend_overdue (cold); the proposer keeps SUBSCRIPTIONS_HIST as a separate `history_copy` collection, which is right, but how the Mongo writer produces the version row (app code, change stream, or versioned document) is a design decision"
+    },
+    {
+      "n": 20,
+      "kind": "trigger_business_logic",
+      "table": "SUBSCRIPTIONS",
+      "name": "TRG_SUB_NO_UNCANCEL",
+      "triage": "needs_design_decision",
+      "evidence": [
+        "F40 (silent coercion, no RAISE)",
+        "access_patterns ap-f0f920bfd1"
+      ],
+      "triage_note": "business rule \"cancelled (30) is terminal, applied silently\" — must move to the application layer or a $jsonSchema cannot express it; decide where it lives"
+    },
+    {
+      "n": 21,
+      "kind": "trigger_business_logic",
+      "table": "USAGE_EVENTS",
+      "name": "TRG_USAGE_EVENTS_CHECK",
+      "triage": "needs_design_decision",
+      "evidence": [
+        "01_tables.sql trigger body",
+        "access_patterns (hot, application-tier usage ingest)"
+      ],
+      "triage_note": "validation on INSERT (hot path); port as $jsonSchema validator or application check — decision, not evidence gap"
+    },
+    {
+      "n": 22,
+      "kind": "trigger_business_logic",
+      "table": "CUSTOMER_MASTER",
+      "name": "TRG_CUSTOMER_MASTER_SEQ",
+      "triage": "needs_design_decision",
+      "evidence": [
+        "census_ddl.json traps sequence_trigger_identity CUSTOMER_MASTER.CUST_SEQ_NO",
+        "F40 (also sets CUST_NAME_UPPER and ROW_VERSION_NO)"
+      ],
+      "triage_note": "not identity-only: also derives CUST_NAME_UPPER = UPPER(CUST_NAME) and seeds ROW_VERSION_NO = 1; the spec maps custNameUpper as a plain field — decide drop (collation index) vs writer-derived"
+    },
+    {
+      "n": 23,
+      "kind": "trigger_business_logic",
+      "table": "CUSTOMER_MASTER",
+      "name": "TRG_CUSTOMER_MASTER_HIST",
+      "triage": "genuinely_open",
+      "evidence": [
+        "F38 (no in-estate firing statement)",
+        "F18 (_HIST empty, fan-out 0)"
+      ],
+      "triage_note": "history copy of a 155-column row on UPDATE/DELETE; nothing in the estate updates CUSTOMER_MASTER (the mainframe CUSTBILL feed is unregistered), so the firing rate and the version volume cannot be known from any artefact we have"
+    },
+    {
+      "n": 24,
+      "kind": "trigger_business_logic",
+      "table": "ENTITY_ATTR_VALUE",
+      "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+      "triage": "answerable_from_evidence",
+      "evidence": [
+        "census_ddl.json traps sequence_trigger_identity ENTITY_ATTR_VALUE.EAV_ID",
+        "F15"
+      ],
+      "triage_note": "identity-only: assigns SEQ NEXTVAL to EAV_ID; no business rule; EAV_ID itself disappears if the attribute pattern is embedded (F42)"
+    }
+  ],
+  "findings_added": [
+    "F41",
+    "F42",
+    "F43",
+    "F44",
+    "F45"
+  ]
+}
