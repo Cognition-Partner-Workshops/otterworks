@@ -3,6 +3,578 @@
   "census_sha256": "af73f0b7da5aee92392f36f87e20b75f21080077f0e56f8c436d1d530bcd1219",
   "patterns": [
     {
+      "id": "ap-fa4086177d",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_HEADER",
+        "CUSTOMER_MASTER",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_HEADER.BATCH_NO",
+          "op": "eq"
+        },
+        {
+          "col": "INVOICE_HEADER.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "CUSTOMER_MASTER.CUST_NO",
+        "INVOICE_HEADER.INVOICE_ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "etl/legacy-extra/tools/oracle_custbill_extract.py",
+        "lines": [
+          15,
+          28
+        ]
+      },
+      "statement": "SELECT h.invoice_id, c.cust_no, c.cust_name, TO_DATE(h.invoice_dt, ?) AS period_end, h.total_amt, CASE WHEN h.total_amt < ? THEN ? ELSE ? END AS record_type FROM invoice_header h JOIN customer_master c ON c.cust_id = h.cust_id LEFT JOIN tenants t ON t.id = h.tenant_id WHERE h.batch_no = :batch_no OR"
+    },
+    {
+      "id": "ap-f95317f034",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/backends/oracle.py",
+        "lines": [
+          68,
+          73
+        ]
+      },
+      "statement": "UPDATE subscriptions SET ends_on = :eff - ?, status_cd = DECODE(status_cd, ?, ?, ?) WHERE tenant_id = :t AND ends_on IS NULL AND starts_on = :eff",
+      "cascades": [
+        "ap-bdfdef0db0"
+      ]
+    },
+    {
+      "id": "ap-e8dc34dca7",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/backends/oracle.py",
+        "lines": [
+          136,
+          136
+        ]
+      },
+      "statement": "SELECT ? FROM tenants WHERE id = :?"
+    },
+    {
+      "id": "ap-578c31b26d",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/backends/oracle.py",
+        "lines": [
+          141,
+          142
+        ]
+      },
+      "statement": "INSERT INTO tenants (id, name, tax_exempt_yn, status_cd) VALUES (:?, :?, ?, ?)"
+    },
+    {
+      "id": "ap-b720c4157e",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "PLANS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "PLANS.ACTIVE_YN",
+          "op": "eq",
+          "wrapped": "NVL"
+        }
+      ],
+      "sort": [
+        "PLANS.MONTHLY_FEE",
+        "PLANS.ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/backends/oracle.py",
+        "lines": [
+          149,
+          153
+        ]
+      },
+      "statement": "SELECT id FROM ( SELECT id FROM plans WHERE NVL(active_yn, ?) = ? ORDER BY monthly_fee, id ) WHERE ROWNUM = ?"
+    },
+    {
+      "id": "ap-4de28fdf15",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/backends/oracle.py",
+        "lines": [
+          161,
+          163
+        ]
+      },
+      "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, status_cd) VALUES (:?, :?, :?, TRUNC(SYSDATE), ?)",
+      "cascades": [
+        "ap-bdfdef0db0"
+      ]
+    },
+    {
+      "id": "ap-88f22eaf5b",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS",
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          111,
+          117
+        ]
+      },
+      "statement": "SELECT t.id AS tenant_id, t.name, ts.code_desc AS status, t.tax_exempt_yn AS tax_exempt FROM tenants t LEFT JOIN codes ts ON ts.code_type = ? AND ts.code_val = t.status_cd WHERE t.id = :?"
+    },
+    {
+      "id": "ap-bd510b9356",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "CUSTOMER_MASTER.CUST_SEQ_NO"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          121,
+          126
+        ]
+      },
+      "statement": "SELECT cust_no, cust_name, cur_bal_amt, past_due_amt, credit_hold_yn FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY"
+    },
+    {
+      "id": "ap-3fbad6ec1e",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS",
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "USAGE_EVENTS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "USAGE_EVENTS.OCCURRED_AT",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          212,
+          222
+        ]
+      },
+      "statement": "SELECT * FROM ( SELECT u.id, u.occurred_at, u.units, c.code_desc AS kind FROM usage_events u JOIN codes c ON c.code_type = ? AND c.code_val = u.kind_cd WHERE u.tenant_id = :? AND u.occurred_at >= :? AND u.occurred_at < TO_DATE(:?, ?) + ? ORDER BY u.occurred_at DESC, u.id DESC ) WHERE ROWNUM <= ?"
+    },
+    {
+      "id": "ap-15404b0226",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES",
+        "RATING_PERIODS",
+        "CODES"
+      ],
+      "join_edges": [
+        [
+          "RATING_PERIODS",
+          "INVOICES"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "INVOICES.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "INVOICES.ISSUED_AT",
+        "INVOICES.ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          241,
+          249
+        ]
+      },
+      "statement": "SELECT i.id AS invoice_id, rp.period_start, rp.period_end, i.subtotal, i.tax, i.total, c.code_desc AS status FROM invoices i JOIN rating_periods rp ON rp.id = i.period_id LEFT JOIN codes c ON c.code_type = ? AND c.code_val = i.status_cd WHERE i.tenant_id = :? ORDER BY i.issued_at DESC, i.id DESC"
+    },
+    {
+      "id": "ap-0da411e03b",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        },
+        {
+          "col": "INVOICES.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          267,
+          267
+        ]
+      },
+      "statement": "SELECT ? FROM invoices WHERE id = :? AND tenant_id = :?"
+    },
+    {
+      "id": "ap-e45fe9768e",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "CUSTOMER_MASTER.CUST_SEQ_NO"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          287,
+          287
+        ]
+      },
+      "statement": "SELECT * FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY"
+    },
+    {
+      "id": "ap-6c1786cb2d",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "ENTITY_ATTR_VALUE.ENTITY_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "ENTITY_ATTR_VALUE.ENTITY_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "ENTITY_ATTR_VALUE.EAV_ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          294,
+          296
+        ]
+      },
+      "statement": "SELECT * FROM entity_attr_value WHERE entity_type = ? AND entity_id = :? ORDER BY eav_id"
+    },
+    {
+      "id": "ap-0a1051eac3",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "DUNNING_ATTEMPTS",
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "DUNNING_ATTEMPTS.SCHEDULED_FOR",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          338,
+          347
+        ]
+      },
+      "statement": "SELECT * FROM ( SELECT d.id, d.tenant_id, d.invoice_id, d.attempt_no, d.scheduled_for, c.code_desc AS status FROM dunning_attempts d LEFT JOIN codes c ON c.code_type = ? AND c.code_val = d.status_cd WHERE d.scheduled_for <= :? ORDER BY d.scheduled_for DESC, d.id DESC ) WHERE ROWNUM <= ?"
+    },
+    {
+      "id": "ap-6470faec0f",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_DESC",
+          "op": "eq",
+          "wrapped": "LOWER"
+        },
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          394,
+          396
+        ]
+      },
+      "statement": "SELECT code_val FROM codes WHERE code_type = ? AND LOWER(code_desc) = LOWER(:?)"
+    },
+    {
+      "id": "ap-d0babb7b83",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/facade.py",
+        "lines": [
+          401,
+          403
+        ]
+      },
+      "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) VALUES (:?, :?, :?, :?, :?)",
+      "cascades": [
+        "ap-fe087c4e0c"
+      ]
+    },
+    {
+      "id": "ap-6167f9171f",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_HEADER",
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_HEADER.BATCH_NO",
+          "op": "eq"
+        },
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/reports.py",
+        "lines": [
+          42,
+          53
+        ]
+      },
+      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, COUNT(*) AS invoice_count, TO_CHAR(SUM(h.total_amt), ?) AS header_total_amt FROM invoice_header h, codes st WHERE h.batch_no = :batch_no AND st.code_type (+) = ? AND st.code_val (+) = h.status_cd GROUP BY NVL(st.code_desc, ? ||"
+    },
+    {
+      "id": "ap-89c88ad4c6",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_HEADER",
+        "INVOICE_LINE",
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_HEADER.BATCH_NO",
+          "op": "eq"
+        },
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/reports.py",
+        "lines": [
+          55,
+          81
+        ]
+      },
+      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, DECODE(l.line_type_cd, ?, ?, ?, ?, ?, ?, ?, ?, ? || TO_CHAR(l.line_type_cd) || ?) AS line_type, COUNT(*) AS line_count, TO_CHAR(SUM(l.amount), ?) AS line_amount, TO_CHAR(SUM(l.tax_amt), ?) AS line_tax, COUNT(DISTINCT h.invoice_"
+    },
+    {
+      "id": "ap-c9b3d38c2c",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.CONVERSION_BATCH_NO",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/app/reports.py",
+        "lines": [
+          83,
+          89
+        ]
+      },
+      "statement": "SELECT COUNT(*) AS customer_count, TO_CHAR(SUM(cur_bal_amt), ?) AS current_balance_total, TO_CHAR(SUM(past_due_amt), ?) AS past_due_total FROM customer_master WHERE conversion_batch_no = :batch_no"
+    },
+    {
       "id": "ap-d9d4207c37",
       "kind": "sql",
       "op": "read",
