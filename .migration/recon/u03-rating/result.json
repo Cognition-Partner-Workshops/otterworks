@@ -1,0 +1,110 @@
+{
+  "unit": "u03-rating",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "tolerance_version": "tol-1",
+  "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+  "collections": [
+    "ratingPeriods",
+    "ratingResults"
+  ],
+  "seed": 0,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T20:06:15.654266+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {
+        "source_counts": {
+          "ratingPeriods": 8,
+          "ratingResults": 8
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 8,
+      "stats": {
+        "deferred_to_tier3": [
+          "ratingPeriods.tenantId",
+          "ratingPeriods.periodStart",
+          "ratingPeriods.periodEnd",
+          "ratingResults.periodId",
+          "ratingResults.subscriptionId",
+          "ratingResults.overageAmount",
+          "ratingResults.createdAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "ratingPeriods.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "ratingResults.periodId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "ratingResults.subscriptionId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 3
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 16,
+      "stats": {
+        "ratingPeriods": {
+          "mode": "full_diff",
+          "population": 8,
+          "duplicate_source_key_count": 0
+        },
+        "ratingResults": {
+          "mode": "full_diff",
+          "population": 8,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}

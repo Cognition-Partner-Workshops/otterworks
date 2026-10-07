@@ -1,0 +1,47 @@
+{
+  "kind": "unit-load",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "target_db": "mmp_rt_b4_oracle",
+  "schema": "OW_BILLING",
+  "write_targets": [
+    "mmp_rt_b4_oracle.invoices",
+    "mmp_rt_b4_oracle.ratingPeriods",
+    "mmp_rt_b4_oracle.ratingResults"
+  ],
+  "loaded_at": "2026-10-07T20:06:11.505259+00:00",
+  "collections": {
+    "ratingPeriods": {
+      "root_table": "RATING_PERIODS",
+      "source_rows": 8,
+      "docs_inserted": 8,
+      "embeds": {},
+      "indexes_created": [
+        "tenantId_1_periodStart_1"
+      ],
+      "collStats": {
+        "count": 8,
+        "size": 1136,
+        "storageSize": 4096,
+        "totalIndexSize": 24576,
+        "nindexes": 2
+      }
+    },
+    "ratingResults": {
+      "root_table": "RATING_RESULTS",
+      "source_rows": 8,
+      "docs_inserted": 8,
+      "embeds": {},
+      "indexes_created": [
+        "periodId_1"
+      ],
+      "collStats": {
+        "count": 8,
+        "size": 2352,
+        "storageSize": 4096,
+        "totalIndexSize": 24576,
+        "nindexes": 2
+      }
+    }
+  }
+}
