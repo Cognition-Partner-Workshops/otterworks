@@ -17,6 +17,12 @@ estate on PostgreSQL 15 with `BILLING_BACKEND=ow_billing_pg`: database
 shared infra Postgres. DDL and the PL/pgSQL ports of the `PKG_*` packages are
 in `db/postgres/initdb/`; the backend is `app/backends/ow_billing_pg.py`.
 
+Like the Oracle fixture, the container listens on all interfaces so the TP
+stack containers reach it through `host.docker.internal`, with dev default
+passwords (`BILLING_PG_PASSWORD`, `BILLING_PG_AUDIT_PASSWORD`,
+`BILLING_PG_ADMIN_PASSWORD` override them). Set `BILLING_PG_BIND=127.0.0.1` to
+keep it local to the host.
+
 ```bash
 make billing-pg-up                    # Postgres target
 make billing-pg-migrate               # reload every table from Oracle (idempotent; refuses once the app
