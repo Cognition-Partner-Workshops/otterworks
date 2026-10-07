@@ -38,6 +38,7 @@ jobs:
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
+      preferences-service: ${{ steps.changes.outputs.preferences-service }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -78,6 +79,11 @@ jobs:
               - 'services/report-service/**'
             legacy-portal:
               - 'services/legacy-portal/**'
+            preferences-service:
+              - 'services/preferences-service/**'
+              - 'services/legacy-portal/**'
+              - 'infrastructure/helm/preferences-service/**'
+              - 'docker-compose.portal.yml'
             api-tests:
               - 'tests/api/**'
               - 'docs/api-route-matrix.md'
@@ -359,6 +365,61 @@ jobs:
           java-version: '11'
           cache: maven
       - run: ./mvnw test -B
+
+  # Java 21 / Spring Boot 3.3 - user preferences, extracted from legacy-portal. Unit tests, the
+  # chart (helm lint/template + kubeconform), then the legacy-portal transcript recorded on main
+  # replayed through the strangler edge of docker-compose.portal.yml (must be 95/95 identical).
+  preferences-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.preferences-service == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: ./mvnw verify -B
+        working-directory: services/preferences-service
+      - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - name: Install kubeconform
+        run: |
+          curl -sSfL -o /tmp/kubeconform.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf /tmp/kubeconform.tgz -C /usr/local/bin kubeconform
+      - name: Helm chart
+        run: |
+          chart=infrastructure/helm/preferences-service
+          set_args=(--set image.tag=ci --set config.SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/preferences)
+          helm lint "$chart" --strict "${set_args[@]}"
+          helm template preferences-service "$chart" "${set_args[@]}" | kubeconform -strict -summary
+          helm template preferences-service "$chart" "${set_args[@]}" --set ingress.enabled=true \
+            --api-versions monitoring.coreos.com/v1 \
+            | kubeconform -strict -summary -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          probes=$(helm template preferences-service "$chart" "${set_args[@]}" --show-only templates/deployment.yaml)
+          grep -A2 livenessProbe <<<"$probes" | grep -q 'path: /health$'
+          grep -A2 readinessProbe <<<"$probes" | grep -q 'path: /actuator/health/readiness$'
+          for bad in "--set service.type=LoadBalancer" "--set config.SPRING_DATASOURCE_URL="; do
+            # shellcheck disable=SC2086
+            if helm template preferences-service "$chart" "${set_args[@]}" $bad >/dev/null 2>&1; then
+              echo "chart must refuse $bad"; exit 1
+            fi
+          done
+      - name: Strangler parity replay
+        run: services/preferences-service/parity/run.sh
+        env:
+          OUT: ${{ runner.temp }}/preferences-parity
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: preferences-parity
+          path: ${{ runner.temp }}/preferences-parity
+          if-no-files-found: ignore
+      - if: always()
+        run: docker compose -p portal-strangler -f docker-compose.portal.yml down -v
 
   # Terraform validation
   infrastructure:
