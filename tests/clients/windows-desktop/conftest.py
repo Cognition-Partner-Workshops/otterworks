@@ -12,6 +12,7 @@ import json
 import os
 import shutil
 import sys
+import uuid
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
@@ -59,11 +60,9 @@ def stub() -> Iterator[GatewayStub]:
 def isolated_session_store() -> Iterator[Path]:
     """Moves any real session.dat under %APPDATA% aside for the duration of a test."""
     store = session_store_path()
-    backup = store.with_name("session.dat.pytest-backup")
-    if backup.exists():
-        # Left by an interrupted run: the backup is the real session, the store is test residue.
-        store.unlink(missing_ok=True)
-    elif store.exists():
+    # Unique per test so a backup left behind by an interrupted run is never overwritten or deleted.
+    backup = store.with_name(f"session.dat.pytest-backup-{uuid.uuid4().hex}")
+    if store.exists():
         shutil.move(store, backup)
     try:
         yield store
