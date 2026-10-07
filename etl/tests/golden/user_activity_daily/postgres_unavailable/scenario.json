@@ -1,0 +1,47 @@
+{
+  "description": "The configured database does not exist: psycopg2.connect fails inside the try, the script logs 'ERROR: PostgreSQL query failed' and exits 1 before reading or writing S3 (no report objects).",
+  "frozen_time": "2026-03-15T05:00:00Z",
+  "config_overrides": {
+    "database": {
+      "database": "otterworks_etl_golden_missing"
+    }
+  },
+  "seed": {
+    "postgres": {
+      "analytics_daily_summary": [
+        {
+          "report_date": "2026-03-15",
+          "active_users": 1,
+          "active_documents": 0,
+          "active_files": 0,
+          "total_events": 1,
+          "documents_created": 0,
+          "documents_edited": 0,
+          "comments_added": 0,
+          "files_uploaded": 0,
+          "files_shared": 0,
+          "files_deleted": 0,
+          "bytes_uploaded": 0,
+          "updated_at": "2026-03-15T02:00:00Z"
+        }
+      ]
+    },
+    "s3": [
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "jsonl",
+        "body": [
+          {
+            "user_id": "user-alice",
+            "actions": {
+              "document_edited": 1
+            },
+            "total": 1
+          }
+        ]
+      }
+    ]
+  }
+}

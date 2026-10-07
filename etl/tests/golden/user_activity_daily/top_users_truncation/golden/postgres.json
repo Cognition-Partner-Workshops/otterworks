@@ -1,0 +1,75 @@
+{
+  "analytics_daily_summary": {
+    "columns": [
+      {
+        "name": "report_date",
+        "type": "date"
+      },
+      {
+        "name": "active_users",
+        "type": "integer"
+      },
+      {
+        "name": "active_documents",
+        "type": "integer"
+      },
+      {
+        "name": "active_files",
+        "type": "integer"
+      },
+      {
+        "name": "total_events",
+        "type": "integer"
+      },
+      {
+        "name": "documents_created",
+        "type": "integer"
+      },
+      {
+        "name": "documents_edited",
+        "type": "integer"
+      },
+      {
+        "name": "comments_added",
+        "type": "integer"
+      },
+      {
+        "name": "files_uploaded",
+        "type": "integer"
+      },
+      {
+        "name": "files_shared",
+        "type": "integer"
+      },
+      {
+        "name": "files_deleted",
+        "type": "integer"
+      },
+      {
+        "name": "bytes_uploaded",
+        "type": "bigint"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "rows": [
+      {
+        "active_documents": 0,
+        "active_files": 0,
+        "active_users": 501,
+        "bytes_uploaded": 0,
+        "comments_added": 0,
+        "documents_created": 0,
+        "documents_edited": 0,
+        "files_deleted": 0,
+        "files_shared": 0,
+        "files_uploaded": 0,
+        "report_date": "2026-03-15",
+        "total_events": 6513,
+        "updated_at": "<normalized:updated_at>"
+      }
+    ]
+  }
+}
