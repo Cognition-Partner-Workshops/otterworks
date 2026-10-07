@@ -1,0 +1,51 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "reports/storage-cleanup/2026-07-01/report.json": {
+      "body": {
+        "cleanup": {
+          "objects_failed": 0,
+          "objects_quarantined": 0,
+          "quarantine_bucket": "otterworks-file-quarantine"
+        },
+        "generated_at": "<normalized:generated_at>",
+        "inventory": {
+          "total_objects": 0,
+          "total_size_bytes": 0,
+          "total_size_gb": 0.0
+        },
+        "orphans": {
+          "orphan_percentage": 0,
+          "orphaned_bytes": 0,
+          "orphaned_objects": 0,
+          "orphaned_size_gb": 0.0
+        },
+        "report_date": "2026-07-01",
+        "report_type": "storage_cleanup",
+        "savings": {
+          "estimated_monthly_savings_usd": 0.0,
+          "storage_freed_gb": 0.0
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {
+    "thumbnails/x.png": {
+      "body": "outside the files/ prefix",
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-files": {}
+}
