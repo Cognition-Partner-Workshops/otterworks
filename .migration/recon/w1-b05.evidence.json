@@ -366,7 +366,7 @@
   "blocked": false,
   "note": "all commands from $HOME via absolute paths / wrapper (F4/F9)"
  },
- "pr_url": null,
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
  "pre_pr_self_check": {
   "null_missing": "all six DUNNING_ATTEMPTS columns NOT NULL owner-side; 0 NULL / 0 dangling reference pointers on both sides",
   "namespace_scope": "writes only to mmp_rt_b3_oracle.dunningAttempts (the single wave write_target); loader refuses any target outside --target-db; ow_tp prefix rule does not apply to this allowlisted db (as b01-b04)",

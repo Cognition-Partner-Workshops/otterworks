@@ -7,7 +7,7 @@
  "write_targets": [
   "mmp_rt_b3_oracle.dunningAttempts"
  ],
- "pr_url": null,
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
  "branch": "devin/1791368621-w1-b05-load",
  "failure_class": null,
  "one_line_summary": "dunningAttempts 1/1 live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31 (Tier 1 2 / Tier 2 3 / Tier 3 1 checks, 0 findings, no warnings), one live run, concurrency 1; references resolve on both sides (invoiceId -> invoices 1/1, tenantId -> tenants 1/1, 0 dangling; DUNNING_ATTEMPTS has no subscription column); loader unchanged, second load identical hash, nothing dropped, b01-b04 collections unchanged; F74 (fixture-first artifact overwritten by the live run at the default per-unit path).",
