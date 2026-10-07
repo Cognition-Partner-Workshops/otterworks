@@ -1,0 +1,115 @@
+{
+  "otterworks-analytics-events": {
+    "items": [
+      {
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "ev-1"
+        },
+        "event_type": {
+          "S": "file_shared"
+        },
+        "fileId": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-03-15T01:30:00Z"
+        },
+        "userId": {
+          "S": "user-carol"
+        }
+      },
+      {
+        "event_date": {
+          "S": "2026-03-15"
+        },
+        "event_id": {
+          "S": "ev-2"
+        },
+        "event_type": {
+          "S": "file_uploaded"
+        },
+        "fileId": {
+          "S": "file-2"
+        },
+        "sizeBytes": {
+          "N": "512"
+        },
+        "timestamp": {
+          "S": "2026-03-15T01:45:00Z"
+        },
+        "userId": {
+          "S": "user-carol"
+        }
+      },
+      {
+        "event_date": {
+          "S": "2026-03-14"
+        },
+        "event_id": {
+          "S": "ev-3"
+        },
+        "event_type": {
+          "S": "file_deleted"
+        },
+        "fileId": {
+          "S": "file-9"
+        },
+        "timestamp": {
+          "S": "2026-03-14T23:59:00Z"
+        },
+        "userId": {
+          "S": "user-dave"
+        }
+      }
+    ],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

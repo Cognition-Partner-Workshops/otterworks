@@ -1,0 +1,18 @@
+{
+  "description": "Harness smoke: one referenced and two orphaned objects under files/, one object outside the prefix; exercises the quarantine copy/delete and the cleanup report.",
+  "frozen_time": "2026-03-15T02:30:00Z",
+  "seed": {
+    "s3": [
+      {"bucket": "otterworks-file-storage", "key": "files/user-alice/report.pdf", "body": "referenced file body", "format": "text", "content_type": "application/pdf"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-bob/orphan.txt", "body": "orphaned file body", "format": "text", "content_type": "text/plain"},
+      {"bucket": "otterworks-file-storage", "key": "files/user-bob/orphan.json", "body": {"orphan": true}, "format": "json", "content_type": "application/json"},
+      {"bucket": "otterworks-file-storage", "key": "thumbnails/report.png", "body": "outside the files/ prefix", "format": "text"}
+    ],
+    "dynamodb": {
+      "otterworks-file-metadata": [
+        {"id": "meta-1", "s3_key": "files/user-alice/report.pdf", "owner_id": "user-alice", "size": 20},
+        {"id": "meta-2", "s3_key": "files/user-carol/missing.bin", "owner_id": "user-carol", "size": 7}
+      ]
+    }
+  }
+}
