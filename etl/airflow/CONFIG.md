@@ -20,9 +20,16 @@ make airflow-config-check   # resolves every Connection/Variable in the schedule
 table that a Variable names (`*_bucket`, `*_queue_name`, `*_table`) is missing from LocalStack.
 `scripts/localstack-init.sh` does not create `otterworks-analytics`, `otterworks-analytics-events`,
 `otterworks-file-storage` or `otterworks-file-quarantine`, so on a fresh stack the check fails
-until the ETL golden harness has created them: `make etl-golden SCRIPT=<script>` runs
-`harness.infra.ensure_resources()` against the same LocalStack (PR #1891; it also resets the local
-stack's contents for its scenario).
+until the ETL golden harness has created them. This creates them and wipes nothing (the same call
+`make legacy-cron-up` makes, PR #1909; the harness is `etl/tests/golden`, PR #1891):
+
+```bash
+cd etl/tests/golden && uv run --python 3.11 --with-requirements requirements.txt \
+  python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
+```
+
+Do not use `make etl-golden` for this: it runs `harness.infra.reset()`, which empties every bucket,
+table, queue and index in the shared local stack.
 
 Edit `etl/airflow/.env` (never `.env.example`) to point a local run elsewhere, then
 `make airflow-up` again to recreate the containers. `etl/airflow/scripts/check_config.py static`

@@ -73,8 +73,11 @@ DECIDED_DEFAULTS = {
 RESOURCE_SUFFIXES = {"_bucket": "s3", "_queue_name": "sqs", "_table": "dynamodb"}
 # scripts/localstack-init.sh does not create every one of them; the golden harness does.
 CREATE_RESOURCES_HINT = (
-    "scripts/localstack-init.sh does not create these; the ETL golden harness does "
-    "(harness.infra.ensure_resources, run by `make etl-golden SCRIPT=<script>`, PR #1891)"
+    "scripts/localstack-init.sh does not create these. Create them (wipes nothing) with the ETL "
+    "golden harness: cd etl/tests/golden && uv run --python 3.11 --with-requirements "
+    'requirements.txt python -c "from harness import infra; infra.wait_ready(); '
+    'infra.ensure_resources()" (what `make legacy-cron-up` runs, PR #1909). '
+    "Not `make etl-golden`: it resets the local stack"
 )
 # config.ini credentials and database identity: none may appear (as a whole token) in the new
 # config. Other config.ini values that equal a local-stack value are listed, not failed.
