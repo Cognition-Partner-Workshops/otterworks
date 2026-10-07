@@ -123,7 +123,7 @@ make etl-parity SCRIPT=storage_cleanup_daily VARIANT=reference_mismatches_normal
    DynamoDB key schema and each item by primary key, each SQS queue, each
    Postgres table's columns and rows, each MeiliSearch index's settings/stats
    and each document). Each row of
-   `.runs/parity/<dag_id>/<script>/report.md` says what was compared, the
+   `.runs/parity/<dag_id>/<script>/<all|scenario|variant>/report.md` says what was compared, the
    golden (before) and DAG (after) value, and the result: `identical`,
    `accepted difference: <reason>` or `failed`. `report.json` has the full
    values. The run passes only with no failed row.

@@ -105,7 +105,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           found=
-          for report in etl/tests/golden/.runs/parity/*/${{ matrix.script }}/report.md; do
+          for report in etl/tests/golden/.runs/parity/*/${{ matrix.script }}/*/report.md; do
             [ -f "$report" ] || continue
             found=1
             { cat "$report"; echo; } >> "$GITHUB_STEP_SUMMARY"

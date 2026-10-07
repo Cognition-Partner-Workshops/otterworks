@@ -11,7 +11,7 @@ split golden and DAG snapshots into checks (harness/differences.py). The DAG
 for a script comes from parity/dags.yaml; accepted differences and flag-on
 variants from <script>/accepted_differences.yaml.
 
-Writes .runs/parity/<dag_id>/<script>/report.md (the org parity table) and
+Writes .runs/parity/<dag_id>/<script>/<all|scenario|variant>/report.md (the org parity table) and
 report.json. Exit 0 when --expect identical (default) and no check failed, or
 when --expect failed and at least one check failed without a harness error.
 """
@@ -208,7 +208,8 @@ def main(argv: list[str] | None = None) -> int:
         print("no scenarios selected", file=sys.stderr)
         return 2
 
-    out_dir = settings.RUNS_DIR / "parity" / entry.dag_id / args.script
+    selection = args.variant or args.scenario or "all"
+    out_dir = settings.RUNS_DIR / "parity" / entry.dag_id / args.script / selection
     out_dir.mkdir(parents=True, exist_ok=True)
     infra.wait_ready()
     infra.ensure_resources()
