@@ -1,0 +1,120 @@
+{
+  "unit": "u00-reference",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "tolerance_version": "tol-1",
+  "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+  "collections": [
+    "codes",
+    "tenants",
+    "plans"
+  ],
+  "seed": 0,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T19:26:02.523248+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 12,
+      "stats": {
+        "source_counts": {
+          "codes": 32,
+          "tenants": 15,
+          "plans": 3
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 7,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.codeDesc",
+          "tenants.name",
+          "tenants.taxExempt",
+          "plans.code",
+          "plans.monthlyFee",
+          "plans.overageRate",
+          "plans.active"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "codes.codeDesc",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "tenants.name",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "plans.code",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 3
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 55,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32,
+          "duplicate_source_key_count": 0
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 15,
+          "duplicate_source_key_count": 0
+        },
+        "embeds_graded": {
+          "tenants.creditNotes": 5
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 4,
+      "name": "app_level_parity",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}

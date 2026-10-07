@@ -1,0 +1,73 @@
+{
+  "kind": "unit-load",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "target_db": "mmp_rt_b4_oracle",
+  "schema": "OW_BILLING",
+  "write_targets": [
+    "mmp_rt_b4_oracle.codes",
+    "mmp_rt_b4_oracle.plans",
+    "mmp_rt_b4_oracle.tenants"
+  ],
+  "loaded_at": "2026-10-07T19:25:58.579205+00:00",
+  "collections": {
+    "codes": {
+      "root_table": "CODES",
+      "source_rows": 32,
+      "docs_inserted": 32,
+      "embeds": {},
+      "indexes_created": [
+        "codeDesc_1_codeType_1",
+        "codeType_1_codeVal_1"
+      ],
+      "collStats": {
+        "count": 32,
+        "size": 2939,
+        "storageSize": 4096,
+        "totalIndexSize": 61440,
+        "nindexes": 3
+      }
+    },
+    "plans": {
+      "root_table": "PLANS",
+      "source_rows": 3,
+      "docs_inserted": 3,
+      "embeds": {},
+      "indexes_created": [
+        "monthlyFee_1__id_1",
+        "monthlyFee_1_code_1",
+        "code_1"
+      ],
+      "collStats": {
+        "count": 3,
+        "size": 519,
+        "storageSize": 4096,
+        "totalIndexSize": 65536,
+        "nindexes": 4
+      }
+    },
+    "tenants": {
+      "root_table": "TENANTS",
+      "source_rows": 15,
+      "docs_inserted": 15,
+      "embeds": {
+        "creditNotes": {
+          "child_table": "CREDIT_NOTES",
+          "elements": 5
+        }
+      },
+      "indexes_created": [
+        "creditNotes.remainingAmount_1",
+        "creditNotes.issuedOn_1_creditNotes.id_1_creditNotes.remainingAmount_1",
+        "name_1"
+      ],
+      "collStats": {
+        "count": 15,
+        "size": 2495,
+        "storageSize": 4096,
+        "totalIndexSize": 65536,
+        "nindexes": 4
+      }
+    }
+  }
+}
