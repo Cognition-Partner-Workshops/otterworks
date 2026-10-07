@@ -1,0 +1,11 @@
+archive d -
+archive/CUSTBILL_QA_001.dat.20260115000000 f 3430
+archive/CUSTBILL_QA_002.dat.20260115000000 f 3430
+incoming d -
+incoming/CUSTBILL_QA_001.dat.done f 3430
+incoming/CUSTBILL_QA_002.dat.done f 3430
+parsed d -
+parsed/CUSTBILL_QA_001.psv f 2475
+parsed/CUSTBILL_QA_002.psv f 2473
+sftp-drop d -
+sftp-drop/upload d -
