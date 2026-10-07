@@ -1,0 +1,32 @@
+{
+  "kind": "unit-load",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "target_db": "mmp_rt_b4_oracle",
+  "schema": "OW_BILLING",
+  "write_targets": [
+    "mmp_rt_b4_oracle.notifications",
+    "mmp_rt_b4_oracle.subscriptions",
+    "mmp_rt_b4_oracle.subscriptionsHist",
+    "mmp_rt_b4_oracle.usageEvents"
+  ],
+  "loaded_at": "2026-10-07T19:57:31.233208+00:00",
+  "collections": {
+    "usageEvents": {
+      "root_table": "USAGE_EVENTS",
+      "source_rows": 103,
+      "docs_inserted": 103,
+      "embeds": {},
+      "indexes_created": [
+        "tenantId_1_occurredAt_1"
+      ],
+      "collStats": {
+        "count": 103,
+        "size": 15759,
+        "storageSize": 4096,
+        "totalIndexSize": 24576,
+        "nindexes": 2
+      }
+    }
+  }
+}

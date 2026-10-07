@@ -1,0 +1,50 @@
+{
+  "kind": "unit-load",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "target_db": "mmp_rt_b4_oracle",
+  "schema": "OW_BILLING",
+  "write_targets": [
+    "mmp_rt_b4_oracle.notifications",
+    "mmp_rt_b4_oracle.subscriptions",
+    "mmp_rt_b4_oracle.subscriptionsHist",
+    "mmp_rt_b4_oracle.usageEvents"
+  ],
+  "loaded_at": "2026-10-07T19:57:24.217655+00:00",
+  "collections": {
+    "subscriptions": {
+      "root_table": "SUBSCRIPTIONS",
+      "source_rows": 20,
+      "docs_inserted": 20,
+      "embeds": {},
+      "indexes_created": [
+        "tenantId_1_endsOn_1_startsOn_1",
+        "endsOn_1_startsOn_1",
+        "planId_1"
+      ],
+      "collStats": {
+        "count": 20,
+        "size": 4216,
+        "storageSize": 4096,
+        "totalIndexSize": 65536,
+        "nindexes": 4
+      }
+    },
+    "subscriptionsHist": {
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "source_rows": 6,
+      "docs_inserted": 6,
+      "embeds": {},
+      "indexes_created": [
+        "id_1__id_1"
+      ],
+      "collStats": {
+        "count": 6,
+        "size": 1716,
+        "storageSize": 4096,
+        "totalIndexSize": 24576,
+        "nindexes": 2
+      }
+    }
+  }
+}
