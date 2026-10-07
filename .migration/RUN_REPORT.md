@@ -41,7 +41,7 @@ Hand-back of the unattended plugin-validation run of the `mongo-migration` Devin
 | #1938 | UNT8-19 | s6.1-unverified-and-blind-spots | `1c095f45` | `05_decisions.md` §4b / §5b |
 | #1940 | UNT8-20 | s6.2-prior-run-diff | `a1611288` | `06_prior_run_diff.md` |
 
-20 PRs merged into the run branch plus one direct push; the first-parent log between `32baffd8` and `a1611288` holds exactly these 21 commits and nothing else. Steps without a PR into the run branch: s1.0-run-branch (UNT8-1: branch cut, plugin pin, harness install), s5.1.0-preflight (UNT8-15: wave-1 spec validated, `manifest_sha 55e68257b3f9` stamped on every batch result), s5.1.verify (UNT8-18: evidence on `origin/recon/wave-1-UNT8-18` @ `95720bb3`, four commits off `7e66c71a`, §4). The PR numbers not listed (#1918, #1920, #1926, #1930–#1932, #1939) are not on the run branch's first-parent history and are not part of this run's record.
+20 PRs merged into the run branch plus one direct push; the first-parent log between `32baffd8` and `a1611288` holds exactly these 21 commits and nothing else. Steps without a PR into the run branch: s1.0-run-branch (UNT8-1: branch cut, plugin pin, harness install), s5.1.0-preflight (UNT8-15: wave-1 spec validated, `manifest_sha 55e68257b3f9` stamped on every batch result), s5.1.verify (UNT8-18: evidence on `origin/recon/wave-1-UNT8-18` @ `95720bb3`, four commits off `7e66c71a`, §4). The PR numbers not listed (#1918, #1920, #1926, #1930–#1932, #1939) are other workstreams' PRs that were open against other bases at report time; none is on the run branch's first-parent history and none is part of this run's record.
 
 ## 3. Wave-1 verdict
 
