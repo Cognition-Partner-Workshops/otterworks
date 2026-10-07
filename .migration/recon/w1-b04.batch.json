@@ -1,0 +1,137 @@
+{
+ "batch": "w1-b04",
+ "status": "PASS",
+ "recon_results": [
+  ".migration/recon/invoices/result.json",
+  ".migration/recon/subscriptionsHist/result.json",
+  ".migration/recon/ratingResults/result.json"
+ ],
+ "write_targets": [
+  "mmp_rt_b3_oracle.invoices",
+  "mmp_rt_b3_oracle.subscriptionsHist",
+  "mmp_rt_b3_oracle.ratingResults"
+ ],
+ "pr_url": null,
+ "branch": "devin/1791367911-w1-b04-load",
+ "failure_class": null,
+ "one_line_summary": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
+ "per_unit": {
+  "invoices": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "live_warnings": [],
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 5,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 5,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 12,
+     "findings": 0
+    }
+   ],
+   "tier1_findings": [],
+   "tier3_stats": {
+    "invoices": {
+     "mode": "full_diff",
+     "population": 4,
+     "duplicate_source_key_count": 0
+    },
+    "embeds_graded": {
+     "invoices.lines": 4
+    }
+   },
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "population": 4
+  },
+  "subscriptionsHist": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "live_warnings": [],
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 1,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 0,
+     "findings": 0
+    }
+   ],
+   "tier1_findings": [],
+   "tier3_stats": {
+    "subscriptionsHist": {
+     "mode": "full_diff",
+     "population": 0,
+     "duplicate_source_key_count": 0
+    }
+   },
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "population": 0,
+   "note": "0-row unit: PASS verifies nothing (F70/F73); SUBSCRIPTIONS_HIST trigger cascade never fired in the fixture"
+  },
+  "ratingResults": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "live_warnings": [],
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 6,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 3,
+     "findings": 0
+    }
+   ],
+   "tier1_findings": [],
+   "tier3_stats": {
+    "ratingResults": {
+     "mode": "full_diff",
+     "population": 3,
+     "duplicate_source_key_count": 0
+    }
+   },
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-4",
+   "population": 3
+  }
+ },
+ "loader_obligations": {},
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "manifest_sha": "b11c0e7b2f31",
+ "merge_eligible": true
+}

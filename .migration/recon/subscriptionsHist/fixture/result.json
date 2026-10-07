@@ -1,0 +1,96 @@
+{
+  "unit": "subscriptionsHist",
+  "mode": "fixture",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-draft-4",
+  "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+  "tolerance_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "collections": [
+    "subscriptionsHist"
+  ],
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T10:13:30.049210+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "subscriptionsHist": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "deferred_to_tier3": [
+          "subscriptionsHist.histDt",
+          "subscriptionsHist.histOp",
+          "subscriptionsHist.tenantId",
+          "subscriptionsHist.planId",
+          "subscriptionsHist.startsOn",
+          "subscriptionsHist.endsOn",
+          "subscriptionsHist.statusCd",
+          "subscriptionsHist.suspendedOn"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "subscriptionsHist.histOp",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionsHist.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionsHist.planId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 7
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {
+        "subscriptionsHist": {
+          "mode": "full_diff",
+          "population": 0,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
