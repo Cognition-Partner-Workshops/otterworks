@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "table",
+    "object": "FIXTURE_META",
+    "a": "present",
+    "b": "absent"
+  },
+  {
+    "kind": "sequence",
+    "object": "SEQ_BILLING_AUDIT_LOG",
+    "a": "absent",
+    "b": "present"
+  },
+  {
+    "kind": "sequence",
+    "object": "SEQ_CUSTOMER_MASTER",
+    "a": "absent",
+    "b": "present"
+  },
+  {
+    "kind": "sequence",
+    "object": "SEQ_CUSTOMER_MASTER_HIST",
+    "a": "absent",
+    "b": "present"
+  },
+  {
+    "kind": "sequence",
+    "object": "SEQ_ENTITY_ATTR_VALUE",
+    "a": "absent",
+    "b": "present"
+  },
+  {
+    "kind": "sequence",
+    "object": "SEQ_SUBSCRIPTIONS_HIST",
+    "a": "absent",
+    "b": "present"
+  }
+]
