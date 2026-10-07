@@ -132,6 +132,7 @@ def test_run_environment_points_every_connection_at_the_harness_stack():
     assert env["AIRFLOW_VAR_AUDIT_ARCHIVE_DELETE_ENABLED"] == "true"
     assert env["AIRFLOW_VAR_STORAGE_CLEANUP_NORMALIZE_KEYS"] == "false"
     assert env["PARITY_CONFIG_PATH"] == "/x/config.ini"
+    assert env["OTTERWORKS_ETL_TASK_RETRIES"] == "0"
     for value in env.values():
         assert "amazonaws.com" not in value
 

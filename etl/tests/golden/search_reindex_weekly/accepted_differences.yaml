@@ -2,6 +2,79 @@
 # (etl/tests/golden/README.md, "DAG parity"). Every check not listed here must be identical;
 # a listed one must show exactly these before/after values. Add an entry only with a reviewed
 # reason, in the PR that introduces the difference.
+#
+# accepted: failing_page only (manager decision, s3.5). Legacy is serial: document-service page 2
+#   answers 500, the script exits 1 and never reaches file-service, so `files` exists with its
+#   settings but stays empty. The DAG runs fetch_and_index_documents and fetch_and_index_files in
+#   parallel (etl/ETL_UPGRADE_GUIDE.md), so files is indexed independently; validate_indices is
+#   upstream_failed and the run still fails with exit 1, as legacy does.
 script: search_reindex_weekly
-accepted: []
+accepted:
+- scenario: failing_page
+  check: meilisearch.json files stats
+  before:
+    fieldDistribution: {}
+    isIndexing: false
+    numberOfDocuments: 0
+  after:
+    fieldDistribution:
+      created_at: 3
+      folder_id: 3
+      id: 3
+      mime_type: 3
+      name: 3
+      owner_id: 3
+      size: 3
+      tags: 3
+      type: 3
+      updated_at: 3
+    isIndexing: false
+    numberOfDocuments: 3
+  reason: 's3.5 decision (failing_page): legacy never reaches files after documents fail; the DAG indexes
+    files in parallel, so the files index holds all 3 files. The run still fails (exit 1).'
+- scenario: failing_page
+  check: meilisearch.json files[id="file-001"]
+  before_absent: true
+  after:
+    created_at: '2026-02-02T10:00:00Z'
+    folder_id: ''
+    id: file-001
+    mime_type: ''
+    name: file-001.pdf
+    owner_id: user-bob
+    size: 1001
+    tags: []
+    type: file
+    updated_at: '2026-03-02T10:00:00Z'
+  reason: 's3.5 decision (failing_page): files indexed in parallel with the failed documents task.'
+- scenario: failing_page
+  check: meilisearch.json files[id="file-002"]
+  before_absent: true
+  after:
+    created_at: '2026-02-03T10:00:00Z'
+    folder_id: ''
+    id: file-002
+    mime_type: ''
+    name: file-002.txt
+    owner_id: user-carol
+    size: 2
+    tags: []
+    type: file
+    updated_at: '2026-03-03T10:00:00Z'
+  reason: 's3.5 decision (failing_page): files indexed in parallel with the failed documents task.'
+- scenario: failing_page
+  check: meilisearch.json files[id="file-003"]
+  before_absent: true
+  after:
+    created_at: '2026-02-04T10:00:00Z'
+    folder_id: ''
+    id: file-003
+    mime_type: application/pdf
+    name: file-003.pdf
+    owner_id: user-alice
+    size: 1003
+    tags: []
+    type: file
+    updated_at: '2026-03-04T10:00:00Z'
+  reason: 's3.5 decision (failing_page): files indexed in parallel with the failed documents task.'
 variants: []

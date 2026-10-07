@@ -19,9 +19,9 @@ scripts:
     dag_folder: image
     variants: true
   search_reindex_weekly:
-    dag_id: parity_passthrough__search_reindex_weekly
-    dag_folder: toy
-    variants: false
+    dag_id: otterworks_search_reindex
+    dag_folder: image
+    variants: true
   storage_cleanup_daily:
     dag_id: otterworks_storage_cleanup
     dag_folder: image
