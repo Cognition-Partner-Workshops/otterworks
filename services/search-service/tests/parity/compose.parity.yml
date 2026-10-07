@@ -1,0 +1,16 @@
+# Overlay used by the parity harness (see README.md).
+#
+#   docker compose -f docker-compose.infra.yml -f docker-compose.yml \
+#     -f services/search-service/tests/parity/compose.parity.yml up -d redis meilisearch search-service
+#
+# * Configures a service token so the Bearer auth path can be exercised
+#   (the base compose file leaves SEARCH_SERVICE_TOKEN unset).
+# * Runs a single worker process: request metrics and search analytics are
+#   per-process in-memory state, so with two workers /metrics and /analytics
+#   depend on which worker answered and the transcript would not replay.
+services:
+  search-service:
+    environment:
+      REQUIRE_AUTH: "true"
+      SEARCH_SERVICE_TOKEN: parity-service-token
+    command: ["gunicorn", "--bind", "0.0.0.0:8087", "--workers", "1", "--threads", "4", "app.main:create_app()"]
