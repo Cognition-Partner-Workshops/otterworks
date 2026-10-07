@@ -20,10 +20,13 @@ def _no_connection(*args, **kwargs):
 @pytest.fixture(scope="session")
 def dagbag():
     from airflow.hooks.base import BaseHook
-    from airflow.models import DagBag, Variable
+    from airflow.models import Connection, DagBag, Variable
 
+    # The secrets-backend lookups catch reads that bypass BaseHook.get_connection/Variable.get.
     with (
         mock.patch.object(BaseHook, "get_connection", side_effect=_no_connection),
+        mock.patch.object(Connection, "get_connection_from_secrets", side_effect=_no_connection),
         mock.patch.object(Variable, "get", side_effect=_no_connection),
+        mock.patch.object(Variable, "get_variable_from_secrets", side_effect=_no_connection),
     ):
         return DagBag(dag_folder=str(DAGS_FOLDER), include_examples=False, read_dags_from_db=False)
