@@ -21,18 +21,18 @@ Runs on the legacy Python 3.9 runtime, so it sticks to 3.9 syntax.
 
 from __future__ import annotations
 
+import http.client
 import os
 import re
 import subprocess
 import sys
-import urllib.request
 from typing import List, NamedTuple, Optional
 
-CRONTAB = os.environ.get("LEGACY_CRON_CRONTAB", "/opt/etl/crontab")
-CONFIG_PATH = os.environ.get("LEGACY_CRON_CONFIG", "/run/legacy-etl/config.ini")
-HARNESS_DIR = os.environ.get("LEGACY_CRON_HARNESS_DIR", "/opt/legacy-cron/golden")
+CRONTAB = "/opt/etl/crontab"
+CONFIG_PATH = "/run/legacy-etl/config.ini"
+HARNESS_DIR = "/opt/legacy-cron/golden"
 LOG_DIR = "/var/log/etl"
-SUPERCRONIC = os.environ.get("LEGACY_CRON_SUPERCRONIC", "/usr/local/bin/supercronic")
+SUPERCRONIC = "/usr/local/bin/supercronic"
 METRICS_ADDRESS = "127.0.0.1:9746"
 NOT_SCHEDULED_EXIT_CODE = 3
 
@@ -149,10 +149,13 @@ def run(script: str) -> int:
 
 def healthcheck() -> int:
     try:
-        with urllib.request.urlopen(
-            "http://%s/metrics" % METRICS_ADDRESS, timeout=5
-        ) as resp:
-            return 0 if resp.status == 200 else 1
+        host, port = METRICS_ADDRESS.rsplit(":", 1)
+        conn = http.client.HTTPConnection(host, int(port), timeout=5)
+        try:
+            conn.request("GET", "/metrics")
+            return 0 if conn.getresponse().status == 200 else 1
+        finally:
+            conn.close()
     except OSError:
         return 1
 
