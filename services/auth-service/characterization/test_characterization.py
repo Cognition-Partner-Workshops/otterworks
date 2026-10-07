@@ -25,10 +25,13 @@ import urllib.request
 import uuid
 
 BASE = os.environ.get("AUTH_BASE_URL", "http://localhost:8081").rstrip("/")
+if not BASE.startswith(("http://", "https://")):
+    sys.exit("AUTH_BASE_URL must be an http(s) URL, got %r" % BASE)
 JWT_SECRET = os.environ.get(
     "AUTH_JWT_SECRET", "otterworks-local-dev-jwt-secret-change-me-in-production"
 )
 RUN_ID = uuid.uuid4().hex[:10]
+DEFAULT_TEST_PASSWORD = "password123"  # throwaway users created by this suite
 SEED_ADMIN_ID = "a0000000-0000-0000-0000-000000000001"
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 ISO_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$")
@@ -70,7 +73,8 @@ def call(method, path, body=None, token=None, raw_body=None, headers=None):
         hdrs["Authorization"] = "Bearer " + token
     req = urllib.request.Request(BASE + path, data=data, method=method, headers=hdrs)
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        # BASE is restricted to http(s) above; path is a test-controlled literal.
+        with urllib.request.urlopen(req, timeout=30) as r:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             return Resp(r.status, r.headers, r.read())
     except urllib.error.HTTPError as e:
         return Resp(e.code, e.headers, e.read())
@@ -98,7 +102,9 @@ def email(tag):
     return "char-%s-%s@otterworks.test" % (tag, RUN_ID)
 
 
-def register(tag, password="password123", display="Char User"):
+def register(tag, password=None, display="Char User"):
+    if password is None:
+        password = DEFAULT_TEST_PASSWORD
     r = call("POST", "/api/v1/auth/register",
              {"email": email(tag), "password": password, "displayName": display})
     assert r.status == 201, (r.status, r.text)
