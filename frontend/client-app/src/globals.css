@@ -21,4 +21,10 @@ body {
   font-size: 13.5px;
   background-color: var(--background);
   color: var(--text-primary);
+  /* Keep page content clear of the status bar, sensor housing and home
+     indicator when the native WebView renders edge-to-edge (requires
+     viewport-fit=cover in index.html). env() resolves to 0 in browsers
+     and on Android, where this has no effect. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
