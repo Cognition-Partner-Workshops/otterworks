@@ -5,60 +5,89 @@ either of two authentication modes:
 
 * A valid service-to-service token via ``Authorization: Bearer <token>``
   (used by trusted internal callers such as the SQS indexer or admin
-  reindex jobs).
-* The ``X-User-ID`` header injected by the API gateway after it has
-  validated the caller's JWT (used by user-facing requests proxied
-  through the gateway).
+  reindex jobs). Only these callers may assert a user identity with the
+  ``X-User-ID`` header.
+* The caller's own JWT via ``Authorization: Bearer <jwt>``, which the API
+  gateway forwards unchanged. The service verifies it with ``JWT_SECRET``
+  and derives the user identity from its ``sub`` (or ``user_id``) claim.
 
-If a service token is configured the middleware will accept it on any
-endpoint; if it is not configured (e.g. local dev), only the gateway
-identity path is available and internal endpoints become reachable only
-via the gateway.
+A bare ``X-User-ID`` header is never treated as authentication, since the
+service may be reachable without passing through the gateway.
+
+The resolved identity is stored on ``flask.g.user_id`` and is what the
+search endpoints use to scope results.
 """
 
 from __future__ import annotations
 
+import hmac
+
+import jwt
 import structlog
-from flask import jsonify, request
+from flask import g, jsonify, request
 
 logger = structlog.get_logger()
 
 PUBLIC_PREFIXES = ("/health", "/metrics")
+JWT_ALGORITHMS = ["HS256", "HS384", "HS512"]
 
 
 def require_auth(app):
     """Register a ``before_request`` hook that enforces authentication.
 
     * Requests to health/metrics paths are always allowed.
-    * All other requests must present either a valid service token in
-      the ``Authorization`` header or an ``X-User-ID`` header set by
-      the API gateway after JWT validation.
+    * All other requests must present either a valid service token or a
+      JWT signed with ``JWT_SECRET`` in the ``Authorization`` header.
     """
     auth_config = app.config["APP_CONFIG"].auth
+    jwtSecrets = [s for s in (auth_config.jwt_secret, auth_config.jwt_peer_secret) if s]
+
+    if auth_config.require_auth and not jwtSecrets:
+        logger.warning("jwt_secret_not_configured", detail="user requests will be rejected")
 
     @app.before_request
     def _check_auth():
+        g.user_id = None
+
         if not auth_config.require_auth:
+            # Local development only: trust the header as-is.
+            g.user_id = request.headers.get("X-User-ID", "").strip() or None
             return None
 
         path = request.path
         if any(path.startswith(p) for p in PUBLIC_PREFIXES):
             return None
 
-        # Accept a valid service token if one is configured.
-        if auth_config.service_token:
-            token = _extract_bearer_token()
-            if token and token == auth_config.service_token:
-                return None
+        token = _extract_bearer_token()
 
-        # Otherwise require gateway-injected user identity.
-        user_id = request.headers.get("X-User-ID", "").strip()
-        if user_id:
+        if token and auth_config.service_token and hmac.compare_digest(
+            token.encode(), auth_config.service_token.encode()
+        ):
+            g.user_id = request.headers.get("X-User-ID", "").strip() or None
             return None
 
-        endpoint = request.endpoint or ""
-        logger.warning("auth_rejected", endpoint=endpoint, path=path)
+        if token:
+            userId = _verify_user_jwt(token, jwtSecrets)
+            if userId:
+                g.user_id = userId
+                return None
+
+        logger.warning("auth_rejected", endpoint=request.endpoint or "", path=path)
         return jsonify({"error": "unauthorized"}), 401
+
+
+def _verify_user_jwt(token: str, secrets: list[str]) -> str | None:
+    """Return the user ID from a valid JWT, or None if it cannot be verified."""
+    for secret in secrets:
+        try:
+            claims = jwt.decode(token, secret, algorithms=JWT_ALGORITHMS)
+        except jwt.PyJWTError:
+            continue
+        userId = claims.get("sub") or claims.get("user_id")
+        if isinstance(userId, str) and userId.strip():
+            return userId.strip()
+        return None
+    return None
 
 
 def _extract_bearer_token() -> str:
