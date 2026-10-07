@@ -1,0 +1,155 @@
+{
+  "documents": {
+    "documents": [],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "title",
+        "content",
+        "tags"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {},
+      "isIndexing": false,
+      "numberOfDocuments": 0
+    }
+  },
+  "files": {
+    "documents": [
+      {
+        "created_at": "2026-02-03T10:00:00Z",
+        "folder_id": "",
+        "id": "file-002",
+        "mime_type": "",
+        "name": "file-002.txt",
+        "owner_id": "user-carol",
+        "size": 2,
+        "tags": [],
+        "type": "file",
+        "updated_at": "2026-03-03T10:00:00Z"
+      }
+    ],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "folder_id",
+        "mime_type",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "name",
+        "tags",
+        "mime_type"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "size",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {
+        "created_at": 1,
+        "folder_id": 1,
+        "id": 1,
+        "mime_type": 1,
+        "name": 1,
+        "owner_id": 1,
+        "size": 1,
+        "tags": 1,
+        "type": 1,
+        "updated_at": 1
+      },
+      "isIndexing": false,
+      "numberOfDocuments": 1
+    }
+  }
+}
