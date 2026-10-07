@@ -1,0 +1,1372 @@
+[
+  {
+    "op": "set_key",
+    "collection": "ratingPeriods",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "89",
+      "note": "[d-natural-keys] ratingPeriods: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_rating_periods PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "ratingResults",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "104",
+      "note": "[d-natural-keys] ratingResults: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_rating_results PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "invoices",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "118",
+      "note": "[d-natural-keys] invoices: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_invoices PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "codes",
+    "columns": [
+      "CODE_TYPE",
+      "CODE_VAL"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "14",
+      "note": "[d-natural-keys] codes: source PRIMARY KEY ['CODE_TYPE', 'CODE_VAL'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_codes PRIMARY KEY (code_type, code_val)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "tenants",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "45",
+      "note": "[d-natural-keys] tenants: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_tenants PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "plans",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "57",
+      "note": "[d-natural-keys] plans: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_plans PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "subscriptions",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "69",
+      "note": "[d-natural-keys] subscriptions: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_subscriptions PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "usageEvents",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "80",
+      "note": "[d-natural-keys] usageEvents: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_usage_events PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "notifications",
+    "columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "163",
+      "note": "[d-natural-keys] notifications: source PRIMARY KEY ['ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_notifications PRIMARY KEY (id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "billingAuditLog",
+    "columns": [
+      "LOG_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "174",
+      "note": "[d-natural-keys] billingAuditLog: source PRIMARY KEY ['LOG_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_billing_audit_log PRIMARY KEY (log_id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "subscriptionsHist",
+    "columns": [
+      "HIST_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "201",
+      "note": "[d-natural-keys] subscriptionsHist: source PRIMARY KEY ['HIST_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_subscriptions_hist PRIMARY KEY (hist_id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "customerMaster",
+    "columns": [
+      "CUST_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "178",
+      "note": "[d-natural-keys] customerMaster: source PRIMARY KEY ['CUST_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_customer_master PRIMARY KEY (cust_id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "customerMasterHist",
+    "columns": [
+      "HIST_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "340",
+      "note": "[d-natural-keys] customerMasterHist: source PRIMARY KEY ['HIST_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_customer_master_hist PRIMARY KEY (hist_id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "invoiceLine",
+    "columns": [
+      "LINE_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "426",
+      "note": "[d-natural-keys] invoiceLine: source PRIMARY KEY ['LINE_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_invoice_line PRIMARY KEY (line_id)"
+    }
+  },
+  {
+    "op": "set_key",
+    "collection": "invoiceHeader",
+    "columns": [
+      "INVOICE_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "439",
+      "note": "[d-natural-keys] invoiceHeader: source PRIMARY KEY ['INVOICE_ID'] kept as the document key; no ObjectId surrogate is introduced",
+      "quote": "pk_invoice_header PRIMARY KEY (invoice_id)"
+    }
+  },
+  {
+    "op": "note",
+    "subject": "empty VARCHAR2 values",
+    "decision": "d-empty-string-policy = null: empty/blank VARCHAR2 loads as null (canonicalization rule empty_string_is_null already in the proposal); no sentinel strings are introduced",
+    "evidence": {
+      "file": ".migration/04_proposal_review.md",
+      "lines": "28",
+      "note": "[d-empty-string-policy] plan default `null`; recorded so the loader and harness treat '' and NULL as equivalent for every string field"
+    }
+  },
+  {
+    "op": "note",
+    "subject": "dirty text dates (VARCHAR2 DD-MON-YY columns)",
+    "decision": "d-dirty-dates = raw-field: every text-date column is parsed with the format the source writes (f_str2dt 'DD-MON-YY'; history triggers 'DD-MON-YY HH24:MI:SS'), unparseable values load as null, and the source text is kept verbatim in a sibling *Raw field",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "40-42",
+      "note": "[d-dirty-dates] plan default `raw-field`; handbook 4.1 documents '31-FEB-24' and 'N/A' in SIGNUP_DT and a job that skips them silently",
+      "quote": "Some rows contain '31-FEB-24' or 'N/A'"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "subscriptions",
+    "child_table": "SUBSCRIPTIONS_HIST",
+    "child_columns": [
+      "ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "205-224",
+      "note": "[d-sub-hist-edge] written_together=YES via_trigger=YES: confirmed pinned UPDATEs ap-a7af1a6156 (pkg_plans.sp_change_plan), ap-d3754b6b8a (pkg_dunning.sp_suspend_overdue) and ap-f95317f034 (backends/oracle.py change_plan) carry cascades to ap-bdfdef0db0, trg_subscriptions_hist (AFTER UPDATE OR DELETE, not autonomous) which inserts :OLD into SUBSCRIPTIONS_HIST in the caller's transaction. The proposer emitted no edge because HIST.ID is not a *_ID column. Rule order: unbounded_append (one row per update/delete, no purge) outranks written_together, so SUBSCRIPTIONS_HIST stays its own revisions collection keyed by HIST_ID (document-versioning, revisions-collection form) and is referenced from subscriptions by ID; the loader keeps the ID pointer verbatim and flags any orphan (no subscriptions doc) in recon",
+      "quote": "AFTER UPDATE OR DELETE ON subscriptions"
+    }
+  },
+  {
+    "op": "index",
+    "collection": "subscriptionsHist",
+    "keys": [
+      [
+        "id",
+        1
+      ],
+      [
+        "_id",
+        1
+      ]
+    ],
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-bdfdef0db0",
+      "note": "[d-sub-hist-edge] revisions are looked up by the subscription they copy (:OLD.id) in write order (hist_id = seq_subscriptions_hist.NEXTVAL)"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "subscriptionsHist",
+    "subject": "SUBSCRIPTIONS_HIST shape",
+    "decision": "document_versioning in its revisions-collection form: own collection keyed by HIST_ID (natural PK), one document per :OLD snapshot, referenced by ID back to subscriptions; the proposer's `history_copy` annotation stands. Not compiled as a key change (pattern document_versioning would replace the natural key) and not embedded (unbounded append). Post-migration the history write is an application write to subscriptionsHist in the same transaction as the subscriptions update (TRG_SUBSCRIPTIONS_HIST re-implementation)",
+    "evidence": {
+      "file": ".migration/03_access_review.md",
+      "lines": "182",
+      "note": "[d-sub-hist-shape] access review §3 consequence: SUBSCRIPTIONS → SUBSCRIPTIONS_HIST written_together via trigger from three confirmed UPDATEs (check 1)"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "customerMasterHist",
+    "subject": "modeling.answered[TRG_CUSTOMER_MASTER_HIST] = sequence_trigger_identity is wrong",
+    "decision": "d-cust-hist-trigger: the proposer closed TRG_CUSTOMER_MASTER_HIST as sequence_trigger_identity citing TRG_CUSTOMER_MASTER_SEQ's NEXTVAL. TRG_CUSTOMER_MASTER_HIST is AFTER UPDATE OR DELETE ON customer_master and inserts a full :OLD row into CUSTOMER_MASTER_HIST (ap-dbf1b410e9) — business history logic, not identity assignment. The answered entry is left in place (generated JSON is not hand-edited) and superseded by this note: the history copy is re-implemented as an application write to customerMasterHist whenever customerMaster is updated or deleted. written_together=NO today: no confirmed application/package UPDATE or DELETE on CUSTOMER_MASTER exists (the INSERT cascades were scanner over-approximation, 03_access_review §3 item 2)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "357-372",
+      "note": "[d-cust-hist-trigger] trigger body: AFTER UPDATE OR DELETE, INSERT INTO customer_master_hist (...) VALUES (seq_customer_master_hist.NEXTVAL, TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS'), v_op, :OLD.cust_id, ...)",
+      "quote": "AFTER UPDATE OR DELETE ON customer_master"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "customerMaster",
+    "child_table": "CUSTOMER_MASTER_HIST",
+    "child_columns": [
+      "CUST_ID"
+    ],
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-dbf1b410e9",
+      "note": "[d-cust-hist-edge] via_trigger=YES (trg_customer_master_hist copies :OLD.cust_id), written_together=NO (no confirmed UPDATE/DELETE on CUSTOMER_MASTER fires it). Own revisions collection keyed by HIST_ID, referenced by CUST_ID; loader keeps the CUST_ID pointer verbatim and flags orphans (pointer_resolve measured 0 unresolved)"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "tenants",
+    "child_table": "CUSTOMER_MASTER_HIST",
+    "child_columns": [
+      "TENANT_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER_HIST.TENANT_ID->TENANTS",
+      "note": "[d-orphan-cmh-tenant] unenforced pointer copied from CUSTOMER_MASTER; keep the pointer verbatim, flag orphans in recon, never null or drop"
+    }
+  },
+  {
+    "op": "index",
+    "collection": "customerMasterHist",
+    "keys": [
+      [
+        "custId",
+        1
+      ],
+      [
+        "_id",
+        1
+      ]
+    ],
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-dbf1b410e9",
+      "note": "[d-cust-hist-edge] revisions are read per customer in write order (hist_id = seq_customer_master_hist.NEXTVAL)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "CUST_ID → customerMaster and TENANT_ID → tenants recorded as reference decisions (d-cust-hist-edge, d-orphan-cmh-tenant): keep pointer values verbatim, flag orphans in recon",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER_HIST.CUST_ID->CUSTOMER_MASTER",
+      "note": "[d-cust-hist-edge] measured pointer resolution for the history copy of CUST_ID"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "subscriptionsHist",
+    "field": "HIST_DT",
+    "format": "%d-%b-%y %H:%M:%S",
+    "raw_field": "histDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "218",
+      "note": "[d-hist-dt] the proposer pinned %Y%m%d while date_format_nonconforming reports conformance 0.0; the trigger writes TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') and all 6 profiled values have the 99-OCT-99 99:99:99 shape. d-dirty-dates = raw-field",
+      "quote": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS')"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "date_format_nonconforming",
+      "column": "HIST_DT"
+    },
+    "resolution": "format corrected to '%d-%b-%y %H:%M:%S' (trigger TO_CHAR mask) with histDtRaw raw copy and unparseable → null (d-hist-dt)",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "text_shapes:SUBSCRIPTIONS_HIST.HIST_DT",
+      "note": "[d-hist-dt] every shaped value is 99-OCT-99 99:99:99, i.e. DD-MON-YY HH24:MI:SS, not YYYYMMDD"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "HIST_DT",
+    "format": "%d-%b-%y %H:%M:%S",
+    "raw_field": "histDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "370",
+      "note": "[d-hist-dt] trg_customer_master_hist writes the same TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') mask; d-dirty-dates = raw-field",
+      "quote": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS')"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "SIGNUP_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "signupDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "40-42",
+      "note": "[d-dirty-dates] handbook 4.1: VARCHAR2 'DD-MON-YY' with '31-FEB-24' and 'N/A' rows; profile conformance 0.846 → parse %d-%b-%y, keep signupDtRaw, unparseable → null",
+      "quote": "Dates in CUSTOMER_MASTER.SIGNUP_DT are VARCHAR2 'DD-MON-YY'."
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "LAST_ACTIVITY_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastActivityDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] LAST_ACTIVITY_DT is a VARCHAR2(9) 'DD-MON-YY' text date written through f_str2dt's mask; same policy as SIGNUP_DT: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "LAST_INVOICE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastInvoiceDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] LAST_INVOICE_DT is a VARCHAR2(9) 'DD-MON-YY' text date written through f_str2dt's mask; same policy as SIGNUP_DT: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "LAST_PAYMENT_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastPaymentDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] LAST_PAYMENT_DT is a VARCHAR2(9) 'DD-MON-YY' text date written through f_str2dt's mask; same policy as SIGNUP_DT: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "TERMINATE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "terminateDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] TERMINATE_DT is a VARCHAR2(9) 'DD-MON-YY' text date written through f_str2dt's mask; same policy as SIGNUP_DT: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "SIGNUP_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "signupDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] history copy of CUSTOMER_MASTER.SIGNUP_DT (same VARCHAR2(9) 'DD-MON-YY' text): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "LAST_ACTIVITY_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastActivityDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] history copy of CUSTOMER_MASTER.LAST_ACTIVITY_DT (same VARCHAR2(9) 'DD-MON-YY' text): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "LAST_INVOICE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastInvoiceDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] history copy of CUSTOMER_MASTER.LAST_INVOICE_DT (same VARCHAR2(9) 'DD-MON-YY' text): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "LAST_PAYMENT_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "lastPaymentDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] history copy of CUSTOMER_MASTER.LAST_PAYMENT_DT (same VARCHAR2(9) 'DD-MON-YY' text): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMasterHist",
+    "field": "TERMINATE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "terminateDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] history copy of CUSTOMER_MASTER.TERMINATE_DT (same VARCHAR2(9) 'DD-MON-YY' text): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "invoiceHeader",
+    "field": "INVOICE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "invoiceDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] CUSTBILL INVOICE_HEADER.INVOICE_DT is a VARCHAR2 'DD-MON-YY' text date (profile conformance 1.0 on the fixture, but the mainframe feed is unvalidated): %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "invoiceHeader",
+    "field": "DUE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "dueDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] CUSTBILL INVOICE_HEADER.DUE_DT text date: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "invoiceLine",
+    "field": "INVOICE_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "invoiceDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] CUSTBILL INVOICE_LINE.INVOICE_DT text date: %d-%b-%y, raw copy, unparseable → null",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "entityAttrValue",
+    "field": "CREATED_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "createdDtRaw",
+    "unparseable": "null",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+      "lines": "4",
+      "note": "[d-dirty-dates] ENTITY_ATTR_VALUE.CREATED_DT VARCHAR2(9) 'DD-MON-YY' (profile conformance 1.0): %d-%b-%y, raw copy, unparseable → null; carried into the attributes element when embedded",
+      "quote": "dates stored as VARCHAR2 'DD-MON-YY'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "date_format_nonconforming",
+      "column": "SIGNUP_DT"
+    },
+    "resolution": "d-dirty-dates: %d-%b-%y kept (0.846 conformance is the handbook's '31-FEB-24'/'N/A' dirt, not a second format); non-conforming values load as null with the text kept in signupDtRaw",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "40-42",
+      "note": "[d-dirty-dates] handbook 4.1 names the dirty values and says the renewal job skips them",
+      "quote": "The renewal job skips"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "entityAttrValue",
+    "match": {
+      "kind": "polymorphic_pointer"
+    },
+    "resolution": "not polymorphic in practice: ENTITY_TYPE domain is {CUSTOMER} (70/70, null_count 0) and the only reader filters entity_type = 'CUSTOMER' AND entity_id = <cust_id>; modelled as a child of CUSTOMER_MASTER via ENTITY_ID (d-eav-embed); entityType is kept as an element field so a second type would be visible, not silently merged",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "value_domain:ENTITY_ATTR_VALUE.ENTITY_TYPE",
+      "note": "[d-eav-embed] single observed type CUSTOMER"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "entityAttrValue",
+    "match": {
+      "kind": "single_valued_index_key",
+      "column": "ENTITY_TYPE"
+    },
+    "resolution": "moot after d-eav-embed: the (entityId, _id) access index on a standalone collection is replaced by the attribute-pattern multikey indexes on customerMaster.attributes.k / .v; entityType stays a plain element field",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "value_domain:ENTITY_ATTR_VALUE.ENTITY_TYPE",
+      "note": "[d-eav-embed] one non-null value; no selectivity to index"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "attribute",
+    "collection": "customerMaster",
+    "child_table": "ENTITY_ATTR_VALUE",
+    "array_path": "attributes",
+    "name_col": "ATTR_NAME",
+    "value_col": "ATTR_VALUE",
+    "type_col": "ATTR_TYPE",
+    "parent_key": [
+      "ENTITY_ID"
+    ],
+    "detail": "ENTITY_ATTR_VALUE embedded under customerMaster as attributes[{k, v, type, ...}] keyed by ENTITY_ID = CUST_ID (plan default: pattern attribute iff read with the parent)",
+    "evidence": {
+      "file": "services/legacy-billing/app/facade.py",
+      "lines": "285-298",
+      "note": "[d-eav-embed] GET /customer reads CUSTOMER_MASTER by tenant (ap-e45fe9768e, hot) and then, in the same request, ENTITY_ATTR_VALUE WHERE entity_type = 'CUSTOMER' AND entity_id = customers[0]['cust_id'] (ap-6c1786cb2d, hot); no path reads ENTITY_ATTR_VALUE alone (03_access_review check 5). Bounded: eav stat 70 rows, 8 distinct attrs, max 1 attr per entity, avg row 77 bytes. The proposer produced no CUSTOMER_MASTER → ENTITY_ATTR_VALUE edge because ENTITY_ID is a polymorphic column, not a *_ID FK",
+      "quote": "WHERE entity_type = 'CUSTOMER' AND entity_id = :1"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "embed_unbounded",
+      "child": "ENTITY_ATTR_VALUE"
+    },
+    "resolution": "d-eav-embed: bounded by measurement — eav stat: 70 rows, 8 distinct attribute names, p99 = max = 1 attribute per entity, avg row 77 bytes / max 94 bytes; no writer appends ENTITY_ATTR_VALUE in the application or packages (reads only), so growth is governed by the 8-name attribute vocabulary, far below the 16 MB document limit",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "eav:ENTITY_ATTR_VALUE",
+      "note": "[d-eav-embed] distinct_attrs 8, max_attrs_per_entity 1, entities 70"
+    }
+  },
+  {
+    "op": "pattern",
+    "pattern": "reference_data",
+    "collection": "codes",
+    "detail": "CODES is a small static lookup table (code_type, code_val) → code_desc; own collection, natural compound key, loaded once, cached by the application; *_CD fields stay numeric codes everywhere",
+    "evidence": {
+      "file": "services/legacy-billing/app/facade.py",
+      "lines": "112-117",
+      "note": "[d-codes-reference-data] the application resolves labels with LEFT JOIN codes ON code_type = '<constant>' AND code_val = <parent>.<x>_cd; the packages use inline DECODE literals instead (03_access_review check 6: no package joins CODES). An extended_reference cannot express a constant-typed join (join.local would need a CODE_TYPE column on the parent), and the only hot parent reads are already served by one small cached collection, so no *_CD label is denormalised",
+      "quote": "ON ts.code_type = 'TENANT_STATUS'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "tenants",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] STATUS_CD → CODES('TENANT_STATUS'): the app joins it on the hot /me read (LEFT JOIN codes ts ON ts.code_type = 'TENANT_STATUS'); pkg_dunning decodes it inline (05_pkg_dunning.sql:23). Keep numeric statusCd; label from the cached codes collection; no extended reference (constant-typed join)",
+    "evidence": {
+      "file": "services/legacy-billing/app/facade.py",
+      "lines": "112-117",
+      "note": "[d-codes-reference-data] tenants code_lookup",
+      "quote": "ts.code_type = 'TENANT_STATUS'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoices",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] STATUS_CD → CODES('INV_STATUS'): joined by the hot /invoices read (LEFT JOIN codes c ON c.code_type = 'INV_STATUS'). Keep numeric statusCd; label from the cached codes collection; no extended reference (constant-typed join)",
+    "evidence": {
+      "file": "services/legacy-billing/app/facade.py",
+      "lines": "243-248",
+      "note": "[d-codes-reference-data] invoices code_lookup",
+      "quote": "c.code_type = 'INV_STATUS'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "usageEvents",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] KIND_CD → CODES('USAGE_KIND'): validated via_trigger on every insert (ap-d0babb7b83 → ap-fe087c4e0c) and joined by the /usage read (facade.py:215-217). Keep numeric kindCd; validation and label come from the cached codes collection",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "248-249",
+      "note": "[d-codes-reference-data] usageEvents code_lookup",
+      "quote": "code_type = 'USAGE_KIND' AND code_val = :NEW.kind_cd"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "plans",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] TIER_CD: no CODES join anywhere; pkg_plans.fn_entitlement decodes it inline (DECODE(p.tier_cd, 1, 'starter', 2, 'growth', 3, 'scale', 'UNKNOWN')). Keep numeric tierCd; the DECODE literal moves into application code",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "lines": "55-56",
+      "note": "[d-codes-reference-data] plans code_lookup",
+      "quote": "DECODE(p.tier_cd, 1, 'starter', 2, 'growth', 3, 'scale',"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptions",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] STATUS_CD: no CODES join anywhere; pkg_plans decodes it inline (DECODE(s.status_cd, 10, 'active', 20, 'suspended', 30, 'cancelled', 'UNKNOWN')) and trg_sub_no_uncancel pins 30. Keep numeric statusCd; the DECODE literal moves into application code",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "lines": "58-59",
+      "note": "[d-codes-reference-data] subscriptions code_lookup",
+      "quote": "DECODE(s.status_cd, 10, 'active', 20, 'suspended',"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "notifications",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] KIND_CD → CODES('NOTIF_KIND') by DDL comment only; no application read joins or decodes it (writer pkg_dunning inserts the literal 3). Keep numeric kindCd",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "158-165",
+      "note": "[d-codes-reference-data] notifications code_lookup",
+      "quote": "CODES('NOTIF_KIND'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] PHONEn_TYPE_CD, STATUS_CD, SUB_STATUS_CD, CUST_TYPE_CD, SEGMENT_CD, REGION_CD, TERRITORY_CD, CHANNEL_CD, RATE_CLASS_CD: the proposer's labels rest on value_domain/code_resolve overlap with seeded CODES rows (CUST_STATUS etc.), not on any join — reports.py and facade.py read customer_master raw (SELECT * / cust_no, cust_name, cur_bal_amt, past_due_amt, credit_hold_yn). Keep every *_CD numeric; CODES stays the lookup where a row exists",
+    "evidence": {
+      "file": "services/legacy-billing/app/reports.py",
+      "lines": "85-90",
+      "note": "[d-codes-reference-data] customerMaster code_lookup",
+      "quote": "FROM customer_master"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] history copy of CUSTOMER_MASTER *_CD columns: same as customerMaster — numeric codes, no denormalised labels",
+    "evidence": {
+      "file": "services/legacy-billing/app/reports.py",
+      "lines": "85-90",
+      "note": "[d-codes-reference-data] customerMasterHist code_lookup",
+      "quote": "FROM customer_master"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] STATUS_CD → CODES('INV_STATUS') via an outer join in the cold, batch-scoped CUSTBILL report (st.code_type (+) = 'INV_STATUS'); keep numeric statusCd, label at read time; not hot, so no extended reference",
+    "evidence": {
+      "file": "services/legacy-billing/app/reports.py",
+      "lines": "67-72",
+      "note": "[d-codes-reference-data] invoiceHeader code_lookup",
+      "quote": "st.code_type (+) = 'INV_STATUS'"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] LINE_TYPE_CD: decoded inline in the CUSTBILL report (DECODE(l.line_type_cd, 1, 'CHARGE', 2, 'CREDIT', ... 9, 'MISC')), never joined to CODES; keep numeric lineTypeCd",
+    "evidence": {
+      "file": "services/legacy-billing/app/reports.py",
+      "lines": "60-62",
+      "note": "[d-codes-reference-data] invoiceLine code_lookup",
+      "quote": "9, 'MISC',"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "code_lookup"
+    },
+    "resolution": "[d-codes-reference-data] history copy of SUBSCRIPTIONS.STATUS_CD: numeric code, DECODE literal lives in application code",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "lines": "58-59",
+      "note": "[d-codes-reference-data] subscriptionsHist code_lookup",
+      "quote": "DECODE(s.status_cd, 10, 'active', 20, 'suspended',"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "invoices",
+    "subject": "DUNNING_ATTEMPTS.STATUS_CD (embedded as invoices.dunningAttempts.statusCd) has no code_lookup question",
+    "decision": "d-dun-status-cd: the proposer raised code_lookup questions from value overlap and missed the one *_CD the application actually joins — the admin dunning read (ap-0a1051eac3, warm) LEFT JOINs codes ON code_type = 'DUN_STATUS' AND code_val = d.status_cd. Decision: keep numeric statusCd in the embedded dunningAttempts element; label from the cached codes collection at read time; no extended reference (warm, not hot; constant-typed join)",
+    "evidence": {
+      "file": "services/legacy-billing/app/facade.py",
+      "lines": "336-346",
+      "note": "[d-dun-status-cd] the only application CODES join the proposer did not question",
+      "quote": "ON c.code_type = 'DUN_STATUS'"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "tenants",
+    "child_table": "CUSTOMER_MASTER",
+    "child_columns": [
+      "TENANT_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-cm-tenant] 200 of 201 non-null TENANT_ID values do not resolve to TENANTS (CUSTBILL estate carries mainframe tenant keys); GET /customer still filters customer_master by tenant_id (ap-e45fe9768e). keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "TENANT_ID → tenants recorded as a reference decision (d-orphan-cm-tenant): keep pointer, flag orphan",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-cm-tenant] 200/201 unresolved"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "d-orphan-cm-tenant: the CUSTBILL customer master is a separate estate whose TENANT_ID rarely matches TENANTS.ID; pointer kept verbatim, orphans flagged, no embed or re-key",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-cm-tenant] measured 200 of 201 unresolved"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "customerMaster",
+    "child_table": "INVOICE_HEADER",
+    "child_columns": [
+      "CUST_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.CUST_ID->CUSTOMER_MASTER",
+      "note": "[d-orphan-ih-cust] unenforced pointer (no FK on the CUSTBILL tables); keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "tenants",
+    "child_table": "INVOICE_HEADER",
+    "child_columns": [
+      "TENANT_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-ih-tenant] 0 of the CUSTBILL header TENANT_IDs resolve to TENANTS; the extract tolerates this with LEFT JOIN tenants. keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "CUST_ID → customerMaster (d-orphan-ih-cust) and TENANT_ID → tenants (d-orphan-ih-tenant) recorded as reference decisions: keep pointer, flag orphan",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.CUST_ID->CUSTOMER_MASTER",
+      "note": "[d-orphan-ih-cust] measured pointer resolution"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "pointer_target_suspect",
+      "column": "TENANT_ID"
+    },
+    "resolution": "d-orphan-ih-tenant: TENANTS is the only candidate target (the extract joins tenants t ON t.id = h.tenant_id); it is kept as the target even though the fixture values do not resolve — mainframe tenant keys, not a mis-typed pointer",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-ih-tenant] measured 0 resolved"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceHeader",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "d-orphan-ih-tenant: keep pointer verbatim, flag every orphan in recon",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS",
+      "note": "[d-orphan-ih-tenant] measured 0 resolved"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "invoiceHeader",
+    "child_table": "INVOICE_LINE",
+    "child_columns": [
+      "INVOICE_ID"
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "43-45",
+      "note": "[d-orphan-il-invoice] 37 of 1500 INVOICE_LINE.INVOICE_ID values resolve to no INVOICE_HEADER (handbook 4.2 'ghost lines', mainframe replay artefact, ~30-40/month, ignored by the reconciliation macro). Not embedded: the only read touching both tables is batch-scoped (ap-89c88ad4c6, h.batch_no = :batch_no), not per parent (03_access_review check 4). keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)",
+      "quote": "INVOICE_LINE rows can point at invoices that do not exist"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "customerMaster",
+    "child_table": "INVOICE_LINE",
+    "child_columns": [
+      "CUST_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_LINE.CUST_ID->CUSTOMER_MASTER",
+      "note": "[d-orphan-il-cust] unenforced pointer; keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "tenants",
+    "child_table": "INVOICE_LINE",
+    "child_columns": [
+      "TENANT_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS",
+      "note": "[d-orphan-il-tenant] 0 resolve (mainframe tenant keys); keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "INVOICE_ID → invoiceHeader (d-orphan-il-invoice; not INVOICES — the CUSTBILL line belongs to the CUSTBILL header, review check 4), CUST_ID → customerMaster (d-orphan-il-cust), TENANT_ID → tenants (d-orphan-il-tenant): keep pointer, flag orphan",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICE_HEADER",
+      "note": "[d-orphan-il-invoice] 37 unresolved of 1500"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "INVOICE_ID"
+    },
+    "resolution": "d-orphan-il-invoice: the 37 ghost lines are a documented source defect (handbook 4.2); pointer kept verbatim and flagged, lines never dropped",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "43-45",
+      "note": "[d-orphan-il-invoice] ghost lines documented",
+      "quote": "ghost lines"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "pointer_target_suspect",
+      "column": "TENANT_ID"
+    },
+    "resolution": "d-orphan-il-tenant: TENANTS kept as the target (same mainframe key space as INVOICE_HEADER.TENANT_ID); pointer kept verbatim, orphans flagged",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS",
+      "note": "[d-orphan-il-tenant] measured 0 resolved"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "pointer_unresolved",
+      "column": "TENANT_ID"
+    },
+    "resolution": "d-orphan-il-tenant: keep pointer verbatim, flag every orphan in recon",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS",
+      "note": "[d-orphan-il-tenant] measured 0 resolved"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "tenants",
+    "child_table": "SUBSCRIPTIONS_HIST",
+    "child_columns": [
+      "TENANT_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:SUBSCRIPTIONS_HIST.TENANT_ID->TENANTS",
+      "note": "[d-orphan-sh-tenant] history copy of SUBSCRIPTIONS.TENANT_ID (resolves fully on the fixture); keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "reference",
+    "from": "plans",
+    "child_table": "SUBSCRIPTIONS_HIST",
+    "child_columns": [
+      "PLAN_ID"
+    ],
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:SUBSCRIPTIONS_HIST.PLAN_ID->PLANS",
+      "note": "[d-orphan-sh-plan] history copy of SUBSCRIPTIONS.PLAN_ID (resolves fully on the fixture); keep the pointer value verbatim on load; the loader flags each unresolved pointer as an orphan in the recon report (counted, never nulled, dropped or re-keyed)"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptionsHist",
+    "match": {
+      "kind": "unenforced_pointer"
+    },
+    "resolution": "TENANT_ID → tenants (d-orphan-sh-tenant) and PLAN_ID → plans (d-orphan-sh-plan) recorded as reference decisions: keep pointer, flag orphan; ID → subscriptions added by d-sub-hist-edge",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "pointer_resolve:SUBSCRIPTIONS_HIST.TENANT_ID->TENANTS",
+      "note": "[d-orphan-sh-tenant] measured pointer resolution"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "d-csv-to-array: RELATED_ACCT_IDS, CHILD_ACCT_IDS (*_IDS) and PROMO_CODES_CSV (*_CSV) keep the proposer's csv_to_array rule (max 4 / unmeasured / 2 elements, avg 2.6 / – / 1.5). Handbook 4.3: trailing commas, spaces and the literal 'NULL' occur in RELATED_ACCT_IDS — the loader trims tokens and drops '' and 'NULL' tokens; nothing stays packed",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "46-48",
+      "note": "[d-csv-to-array] packing dirt documented",
+      "quote": "RELATED_ACCT_IDS is a comma-separated VARCHAR2"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "d-csv-to-array: history copies of RELATED_ACCT_IDS, CHILD_ACCT_IDS, PROMO_CODES_CSV keep csv_to_array with the same token cleaning as customerMaster",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "csv_elements:CUSTOMER_MASTER_HIST.RELATED_ACCT_IDS",
+      "note": "[d-csv-to-array] measured element counts on the history copy"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoiceLine",
+    "match": {
+      "kind": "csv_list"
+    },
+    "resolution": "d-csv-to-array: GL_ACCT_CSV (*_CSV) keeps csv_to_array → glAcct array of GL account strings; tokens trimmed, empty tokens dropped",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "csv_elements:INVOICE_LINE.GL_ACCT_CSV",
+      "note": "[d-csv-to-array] measured element counts"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMaster",
+    "match": {
+      "kind": "repeating_group"
+    },
+    "resolution": "d-repeating-groups-scalar: ADDR_LINE_1..6 / MAIL_ADDR_LINE_1..6 / PHONE1..4 (+_TYPE_CD) / FLAG_01..20 / UDF_* stay 1:1 scalar fields. No application or package reads any of them; positions are semantic (FLAG_07 is load-bearing per the handbook, address lines are ordered) and the only reads are SELECT * copies, so collapsing them into arrays would change field identity for zero access benefit",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "17-19",
+      "note": "[d-repeating-groups-scalar] customerMaster: 155 columns, FLAG meanings undocumented, FLAG_07 load-bearing",
+      "quote": "FLAG_07 is load-bearing. Do not change FLAG_07."
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "customerMasterHist",
+    "match": {
+      "kind": "repeating_group"
+    },
+    "resolution": "d-repeating-groups-scalar: ADDR_LINE_1..6 / MAIL_ADDR_LINE_1..6 / PHONE1..4 (+_TYPE_CD) / FLAG_01..20 / UDF_* stay 1:1 scalar fields. No application or package reads any of them; positions are semantic (FLAG_07 is load-bearing per the handbook, address lines are ordered) and the only reads are SELECT * copies, so collapsing them into arrays would change field identity for zero access benefit",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+      "lines": "17-19",
+      "note": "[d-repeating-groups-scalar] customerMasterHist: 155 columns, FLAG meanings undocumented, FLAG_07 load-bearing",
+      "quote": "FLAG_07 is load-bearing. Do not change FLAG_07."
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoices",
+    "match": {
+      "kind": "unrated_access_basis",
+      "table": "INVOICE_LINES"
+    },
+    "resolution": "d-embed-invoice-lines-stands: ap-620d0a2057 (pkg_invoicing.fn_invoice_lines WHERE invoice_id = :1) is confirmed, pinned and rated warm in 03_access_review; the lines are also written in the same sp_issue_invoice flow as the invoice (DELETE/INSERT invoice_lines between INSERT invoices and UPDATE invoices, 04_pkg_invoicing.sql:137-171). Fan-out max 5, bounded. Embed `lines` keeps the proposer's read_by_parent_key / size / unbounded rules",
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-620d0a2057",
+      "note": "[d-embed-invoice-lines-stands] per-parent read of INVOICE_LINES by invoice_id, confirmed warm"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "invoices",
+    "match": {
+      "kind": "unrated_access_basis",
+      "table": "DUNNING_ATTEMPTS"
+    },
+    "resolution": "d-embed-dunning-stands: ap-37287a11b5 (pkg_dunning.sp_schedule_dunning, per invoice) is confirmed cold/pinned and the admin read ap-0a1051eac3 (warm) scans attempts by scheduled_for across invoices, which the existing dunningAttempts.scheduledFor access index serves. Fan-out max 3 per invoice, bounded by attempt_no. Embed `dunningAttempts` keeps the proposer's read_by_parent_key / size / unbounded rules",
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-37287a11b5",
+      "note": "[d-embed-dunning-stands] per-invoice read of DUNNING_ATTEMPTS, confirmed cold"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "tenants",
+    "match": {
+      "kind": "append_growth",
+      "child_table": "USAGE_EVENTS"
+    },
+    "resolution": "d-usage-events-reference: keep USAGE_EVENTS as its own collection referencing tenants (child_written_alone: ap-d0babb7b83 hot insert, only via_trigger read is the CODES check). No TENANTS read needs recent events (the /usage read is period-scoped by tenant_id + occurred_at and served by the existing (tenantId, occurredAt) index), so no subset embed",
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-d0babb7b83",
+      "note": "[d-usage-events-reference] hot append of USAGE_EVENTS alone; profiled max 24 per tenant is a snapshot, not a bound"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "plans",
+    "match": {
+      "kind": "single_valued_index_key",
+      "column": "ACTIVE_YN"
+    },
+    "resolution": "d-plans-active-index: ACTIVE_YN is a Y/N flag by name and rule (yn_to_bool); the fixture only has 'Y'. The access-index plan that filters on it (fn_list_plans WHERE active_yn = 'Y' ORDER BY monthly_fee) stands; plans is a 3-row collection so index selectivity is irrelevant",
+    "evidence": {
+      "kind": "data_profile",
+      "ref": "value_domain:PLANS.ACTIVE_YN",
+      "note": "[d-plans-active-index] one non-null value on the fixture"
+    }
+  },
+  {
+    "op": "resolve",
+    "collection": "subscriptions",
+    "match": {
+      "kind": "extended_reference_candidate",
+      "parent": "PLANS"
+    },
+    "resolution": "d-no-plan-extended-reference: declined. fn_entitlement (ap-60ec05ff91 hot, ap-df26fbfed9 hot) and compute_preview (ap-ee373ebbd1 warm) read code, tier_cd, monthly_fee, included_units and overage_rate — five of PLANS' six fields — so the 'extended reference' would copy the whole plan into every subscription and its history rows. PLANS is 3 rows of static reference data (fn_list_plans, no app writer); the entitlement read becomes one lookup against a cached plans collection by planId (existing reference_fk index). Plain reference kept",
+    "evidence": {
+      "kind": "access_pattern",
+      "ref": "ap-60ec05ff91",
+      "note": "[d-no-plan-extended-reference] fn_entitlement joins subscriptions to plans for nearly every plan column"
+    }
+  },
+  {
+    "op": "note",
+    "collection": "billingAuditLog",
+    "subject": "BILLING_AUDIT_LOG is a detached autonomous-transaction audit log",
+    "decision": "d-audit-detached: written only by pkg_ow_util.log_msg under PRAGMA AUTONOMOUS_TRANSACTION (ap-779ce5b5b7, hot) and purged by JOB_PURGE_AUDIT_LOG (ap-e7b18e81b8, logged_at < SYSDATE - 90). written_together=NO by construction (own transaction, commits even when the caller rolls back), via_trigger=NO (trg_billing_audit_log_id only assigns the sequence). Own collection keyed by LOG_ID, no reference edge to any caller table, never embedded; retention becomes a TTL index on loggedAt (expireAfterSeconds 90 days) owned by the loader/ops step — recorded here, not compiled (ttl is record-only)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "lines": "64-72",
+      "note": "[d-audit-detached] log_msg body",
+      "quote": "PRAGMA AUTONOMOUS_TRANSACTION;"
+    }
+  },
+  {
+    "op": "index",
+    "collection": "billingAuditLog",
+    "keys": [
+      [
+        "loggedAt",
+        1
+      ]
+    ],
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+      "lines": "24",
+      "note": "[d-audit-detached] retention delete predicate logged_at < SYSDATE - 90; the TTL index on loggedAt replaces JOB_PURGE_AUDIT_LOG",
+      "quote": "DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_SUBSCRIPTIONS_HIST"
+    },
+    "resolution": "d-sub-hist-edge: history copy becomes an application write — every update/delete of a subscriptions document inserts the pre-image into subscriptionsHist (histOp U/D, histDt now) in the same transaction (written_together via trigger today: ap-a7af1a6156, ap-d3754b6b8a, ap-f95317f034 → ap-bdfdef0db0)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "205-224",
+      "note": "[d-sub-hist-edge] trigger body copies :OLD into subscriptions_hist",
+      "quote": "INSERT INTO subscriptions_hist ("
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_SUB_NO_UNCANCEL"
+    },
+    "resolution": "d-trg-no-uncancel: business rule 'status 30 (cancelled) is terminal' moves into the application's subscription status update (reject or no-op any transition away from 30); no schema change",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "228-236",
+      "note": "[d-trg-no-uncancel] BEFORE UPDATE OF status_cd: IF :OLD.status_cd = 30 THEN :NEW.status_cd := 30",
+      "quote": "IF :OLD.status_cd = 30 THEN"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "trigger_business_logic",
+      "name": "TRG_USAGE_EVENTS_CHECK"
+    },
+    "resolution": "d-trg-usage-check: validation moves to the application insert path (units > 0, kindCd must exist in codes with codeType USAGE_KIND, served from the cached codes collection) and a $jsonSchema minimum on usageEvents.units; errors -20001/-20002 become application validation errors",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+      "lines": "239-253",
+      "note": "[d-trg-usage-check] BEFORE INSERT: units must be > 0; unknown usage kind check against CODES('USAGE_KIND')",
+      "quote": "code_type = 'USAGE_KIND' AND code_val = :NEW.kind_cd"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "plsql_unit_needs_manual_review",
+      "name": "PKG_OW_UTIL"
+    },
+    "resolution": "d-plsql-pkg-ow-util: reviewed in 03_access_review (f_str2dt swallows parse errors → d-dirty-dates; f_md5_uuid → id generation in app; log_msg autonomous audit → d-audit-detached). No schema impact beyond those decisions",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "lines": "64-72",
+      "note": "[d-plsql-pkg-ow-util] manual review done against the package source",
+      "quote": "PRAGMA AUTONOMOUS_TRANSACTION;"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "plsql_unit_needs_manual_review",
+      "name": "PKG_PLANS"
+    },
+    "resolution": "d-plsql-pkg-plans: fn_list_plans / fn_entitlement / sp_change_plan reviewed (03_access_review §1); entitlement = subscriptions lookup by tenantId + date range then plans by planId (d-no-plan-extended-reference); sp_change_plan = close open subscription + insert new one + history pre-image (d-sub-hist-edge); the g_last_* package-state cache is dropped",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "lines": "2",
+      "note": "[d-plsql-pkg-plans] manual review done against the package source",
+      "quote": "Entrypoints: fn_list_plans, fn_entitlement, sp_change_plan"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "plsql_unit_needs_manual_review",
+      "name": "PKG_RATING"
+    },
+    "resolution": "d-plsql-pkg-rating: fn_usage_rating / fn_usage_summary / sp_finalize_rating reviewed; rating_periods and rating_results stay separate collections referenced by periodId (shared_child), written by the rating service in one transaction (no txn evidence from the scanner; the package body is the evidence)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+      "lines": "2",
+      "note": "[d-plsql-pkg-rating] manual review done against the package source",
+      "quote": "Entrypoints: fn_usage_rating, fn_usage_summary, sp_finalize_rating"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "plsql_unit_needs_manual_review",
+      "name": "PKG_INVOICING"
+    },
+    "resolution": "d-plsql-pkg-invoicing: compute_preview / sp_issue_invoice / fn_invoice_lines reviewed; sp_issue_invoice finalises rating then INSERT invoices, DELETE+INSERT invoice_lines, UPDATE invoices in one flow → invoices document with embedded lines written in one operation (d-embed-invoice-lines-stands)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "lines": "134-171",
+      "note": "[d-plsql-pkg-invoicing] manual review done against the package source",
+      "quote": "INSERT INTO invoices ("
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "plsql_unit_needs_manual_review",
+      "name": "PKG_DUNNING"
+    },
+    "resolution": "d-plsql-pkg-dunning: sp_schedule_dunning / sp_suspend_overdue reviewed; suspend = tenants.statusCd 20 + subscriptions.statusCd 20 (+ history pre-image, d-sub-hist-edge) + notifications insert, run by the nightly job owner (d-job-nightly-dunning)",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+      "lines": "78-90",
+      "note": "[d-plsql-pkg-dunning] manual review done against the package source",
+      "quote": "UPDATE subscriptions"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "scheduler_job",
+      "name": "JOB_NIGHTLY_DUNNING"
+    },
+    "resolution": "d-job-nightly-dunning: DBMS_SCHEDULER daily 02:00 → an application/cron scheduler invoking the dunning routine (schedule then suspend) against MongoDB; cadence preserved, needs an owner in the cutover step",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+      "lines": "11-15",
+      "note": "[d-job-nightly-dunning] FREQ=DAILY;BYHOUR=2",
+      "quote": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0"
+    }
+  },
+  {
+    "op": "resolve",
+    "match": {
+      "kind": "scheduler_job",
+      "name": "JOB_PURGE_AUDIT_LOG"
+    },
+    "resolution": "d-audit-detached: replaced by a TTL index on billingAuditLog.loggedAt (90 days); no scheduler needed",
+    "evidence": {
+      "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+      "lines": "22-26",
+      "note": "[d-audit-detached] DELETE ... WHERE logged_at < SYSDATE - 90 daily 03:30",
+      "quote": "DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90"
+    }
+  }
+]

@@ -1,0 +1,173 @@
+# 05 — Design decisions and pinned mapping (s4.2-design-decisions, UNT8-12)
+
+| | value |
+|---|---|
+| mapping version | **`map-v1`** (`.migration/mapping_spec.json`) |
+| `mapping_sha256` | **`949a8891f7fe837ad528d3f8aa54575e0fb50c71346c581310457855540201b2`** (`sha256sum .migration/mapping_spec.json`) |
+| input proposal | `map-draft-1`, sha256 `54d2e3173602e82f44a89ddc96cb1c67a4a31c7b98c89585b47f120a9e7713bb` (run branch commit `963160a2`) |
+| decisions file | `.migration/design_decisions.json` — 100 decisions, every one with `evidence {file, lines, quote/note}`, a confirmed `access_pattern` ref, or an `ok` `data_profile` stat |
+| plugin | `Cognition-Partner-Workshops/mongo-migration-plugin` @ `353280fc837193a40ccc005cb62fb4ffaf8ac16f` (`~/mmp`, unpatched; `skills/schema-modeling/model_patch.py`) |
+| run branch | `tp-run/mongodb-20261007T161014Z` |
+| previous run branch | `tp-run/mongodb-20261007T062215Z` **was not read** (no fetch, checkout, log, show or diff against it) |
+| gate | `model_patch.py --check` → `open items: 0 modeling.unresolved, 0 collection open_questions` / `check OK (124 decisions, 251 evidence refs)`, exit 0 |
+| result | 15 collections, 4 embeds (all `cardinality_basis: derived`), 0 `modeling.unresolved`, 0 collection `open_questions`, 24 → 0 unresolved, 42 → 0 open |
+
+Commands run (from the run-branch root, in this order; the generated JSON was never edited by hand):
+
+```sh
+python3 ~/mmp/skills/schema-modeling/model_patch.py \
+  --spec .migration/mapping_spec.json --decisions .migration/design_decisions.json \
+  --out .migration/mapping_spec.json --version map-v1 \
+  --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json \
+  --census .migration/census.json
+python3 ~/mmp/skills/schema-modeling/model_patch.py \
+  --spec .migration/mapping_spec.json --check \
+  --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json \
+  --census .migration/census.json          # exit 0
+sha256sum .migration/mapping_spec.json     # 949a8891…01b2
+```
+
+Decision ids (`d-…`) below are the tags written into each decision's `evidence.note` / `resolution` in `design_decisions.json` (the patcher's decision schema has no id field, so the tag is the id). Plan defaults applied: `d-empty-string-policy = null`, `d-dirty-dates = raw-field`.
+
+## 1. Proposer decision, rule and rationale — horror tables and history tables
+
+Column 'proposer' is what `map-draft-1` said (`04_proposal_review.md` §2); 'final' is `map-v1`. `written_together` / `via_trigger` are answered from `access_patterns.json` + `03_access_review.md` §2 (the proposer emitted neither string anywhere — §5 item 1).
+
+| table | proposer shape / rule / basis | written_together? | via_trigger? | final (map-v1) |
+|---|---|---|---|---|
+| `CUSTOMER_MASTER` | own collection `customerMaster`, key `CUST_ID`; `TENANTS → CUSTOMER_MASTER` = `pointer_only_no_fk` / reference / `assumed`; no edge to `ENTITY_ATTR_VALUE` or `CUSTOMER_MASTER_HIST` beyond pointer rows | no — reads only (`ap-e45fe9768e` hot, `ap-bd510b9356`, `ap-fa4086177d` cold); no confirmed writer | n/a | own collection, natural key `CUST_ID` (`d-natural-keys`); `attributes[]` embed of `ENTITY_ATTR_VALUE` (`d-eav-embed`); `tenantId` kept as orphan-flagged pointer (`d-orphan-cm-tenant`); 10 text dates → `%d-%b-%y` + `*Raw` (`d-dirty-dates`); CSV → arrays (`d-csv-to-array`); numbered groups stay scalar (`d-repeating-groups-scalar`); all `*_CD` numeric (`d-codes-reference-data`) |
+| `ENTITY_ATTR_VALUE` | own collection `entityAttrValue`, key `EAV_ID`, `polymorphic_pointer` question, **no ownership edge** (ENTITY_ID is not a `*_ID` FK) | yes with parent on read: `ap-e45fe9768e` → `ap-6c1786cb2d` in one `GET /customer` (`facade.py:287,294-297`); never read alone (`03_access_review.md` check 5) | no | embedded in `customerMaster.attributes` as `{k, v, type, entityType, createdDt, createdDtRaw, eavId}` via `pattern attribute` (`d-eav-embed`); bounded by `eav:ENTITY_ATTR_VALUE` (70 rows, 8 names, max 1/entity); indexes `attributes.k`, `attributes.v` |
+| `INVOICE_HEADER` | own collection `invoiceHeader`, key `INVOICE_ID`; `CUSTOMER_MASTER → INVOICE_HEADER`, `TENANTS → INVOICE_HEADER` = `pointer_only_no_fk` / reference / `assumed` | no — nightly CUSTBILL load (handbook §2), reads only (`ap-89c88ad4c6` cold batch, `ap-fa4086177d` cold) | no | own collection, natural key; `custId`, `tenantId` orphan-flagged pointers (`d-orphan-ih-cust`, `d-orphan-ih-tenant`, 0 of the TENANT_IDs resolve); `invoiceDt`/`dueDt` → `%d-%b-%y` + raw (`d-dirty-dates`); `statusCd` numeric, label via `codes` (`d-codes-reference-data`) |
+| `INVOICE_LINE` | own collection `invoiceLine`, key `LINE_ID`; `INVOICE_HEADER → INVOICE_LINE` = `pointer_only_no_fk` / reference / `assumed`; `unenforced_pointer` offered `INVOICES` as alternative target for `INVOICE_ID` | no — same CUSTBILL feed; the one read touching header+line is batch-scoped (`h.batch_no = :batch_no`, check 4), not per parent | no | own collection, natural key; **not embedded** (no per-parent read; 37/1500 ghost lines, handbook 4.2); `invoiceId → invoiceHeader` (not `INVOICES`), `custId`, `tenantId` orphan-flagged pointers (`d-orphan-il-*`); `glAcct` array (`d-csv-to-array`); `lineTypeCd` numeric (DECODE lives in the report) |
+| `CODES` | own collection `codes`, compound key `(CODE_TYPE, CODE_VAL)`, `reference_data` pattern; 11 `code_lookup` questions built from `value_domain`/`code_resolve` overlap | n/a | read via trigger: `ap-d0babb7b83` → `ap-fe087c4e0c` (`trg_usage_events_check`) | `reference_data` re-recorded with the app-join evidence (`d-codes-reference-data`); every `*_CD` stays numeric; **no `extended_reference`** — every CODES join is `code_type = '<constant>' AND code_val = x` which the pattern cannot express (no local `CODE_TYPE` column), and the collection is tiny and static |
+| `SUBSCRIPTIONS_HIST` | own collection `subscriptionsHist`, key `HIST_ID`, `pattern: history_copy`, `of_table: SUBSCRIPTIONS`; `TENANTS →` and `PLANS → SUBSCRIPTIONS_HIST` = `pointer_only_no_fk`; **no `SUBSCRIPTIONS → SUBSCRIPTIONS_HIST` row** | **yes** — `ap-a7af1a6156` (`pkg_plans.sp_change_plan`, warm), `ap-d3754b6b8a` (`pkg_dunning.sp_suspend_overdue`, cold), `ap-f95317f034` (`backends/oracle.py` `change_plan`, warm) all carry `cascades: ["ap-bdfdef0db0"]` | **yes** — `ap-bdfdef0db0` `trg_subscriptions_hist`, `AFTER UPDATE OR DELETE ON subscriptions`, not autonomous, inserts `:OLD` (`01_tables.sql:205-224`) | own revisions collection (document-versioning, revisions-collection form), natural key `HIST_ID`; **new edge** `SUBSCRIPTIONS → SUBSCRIPTIONS_HIST (ID)` rule `decision`/reference/`derived` (`d-sub-hist-edge`); index `(id, _id)`; `histDt` → `%d-%b-%y %H:%M:%S` + `histDtRaw` (`d-hist-dt`); `tenantId`, `planId` orphan-flagged pointers. Rule applied: `unbounded_append` (one row per update/delete, never purged) precedes `written_together` in the proposer's rule order, so the write-together fact changes the loader/application contract (history row written in the same transaction, `TRG_SUBSCRIPTIONS_HIST` resolution), not the shape |
+| `CUSTOMER_MASTER_HIST` | own collection `customerMasterHist`, key `HIST_ID`, `pattern: history_copy`, `of_table: CUSTOMER_MASTER`; `CUSTOMER_MASTER →` and `TENANTS → CUSTOMER_MASTER_HIST` = `pointer_only_no_fk`; `modeling.answered` closes `TRG_CUSTOMER_MASTER_HIST` as `sequence_trigger_identity` | **no** — `ap-dbf1b410e9` is confirmed but no confirmed application/package UPDATE or DELETE on `CUSTOMER_MASTER` exists; the INSERT cascades the scanner attached were over-approximation (`03_access_review.md` §3 item 2) | **yes** for the trigger itself — `trg_customer_master_hist`, `AFTER UPDATE OR DELETE ON customer_master`, full-row `:OLD` copy (`02_horror.sql:357-372`) | own revisions collection, natural key `HIST_ID`; edges confirmed with cited evidence → `derived` (`d-cust-hist-edge`, `d-orphan-cmh-tenant`); index `(custId, _id)`; `histDt` + 5 text dates → parsed + raw (`d-hist-dt`, `d-dirty-dates`); wrong `answered` entry superseded by `d-cust-hist-trigger` (§2) |
+| `BILLING_AUDIT_LOG` | own collection `billingAuditLog`, key `LOG_ID`, no rationale row (no relationship), `TRG_BILLING_AUDIT_LOG_ID` answered `sequence_trigger_identity` (correct) | **no by construction** — sole writer `pkg_ow_util.log_msg` runs under `PRAGMA AUTONOMOUS_TRANSACTION` (`01_pkg_util.sql:67`, `ap-779ce5b5b7` hot); it commits even when the caller rolls back | no (identity trigger only) | own collection, natural key `LOG_ID`, never embedded, no edge to any caller (`d-audit-detached`); retention `JOB_PURGE_AUDIT_LOG` (`ap-e7b18e81b8`, `logged_at < SYSDATE - 90`) → TTL on `loggedAt` (recorded; `ttl` is record-only in the patcher) + index `(loggedAt)` |
+
+Existing embeds were kept exactly as proposed (size / shared-child / unbounded rules unchanged): `INVOICES → INVOICE_LINES` as `lines` (`read_by_parent_key`, `ap-620d0a2057`, fan-out max 5; also co-written in `sp_issue_invoice`, `04_pkg_invoicing.sql:137-171`), `INVOICES → DUNNING_ATTEMPTS` as `dunningAttempts` (`read_by_parent_key`, `ap-37287a11b5`, fan-out max 3), `TENANTS → CREDIT_NOTES` as `creditNotes` (`co_read`). `USAGE_EVENTS` stays a referenced collection (`child_written_alone`, `ap-d0babb7b83`). All 15 roots keep their source primary key as the document key (`d-natural-keys`, `set_key` ×15, no ObjectId); `codes` keeps the compound `(codeType, codeVal)` key.
+
+## 2. Manual corrections (decision id → what changed → why the proposer's output was indefensible → evidence)
+
+| # | decision id | what changed in `map-v1` | why `map-draft-1` was indefensible | evidence |
+|---|---|---|---|---|
+| 1 | `d-sub-hist-edge` (+ `d-sub-hist-shape`, index) | `reference` from `subscriptions` to `SUBSCRIPTIONS_HIST` on `child_columns ["ID"]`: new `modeling.rationale` row `SUBSCRIPTIONS → SUBSCRIPTIONS_HIST (ID)`, `rule: decision`, `basis: derived`; `subscriptionsHist.decision.references` gains `{column: [ID], to: subscriptions}`; index `(id, _id)`; `TRG_SUBSCRIPTIONS_HIST` resolved as an in-transaction application write | The proposer had **no edge at all** between a table and its own history copy because `SUBSCRIPTIONS_HIST.ID` is not a `*_ID` column, and emitted neither `written_together` nor `via_trigger` anywhere — while three confirmed, pinned UPDATEs carry a cascade to the history trigger. A model that does not know the history table is written in the caller's transaction cannot specify the loader or the post-migration write path | `access_patterns.json`: `ap-a7af1a6156`, `ap-d3754b6b8a`, `ap-f95317f034` (`cascades: ["ap-bdfdef0db0"]`), `ap-bdfdef0db0`; `03_access_review.md:151` (check 1 "Yes"), `:182`; `01_tables.sql:205-224` (`AFTER UPDATE OR DELETE ON subscriptions`, `INSERT INTO subscriptions_hist`); `04_proposal_review.md:1891-1892, 3036` |
+| 2 | `d-cust-hist-trigger` (+ `d-cust-hist-edge`, `d-orphan-cmh-tenant`, index) | `note` on `customerMasterHist` superseding `modeling.answered[TRG_CUSTOMER_MASTER_HIST] = sequence_trigger_identity` (the answered entry is generated JSON and is left in place); `reference` decisions re-rate `CUSTOMER_MASTER → CUSTOMER_MASTER_HIST (CUST_ID)` and `TENANTS → CUSTOMER_MASTER_HIST (TENANT_ID)` to `basis: derived` with the trigger / pointer_resolve evidence; `written_together = no`, `via_trigger = yes` recorded | The answer cites `TRG_CUSTOMER_MASTER_SEQ`'s `NEXTVAL` for a different trigger. `TRG_CUSTOMER_MASTER_HIST` is `AFTER UPDATE OR DELETE` and copies the whole `:OLD` row — business history logic that has to be re-implemented, not an identity assignment that disappears with the sequence | `02_horror.sql:357-372`; `ap-dbf1b410e9` (confirmed, cold, pinned); `03_access_review.md:152` (check 2 "No valid cascade exists"), `:163` (item 2); `04_proposal_review.md:2094, 2895` |
+| 3 | `d-hist-dt` | `date_format` on `subscriptionsHist.HIST_DT` and `customerMasterHist.HIST_DT`: `%d-%b-%y %H:%M:%S`, `raw_field histDtRaw`, `unparseable: null` (rule `date_string_to_date:dbyHMS-70a36e` replaces `date_string_to_date:Ymd-0e0ea1`); `date_format_nonconforming` on `SUBSCRIPTIONS_HIST.HIST_DT` resolved; `date_format_assumed` on `CUSTOMER_MASTER_HIST.HIST_DT` resolved | The proposer pinned `%Y%m%d` with `date_format_basis: data_profile` while its own `date_format_nonconforming` question on the same column reported **conformance 0.0** — every one of the 6 profiled values has the `99-OCT-99 99:99:99` shape. Loading with `%Y%m%d` would null 100 % of history timestamps | `01_tables.sql:218` and `02_horror.sql:370` (`TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS')`); `data_profile.json` `text_shapes:SUBSCRIPTIONS_HIST.HIST_DT`; `04_proposal_review.md:2078, 3041` |
+| 4 | `d-codes-reference-data`, `d-dun-status-cd` | `pattern reference_data` on `codes` re-recorded with the application-join evidence; all 11 `code_lookup` questions resolved per column with the actual access (app `LEFT JOIN codes ON code_type = '<const>'` for `TENANT_STATUS`, `INV_STATUS`, `USAGE_KIND`, `DUN_STATUS`; inline `DECODE` in the packages for `tier_cd`, `status_cd`, `line_type_cd`; nothing at all for the 12 `CUSTOMER_MASTER` `*_CD`s); `note` on `invoices` records the `DUNNING_ATTEMPTS.STATUS_CD` decision the proposer never asked about; no `extended_reference` anywhere | Every "denormalise the label" / "ambiguous: … all cover the domain" proposal rested on `value_domain`/`code_resolve` overlap with seeded `CODES` rows, not on a join; `03_access_review.md` check 6 shows the packages never join `CODES` (they `DECODE` literals), and the one `*_CD` the application does join that the proposer missed (`DUNNING_ATTEMPTS.STATUS_CD` → `DUN_STATUS`) got no question because it is embedded. A label copy keyed on domain overlap would denormalise fields nobody reads | `facade.py:112-117, 215-217, 243-248, 336-346`; `reports.py:60-62, 67-72`; `02_pkg_plans.sql:55-59`; `05_pkg_dunning.sql:23`; `ap-0a1051eac3`; `03_access_review.md:156` (check 6 "None"); `04_proposal_review.md:1711-1712` |
+| 5 | `d-eav-embed` | `pattern attribute` on `customerMaster` for `ENTITY_ATTR_VALUE` (`parent_key [ENTITY_ID]`, `name_col ATTR_NAME`, `value_col ATTR_VALUE`, `type_col ATTR_TYPE`, `array_path attributes`): the standalone `entityAttrValue` collection is replaced by `customerMaster.attributes[{k, v, type, …}]` with element key `(ATTR_NAME, EAV_ID)` and multikey indexes on `attributes.k` / `attributes.v`; `polymorphic_pointer`, `single_valued_index_key`, `embed_unbounded` resolved with the `value_domain` / `eav` stats | The proposer produced **no `CUSTOMER_MASTER → ENTITY_ATTR_VALUE` edge** (polymorphic `ENTITY_ID` is not a `*_ID` FK) and proposed a polymorphic reference "it cannot be embedded", although the only reader fetches the attributes immediately after the parent, by the parent's `cust_id`, and the observed type domain is exactly `{CUSTOMER}` (70/70). The plan default is explicit: attribute pattern under the parent iff read with the parent | `facade.py:285-298` (`WHERE entity_type = 'CUSTOMER' AND entity_id = :1`); `ap-e45fe9768e`, `ap-6c1786cb2d` (both hot, confirmed); `03_access_review.md:155` (check 5); `data_profile.json` `value_domain:ENTITY_ATTR_VALUE.ENTITY_TYPE`, `eav:ENTITY_ATTR_VALUE`; `04_proposal_review.md:1588` |
+| 6 | `d-orphan-il-invoice` | `INVOICE_LINE.INVOICE_ID` pointer confirmed to `invoiceHeader` (not the proposer's alternative `INVOICES`), kept verbatim, 37 ghost lines flagged; `INVOICE_HEADER → INVOICE_LINE` rationale → `derived` | The `unenforced_pointer` question offered `INVOICES` as a target for a CUSTBILL line id; the only read touching both tables is header⋈line within one batch (`h.invoice_id = l.invoice_id`), and the handbook documents the orphans as a replay artefact that must be kept and reconciled, not dropped or re-parented | `reports.py:67-71`; `OPERATIONS_HANDBOOK.doc.txt:43-45`; `data_profile.json` `pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICE_HEADER` (37/1500); `ap-89c88ad4c6`; `03_access_review.md:154` |
+| 7 | `d-audit-detached` | `note` on `billingAuditLog` recording the autonomous-transaction semantics (never embed, no caller edge, TTL retention) + index `(loggedAt)`; `JOB_PURGE_AUDIT_LOG` resolved to the TTL | The spec kept the right shape by accident (no relationship → default collection) but carried **no reason**; a later step could legitimately have embedded the audit rows into invoices/dunning as "written together", which is exactly what `PRAGMA AUTONOMOUS_TRANSACTION` forbids | `01_pkg_util.sql:64-72`; `04_jobs.sql:22-26`; `ap-779ce5b5b7`, `ap-e7b18e81b8`; `03_access_review.md:153, 187`; `04_proposal_review.md:2084-2088` |
+
+Everything else in `design_decisions.json` applies a plan default or records a choice the proposer had already made (natural keys, `csv_to_array`, `yn_to_bool`, the three existing embeds, `USAGE_EVENTS` reference, orphan pointers for the CUSTBILL estate and the history copies) — listed per question in §3.
+
+## 3. Every proposer-raised open question and how it was resolved
+
+Identified by collection / `kind` / column(s) as the proposer emitted them (`04_proposal_review.md` §2, §4). Resolution text is the `resolve` decision's `resolution` (abridged); the full text and evidence are in `mapping_spec.json` `decision.resolved_questions` / `modeling.resolved`. **Nothing remains unresolved**: `--check` reports `0 modeling.unresolved, 0 collection open_questions`.
+
+### 3.1 Collection `open_questions` (42)
+
+| # | collection | kind | column(s) | resolution (decision id) |
+|---|---|---|---|---|
+| 1 | `customerMasterHist` | `repeating_group` | numbered series | keep 1:1 scalars; no reader, positions semantic, FLAG_07 load-bearing (`d-repeating-groups-scalar`; handbook :17-19) |
+| 2 | `customerMasterHist` | `unenforced_pointer` | `CUST_ID`, `TENANT_ID` | `reference` to `customerMaster` / `tenants`, keep pointer, flag orphan (`d-cust-hist-edge`, `d-orphan-cmh-tenant`) |
+| 3 | `customerMasterHist` | `code_lookup` | 12 `*_CD` | numeric codes, no label copy — history copy of #23 (`d-codes-reference-data`) |
+| 4 | `customerMasterHist` | `date_as_string` | `HIST_DT`, `SIGNUP_DT`, `LAST_ACTIVITY_DT`, `LAST_INVOICE_DT`, `LAST_PAYMENT_DT`, `TERMINATE_DT` | `date_format` ×6: `HIST_DT` `%d-%b-%y %H:%M:%S`, others `%d-%b-%y`; each with `*Raw` + `unparseable: null` (`d-hist-dt`, `d-dirty-dates`) |
+| 5 | `customerMasterHist` | `csv_list` | `RELATED_ACCT_IDS`, `CHILD_ACCT_IDS`, `PROMO_CODES_CSV` | `csv_to_array` kept, tokens trimmed, `''`/`'NULL'` dropped (`d-csv-to-array`) |
+| 6 | `invoices` | `unrated_access_basis` | `DUNNING_ATTEMPTS` | `ap-37287a11b5` confirmed cold + `ap-0a1051eac3` warm served by `dunningAttempts.scheduledFor` index; embed stands (`d-embed-dunning-stands`) |
+| 7 | `invoices` | `unrated_access_basis` | `INVOICE_LINES` | `ap-620d0a2057` confirmed warm per-parent read, co-written in `sp_issue_invoice`, fan-out ≤ 5; embed stands (`d-embed-invoice-lines-stands`) |
+| 8 | `invoices` | `code_lookup` | `STATUS_CD` | app joins `INV_STATUS` on hot `/invoices`; numeric + cached `codes` lookup, no extended reference (`d-codes-reference-data`) |
+| 9 | `tenants` | `append_growth` | `USAGE_EVENTS` | keep reference; no TENANTS read needs recent events; `(tenantId, occurredAt)` index exists (`d-usage-events-reference`) |
+| 10 | `tenants` | `code_lookup` | `STATUS_CD` | app joins `TENANT_STATUS` on hot `/me`, `pkg_dunning` DECODEs; numeric + lookup (`d-codes-reference-data`) |
+| 11 | `plans` | `code_lookup` | `TIER_CD` | inline `DECODE` in `fn_entitlement`, never joined; numeric (`d-codes-reference-data`) |
+| 12 | `plans` | `single_valued_index_key` | `ACTIVE_YN` | Y/N flag, fixture only `Y`; `fn_list_plans` filter stands, 3-row collection (`d-plans-active-index`) |
+| 13 | `subscriptions` | `extended_reference_candidate` | `PLANS` | **declined**: the reads use 5 of 6 PLANS fields, PLANS is 3 static rows; plain `planId` reference + cached lookup (`d-no-plan-extended-reference`) |
+| 14 | `subscriptions` | `code_lookup` | `STATUS_CD` | inline `DECODE` + `trg_sub_no_uncancel`; numeric (`d-codes-reference-data`) |
+| 15 | `usageEvents` | `code_lookup` | `KIND_CD` | validated via trigger against `USAGE_KIND`, joined on `/usage`; numeric + lookup (`d-codes-reference-data`) |
+| 16 | `notifications` | `code_lookup` | `KIND_CD` | DDL comment only, no reader; numeric (`d-codes-reference-data`) |
+| 17 | `customerMaster` | `date_format_nonconforming` | `SIGNUP_DT` | `%d-%b-%y` kept; 0.846 is the handbook's `'31-FEB-24'`/`'N/A'` dirt → null + `signupDtRaw` (`d-dirty-dates`) |
+| 18 | `customerMaster` | `repeating_group` | numbered series | as #1 (`d-repeating-groups-scalar`) |
+| 19 | `customerMaster` | `unenforced_pointer` | `TENANT_ID` | `reference` to `tenants`, keep pointer, flag orphan (`d-orphan-cm-tenant`) |
+| 20 | `customerMaster` | `pointer_unresolved` | `TENANT_ID` → `TENANTS` | 200/201 unresolved = mainframe tenant keys; pointer kept, orphans flagged, no embed/re-key (`d-orphan-cm-tenant`) |
+| 21 | `customerMaster` | `date_as_string` | `SIGNUP_DT`, `LAST_ACTIVITY_DT`, `LAST_INVOICE_DT`, `LAST_PAYMENT_DT`, `TERMINATE_DT` | `date_format` ×5 `%d-%b-%y` + `*Raw` + null (`d-dirty-dates`) |
+| 22 | `customerMaster` | `csv_list` | `RELATED_ACCT_IDS`, `CHILD_ACCT_IDS`, `PROMO_CODES_CSV` | as #5 (`d-csv-to-array`; handbook :46-48) |
+| 23 | `customerMaster` | `code_lookup` | `PHONE1-4_TYPE_CD`, `STATUS_CD`, `SUB_STATUS_CD`, `CUST_TYPE_CD`, `SEGMENT_CD`, `REGION_CD`, `TERRITORY_CD`, `CHANNEL_CD`, `RATE_CLASS_CD` | no join or DECODE anywhere (`reports.py:85-90`, `facade.py:122-126` read raw); numeric, no label copy (`d-codes-reference-data`) |
+| 24 | `entityAttrValue` | `polymorphic_pointer` | `ENTITY_TYPE`, `ENTITY_ID` | not polymorphic in practice (domain `{CUSTOMER}`, reader filters the constant); child of `CUSTOMER_MASTER` via `ENTITY_ID`, `entityType` kept as element field (`d-eav-embed`) |
+| 25 | `entityAttrValue` | `date_as_string` | `CREATED_DT` | `date_format` `%d-%b-%y` + `createdDtRaw`, carried into the element (`d-dirty-dates`) |
+| 26 | `entityAttrValue` | `single_valued_index_key` | `ENTITY_TYPE` | moot after the embed; attribute-pattern indexes replace `(entityId, _id)` (`d-eav-embed`) |
+| 27 | `invoiceHeader` | `unenforced_pointer` | `CUST_ID`, `TENANT_ID` | `reference` ×2, keep pointer, flag orphan (`d-orphan-ih-cust`, `d-orphan-ih-tenant`) |
+| 28 | `invoiceHeader` | `code_lookup` | `STATUS_CD` | outer-joined `INV_STATUS` only in the cold batch report; numeric (`d-codes-reference-data`) |
+| 29 | `invoiceHeader` | `date_as_string` | `INVOICE_DT`, `DUE_DT` | `date_format` ×2 `%d-%b-%y` + raw (`d-dirty-dates`) |
+| 30 | `invoiceHeader` | `pointer_target_suspect` | `TENANT_ID` | `TENANTS` kept as target (extract `LEFT JOIN tenants t ON t.id = h.tenant_id`); values are mainframe keys, not a mis-typed pointer (`d-orphan-ih-tenant`) |
+| 31 | `invoiceHeader` | `pointer_unresolved` | `TENANT_ID` → `TENANTS` | keep pointer verbatim, flag every orphan (`d-orphan-ih-tenant`) |
+| 32 | `invoiceLine` | `unenforced_pointer` | `INVOICE_ID`, `CUST_ID`, `TENANT_ID` | `reference` ×3 → `invoiceHeader` (not `INVOICES`), `customerMaster`, `tenants`; keep pointer, flag orphan (`d-orphan-il-*`) |
+| 33 | `invoiceLine` | `code_lookup` | `LINE_TYPE_CD` | inline `DECODE` in the report, never joined; numeric (`d-codes-reference-data`) |
+| 34 | `invoiceLine` | `date_as_string` | `INVOICE_DT` | `date_format` `%d-%b-%y` + raw (`d-dirty-dates`) |
+| 35 | `invoiceLine` | `csv_list` | `GL_ACCT_CSV` | `csv_to_array` → `glAcct` (`d-csv-to-array`) |
+| 36 | `invoiceLine` | `pointer_unresolved` | `INVOICE_ID` → `INVOICE_HEADER` | 37 ghost lines are a documented source defect (handbook 4.2); kept + flagged, never dropped (`d-orphan-il-invoice`) |
+| 37 | `invoiceLine` | `pointer_target_suspect` | `TENANT_ID` | `TENANTS` kept (same key space as the header) (`d-orphan-il-tenant`) |
+| 38 | `invoiceLine` | `pointer_unresolved` | `TENANT_ID` → `TENANTS` | keep pointer, flag orphan (`d-orphan-il-tenant`) |
+| 39 | `subscriptionsHist` | `date_format_nonconforming` | `HIST_DT` | format corrected to the trigger's mask (`d-hist-dt`, §2 #3) |
+| 40 | `subscriptionsHist` | `unenforced_pointer` | `TENANT_ID`, `PLAN_ID` | `reference` ×2, keep pointer, flag orphan (`d-orphan-sh-tenant`, `d-orphan-sh-plan`); `ID → subscriptions` added by `d-sub-hist-edge` |
+| 41 | `subscriptionsHist` | `code_lookup` | `STATUS_CD` | history copy of #14; numeric (`d-codes-reference-data`) |
+| 42 | `subscriptionsHist` | `date_as_string` | `HIST_DT` | `date_format` `%d-%b-%y %H:%M:%S` + `histDtRaw` (`d-hist-dt`) |
+
+### 3.2 `modeling.unresolved` (24) and items raised by the patch itself (1)
+
+| # | kind | item | resolution (decision id) |
+|---|---|---|---|
+| 43-48 | `date_format_assumed` | `CUSTOMER_MASTER_HIST.{HIST_DT, SIGNUP_DT, LAST_ACTIVITY_DT, LAST_INVOICE_DT, LAST_PAYMENT_DT, TERMINATE_DT}` | closed by the `date_format` decisions of #4 (`d-hist-dt`, `d-dirty-dates`) |
+| 49-51 | `date_format_assumed` | `CUSTOMER_MASTER.{LAST_INVOICE_DT, LAST_PAYMENT_DT, TERMINATE_DT}` | closed by the `date_format` decisions of #21 (`d-dirty-dates`) |
+| 52-53 | `plsql_unit_needs_manual_review` | `PKG_OW_UTIL` (×2) | reviewed: `f_str2dt` → `d-dirty-dates`, `f_md5_uuid` → app id generation, `log_msg` → `d-audit-detached` (`d-plsql-pkg-ow-util`) |
+| 54-55 | `plsql_unit_needs_manual_review` | `PKG_PLANS` (×2) | entitlement = `subscriptions` by `tenantId` + date range then `plans` by `planId`; `sp_change_plan` = close + insert + history pre-image; package-state cache dropped (`d-plsql-pkg-plans`) |
+| 56-57 | `plsql_unit_needs_manual_review` | `PKG_RATING` (×2) | `ratingPeriods` / `ratingResults` stay referenced collections written by the rating service in one transaction (`d-plsql-pkg-rating`) |
+| 58-59 | `plsql_unit_needs_manual_review` | `PKG_INVOICING` (×2) | `sp_issue_invoice` → one `invoices` document with embedded `lines` written in one operation (`d-plsql-pkg-invoicing`) |
+| 60-61 | `plsql_unit_needs_manual_review` | `PKG_DUNNING` (×2) | suspend = `tenants.statusCd` 20 + `subscriptions.statusCd` 20 + history pre-image + `notifications` insert, under the nightly job owner (`d-plsql-pkg-dunning`) |
+| 62 | `trigger_business_logic` | `SUBSCRIPTIONS.TRG_SUBSCRIPTIONS_HIST` | application writes the pre-image to `subscriptionsHist` in the same transaction (`d-sub-hist-edge`) |
+| 63 | `trigger_business_logic` | `SUBSCRIPTIONS.TRG_SUB_NO_UNCANCEL` | "status 30 is terminal" guard moves into the application update (`d-trg-no-uncancel`) |
+| 64 | `trigger_business_logic` | `USAGE_EVENTS.TRG_USAGE_EVENTS_CHECK` | `units > 0` + `kindCd ∈ codes(USAGE_KIND)` validation in the app + `$jsonSchema` minimum (`d-trg-usage-check`) |
+| 65 | `scheduler_job` | `JOB_NIGHTLY_DUNNING` | app/cron scheduler, daily 02:00 cadence preserved; owner assigned at cutover (`d-job-nightly-dunning`) |
+| 66 | `scheduler_job` | `JOB_PURGE_AUDIT_LOG` | TTL index on `billingAuditLog.loggedAt`, 90 days (`d-audit-detached`) |
+| 67 | `embed_unbounded` (raised by the `pattern attribute` embed) | `customerMaster.attributes` ← `ENTITY_ATTR_VALUE` | bounded by `eav:ENTITY_ATTR_VALUE` (70 rows, 8 names, max 1 per entity, ≤ 94 B/row); no writer appends it (`d-eav-embed`) |
+
+`modeling.answered` (9) was left as generated; the one wrong answer (`TRG_CUSTOMER_MASTER_HIST`) is superseded by `d-cust-hist-trigger` (§2 #2). The other eight (`TRG_BILLING_AUDIT_LOG_ID`, `TRG_CUSTOMER_MASTER_SEQ`, `TRG_ENTITY_ATTR_VALUE_SEQ` as `sequence_trigger_identity`; five `date_format_assumed` → `data_profile` at conformance 1.0) were checked against the DDL and the profile and stand.
+
+## 4. Plan defaults as applied
+
+| default | decision id | applied as |
+|---|---|---|
+| empty `VARCHAR2` → `null` | `d-empty-string-policy` | `note`; canonicalization rule `empty_string_is_null` already in the proposal, no sentinel strings |
+| dirty text dates → `raw-field` | `d-dirty-dates` | 17 `date_format` decisions (`%d-%b-%y` for the `VARCHAR2(9)` `DD-MON-YY` columns, `%d-%b-%y %H:%M:%S` for both `HIST_DT`) each with a `*Raw` identity copy and `unparseable: null` |
+| `*_CSV` / `*_IDS` → `csv_to_array` | `d-csv-to-array` | proposer's rule kept on all 7 columns; packing dirt (handbook 4.3) handled by the loader; nothing stays packed |
+| `*_YN` → `yn_to_bool` | (proposer) | already applied to all 10 `*_YN` columns; recorded in the `code_lookup`/`single_valued_index_key` resolutions, no change |
+| EAV → `pattern attribute` iff read with parent | `d-eav-embed` | yes, read with parent (`facade.py:287,294-297`) → embedded |
+| `CODES` → `reference_data`; `extended_reference` only if hot with parent | `d-codes-reference-data` | `reference_data`; no `extended_reference` (constant-typed joins, tiny static collection) |
+| `_HIST` / `BILLING_AUDIT_LOG` per `written_together`/`via_trigger` + growth | `d-sub-hist-edge`, `d-cust-hist-edge`, `d-audit-detached` | own referenced collections (revisions form); evidence in §1 |
+| natural keys, no ObjectId | `d-natural-keys` | `set_key` ×15 to the source PK |
+| every planted orphan → `reference` naming load behaviour | `d-orphan-*` ×9 | keep pointer verbatim, flag orphan in recon, never null/drop/re-key |
+
+## 5. Proposer blind spots and input findings (from the access review and this correction work)
+
+1. **No `written_together` / `via_trigger` output at all.** The proposer never emits either string; trigger cascades on confirmed writes (`cascades: [...]`) are not consumed for relationship rationale. Consequence here: §2 #1. Input finding for the plugin: consume `cascades` + trigger `op`/`table` into the history-table edge and rule.
+2. **Relationship discovery is `*_ID`-suffix bound.** `SUBSCRIPTIONS_HIST.ID` (history copy of the parent PK) and `ENTITY_ATTR_VALUE.ENTITY_ID` (polymorphic pointer whose type column is a constant in practice) produced no edge, so the two most important ownership relationships in the horror schema were missing (§2 #1, #5).
+3. **Trigger classification by table, not by trigger.** `TRG_CUSTOMER_MASTER_HIST` was answered with `TRG_CUSTOMER_MASTER_SEQ`'s evidence because both sit on `CUSTOMER_MASTER` (§2 #2). The DDL census distinguishes them (`AFTER UPDATE OR DELETE` vs `BEFORE INSERT`); the answer logic does not.
+4. **Date format pinned against its own non-conformance report.** `HIST_DT` got `%Y%m%d` at conformance 0.0 (§2 #3). The format chooser should refuse a `data_profile` basis below a threshold and fall back to `date_format_assumed` or the shape histogram (`99-OCT-99 99:99:99` is unambiguous).
+5. **`code_lookup` questions come from value overlap, not from joins.** 11 questions for columns nobody joins, none for the one embedded `*_CD` the app does join (§2 #4). Input: use `join_edges`/statement text of confirmed reads to raise `code_lookup`, and include embedded children.
+6. **Scanner gaps inherited from s3.2 (`03_access_review.md` §3)** that the proposer cannot see and that this step filled from source: no `txn` for PL/SQL or Python (sp_issue_invoice, change_plan, ensure_tenant transactions); Python callers not in `invoked_by`; non-FK joins (`CODES`, header⋈line, `LEFT JOIN tenants`) not emitted as `join_edges`; INSERT → `AFTER UPDATE OR DELETE` cascade over-approximation (left unconfirmed; §1 `CUSTOMER_MASTER_HIST`); `PRAGMA AUTONOMOUS_TRANSACTION` not represented (§2 #7); trigger-only business rules (`TRG_SUB_NO_UNCANCEL`) not attached to the writes they guard.
+7. **Orphan pointers rated `assumed` with no load behaviour.** All 10 `pointer_only_no_fk` rows stayed `assumed` although `pointer_resolve` stats existed for every one of them; the proposer should derive the basis from the stat and ask for the load behaviour explicitly (it needed 9 `reference` decisions here).
+8. **Operational documents are not inputs.** The handbook (`OPERATIONS_HANDBOOK.doc.txt`) explains the three profile anomalies the proposer flagged as questions — `SIGNUP_DT` dirt (4.1), ghost `INVOICE_LINE` rows (4.2), `RELATED_ACCT_IDS` packing dirt (4.3), `FLAG_07` load-bearing — and the `INVOICE_HEADER`/`INVOICE_LINE` nightly mainframe load that makes the CUSTBILL estate a different key space from `TENANTS`.
+9. **Record-only patterns leave no trace in the shape.** `ttl`, `document_versioning`-as-revisions and the detached-audit semantics can only be carried as `note`/`resolve` text; downstream steps (loader, cutover) must read `modeling.decisions`, not just `collections`.
+
+Legacy source (`services/legacy-billing/db/oracle/`, `testdata/legacy/oracle_billing_seed.py`) and the plugin clone were not modified. No database connection was used in this step; no secret value appears in any artifact.
+
+## 6. Pre-PR self-check (`.agents/skills/tp-pre-pr-self-check`)
+
+| check | result |
+|---|---|
+| `model_patch.py --check` on `map-v1` | exit 0 — `open items: 0 modeling.unresolved, 0 collection open_questions`, `check OK (124 decisions, 251 evidence refs)` |
+| `make tp-smoke` | `tp-smoke: all checks passed`, exit 0 (after `mise trust` of the repo's `mise.toml` on this VM — environment, not a repo change) |
+| generated JSON edited by hand | no — `mapping_spec.json` is the patcher's output of the single command above; `design_decisions.json` is the only hand-written input |
+| legacy estate untouched | `git diff --stat` touches only `.migration/design_decisions.json`, `.migration/mapping_spec.json`, `.migration/05_decisions.md` |
+| secrets | none referenced; `MONGODB_ATLAS_URI` not used (no database access in this step) |
+| NULL/missing attribution, unit namespace `ow_tp`/`ow-tp-`, shared-table DDL, rerun retention, recon report, capability preflight, parity tolerance | not applicable to this step (modeling artifacts only; no load, no target writes); recorded, not claimed |
+| unverified paths | loader behaviour named in the `d-orphan-*`, `d-dirty-dates` and `d-eav-embed` decisions is a contract for the load step, not yet executed |
+| previous run branch | `tp-run/mongodb-20261007T062215Z` not read |
