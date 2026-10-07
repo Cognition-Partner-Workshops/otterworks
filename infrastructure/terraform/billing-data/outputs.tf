@@ -1,0 +1,74 @@
+output "run_token" {
+  value = var.run_token
+}
+
+output "expires" {
+  value = var.expires
+}
+
+output "db_instance" {
+  value = var.db_instance_identifier
+}
+
+output "db_endpoint" {
+  value = "${data.aws_db_instance.shared.address}:${data.aws_db_instance.shared.port}"
+}
+
+output "db_name" {
+  value = local.db_name
+}
+
+output "db_role" {
+  value = local.db_role
+}
+
+output "db_secret_name" {
+  description = "Secrets Manager secret with engine/host/port/dbname/username/password of the run's login role."
+  value       = aws_secretsmanager_secret.billing_db.name
+}
+
+output "db_init_function" {
+  value = aws_lambda_function.db_init.function_name
+}
+
+output "sql_function" {
+  description = "In-VPC SQL runner scripts/billing-to-rds.py invokes for the load and RDS-side counts."
+  value       = aws_lambda_function.db_sql.function_name
+}
+
+output "db_evidence" {
+  description = "What the db-init function read back after create: the \\l row, the role, its database privileges and a login as the role."
+  value       = jsondecode(aws_lambda_invocation.database.result)
+}
+
+output "usage_bucket" {
+  description = "Bucket the nightly export writes usage/period=<yyyy-mm>/part-00000.csv.gz to."
+  value       = aws_s3_bucket.usage.id
+}
+
+output "usage_export_function" {
+  description = "Non-VPC export function; invoke with {} or {\"periods\": [\"yyyy-mm\", ...]}."
+  value       = aws_lambda_function.usage_export.function_name
+}
+
+output "usage_export_schedule" {
+  value = "${aws_scheduler_schedule.usage_export.group_name}/${aws_scheduler_schedule.usage_export.name}"
+}
+
+output "usage_glue_table" {
+  description = "Glue table over s3://<bucket>/usage/, partition projection on period (yyyy-mm)."
+  value       = "${aws_glue_catalog_database.billing.name}.${aws_glue_catalog_table.usage_events.name}"
+}
+
+output "athena_workgroup" {
+  description = "Workgroup (enforced configuration) whose results go to s3://<bucket>/athena-results/."
+  value       = aws_athena_workgroup.billing.name
+}
+
+output "usage_summary_named_queries" {
+  description = "Named query ids: usage_summary (tenant, start, end, start, end) and usage_summary_all_tenants (start, end, start, end)."
+  value = {
+    usage_summary             = aws_athena_named_query.usage_summary.id
+    usage_summary_all_tenants = aws_athena_named_query.usage_summary_all_tenants.id
+  }
+}
