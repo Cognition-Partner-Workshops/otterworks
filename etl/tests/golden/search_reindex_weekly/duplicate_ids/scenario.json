@@ -1,0 +1,16 @@
+{
+  "description": "Two documents share id doc-dup (one via document_id, one via id). MeiliSearch upserts, so the index holds 2 documents while the script counted 3 fetched: validation fails with a count mismatch and exit 1, though every unique document is indexed. Files are unaffected.",
+  "frozen_time": "2026-03-15T04:00:00Z",
+  "seed": {
+    "http": {
+      "documents": [
+        {"document_id": "doc-dup", "title": "First copy", "owner_id": "user-alice"},
+        {"id": "doc-dup", "title": "Second copy", "owner_id": "user-bob"},
+        {"id": "doc-solo", "title": "Solo", "owner_id": "user-carol"}
+      ],
+      "files": [
+        {"owner_id": "user-bob", "created_at": "2026-02-02T10:00:00Z", "updated_at": "2026-03-02T10:00:00Z", "file_id": "file-001", "file_name": "file-001.pdf", "size_bytes": 1001}
+      ]
+    }
+  }
+}

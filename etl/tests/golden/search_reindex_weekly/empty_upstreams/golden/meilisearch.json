@@ -1,0 +1,131 @@
+{
+  "documents": {
+    "documents": [],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "title",
+        "content",
+        "tags"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {},
+      "isIndexing": false,
+      "numberOfDocuments": 0
+    }
+  },
+  "files": {
+    "documents": [],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "folder_id",
+        "mime_type",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "name",
+        "tags",
+        "mime_type"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "size",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {},
+      "isIndexing": false,
+      "numberOfDocuments": 0
+    }
+  }
+}

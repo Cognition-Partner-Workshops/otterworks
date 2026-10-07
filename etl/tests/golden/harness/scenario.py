@@ -12,7 +12,8 @@ Schema (every key except frozen_time is optional):
         "s3":       [{"bucket", "key", "body", "format": "json"|"jsonl"|"text",
                       "gzip": false, "content_type": null, "storage_class": null}],
         "postgres": {"<table>": [{<column>: <value>}]},
-        "http":     {"documents": [...], "files": [...]}
+        "http":     {"documents": [...], "files": [...],
+                     "errors": {"documents"|"files": {"<page>": <http status>}}}
       }
     }
 """
