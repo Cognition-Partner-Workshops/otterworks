@@ -15,7 +15,7 @@
     "mmp_rt_b3_oracle.notifications",
     "mmp_rt_b3_oracle.subscriptions"
   ],
-  "pr_url": "",
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
   "branch": "devin/1791364935-w1-b02-load",
   "failure_class": "",
   "one_line_summary": "all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",

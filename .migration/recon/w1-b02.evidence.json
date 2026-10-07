@@ -502,7 +502,7 @@
   "MONGO_GUARD_BASE_REF": "origin/tp-run/mongodb-20261007T062215Z",
   "note": "exported for every command; the active PreToolUse hook is the org dbx guard (F4/F9)"
  },
- "pr_url": "",
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
  "pre_pr_self_check": {
   "null_missing": "NULL key refused by the loader; NULL non-key fields written as null, or omitted under null_missing_equiv (endsOn, suspendedOn) \u2014 both attributed by the spec rules the harness grades",
   "namespace_scope": "writes only to the five w1-b02 write_targets in mmp_rt_b3_oracle (allowed_targets.json); the ow_tp prefix rule of the generic checklist does not apply to this run's allowlisted db (recorded since b01)",
