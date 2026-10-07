@@ -18,6 +18,7 @@ from app.middleware.request_log import (
     redact_headers,
     redact_query,
 )
+from tests.conftest import TEST_JWT_SECRET, auth_headers_for
 
 
 def test_redact_headers_masks_credentials_only() -> None:
@@ -60,17 +61,20 @@ async def test_logged_request_keeps_body_but_not_bearer_token(
     monkeypatch.setattr(request_log_module, "flag_active", lambda key: key == FLAG_REQUEST_LOG)
     monkeypatch.setattr(request_log_module, "request_log", RequestLog(str(tmp_path)))
 
+    monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
+    token = auth_headers_for(owner_id)["Authorization"].removeprefix("Bearer ")
+
     resp = await client.get(
         "/api/v1/documents/",
         params={"owner_id": str(owner_id)},
-        headers={"Authorization": "Bearer top-secret", "Cookie": "sid=1"},
+        headers={"Authorization": f"Bearer {token}", "Cookie": "sid=1"},
     )
     assert resp.status_code == 200
 
     files = list(tmp_path.iterdir())
     assert len(files) == 1
     raw = files[0].read_text()
-    assert "top-secret" not in raw
+    assert token not in raw
     assert "sid=1" not in raw
     record = json.loads(raw.splitlines()[-1])
     assert record["headers"]["authorization"] == REDACTED

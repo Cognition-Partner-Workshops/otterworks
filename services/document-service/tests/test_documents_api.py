@@ -54,13 +54,17 @@ async def test_get_document_not_found(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
+async def test_list_documents(
+    client: AsyncClient, owner_id: uuid.UUID, owner_headers: dict[str, str]
+):
     for i in range(3):
         await client.post(
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id)}, headers=owner_headers
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
@@ -68,14 +72,18 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUID):
+async def test_list_documents_pagination(
+    client: AsyncClient, owner_id: uuid.UUID, owner_headers: dict[str, str]
+):
     for i in range(5):
         await client.post(
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "page": 1, "size": 2},
+        headers=owner_headers,
     )
     data = resp.json()
     assert data["total"] == 5
@@ -182,7 +190,9 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
+async def test_search_documents(
+    client: AsyncClient, owner_id: uuid.UUID, owner_headers: dict[str, str]
+):
     await client.post(
         "/api/v1/documents/",
         json={"title": "Python Guide", "content": "Learn Python", "owner_id": str(owner_id)},
@@ -192,7 +202,9 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=owner_headers
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1

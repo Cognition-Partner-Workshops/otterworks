@@ -133,7 +133,11 @@ async def test_search(db_session: AsyncSession, owner_id: uuid.UUID):
         DocumentCreate(title="Rust Guide", content="Learn Rust", owner_id=owner_id)
     )
 
-    items, total = await service.search("Python")
+    await service.create(
+        DocumentCreate(title="Python Secrets", content="Learn Python", owner_id=uuid.uuid4())
+    )
+
+    items, total = await service.search("Python", owner_id=owner_id)
     assert total == 1
     assert items[0].title == "Python Guide"
 
