@@ -23,9 +23,9 @@ scripts:
     dag_folder: toy
     variants: false
   storage_cleanup_daily:
-    dag_id: parity_passthrough__storage_cleanup_daily
-    dag_folder: toy
-    variants: false
+    dag_id: otterworks_storage_cleanup
+    dag_folder: image
+    variants: true
   user_activity_daily:
     dag_id: parity_passthrough__user_activity_daily
     dag_folder: toy

@@ -4,12 +4,22 @@
 # reason, in the PR that introduces the difference.
 #
 # accepted: runs with every Variable at its committed default (etl/airflow/.env.example).
-#   Both decided flags default to false, which matches the legacy goldens: nothing accepted.
+#   storage_cleanup_normalize_keys defaults to false, which matches the legacy goldens; the only
+#   accepted difference is the end-of-task failure when quarantine copies fail.
 # variants: flag-on runs, a committed scenario's seed with per-scenario Variable overrides.
 #   `before` is the committed golden value (tests/test_parity.py checks it), `after` the
 #   reviewed expected DAG output. Run with: make etl-parity SCRIPT=storage_cleanup_daily VARIANT=<name>
 script: storage_cleanup_daily
-accepted: []
+accepted:
+- scenario: quarantine_failure
+  check: result.json exit_code
+  before: 0
+  after: 1
+  reason: 'Planned fix (s3.3): legacy logs each failed quarantine copy and exits 0. move_to_quarantine
+    still attempts every orphan and logs each failure at ERROR, then fails the task, so the DagRun fails
+    and alerts. The source objects stay in file storage and generate_storage_report still writes the
+    legacy report (objects_failed, storage_freed_gb as legacy computes them), so every other check is
+    identical; cleanup_staging does not run, so staged listings are kept for the retry.'
 variants:
 - name: reference_mismatches_normalize_keys
   scenario: reference_mismatches

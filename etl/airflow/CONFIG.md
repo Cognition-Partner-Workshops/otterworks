@@ -114,8 +114,11 @@ before the cutoff instant: the legacy string filter archives same-instant spelli
 
 `storage_cleanup_normalize_keys` (decided default `false`): false keeps the legacy exact-string
 match, so a metadata `s3_key` with a leading `/`, an `s3://bucket/` URI or different case does not
-protect its object (the `reference_mismatches` golden). True lets the DAG normalize `s3_key` before
-matching; that is an accepted difference from the goldens, opt-in only.
+protect its object (the `reference_mismatches` golden); the DAG logs how many references
+normalization would have matched (`normalization_disabled`, `would_match`). True strips one leading
+`/` or an `s3://<file_storage_bucket>/` prefix from `s3_key` before matching, and never folds case
+(S3 keys are case-sensitive): an accepted difference from the goldens, opt-in only, tested in the
+flag-on variant `reference_mismatches_normalize_keys`.
 
 ### `otterworks_user_activity_report` (`user_activity_daily.py`)
 
