@@ -375,3 +375,17 @@ One line per item: **tool → what it did → what was true → evidence**. Ever
 | NULL/missing attribution, unit namespace, shared-table DDL, rerun retention, recon report, capability preflight, parity tolerance | not applicable (documentation only; no load, no target writes); recorded, not claimed |
 | unverified paths | listed in §5b.7; §4b states the one UNVERIFIED unit and that it was not promoted |
 | previous run branch | `tp-run/mongodb-20261007T062215Z` not read |
+
+## Post-diff note — 2026-10-07 (after reading the prior record, ticket "Diff this run against the prior record")
+
+Written after `06_prior_run_diff.md`; §1–§5b above are unchanged.
+
+1. §5b.7 and §6.2 say the previous run branch `tp-run/mongodb-20261007T062215Z` was "not read". True when written; it
+   was read (via `git show` only, never checked out or merged) for `06_prior_run_diff.md` once the read gate opened.
+2. Prior F40 points at a wording slip repeated in this run's `03_access_scan_notes.md` §8.1, which describes
+   `TRG_SUB_NO_UNCANCEL` as a rule that "rejects" cancelled→active. The trigger body has no `RAISE`; it silently
+   overrides `:NEW.status_cd` back to cancelled. `02_dependency_register.md:85` and §3b already state the coercion
+   correctly; the mapping and recon are unaffected (status is copied as stored). The scan-notes text is left as-is
+   (it is an evidence artifact of its PR); this note is the correction of record.
+3. The diff classifies 30 F-rows fixed, 27 still present, 0 newly regressed, 25 not exercised, and lists 40 findings
+   of this run with no F counterpart (`06_prior_run_diff.md` §2–§3). No §5b item was found to be wrong.
