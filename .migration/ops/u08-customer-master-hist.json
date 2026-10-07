@@ -1,0 +1,58 @@
+[
+  {
+    "name": "customer-hist-revisions",
+    "evidence": "trg_customer_master_hist (02_horror.sql:358-374, ap-dbf1b410e9): AFTER UPDATE OR DELETE :OLD copy; revisions per customer and operation. 0 source rows in mmprt-mini \u2014 UNVERIFIED by design (0 = 0 on both sides)",
+    "source_sql": "SELECT cust_id AS \"custId\", hist_op AS \"histOp\", COUNT(*) AS \"revisions\" FROM customer_master_hist GROUP BY cust_id, hist_op",
+    "collection": "customerMasterHist",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": {
+            "custId": "$custId",
+            "histOp": "$histOp"
+          },
+          "revisions": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "custId": "$_id.custId",
+          "histOp": "$_id.histOp",
+          "revisions": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "customer-hist-raw-timestamps",
+    "evidence": "d-hist-dt (05_decisions.md \u00a72 #3): HIST_DT text 'DD-MON-YY HH24:MI:SS' must be carried verbatim in histDtRaw next to the parsed histDt. 0 source rows in mmprt-mini \u2014 UNVERIFIED by design",
+    "source_sql": "SELECT hist_id AS \"histId\", cust_id AS \"custId\", hist_op AS \"histOp\", hist_dt AS \"histDtRaw\" FROM customer_master_hist",
+    "collection": "customerMasterHist",
+    "target_pipeline": [
+      {
+        "$project": {
+          "_id": 0,
+          "histId": "$_id",
+          "custId": 1,
+          "histOp": 1,
+          "histDtRaw": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

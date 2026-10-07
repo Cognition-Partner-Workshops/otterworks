@@ -1,0 +1,130 @@
+[
+  {
+    "name": "rating-rollover-by-tenant",
+    "evidence": "pkg_rating.compute_rating rollover loop (03_pkg_rating.sql:87-92, ap-81929b0d21): rating_results joined to rating_periods by period_id, summed per tenant (the ADD_MONTHS window dropped so every rated period is covered)",
+    "source_sql": "SELECT rp.tenant_id AS \"tenantId\", COUNT(rr.id) AS \"ratedPeriods\", NVL(SUM(rr.rollover_units), 0) AS \"rolloverUnits\" FROM rating_periods rp, rating_results rr WHERE rp.id = rr.period_id GROUP BY rp.tenant_id",
+    "collection": "ratingResults",
+    "target_pipeline": [
+      {
+        "$lookup": {
+          "from": "ratingPeriods",
+          "localField": "periodId",
+          "foreignField": "_id",
+          "as": "period"
+        }
+      },
+      {
+        "$unwind": "$period"
+      },
+      {
+        "$group": {
+          "_id": "$period.tenantId",
+          "ratedPeriods": {
+            "$sum": 1
+          },
+          "rolloverUnits": {
+            "$sum": {
+              "$ifNull": [
+                "$rolloverUnits",
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "ratedPeriods": 1,
+          "rolloverUnits": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "rating-periods-by-tenant",
+    "evidence": "pkg_rating.sp_finalize_rating upsert key (03_pkg_rating.sql:185-192, ap-8e58932397 / ap-8ee13949bc): one period per (tenant_id, period_start); periods per tenant with the covered span",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", COUNT(*) AS \"periods\", MIN(period_start) AS \"firstPeriodStart\", MAX(period_end) AS \"lastPeriodEnd\" FROM rating_periods GROUP BY tenant_id",
+    "collection": "ratingPeriods",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$tenantId",
+          "periods": {
+            "$sum": 1
+          },
+          "firstPeriodStart": {
+            "$min": "$periodStart"
+          },
+          "lastPeriodEnd": {
+            "$max": "$periodEnd"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "periods": 1,
+          "firstPeriodStart": 1,
+          "lastPeriodEnd": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "rating-results-billable",
+    "evidence": "pkg_rating.sp_finalize_rating result write (03_pkg_rating.sql:199-214, ap-d7af986eeb / ap-76af3595e0): the rated figures of every period that produced billable units or an overage amount",
+    "source_sql": "SELECT id AS \"resultId\", period_id AS \"periodId\", subscription_id AS \"subscriptionId\", used_units AS \"usedUnits\", quota_units AS \"quotaUnits\", billable_units AS \"billableUnits\", overage_amount AS \"overageAmount\" FROM rating_results WHERE billable_units > 0 OR overage_amount > 0",
+    "collection": "ratingResults",
+    "target_pipeline": [
+      {
+        "$match": {
+          "$or": [
+            {
+              "billableUnits": {
+                "$gt": 0
+              }
+            },
+            {
+              "overageAmount": {
+                "$gt": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "resultId": "$_id",
+          "periodId": 1,
+          "subscriptionId": 1,
+          "usedUnits": 1,
+          "quotaUnits": 1,
+          "billableUnits": 1,
+          "overageAmount": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

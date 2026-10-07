@@ -3,7 +3,8 @@
   "method": "synthetic",
   "masked_columns": [],
   "produced_at": "2026-10-07T16:43:32Z",
-  "produced_by": {
+  "produced_by": "testdata/legacy/mmp_rt_mini_seed.py (blob 34a1ccf2) over testdata/legacy/oracle_billing_seed.py (blob 9bcb225b, last commit ecf8cc83) + testdata/legacy/mmp_rt_exercise.sql; run branch a0477e2e, plugin 353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "producers": {
     "wrapper": "testdata/legacy/mmp_rt_mini_seed.py",
     "wrapper_blob_sha": "34a1ccf2774ad5cf4fede3a2e2624db3b126281a",
     "seeder": "testdata/legacy/oracle_billing_seed.py",

@@ -1,0 +1,133 @@
+[
+  {
+    "name": "custbill-header-status-by-batch",
+    "evidence": "reports.py STATUS_SQL (services/legacy-billing/app/reports.py:42-53, ap-6167f9171f): invoice_header count and total_amt per status, replayed for every batch_no; the CODES label join is dropped (codes is another unit) so status_cd stays numeric",
+    "source_sql": "SELECT batch_no AS \"batchNo\", status_cd AS \"statusCd\", COUNT(*) AS \"invoiceCount\", NVL(SUM(total_amt), 0) AS \"headerTotalAmt\" FROM invoice_header GROUP BY batch_no, status_cd",
+    "collection": "invoiceHeader",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": {
+            "batchNo": "$batchNo",
+            "statusCd": "$statusCd"
+          },
+          "invoiceCount": {
+            "$sum": 1
+          },
+          "headerTotalAmt": {
+            "$sum": {
+              "$ifNull": [
+                "$totalAmt",
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "batchNo": "$_id.batchNo",
+          "statusCd": "$_id.statusCd",
+          "invoiceCount": 1,
+          "headerTotalAmt": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "custbill-lines-by-batch-type",
+    "evidence": "reports.py LINE_SQL (services/legacy-billing/app/reports.py:55-81, ap-89c88ad4c6): line count, amount, tax and invoices touched per (batch_no, line_type_cd), on invoice_line alone (the header join is batch-scoped, not per parent \u2014 03_access_review check 4)",
+    "source_sql": "SELECT batch_no AS \"batchNo\", line_type_cd AS \"lineTypeCd\", COUNT(*) AS \"lineCount\", NVL(SUM(amount), 0) AS \"lineAmount\", NVL(SUM(tax_amt), 0) AS \"lineTax\", COUNT(DISTINCT invoice_id) AS \"invoicesTouched\" FROM invoice_line GROUP BY batch_no, line_type_cd",
+    "collection": "invoiceLine",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": {
+            "batchNo": "$batchNo",
+            "lineTypeCd": "$lineTypeCd"
+          },
+          "lineCount": {
+            "$sum": 1
+          },
+          "lineAmount": {
+            "$sum": {
+              "$ifNull": [
+                "$amount",
+                0
+              ]
+            }
+          },
+          "lineTax": {
+            "$sum": {
+              "$ifNull": [
+                "$taxAmt",
+                0
+              ]
+            }
+          },
+          "invoiceIds": {
+            "$addToSet": "$invoiceId"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "batchNo": "$_id.batchNo",
+          "lineTypeCd": "$_id.lineTypeCd",
+          "lineCount": 1,
+          "lineAmount": 1,
+          "lineTax": 1,
+          "invoicesTouched": {
+            "$size": "$invoiceIds"
+          }
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "custbill-ghost-lines",
+    "evidence": "OPERATIONS_HANDBOOK 4.2 'ghost lines' / d-orphan-il-invoice (data_profile pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICE_HEADER unresolved=37): lines whose INVOICE_ID resolves to no header must be loaded verbatim, never dropped",
+    "source_sql": "SELECT COUNT(*) AS \"ghostLines\" FROM invoice_line l WHERE NOT EXISTS (SELECT 1 FROM invoice_header h WHERE h.invoice_id = l.invoice_id)",
+    "collection": "invoiceLine",
+    "target_pipeline": [
+      {
+        "$lookup": {
+          "from": "invoiceHeader",
+          "localField": "invoiceId",
+          "foreignField": "_id",
+          "as": "hdr"
+        }
+      },
+      {
+        "$match": {
+          "hdr": {
+            "$size": 0
+          }
+        }
+      },
+      {
+        "$count": "ghostLines"
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]
