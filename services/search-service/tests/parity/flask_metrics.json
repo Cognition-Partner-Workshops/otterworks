@@ -1,0 +1,3108 @@
+{
+  "search_service_index_operations_total": {
+    "help": "Total number of index operations",
+    "label_names": [
+      "operation",
+      "type"
+    ],
+    "label_values": {
+      "operation": [
+        "delete",
+        "index"
+      ],
+      "type": [
+        "document",
+        "file"
+      ]
+    },
+    "present": true,
+    "samples": [
+      {
+        "labels": {
+          "operation": "delete",
+          "type": "document"
+        },
+        "name": "search_service_index_operations_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "operation": "delete",
+          "type": "file"
+        },
+        "name": "search_service_index_operations_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "operation": "index",
+          "type": "document"
+        },
+        "name": "search_service_index_operations_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "operation": "index",
+          "type": "file"
+        },
+        "name": "search_service_index_operations_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "operation": "delete",
+          "type": "document"
+        },
+        "name": "search_service_index_operations_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "operation": "delete",
+          "type": "file"
+        },
+        "name": "search_service_index_operations_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "operation": "index",
+          "type": "document"
+        },
+        "name": "search_service_index_operations_total",
+        "value": 3
+      },
+      {
+        "labels": {
+          "operation": "index",
+          "type": "file"
+        },
+        "name": "search_service_index_operations_total",
+        "value": 2
+      }
+    ],
+    "type": "counter"
+  },
+  "search_service_request_duration_seconds": {
+    "help": "Request latency in seconds",
+    "label_names": [
+      "endpoint",
+      "method"
+    ],
+    "label_values": {
+      "endpoint": [
+        "/api/v1/search/",
+        "/api/v1/search/advanced",
+        "/api/v1/search/analytics",
+        "/api/v1/search/index/<doc_type>/<doc_id>",
+        "/api/v1/search/index/document",
+        "/api/v1/search/index/file",
+        "/api/v1/search/reindex",
+        "/api/v1/search/suggest",
+        "/health/ready",
+        "unknown"
+      ],
+      "method": [
+        "DELETE",
+        "GET",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    "present": true,
+    "samples": [
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "+Inf",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "+Inf",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.005",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.005",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.01",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.01",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.025",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.025",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.05",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.05",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.075",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.075",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.1",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.1",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.25",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.25",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.75",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "0.75",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "1.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "1.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "10.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "10.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "2.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "2.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "5.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "5.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "7.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "le": "7.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "+Inf",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "+Inf",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.005",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.005",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.01",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.01",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.025",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.025",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.05",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.05",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.075",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.075",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.1",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.1",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.25",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.25",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.75",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "0.75",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "1.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "1.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "10.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "10.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "2.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "2.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "5.0",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "5.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "7.5",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "le": "7.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "+Inf",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.005",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.01",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.025",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.05",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.075",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.1",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.25",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "0.75",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "1.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "10.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "2.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "5.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "le": "7.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "+Inf",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.005",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.01",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.025",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.05",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.075",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.1",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.25",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "0.75",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "1.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "10.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "2.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "5.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "le": "7.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "+Inf",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.005",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.01",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.025",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.05",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.075",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.1",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.25",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "0.75",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "1.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "10.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "2.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "5.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "le": "7.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "+Inf",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.005",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.01",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.025",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.05",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.075",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.1",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.25",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "0.75",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "1.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "10.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "2.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "5.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "le": "7.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "+Inf",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.005",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.01",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.025",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.05",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.075",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.1",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.25",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "0.75",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "1.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "10.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "2.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "5.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "le": "7.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "+Inf",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.005",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.01",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.025",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.05",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.075",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.1",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.25",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "0.75",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "1.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "10.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "2.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "5.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "le": "7.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "+Inf",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.005",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.01",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.025",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.05",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.075",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.1",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.25",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "0.75",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "1.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "10.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "2.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "5.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "le": "7.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "+Inf",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "+Inf",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "+Inf",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.005",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.005",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.005",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.01",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.01",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.01",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.025",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.025",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.025",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.05",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.05",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.05",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.075",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.075",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.075",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.1",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.1",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.1",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.25",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.25",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.25",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.75",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.75",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "0.75",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "1.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "1.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "1.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "10.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "10.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "10.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "2.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "2.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "2.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "5.0",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "5.0",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "5.0",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "7.5",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "7.5",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "le": "7.5",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_bucket",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 39
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 4
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 15
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 6
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 12
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 7
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 10
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 4
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 13
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_count",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "OPTIONS"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "DELETE"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "POST"
+        },
+        "name": "search_service_request_duration_seconds_sum",
+        "value": "<volatile>"
+      }
+    ],
+    "type": "histogram"
+  },
+  "search_service_requests_total": {
+    "help": "Total number of requests to the search service",
+    "label_names": [
+      "endpoint",
+      "method",
+      "status"
+    ],
+    "label_values": {
+      "endpoint": [
+        "/api/v1/search/",
+        "/api/v1/search/advanced",
+        "/api/v1/search/analytics",
+        "/api/v1/search/index/<doc_type>/<doc_id>",
+        "/api/v1/search/index/document",
+        "/api/v1/search/index/file",
+        "/api/v1/search/reindex",
+        "/api/v1/search/suggest",
+        "/health/ready",
+        "unknown"
+      ],
+      "method": [
+        "DELETE",
+        "GET",
+        "OPTIONS",
+        "POST"
+      ],
+      "status": [
+        "200",
+        "201",
+        "400",
+        "401",
+        "404",
+        "405",
+        "415",
+        "500",
+        "503"
+      ]
+    },
+    "present": true,
+    "samples": [
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "400"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "500"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "OPTIONS",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "500"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "400"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "404"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "500"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "201"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "500"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "201"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "500"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET",
+          "status": "503"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "DELETE",
+          "status": "404"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "404"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "405"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "POST",
+          "status": "405"
+        },
+        "name": "search_service_requests_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 26
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "400"
+        },
+        "name": "search_service_requests_total",
+        "value": 6
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 6
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "GET",
+          "status": "500"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/",
+          "method": "OPTIONS",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "OPTIONS",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 8
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_total",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/advanced",
+          "method": "POST",
+          "status": "500"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/analytics",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "400"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "404"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/<doc_type>/<doc_id>",
+          "method": "DELETE",
+          "status": "500"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "201"
+        },
+        "name": "search_service_requests_total",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_total",
+        "value": 4
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/document",
+          "method": "POST",
+          "status": "500"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "201"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "400"
+        },
+        "name": "search_service_requests_total",
+        "value": 4
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/index/file",
+          "method": "POST",
+          "status": "415"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/reindex",
+          "method": "POST",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 7
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "/api/v1/search/suggest",
+          "method": "GET",
+          "status": "500"
+        },
+        "name": "search_service_requests_total",
+        "value": 2
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET",
+          "status": "200"
+        },
+        "name": "search_service_requests_total",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "/health/ready",
+          "method": "GET",
+          "status": "503"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "DELETE",
+          "status": "404"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "401"
+        },
+        "name": "search_service_requests_total",
+        "value": 3
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "404"
+        },
+        "name": "search_service_requests_total",
+        "value": 6
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "GET",
+          "status": "405"
+        },
+        "name": "search_service_requests_total",
+        "value": 4
+      },
+      {
+        "labels": {
+          "endpoint": "unknown",
+          "method": "POST",
+          "status": "405"
+        },
+        "name": "search_service_requests_total",
+        "value": 1
+      }
+    ],
+    "type": "counter"
+  },
+  "search_service_searches_total": {
+    "help": "Total number of search queries executed",
+    "label_names": [],
+    "label_values": {},
+    "present": true,
+    "samples": [
+      {
+        "labels": {},
+        "name": "search_service_searches_created",
+        "value": "<volatile>"
+      },
+      {
+        "labels": {},
+        "name": "search_service_searches_total",
+        "value": 34
+      }
+    ],
+    "type": "counter"
+  }
+}

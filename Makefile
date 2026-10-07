@@ -184,6 +184,10 @@ test-coverage: ## Run tests with coverage for all services
 	@echo "=== Auth Service ===" && cd services/auth-service && ./gradlew test jacocoTestReport || true
 	@echo "=== File Service ===" && cd services/file-service && cargo test 2>&1 | tail -5 || true
 
+.PHONY: search-smoke
+search-smoke: ## Compose smoke test of the search-service image (SMOKE_LOG_DIR, SMOKE_IMAGE_MIRROR=mirror.gcr.io optional)
+	services/search-service/scripts/compose_smoke.sh
+
 test-api-flows: ## Run black-box API flow tests against the local API gateway
 	UV_PROJECT_ENVIRONMENT=.venv uv run python -m pytest tests/api
 

@@ -1,0 +1,4537 @@
+[
+  {
+    "action": "redis_del",
+    "key": "chaos:search-service:suggest_500",
+    "name": "reset.chaos_flag_cleared"
+  },
+  {
+    "action": "restart_service",
+    "name": "reset.service_restarted"
+  },
+  {
+    "name": "health.alive",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "service": "search-service",
+          "status": "alive"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "health.ready_ok",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health/ready"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "ready": true
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "metrics.initial",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/metrics"
+    },
+    "response": {
+      "body": {
+        "metrics_families_present": [
+          "search_service_index_operations_total",
+          "search_service_request_duration_seconds",
+          "search_service_requests_total",
+          "search_service_searches_total"
+        ]
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/plain; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "health.head",
+    "request": {
+      "headers": {},
+      "method": "HEAD",
+      "path": "/health"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "reindex.bearer",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/reindex"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "indexed_counts": {
+            "documents": 0,
+            "files": 0
+          },
+          "indices": [
+            "documents",
+            "files"
+          ],
+          "status": "reindexed"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "reindex.user",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/reindex"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "indexed_counts": {
+            "documents": 0,
+            "files": 0
+          },
+          "indices": [
+            "documents",
+            "files"
+          ],
+          "status": "reindexed"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "index.document.doc1",
+    "request": {
+      "body": "{\"id\": \"parity-doc-1\", \"title\": \"Otter Quarterly Report\", \"content\": \"Quarterly revenue for the otter colony grew steadily across every river.\", \"owner_id\": \"parity-user-1\", \"tags\": [\"finance\", \"report\"], \"created_at\": \"2026-01-15T10:00:00Z\", \"updated_at\": \"2026-01-16T10:00:00Z\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-doc-1",
+          "status": "indexed",
+          "type": "document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 201
+    }
+  },
+  {
+    "name": "index.document.doc2",
+    "request": {
+      "body": "{\"id\": \"parity-doc-2\", \"title\": \"Otter Habitat Notes\", \"content\": \"Field notes on otter dens, river banks and kelp forests.\", \"owner_id\": \"parity-user-2\", \"tags\": [\"research\"], \"created_at\": \"2026-02-01T09:30:00Z\", \"updated_at\": \"2026-02-02T09:30:00Z\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-doc-2",
+          "status": "indexed",
+          "type": "document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 201
+    }
+  },
+  {
+    "name": "index.file.file1",
+    "request": {
+      "body": "{\"id\": \"parity-file-1\", \"name\": \"otter-photo.png\", \"mime_type\": \"image/png\", \"owner_id\": \"parity-user-1\", \"folder_id\": \"parity-folder-1\", \"tags\": [\"media\"], \"size\": 2048, \"created_at\": \"2026-01-20T12:00:00Z\", \"updated_at\": \"2026-01-20T12:00:00Z\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-file-1",
+          "status": "indexed",
+          "type": "file"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 201
+    }
+  },
+  {
+    "name": "index.file.file2",
+    "request": {
+      "body": "{\"id\": \"parity-file-2\", \"name\": \"otter-budget.xlsx\", \"mime_type\": \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\", \"owner_id\": \"parity-user-2\", \"folder_id\": \"parity-folder-2\", \"tags\": [\"finance\"], \"size\": 4096, \"created_at\": \"2026-02-10T08:00:00Z\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-file-2",
+          "status": "indexed",
+          "type": "file"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 201
+    }
+  },
+  {
+    "name": "index.document.reindex_same_id",
+    "request": {
+      "body": "{\"id\": \"parity-doc-1\", \"title\": \"Otter Quarterly Report\", \"content\": \"Quarterly revenue for the otter colony grew steadily across every river.\", \"owner_id\": \"parity-user-1\", \"tags\": [\"finance\", \"report\"], \"created_at\": \"2026-01-15T10:00:00Z\", \"updated_at\": \"2026-01-16T10:00:00Z\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-doc-1",
+          "status": "indexed",
+          "type": "document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 201
+    }
+  },
+  {
+    "name": "index.document.missing_id",
+    "request": {
+      "body": "{\"title\": \"No id\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Document 'id' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.document.missing_title",
+    "request": {
+      "body": "{\"id\": \"x\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Document 'title' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.document.empty_object",
+    "request": {
+      "body": "{}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Request body is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.document.json_array",
+    "request": {
+      "body": "[1]",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Failed to index document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "index.document.no_body",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>415 Unsupported Media Type</title>\n<h1>Unsupported Media Type</h1>\n<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 415
+    }
+  },
+  {
+    "name": "index.document.no_content_type",
+    "request": {
+      "body": "{\"id\": \"a\", \"title\": \"b\"}",
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>415 Unsupported Media Type</title>\n<h1>Unsupported Media Type</h1>\n<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 415
+    }
+  },
+  {
+    "name": "index.document.invalid_json",
+    "request": {
+      "body": "{not json",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>400 Bad Request</title>\n<h1>Bad Request</h1>\n<p>The browser (or proxy) sent a request that this server could not understand.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.file.missing_id",
+    "request": {
+      "body": "{\"name\": \"a.txt\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "File 'id' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.file.missing_name",
+    "request": {
+      "body": "{\"id\": \"x\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "File 'name' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.file.empty_object",
+    "request": {
+      "body": "{}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Request body is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "index.file.no_body",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>415 Unsupported Media Type</title>\n<h1>Unsupported Media Type</h1>\n<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 415
+    }
+  },
+  {
+    "name": "index.file.invalid_json",
+    "request": {
+      "body": "{not json",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/file"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>400 Bad Request</title>\n<h1>Bad Request</h1>\n<p>The browser (or proxy) sent a request that this server could not understand.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.no_slash.user1",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.slash.user1",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.no_slash.user2",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-2"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.bearer_all_owners",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.type_document",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&type=document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.type_file",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&type=file"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.type_unknown",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&type=folder"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [],
+          "total": 0
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.highlight_content",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=revenue"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "revenue",
+          "results": [
+            {
+              "content_snippet": "Quarterly <em>revenue</em> for the otter colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly <em>revenue</em> for the otter colony grew steadily across every river."
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            }
+          ],
+          "total": 1
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.page2_size1",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=2&size=1"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 2,
+          "page_size": 1,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.page_beyond",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=50&size=10"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 50,
+          "page_size": 10,
+          "query": "otter",
+          "results": [],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.page_zero_clamped",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=0&size=0"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 1,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.size_over_max_clamped",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&size=1000"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 100,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.negative_page",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=-3"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.invalid_page",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=abc"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.invalid_size",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&size=xyz"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.float_page",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&page=1.5"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.invalid_page_missing_q",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?page=abc"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.missing_q",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Query parameter 'q' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.empty_q",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q="
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Query parameter 'q' is required"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "search.no_results",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=zebra"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "zebra",
+          "results": [],
+          "total": 0
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.quote_in_type",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter&type=a%22b"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [],
+          "total": 0
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.quote_in_user_id",
+    "request": {
+      "headers": {
+        "X-User-ID": "u\"1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [],
+          "total": 0
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "search.unicode_q",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=%C3%B6tter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "ötter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "suggest.missing_q",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "",
+          "suggestions": []
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "suggest.short_prefix",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=o"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "o",
+          "suggestions": []
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "suggest.normal",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=ott"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "ott",
+          "suggestions": [
+            "Otter Quarterly Report",
+            "Otter Habitat Notes",
+            "otter-photo.png",
+            "otter-budget.xlsx"
+          ]
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "suggest.no_match",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=zzzz"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "zzzz",
+          "suggestions": []
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "suggest.trailing_slash",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest/?q=ott"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "advanced.query",
+    "request": {
+      "body": "{\"q\": \"otter\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.bearer_all",
+    "request": {
+      "body": "{\"q\": \"otter\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.type_file",
+    "request": {
+      "body": "{\"q\": \"otter\", \"type\": \"file\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.tags",
+    "request": {
+      "body": "{\"q\": \"otter\", \"tags\": [\"finance\"]}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-02-10T08:00:00Z",
+              "folder_id": "parity-folder-2",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-budget.xlsx"
+                ]
+              },
+              "id": "parity-file-2",
+              "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "size": 4096,
+              "tags": [
+                "finance"
+              ],
+              "title": "otter-budget.xlsx",
+              "type": "file"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.dates",
+    "request": {
+      "body": "{\"q\": \"otter\", \"date_from\": \"2026-01-01T00:00:00Z\", \"date_to\": \"2026-01-31T23:59:59Z\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Advanced search failed"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "advanced.paging",
+    "request": {
+      "body": "{\"q\": \"otter\", \"page\": 2, \"size\": 1}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 2,
+          "page_size": 1,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.paging_strings",
+    "request": {
+      "body": "{\"q\": \"otter\", \"page\": \"1\", \"size\": \"2\"}",
+      "headers": {
+        "Authorization": "Bearer parity-service-token",
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 2,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "Field notes on <em>otter</em> dens, river banks and kelp forests.",
+              "created_at": "2026-02-01T09:30:00Z",
+              "highlights": {
+                "content": [
+                  "Field notes on <em>otter</em> dens, river banks and kelp forests."
+                ],
+                "title": [
+                  "<em>Otter</em> Habitat Notes"
+                ]
+              },
+              "id": "parity-doc-2",
+              "owner_id": "parity-user-2",
+              "score": 0.0,
+              "tags": [
+                "research"
+              ],
+              "title": "Otter Habitat Notes",
+              "type": "document",
+              "updated_at": "2026-02-02T09:30:00Z"
+            }
+          ],
+          "total": 4
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.empty_object",
+    "request": {
+      "body": "{}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "*",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the otter colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {},
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {},
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "advanced.invalid_page",
+    "request": {
+      "body": "{\"q\": \"otter\", \"page\": \"x\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "advanced.invalid_size",
+    "request": {
+      "body": "{\"q\": \"otter\", \"size\": null}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid page or size parameter"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "advanced.no_body",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>415 Unsupported Media Type</title>\n<h1>Unsupported Media Type</h1>\n<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 415
+    }
+  },
+  {
+    "name": "advanced.invalid_json",
+    "request": {
+      "body": "{not json",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>400 Bad Request</title>\n<h1>Bad Request</h1>\n<p>The browser (or proxy) sent a request that this server could not understand.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "advanced.json_null",
+    "request": {
+      "body": "null",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "*",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the otter colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {},
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {},
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "analytics.after_searches",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/analytics"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "avg_results_per_query": 2.36,
+          "popular_queries": [
+            {
+              "count": 20,
+              "query": "otter"
+            },
+            {
+              "count": 2,
+              "query": "*"
+            },
+            {
+              "count": 1,
+              "query": "revenue"
+            },
+            {
+              "count": 1,
+              "query": "zebra"
+            },
+            {
+              "count": 1,
+              "query": "ötter"
+            }
+          ],
+          "total_searches": 25,
+          "zero_result_queries": [
+            {
+              "count": 3,
+              "query": "otter"
+            },
+            {
+              "count": 1,
+              "query": "zebra"
+            }
+          ]
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "delete.document",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/document/parity-doc-2"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-doc-2",
+          "status": "deleted",
+          "type": "document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "delete.document_again_not_found",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/document/parity-doc-2"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-doc-2",
+          "status": "not_found",
+          "type": "document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "delete.file",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/file/parity-file-2"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "id": "parity-file-2",
+          "status": "deleted",
+          "type": "file"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "delete.invalid_type",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/folder/x"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Invalid type 'folder'. Must be 'document' or 'file'."
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 400
+    }
+  },
+  {
+    "name": "delete.missing_id",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/document/"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "search.after_delete",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "routing.unknown_api_path",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/nope"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "routing.unknown_root_path",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/nope"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "routing.unknown_search_subpath",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/nope"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "routing.wrong_method.post_search",
+    "request": {
+      "body": "{}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "routing.wrong_method.get_advanced",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "OPTIONS, POST",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "routing.wrong_method.get_reindex",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/reindex"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "OPTIONS, POST",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "routing.wrong_method.get_index_document",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "OPTIONS, POST",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "routing.wrong_method.put_health",
+    "request": {
+      "headers": {},
+      "method": "PUT",
+      "path": "/health"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "routing.wrong_method.post_metrics",
+    "request": {
+      "headers": {},
+      "method": "POST",
+      "path": "/metrics"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "auth.none.search",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.search_slash",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.suggest",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=ott"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.advanced",
+    "request": {
+      "body": "{\"q\": \"otter\"}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.analytics",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/search/analytics"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.index_document",
+    "request": {
+      "body": "{\"id\": \"parity-doc-1\", \"title\": \"Otter Quarterly Report\", \"content\": \"Quarterly revenue for the otter colony grew steadily across every river.\", \"owner_id\": \"parity-user-1\", \"tags\": [\"finance\", \"report\"], \"created_at\": \"2026-01-15T10:00:00Z\", \"updated_at\": \"2026-01-16T10:00:00Z\"}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.delete",
+    "request": {
+      "headers": {},
+      "method": "DELETE",
+      "path": "/api/v1/search/index/document/parity-doc-1"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.reindex",
+    "request": {
+      "headers": {},
+      "method": "POST",
+      "path": "/api/v1/search/reindex"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.unknown_path",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/nope"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.unknown_root_path",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/nope"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.wrong_method",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.none.health",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "service": "search-service",
+          "status": "alive"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.none.health_ready",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health/ready"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "ready": true
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.none.metrics",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/metrics"
+    },
+    "response": {
+      "body": {
+        "metrics_families_present": [
+          "search_service_index_operations_total",
+          "search_service_request_duration_seconds",
+          "search_service_requests_total",
+          "search_service_searches_total"
+        ]
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/plain; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.none.health_prefix_path",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/healthcheck"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "auth.none.metrics_prefix_path",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/metrics/extra"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 404
+    }
+  },
+  {
+    "name": "auth.blank_user_id",
+    "request": {
+      "headers": {
+        "X-User-ID": "   "
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.user_id",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.bearer_valid",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.bearer_lowercase_scheme",
+    "request": {
+      "headers": {
+        "Authorization": "bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.bearer_invalid",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer wrong-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.basic_scheme",
+    "request": {
+      "headers": {
+        "Authorization": "Basic parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "auth.bearer_invalid_with_user_id",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer wrong-token",
+        "X-User-ID": "parity-user-2"
+      },
+      "method": "GET",
+      "path": "/api/v1/search?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [],
+          "total": 0
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "auth.bearer_valid.reindex_not_run",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/reindex"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "OPTIONS, POST",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 405
+    }
+  },
+  {
+    "name": "cors.preflight.allowed.no_creds",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Headers": "x-user-id",
+        "Access-Control-Request-Method": "GET",
+        "Origin": "http://localhost:3000"
+      },
+      "method": "OPTIONS",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-headers": "x-user-id",
+        "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "cors.preflight.allowed.with_user_id",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Headers": "x-user-id",
+        "Access-Control-Request-Method": "GET",
+        "Origin": "http://localhost:3000",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "OPTIONS",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "access-control-allow-headers": "x-user-id",
+        "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.preflight.allowed_4200.advanced",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Headers": "content-type,x-user-id",
+        "Access-Control-Request-Method": "POST",
+        "Origin": "http://localhost:4200",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "OPTIONS",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "access-control-allow-headers": "content-type, x-user-id",
+        "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
+        "access-control-allow-origin": "http://localhost:4200",
+        "allow": "OPTIONS, POST",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.preflight.disallowed.no_creds",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Headers": "x-user-id",
+        "Access-Control-Request-Method": "GET",
+        "Origin": "http://evil.example"
+      },
+      "method": "OPTIONS",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "content-type": "application/json"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "cors.preflight.disallowed.with_user_id",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Headers": "x-user-id",
+        "Access-Control-Request-Method": "GET",
+        "Origin": "http://evil.example",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "OPTIONS",
+      "path": "/api/v1/search/"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.preflight.health",
+    "request": {
+      "headers": {
+        "Access-Control-Request-Method": "GET",
+        "Origin": "http://localhost:3000"
+      },
+      "method": "OPTIONS",
+      "path": "/health"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
+        "access-control-allow-origin": "http://localhost:3000",
+        "allow": "GET, HEAD, OPTIONS",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.simple.allowed",
+    "request": {
+      "headers": {
+        "Origin": "http://localhost:3000",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.simple.disallowed",
+    "request": {
+      "headers": {
+        "Origin": "http://evil.example",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "content-type": "application/json"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "cors.simple.allowed.unauthorized",
+    "request": {
+      "headers": {
+        "Origin": "http://localhost:3000"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "unauthorized"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 401
+    }
+  },
+  {
+    "name": "cors.simple.allowed.health",
+    "request": {
+      "headers": {
+        "Origin": "http://localhost:3000"
+      },
+      "method": "GET",
+      "path": "/health"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "service": "search-service",
+          "status": "alive"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "action": "redis_set",
+    "key": "chaos:search-service:suggest_500",
+    "name": "chaos.suggest_500.set",
+    "value": "1"
+  },
+  {
+    "name": "chaos.suggest.normal_500",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=ott"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "chaos.suggest.no_match_500",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=zzzz"
+    },
+    "response": {
+      "body": {
+        "text": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n"
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/html; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "chaos.suggest.short_prefix_ok",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=o"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "o",
+          "suggestions": []
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "chaos.search_unaffected",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "action": "redis_del",
+    "key": "chaos:search-service:suggest_500",
+    "name": "chaos.suggest_500.cleared"
+  },
+  {
+    "name": "chaos.suggest.recovered",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=ott"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "ott",
+          "suggestions": [
+            "Otter Quarterly Report",
+            "otter-photo.png"
+          ]
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "action": "stop_meilisearch",
+    "name": "meili.stopped"
+  },
+  {
+    "name": "meili_down.health",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "service": "search-service",
+          "status": "alive"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "meili_down.health_ready_503",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health/ready"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "ready": false,
+          "reason": "meilisearch_unavailable"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 503
+    }
+  },
+  {
+    "name": "meili_down.search_500",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Search failed"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "meili_down.suggest_degrades",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/suggest?q=ott"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "query": "ott",
+          "suggestions": []
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "meili_down.advanced_500",
+    "request": {
+      "body": "{\"q\": \"otter\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/advanced"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Advanced search failed"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "meili_down.index_document_500",
+    "request": {
+      "body": "{\"id\": \"parity-doc-2\", \"title\": \"Otter Habitat Notes\", \"content\": \"Field notes on otter dens, river banks and kelp forests.\", \"owner_id\": \"parity-user-2\", \"tags\": [\"research\"], \"created_at\": \"2026-02-01T09:30:00Z\", \"updated_at\": \"2026-02-02T09:30:00Z\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "POST",
+      "path": "/api/v1/search/index/document"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Failed to index document"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "name": "meili_down.delete_500",
+    "request": {
+      "headers": {
+        "X-User-ID": "parity-user-1"
+      },
+      "method": "DELETE",
+      "path": "/api/v1/search/index/document/parity-doc-1"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "error": "Failed to remove from index"
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 500
+    }
+  },
+  {
+    "action": "start_meilisearch",
+    "name": "meili.started"
+  },
+  {
+    "name": "meili_up.health_ready_ok",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/health/ready"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "ready": true
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "meili_up.search",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/?q=otter"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "page": 1,
+          "page_size": 20,
+          "query": "otter",
+          "results": [
+            {
+              "content_snippet": "Quarterly revenue for the <em>otter</em> colony grew steadily across every river.",
+              "created_at": "2026-01-15T10:00:00Z",
+              "highlights": {
+                "content": [
+                  "Quarterly revenue for the <em>otter</em> colony grew steadily across every river."
+                ],
+                "title": [
+                  "<em>Otter</em> Quarterly Report"
+                ]
+              },
+              "id": "parity-doc-1",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "tags": [
+                "finance",
+                "report"
+              ],
+              "title": "Otter Quarterly Report",
+              "type": "document",
+              "updated_at": "2026-01-16T10:00:00Z"
+            },
+            {
+              "content_snippet": "",
+              "created_at": "2026-01-20T12:00:00Z",
+              "folder_id": "parity-folder-1",
+              "highlights": {
+                "name": [
+                  "<em>otter</em>-photo.png"
+                ]
+              },
+              "id": "parity-file-1",
+              "mime_type": "image/png",
+              "owner_id": "parity-user-1",
+              "score": 0.0,
+              "size": 2048,
+              "tags": [
+                "media"
+              ],
+              "title": "otter-photo.png",
+              "type": "file",
+              "updated_at": "2026-01-20T12:00:00Z"
+            }
+          ],
+          "total": 2
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "analytics.final",
+    "request": {
+      "headers": {
+        "Authorization": "Bearer parity-service-token"
+      },
+      "method": "GET",
+      "path": "/api/v1/search/analytics"
+    },
+    "response": {
+      "body": {
+        "json": {
+          "avg_results_per_query": 2.21,
+          "popular_queries": [
+            {
+              "count": 29,
+              "query": "otter"
+            },
+            {
+              "count": 2,
+              "query": "*"
+            },
+            {
+              "count": 1,
+              "query": "revenue"
+            },
+            {
+              "count": 1,
+              "query": "zebra"
+            },
+            {
+              "count": 1,
+              "query": "ötter"
+            }
+          ],
+          "total_searches": 34,
+          "zero_result_queries": [
+            {
+              "count": 4,
+              "query": "otter"
+            },
+            {
+              "count": 1,
+              "query": "zebra"
+            }
+          ]
+        }
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  },
+  {
+    "name": "metrics.final",
+    "request": {
+      "headers": {},
+      "method": "GET",
+      "path": "/metrics"
+    },
+    "response": {
+      "body": {
+        "metrics_families_present": [
+          "search_service_index_operations_total",
+          "search_service_request_duration_seconds",
+          "search_service_requests_total",
+          "search_service_searches_total"
+        ]
+      },
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000",
+        "content-type": "text/plain; charset=utf-8",
+        "vary": "Origin"
+      },
+      "status": 200
+    }
+  }
+]
