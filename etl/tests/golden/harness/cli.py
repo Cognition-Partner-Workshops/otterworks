@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import hashlib
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -29,8 +30,13 @@ class HarnessError(RuntimeError):
     pass
 
 
+def mode_dir(scn: scenario.Scenario, mode: str) -> Path:
+    """Where one mode keeps its snapshots and diff, so modes never overwrite each other."""
+    return settings.RUNS_DIR / scn.script / scn.name / mode
+
+
 def run_scenario(
-    scn: scenario.Scenario, image: str, attempt: int
+    scn: scenario.Scenario, image: str, attempt: int, mode: str
 ) -> tuple[dict[str, str], int, int]:
     """Reset, seed, run the legacy script once; return (rendered files, exit code, replaced)."""
     run_dir = settings.RUNS_DIR / scn.script / scn.name
@@ -53,7 +59,7 @@ def run_scenario(
         )
     files, replaced = normalize.normalize(snapshot.capture(result.exit_code))
     rendered = snapshot.render(files)
-    write_files(run_dir / ("snapshot-%d" % attempt), rendered)
+    write_files(mode_dir(scn, mode) / ("snapshot-%d" % attempt), rendered)
     print(
         "  run %d: exit=%d in %.1fs, %d volatile value(s) normalized, log %s"
         % (
@@ -116,16 +122,18 @@ def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
     write_files(scn.golden_dir, files)
 
 
-def report_diff(scn: scenario.Scenario, lines: list[str]) -> None:
+def report_diff(scn: scenario.Scenario, mode: str, lines: list[str]) -> None:
     """Print a diff and keep it next to the run logs for the CI artifact."""
     sys.stdout.writelines(lines)
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).write_text("".join(lines))
+    out = mode_dir(scn, mode)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / DIFF_FILE).write_text("".join(lines))
 
 
 def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
     print("== %s [%s] frozen_time=%s" % (scn.label, mode, scn.frozen_time))
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).unlink(missing_ok=True)
-    files, exit_code, _ = run_scenario(scn, image, 1)
+    shutil.rmtree(mode_dir(scn, mode), ignore_errors=True)
+    files, exit_code, _ = run_scenario(scn, image, 1, mode)
     if mode == "record":
         write_golden(scn, files)
         return True, "recorded exit=%d sha256=%s" % (exit_code, digest(files)[:16])
@@ -135,14 +143,14 @@ def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
             return False, "no golden recorded (run MODE=record)"
         delta = diff(golden, files)
         if delta:
-            report_diff(scn, delta)
+            report_diff(scn, mode, delta)
             return False, "differs from golden"
         return True, "identical to golden sha256=%s" % digest(files)[:16]
-    second, _, _ = run_scenario(scn, image, 2)
+    second, _, _ = run_scenario(scn, image, 2, mode)
     first_digest, second_digest = digest(files), digest(second)
     print("  run 1 sha256=%s\n  run 2 sha256=%s" % (first_digest, second_digest))
     if files != second:
-        report_diff(scn, diff(files, second))
+        report_diff(scn, mode, diff(files, second))
         return False, "runs differ"
     return True, "byte-identical across 2 runs sha256=%s" % first_digest[:16]
 
