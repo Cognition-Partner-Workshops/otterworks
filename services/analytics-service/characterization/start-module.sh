@@ -29,6 +29,7 @@ TAG="${1:?usage: start-module.sh <image-tag> | --down}"
 DOCKERFILE="$MODULE_DIR/Dockerfile"
 if [[ -n "${MAVEN_MIRROR:-}" ]]; then
   DOCKERFILE="$(mktemp)"
+  trap 'rm -f "$DOCKERFILE"' EXIT
   awk -v mirror="$MAVEN_MIRROR" '
     { print }
     !done && /^WORKDIR \/app/ {
