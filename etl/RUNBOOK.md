@@ -185,6 +185,10 @@ at the next slot" means *the first run is at the next slot*; set `start_date` to
 1. **Release the DAG with its cutover `start_date`.** In the DAG module set
    `start_date=<LAST>` (`pendulum.datetime(..., tz="UTC")`) and keep `catchup=False` (both from
    the DAG PR / `otterworks_dag_kwargs`). Deploy. The DAG stays **paused**.
+   This is a release-only change: run `make etl-parity` before it, not after. `airflow dags test`
+   at a golden scenario's frozen date (2026-03-15) earlier than `start_date` schedules no task, so
+   parity fails on any commit that carries a cutover `start_date`. Never unpause a DAG still
+   on the code default (`2026-01-01`): on unpause it runs the latest slot cron already ran.
 2. **Confirm what Airflow will do before unpausing:**
    ```bash
    $AF dags list -o plain | grep "$DAG"     # paused True
@@ -505,6 +509,7 @@ no cloud endpoints: `aws` only ever talks to `http://localhost:4566` (LocalStack
 | `crontab /opt/etl/crontab` after removing/restoring a line | edit `etl/crontab` (or point `LEGACY_ETL_CRONTAB` at a copy), then `make legacy-cron-reload` |
 | `/opt/etl/run.sh <script>` once | `make legacy-cron-run SCRIPT=<script-without-.py>` (exit 3 if its line was removed: cut over) |
 | `/var/log/etl/*.log` | `docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs legacy-etl-cron` |
+| release with the cutover `start_date` (5.0 step 1) | edit `start_date=<LAST>` in the DAG modules without committing, then `make airflow-up` (the DAGs are baked into the image, so the rebuild deploys them); commit only `etl/crontab` (`git commit ... etl/crontab`) |
 | wait for the next slot | `$AF dags trigger $DAG` only in a rehearsal, with cron's line removed; a scheduled run is still needed to rehearse `start_date` |
 | teardown | `make legacy-cron-down`, `make airflow-down` |
 
