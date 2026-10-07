@@ -1,0 +1,38 @@
+{
+  "batch": "w1-b0-reference",
+  "wave": 1,
+  "units": [
+    "u00-reference"
+  ],
+  "status": "PASS",
+  "recon_results": [
+    ".migration/recon/u00-reference/result.json"
+  ],
+  "recon_verdicts": {
+    "u00-reference": {
+      "verdict": "PASS",
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "merge_eligible": true,
+      "warnings": [],
+      "mapping_version": "map-v1.1",
+      "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+      "tolerance_version": "tol-1",
+      "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+      "generated_at": "2026-10-07T19:26:02.523248+00:00"
+    }
+  },
+  "write_targets": [
+    "mmp_rt_b4_oracle.codes",
+    "mmp_rt_b4_oracle.plans",
+    "mmp_rt_b4_oracle.tenants"
+  ],
+  "manifest_sha": "55e68257b3f9",
+  "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1934",
+  "branch": "devin/1791401000-s5-1-w1-b0-reference",
+  "failure_class": "",
+  "one_line_summary": "u00-reference live recon PASS (merge_eligible=True): codes 32 / plans 3 / tenants 15 (+5 creditNotes) loaded into mmp_rt_b4_oracle, 4/4 tiers, 0 findings, 0 warnings."
+}
