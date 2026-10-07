@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status etl-golden etl-golden-test airflow-up airflow-down airflow-check airflow-env airflow-config-check
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status etl-golden etl-golden-test etl-parity airflow-up airflow-down airflow-check airflow-env airflow-config-check
 
 SHELL := /bin/bash
 
@@ -84,6 +84,7 @@ airflow-down: airflow-env ## Stop the Airflow ETL stack (keeps its metadata volu
 infra-up: ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearch)
 	docker compose -f docker-compose.infra.yml up -d
 
+ETL_AIRFLOW_IMAGE ?= otterworks/etl-airflow:local
 ETL_GOLDEN_UV = cd etl/tests/golden && uv run --quiet --python 3.11 --with-requirements requirements.txt
 
 etl-golden: ## Record/check legacy ETL goldens against local infra (SCRIPT=<name>|all, MODE=check|record|repeat, SCENARIO optional)
@@ -92,6 +93,11 @@ etl-golden: ## Record/check legacy ETL goldens against local infra (SCRIPT=<name
 
 etl-golden-test: ## Unit-test the ETL golden harness (no infra needed)
 	$(ETL_GOLDEN_UV) pytest
+
+etl-parity: ## Run a script's scenarios through its DAG (airflow dags test) and diff with the goldens (SCRIPT=<name>; DAG, SCENARIO, VARIANT, EXPECT=failed optional)
+	@test -n "$(SCRIPT)" || (echo "SCRIPT is required, e.g. make etl-parity SCRIPT=audit_archive_weekly" >&2; exit 2)
+	docker build -q -t $(ETL_AIRFLOW_IMAGE) etl/airflow
+	export GOLDEN_AIRFLOW_IMAGE=$(ETL_AIRFLOW_IMAGE); $(ETL_GOLDEN_UV) python -m harness.parity --script $(SCRIPT) $(if $(DAG),--dag $(DAG),) $(if $(SCENARIO),--scenario $(SCENARIO),) $(if $(VARIANT),--variant $(VARIANT),) $(if $(EXPECT),--expect $(EXPECT),)
 
 infra-down: ## Stop local infrastructure
 	docker compose -f docker-compose.infra.yml down

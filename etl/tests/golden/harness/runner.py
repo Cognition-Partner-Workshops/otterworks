@@ -64,6 +64,28 @@ def ensure_image() -> str:
     return tag
 
 
+def legacy_mounts(config_path: Path) -> list[tuple[Path, str]]:
+    """(host source, container target) pairs, all mounted read-only."""
+    return [
+        (settings.ETL_DIR / "run.sh", "/opt/etl/run.sh"),
+        (settings.ETL_DIR / "scripts", "/opt/etl/scripts"),
+        (config_path, "/opt/etl/config.ini"),
+        (settings.LEGACY_DIR / "sitecustomize.py", "/opt/etl/sitecustomize.py"),
+    ]
+
+
+def legacy_environment(frozen_time: str) -> dict[str, str]:
+    return {
+        "TZ": "UTC",
+        "GOLDEN_AWS_ENDPOINT_URL": settings.LOCALSTACK_URL,
+        "GOLDEN_FROZEN_TIME": frozen_time,
+    }
+
+
+def legacy_command(script: str) -> list[str]:
+    return ["/opt/etl/run.sh", "%s.py" % script]
+
+
 def docker_command(
     image: str,
     script: str,
@@ -71,9 +93,16 @@ def docker_command(
     config_path: Path,
     name: str = "otterworks-etl-golden",
 ) -> list[str]:
-    def mount(src: Path, dst: str) -> list[str]:
-        return ["--mount", "type=bind,source=%s,target=%s,readonly" % (src, dst)]
-
+    env = [
+        arg
+        for key, value in legacy_environment(frozen_time).items()
+        for arg in ("-e", "%s=%s" % (key, value))
+    ]
+    mounts = [
+        arg
+        for src, dst in legacy_mounts(config_path)
+        for arg in ("--mount", "type=bind,source=%s,target=%s,readonly" % (src, dst))
+    ]
     return [
         "docker",
         "run",
@@ -82,19 +111,10 @@ def docker_command(
         name,
         "--network",
         settings.DOCKER_NETWORK,
-        "-e",
-        "TZ=UTC",
-        "-e",
-        "GOLDEN_AWS_ENDPOINT_URL=%s" % settings.LOCALSTACK_URL,
-        "-e",
-        "GOLDEN_FROZEN_TIME=%s" % frozen_time,
-        *mount(settings.ETL_DIR / "run.sh", "/opt/etl/run.sh"),
-        *mount(settings.ETL_DIR / "scripts", "/opt/etl/scripts"),
-        *mount(config_path, "/opt/etl/config.ini"),
-        *mount(settings.LEGACY_DIR / "sitecustomize.py", "/opt/etl/sitecustomize.py"),
+        *env,
+        *mounts,
         image,
-        "/opt/etl/run.sh",
-        "%s.py" % script,
+        *legacy_command(script),
     ]
 
 
