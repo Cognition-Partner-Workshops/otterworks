@@ -324,5 +324,6 @@
   "mongo_guard": {
     "MONGO_GUARD_BASE_REF": "origin/tp-run/mongodb-20261007T062215Z",
     "note": "exported for every command; the mongo-migration hooks are not installed as a PreToolUse hook in this session (plugin used as a clone), the active hook is the org dbx guard (F4/F9)"
-  }
+  },
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862"
 }

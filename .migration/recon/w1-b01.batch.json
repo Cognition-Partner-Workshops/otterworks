@@ -15,7 +15,7 @@
     "mmp_rt_b3_oracle.customerMaster",
     "mmp_rt_b3_oracle.billingAuditLog"
   ],
-  "pr_url": "",
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
   "branch": "devin/1791363491-w1-b01-load",
   "failure_class": "spec_cannot_express_obligation",
   "one_line_summary": "codes/tenants/plans/billingAuditLog PASS merge_eligible (live, migration_cluster); customerMaster FAIL 44/271 Tier-3 checks: 41 SIGNUP_DT rows the spec's date_string_to_date cannot grade under the F49 raw+parsed obligation (F61) and 1 duplicate ENTITY_ATTR_VALUE (ENTITY_ID, ATTR_NAME) pair the attributes embed key collapses (F62); loader-side F48/F49 obligations hold (tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201).",
