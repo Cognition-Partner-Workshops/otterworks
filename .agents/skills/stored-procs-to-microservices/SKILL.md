@@ -36,6 +36,7 @@ make procs-down NS=dev
 make procs-list
 make procs-record NS=dev
 make procs-rules-gate MODULE=plans
+make procs-rules-gate MODULE=rating
 make procs-rules-gate ALL=1
 make procs-parity NS=dev
 make procs-parity NS=dev MODULE=plans
@@ -45,7 +46,7 @@ make procs-parity NS=dev MODULE=plans SCENARIO=PLANS-001
 `procs-up` builds and waits for healthy Compose services. `procs-list` prints
 module status, scenario count, rule claims, and scenario mappings. A healthy
 rules run prints `Rules gate PASS: plans`. A healthy full parity run prints
-`Parity PASS=5 FAIL=0 SKIP=19` and writes both local report files, which CI
+`Parity PASS=19 FAIL=0 SKIP=5` and writes both local report files, which CI
 uploads as artifacts. Extracted modules
 are graded; pending modules are `SKIP`, never `PASS`.
 
@@ -59,8 +60,8 @@ entrypoints.
 | Module | Status | Scenarios | Entrypoints |
 | --- | --- | ---: | --- |
 | plans | extracted | 5 | `billing.fn_list_plans` (1), `billing.fn_entitlement` (2), `billing.sp_change_plan` (2) |
-| rating | pending | 8 | `billing.fn_usage_rating` (6), `billing.fn_usage_summary` (1), `billing.sp_finalize_rating` (1) |
-| invoicing | pending | 6 | `billing.fn_invoice_preview` (2), `billing.sp_issue_invoice` (3), `billing.fn_invoice_lines` (1) |
+| rating | extracted | 8 | `billing.fn_usage_rating` (6), `billing.fn_usage_summary` (1), `billing.sp_finalize_rating` (1) |
+| invoicing | extracted | 6 | `billing.fn_invoice_preview` (2), `billing.sp_issue_invoice` (3), `billing.fn_invoice_lines` (1) |
 | dunning | pending | 5 | `billing.fn_overdue_accounts` (1), `billing.sp_schedule_dunning` (2), `billing.sp_suspend_overdue` (2) |
 
 ## Ledger and target tests
