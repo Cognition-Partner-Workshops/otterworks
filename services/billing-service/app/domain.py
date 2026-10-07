@@ -91,9 +91,7 @@ def change_plan(
     subscriptions = repository.list_subscriptions(tenant_id)
     for subscription in subscriptions:
         if subscription.ends_on is None and subscription.starts_on < effective_on:
-            next_status = (
-                subscription.status if subscription.status == "cancelled" else "active"
-            )
+            next_status = subscription.status if subscription.status == "cancelled" else "active"
             repository.update_subscription(
                 subscription.subscription_id,
                 effective_on - timedelta(days=1),
@@ -259,9 +257,7 @@ def used_units(events: list[UsageEventRow], period_start: date, period_end: date
     return sum(event.units for event in events if _in_period(event, period_start, period_end))
 
 
-def rollover_units(
-    history: list[RatingHistoryRow], period_start: date, included_units: int
-) -> int:
+def rollover_units(history: list[RatingHistoryRow], period_start: date, included_units: int) -> int:
     window_start = months_before(period_start, ROLLOVER_WINDOW_MONTHS)
     prior = sum(
         row.rollover_units for row in history if window_start <= row.period_start < period_start

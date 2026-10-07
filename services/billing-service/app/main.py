@@ -203,9 +203,9 @@ def get_usage_summary(
 
 
 @app.post("/api/tenants/{tenant_id}/rating-finalizations")
-def finalize_tenant_rating(
-    tenant_id: Annotated[UUID, Path()], request: RatingFinalization
-) -> dict:
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingFinalization) -> dict:
+    if request.period_end < request.period_start:
+        raise HTTPException(status_code=422, detail="period_end must not precede period_start")
     try:
         with connect() as connection:
             results = finalize_rating(
@@ -220,6 +220,11 @@ def finalize_tenant_rating(
         raise HTTPException(
             status_code=409,
             detail="rating period id does not match the existing period",
+        ) from error
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="the rating period is being finalized concurrently; retry",
         ) from error
     rows = [_rating_result_body(item) for item in results]
     return {**rows[0], "rating_result": rows}

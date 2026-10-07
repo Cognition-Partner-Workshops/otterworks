@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   billingApi,
@@ -22,9 +22,12 @@ export default function BillingUsageRatingPage() {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
+  const currentTenant = useRef(tenantId);
 
   useEffect(() => {
     let mounted = true;
+    currentTenant.current = tenantId;
+    setIsFinalizing(false);
     setError("");
     setRating(null);
     setSummary([]);
@@ -61,11 +64,19 @@ export default function BillingUsageRatingPage() {
     if (!tenantId || isFinalizing) return;
     setError("");
     setIsFinalizing(true);
+    const requestTenant = tenantId;
+    const isCurrent = () => currentTenant.current === requestTenant;
     billingApi
       .finalizeRating(tenantId, PERIOD_START, PERIOD_END)
-      .then(setFinalized)
-      .catch(() => setError("The rating could not be finalized."))
-      .finally(() => setIsFinalizing(false));
+      .then((value) => {
+        if (isCurrent()) setFinalized(value);
+      })
+      .catch(() => {
+        if (isCurrent()) setError("The rating could not be finalized.");
+      })
+      .finally(() => {
+        if (isCurrent()) setIsFinalizing(false);
+      });
   };
 
   return (

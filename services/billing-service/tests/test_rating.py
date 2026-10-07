@@ -4,6 +4,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from uuid import UUID
 
+import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
@@ -131,9 +132,7 @@ class FakeRatingRepository:
     def list_rating_results(self, tenant_id: UUID, period_start: date) -> list[RatingResultRow]:
         period = self.find_rating_period(tenant_id, period_start)
         return [
-            item
-            for item in self.results.values()
-            if period and item.period_id == period.period_id
+            item for item in self.results.values() if period and item.period_id == period.period_id
         ]
 
 
@@ -177,6 +176,33 @@ def test_rating_without_an_overlapping_subscription_is_not_found(monkeypatch) ->
         )
     assert rating.status_code == 404
     assert finalized.status_code == 404
+
+
+@pytest.mark.rule("RATING-R09")
+def test_finalize_rejects_reversed_periods_and_reports_concurrent_conflicts(monkeypatch) -> None:
+    class FakeConnection:
+        def __enter__(self) -> FakeConnection:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+    def concurrent_insert(*_args: object) -> None:
+        raise psycopg.errors.UniqueViolation("duplicate key")
+
+    monkeypatch.setattr(main, "migrate", lambda: None)
+    monkeypatch.setattr(main, "connect", FakeConnection)
+    monkeypatch.setattr(main, "finalize_rating", concurrent_insert)
+    path = f"/api/tenants/{TENANT}/rating-finalizations"
+    with TestClient(main.app) as client:
+        reversed_period = client.post(
+            path, json={"period_start": "2026-02-28", "period_end": "2026-02-01"}
+        )
+        concurrent = client.post(
+            path, json={"period_start": "2026-02-01", "period_end": "2026-02-28"}
+        )
+    assert reversed_period.status_code == 422
+    assert concurrent.status_code == 409
 
 
 @pytest.mark.rule("RATING-R02")
@@ -231,9 +257,7 @@ def test_overage_is_rounded_once_half_up() -> None:
 @pytest.mark.rule("RATING-R07")
 def test_suspension_prorates_billable_and_amount_but_not_tiers() -> None:
     suspended = subscription(status="suspended", suspended_on=date(2026, 2, 15))
-    repository = FakeRatingRepository(
-        [suspended], [event(datetime(2026, 2, 10, tzinfo=UTC), 300)]
-    )
+    repository = FakeRatingRepository([suspended], [event(datetime(2026, 2, 10, tzinfo=UTC), 300)])
     rating = rate_usage(repository, TENANT, FEB_START, FEB_END)
 
     assert (rating.first_tier_units, rating.second_tier_units) == (101, 99)
@@ -241,9 +265,12 @@ def test_suspension_prorates_billable_and_amount_but_not_tiers() -> None:
     assert rating.overage_amount == Decimal("6.86")
     active = subscription(suspended_on=date(2026, 2, 15))
     assert suspension_factor(active, FEB_START, FEB_END) is None
-    assert suspension_factor(
-        subscription(status="suspended", suspended_on=date(2026, 3, 1)), FEB_START, FEB_END
-    ) is None
+    assert (
+        suspension_factor(
+            subscription(status="suspended", suspended_on=date(2026, 3, 1)), FEB_START, FEB_END
+        )
+        is None
+    )
 
 
 @pytest.mark.rule("RATING-R07")
