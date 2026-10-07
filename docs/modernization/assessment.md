@@ -268,7 +268,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 ### Wave 3: Remaining data and batch estate
 
 - Legacy ETL: replatform the 5 Python cron scripts onto the orchestrator chosen in Wave 1 Track B. Decommission the cron host
-- `usage-rollup`: first point `cronjob.input` at a real production event source (it defaults to the bundled seed) and persist the nightly report (it is written to an `emptyDir` today), so there is a live baseline. Then replace the CronJob with event-driven processing
+- `usage-rollup`: first give the job live input (it defaults to the bundled seed, and `EventLoader` reads only local files or classpath resources, with no input volume mounted), either by exporting production events to a file mounted into the CronJob or by adding an S3 reader, and persist the nightly report (it is written to an `emptyDir` today), so there is a live baseline. Then replace the CronJob with event-driven processing
 - LDM: run the Db2 (and Oracle archive) migrations to PostgreSQL / Azure SQL, then purge and retire the archives
 - Insurance commission PL/SQL: extract the packages and migrate the commission OLTP/OLAP data. LDM does not cover this, because its Oracle overlay (`o27-*`) moves the document-retention tables only, so the data move needs its own mapping and reconciliation (a fixture today, not a production estate)
 - Windows desktop: retire in favour of Electron after a usage check
