@@ -28,6 +28,9 @@ Verifier session did not load any batch. Everything below was recomputed in this
 - **`preflight.py --grade` under manifest `b11c0e7b2f31` grades only w1-b04 and w1-b05 PASS.** w1-b01, w1-b02 and w1-b03 come back `FAIL / insufficient_evidence` ("PASS downgraded: … graded mapping map-draft-3 / tolerances 1; the ticket is map-draft-4 / 1"; b03 on `customerMasterHist`, never re-run after the s3.4 re-pin) — their batch results were produced under manifest `ed1747e90f6e` and were merged anyway. `verify-result.json` therefore keys `unit_verdicts` on w1-b04 and w1-b05 only, as the contract demands (exactly the graded PASS set), and carries the verifier's verdict for all five batches in `verifier_batch_verdicts`. The data is not in question — every unit of b01–b03 is PASS in this session's own live runs (§3); the batch *evidence* is stale (F76). Re-grading b01–b03 needs a re-run of their harness artifacts under `map-draft-4` on their branches or a manager decision; the verifier does not do either.
 
 - `invoiceHeader` (w1-b03) is harness PASS but `merge_eligible: false` (F72, scoped embed warning); the hand proof in §4.1 is the only evidence for the 37-row remainder.
+
+**Re-stamped 2026-10-07 ~11:20Z (s4.1.v2, ticket UNT7-26, decision `d-verify-restamp = restamp`, run-branch tip `e3cc9f7e`).** The bullet above describes the state at verify time (run-branch `903dbed9`). PR #1868 (UNT7-25, s4.1.r) then refreshed the b01/b02/`customerMasterHist` batch artifacts under `map-draft-4` / manifest `b11c0e7b2f31`, and `preflight.py --grade` over the five committed `w1-b0N.batch.json` now marks **all five batches PASS** (b01 `merge_eligible true`, b02 `true`, b03 `false` — F72, b04 `true`, b05 `true`; b01–b03 read from `origin/devin/1791370818-w1-recon-refresh`, F79). The contract keys `unit_verdicts` to that graded set, so the unchanged verifier file was rejected (`verifier output invalid: missing verdicts for w1-b01, w1-b02, w1-b03`, exit 1, `mergeable_prs: []` — F78). `verify-result.json` was therefore re-stamped by the same verifier: `unit_verdicts` now names all five batches with the verdicts already recorded in `verifier_batch_verdicts` (16/16 live PASS under `map-draft-4`, §3), `unit_verdicts_restamped` records `{at, after: "UNT7-25 / PR #1868", previous: [w1-b04, w1-b05]}`, and nothing else in the file changed (`recon_results`, findings, `unverified_units`, `merge_notes`, `run_id`, `manifest_sha`). No recon was re-run and Atlas was not touched. After the re-stamp the same command exits 0 with `verify_problems: []` and `mergeable_prs` = #1862, #1863, #1865, #1866 — four, not five: #1864 (b03) is excluded because `preflight.py` lists only `merge_eligible` batches and b03 stays `merge_eligible false` on the `invoiceHeader` scoped-embed warning (F72, accepted by `d-orphan-grading`). Both outputs are in §6a; finding F80.
+
 - `billingAuditLog`, `customerMasterHist`, `subscriptionsHist` are harness PASS on 0 rows and are **UNVERIFIED** (§4.9, F68/F70/F73) — the batch verdicts PASS because the harness says so, but these three units verified nothing.
 - 11 of 16 committed batch artifacts cite a superseded mapping version (F76); verdicts do not change under `map-draft-4`.
 
@@ -248,6 +251,35 @@ The read-only principal has no EXECUTE on the packages, so each function's curso
 ## 6a. `preflight.py --grade … --verify` (run by the verifier against the pushed branch)
 
 `GIT_DIR=<repo>/.git python3 <plugin>/skills/wave-preflight/preflight.py --wave .migration/waves/wave-1.json --root <repo> --grade .migration/recon/w1-b0{1..5}.batch.json --verify .migration/recon/wave-1/verify-result.json --run-id ticket-cf5c46af9c3345b98534ff860bb73f38` → graded PASS set `{w1-b04, w1-b05}`, b01–b03 `FAIL insufficient_evidence` as described above; `verify_problems: []` once `unit_verdicts` was keyed to that set (output in `evidence/preflight_verify.out`). The branch `recon/wave-1` already existed on origin from an unrelated 2026-09-29 run (off `32baffd8`); it was merged in (its `report.md` removed) rather than force-pushed, so the branch advanced fast-forward.
+
+### 6a.1 Re-stamp (s4.1.v2, UNT7-26, run-branch tip `e3cc9f7e`)
+
+Same command, `--grade` given five times (one per `w1-b0N.batch.json`), from `$HOME` with `GIT_DIR=<repo>/.git`. Plugin clone HEAD `88dea6ae4f876e9d9fe7828bb8a24337c7873145`, branch tip `ada6699dbbc0112288884a050766ef1332da7ac1`.
+
+Before the re-stamp (committed verifier file, graded set now all five) — exit 1:
+
+```
+w1-b01 PASS  merge_eligible true   branch devin/1791370818-w1-recon-refresh  live/migration_cluster
+w1-b02 PASS  merge_eligible true   branch devin/1791370818-w1-recon-refresh  live/migration_cluster
+w1-b03 PASS  merge_eligible false  branch devin/1791370818-w1-recon-refresh  live/migration_cluster  (invoiceHeader scoped-embed warning, F72)
+w1-b04 PASS  merge_eligible true   branch devin/1791367911-w1-b04-load
+w1-b05 PASS  merge_eligible true   branch devin/1791368621-w1-b05-load
+mergeable_prs: []
+verify_problems:
+  verifier output invalid: missing verdicts for w1-b01, w1-b02, w1-b03
+  verifier output invalid: verdict for w1-b01 is None
+  verifier output invalid: verdict for w1-b02 is None
+  verifier output invalid: verdict for w1-b03 is None
+```
+
+After the re-stamp (`unit_verdicts` = all five from `verifier_batch_verdicts`) — exit 0:
+
+```
+w1-b01..w1-b05 PASS (unchanged grade)
+mergeable_prs: [#1862, #1863, #1865, #1866]   (#1864 excluded: b03 merge_eligible false, F72)
+verify_problems: []
+wave 1 OK: 5 batches, manifest_sha b11c0e7b2f31
+```
 
 ## 7. Pre-PR self-check (`.agents/skills/tp-pre-pr-self-check`)
 

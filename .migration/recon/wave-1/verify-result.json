@@ -5,8 +5,23 @@
  "branch": "recon/wave-1",
  "wave_verdict": "PASS",
  "unit_verdicts": {
+  "w1-b01": "PASS",
+  "w1-b02": "PASS",
+  "w1-b03": "PASS",
   "w1-b04": "PASS",
   "w1-b05": "PASS"
+ },
+ "unit_verdicts_restamped": {
+  "at": "2026-10-07T11:20:00Z",
+  "after": "UNT7-25 / PR #1868",
+  "previous": [
+   "w1-b04",
+   "w1-b05"
+  ],
+  "ticket": "UNT7-26",
+  "plan_step": "s4.1.v2",
+  "decision": "d-verify-restamp = restamp",
+  "basis": "verifier_batch_verdicts (16 live runs under map-draft-4, 2026-10-07 ~10:40Z); no new recon, no Atlas access"
  },
  "recon_results": {
   "w1-b01": [
@@ -42,7 +57,7 @@
   "subscriptionsHist": "source 0 rows; TRG_SUBSCRIPTIONS_HIST never fired in the fixture (F73)"
  },
  "merge_notes": {
-  "invoiceHeader": "harness PASS, merge_eligible false (F72 scoped-embed warning); hand proof 1463+37=1500 in verify-report.md \u00a74.1"
+  "invoiceHeader": "harness PASS, merge_eligible false (F72 scoped-embed warning); hand proof 1463+37=1500 in verify-report.md §4.1"
  },
  "mapping_version": "map-draft-4",
  "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
@@ -77,5 +92,5 @@
   "w1-b04": "PASS",
   "w1-b05": "PASS"
  },
- "unit_verdicts_note": "unit_verdicts covers exactly the batches preflight --grade marks PASS under the current manifest (w1-b04, w1-b05), as the contract requires; the verifier re-ran all 16 units of all five batches under map-draft-4 and every one is PASS \u2014 see verifier_batch_verdicts and recon_results."
+ "unit_verdicts_note": "unit_verdicts covers exactly the batches preflight --grade marks PASS under manifest b11c0e7b2f31. At verify time (s4.1.v, run-branch 903dbed9) that set was {w1-b04, w1-b05} because the b01-b03 batch artifacts cited map-draft-3 (F76); after the s4.1.r refresh (UNT7-25 / PR #1868, run-branch e3cc9f7e) all five grade PASS (b03 with merge_eligible false, F72), so the verifier re-stamped unit_verdicts to all five from its own verifier_batch_verdicts (s4.1.v2, F78/F80). preflight_grade_under_manifest_b11c0e7b2f31 is the pre-refresh grade kept for the record; see unit_verdicts_restamped."
 }
