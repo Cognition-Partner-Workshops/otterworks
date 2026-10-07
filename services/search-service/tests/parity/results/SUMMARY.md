@@ -32,3 +32,14 @@ The two contract logs are identical apart from timings/addresses. Kept failing f
 No difference was found in routes, methods, status codes, `{"error": ...}` bodies, HTML error bodies, CORS headers, `Content-Type` or metric names/labels/values.
 
 Note: with `SQS_ENABLED=true` and no LocalStack in this stack, both Flask and FastAPI log `EndpointConnectionError` from the SQS consumer and keep serving HTTP; it does not affect any case.
+
+## Re-run after the starlette CVE bump
+
+The PR's `dependency-scan` (Trivy) reported CVE-2026-48818 (fixed in starlette 1.1.0) and CVE-2026-54283 (fixed in starlette 1.3.1) against `starlette==0.50.0`.
+`requirements.txt` now pins `starlette==1.3.1` and `fastapi==0.135.4`: FastAPI 0.128.x–0.132.x cap starlette `<1.0.0`, and 0.135.4 requires `>=0.46.0`. Re-checked on the rebuilt image, with the same stack and commands as above:
+
+| Check | Result |
+|-------|--------|
+| `pytest` (unit, venv with the new pins) | 193 passed; the original 41 still pass |
+| Transcript replay | 130/130 HTTP cases, 0 differing. Replayed transcript and metrics are byte-identical to `flask_transcript.json` / `flask_metrics.json` |
+| `make search-smoke` | 13/13 PASS — [compose_smoke_starlette_1.3.1.txt](compose_smoke_starlette_1.3.1.txt) |
