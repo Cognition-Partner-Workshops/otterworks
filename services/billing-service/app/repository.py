@@ -188,7 +188,12 @@ class PostgresRatingRepository(PostgresPlansRepository):
 
     def find_rating_result(self, result_id: UUID) -> RatingResultRow | None:
         row = self.connection.execute(
-            f"{_RESULT_SELECT} WHERE id = %s",
+            """
+            SELECT id, period_id, subscription_id, used_units, quota_units, rollover_units,
+                   billable_units, overage_amount, created_at
+            FROM billing_svc.rating_results
+            WHERE id = %s
+            """,
             (result_id,),
         ).fetchone()
         return None if row is None else _result_row(row)
@@ -232,8 +237,10 @@ class PostgresRatingRepository(PostgresPlansRepository):
 
     def list_rating_results(self, tenant_id: UUID, period_start: date) -> list[RatingResultRow]:
         rows = self.connection.execute(
-            f"""
-            {_RESULT_SELECT}
+            """
+            SELECT id, period_id, subscription_id, used_units, quota_units, rollover_units,
+                   billable_units, overage_amount, created_at
+            FROM billing_svc.rating_results
             WHERE period_id IN (
                 SELECT id FROM billing_svc.rating_periods
                 WHERE tenant_id = %s AND period_start = %s
@@ -243,13 +250,6 @@ class PostgresRatingRepository(PostgresPlansRepository):
             (tenant_id, period_start),
         ).fetchall()
         return [_result_row(row) for row in rows]
-
-
-_RESULT_SELECT = """
-    SELECT id, period_id, subscription_id, used_units, quota_units, rollover_units,
-           billable_units, overage_amount, created_at
-    FROM billing_svc.rating_results
-"""
 
 
 def _result_row(row: dict) -> RatingResultRow:
