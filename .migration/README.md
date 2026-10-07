@@ -1,0 +1,1 @@
+Machine files for the OtterWorks billing Oracle → Atlas run `mmp_rt_b4_oracle` (run branch `tp-run/mongodb-20261007T161014Z`, plugin `mongo-migration-plugin` @ `353280fc837193a40ccc005cb62fb4ffaf8ac16f`); prose, findings and decisions live on the Devin board https://partner-workshops.devinenterprise.com/boards/board-bce08d84e5e24a0f85923f2c9816a40f.
