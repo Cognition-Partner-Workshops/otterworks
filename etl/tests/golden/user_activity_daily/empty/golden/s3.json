@@ -1,0 +1,54 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "reports/user-activity/2026-03-15/activity_report.json": {
+      "body": {
+        "daily_summaries": [],
+        "generated_at": "<normalized:generated_at>",
+        "lookback_days": 30,
+        "report_date": "2026-03-15",
+        "report_type": "user_activity",
+        "top_users": [],
+        "trends": {
+          "avg_daily_events": 0,
+          "peak_active_users": 0,
+          "reporting_days": 0,
+          "total_events": 0
+        },
+        "user_summaries": []
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "reports/user-activity/latest/activity_report.json": {
+      "body": {
+        "daily_summaries": [],
+        "generated_at": "<normalized:generated_at>",
+        "lookback_days": 30,
+        "report_date": "2026-03-15",
+        "report_type": "user_activity",
+        "top_users": [],
+        "trends": {
+          "avg_daily_events": 0,
+          "peak_active_users": 0,
+          "reporting_days": 0,
+          "total_events": 0
+        },
+        "user_summaries": []
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}

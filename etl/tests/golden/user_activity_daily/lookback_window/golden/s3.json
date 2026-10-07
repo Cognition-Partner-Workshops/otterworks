@@ -1,0 +1,359 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "analytics/daily/year=2025/month=12/day=10/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "document_edited": 70
+        },
+        "total": 70,
+        "user_id": "user-before-window"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2025/month=12/day=11/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "document_edited": 100
+        },
+        "total": 100,
+        "user_id": "user-dave"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2025/month=12/day=12/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "file_shared": 1,
+          "file_uploaded": 3
+        },
+        "total": 4,
+        "user_id": "user-erin"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2025/month=12/day=31/top_users.jsonl.gz": {
+      "body": [
+        {
+          "actions": {
+            "document_created": 1,
+            "document_edited": 1
+          },
+          "total": 2,
+          "user_id": "user-alice"
+        },
+        {
+          "actions": {
+            "file_uploaded": 1
+          },
+          "total": 1,
+          "user_id": "user-erin"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD",
+      "trailing_newline": true
+    },
+    "analytics/daily/year=2026/month=01/day=10/summary.json": {
+      "body": {
+        "total": 40,
+        "user_id": "user-not-top-users"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=01/day=10/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "document_edited": 3
+        },
+        "total": 3,
+        "user_id": "user-alice"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "analytics/daily/year=2026/month=01/day=11/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "document_edited": 50
+        },
+        "total": 50,
+        "user_id": "user-future"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "reports/user-activity/2026-01-10/activity_report.json": {
+      "body": {
+        "daily_summaries": [
+          {
+            "active_documents": 1,
+            "active_files": 1,
+            "active_users": 4,
+            "bytes_uploaded": 5000000000,
+            "comments_added": 1,
+            "documents_created": 1,
+            "documents_edited": 1,
+            "files_deleted": 1,
+            "files_shared": 1,
+            "files_uploaded": 1,
+            "report_date": "2025-12-11",
+            "total_events": 7
+          },
+          {
+            "active_documents": 2,
+            "active_files": 2,
+            "active_users": 9,
+            "bytes_uploaded": 2048,
+            "comments_added": 2,
+            "documents_created": 2,
+            "documents_edited": 2,
+            "files_deleted": 2,
+            "files_shared": 2,
+            "files_uploaded": 2,
+            "report_date": "2025-12-31",
+            "total_events": 3
+          },
+          {
+            "active_documents": 0,
+            "active_files": 0,
+            "active_users": 2,
+            "bytes_uploaded": 0,
+            "comments_added": 0,
+            "documents_created": 0,
+            "documents_edited": 0,
+            "files_deleted": 0,
+            "files_shared": 0,
+            "files_uploaded": 0,
+            "report_date": "2026-01-10",
+            "total_events": 4
+          }
+        ],
+        "generated_at": "<normalized:generated_at>",
+        "lookback_days": 30,
+        "report_date": "2026-01-10",
+        "report_type": "user_activity",
+        "top_users": [
+          {
+            "actions_by_type": {
+              "document_created": 1,
+              "document_edited": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-alice"
+          },
+          {
+            "actions_by_type": {
+              "file_shared": 1,
+              "file_uploaded": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-erin"
+          }
+        ],
+        "trends": {
+          "avg_daily_events": 4.67,
+          "peak_active_users": 9,
+          "reporting_days": 3,
+          "total_events": 14
+        },
+        "user_summaries": [
+          {
+            "actions_by_type": {
+              "document_created": 1,
+              "document_edited": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-alice"
+          },
+          {
+            "actions_by_type": {
+              "file_shared": 1,
+              "file_uploaded": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-erin"
+          }
+        ]
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "reports/user-activity/2026-01-10/user_summaries.jsonl": {
+      "body": [
+        {
+          "actions_by_type": {
+            "document_created": 1,
+            "document_edited": 4
+          },
+          "active_days": 2,
+          "total_actions": 5,
+          "user_id": "user-alice"
+        },
+        {
+          "actions_by_type": {
+            "file_shared": 1,
+            "file_uploaded": 4
+          },
+          "active_days": 2,
+          "total_actions": 5,
+          "user_id": "user-erin"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD",
+      "trailing_newline": true
+    },
+    "reports/user-activity/latest/activity_report.json": {
+      "body": {
+        "daily_summaries": [
+          {
+            "active_documents": 1,
+            "active_files": 1,
+            "active_users": 4,
+            "bytes_uploaded": 5000000000,
+            "comments_added": 1,
+            "documents_created": 1,
+            "documents_edited": 1,
+            "files_deleted": 1,
+            "files_shared": 1,
+            "files_uploaded": 1,
+            "report_date": "2025-12-11",
+            "total_events": 7
+          },
+          {
+            "active_documents": 2,
+            "active_files": 2,
+            "active_users": 9,
+            "bytes_uploaded": 2048,
+            "comments_added": 2,
+            "documents_created": 2,
+            "documents_edited": 2,
+            "files_deleted": 2,
+            "files_shared": 2,
+            "files_uploaded": 2,
+            "report_date": "2025-12-31",
+            "total_events": 3
+          },
+          {
+            "active_documents": 0,
+            "active_files": 0,
+            "active_users": 2,
+            "bytes_uploaded": 0,
+            "comments_added": 0,
+            "documents_created": 0,
+            "documents_edited": 0,
+            "files_deleted": 0,
+            "files_shared": 0,
+            "files_uploaded": 0,
+            "report_date": "2026-01-10",
+            "total_events": 4
+          }
+        ],
+        "generated_at": "<normalized:generated_at>",
+        "lookback_days": 30,
+        "report_date": "2026-01-10",
+        "report_type": "user_activity",
+        "top_users": [
+          {
+            "actions_by_type": {
+              "document_created": 1,
+              "document_edited": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-alice"
+          },
+          {
+            "actions_by_type": {
+              "file_shared": 1,
+              "file_uploaded": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-erin"
+          }
+        ],
+        "trends": {
+          "avg_daily_events": 4.67,
+          "peak_active_users": 9,
+          "reporting_days": 3,
+          "total_events": 14
+        },
+        "user_summaries": [
+          {
+            "actions_by_type": {
+              "document_created": 1,
+              "document_edited": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-alice"
+          },
+          {
+            "actions_by_type": {
+              "file_shared": 1,
+              "file_uploaded": 4
+            },
+            "active_days": 2,
+            "total_actions": 5,
+            "user_id": "user-erin"
+          }
+        ]
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}

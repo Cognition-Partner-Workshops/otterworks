@@ -1,0 +1,23 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz": {
+      "body": {
+        "actions": {
+          "document_edited": 1
+        },
+        "total": 1,
+        "user_id": "user-alice"
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}
