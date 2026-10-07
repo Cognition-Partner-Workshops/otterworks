@@ -302,26 +302,77 @@ paths:
               schema:
                 type: string
 
-  /ws/notifications/{userId}:
+  /ws/notifications:
     get:
       operationId: webSocketNotifications
-      summary: WebSocket connection for real-time notifications
+      summary: WebSocket connection for the authenticated user's real-time notifications
       description: |
-        Establishes a WebSocket connection for real-time notification delivery.
-        Supports ping/pong keepalive. Server pushes notification events as they occur.
+        Establishes a WebSocket connection for real-time notification delivery to the user the
+        access token was issued to (its `sub` claim). Requires an auth-service access token, sent
+        as `Authorization: Bearer <token>` or, for browsers that cannot set headers on a WebSocket
+        upgrade, as the `access_token` query parameter. Supports ping/pong keepalive.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AccessToken"
+      responses:
+        "101":
+          description: WebSocket upgrade successful
+        "401":
+          description: Missing, invalid, expired or refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ws/notifications/{userId}:
+    get:
+      operationId: webSocketNotificationsForUser
+      summary: Legacy form of /ws/notifications
+      description: |
+        Same as `/ws/notifications`; `userId` must equal the authenticated user, otherwise the
+        upgrade is refused with 403. The subscription is always keyed by the token's subject.
+      security:
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: string
-          description: User ID to subscribe to notifications for
+          description: Must match the authenticated user's ID
+        - $ref: "#/components/parameters/AccessToken"
       responses:
         "101":
           description: WebSocket upgrade successful
+        "401":
+          description: Missing, invalid, expired or refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: userId does not match the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   parameters:
+    AccessToken:
+      name: access_token
+      in: query
+      required: false
+      description: Access token, for clients that cannot send an Authorization header on the upgrade
+      schema:
+        type: string
     XUserID:
       name: X-User-ID
       in: header
