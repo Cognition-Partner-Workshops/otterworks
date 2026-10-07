@@ -1,14 +1,14 @@
 {
   "kind": "w1-b01-load-evidence",
-  "ticket": "UNT7-14",
-  "plan_step": "s4.1.b01",
+  "ticket": "UNT7-14 + UNT7-23",
+  "plan_step": "s4.1.b01 + s3.3-spec-correction",
   "wave_manifest": ".migration/waves/wave-1.json",
-  "manifest_sha": "790ff9c4775a",
+  "manifest_sha": "ed1747e90f6e",
   "run_branch_base": "e0613f71",
   "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
   "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
-  "mapping_version": "map-draft-2",
-  "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+  "mapping_version": "map-draft-3",
+  "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
   "tolerance_version": "1",
   "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
   "source": {
@@ -325,5 +325,343 @@
     "MONGO_GUARD_BASE_REF": "origin/tp-run/mongodb-20261007T062215Z",
     "note": "exported for every command; the mongo-migration hooks are not installed as a PreToolUse hook in this session (plugin used as a clone), the active hook is the org dbx guard (F4/F9)"
   },
-  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862"
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+  "manifest_sha_before_correction": "790ff9c4775a",
+  "mapping_before_correction": {
+    "version": "map-draft-2",
+    "sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e"
+  },
+  "s3_3_spec_correction": {
+    "decision": "d-cm-fail = patch-spec (manager, after PR #1862 review)",
+    "patcher_attempts": [
+      {
+        "decision": {
+          "op": "date_format",
+          "collection": "customerMaster",
+          "field": "SIGNUP_DT",
+          "format": "%d-%b-%y",
+          "unparseable": "null"
+        },
+        "exit": 0,
+        "stdout": "mapping spec map-draft-3 written to \u2026/spec_date.json: collections=16 embeds=3 (derived=3) unresolved=0 decisions=1",
+        "effect": "field re-aliased to date_string_to_date:dby-b3d57e, date_format set; 'unparseable' ignored (copied only into modeling.decisions[]) \u2014 F65"
+      },
+      {
+        "decision": {
+          "op": "set_key",
+          "embed": {
+            "into": "customerMaster",
+            "child_table": "ENTITY_ATTR_VALUE"
+          },
+          "columns": [
+            "ATTR_NAME",
+            "EAV_ID"
+          ]
+        },
+        "exit": 1,
+        "stderr": "decision refused: index keys with no target field after decisions: customerMaster [['attributes.k', 1], ['attributes.v', 1]]",
+        "effect": "refused \u2014 F66"
+      }
+    ],
+    "hand_edits": [
+      {
+        "finding": "F65",
+        "paths": [
+          "canonicalization.rules[+] name=date_string_to_date:dby-b3d57e-unparseable-null params={format:%d-%b-%y, unparseable:null}",
+          "collections[customerMaster].fields[SIGNUP_DT].rules[0]",
+          "collections[customerMaster].fields[SIGNUP_DT].date_format_basis=decision+manual"
+        ]
+      },
+      {
+        "finding": "F66",
+        "paths": [
+          "collections[customerMaster].embeds[attributes].key={source:[ATTR_NAME,EAV_ID],target:[k,eavId]}",
+          "collections[customerMaster].embeds[attributes].child_key=[ENTITY_ID,ATTR_NAME,EAV_ID]",
+          "collections[customerMaster].embeds[attributes].fields -= EAV_ID",
+          "collections[customerMaster].embeds[attributes].evidence (appended)"
+        ]
+      }
+    ],
+    "design_decisions_appended": [
+      83,
+      84
+    ],
+    "design_decisions_replayable_from_map_draft_1": false,
+    "model_patch_check": {
+      "exit": 0,
+      "stdout": "model_patch: check OK (98 decisions, 160 evidence refs)"
+    },
+    "wave_repin": {
+      "file": ".migration/waves/wave-1.json",
+      "batches_repinned": [
+        "w1-b01",
+        "w1-b02",
+        "w1-b03",
+        "w1-b04",
+        "w1-b05"
+      ],
+      "mapping_version": "map-draft-3",
+      "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+      "tolerance_version": "1",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+      "preflight": "wave 1 OK: 5 batches, manifest_sha ed1747e90f6e",
+      "emit_tickets_output": "~/mmp_rt_scratch (not committed; preflight warning about .migration prose files unchanged, F2/F59)"
+    },
+    "reload": {
+      "mode": "delete_many + insert_many per allowed collection, no drops",
+      "load_report": {
+        "kind": "load-report",
+        "spec_version": "map-draft-3",
+        "target_db": "mmp_rt_b3_oracle",
+        "dry_run": false,
+        "started_at": "2026-10-07T09:11:48.472928+00:00",
+        "units": {
+          "codes": {
+            "root_table": "CODES",
+            "source_rows": 32,
+            "documents_written": 32,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "codeType_1_codeVal_1"
+            ],
+            "elapsed_s": 0.843
+          },
+          "tenants": {
+            "root_table": "TENANTS",
+            "source_rows": 15,
+            "documents_written": 15,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "name_1"
+            ],
+            "elapsed_s": 0.238
+          },
+          "plans": {
+            "root_table": "PLANS",
+            "source_rows": 3,
+            "documents_written": 3,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "monthlyFee_1_code_1",
+              "code_1"
+            ],
+            "elapsed_s": 0.344
+          },
+          "customerMaster": {
+            "root_table": "CUSTOMER_MASTER",
+            "source_rows": 201,
+            "documents_written": 201,
+            "embeds": {
+              "attributes": {
+                "child_table": "ENTITY_ATTR_VALUE",
+                "elements": 70,
+                "orphan_child_rows": 0
+              }
+            },
+            "derived": {
+              "tenantResolved_true": 1,
+              "tenantResolved_false": 200,
+              "signupDt_missing": 41,
+              "signupDtRaw_present": 201
+            },
+            "indexes": [
+              "attributes.k_1_attributes.v_1"
+            ],
+            "elapsed_s": 1.972
+          },
+          "billingAuditLog": {
+            "root_table": "BILLING_AUDIT_LOG",
+            "source_rows": 0,
+            "documents_written": 0,
+            "embeds": {},
+            "derived": {},
+            "indexes": [],
+            "elapsed_s": 0.068
+          }
+        },
+        "source_queries": 7,
+        "source_concurrency": 1,
+        "finished_at": "2026-10-07T09:11:51.939008+00:00"
+      },
+      "source_concurrency": 1
+    },
+    "recon_live_map_draft_3": {
+      "codes": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "mapping_version": "map-draft-3",
+        "tier3_checks": 32,
+        "findings": 0,
+        "redaction_salted": false
+      },
+      "tenants": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "mapping_version": "map-draft-3",
+        "tier3_checks": 15,
+        "findings": 0,
+        "redaction_salted": false
+      },
+      "plans": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "mapping_version": "map-draft-3",
+        "tier3_checks": 3,
+        "findings": 0,
+        "redaction_salted": false
+      },
+      "customerMaster": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "mapping_version": "map-draft-3",
+        "tier3_checks": 271,
+        "findings": 0,
+        "redaction_salted": false
+      },
+      "billingAuditLog": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "mapping_version": "map-draft-3",
+        "tier3_checks": 0,
+        "findings": 0,
+        "redaction_salted": false
+      }
+    },
+    "fixture_dirs_note": ".migration/recon/<unit>/fixture/ are the map-draft-2 fixture-mode runs (pre-correction), kept as the F61/F62 record",
+    "dbstats_before_reload": {
+      "when": "before_map_draft_3_reload",
+      "db": "mmp_rt_b3_oracle",
+      "collections": 4,
+      "objects": 251,
+      "dataSize": 231841,
+      "storageSize": 360448,
+      "indexes": 9,
+      "indexSize": 356352,
+      "collection_names": [
+        "codes",
+        "customerMaster",
+        "plans",
+        "tenants"
+      ],
+      "listDatabases_names": [
+        "admin",
+        "local",
+        "mmp_rt_b1_mysql",
+        "mmp_rt_b1_tsql",
+        "mmp_rt_b2_tsql",
+        "mmp_rt_b3_oracle",
+        "ow_billing_migration",
+        "ow_tp_billing_20261001T233613Z",
+        "ow_tp_mmp_live"
+      ],
+      "per_collection": {
+        "codes": {
+          "count": 32,
+          "indexes": [
+            "_id_",
+            "codeType_1_codeVal_1"
+          ]
+        },
+        "customerMaster": {
+          "count": 201,
+          "indexes": [
+            "_id_",
+            "attributes.k_1_attributes.v_1"
+          ]
+        },
+        "plans": {
+          "count": 3,
+          "indexes": [
+            "_id_",
+            "code_1",
+            "monthlyFee_1_code_1"
+          ]
+        },
+        "tenants": {
+          "count": 15,
+          "indexes": [
+            "_id_",
+            "name_1"
+          ]
+        }
+      },
+      "customerMaster_checks": {
+        "signupDt_missing": 41,
+        "signupDtRaw_present": 201,
+        "tenantResolved_true": 1,
+        "attributes_total": 70,
+        "attributes_with_eavId": 70
+      }
+    },
+    "dbstats_after_reload": {
+      "when": "after_map_draft_3_reload",
+      "db": "mmp_rt_b3_oracle",
+      "collections": 4,
+      "objects": 251,
+      "dataSize": 231841,
+      "storageSize": 360448,
+      "indexes": 9,
+      "indexSize": 356352,
+      "collection_names": [
+        "codes",
+        "customerMaster",
+        "plans",
+        "tenants"
+      ],
+      "listDatabases_names": [
+        "admin",
+        "local",
+        "mmp_rt_b1_mysql",
+        "mmp_rt_b1_tsql",
+        "mmp_rt_b2_tsql",
+        "mmp_rt_b3_oracle",
+        "ow_billing_migration",
+        "ow_tp_billing_20261001T233613Z",
+        "ow_tp_mmp_live"
+      ],
+      "per_collection": {
+        "codes": {
+          "count": 32,
+          "indexes": [
+            "_id_",
+            "codeType_1_codeVal_1"
+          ]
+        },
+        "customerMaster": {
+          "count": 201,
+          "indexes": [
+            "_id_",
+            "attributes.k_1_attributes.v_1"
+          ]
+        },
+        "plans": {
+          "count": 3,
+          "indexes": [
+            "_id_",
+            "code_1",
+            "monthlyFee_1_code_1"
+          ]
+        },
+        "tenants": {
+          "count": 15,
+          "indexes": [
+            "_id_",
+            "name_1"
+          ]
+        }
+      },
+      "customerMaster_checks": {
+        "signupDt_missing": 41,
+        "signupDtRaw_present": 201,
+        "tenantResolved_true": 1,
+        "attributes_total": 70,
+        "attributes_with_eavId": 70
+      }
+    },
+    "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+    "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1"
+  }
 }
