@@ -1,0 +1,74 @@
+{
+  "unit": "notifications",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-draft-3",
+  "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+  "tolerance_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "collections": [
+    "notifications"
+  ],
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T09:26:07.756294+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "source_counts": {
+          "notifications": 1
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "deferred_to_tier3": [
+          "notifications.tenantId",
+          "notifications.sentAt"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "notifications.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "notifications": {
+          "mode": "full_diff",
+          "population": 1,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}
