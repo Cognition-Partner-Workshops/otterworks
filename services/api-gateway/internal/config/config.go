@@ -25,10 +25,6 @@ type Config struct {
 	AuditServiceURL        string
 	ReportServiceURL       string
 
-	// Tenant Redis holding the chaos flags; empty disables chaos.
-	RedisHost string
-	RedisPort string
-
 	// Rate limiting
 	RateLimitRPS int
 
@@ -48,10 +44,10 @@ type Config struct {
 	ShutdownTimeout time.Duration
 
 	// Circuit breaker
-	CBMaxRequests   uint32
-	CBInterval      time.Duration
-	CBTimeout       time.Duration
-	CBFailureRatio  float64
+	CBMaxRequests  uint32
+	CBInterval     time.Duration
+	CBTimeout      time.Duration
+	CBFailureRatio float64
 }
 
 // Validate checks that required security-sensitive configuration is present.
@@ -79,9 +75,6 @@ func Load() *Config {
 		AuditServiceURL:        getEnv("AUDIT_SERVICE_URL", "http://audit-service:8090"),
 		ReportServiceURL:       getEnv("REPORT_SERVICE_URL", "http://report-service:8091"),
 
-		RedisHost: getEnv("REDIS_HOST", ""),
-		RedisPort: getEnv("REDIS_PORT", "6379"),
-
 		RateLimitRPS: getEnvInt("RATE_LIMIT_RPS", 100),
 
 		JWTSecret:     getEnv("JWT_SECRET", ""),
@@ -99,14 +92,6 @@ func Load() *Config {
 		CBTimeout:      time.Duration(getEnvInt("CB_TIMEOUT_SECONDS", 30)) * time.Second,
 		CBFailureRatio: getEnvFloat("CB_FAILURE_RATIO", 0.6),
 	}
-}
-
-// RedisAddr returns host:port of the chaos-flag Redis, or "" when unset.
-func (c *Config) RedisAddr() string {
-	if c.RedisHost == "" {
-		return ""
-	}
-	return c.RedisHost + ":" + c.RedisPort
 }
 
 // ServiceRoutes returns a map of route prefix to backend service URL.
