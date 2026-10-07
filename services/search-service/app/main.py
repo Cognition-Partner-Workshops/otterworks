@@ -6,6 +6,7 @@ import logging
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import structlog
 from fastapi import FastAPI
@@ -13,7 +14,10 @@ from starlette.types import ASGIApp
 
 from app.api.health import router as health_router
 from app.config import AppConfig
+from app.errors import register_exception_handlers
+from app.middleware.auth import AuthMiddleware
 from app.middleware.cors import CORSMiddleware
+from app.routing import install_flask_router
 from app.services.meilisearch_client import MeiliSearchService
 
 logger = structlog.get_logger()
@@ -49,12 +53,16 @@ def configure_logging(log_level: str) -> None:
 
 
 class SearchServiceApp(FastAPI):
-    """FastAPI with CORS wrapped around the whole stack.
+    """FastAPI with Werkzeug routing and CORS wrapped around the whole stack.
 
     ``add_middleware`` would place CORS inside Starlette's
     ``ServerErrorMiddleware``, so unhandled-error 500s would lose the CORS
     headers flask-cors adds to them (``intercept_exceptions``).
     """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(redirect_slashes=False, **kwargs)
+        install_flask_router(self.router)
 
     def build_middleware_stack(self) -> ASGIApp:
         return CORSMiddleware(super().build_middleware_stack(), allow_origins=CORS_ORIGINS)
@@ -89,6 +97,9 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
 
     app = SearchServiceApp(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.config = config
+    register_exception_handlers(app)
+    # Inside ServerErrorMiddleware, before routing: Flask's before_request.
+    app.add_middleware(AuthMiddleware, auth_config=config.auth)
 
     app.include_router(health_router)
 
