@@ -8,11 +8,11 @@ Images `redis:7-alpine`, `getmeili/meilisearch:v1.6`, `python:3.12-slim` pulled 
 
 | Check | Command | Result |
 |-------|---------|--------|
-| Transcript replay | `python3 -m tests.parity.harness replay --out-dir tests/parity/results` (cwd `services/search-service`) | 130/130 HTTP cases, 0 differing, exit 0 — [replay.log](replay.log) |
+| Transcript replay | `python3 -m tests.parity.harness replay --out-dir tests/parity/results` (cwd `services/search-service`) | 130/130 HTTP cases, 0 differing, exit 0 — [replay.txt](replay.txt) |
 | Transcript diff | replayed transcript vs `flask_transcript.json` | byte-identical — [transcript_diff.txt](transcript_diff.txt) |
 | Metrics diff | replayed `/metrics` dump vs `flask_metrics.json` | byte-identical — [metrics_diff.txt](metrics_diff.txt) |
-| Contract tests (FastAPI) | `SEARCH_SERVICE_URL=http://localhost:8087 pytest tests/contract/test_search_contract.py -v` (repo root) | 16 passed, 2 failed — [contract_fastapi.log](contract_fastapi.log) |
-| Contract tests (Flask `main`) | same, against the Flask image on :8097 with the same env | 16 passed, 2 failed — [contract_flask_main.log](contract_flask_main.log) |
+| Contract tests (FastAPI) | `SEARCH_SERVICE_URL=http://localhost:8087 pytest tests/contract/test_search_contract.py -v` (repo root) | 16 passed, 2 failed — [contract_fastapi.txt](contract_fastapi.txt) |
+| Contract tests (Flask `main`) | same, against the Flask image on :8097 with the same env | 16 passed, 2 failed — [contract_flask_main.txt](contract_flask_main.txt) |
 
 The chaos-flag cases (`chaos.suggest.*`, `chaos:search-service:suggest_500`) are part of the 130 and replay identically.
 
