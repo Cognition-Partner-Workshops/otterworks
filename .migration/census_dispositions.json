@@ -1,0 +1,747 @@
+{
+  "kind": "census-dispositions",
+  "run": "mmp_rt_b3_oracle",
+  "plan_step": "s2.1-census",
+  "gate": "g-census-complete",
+  "recorded_at": "2026-10-07T07:05:00Z",
+  "plugin_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+  "plugin_base": {
+    "branch": "devin/1791335937-app-aware-modeling-next",
+    "branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+    "cherry_pick": "865b105d695090615d1efa908fd9621e7bbd7bff"
+  },
+  "inputs": {
+    "census.json": "catalog_census.py --family oracle --source-dsn-secret MMP_RT_SRC_DSN --schema OW_BILLING (principal OW_BILLING_RO, one read-only connection)",
+    "census_ddl.json": "ddl_census.py --dialect oracle schema/*.sql packages/*.sql (10 files)",
+    "census_diff.json": "census_diff.py census.json census_ddl.json --json (exit 1, 6 differences)"
+  },
+  "counts": {
+    "live": {
+      "tables": 20,
+      "columns": 434,
+      "fks": 13,
+      "triggers": 7,
+      "sequences": 0,
+      "plsql_units": 0,
+      "scheduler_jobs": 0,
+      "indexes_slot": 0,
+      "findings": 8,
+      "traps": 37
+    },
+    "ddl": {
+      "tables": 19,
+      "columns": 431,
+      "fks": 13,
+      "triggers": 7,
+      "sequences": 5,
+      "plsql_units": 10,
+      "scheduler_jobs": 2,
+      "indexes_slot": 0,
+      "findings": 15,
+      "traps": 42,
+      "unparsed": 2
+    },
+    "owner_catalog_truth": {
+      "TABLE": 20,
+      "INDEX": 25,
+      "SEQUENCE": 5,
+      "PACKAGE": 5,
+      "PACKAGE BODY": 5,
+      "TRIGGER": 7,
+      "JOB": 2,
+      "total": 69,
+      "source": "USER_OBJECTS as OW_BILLING via sqlplus in the container; matches fixture_counts.json schema_objects"
+    },
+    "diff": 6
+  },
+  "ro_tier_blindness": {
+    "note": "profile discovery_commands run verbatim as OW_BILLING_RO (CREATE SESSION + SELECT_CATALOG_ROLE + SELECT on tables); the right column is the same query as the owner. Principal left at the profile tier on purpose (F11); not widened.",
+    "queries": {
+      "tables": {
+        "ro": 20,
+        "owner": 20
+      },
+      "columns": {
+        "ro": 434,
+        "owner": 434
+      },
+      "constraints": {
+        "ro": 44,
+        "owner": 44
+      },
+      "indexes": {
+        "ro": 31,
+        "owner": 31
+      },
+      "triggers": {
+        "ro": 7,
+        "owner": 7
+      },
+      "plsql_objects": {
+        "ro": 0,
+        "owner": 17,
+        "missed": "5 PACKAGE + 5 PACKAGE BODY + 7 TRIGGER (ALL_OBJECTS hides code objects without EXECUTE; even the 7 triggers visible in ALL_TRIGGERS are absent here)"
+      },
+      "sequences": {
+        "ro": 0,
+        "owner": 5,
+        "missed": "all 5"
+      },
+      "scheduler_jobs": {
+        "ro": 0,
+        "owner": 2,
+        "missed": "both"
+      },
+      "rowid_usage": {
+        "ro": 0,
+        "owner": 0,
+        "note": "ALL_SOURCE is blind (0 of 17 units), so the 0 is unproven from the ro side; owner-side ALL_SOURCE confirms no ROWID usage"
+      },
+      "dependencies": {
+        "ro": 0,
+        "owner": 45,
+        "note": "optional id, not run by the census (UNUSED_IDS)"
+      }
+    },
+    "census_slots_silently_empty": [
+      "sequences",
+      "plsql_units",
+      "scheduler_jobs",
+      "rowid_usage findings"
+    ],
+    "see": "05_decisions.md F11, F14"
+  },
+  "diff_dispositions": [
+    {
+      "kind": "table",
+      "object": "FIXTURE_META",
+      "a": "present",
+      "b": "absent",
+      "right_side": "a (live)",
+      "why": "FIXTURE_META exists in the schema (created by startup/00_init.sh:150, altered by schema/04_upgrade_static.sql inside an anonymous block the parser lists as unparsed); it is fixture bookkeeping, not in schema/*.sql, so the DDL census cannot know it. Out of migration scope; exclude from the mapping spec."
+    },
+    {
+      "kind": "sequence",
+      "object": "SEQ_BILLING_AUDIT_LOG",
+      "a": "absent",
+      "b": "present",
+      "right_side": "b (ddl)",
+      "why": "sequence exists live (USER_OBJECTS as owner: 5 SEQUENCE, VALID) and in DDL (schema/01_tables.sql:177); OW_BILLING_RO sees 0 rows in ALL_SEQUENCES (F11/F14), so the live census is blind, not the schema."
+    },
+    {
+      "kind": "sequence",
+      "object": "SEQ_CUSTOMER_MASTER",
+      "a": "absent",
+      "b": "present",
+      "right_side": "b (ddl)",
+      "why": "sequence exists live (USER_OBJECTS as owner: 5 SEQUENCE, VALID) and in DDL (schema/02_horror.sql:343); OW_BILLING_RO sees 0 rows in ALL_SEQUENCES (F11/F14), so the live census is blind, not the schema."
+    },
+    {
+      "kind": "sequence",
+      "object": "SEQ_CUSTOMER_MASTER_HIST",
+      "a": "absent",
+      "b": "present",
+      "right_side": "b (ddl)",
+      "why": "sequence exists live (USER_OBJECTS as owner: 5 SEQUENCE, VALID) and in DDL (schema/02_horror.sql:344); OW_BILLING_RO sees 0 rows in ALL_SEQUENCES (F11/F14), so the live census is blind, not the schema."
+    },
+    {
+      "kind": "sequence",
+      "object": "SEQ_ENTITY_ATTR_VALUE",
+      "a": "absent",
+      "b": "present",
+      "right_side": "b (ddl)",
+      "why": "sequence exists live (USER_OBJECTS as owner: 5 SEQUENCE, VALID) and in DDL (schema/02_horror.sql:389); OW_BILLING_RO sees 0 rows in ALL_SEQUENCES (F11/F14), so the live census is blind, not the schema."
+    },
+    {
+      "kind": "sequence",
+      "object": "SEQ_SUBSCRIPTIONS_HIST",
+      "a": "absent",
+      "b": "present",
+      "right_side": "b (ddl)",
+      "why": "sequence exists live (USER_OBJECTS as owner: 5 SEQUENCE, VALID) and in DDL (schema/01_tables.sql:204); OW_BILLING_RO sees 0 rows in ALL_SEQUENCES (F11/F14), so the live census is blind, not the schema."
+    }
+  ],
+  "unparsed_ddl": [
+    {
+      "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+      "line": 6,
+      "what": "anonymous DECLARE/BEGIN block: EXECUTE IMMEDIATE 'ALTER TABLE fixture_meta ADD (marker, value)' guarded by a user_tab_columns count",
+      "disposition": "parser blind spot (F16) but harmless here: the only object it touches is FIXTURE_META (out of scope)"
+    },
+    {
+      "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+      "line": 170,
+      "what": "MERGE INTO fixture_meta ... static_seed_version = '2'",
+      "disposition": "MERGE is not a parsed statement (F16); seed_rows cannot count MERGE-fed rows; FIXTURE_META only"
+    }
+  ],
+  "other_observations": [
+    "ALL_TABLES.num_rows is NULL for all 20 tables (never analyzed; LAST_ANALYZED NULL) so census row_estimate is null everywhere; DBMS_STATS not run (legacy read-only). Recon baseline is .migration/fixture_counts.json, not the census.",
+    "Live triggers: events kept as one string ('UPDATE OR DELETE') and sequence_assigns always []; DDL splits events and reads bodies, so DDL classifies TRG_BILLING_AUDIT_LOG_ID / TRG_CUSTOMER_MASTER_SEQ / TRG_ENTITY_ATTR_VALUE_SEQ as sequence_trigger_identity while live flags all 7 as trigger_business_logic (F15). census_diff compares (name, table) only, so this is invisible to the diff.",
+    "DDL finding reference_data_candidate on ENTITY_ATTR_VALUE is wrong (F17): EAV is the entity-attribute table (66 rows in the mmprt seed + 4 static), also tagged as the eav trap by both censuses.",
+    "Both scheduler jobs are DISABLED live (USER_SCHEDULER_JOBS enabled=FALSE) \u2014 the DDL census records repeat_interval but not enabled; 04_jobs.sql creates them enabled => FALSE.",
+    "DDL seed_rows (03_seed_static.sql) match fixture_counts.static_rows_outside_namespace for TENANTS (11 incl. OtterWorks Admin -> 10 named + admin), CUSTOMER_MASTER 2 vs 1 live static (the second seed row is in the mmprt namespace count) \u2014 not a census defect, recon baseline stays fixture_counts.json."
+  ],
+  "objects": [
+    {
+      "type": "TABLE",
+      "name": "BILLING_AUDIT_LOG",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:169",
+      "live": "census.json tables.BILLING_AUDIT_LOG",
+      "ddl": "census_ddl.json tables.BILLING_AUDIT_LOG"
+    },
+    {
+      "type": "TABLE",
+      "name": "CODES",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:10",
+      "live": "census.json tables.CODES",
+      "ddl": "census_ddl.json tables.CODES"
+    },
+    {
+      "type": "TABLE",
+      "name": "CREDIT_NOTES",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "live": "census.json tables.CREDIT_NOTES",
+      "ddl": "census_ddl.json tables.CREDIT_NOTES"
+    },
+    {
+      "type": "TABLE",
+      "name": "CUSTOMER_MASTER",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "live": "census.json tables.CUSTOMER_MASTER",
+      "ddl": "census_ddl.json tables.CUSTOMER_MASTER"
+    },
+    {
+      "type": "TABLE",
+      "name": "CUSTOMER_MASTER_HIST",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "live": "census.json tables.CUSTOMER_MASTER_HIST",
+      "ddl": "census_ddl.json tables.CUSTOMER_MASTER_HIST"
+    },
+    {
+      "type": "TABLE",
+      "name": "DUNNING_ATTEMPTS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "live": "census.json tables.DUNNING_ATTEMPTS",
+      "ddl": "census_ddl.json tables.DUNNING_ATTEMPTS"
+    },
+    {
+      "type": "TABLE",
+      "name": "ENTITY_ATTR_VALUE",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "live": "census.json tables.ENTITY_ATTR_VALUE",
+      "ddl": "census_ddl.json tables.ENTITY_ATTR_VALUE"
+    },
+    {
+      "type": "TABLE",
+      "name": "FIXTURE_META",
+      "bucket": "live_only_fixture_bookkeeping",
+      "cite": "services/legacy-billing/db/oracle/startup/00_init.sh:150 (CREATE TABLE fixture_meta); altered by services/legacy-billing/db/oracle/schema/04_upgrade_static.sql:6 (unparsed anonymous block)",
+      "live": "census.json tables.FIXTURE_META",
+      "ddl": "absent (not in schema/*.sql)"
+    },
+    {
+      "type": "TABLE",
+      "name": "INVOICES",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "live": "census.json tables.INVOICES",
+      "ddl": "census_ddl.json tables.INVOICES"
+    },
+    {
+      "type": "TABLE",
+      "name": "INVOICE_HEADER",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "live": "census.json tables.INVOICE_HEADER",
+      "ddl": "census_ddl.json tables.INVOICE_HEADER"
+    },
+    {
+      "type": "TABLE",
+      "name": "INVOICE_LINE",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "live": "census.json tables.INVOICE_LINE",
+      "ddl": "census_ddl.json tables.INVOICE_LINE"
+    },
+    {
+      "type": "TABLE",
+      "name": "INVOICE_LINES",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "live": "census.json tables.INVOICE_LINES",
+      "ddl": "census_ddl.json tables.INVOICE_LINES"
+    },
+    {
+      "type": "TABLE",
+      "name": "NOTIFICATIONS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:158",
+      "live": "census.json tables.NOTIFICATIONS",
+      "ddl": "census_ddl.json tables.NOTIFICATIONS"
+    },
+    {
+      "type": "TABLE",
+      "name": "PLANS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "live": "census.json tables.PLANS",
+      "ddl": "census_ddl.json tables.PLANS"
+    },
+    {
+      "type": "TABLE",
+      "name": "RATING_PERIODS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:84",
+      "live": "census.json tables.RATING_PERIODS",
+      "ddl": "census_ddl.json tables.RATING_PERIODS"
+    },
+    {
+      "type": "TABLE",
+      "name": "RATING_RESULTS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "live": "census.json tables.RATING_RESULTS",
+      "ddl": "census_ddl.json tables.RATING_RESULTS"
+    },
+    {
+      "type": "TABLE",
+      "name": "SUBSCRIPTIONS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "live": "census.json tables.SUBSCRIPTIONS",
+      "ddl": "census_ddl.json tables.SUBSCRIPTIONS"
+    },
+    {
+      "type": "TABLE",
+      "name": "SUBSCRIPTIONS_HIST",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "live": "census.json tables.SUBSCRIPTIONS_HIST",
+      "ddl": "census_ddl.json tables.SUBSCRIPTIONS_HIST"
+    },
+    {
+      "type": "TABLE",
+      "name": "TENANTS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:40",
+      "live": "census.json tables.TENANTS",
+      "ddl": "census_ddl.json tables.TENANTS"
+    },
+    {
+      "type": "TABLE",
+      "name": "USAGE_EVENTS",
+      "bucket": "both_identical",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "live": "census.json tables.USAGE_EVENTS",
+      "ddl": "census_ddl.json tables.USAGE_EVENTS"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_BILLING_AUDIT_LOG",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.BILLING_AUDIT_LOG.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.BILLING_AUDIT_LOG.primary_key",
+      "ddl": "tables.BILLING_AUDIT_LOG.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_CODES",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.CODES.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.CODES.primary_key",
+      "ddl": "tables.CODES.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_CREDIT_NOTES",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.CREDIT_NOTES.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.CREDIT_NOTES.primary_key",
+      "ddl": "tables.CREDIT_NOTES.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_CUSTOMER_MASTER",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.CUSTOMER_MASTER.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.CUSTOMER_MASTER.primary_key",
+      "ddl": "tables.CUSTOMER_MASTER.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_CUSTOMER_MASTER_HIST",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.CUSTOMER_MASTER_HIST.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.CUSTOMER_MASTER_HIST.primary_key",
+      "ddl": "tables.CUSTOMER_MASTER_HIST.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_DUNNING_ATTEMPTS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.DUNNING_ATTEMPTS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.DUNNING_ATTEMPTS.primary_key",
+      "ddl": "tables.DUNNING_ATTEMPTS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_DUNNING_ATTEMPTS",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.DUNNING_ATTEMPTS.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.DUNNING_ATTEMPTS.unique",
+      "ddl": "tables.DUNNING_ATTEMPTS.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_ENTITY_ATTR_VALUE",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.ENTITY_ATTR_VALUE.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.ENTITY_ATTR_VALUE.primary_key",
+      "ddl": "tables.ENTITY_ATTR_VALUE.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_INVOICES",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.INVOICES.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.INVOICES.primary_key",
+      "ddl": "tables.INVOICES.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_INVOICE_HEADER",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.INVOICE_HEADER.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.INVOICE_HEADER.primary_key",
+      "ddl": "tables.INVOICE_HEADER.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_INVOICE_LINE",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.INVOICE_LINE.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.INVOICE_LINE.primary_key",
+      "ddl": "tables.INVOICE_LINE.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_INVOICE_LINES",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.INVOICE_LINES.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.INVOICE_LINES.primary_key",
+      "ddl": "tables.INVOICE_LINES.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_INVOICE_LINES",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.INVOICE_LINES.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.INVOICE_LINES.unique",
+      "ddl": "tables.INVOICE_LINES.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_NOTIFICATIONS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.NOTIFICATIONS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.NOTIFICATIONS.primary_key",
+      "ddl": "tables.NOTIFICATIONS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_NOTIFICATIONS",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.NOTIFICATIONS.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.NOTIFICATIONS.unique",
+      "ddl": "tables.NOTIFICATIONS.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_PLANS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.PLANS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.PLANS.primary_key",
+      "ddl": "tables.PLANS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_PLANS_CODE",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.PLANS.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.PLANS.unique",
+      "ddl": "tables.PLANS.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_RATING_PERIODS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.RATING_PERIODS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.RATING_PERIODS.primary_key",
+      "ddl": "tables.RATING_PERIODS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_RATING_PERIODS",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.RATING_PERIODS.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.RATING_PERIODS.unique",
+      "ddl": "tables.RATING_PERIODS.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_RATING_RESULTS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.RATING_RESULTS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.RATING_RESULTS.primary_key",
+      "ddl": "tables.RATING_RESULTS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_SUBSCRIPTIONS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.SUBSCRIPTIONS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.SUBSCRIPTIONS.primary_key",
+      "ddl": "tables.SUBSCRIPTIONS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_SUBSCRIPTIONS_HIST",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.SUBSCRIPTIONS_HIST.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.SUBSCRIPTIONS_HIST.primary_key",
+      "ddl": "tables.SUBSCRIPTIONS_HIST.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_TENANTS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.TENANTS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.TENANTS.primary_key",
+      "ddl": "tables.TENANTS.primary_key"
+    },
+    {
+      "type": "INDEX",
+      "name": "UQ_TENANTS_NAME",
+      "bucket": "constraint_index_folded_into_unique",
+      "cite": "census.json tables.TENANTS.unique; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.TENANTS.unique",
+      "ddl": "tables.TENANTS.unique"
+    },
+    {
+      "type": "INDEX",
+      "name": "PK_USAGE_EVENTS",
+      "bucket": "constraint_index_folded_into_primary_key",
+      "cite": "census.json tables.USAGE_EVENTS.primary_key; live indexes query 31 rows (inputs[3]); catalog_census.py:484 'the index backing a PK/unique constraint is the constraint'",
+      "live": "tables.USAGE_EVENTS.primary_key",
+      "ddl": "tables.USAGE_EVENTS.primary_key"
+    },
+    {
+      "type": "SEQUENCE",
+      "name": "SEQ_BILLING_AUDIT_LOG",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:177",
+      "live": "absent (ALL_SEQUENCES 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json sequences"
+    },
+    {
+      "type": "SEQUENCE",
+      "name": "SEQ_SUBSCRIPTIONS_HIST",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:204",
+      "live": "absent (ALL_SEQUENCES 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json sequences"
+    },
+    {
+      "type": "SEQUENCE",
+      "name": "SEQ_CUSTOMER_MASTER",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:343",
+      "live": "absent (ALL_SEQUENCES 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json sequences"
+    },
+    {
+      "type": "SEQUENCE",
+      "name": "SEQ_CUSTOMER_MASTER_HIST",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:344",
+      "live": "absent (ALL_SEQUENCES 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json sequences"
+    },
+    {
+      "type": "SEQUENCE",
+      "name": "SEQ_ENTITY_ATTR_VALUE",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:389",
+      "live": "absent (ALL_SEQUENCES 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json sequences"
+    },
+    {
+      "type": "PACKAGE",
+      "name": "PKG_OW_UTIL",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql:6",
+      "live": "absent (ALL_OBJECTS code types 0 rows, ALL_SOURCE 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE BODY",
+      "name": "PKG_OW_UTIL",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql:20",
+      "live": "absent (same)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE",
+      "name": "PKG_PLANS",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:5",
+      "live": "absent (ALL_OBJECTS code types 0 rows, ALL_SOURCE 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE BODY",
+      "name": "PKG_PLANS",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:18",
+      "live": "absent (same)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE",
+      "name": "PKG_RATING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:5",
+      "live": "absent (ALL_OBJECTS code types 0 rows, ALL_SOURCE 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE BODY",
+      "name": "PKG_RATING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:30",
+      "live": "absent (same)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE",
+      "name": "PKG_INVOICING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:5",
+      "live": "absent (ALL_OBJECTS code types 0 rows, ALL_SOURCE 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE BODY",
+      "name": "PKG_INVOICING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:24",
+      "live": "absent (same)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE",
+      "name": "PKG_DUNNING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:5",
+      "live": "absent (ALL_OBJECTS code types 0 rows, ALL_SOURCE 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "PACKAGE BODY",
+      "name": "PKG_DUNNING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:15",
+      "live": "absent (same)",
+      "ddl": "census_ddl.json plsql_units"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_BILLING_AUDIT_LOG_ID",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:179",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_SUBSCRIPTIONS_HIST",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:206",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_SUB_NO_UNCANCEL",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:228",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_USAGE_EVENTS_CHECK",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/01_tables.sql:239",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_CUSTOMER_MASTER_SEQ",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:346",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_CUSTOMER_MASTER_HIST",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:358",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "TRIGGER",
+      "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+      "bucket": "both_present_contract_degraded_live_F15",
+      "cite": "services/legacy-billing/db/oracle/schema/02_horror.sql:391",
+      "live": "census.json triggers (events joined as one string, sequence_assigns [])",
+      "ddl": "census_ddl.json triggers"
+    },
+    {
+      "type": "JOB",
+      "name": "JOB_NIGHTLY_DUNNING",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/04_jobs.sql:10 (DBMS_SCHEDULER.CREATE_JOB); live USER_SCHEDULER_JOBS: enabled=FALSE, state=DISABLED",
+      "live": "absent (ALL_SCHEDULER_JOBS 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json scheduler_jobs"
+    },
+    {
+      "type": "JOB",
+      "name": "JOB_PURGE_AUDIT_LOG",
+      "bucket": "ddl_only_live_blind_F11_F14",
+      "cite": "services/legacy-billing/db/oracle/schema/04_jobs.sql:21 (DBMS_SCHEDULER.CREATE_JOB); live USER_SCHEDULER_JOBS: enabled=FALSE, state=DISABLED",
+      "live": "absent (ALL_SCHEDULER_JOBS 0 rows under OW_BILLING_RO)",
+      "ddl": "census_ddl.json scheduler_jobs"
+    }
+  ],
+  "bucket_counts": {
+    "both_identical": 19,
+    "live_only_fixture_bookkeeping": 1,
+    "constraint_index_folded_into_primary_key": 19,
+    "constraint_index_folded_into_unique": 6,
+    "ddl_only_live_blind_F11_F14": 17,
+    "both_present_contract_degraded_live_F15": 7
+  }
+}
