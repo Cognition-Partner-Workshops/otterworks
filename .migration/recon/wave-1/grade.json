@@ -1,0 +1,275 @@
+{
+ "kind": "wave-grade-record",
+ "ticket": "UNT7-16",
+ "plan_step": "s4.1.c",
+ "wave": 1,
+ "run_branch": "tp-run/mongodb-20261007T062215Z",
+ "run_branch_tip_at_grading": "7b20d7ad",
+ "manifest_sha": "b11c0e7b2f31",
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "auto_merge": false,
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1 (devin/1791335937-app-aware-modeling-next, cherry-pick 865b105d applied)",
+ "command": "GIT_DIR=<repo>/.git python3 <plugin>/skills/wave-preflight/preflight.py --wave <repo>/.migration/waves/wave-1.json --root <repo> --grade <repo>/.migration/recon/w1-b0{1..5}.batch.json --verify <repo>/.migration/recon/wave-1/verify-result.json --run-id ticket-cf5c46af9c3345b98534ff860bb73f38 [--merged merged.json]  (run from $HOME, F4/F63)",
+ "graded_batches": {
+  "w1-b01": {
+   "status": "PASS",
+   "failure_class": "",
+   "merge_eligible": true,
+   "harness_merge_eligible": true,
+   "recon_verdict": "PASS",
+   "recon_mode": "live",
+   "target_class": "migration_cluster",
+   "mapping_version": "map-draft-4",
+   "manifest_sha": "b11c0e7b2f31",
+   "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+   "branch": "devin/1791370818-w1-recon-refresh",
+   "undeclared_write_targets": []
+  },
+  "w1-b02": {
+   "status": "PASS",
+   "failure_class": "",
+   "merge_eligible": true,
+   "harness_merge_eligible": true,
+   "recon_verdict": "PASS",
+   "recon_mode": "live",
+   "target_class": "migration_cluster",
+   "mapping_version": "map-draft-4",
+   "manifest_sha": "b11c0e7b2f31",
+   "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+   "branch": "devin/1791370818-w1-recon-refresh",
+   "undeclared_write_targets": []
+  },
+  "w1-b03": {
+   "status": "PASS",
+   "failure_class": null,
+   "merge_eligible": false,
+   "harness_merge_eligible": false,
+   "recon_verdict": "PASS",
+   "recon_mode": "live",
+   "target_class": "migration_cluster",
+   "mapping_version": "map-draft-4",
+   "manifest_sha": "b11c0e7b2f31",
+   "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+   "branch": "devin/1791370818-w1-recon-refresh",
+   "undeclared_write_targets": []
+  },
+  "w1-b04": {
+   "status": "PASS",
+   "failure_class": null,
+   "merge_eligible": true,
+   "harness_merge_eligible": true,
+   "recon_verdict": "PASS",
+   "recon_mode": "live",
+   "target_class": "migration_cluster",
+   "mapping_version": "map-draft-4",
+   "manifest_sha": "b11c0e7b2f31",
+   "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+   "branch": "devin/1791367911-w1-b04-load",
+   "undeclared_write_targets": []
+  },
+  "w1-b05": {
+   "status": "PASS",
+   "failure_class": null,
+   "merge_eligible": true,
+   "harness_merge_eligible": true,
+   "recon_verdict": "PASS",
+   "recon_mode": "live",
+   "target_class": "migration_cluster",
+   "mapping_version": "map-draft-4",
+   "manifest_sha": "b11c0e7b2f31",
+   "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+   "branch": "devin/1791368621-w1-b05-load",
+   "undeclared_write_targets": []
+  }
+ },
+ "graded_summaries": {
+  "w1-b01": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): codes PASS, tenants PASS, plans PASS, customerMaster PASS, billingAuditLog PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3 after the s3.3 spec correction: customerMaster 271/271 Tier-3 checks (0 findings; was 44 under map-draft-2 \u2014 F61 dirty SIGNUP_DT fixed by the scoped unparseable=null alias F65, F62 duplicate (ENTITY_ID, ATTR_NAME) fixed by the [ATTR_NAME, EAV_ID] element key F66); loader unchanged, obligations recomputed on the target: tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201, attributes 70/70 with eavId.",
+  "w1-b02": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): ratingPeriods PASS, creditNotes PASS, usageEvents PASS, notifications PASS, subscriptions PASS; original load: all five units PASS merge_eligible (live, migration_cluster, concurrency 1) under map-draft-3: ratingPeriods 3/3, creditNotes 5/5, usageEvents 103/103, notifications 1/1, subscriptions 15/15 rows with the plan extended reference copied from PLANS 15/15 (Tier 3 30 checks, 0 findings); one loader change for the duplicate ratingPeriods index declaration (F67) and copied_fields support; the first full load attempt aborted on that duplicate index after ratingPeriods, so the live runs on the four never-loaded units are kept as attempt 1 (F68) and the committed result.json files are attempt 2.",
+  "w1-b03": "refreshed by UNT7-25 under map-draft-4 / manifest_sha b11c0e7b2f31 (recon-only, no reload): invoiceHeader PASS (not merge_eligible), customerMasterHist PASS; original load: s3.4-orphan-scope re-run under map-draft-4 (child_where INVOICE_ID IN (SELECT INVOICE_ID FROM INVOICE_HEADER), manifest_sha b11c0e7b2f31): invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines in invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand on the target and owner-side), live harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2463 checks, 0 findings, embeds_graded 1463) but merge_eligible false because a scoped embed always carries the 'extra target elements not checked' warning (F72); graded INVOICE_LINE scope narrowed 1500 -> 1463 by decision (F71); customerMasterHist 0/0 PASS merge_eligible from the original b03 run (map-draft-3, not re-run); loader unchanged; nothing dropped, b01/b02 collections unchanged.",
+  "w1-b04": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
+  "w1-b05": "dunningAttempts 1/1 live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31 (Tier 1 2 / Tier 2 3 / Tier 3 1 checks, 0 findings, no warnings), one live run, concurrency 1; references resolve on both sides (invoiceId -> invoices 1/1, tenantId -> tenants 1/1, 0 dangling; DUNNING_ATTEMPTS has no subscription column); loader unchanged, second load identical hash, nothing dropped, b01-b04 collections unchanged; F74 (fixture-first artifact overwritten by the live run at the default per-unit path)."
+ },
+ "verifier": {
+  "run_id": "ticket-cf5c46af9c3345b98534ff860bb73f38",
+  "wave_verdict": "PASS",
+  "unit_verdicts": {
+   "w1-b01": "PASS",
+   "w1-b02": "PASS",
+   "w1-b03": "PASS",
+   "w1-b04": "PASS",
+   "w1-b05": "PASS"
+  },
+  "unit_verdicts_restamped": {
+   "at": "2026-10-07T11:20:00Z",
+   "after": "UNT7-25 / PR #1868",
+   "previous": [
+    "w1-b04",
+    "w1-b05"
+   ],
+   "ticket": "UNT7-26",
+   "plan_step": "s4.1.v2",
+   "decision": "d-verify-restamp = restamp",
+   "basis": "verifier_batch_verdicts (16 live runs under map-draft-4, 2026-10-07 ~10:40Z); no new recon, no Atlas access"
+  },
+  "verifier_batch_verdicts": {
+   "w1-b01": "PASS",
+   "w1-b02": "PASS",
+   "w1-b03": "PASS",
+   "w1-b04": "PASS",
+   "w1-b05": "PASS"
+  },
+  "unverified_units": {
+   "billingAuditLog": "source 0 rows; target collection never created",
+   "customerMasterHist": "source 0 rows; empty collection + index only",
+   "subscriptionsHist": "source 0 rows; TRG_SUBSCRIPTIONS_HIST never fired in the fixture (F73)"
+  },
+  "merge_notes": {
+   "invoiceHeader": "harness PASS, merge_eligible false (F72 scoped-embed warning); hand proof 1463+37=1500 in verify-report.md \u00a74.1"
+  },
+  "verify_problems": [],
+  "verify_exit": 0
+ },
+ "mergeable_prs": [
+  "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+  "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+  "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+  "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866"
+ ],
+ "merged_check": {
+  "actually_merged_into_run_branch": [
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1862",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1863",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1867",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868",
+   "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1869"
+  ],
+  "merged_json_full_set": {
+   "exit": 1,
+   "verify_problems": [
+    "merge output invalid: merged_prs includes unverified https://github.com/Cognition-Partner-Workshops/otterworks/pull/1864",
+    "merge output invalid: merged_prs includes unverified https://github.com/Cognition-Partner-Workshops/otterworks/pull/1867",
+    "merge output invalid: merged_prs includes unverified https://github.com/Cognition-Partner-Workshops/otterworks/pull/1868",
+    "merge output invalid: merged_prs includes unverified https://github.com/Cognition-Partner-Workshops/otterworks/pull/1869"
+   ]
+  },
+  "merged_json_mergeable_set_only": {
+   "exit": 0,
+   "verify_problems": []
+  },
+  "note": "#1864 (w1-b03) merged on manager decision d-orphan-grading = child-where although not in mergeable_prs (F81); #1867 (verify), #1868 (recon refresh), #1869 (verifier re-stamp) are not batch PRs and the merge contract has no place for them (F82). Nothing reverted."
+ },
+ "downgrades_and_caveats": [
+  {
+   "batch": "w1-b03",
+   "unit": "invoiceHeader",
+   "kind": "PASS not merge_eligible",
+   "finding": "F72",
+   "detail": "harness PASS (Tier 1 3 / Tier 2 2 / Tier 3 2,463 checks, 0 findings) with warning `embed invoiceHeader.lines: scoped by a where-predicate; extra target elements not checked`; report.py never grants merge_eligible to a unit with a warning. Graded INVOICE_LINE scope 1,463 of 1,500 (F71, child_where). Remainder: 37 ghost lines in mmp_rt_b3_oracle.invoice_lines_orphaned (orphan: true, raw invoiceId) \u2014 hand proof 1463 + 37 = 1500 on target and owner side, 0 orphan invoiceIds resolve to a header, 0 lineId on both sides (w1-b03.evidence.json; re-proved by the verifier, verify-report.md \u00a74.1). Accepted by d-orphan-grading; recorded, not fixed."
+  },
+  {
+   "batch": "w1-b01",
+   "unit": "billingAuditLog",
+   "kind": "UNVERIFIED (0 rows)",
+   "finding": "F70",
+   "detail": "source 0 rows; target collection never created"
+  },
+  {
+   "batch": "w1-b03",
+   "unit": "customerMasterHist",
+   "kind": "UNVERIFIED (0 rows)",
+   "finding": "F70",
+   "detail": "source 0 rows; empty collection + index only"
+  },
+  {
+   "batch": "w1-b04",
+   "unit": "subscriptionsHist",
+   "kind": "UNVERIFIED (0 rows)",
+   "finding": "F70/F73",
+   "detail": "source 0 rows; TRG_SUBSCRIPTIONS_HIST never fired in the fixture (F73); latent histDt format defect (F73) unexercised"
+  },
+  {
+   "scope": "target principal",
+   "kind": "connectivity.json blocked: true",
+   "decision": "d-target-principal",
+   "detail": "target principal probe BLOCKED (privilege_excess, F12\u2013F13); loads ran under the same MONGODB_ATLAS_URI with mongo_guard database allowlist as the only scope control; connectivity.json unchanged for the whole run"
+  },
+  {
+   "scope": "grading provenance",
+   "kind": "evidence branch dependency",
+   "finding": "F79",
+   "detail": "w1-b01/02/03.batch.json cite branch devin/1791370818-w1-recon-refresh; the grader reads recon_results from origin/<branch>, so a PASS for b01\u2013b03 depends on that branch staying on origin (manager keeps it for the run; nothing pins its SHA)"
+  },
+  {
+   "scope": "verifier file",
+   "kind": "re-stamped unit_verdicts",
+   "finding": "F78/F80",
+   "detail": "unit_verdicts re-stamped from verifier_batch_verdicts (UNT7-26) after the s4.1.r refresh; no new recon"
+  }
+ ],
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "uri_secret": "MONGODB_ATLAS_URI",
+  "access": "read-only (dbStats, collection counts, listDatabases)",
+  "dbstats": {
+   "collections": 16,
+   "objects": 1423,
+   "dataSize": 1458565,
+   "storageSize": 2064384,
+   "indexes": 37,
+   "indexSize": 1523712
+  },
+  "collection_counts": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "dunningAttempts": 1,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "budget_bytes": 10485760,
+  "listDatabases_names": [
+   "admin",
+   "local",
+   "mmp_rt_b1_mysql",
+   "mmp_rt_b1_tsql",
+   "mmp_rt_b2_tsql",
+   "mmp_rt_b3_oracle",
+   "ow_billing_migration",
+   "ow_tp_billing_20261001T233613Z",
+   "ow_tp_mmp_live"
+  ],
+  "databases_not_created_by_this_run": [
+   "mmp_rt_b1_mysql",
+   "mmp_rt_b1_tsql",
+   "mmp_rt_b2_tsql",
+   "ow_billing_migration",
+   "ow_tp_billing_20261001T233613Z",
+   "ow_tp_mmp_live"
+  ],
+  "pre_existence_evidence": ".migration/recon/w1-b01.evidence.json /target/dbStats_before/listDatabases_names lists the same names before the first wave-1 write",
+  "no_other_database_created": true
+ },
+ "edits": "only recon/wave-1/grade.md, recon/wave-1/grade.json, 05_decisions.md (F81\u2013F82), README.md (grade section); connectivity.json / spec / waves / tolerances / batch / verifier files untouched",
+ "findings": [
+  "F81",
+  "F82"
+ ],
+ "pr_url": null
+}
