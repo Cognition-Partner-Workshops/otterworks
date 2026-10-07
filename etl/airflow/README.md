@@ -13,14 +13,14 @@ until their DAGs are ported; this directory only provides the image, local stack
 | `scripts/check-stack.sh` | Gate: webserver + scheduler healthy, expected DAG parsed, zero import errors |
 | `CONFIG.md` | Airflow Connections and Variables that replaced `etl/config.ini` (removed), old key to new key |
 | `.env.example` | Local `AIRFLOW_CONN_*` / `AIRFLOW_VAR_*` (dev values only), copied to the untracked `.env` |
-| `scripts/check_config.py` | Config check: static (docs, decided defaults, `etl/config.ini` stays removed) and live (resolve + probe) |
+| `scripts/check_config.py` | Config check: static (docs, values vs. `etl/scripts` defaults, decided defaults, `etl/config.ini` stays removed) and live (resolve + probe) |
 
 ## Local stack
 
 ```bash
 make airflow-up     # infra (postgres, localstack, meilisearch) + Airflow, waits for healthy, runs the gate
 make airflow-check  # re-run the gate
-make airflow-config-check  # Connections/Variables resolve and reach postgres, localstack, meilisearch
+make airflow-config-check  # every Connection and required Variable resolves; reaches postgres, localstack (named buckets/queues/tables exist), meilisearch
 make airflow-down   # stop Airflow (keeps its metadata volume; infra stays up)
 ```
 
