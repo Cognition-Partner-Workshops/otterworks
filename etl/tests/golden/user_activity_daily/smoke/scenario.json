@@ -1,0 +1,23 @@
+{
+  "description": "Harness smoke: Postgres summaries inside and outside the 30-day lookback, per-user top_users.jsonl.gz for two days in the lookback; exercises the report, latest pointer and JSONL summaries.",
+  "frozen_time": "2026-03-15T05:00:00Z",
+  "seed": {
+    "postgres": {
+      "analytics_daily_summary": [
+        {"report_date": "2026-01-01", "active_users": 9, "active_documents": 9, "active_files": 9, "total_events": 99, "documents_created": 9, "documents_edited": 9, "comments_added": 9, "files_uploaded": 9, "files_shared": 9, "files_deleted": 9, "bytes_uploaded": 9999, "updated_at": "2026-01-01T02:00:00Z"},
+        {"report_date": "2026-03-14", "active_users": 2, "active_documents": 1, "active_files": 1, "total_events": 5, "documents_created": 1, "documents_edited": 2, "comments_added": 1, "files_uploaded": 1, "files_shared": 0, "files_deleted": 0, "bytes_uploaded": 1024, "updated_at": "2026-03-14T02:00:00Z"},
+        {"report_date": "2026-03-15", "active_users": 3, "active_documents": 1, "active_files": 2, "total_events": 6, "documents_created": 1, "documents_edited": 1, "comments_added": 1, "files_uploaded": 2, "files_shared": 1, "files_deleted": 0, "bytes_uploaded": 2560, "updated_at": "2026-03-15T02:00:00Z"}
+      ]
+    },
+    "s3": [
+      {"bucket": "otterworks-data-lake", "key": "analytics/daily/year=2026/month=03/day=14/top_users.jsonl.gz", "gzip": true, "format": "jsonl", "body": [
+        {"user_id": "user-alice", "actions": {"document_edited": 2, "file_uploaded": 1}, "total": 3},
+        {"user_id": "user-bob", "actions": {"comment_added": 1, "document_created": 1}, "total": 2}
+      ]},
+      {"bucket": "otterworks-data-lake", "key": "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz", "gzip": true, "format": "jsonl", "body": [
+        {"user_id": "user-carol", "actions": {"file_uploaded": 2, "file_shared": 1}, "total": 3},
+        {"user_id": "user-alice", "actions": {"document_created": 1}, "total": 1}
+      ]}
+    ]
+  }
+}

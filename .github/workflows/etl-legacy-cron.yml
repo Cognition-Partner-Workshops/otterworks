@@ -1,0 +1,52 @@
+name: ETL legacy cron
+
+# legacy-etl-cron (docker-compose.airflow.yml, profile legacy-cron): unit tests, then build
+# the image, start it next to docker-compose.infra.yml and run the schedule/cutover/rollback smoke.
+on:
+  push:
+    paths:
+      - "etl/legacy-cron/**"
+      - "etl/crontab"
+      - "etl/run.sh"
+      - "etl/scripts/**"
+      - "etl/requirements.txt"
+      - "etl/tests/golden/legacy/**"
+      - "etl/tests/golden/harness/**"
+      - "docker-compose.airflow.yml"
+      - "docker-compose.infra.yml"
+      - "Makefile"
+      - ".github/workflows/etl-legacy-cron.yml"
+  pull_request:
+    paths:
+      - "etl/legacy-cron/**"
+      - "etl/crontab"
+      - "etl/run.sh"
+      - "etl/scripts/**"
+      - "etl/requirements.txt"
+      - "etl/tests/golden/legacy/**"
+      - "etl/tests/golden/harness/**"
+      - "docker-compose.airflow.yml"
+      - "docker-compose.infra.yml"
+      - "Makefile"
+      - ".github/workflows/etl-legacy-cron.yml"
+
+jobs:
+  legacy-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: make legacy-cron-test
+      - run: shellcheck etl/legacy-cron/scripts/smoke.sh
+      - run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow --profile legacy-cron config --quiet
+      - run: make legacy-cron-up
+      - run: make legacy-cron-run SCRIPT=storage_cleanup_daily
+      - run: make legacy-cron-smoke
+      - if: failure()
+        run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow --profile legacy-cron logs --no-color legacy-etl-cron
+      - if: always()
+        run: |
+          make legacy-cron-down
+          docker compose -f docker-compose.infra.yml down -v

@@ -104,6 +104,53 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  # Legacy cron for strangler coexistence and rollback (etl/legacy-cron/README.md).
+  # Opt-in via the legacy-cron profile (`make legacy-cron-up`); runs only the lines
+  # still present in etl/crontab, through etl/run.sh, with the golden harness shim.
+  legacy-etl-cron:
+    profiles:
+    - legacy-cron
+    build:
+      context: ./etl
+      dockerfile: legacy-cron/Dockerfile
+    image: otterworks/etl-legacy-cron:local
+    environment:
+      TZ: UTC
+      GOLDEN_AWS_ENDPOINT_URL: http://localstack:4566
+      GOLDEN_PG_HOST: postgres
+      GOLDEN_PG_PORT: '5432'
+      GOLDEN_MEILI_URL: http://meilisearch:7700
+      # Same address as DOCUMENT_SERVICE_URL in docker-compose.yml.
+      LEGACY_CRON_DOCUMENT_SERVICE_URL: ${LEGACY_CRON_DOCUMENT_SERVICE_URL:-http://document-service:8083}
+      # Same address as FILE_SERVICE_URL in docker-compose.yml.
+      LEGACY_CRON_FILE_SERVICE_URL: ${LEGACY_CRON_FILE_SERVICE_URL:-http://file-service:8082}
+    volumes:
+    - ./etl/run.sh:/opt/etl/run.sh:ro
+    - ./etl/scripts:/opt/etl/scripts:ro
+    - ${LEGACY_ETL_CRONTAB:-./etl/crontab}:/opt/etl/crontab:ro
+    - ./etl/tests/golden/legacy/sitecustomize.py:/opt/etl/sitecustomize.py:ro
+    - ./etl/tests/golden/harness:/opt/legacy-cron/golden/harness:ro
+    networks:
+    - otterworks
+    healthcheck:
+      test:
+      - CMD
+      - python3
+      - /opt/legacy-cron/legacy_cron.py
+      - healthcheck
+      interval: 5s
+      timeout: 5s
+      start_period: 10s
+      retries: 6
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    tmpfs:
+    - /tmp
+    - /run/legacy-etl:uid=10001,gid=10001,mode=0700
+    - /var/log/etl:uid=10001,gid=10001,mode=0755
+
 networks:
   airflow: {}
   otterworks:
