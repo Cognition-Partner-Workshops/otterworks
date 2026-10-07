@@ -16,11 +16,19 @@ import (
 
 const testSecret = "router-test-secret-0123456789abcdef0123456789abcdef"
 
-func newIdentityTestServer(t *testing.T) (http.Handler, *string) {
+type forwardedRequest struct {
+	userID     string
+	requestURI string
+	authHeader string
+}
+
+func newIdentityTestServer(t *testing.T) (http.Handler, *forwardedRequest) {
 	t.Helper()
-	seen := new(string)
+	seen := new(forwardedRequest)
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		*seen = r.Header.Get("X-User-ID")
+		seen.userID = r.Header.Get("X-User-ID")
+		seen.requestURI = r.URL.RequestURI()
+		seen.authHeader = r.Header.Get("Authorization")
 		w.WriteHeader(http.StatusOK)
 	}))
 	t.Cleanup(backend.Close)
@@ -46,7 +54,8 @@ func TestRouter_StripsSpoofedUserIDOnUnauthenticatedRoute(t *testing.T) {
 	handler.ServeHTTP(rec, req)
 
 	require.Equal(t, http.StatusOK, rec.Code)
-	assert.Empty(t, *seen)
+	assert.Empty(t, seen.userID)
+	assert.Equal(t, "/api/v1/search/public", seen.requestURI)
 }
 
 func TestRouter_OverwritesSpoofedUserIDWithTokenSubject(t *testing.T) {
@@ -66,5 +75,7 @@ func TestRouter_OverwritesSpoofedUserIDWithTokenSubject(t *testing.T) {
 	handler.ServeHTTP(rec, req)
 
 	require.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, "attacker", *seen)
+	assert.Equal(t, "attacker", seen.userID)
+	assert.Equal(t, "/api/v1/search/?q=x", seen.requestURI)
+	assert.Equal(t, "Bearer "+token, seen.authHeader)
 }
