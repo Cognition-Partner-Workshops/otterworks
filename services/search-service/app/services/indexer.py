@@ -16,6 +16,24 @@ FILE_SERVICE_URL = "http://file-service:8082"
 FETCH_TIMEOUT = 30
 
 
+def share_recipients(value: Any) -> list[str]:
+    """Normalise a share list to the user IDs it grants access to.
+
+    Accepts plain user IDs or share objects as returned by file-service
+    (``{"shared_with": "<user-id>", ...}``).
+    """
+    if not isinstance(value, list):
+        return []
+    recipients: list[str] = []
+    for entry in value:
+        if isinstance(entry, dict):
+            entry = entry.get("shared_with") or entry.get("sharedWith") or entry.get("user_id")
+        user_id = entry.strip() if isinstance(entry, str) else ""
+        if user_id and user_id not in recipients:
+            recipients.append(user_id)
+    return recipients
+
+
 class Indexer:
     """Handles document and file indexing into MeiliSearch."""
 
@@ -26,7 +44,7 @@ class Indexer:
         """Validate and index a document.
 
         Expected payload fields:
-            id, title, content, owner_id, tags, created_at, updated_at
+            id, title, content, owner_id, shared_with, tags, created_at, updated_at
         """
         if not payload.get("id"):
             raise ValueError("Document 'id' is required")
@@ -38,6 +56,7 @@ class Indexer:
             "title": payload["title"],
             "content": payload.get("content", ""),
             "owner_id": payload.get("owner_id", ""),
+            "shared_with": share_recipients(payload.get("shared_with")),
             "tags": payload.get("tags", []),
             "created_at": payload.get("created_at"),
             "updated_at": payload.get("updated_at"),
@@ -51,7 +70,7 @@ class Indexer:
         """Validate and index a file.
 
         Expected payload fields:
-            id, name, mime_type, owner_id, folder_id, tags, size, created_at
+            id, name, mime_type, owner_id, shared_with, folder_id, tags, size, created_at
         """
         if not payload.get("id"):
             raise ValueError("File 'id' is required")
@@ -63,6 +82,7 @@ class Indexer:
             "name": payload["name"],
             "mime_type": payload.get("mime_type", ""),
             "owner_id": payload.get("owner_id", ""),
+            "shared_with": share_recipients(payload.get("shared_with")),
             "folder_id": payload.get("folder_id", ""),
             "tags": payload.get("tags", []),
             "size": payload.get("size", 0),
@@ -127,6 +147,7 @@ class Indexer:
                         "title": item.get("title", ""),
                         "content": item.get("content", ""),
                         "owner_id": item.get("owner_id", ""),
+                        "shared_with": share_recipients(item.get("shared_with")),
                         "tags": item.get("tags", []),
                         "created_at": item.get("created_at"),
                         "updated_at": item.get("updated_at"),
@@ -163,6 +184,9 @@ class Indexer:
                         "name": item.get("name", ""),
                         "mime_type": item.get("mime_type", item.get("mimeType", "")),
                         "owner_id": item.get("owner_id", item.get("ownerId", "")),
+                        "shared_with": share_recipients(
+                            item.get("shared_with", item.get("sharedWith"))
+                        ),
                         "folder_id": item.get("folder_id", item.get("folderId", "")),
                         "tags": item.get("tags", []),
                         "size": item.get("size", item.get("size_bytes", item.get("sizeBytes", 0))),
