@@ -86,3 +86,66 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_title_quote_is_treated_as_data(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "x')) OR 1=1--"})
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_content_type_tautology_does_not_cross_owners(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    other_owner = uuid.uuid4()
+    await _create(client, owner_id, "Mine")
+    await _create(client, other_owner, "Theirs")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "content_type": "text/markdown' OR '1'='1"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("sort", "direction"),
+    [
+        ("title; DROP TABLE documents", "desc"),
+        ("(SELECT 1)", "asc"),
+        ("title", "desc; SELECT 1"),
+    ],
+)
+async def test_unknown_sort_or_direction_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, sort: str, direction: str
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get(
+        "/api/v1/documents/", params={"sort": sort, "direction": direction}
+    )
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid sort or direction"}
+
+
+@pytest.mark.asyncio
+async def test_direction_is_case_insensitive(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Beta plan")
+    await _create(client, owner_id, "Alpha plan")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"title": "plan", "sort": "title", "direction": "ASC"},
+    )
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Alpha plan", "Beta plan"]

@@ -226,8 +226,11 @@ async def _do_filter_documents(
             limit=size,
             offset=(page - 1) * size,
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid sort or direction") from exc
     except SQLAlchemyError as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid filter: {exc}") from exc
+        logger.exception("document_filter_query_failed")
+        raise HTTPException(status_code=400, detail="Invalid filter") from exc
     return DocumentListResponse(
         items=[DocumentResponse.model_validate(row) for row in rows],
         total=total,
