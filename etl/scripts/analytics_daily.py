@@ -5,10 +5,9 @@
 #
 # Owner: Jake (data-team@otterworks.dev) -- Jake left mid-2020
 # TODO ETL-078: Refactor this into proper modules (deferred Q4 2019)
-# TODO ETL-142: Move credentials to secrets manager (deferred Q3 2020)
+# ETL-142: credentials come from the environment, see etl_config.py
 # TODO ETL-201: Add unit tests (never prioritized)
 
-import configparser
 import gzip
 import io
 import json
@@ -21,16 +20,17 @@ import boto3
 import pandas as pd
 import psycopg2
 
+from etl_config import load_config
+
 
 def main():
     print("[%s] analytics_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
+    config = load_config()
 
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    aws_access_key = config.get("aws", "access_key", required=False)
+    aws_secret_key = config.get("aws", "secret_key", required=False)
     aws_region = config.get("aws", "region")
 
     db_host = config.get("database", "host")
