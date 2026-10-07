@@ -40,7 +40,7 @@ scheduled run and its outputs check out.
 1. **`otterworks_analytics_etl`** first. `otterworks_user_activity_report` reads its partitions
    and `analytics_daily_summary`, so analytics must be stable before anything downstream moves.
 2. **`otterworks_audit_archive`, alone**, only once its parity report has no failed rows. Cut it
-   over with `audit_archive_delete_enabled=false` ([§5.2](#53-otterworks_audit_archive)). Nothing
+   over with `audit_archive_delete_enabled=false` ([§5.3](#53-otterworks_audit_archive)). Nothing
    else is cut over in the same week.
 3. **The other three**, in any order, one per slot: `otterworks_storage_cleanup`
    (`storage_cleanup_normalize_keys=false`), `otterworks_user_activity_report`,
