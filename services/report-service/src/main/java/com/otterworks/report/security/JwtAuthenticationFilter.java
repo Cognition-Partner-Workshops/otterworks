@@ -3,6 +3,8 @@ package com.otterworks.report.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,28 +66,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith(BEARER_PREFIX)) {
-            Claims claims = verify(header.substring(BEARER_PREFIX.length()).trim());
-            if (claims != null && !"refresh".equals(claims.get("type", String.class))
-                    && StringUtils.hasText(claims.getSubject())) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        claims.getSubject(), null, authorities(claims.get("roles")));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+        try {
+            SecurityContextHolder.getContext().setAuthentication(authenticate(bearerToken(request)));
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.debug("Request not authenticated: {}", e.getClass().getSimpleName());
         }
         filterChain.doFilter(request, response);
     }
 
+    private static String bearerToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return header != null && header.startsWith(BEARER_PREFIX)
+                ? header.substring(BEARER_PREFIX.length()).trim() : null;
+    }
+
+    private UsernamePasswordAuthenticationToken authenticate(String token) {
+        Claims claims = verify(token);
+        requireAccessToken(claims);
+        return new UsernamePasswordAuthenticationToken(
+                claims.getSubject(), null, authorities(claims.get("roles")));
+    }
+
+    private static void requireAccessToken(Claims claims) {
+        if ("refresh".equals(claims.get("type", String.class))) {
+            throw new UnsupportedJwtException("refresh tokens cannot be used as access tokens");
+        }
+        if (!StringUtils.hasText(claims.getSubject())) {
+            throw new MalformedJwtException("token has no subject");
+        }
+    }
+
     private Claims verify(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new IllegalArgumentException("no bearer token");
+        }
+        JwtException failure = new JwtException("JWT_SECRET is not configured");
         for (SecretKey key : signingKeys) {
             try {
                 return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-            } catch (JwtException | IllegalArgumentException e) {
-                logger.debug("JWT rejected: {}", e.getMessage());
+            } catch (JwtException e) {
+                failure = e;
             }
         }
-        return null;
+        throw failure;
     }
 
     private static Collection<SimpleGrantedAuthority> authorities(Object rolesClaim) {

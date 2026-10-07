@@ -89,8 +89,8 @@ public class ReportController {
         request.setRequestedBy(caller.getUserId());
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
-                request.getReportName(), request.getCategory(),
-                request.getReportType(), caller.getUserId());
+                sanitizeForLog(request.getReportName()), request.getCategory(),
+                request.getReportType(), sanitizeForLog(caller.getUserId()));
 
         Report report = reportService.createReport(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -239,6 +239,10 @@ public class ReportController {
      * Reports the caller may not access are reported as absent, so sequential ids
      * cannot be probed for existence.
      */
+    private static String sanitizeForLog(String value) {
+        return value == null ? null : value.replaceAll("[\r\n]", "_");
+    }
+
     private Optional<Report> findAccessibleReport(Long id, ReportCaller caller) {
         return reportService.getReport(id)
                 .filter(report -> caller.canAccess(report.getRequestedBy()))

@@ -20,9 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -313,10 +313,10 @@ public class ReportAuthorizationIntegrationTest {
     }
 
     private static String reportFile(String contents) throws Exception {
-        File file = File.createTempFile("report-authz-", ".csv");
-        file.deleteOnExit();
-        Files.write(file.toPath(), contents.getBytes(StandardCharsets.UTF_8));
-        return file.getAbsolutePath();
+        Path file = Files.createTempFile("report-authz-", ".csv");
+        file.toFile().deleteOnExit();
+        Files.write(file, contents.getBytes(StandardCharsets.UTF_8));
+        return file.toAbsolutePath().toString();
     }
 
     private static ReportRequest request(ReportCategory category, String requestedBy) {
