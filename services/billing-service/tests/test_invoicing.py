@@ -88,6 +88,8 @@ class FakeInvoicingRepository(FakeRatingRepository):
         self.invoices: dict[UUID, InvoiceRow] = {}
         self.lines: dict[UUID, InvoiceLineRow] = {}
         self.writes: list[str] = []
+        self.locked_before_reads: list[bool] = []
+        self.priced = False
 
     def list_plans(self) -> list[PlanRow]:
         return self.plans
@@ -97,13 +99,14 @@ class FakeInvoicingRepository(FakeRatingRepository):
         super().insert_rating_period(period)
 
     def find_tax_exempt(self, _tenant_id: UUID) -> bool | None:
+        self.priced = True
         return self.tax_exempt
 
     def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
         return [item for item in self.notes.values() if item.tenant_id == tenant_id]
 
     def lock_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
-        self.writes.append("lock_credit")
+        self.locked_before_reads.append(not self.priced)
         return self.list_credit_notes(tenant_id)
 
     def update_credit_remaining(self, credit_id: UUID, remaining_amount: Decimal) -> None:
@@ -403,12 +406,12 @@ def test_reissue_consumes_remaining_credit_again() -> None:
 
 
 @pytest.mark.rule("INVOICING-R09")
-def test_credit_is_consumed_from_locked_balances() -> None:
+def test_credit_notes_are_locked_before_the_invoice_is_priced() -> None:
     repository = FakeInvoicingRepository(
         [subscription()], notes=[note(NOTE_A, date(2026, 1, 31), "5.00")]
     )
     issue_invoice(repository, TENANT, FEB_START, FEB_END)
-    assert repository.writes.index("lock_credit") < repository.writes.index("credit")
+    assert repository.locked_before_reads == [True]
 
 
 @pytest.mark.rule("INVOICING-R10")

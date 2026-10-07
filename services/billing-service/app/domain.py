@@ -586,6 +586,7 @@ def consume_credit(notes: list[CreditNoteRow], credit: Decimal) -> list[tuple[UU
 def issue_invoice(
     repository: InvoicingRepository, tenant_id: UUID, period_start: date, period_end: date
 ) -> IssuedInvoice:
+    repository.lock_credit_notes(tenant_id)
     lines = invoice_preview(repository, tenant_id, period_start, period_end)
     totals = invoice_totals(lines)
     if totals.total < 0:
@@ -613,7 +614,7 @@ def issue_invoice(
         repository.insert_invoice_line(line)
     repository.update_invoice_totals(invoice_id, totals)
     for credit_id, remaining_amount in consume_credit(
-        repository.lock_credit_notes(tenant_id), totals.credit
+        repository.list_credit_notes(tenant_id), totals.credit
     ):
         repository.update_credit_remaining(credit_id, remaining_amount)
     invoice = repository.find_invoice(invoice_id)
