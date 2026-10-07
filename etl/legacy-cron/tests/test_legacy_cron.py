@@ -131,20 +131,34 @@ def test_render_config_requires_service_urls(tmp_path):
         legacy_cron.render_config(str(tmp_path / "c.ini"), str(GOLDEN_DIR), env={})
 
 
-def test_rendered_credentials_and_hosts_are_not_the_committed_ones(tmp_path):
+def test_committed_config_ini_is_retired_and_rendered_hosts_are_local(tmp_path):
+    # etl/config.ini is deleted (ETL_UPGRADE_GUIDE.md step 9); the container only ever reads
+    # the rendered dev config, whose endpoints are the local stack or the test's services.
+    assert not (ETL_DIR / "config.ini").exists()
     _, rendered = _render(tmp_path)
-    committed = configparser.ConfigParser()
-    committed.read(ETL_DIR / "config.ini")
-    for section, key in [
-        ("aws", "access_key"),
-        ("aws", "secret_key"),
-        ("database", "host"),
-        ("database", "user"),
-        ("database", "password"),
-        ("database", "database"),
-        ("services", "document_service_url"),
-        ("services", "file_service_url"),
-        ("services", "meilisearch_url"),
-        ("services", "meilisearch_api_key"),
-    ]:
-        assert rendered[section][key] != committed[section][key], (section, key)
+    assert rendered["database"]["host"] in ("localhost", "127.0.0.1", "postgres")
+    assert rendered["aws"]["access_key"] == rendered["aws"]["secret_key"] == "test"
+    assert set(LOCAL_SERVICES.values()) <= set(rendered["services"].values())
+
+
+def test_concurrent_renders_do_not_share_a_staging_file(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    target = tmp_path / "config.ini"
+    (tmp_path / "config.ini.tmp").write_text("stale")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [
+            pool.submit(
+                legacy_cron.render_config, str(target), str(GOLDEN_DIR), LOCAL_SERVICES
+            )
+            for _ in range(32)
+        ]
+        for future in futures:
+            future.result()
+    rendered = configparser.ConfigParser()
+    rendered.read(target)
+    assert rendered["services"]["file_service_url"] == "http://files:2"
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        "config.ini",
+        "config.ini.tmp",
+    ]

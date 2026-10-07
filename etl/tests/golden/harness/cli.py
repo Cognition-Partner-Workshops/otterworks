@@ -6,6 +6,11 @@
 record  run each scenario and (re)write <script>/<scenario>/golden/*.json
 check   run each scenario and diff the normalized snapshot against golden/
 repeat  run each scenario twice and require byte-identical normalized snapshots
+
+Once a script is retired (removed from etl/scripts/, etl/RUNBOOK.md section 9), check
+and repeat skip its legacy run and only validate the committed goldens (every surface
+present, valid JSON), which stay as the DAG's contract for `make etl-parity`. record needs
+the legacy script: restore it from git history first (etl/RUNBOOK.md section 9.3).
 """
 
 from __future__ import annotations
@@ -13,6 +18,8 @@ from __future__ import annotations
 import argparse
 import difflib
 import hashlib
+import json
+import shutil
 import sys
 import time
 from collections.abc import Callable
@@ -32,11 +39,78 @@ class HarnessError(RuntimeError):
 
 Run = Callable[[Path, str], runner.RunResult]
 
+# One file per surface harness/snapshot.py captures.
+GOLDEN_SURFACES = (
+    "dynamodb.json",
+    "meilisearch.json",
+    "postgres.json",
+    "result.json",
+    "s3.json",
+    "sqs.json",
+)
+
+
+def legacy_script(script: str) -> Path:
+    return settings.ETL_DIR / "scripts" / ("%s.py" % script)
+
+
+def is_retired(script: str) -> bool:
+    return not legacy_script(script).is_file()
+
+
+def require_legacy_runtime(scn: scenario.Scenario, mode: str) -> None:
+    missing = [
+        str(path.relative_to(settings.REPO_ROOT))
+        for path in (legacy_script(scn.script), settings.ETL_DIR / "run.sh")
+        if not path.is_file()
+    ]
+    if missing:
+        raise HarnessError(
+            "%s: %s mode runs the legacy script, but %s %s retired; restore it from "
+            "git history first (etl/RUNBOOK.md section 9.3)"
+            % (
+                scn.label,
+                mode,
+                " and ".join(missing),
+                "are" if len(missing) > 1 else "is",
+            )
+        )
+
+
+def check_retired(scn: scenario.Scenario) -> tuple[bool, str]:
+    """Check/repeat of a retired script: every golden surface must be there and parse."""
+    golden = read_golden(scn)
+    if not golden:
+        return False, "script retired and no golden recorded"
+    missing = [name for name in GOLDEN_SURFACES if name not in golden]
+    if missing:
+        return False, "script retired; golden incomplete, missing %s" % ", ".join(
+            missing
+        )
+    for name, content in golden.items():
+        try:
+            json.loads(content)
+        except json.JSONDecodeError as exc:
+            return False, "script retired; golden/%s is not valid JSON (%s)" % (
+                name,
+                exc,
+            )
+    return True, (
+        "SKIP legacy run: script retired; %d golden file(s) kept as the DAG contract "
+        "sha256=%s" % (len(golden), digest(golden)[:16])
+    )
+
+
+def mode_dir(scn: scenario.Scenario, mode: str) -> Path:
+    """Where one mode keeps its snapshots and diff, so modes never overwrite each other."""
+    return settings.RUNS_DIR / scn.script / scn.name / mode
+
 
 def run_scenario(
     scn: scenario.Scenario,
     image: str,
     attempt: int,
+    mode: str = "check",
     run: Run | None = None,
     run_dir: Path | None = None,
 ) -> tuple[dict[str, str], int, int]:
@@ -44,9 +118,11 @@ def run_scenario(
 
     By default the legacy script runs in the pinned image and its log must
     carry the shim banner. The DAG parity runner passes ``run`` (called with
-    the generated config.ini and the HTTP stub URL) and its own ``run_dir``;
-    seeding, snapshot and normalization stay exactly the same.
+    the generated config.ini and the HTTP stub URL) and its own ``run_dir``, which
+    then also holds the snapshots; seeding, snapshot and normalization stay exactly
+    the same. Otherwise snapshots go to ``mode_dir`` so check and repeat never mix.
     """
+    snapshot_dir = run_dir or mode_dir(scn, mode)
     run_dir = run_dir or settings.RUNS_DIR / scn.script / scn.name
     run_dir.mkdir(parents=True, exist_ok=True)
     infra.reset()
@@ -72,7 +148,7 @@ def run_scenario(
         )
     files, replaced = normalize.normalize(snapshot.capture(result.exit_code))
     rendered = snapshot.render(files)
-    write_files(run_dir / ("snapshot-%d" % attempt), rendered)
+    write_files(snapshot_dir / ("snapshot-%d" % attempt), rendered)
     print(
         "  run %d: exit=%d in %.1fs, %d volatile value(s) normalized, log %s"
         % (
@@ -135,16 +211,22 @@ def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
     write_files(scn.golden_dir, files)
 
 
-def report_diff(scn: scenario.Scenario, lines: list[str]) -> None:
+def report_diff(scn: scenario.Scenario, mode: str, lines: list[str]) -> None:
     """Print a diff and keep it next to the run logs for the CI artifact."""
     sys.stdout.writelines(lines)
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).write_text("".join(lines))
+    out = mode_dir(scn, mode)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / DIFF_FILE).write_text("".join(lines))
 
 
-def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
+def execute(scn: scenario.Scenario, image: str | None, mode: str) -> tuple[bool, str]:
     print("== %s [%s] frozen_time=%s" % (scn.label, mode, scn.frozen_time))
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).unlink(missing_ok=True)
-    files, exit_code, _ = run_scenario(scn, image, 1)
+    if mode in ("check", "repeat") and is_retired(scn.script):
+        return check_retired(scn)
+    require_legacy_runtime(scn, mode)
+    assert image is not None
+    shutil.rmtree(mode_dir(scn, mode), ignore_errors=True)
+    files, exit_code, _ = run_scenario(scn, image, 1, mode)
     if mode == "record":
         write_golden(scn, files)
         return True, "recorded exit=%d sha256=%s" % (exit_code, digest(files)[:16])
@@ -154,14 +236,14 @@ def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
             return False, "no golden recorded (run MODE=record)"
         delta = diff(golden, files)
         if delta:
-            report_diff(scn, delta)
+            report_diff(scn, mode, delta)
             return False, "differs from golden"
         return True, "identical to golden sha256=%s" % digest(files)[:16]
-    second, _, _ = run_scenario(scn, image, 2)
+    second, _, _ = run_scenario(scn, image, 2, mode)
     first_digest, second_digest = digest(files), digest(second)
     print("  run 1 sha256=%s\n  run 2 sha256=%s" % (first_digest, second_digest))
     if files != second:
-        report_diff(scn, diff(files, second))
+        report_diff(scn, mode, diff(files, second))
         return False, "runs differ"
     return True, "byte-identical across 2 runs sha256=%s" % first_digest[:16]
 
@@ -190,10 +272,20 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    infra.wait_ready()
-    infra.ensure_resources()
-    image = runner.ensure_image()
-    print("legacy image %s" % image)
+    if args.mode == "record":
+        try:
+            for scn in scenarios:
+                require_legacy_runtime(scn, args.mode)
+        except HarnessError as exc:
+            print(exc, file=sys.stderr)
+            return 2
+
+    image = None
+    if args.mode == "record" or not all(is_retired(s.script) for s in scenarios):
+        infra.wait_ready()
+        infra.ensure_resources()
+        image = runner.ensure_image()
+        print("legacy image %s" % image)
 
     results = []
     for scn in scenarios:

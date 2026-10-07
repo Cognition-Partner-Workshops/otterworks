@@ -557,6 +557,8 @@ jobs:
         run: make airflow-up AIRFLOW_INFRA_SERVICES="postgres localstack"
       - if: steps.changes.outputs.airflow == 'true'
         name: DAG conventions + integrity tests (pytest in the Airflow image, S3 staging on LocalStack)
+        env:
+          OTTERWORKS_LOCALSTACK_URL: http://localstack:4566
         run: etl/airflow/scripts/run-tests.sh tests -p no:warnings
       - if: steps.changes.outputs.airflow == 'true'
         run: make airflow-config-check AIRFLOW_INFRA_SERVICES=postgres

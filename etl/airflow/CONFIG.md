@@ -1,6 +1,7 @@
 # ETL configuration: `config.ini` to Airflow Connections and Variables
 
-The DAGs never read `etl/config.ini`. Credentials and endpoints are Airflow **Connections**;
+`etl/config.ini` is removed from the repository (ETL_UPGRADE_GUIDE.md step 9) and the DAGs
+never read a `config.ini`. Credentials and endpoints are Airflow **Connections**;
 bucket names, prefixes, table and queue names and tunables are flat Airflow **Variables**,
 named `<area>_<setting>` (shared buckets have no area prefix). Locally both come from
 environment variables (`AIRFLOW_CONN_<ID>` / `AIRFLOW_VAR_<KEY>`, upper-cased) in the
@@ -15,9 +16,29 @@ make airflow-up             # creates etl/airflow/.env from .env.example if miss
 make airflow-config-check   # resolves every Connection/Variable in the scheduler and calls LocalStack, Postgres, MeiliSearch
 ```
 
+`make airflow-config-check` fails if a Connection or a required Variable (the `VARIABLES` list in
+`scripts/check_config.py`, equal to `.env.example`) does not resolve, and if a bucket, queue or
+table that a Variable names (`*_bucket`, `*_queue_name`, `*_table`) is missing from LocalStack.
+`scripts/localstack-init.sh` does not create `otterworks-analytics`, `otterworks-analytics-events`,
+`otterworks-file-storage` or `otterworks-file-quarantine`, so on a fresh stack the check fails
+until the ETL golden harness has created them. This creates them and wipes nothing (the same call
+`make legacy-cron-up` makes, PR #1909; the harness is `etl/tests/golden`, PR #1891):
+
+```bash
+cd etl/tests/golden && uv run --python 3.11 --with-requirements requirements.txt \
+  python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
+```
+
+Do not use `make etl-golden` for this: it runs `harness.infra.reset()`, which empties every bucket,
+table, queue and index in the shared local stack.
+
 Edit `etl/airflow/.env` (never `.env.example`) to point a local run elsewhere, then
 `make airflow-up` again to recreate the containers. `etl/airflow/scripts/check_config.py static`
-keeps this file, `.env.example` and the legacy scripts in step (run in CI).
+(run in CI) fails if this file and `.env.example` disagree on a Connection, a Variable or its value,
+or if a script default that a Variable table row maps (the first `code` in its "Replaces" cell) is
+no longer in that `etl/scripts` file with that value (skipped once the script is retired,
+RUNBOOK.md section 9). `[s3]` rows came from the removed `etl/config.ini` and *new* rows have no
+legacy default, so those are not checked against the scripts.
 
 ## Reading values in a DAG
 
@@ -162,12 +183,12 @@ paging parameter names.
 
 ## Where the local values come from
 
-No value is copied from `etl/config.ini`. Credentials and hosts come from
+No value is copied from the removed `etl/config.ini`. Credentials and hosts come from
 `docker-compose.infra.yml` (Postgres `otterworks`/`otterworks_dev`, LocalStack `test`/`test`,
 `us-east-1`) and `docker-compose.yml` (service ports); bucket, table and queue names from
 `scripts/localstack-init.sh` and the golden harness (`etl/tests/golden/harness/settings.py`), which
 creates `otterworks-analytics`, `otterworks-analytics-events`, `otterworks-file-storage` and
 `otterworks-file-quarantine` that `localstack-init.sh` does not. Some of these non-secret names
 equal the ones in `config.ini` because both describe the same resources; `check_config.py static`
-fails if any credential, database host/name/user or API key from `config.ini` appears in this
-directory.
+fails if `etl/config.ini` is back in the tree, and CI's `secret-scan` (gitleaks) rejects
+credentials committed anywhere.

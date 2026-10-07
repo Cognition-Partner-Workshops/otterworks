@@ -72,7 +72,7 @@ airflow-up: airflow-env ## Start the Airflow ETL stack on the infra network and 
 airflow-check: ## Fail unless Airflow webserver + scheduler are healthy and no DAG has an import error
 	AIRFLOW_WEB_PORT=$(AIRFLOW_WEB_PORT) etl/airflow/scripts/check-stack.sh
 
-airflow-config-check: airflow-env ## Check Connections/Variables: static (docs, defaults, no config.ini credentials) + resolve and probe AIRFLOW_INFRA_SERVICES in the scheduler
+airflow-config-check: airflow-env ## Check Connections/Variables: static (docs, defaults, etl/config.ini stays removed) + resolve and probe AIRFLOW_INFRA_SERVICES in the scheduler
 	python3 etl/airflow/scripts/check_config.py static
 	$(AIRFLOW_COMPOSE) exec -T airflow-scheduler python - live --probe $(AIRFLOW_INFRA_SERVICES) < etl/airflow/scripts/check_config.py
 
@@ -99,8 +99,11 @@ legacy-cron-reload: ## Recreate legacy-etl-cron so it re-reads etl/crontab (afte
 	$(LEGACY_CRON_COMPOSE) up -d --force-recreate --wait legacy-etl-cron
 
 legacy-cron-run: ## Run one script's crontab line now in legacy-etl-cron (SCRIPT=<name>; exit 3 if its line was removed)
-	@test -n "$(SCRIPT)" || (echo "SCRIPT is required, e.g. make legacy-cron-run SCRIPT=analytics_daily" >&2; exit 2)
-	$(LEGACY_CRON_COMPOSE) exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run $(SCRIPT).py
+	@script='$(subst ','"'"',$(SCRIPT))'; \
+	case "$$script" in \
+	  ''|*[!A-Za-z0-9_]*) echo "SCRIPT must be a script name like analytics_daily (letters, digits, _)" >&2; exit 2;; \
+	esac; \
+	set -x; $(LEGACY_CRON_COMPOSE) exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run "$$script.py"
 
 legacy-cron-down: ## Stop legacy-etl-cron (Airflow and infra stay up)
 	$(LEGACY_CRON_COMPOSE) rm -sf legacy-etl-cron

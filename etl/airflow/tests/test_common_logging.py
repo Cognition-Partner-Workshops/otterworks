@@ -53,6 +53,27 @@ def test_log_event_message_is_json_and_formatter_flattens_it(caplog):
     assert out["event"] == "rows_loaded" and out["rows"] == 3 and "message" not in out
 
 
+def test_payload_fields_never_replace_the_envelope(caplog):
+    logger = get_logger("otterworks_etl.test")
+    with caplog.at_level(logging.ERROR, logger="otterworks_etl.test"):
+        log_event(logger, "job_state", logging.ERROR, timestamp="2020-01-01", state="failed")
+    (record,) = caplog.records
+    record.level = "INFO"
+    record.logger = "spoofed"
+    out = json.loads(StructuredFormatter().format(record))
+    assert out["level"] == "ERROR"
+    assert out["logger"] == "otterworks_etl.test"
+    assert out["timestamp"] != "2020-01-01" and out["timestamp"].endswith("+00:00")
+    assert out["field_timestamp"] == "2020-01-01"
+    assert out["field_level"] == "INFO" and out["field_logger"] == "spoofed"
+    assert out["event"] == "job_state" and out["state"] == "failed"
+    assert json.loads(record.getMessage()) == {
+        "event": "job_state",
+        "timestamp": "2020-01-01",
+        "state": "failed",
+    }
+
+
 def _context():
     ti = types.SimpleNamespace(
         dag_id="otterworks_analytics_etl",

@@ -37,8 +37,8 @@ stack** before each run.
 3. **Legacy runner** (`harness/runner.py`, `legacy/Dockerfile`): `docker run`
    of `/opt/etl/run.sh <script>.py`, the crontab command, with `run.sh`,
    `scripts/`, a generated `config.ini` (`harness/config_ini.py`, dev
-   credentials and local endpoints only; the committed `etl/config.ini` is
-   never used) and `legacy/sitecustomize.py` bind-mounted read-only under
+   credentials and local endpoints only; the repository has no `config.ini`,
+   `etl/config.ini` was removed) and `legacy/sitecustomize.py` bind-mounted read-only under
    `/opt/etl`.
 4. **Shim** (`legacy/sitecustomize.py`), picked up through run.sh's
    `PYTHONPATH=/opt/etl`:
@@ -69,8 +69,10 @@ keys, 2-space indent):
 
 Container output goes to `.runs/<script>/<scenario>/run-N.log` (gitignored),
 not into the golden. Each run also leaves its normalized snapshot in
-`.runs/<script>/<scenario>/snapshot-N/`, and a failing `check` or `repeat`
-writes the diff it printed to `.runs/<script>/<scenario>/diff.txt`. CI
+`.runs/<script>/<scenario>/<mode>/snapshot-N/`, and a failing `check` or
+`repeat` writes the diff it printed to `.runs/<script>/<scenario>/<mode>/diff.txt`.
+Each mode clears only its own `<mode>/` directory, so a `repeat` after a failed
+`check` keeps the check diff. CI
 (`.github/workflows/etl-golden.yml`) uploads the run logs on every run and the
 snapshots and diffs when a step fails.
 

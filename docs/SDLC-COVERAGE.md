@@ -318,8 +318,9 @@ External Secrets Operator (pulling from Secrets Manager/SSM) for a credible secr
 ## 13. Data / ETL — Partial
 
 **Evidence.** `etl/` contains Python batch jobs (`scripts/{storage_cleanup_daily,audit_archive_weekly,
-user_activity_daily,search_reindex_weekly,analytics_daily}.py`), a `crontab`, `run.sh`, `config.ini`,
-and `ETL_UPGRADE_GUIDE.md`. `analytics-service` now persists events + a daily aggregate rollup to a
+user_activity_daily,search_reindex_weekly,analytics_daily}.py`), a `crontab`, `run.sh`
+and `ETL_UPGRADE_GUIDE.md` (the plaintext `config.ini` is removed; configuration is Airflow
+Connections and Variables, `etl/airflow/CONFIG.md`). `analytics-service` now persists events + a daily aggregate rollup to a
 **durable PostgreSQL store** via Slick/Flyway (`analytics_events`, `analytics_daily_metrics`) and also
 has the S3 **data lake** bucket wired (`s3_data_lake_bucket`) — see `services/analytics-service/README.md`.
 

@@ -4,6 +4,8 @@
 
 The OtterWorks ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a `config.ini` file that contains hardcoded AWS credentials, database passwords, and service URLs in plaintext.
 
+> **Status:** `etl/config.ini` has been removed from the repository (step 9). Configuration is Airflow Connections and Variables, mapped key by key in [`airflow/CONFIG.md`](airflow/CONFIG.md); rotating the exposed secrets is a human follow-up in [`RUNBOOK.md` §10](RUNBOOK.md#10-human-follow-ups).
+
 ### Problems with the Current Implementation
 
 | Problem | Impact |
@@ -103,6 +105,8 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 - Non-sensitive configuration (bucket names, queue URLs, service URLs) in Airflow Variables
 - No credentials in version control
 
+**Done:** the Connections (`aws_default`, `otterworks_postgres`, `otterworks_meilisearch`, `otterworks_document_service`, `otterworks_file_service`) and flat Variables are specified in [`airflow/CONFIG.md`](airflow/CONFIG.md), local values in `airflow/.env.example`, checked by `make airflow-config-check`; `etl/config.ini` is deleted.
+
 ### 3. Raw `boto3` to Airflow Provider Hooks
 
 **Current:** Each script creates raw `boto3.client()` and `boto3.resource()` instances with explicit access keys.
@@ -192,7 +196,7 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 
 1. **Set up Airflow infrastructure** -- Deploy Airflow 2.8+ with CeleryExecutor or KubernetesExecutor. Configure the webserver, scheduler, and worker(s).
 
-2. **Configure Connections and Variables** -- Create Airflow Connections for AWS (`aws_default`) and PostgreSQL (`otterworks_postgres`). Migrate all `config.ini` values to Airflow Variables.
+2. **Configure Connections and Variables** -- Create Airflow Connections for AWS (`aws_default`) and PostgreSQL (`otterworks_postgres`). Migrate all `config.ini` values to Airflow Variables (old key to new key: [`airflow/CONFIG.md`](airflow/CONFIG.md)).
 
 3. **Migrate `analytics_daily.py` first** -- This is the most complex script and touches the most systems. Successful migration validates the patterns for all other scripts.
 
@@ -204,6 +208,6 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 
 7. **Enable alerting** -- Configure email notifications, SLA monitoring, and Slack/PagerDuty callbacks.
 
-8. **Decommission cron** -- Remove cron entries from the EC2 instance. Archive the legacy scripts.
+8. **Decommission cron** -- Remove cron entries from the EC2 instance per [`RUNBOOK.md`](RUNBOOK.md) §5. Each legacy script stays one full weekly cycle after its own cutover (seven consecutive successful scheduled runs for a daily DAG, one for a weekly DAG; a rollback restarts the count), then is removed per §9; `run.sh` and the crontab go with the last script.
 
-9. **Delete `config.ini`** -- Remove the plaintext credentials file from the repository and rotate all exposed secrets.
+9. **Delete `config.ini`** -- Remove the plaintext credentials file from the repository and rotate all exposed secrets. *Repository part done:* `etl/config.ini` is deleted; DAGs use Connections/Variables ([`airflow/CONFIG.md`](airflow/CONFIG.md)) and the golden harness and `legacy-etl-cron` render their own dev-only config. *Rotation outstanding:* it needs the real AWS account and database, see [`RUNBOOK.md` §10](RUNBOOK.md#10-human-follow-ups).

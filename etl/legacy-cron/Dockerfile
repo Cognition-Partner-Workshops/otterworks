@@ -5,7 +5,7 @@
 # bind-mounted read-only at run time (docker-compose.airflow.yml), so the image
 # never carries ETL code or config.
 # Build context: etl/ (see Dockerfile.dockerignore: only the pin files and the
-# entrypoint are sent; etl/config.ini never enters the build).
+# entrypoint are sent; no config.ini enters the build, it is rendered at start).
 ARG BASE_IMAGE=python:3.9-slim
 
 FROM ${BASE_IMAGE} AS supercronic
