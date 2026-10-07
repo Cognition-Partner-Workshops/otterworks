@@ -1,0 +1,70 @@
+global:
+  environment: dev
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/workshop/otterworks-etl-airflow
+  tag: ""  # Set at deploy time (ECR uses IMMUTABLE tags)
+  pullPolicy: IfNotPresent
+
+# The Airflow UI is internal only: no ingress, ClusterIP service.
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+webserver:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+# LocalExecutor runs tasks inside the scheduler pod, so it is a single replica.
+scheduler:
+  healthPort: 8974
+  # Task log server: the webserver fetches LocalExecutor task logs from here.
+  logServerPort: 8793
+  migrationWaitTimeout: 300
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
+
+healthCheck:
+  path: /health
+  initialDelaySeconds: 30
+  periodSeconds: 15
+
+networkPolicy:
+  enabled: true
+  ingressNamespace: ingress-nginx
+  monitoringNamespace: monitoring
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 50000
+  runAsGroup: 0
+  fsGroup: 0
+
+env:
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+  AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+  # Pod names are not resolvable; record the pod IP so the webserver can reach the log server.
+  AIRFLOW__CORE__HOSTNAME_CALLABLE: airflow.utils.net.get_host_ip_address
+
+# Non-sensitive Airflow configuration rendered into {{ .Release.Name }}-config
+# and injected via envFrom. Populate at deploy time.
+config: {}
+
+# Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
+# stringData) and injected via envFrom: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN,
+# AIRFLOW__CORE__FERNET_KEY, AIRFLOW__WEBSERVER__SECRET_KEY. Populate at deploy
+# time; never commit values.
+secrets: {}
