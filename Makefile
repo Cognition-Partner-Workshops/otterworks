@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status airflow-up airflow-down airflow-check etl-golden etl-golden-test
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status airflow-up airflow-down airflow-check etl-golden etl-golden-test legacy-cron-up legacy-cron-reload legacy-cron-run legacy-cron-down legacy-cron-test legacy-cron-smoke
 
 SHELL := /bin/bash
 
@@ -71,6 +71,31 @@ airflow-check: ## Fail unless Airflow webserver + scheduler are healthy and no D
 
 airflow-down: ## Stop the Airflow ETL stack (keeps its metadata volume; infra stays up)
 	$(AIRFLOW_COMPOSE) down
+
+# --- ETL: legacy cron for Airflow coexistence (etl/legacy-cron) ---
+
+LEGACY_CRON_COMPOSE = $(AIRFLOW_COMPOSE) --profile legacy-cron
+
+legacy-cron-up: ## Start legacy-etl-cron (etl/crontab via etl/run.sh, golden shim) next to Airflow; creates the harness resources first
+	docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch
+	$(ETL_GOLDEN_UV) python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
+	$(LEGACY_CRON_COMPOSE) up -d --build --wait legacy-etl-cron
+
+legacy-cron-reload: ## Recreate legacy-etl-cron so it re-reads etl/crontab (after removing or restoring a line)
+	$(LEGACY_CRON_COMPOSE) up -d --force-recreate --wait legacy-etl-cron
+
+legacy-cron-run: ## Run one script's crontab line now in legacy-etl-cron (SCRIPT=<name>; exit 3 if its line was removed)
+	@test -n "$(SCRIPT)" || (echo "SCRIPT is required, e.g. make legacy-cron-run SCRIPT=analytics_daily" >&2; exit 2)
+	$(LEGACY_CRON_COMPOSE) exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run $(SCRIPT).py
+
+legacy-cron-down: ## Stop legacy-etl-cron (Airflow and infra stay up)
+	$(LEGACY_CRON_COMPOSE) rm -sf legacy-etl-cron
+
+legacy-cron-test: ## Lint and unit-test the legacy-etl-cron entrypoint (no infra needed)
+	cd etl/legacy-cron && uv run --quiet --python 3.11 --with ruff==0.9.10 ruff check . && uv run --quiet --python 3.11 --with pytest==8.3.5 pytest
+
+legacy-cron-smoke: ## End-to-end: a crontab line fires on schedule, logs reach stdout, removing a line cuts it over
+	etl/legacy-cron/scripts/smoke.sh
 
 # --- Local Development ---
 
