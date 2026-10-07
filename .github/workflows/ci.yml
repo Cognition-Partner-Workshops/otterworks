@@ -456,6 +456,10 @@ jobs:
     env:
       LDM_TEST_PG_HOST: localhost
       LDM_TEST_PG_PORT: "55432"
+      # tests/test_snowflake.py runs only when the repo secret is present (else it skips)
+      LDM_TEST_SNOWFLAKE_ACCOUNT: ${{ vars.LDM_TEST_SNOWFLAKE_ACCOUNT }}
+      LDM_TEST_SNOWFLAKE_USER: ${{ vars.LDM_TEST_SNOWFLAKE_USER }}
+      SNOWFLAKE_PAT: ${{ secrets.SNOWFLAKE_PAT }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
@@ -466,6 +470,7 @@ jobs:
               - 'migration/job/**'
               - 'migration/target/sql/**'
               - 'migration/target/postgresql/**'
+              - 'migration/target/snowflake/**'
               - 'migration/manifest.yaml'
               - 'migration/manifests/**'
               - 'migration/source/copybooks/**'
@@ -483,7 +488,7 @@ jobs:
           distribution: temurin
           java-version: '17'
       - if: steps.changes.outputs.ldm == 'true'
-        run: python -m pip install -e '.[dev,postgresql,s3,spark]'
+        run: python -m pip install -e '.[dev,postgresql,s3,spark,snowflake]'
         working-directory: migration/job
       - if: steps.changes.outputs.ldm == 'true'
         run: ruff check . && ruff format --check .
@@ -510,6 +515,15 @@ jobs:
           --set image.tag=ci --set expires=2026-01-01T00:00:00Z
           --set-file manifest.base=migration/manifest.yaml
           --set-file manifest.overlay=migration/manifests/o27-after.yaml
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/migration-job --strict
+          --set namespaceToken=ci1-after --set stage=extract --set runId=ci
+          --set image.tag=ci --set expires=2026-01-01T00:00:00Z
+          --set sourceDriver=oracle --set targetProvider=snowflake
+          --set env.SNOWFLAKE_DATABASE=OTTERWORKS_LDM_CI1
+          --set-file manifest.base=migration/manifest.yaml
+          --set-file manifest.overlay=migration/manifests/s29-after.yaml
       - if: steps.changes.outputs.ldm == 'true'
         run: >
           helm lint infrastructure/helm/oracle-archive --strict
