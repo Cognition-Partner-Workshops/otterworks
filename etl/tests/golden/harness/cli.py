@@ -13,22 +13,30 @@ from __future__ import annotations
 import argparse
 import difflib
 import hashlib
+import shutil
 import sys
 import time
+from pathlib import Path
 
 from . import config_ini, infra, normalize, runner, scenario, settings, snapshot
 from .stub_http import ServiceStub
 
 SHIM_BANNER = "[golden-shim] endpoint="
 SHIM_FAILURE_EXIT_CODE = 97
+DIFF_FILE = "diff.txt"
 
 
 class HarnessError(RuntimeError):
     pass
 
 
+def mode_dir(scn: scenario.Scenario, mode: str) -> Path:
+    """Where one mode keeps its snapshots and diff, so modes never overwrite each other."""
+    return settings.RUNS_DIR / scn.script / scn.name / mode
+
+
 def run_scenario(
-    scn: scenario.Scenario, image: str, attempt: int
+    scn: scenario.Scenario, image: str, attempt: int, mode: str
 ) -> tuple[dict[str, str], int, int]:
     """Reset, seed, run the legacy script once; return (rendered files, exit code, replaced)."""
     run_dir = settings.RUNS_DIR / scn.script / scn.name
@@ -50,6 +58,8 @@ def run_scenario(
             "%s: sitecustomize shim did not load; see %s" % (scn.label, log_path)
         )
     files, replaced = normalize.normalize(snapshot.capture(result.exit_code))
+    rendered = snapshot.render(files)
+    write_files(mode_dir(scn, mode) / ("snapshot-%d" % attempt), rendered)
     print(
         "  run %d: exit=%d in %.1fs, %d volatile value(s) normalized, log %s"
         % (
@@ -60,7 +70,7 @@ def run_scenario(
             log_path.relative_to(settings.REPO_ROOT),
         )
     )
-    return snapshot.render(files), result.exit_code, replaced
+    return rendered, result.exit_code, replaced
 
 
 def digest(files: dict[str, str]) -> str:
@@ -99,18 +109,31 @@ def read_golden(scn: scenario.Scenario) -> dict[str, str]:
     return {p.name: p.read_text() for p in sorted(scn.golden_dir.glob("*.json"))}
 
 
-def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
-    scn.golden_dir.mkdir(exist_ok=True)
-    for stale in scn.golden_dir.glob("*.json"):
+def write_files(directory: Path, files: dict[str, str]) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    for stale in directory.glob("*.json"):
         if stale.name not in files:
             stale.unlink()
     for name, content in files.items():
-        (scn.golden_dir / name).write_text(content)
+        (directory / name).write_text(content)
+
+
+def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
+    write_files(scn.golden_dir, files)
+
+
+def report_diff(scn: scenario.Scenario, mode: str, lines: list[str]) -> None:
+    """Print a diff and keep it next to the run logs for the CI artifact."""
+    sys.stdout.writelines(lines)
+    out = mode_dir(scn, mode)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / DIFF_FILE).write_text("".join(lines))
 
 
 def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
     print("== %s [%s] frozen_time=%s" % (scn.label, mode, scn.frozen_time))
-    files, exit_code, _ = run_scenario(scn, image, 1)
+    shutil.rmtree(mode_dir(scn, mode), ignore_errors=True)
+    files, exit_code, _ = run_scenario(scn, image, 1, mode)
     if mode == "record":
         write_golden(scn, files)
         return True, "recorded exit=%d sha256=%s" % (exit_code, digest(files)[:16])
@@ -120,14 +143,14 @@ def execute(scn: scenario.Scenario, image: str, mode: str) -> tuple[bool, str]:
             return False, "no golden recorded (run MODE=record)"
         delta = diff(golden, files)
         if delta:
-            sys.stdout.writelines(delta)
+            report_diff(scn, mode, delta)
             return False, "differs from golden"
         return True, "identical to golden sha256=%s" % digest(files)[:16]
-    second, _, _ = run_scenario(scn, image, 2)
+    second, _, _ = run_scenario(scn, image, 2, mode)
     first_digest, second_digest = digest(files), digest(second)
     print("  run 1 sha256=%s\n  run 2 sha256=%s" % (first_digest, second_digest))
     if files != second:
-        sys.stdout.writelines(diff(files, second))
+        report_diff(scn, mode, diff(files, second))
         return False, "runs differ"
     return True, "byte-identical across 2 runs sha256=%s" % first_digest[:16]
 

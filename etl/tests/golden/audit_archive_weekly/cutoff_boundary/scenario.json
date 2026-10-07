@@ -1,0 +1,97 @@
+{
+  "description": "Events around the cutoff 2025-12-15T00:00:00Z (frozen 2026-03-15, 90 days). The filter is a string comparison '#ts < :cutoff', so: exactly-on-cutoff 'Z' and lowercase 'z' are kept; same-instant '.000Z' and '+00:00' spellings, a date-only value and a '-05:00' offset that is actually after the cutoff are archived; a numeric (N) epoch timestamp and an item without timestamp are never matched.",
+  "frozen_time": "2026-03-15T03:00:00Z",
+  "seed": {
+    "dynamodb": {
+      "otterworks-audit-events": [
+        {
+          "id": "b-before-1s",
+          "event_id": "b-before-1s",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-14T23:59:59Z"
+        },
+        {
+          "id": "b-exact",
+          "event_id": "b-exact",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00Z"
+        },
+        {
+          "id": "b-exact-lower-z",
+          "event_id": "b-exact-lower-z",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00z"
+        },
+        {
+          "id": "b-exact-millis",
+          "event_id": "b-exact-millis",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00.000Z"
+        },
+        {
+          "id": "b-exact-plus-offset",
+          "event_id": "b-exact-plus-offset",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00+00:00"
+        },
+        {
+          "id": "b-after-1s",
+          "event_id": "b-after-1s",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:01Z"
+        },
+        {
+          "id": "b-date-only-same-day",
+          "event_id": "b-date-only-same-day",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15"
+        },
+        {
+          "id": "b-minus5-after-cutoff",
+          "event_id": "b-minus5-after-cutoff",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-14T23:00:00-05:00"
+        },
+        {
+          "id": "b-epoch-number-old",
+          "event_id": "b-epoch-number-old",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": 1700000000
+        },
+        {
+          "id": "b-no-timestamp",
+          "event_id": "b-no-timestamp",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1"
+        },
+        {
+          "id": "b-recent",
+          "event_id": "b-recent",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-03-14T12:00:00Z"
+        }
+      ]
+    }
+  }
+}

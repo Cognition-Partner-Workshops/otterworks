@@ -1,0 +1,33 @@
+{
+  "otterworks-audit-archive": {
+    "audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz": {
+      "body": [
+        {
+          "action": "file.delete",
+          "actor_id": "user-bob",
+          "id": "e-no-event-id",
+          "timestamp": "2025-11-02T00:00:00Z"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "e-ok",
+          "id": "e-ok",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-01T00:00:00Z"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "GLACIER",
+      "trailing_newline": true
+    }
+  },
+  "otterworks-data-lake": {},
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}

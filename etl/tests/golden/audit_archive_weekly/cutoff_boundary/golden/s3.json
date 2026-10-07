@@ -1,0 +1,90 @@
+{
+  "otterworks-audit-archive": {
+    "audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz": {
+      "body": [
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "b-minus5-after-cutoff",
+          "id": "b-minus5-after-cutoff",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-14T23:00:00-05:00"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "b-exact-millis",
+          "id": "b-exact-millis",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00.000Z"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "b-before-1s",
+          "id": "b-before-1s",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-14T23:59:59Z"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "b-exact-plus-offset",
+          "id": "b-exact-plus-offset",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15T00:00:00+00:00"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "b-date-only-same-day",
+          "id": "b-date-only-same-day",
+          "resource_id": "file-1",
+          "timestamp": "2025-12-15"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "GLACIER",
+      "trailing_newline": true
+    },
+    "reports/compliance/audit-archive/2026-03-15/report.json": {
+      "body": {
+        "compliance": {
+          "data_encrypted_at_rest": true,
+          "data_encrypted_in_transit": true,
+          "gdpr_compliant": true,
+          "soc2_compliant": true
+        },
+        "execution_date": "2026-03-15",
+        "generated_at": "<normalized:generated_at>",
+        "report_type": "audit_archive_compliance",
+        "results": {
+          "archive_location": "s3://otterworks-audit-archive/audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz",
+          "archive_storage_class": "GLACIER",
+          "compressed_size_bytes": 235,
+          "events_archived": 5,
+          "events_deleted_from_source": 0,
+          "events_scanned": 5
+        },
+        "retention_policy": {
+          "cutoff_date": "2025-12-15T00:00:00Z",
+          "retention_days": 90
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-data-lake": {},
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}

@@ -1,0 +1,108 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [
+      {
+        "id": {
+          "S": "meta-a"
+        },
+        "owner_id": {
+          "S": "user-alice"
+        },
+        "s3_key": {
+          "S": "files/user-alice/a.pdf"
+        },
+        "size": {
+          "N": "14"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-b"
+        },
+        "owner_id": {
+          "S": "user-bob"
+        },
+        "s3_key": {
+          "S": "files/user-bob/b.csv"
+        },
+        "size": {
+          "N": "15"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-c"
+        },
+        "owner_id": {
+          "S": "user-carol"
+        },
+        "s3_key": {
+          "S": "files/user-carol/nested/deep/c.json"
+        },
+        "size": {
+          "N": "26"
+        }
+      },
+      {
+        "id": {
+          "S": "meta-d"
+        },
+        "owner_id": {
+          "S": "user-dave"
+        },
+        "s3_key": {
+          "S": "files/user-dave/gone.bin"
+        },
+        "size": {
+          "N": "99"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

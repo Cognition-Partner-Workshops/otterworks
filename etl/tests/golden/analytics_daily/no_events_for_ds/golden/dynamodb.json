@@ -1,0 +1,115 @@
+{
+  "otterworks-analytics-events": {
+    "items": [
+      {
+        "event_date": {
+          "S": "2026-03-14"
+        },
+        "event_id": {
+          "S": "dx-01"
+        },
+        "event_type": {
+          "S": "file_uploaded"
+        },
+        "fileId": {
+          "S": "file-90"
+        },
+        "sizeBytes": {
+          "N": "123456"
+        },
+        "timestamp": {
+          "S": "2026-03-14T23:59:59Z"
+        },
+        "userId": {
+          "S": "user-old"
+        }
+      },
+      {
+        "documentId": {
+          "S": "doc-90"
+        },
+        "event_date": {
+          "S": "2026-03-16"
+        },
+        "event_id": {
+          "S": "dx-02"
+        },
+        "event_type": {
+          "S": "document_created"
+        },
+        "ownerId": {
+          "S": "user-new"
+        },
+        "timestamp": {
+          "S": "2026-03-16T00:00:01Z"
+        }
+      },
+      {
+        "authorId": {
+          "S": "user-old"
+        },
+        "documentId": {
+          "S": "doc-90"
+        },
+        "event_date": {
+          "S": "2026-02-15"
+        },
+        "event_id": {
+          "S": "dx-03"
+        },
+        "event_type": {
+          "S": "comment_added"
+        },
+        "timestamp": {
+          "S": "2026-02-15T12:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

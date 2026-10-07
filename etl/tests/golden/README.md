@@ -68,7 +68,13 @@ keys, 2-space indent):
 | `meilisearch.json` | every index: primary key, settings, stats and all documents sorted by primary key |
 
 Container output goes to `.runs/<script>/<scenario>/run-N.log` (gitignored),
-not into the golden.
+not into the golden. Each run also leaves its normalized snapshot in
+`.runs/<script>/<scenario>/<mode>/snapshot-N/`, and a failing `check` or
+`repeat` writes the diff it printed to `.runs/<script>/<scenario>/<mode>/diff.txt`.
+Each mode clears only its own `<mode>/` directory, so a `repeat` after a failed
+`check` keeps the check diff. CI
+(`.github/workflows/etl-golden.yml`) uploads the run logs on every run and the
+snapshots and diffs when a step fails.
 
 ## Normalizer
 

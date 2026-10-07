@@ -1,0 +1,120 @@
+{
+  "description": "What the bare except around each day's get_object tolerates. Most days in the lookback have no object (NoSuchKey, skipped). Per object: blank lines are skipped; a missing user_id becomes 'unknown', a null user_id stays null; a missing total adds 0 but still counts an active day; a user listed twice in one day gets active_days 2. An exception aborts the rest of that object only, keeping what was already added: an invalid JSON line (day 14), a string total (day 12: the user is created with zero totals and no actions), actions given as a list (day 07: the total is kept, actions are not). A non-gzip object under the .gz key (day 13) and an empty gzip object (day 10) contribute nothing. Float totals and counts are summed as floats.",
+  "frozen_time": "2026-03-15T05:00:00Z",
+  "seed": {
+    "postgres": {
+      "analytics_daily_summary": [
+        {
+          "report_date": "2026-03-15",
+          "active_users": 6,
+          "active_documents": 1,
+          "active_files": 1,
+          "total_events": 12,
+          "documents_created": 1,
+          "documents_edited": 1,
+          "comments_added": 1,
+          "files_uploaded": 1,
+          "files_shared": 1,
+          "files_deleted": 1,
+          "bytes_uploaded": 300,
+          "updated_at": "2026-03-15T02:00:00Z"
+        }
+      ]
+    },
+    "s3": [
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=15/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "text",
+        "body": "{\"user_id\": \"user-alice\", \"actions\": {\"document_edited\": 2}, \"total\": 2}\n\n{\"actions\": {\"file_uploaded\": 1}, \"total\": 1}\n{\"user_id\": \"user-bob\"}\n{\"user_id\": \"user-alice\", \"actions\": {\"document_edited\": 1}, \"total\": 1}\n"
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=14/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "text",
+        "body": "{\"user_id\": \"user-carol\", \"actions\": {\"file_shared\": 1}, \"total\": 1}\nnot json{\n{\"user_id\": \"user-dropped-after-bad-line\", \"actions\": {\"file_shared\": 9}, \"total\": 9}\n"
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=13/top_users.jsonl.gz",
+        "gzip": false,
+        "format": "jsonl",
+        "body": [
+          {
+            "user_id": "user-not-gzipped",
+            "actions": {
+              "document_edited": 50
+            },
+            "total": 50
+          }
+        ]
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=12/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "text",
+        "body": "{\"user_id\": \"user-frank\", \"actions\": {\"comment_added\": 3}, \"total\": \"3\"}\n{\"user_id\": \"user-dropped-after-type-error\", \"actions\": {\"comment_added\": 4}, \"total\": 4}\n"
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=11/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "jsonl",
+        "body": [
+          {
+            "user_id": "user-alice",
+            "actions": {
+              "document_edited": 0.5
+            },
+            "total": 2.5
+          }
+        ]
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=10/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "text",
+        "body": ""
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=08/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "jsonl",
+        "body": [
+          {
+            "user_id": null,
+            "actions": {
+              "file_uploaded": 1
+            },
+            "total": 1
+          }
+        ]
+      },
+      {
+        "bucket": "otterworks-data-lake",
+        "key": "analytics/daily/year=2026/month=03/day=07/top_users.jsonl.gz",
+        "gzip": true,
+        "format": "jsonl",
+        "body": [
+          {
+            "user_id": "user-hank",
+            "actions": [
+              "document_edited"
+            ],
+            "total": 6
+          },
+          {
+            "user_id": "user-dropped-after-list-actions",
+            "actions": {},
+            "total": 7
+          }
+        ]
+      }
+    ]
+  }
+}

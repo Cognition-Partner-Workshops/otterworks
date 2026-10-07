@@ -1,0 +1,51 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

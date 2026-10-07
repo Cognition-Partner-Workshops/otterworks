@@ -1,0 +1,595 @@
+{
+  "description": "60 events older than the cutoff (25 + 25 + 10 delete batches) and 5 newer ones; exercises the scan, a 60-line archive and the full and remainder batch_writer delete passes.",
+  "frozen_time": "2026-03-15T03:00:00Z",
+  "seed": {
+    "dynamodb": {
+      "otterworks-audit-events": [
+        {
+          "id": "m-000",
+          "event_id": "m-000",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-01T00:00:00Z",
+          "bytes": 0
+        },
+        {
+          "id": "m-001",
+          "event_id": "m-001",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-02T01:00:00Z",
+          "bytes": 1
+        },
+        {
+          "id": "m-002",
+          "event_id": "m-002",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-03T02:00:00Z",
+          "bytes": 2
+        },
+        {
+          "id": "m-003",
+          "event_id": "m-003",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-04T03:00:00Z",
+          "bytes": 3
+        },
+        {
+          "id": "m-004",
+          "event_id": "m-004",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-05T04:00:00Z",
+          "bytes": 4
+        },
+        {
+          "id": "m-005",
+          "event_id": "m-005",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-06T05:00:00Z",
+          "bytes": 5
+        },
+        {
+          "id": "m-006",
+          "event_id": "m-006",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-07T06:00:00Z",
+          "bytes": 6
+        },
+        {
+          "id": "m-007",
+          "event_id": "m-007",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-08T07:00:00Z",
+          "bytes": 7
+        },
+        {
+          "id": "m-008",
+          "event_id": "m-008",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-09T08:00:00Z",
+          "bytes": 8
+        },
+        {
+          "id": "m-009",
+          "event_id": "m-009",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-10T09:00:00Z",
+          "bytes": 9
+        },
+        {
+          "id": "m-010",
+          "event_id": "m-010",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-11T10:00:00Z",
+          "bytes": 10
+        },
+        {
+          "id": "m-011",
+          "event_id": "m-011",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-12T11:00:00Z",
+          "bytes": 11
+        },
+        {
+          "id": "m-012",
+          "event_id": "m-012",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-13T12:00:00Z",
+          "bytes": 12
+        },
+        {
+          "id": "m-013",
+          "event_id": "m-013",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-14T13:00:00Z",
+          "bytes": 13
+        },
+        {
+          "id": "m-014",
+          "event_id": "m-014",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-15T14:00:00Z",
+          "bytes": 14
+        },
+        {
+          "id": "m-015",
+          "event_id": "m-015",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-16T15:00:00Z",
+          "bytes": 15
+        },
+        {
+          "id": "m-016",
+          "event_id": "m-016",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-17T16:00:00Z",
+          "bytes": 16
+        },
+        {
+          "id": "m-017",
+          "event_id": "m-017",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-18T17:00:00Z",
+          "bytes": 17
+        },
+        {
+          "id": "m-018",
+          "event_id": "m-018",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-19T18:00:00Z",
+          "bytes": 18
+        },
+        {
+          "id": "m-019",
+          "event_id": "m-019",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-20T19:00:00Z",
+          "bytes": 19
+        },
+        {
+          "id": "m-020",
+          "event_id": "m-020",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-21T20:00:00Z",
+          "bytes": 20
+        },
+        {
+          "id": "m-021",
+          "event_id": "m-021",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-22T21:00:00Z",
+          "bytes": 21
+        },
+        {
+          "id": "m-022",
+          "event_id": "m-022",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-23T22:00:00Z",
+          "bytes": 22
+        },
+        {
+          "id": "m-023",
+          "event_id": "m-023",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-24T23:00:00Z",
+          "bytes": 23
+        },
+        {
+          "id": "m-024",
+          "event_id": "m-024",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-25T00:00:00Z",
+          "bytes": 24
+        },
+        {
+          "id": "m-025",
+          "event_id": "m-025",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-26T01:00:00Z",
+          "bytes": 25
+        },
+        {
+          "id": "m-026",
+          "event_id": "m-026",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-27T02:00:00Z",
+          "bytes": 26
+        },
+        {
+          "id": "m-027",
+          "event_id": "m-027",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-09-28T03:00:00Z",
+          "bytes": 27
+        },
+        {
+          "id": "m-028",
+          "event_id": "m-028",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-01T04:00:00Z",
+          "bytes": 28
+        },
+        {
+          "id": "m-029",
+          "event_id": "m-029",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-02T05:00:00Z",
+          "bytes": 29
+        },
+        {
+          "id": "m-030",
+          "event_id": "m-030",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-03T06:00:00Z",
+          "bytes": 30
+        },
+        {
+          "id": "m-031",
+          "event_id": "m-031",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-04T07:00:00Z",
+          "bytes": 31
+        },
+        {
+          "id": "m-032",
+          "event_id": "m-032",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-05T08:00:00Z",
+          "bytes": 32
+        },
+        {
+          "id": "m-033",
+          "event_id": "m-033",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-06T09:00:00Z",
+          "bytes": 33
+        },
+        {
+          "id": "m-034",
+          "event_id": "m-034",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-07T10:00:00Z",
+          "bytes": 34
+        },
+        {
+          "id": "m-035",
+          "event_id": "m-035",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-08T11:00:00Z",
+          "bytes": 35
+        },
+        {
+          "id": "m-036",
+          "event_id": "m-036",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-09T12:00:00Z",
+          "bytes": 36
+        },
+        {
+          "id": "m-037",
+          "event_id": "m-037",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-10T13:00:00Z",
+          "bytes": 37
+        },
+        {
+          "id": "m-038",
+          "event_id": "m-038",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-11T14:00:00Z",
+          "bytes": 38
+        },
+        {
+          "id": "m-039",
+          "event_id": "m-039",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-12T15:00:00Z",
+          "bytes": 39
+        },
+        {
+          "id": "m-040",
+          "event_id": "m-040",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-13T16:00:00Z",
+          "bytes": 40
+        },
+        {
+          "id": "m-041",
+          "event_id": "m-041",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-14T17:00:00Z",
+          "bytes": 41
+        },
+        {
+          "id": "m-042",
+          "event_id": "m-042",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-15T18:00:00Z",
+          "bytes": 42
+        },
+        {
+          "id": "m-043",
+          "event_id": "m-043",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-16T19:00:00Z",
+          "bytes": 43
+        },
+        {
+          "id": "m-044",
+          "event_id": "m-044",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-17T20:00:00Z",
+          "bytes": 44
+        },
+        {
+          "id": "m-045",
+          "event_id": "m-045",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-18T21:00:00Z",
+          "bytes": 45
+        },
+        {
+          "id": "m-046",
+          "event_id": "m-046",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-19T22:00:00Z",
+          "bytes": 46
+        },
+        {
+          "id": "m-047",
+          "event_id": "m-047",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-20T23:00:00Z",
+          "bytes": 47
+        },
+        {
+          "id": "m-048",
+          "event_id": "m-048",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-21T00:00:00Z",
+          "bytes": 48
+        },
+        {
+          "id": "m-049",
+          "event_id": "m-049",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-22T01:00:00Z",
+          "bytes": 49
+        },
+        {
+          "id": "m-050",
+          "event_id": "m-050",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-23T02:00:00Z",
+          "bytes": 50
+        },
+        {
+          "id": "m-051",
+          "event_id": "m-051",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-24T03:00:00Z",
+          "bytes": 51
+        },
+        {
+          "id": "m-052",
+          "event_id": "m-052",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-25T04:00:00Z",
+          "bytes": 52
+        },
+        {
+          "id": "m-053",
+          "event_id": "m-053",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-26T05:00:00Z",
+          "bytes": 53
+        },
+        {
+          "id": "m-054",
+          "event_id": "m-054",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-27T06:00:00Z",
+          "bytes": 54
+        },
+        {
+          "id": "m-055",
+          "event_id": "m-055",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-28T07:00:00Z",
+          "bytes": 55
+        },
+        {
+          "id": "m-056",
+          "event_id": "m-056",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-01T08:00:00Z",
+          "bytes": 56
+        },
+        {
+          "id": "m-057",
+          "event_id": "m-057",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-02T09:00:00Z",
+          "bytes": 57
+        },
+        {
+          "id": "m-058",
+          "event_id": "m-058",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-03T10:00:00Z",
+          "bytes": 58
+        },
+        {
+          "id": "m-059",
+          "event_id": "m-059",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-04T11:00:00Z",
+          "bytes": 59
+        },
+        {
+          "id": "m-new-0",
+          "event_id": "m-new-0",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-02-01T12:00:00Z",
+          "bytes": 0
+        },
+        {
+          "id": "m-new-1",
+          "event_id": "m-new-1",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-02-02T12:00:00Z",
+          "bytes": 1
+        },
+        {
+          "id": "m-new-2",
+          "event_id": "m-new-2",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-02-03T12:00:00Z",
+          "bytes": 2
+        },
+        {
+          "id": "m-new-3",
+          "event_id": "m-new-3",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-02-04T12:00:00Z",
+          "bytes": 3
+        },
+        {
+          "id": "m-new-4",
+          "event_id": "m-new-4",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-02-05T12:00:00Z",
+          "bytes": 4
+        }
+      ]
+    }
+  }
+}

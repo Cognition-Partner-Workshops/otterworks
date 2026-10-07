@@ -19,6 +19,7 @@ on:
 jobs:
   golden:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
@@ -27,13 +28,37 @@ jobs:
       - run: uv run --python 3.11 --with ruff==0.9.10 ruff check etl/tests/golden
       - run: make etl-golden-test
       - run: docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch
-      - run: make etl-golden SCRIPT=all MODE=check
-      - run: make etl-golden SCRIPT=all MODE=repeat
+      - name: Check every scenario against its golden
+        run: |
+          mkdir -p etl/tests/golden/.runs
+          make etl-golden SCRIPT=all MODE=check 2>&1 | tee etl/tests/golden/.runs/check.log
+      - name: Repeat every scenario twice
+        if: ${{ !cancelled() }}
+        run: make etl-golden SCRIPT=all MODE=repeat 2>&1 | tee etl/tests/golden/.runs/repeat.log
+      - name: Parity table
+        if: ${{ !cancelled() }}
+        run: |
+          for mode in check repeat; do
+            log=etl/tests/golden/.runs/$mode.log
+            [ -f "$log" ] || continue
+            { echo "### $mode"; echo; grep '^|' "$log" || true; echo; } >> "$GITHUB_STEP_SUMMARY"
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: etl-golden-run-logs
           path: etl/tests/golden/.runs/**/*.log
+          include-hidden-files: true
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: etl-golden-snapshots
+          path: |
+            etl/tests/golden/.runs/*/*/check/snapshot-*/*.json
+            etl/tests/golden/.runs/*/*/check/diff.txt
+            etl/tests/golden/.runs/*/*/repeat/snapshot-*/*.json
+            etl/tests/golden/.runs/*/*/repeat/diff.txt
           include-hidden-files: true
       - if: always()
         run: docker compose -f docker-compose.infra.yml down -v

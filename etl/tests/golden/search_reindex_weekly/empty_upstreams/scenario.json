@@ -1,0 +1,10 @@
+{
+  "description": "Both services return an empty first page: indices are recreated and configured, nothing is indexed, validation 0 == 0 passes, exit 0.",
+  "frozen_time": "2026-03-15T04:00:00Z",
+  "seed": {
+    "http": {
+      "documents": [],
+      "files": []
+    }
+  }
+}

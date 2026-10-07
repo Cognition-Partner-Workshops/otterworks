@@ -1,0 +1,16 @@
+{
+  "description": "A batch with one document carrying neither document_id nor id (mapped to id \"\") and one with an id MeiliSearch rejects. The whole batch's add-documents task fails, the script only prints a WARNING, counts all 3 as indexed, then fails validation (0 != 3): exit 1 with an empty documents index.",
+  "frozen_time": "2026-03-15T04:00:00Z",
+  "seed": {
+    "http": {
+      "documents": [
+        {"id": "doc-ok", "title": "Valid"},
+        {"title": "No id at all"},
+        {"id": "bad id!", "title": "Invalid characters"}
+      ],
+      "files": [
+        {"owner_id": "user-carol", "created_at": "2026-02-03T10:00:00Z", "updated_at": "2026-03-03T10:00:00Z", "id": "file-002", "name": "file-002.txt", "size": 2}
+      ]
+    }
+  }
+}

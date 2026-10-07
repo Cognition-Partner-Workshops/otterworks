@@ -1,0 +1,124 @@
+{
+  "otterworks-audit-archive": {},
+  "otterworks-data-lake": {
+    "reports/storage-cleanup/2026-06-01/report.json": {
+      "body": {
+        "cleanup": {
+          "objects_failed": 0,
+          "objects_quarantined": 6,
+          "quarantine_bucket": "otterworks-file-quarantine"
+        },
+        "generated_at": "<normalized:generated_at>",
+        "inventory": {
+          "total_objects": 8,
+          "total_size_bytes": 171,
+          "total_size_gb": 0.0
+        },
+        "orphans": {
+          "orphan_percentage": 75.0,
+          "orphaned_bytes": 115,
+          "orphaned_objects": 6,
+          "orphaned_size_gb": 0.0
+        },
+        "report_date": "2026-06-01",
+        "report_type": "storage_cleanup",
+        "savings": {
+          "estimated_monthly_savings_usd": 0.0,
+          "storage_freed_gb": 0.0
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-quarantine": {
+    "quarantined/2026-06-01/files/": {
+      "body": "",
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-06-01/files/user-alice/Report.PDF": {
+      "body": "upper-case key",
+      "content_encoding": null,
+      "content_type": "application/pdf",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-06-01/files/user-bob/leading.txt": {
+      "body": "referenced with a leading slash",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-06-01/files/user-carol/uri.txt": {
+      "body": "referenced as an s3:// URI",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-06-01/files/user-dan/with space & plus+.txt": {
+      "body": "special characters in key",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "quarantined/2026-06-01/files/user-erin/dup.txt": {
+      "body": "today's orphan body",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-file-storage": {
+    "files-archive/old.txt": {
+      "body": "outside the files/ prefix",
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "files/user-dan/shared.txt": {
+      "body": "referenced by two metadata rows",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    },
+    "files/user-dan/ünïcode.txt": {
+      "body": "non-ascii key, referenced",
+      "content_encoding": null,
+      "content_type": "text/plain",
+      "format": "text",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-files": {}
+}
