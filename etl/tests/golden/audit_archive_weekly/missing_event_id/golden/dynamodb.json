@@ -1,0 +1,106 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [
+      {
+        "action": {
+          "S": "file.delete"
+        },
+        "actor_id": {
+          "S": "user-bob"
+        },
+        "id": {
+          "S": "e-no-event-id"
+        },
+        "timestamp": {
+          "S": "2025-11-02T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "e-ok"
+        },
+        "id": {
+          "S": "e-ok"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-11-01T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "e-recent"
+        },
+        "id": {
+          "S": "e-recent"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-03-01T00:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

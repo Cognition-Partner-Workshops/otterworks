@@ -1,0 +1,110 @@
+{
+  "otterworks-audit-archive": {
+    "audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz": {
+      "body": [
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "d-precision",
+          "id": "d-precision",
+          "pi": 3.141592653589793,
+          "price": 19.99,
+          "resource_id": "file-1",
+          "timestamp": "2025-10-03T00:00:00Z"
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "big": 12345678901234567890123456789012345678,
+          "bytes": 42,
+          "event_id": "d-ints",
+          "id": "d-ints",
+          "negative": -7,
+          "resource_id": "file-1",
+          "timestamp": "2025-10-01T00:00:00Z",
+          "zero": 0
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "event_id": "d-floats",
+          "half": -0.5,
+          "id": "d-floats",
+          "neg_zero": 0,
+          "ratio": 1.1,
+          "resource_id": "file-1",
+          "timestamp": "2025-10-02T00:00:00Z",
+          "tiny": 1e-10,
+          "whole_float": 100
+        },
+        {
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "details": {
+            "geo": {
+              "lat": 47.6062,
+              "lon": -122.3321
+            },
+            "scores": [
+              1,
+              2.5,
+              3
+            ],
+            "size": 2048
+          },
+          "event_id": "d-nested",
+          "flags": [
+            true,
+            false,
+            null
+          ],
+          "id": "d-nested",
+          "resource_id": "file-1",
+          "timestamp": "2025-10-04T00:00:00Z"
+        }
+      ],
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "jsonl",
+      "gzip": true,
+      "metadata": {},
+      "storage_class": "GLACIER",
+      "trailing_newline": true
+    },
+    "reports/compliance/audit-archive/2026-03-15/report.json": {
+      "body": {
+        "compliance": {
+          "data_encrypted_at_rest": true,
+          "data_encrypted_in_transit": true,
+          "gdpr_compliant": true,
+          "soc2_compliant": true
+        },
+        "execution_date": "2026-03-15",
+        "generated_at": "<normalized:generated_at>",
+        "report_type": "audit_archive_compliance",
+        "results": {
+          "archive_location": "s3://otterworks-audit-archive/audit-archive/year=2026/week=2026-03-15/audit_events.jsonl.gz",
+          "archive_storage_class": "GLACIER",
+          "compressed_size_bytes": 369,
+          "events_archived": 4,
+          "events_deleted_from_source": 0,
+          "events_scanned": 4
+        },
+        "retention_policy": {
+          "cutoff_date": "2025-12-15T00:00:00Z",
+          "retention_days": 90
+        }
+      },
+      "content_encoding": null,
+      "content_type": "binary/octet-stream",
+      "format": "json",
+      "gzip": false,
+      "metadata": {},
+      "storage_class": "STANDARD"
+    }
+  },
+  "otterworks-data-lake": {},
+  "otterworks-file-quarantine": {},
+  "otterworks-file-storage": {},
+  "otterworks-files": {}
+}
