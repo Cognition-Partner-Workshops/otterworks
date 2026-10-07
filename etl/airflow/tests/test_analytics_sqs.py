@@ -31,12 +31,12 @@ class FakeSqs:
 
     def delete_message_batch(self, QueueUrl, Entries):
         self.calls.append("delete")
-        if self.fail_delete:
-            return {"Failed": [{"Id": Entries[0]["Id"]}], "Successful": []}
         ids = {e["Id"] for e in Entries}
+        failed = {Entries[0]["Id"]} if self.fail_delete else set()
+        ids -= failed
         self.deleted.extend(sorted(ids))
         self.queue = [m for m in self.queue if m[0] not in ids]
-        return {"Successful": [{"Id": i} for i in ids]}
+        return {"Successful": [{"Id": i} for i in ids], "Failed": [{"Id": i} for i in failed]}
 
 
 def _drain(sqs, staged, **overrides):
@@ -79,11 +79,27 @@ def test_a_failed_stage_deletes_nothing():
     assert sqs.deleted == [] and len(sqs.queue) == 1
 
 
-def test_failed_delete_raises_after_staging():
+def test_failed_delete_raises_and_unstages_the_undeleted_message():
     sqs, staged = FakeSqs([json.dumps({"n": 1})], fail_delete=True), {}
     with pytest.raises(RuntimeError, match="delete failed"):
         _drain(sqs, staged)
-    assert staged == {0: [{"n": 1}]}
+    assert staged == {0: []}
+    assert sqs.deleted == [] and len(sqs.queue) == 1
+
+
+def test_retry_after_a_partial_delete_failure_stages_each_event_once():
+    bodies = [json.dumps({"n": i}) for i in range(3)]
+    sqs, staged = FakeSqs(bodies, fail_delete=True), {}
+    with pytest.raises(RuntimeError, match="delete failed for 1 of 3"):
+        _drain(sqs, staged)
+    assert staged == {0: [{"n": 1}, {"n": 2}]}
+
+    # visibility timeout expires, the task retries resuming from the staged batch
+    sqs.in_flight.clear()
+    sqs.fail_delete = False
+    result = _drain(sqs, staged, messages_processed=2, next_batch=1)
+    assert sorted(e["n"] for batch in staged.values() for e in batch) == [0, 1, 2]
+    assert result.messages_processed == 3 and sqs.queue == []
 
 
 def test_max_messages_counts_malformed_and_resumes():

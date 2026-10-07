@@ -84,11 +84,19 @@ def drain_queue(
             entries.append({"Id": msg["MessageId"], "ReceiptHandle": msg["ReceiptHandle"]})
 
         if events:
-            result.staged_keys.append(stage_batch(batch_index, events))
+            index = batch_index
+            result.staged_keys.append(stage_batch(index, events))
             batch_index += 1
             deleted = client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
             failed = deleted.get("Failed") or []
             if failed:
+                # The undeleted messages come back to the retry; keep only the deleted ones
+                # in this batch so they are not counted twice.
+                failed_ids = {f["Id"] for f in failed}
+                stage_batch(
+                    index,
+                    [e for e, m in zip(events, entries, strict=True) if m["Id"] not in failed_ids],
+                )
                 raise RuntimeError(
                     "SQS delete failed for %d of %d staged messages: %s"
                     % (len(failed), len(entries), failed[:3])
