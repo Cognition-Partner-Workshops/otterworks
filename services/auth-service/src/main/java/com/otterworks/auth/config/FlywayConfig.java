@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 public class FlywayConfig {
 
   /**
-   * V1 was rewritten to drop a leaked bcrypt hash, so databases migrated before that change hold
-   * a stale checksum for it. Repair realigns applied checksums with the files on the classpath
-   * before migrating, so those databases keep starting instead of failing validation.
+   * V1 was rewritten to drop a leaked bcrypt hash, so databases migrated before that change hold a
+   * stale checksum for it. Repair realigns applied checksums with the files on the classpath before
+   * migrating, so those databases keep starting instead of failing validation.
    */
   @Bean
   public FlywayMigrationStrategy repairThenMigrate() {
