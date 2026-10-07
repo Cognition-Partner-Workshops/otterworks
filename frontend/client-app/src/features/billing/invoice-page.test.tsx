@@ -89,6 +89,32 @@ describe("Billing invoice", () => {
     expect(await screen.findByText("regional tax: 2.25")).toBeInTheDocument();
   });
 
+  it("keeps the issued invoice when its lines cannot be loaded", async () => {
+    usePreviewHandler();
+    billingServer.use(
+      http.post(`${BASE}/tenants/${TENANT}/invoices`, () => {
+        const state = { status: "issued", subtotal: "54.56", tax: "4.50", total: "59.06" };
+        return HttpResponse.json({
+          ...state,
+          invoice_id: INVOICE,
+          period_id: "p",
+          issued_at: "2026-02-28T00:00:00+00:00",
+          invoice_state: [state],
+          credit_notes: [],
+        });
+      }),
+      http.get(`${BASE}/invoices/${INVOICE}/lines`, () =>
+        HttpResponse.json({ detail: "unavailable" }, { status: 503 }),
+      ),
+    );
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Issue invoice" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The invoice was issued, but its lines could not be loaded.",
+    );
+    expect(screen.getByLabelText("Issued invoice")).toHaveTextContent("total 59.06");
+  });
+
   it("shows an error when the invoice cannot be issued", async () => {
     usePreviewHandler();
     billingServer.use(

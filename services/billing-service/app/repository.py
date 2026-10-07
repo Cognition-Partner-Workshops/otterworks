@@ -274,16 +274,29 @@ class PostgresInvoicingRepository(PostgresRatingRepository):
             """,
             (tenant_id,),
         ).fetchall()
-        return [
-            CreditNoteRow(
-                credit_id=row["id"],
-                tenant_id=row["tenant_id"],
-                issued_on=row["issued_on"],
-                amount=Decimal(row["amount"]),
-                remaining_amount=Decimal(row["remaining_amount"]),
-            )
-            for row in rows
-        ]
+        return [self._credit_note(row) for row in rows]
+
+    def lock_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
+        rows = self.connection.execute(
+            """
+            SELECT id, tenant_id, issued_on, amount, remaining_amount
+            FROM billing_svc.credit_notes
+            WHERE tenant_id = %s
+            FOR UPDATE
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [self._credit_note(row) for row in rows]
+
+    @staticmethod
+    def _credit_note(row: dict) -> CreditNoteRow:
+        return CreditNoteRow(
+            credit_id=row["id"],
+            tenant_id=row["tenant_id"],
+            issued_on=row["issued_on"],
+            amount=Decimal(row["amount"]),
+            remaining_amount=Decimal(row["remaining_amount"]),
+        )
 
     def update_credit_remaining(self, credit_id: UUID, remaining_amount: Decimal) -> None:
         self.connection.execute(

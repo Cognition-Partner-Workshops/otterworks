@@ -102,6 +102,10 @@ class FakeInvoicingRepository(FakeRatingRepository):
     def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
         return [item for item in self.notes.values() if item.tenant_id == tenant_id]
 
+    def lock_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
+        self.writes.append("lock_credit")
+        return self.list_credit_notes(tenant_id)
+
     def update_credit_remaining(self, credit_id: UUID, remaining_amount: Decimal) -> None:
         self.writes.append("credit")
         self.notes[credit_id] = replace(self.notes[credit_id], remaining_amount=remaining_amount)
@@ -396,6 +400,15 @@ def test_reissue_consumes_remaining_credit_again() -> None:
     second = issue_invoice(repository, TENANT, FEB_START, FEB_END)
     assert [item.remaining_amount for item in second.credit_notes] == [ZERO, Decimal("0.00")]
     assert second.invoice.total == Decimal("46.08")
+
+
+@pytest.mark.rule("INVOICING-R09")
+def test_credit_is_consumed_from_locked_balances() -> None:
+    repository = FakeInvoicingRepository(
+        [subscription()], notes=[note(NOTE_A, date(2026, 1, 31), "5.00")]
+    )
+    issue_invoice(repository, TENANT, FEB_START, FEB_END)
+    assert repository.writes.index("lock_credit") < repository.writes.index("credit")
 
 
 @pytest.mark.rule("INVOICING-R10")

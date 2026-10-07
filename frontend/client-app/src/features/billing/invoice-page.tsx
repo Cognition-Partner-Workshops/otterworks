@@ -64,15 +64,21 @@ export default function BillingInvoicePage() {
     const isCurrent = () => issueRequest.current === request;
     billingApi
       .issueInvoice(tenantId, PERIOD_START, PERIOD_END)
-      .then(async (value) => {
-        if (!isCurrent()) return;
-        setIssued(value);
-        const stored = await billingApi.invoiceLines(value.invoice_id);
-        if (isCurrent()) setLines(stored);
-      })
-      .catch(() => {
-        if (isCurrent()) setError("The invoice could not be issued.");
-      })
+      .then(
+        async (value) => {
+          if (!isCurrent()) return;
+          setIssued(value);
+          try {
+            const stored = await billingApi.invoiceLines(value.invoice_id);
+            if (isCurrent()) setLines(stored);
+          } catch {
+            if (isCurrent()) setError("The invoice was issued, but its lines could not be loaded.");
+          }
+        },
+        () => {
+          if (isCurrent()) setError("The invoice could not be issued.");
+        }
+      )
       .finally(() => {
         if (isCurrent()) setIsIssuing(false);
       });

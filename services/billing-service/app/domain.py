@@ -457,6 +457,8 @@ class InvoicingRepository(RatingRepository, Protocol):
 
     def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]: ...
 
+    def lock_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]: ...
+
     def update_credit_remaining(self, credit_id: UUID, remaining_amount: Decimal) -> None: ...
 
     def find_invoice(self, invoice_id: UUID) -> InvoiceRow | None: ...
@@ -611,7 +613,7 @@ def issue_invoice(
         repository.insert_invoice_line(line)
     repository.update_invoice_totals(invoice_id, totals)
     for credit_id, remaining_amount in consume_credit(
-        repository.list_credit_notes(tenant_id), totals.credit
+        repository.lock_credit_notes(tenant_id), totals.credit
     ):
         repository.update_credit_remaining(credit_id, remaining_amount)
     invoice = repository.find_invoice(invoice_id)
