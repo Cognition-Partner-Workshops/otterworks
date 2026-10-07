@@ -5,11 +5,9 @@ spring:
   application:
     name: preferences-service
   # Default profile: embedded H2, used by tests and local runs. The schema is created by
-  # Flyway (db/migration), not by Hibernate.
+  # Flyway (db/migration), not by Hibernate. Spring Boot's embedded-H2 credentials apply.
   datasource:
     url: 'jdbc:h2:mem:preferences;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE'
-    username: sa
-    password: ''
     driver-class-name: org.h2.Driver
   jpa:
     open-in-view: false
