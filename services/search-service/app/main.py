@@ -19,6 +19,7 @@ from app.config import AppConfig
 from app.errors import register_exception_handlers
 from app.middleware.auth import AuthMiddleware
 from app.middleware.cors import CORSMiddleware
+from app.middleware.metrics import MetricsMiddleware
 from app.routing import install_flask_router
 from app.services.meilisearch_client import MeiliSearchService
 
@@ -59,7 +60,8 @@ class SearchServiceApp(FastAPI):
 
     ``add_middleware`` would place CORS inside Starlette's
     ``ServerErrorMiddleware``, so unhandled-error 500s would lose the CORS
-    headers flask-cors adds to them (``intercept_exceptions``).
+    headers flask-cors adds to them (``intercept_exceptions``). Request
+    metrics sit just inside CORS so they also count those 500s and auth 401s.
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -67,7 +69,7 @@ class SearchServiceApp(FastAPI):
         install_flask_router(self.router)
 
     def build_middleware_stack(self) -> ASGIApp:
-        return CORSMiddleware(super().build_middleware_stack(), allow_origins=CORS_ORIGINS)
+        return CORSMiddleware(MetricsMiddleware(super().build_middleware_stack()), allow_origins=CORS_ORIGINS)
 
 
 def create_app(config: AppConfig | None = None) -> FastAPI:
