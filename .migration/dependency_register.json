@@ -1,0 +1,983 @@
+{
+  "kind": "dependency-register",
+  "register_version": 1,
+  "run": "mmp_rt_b3_oracle",
+  "plan_step": "s2.3-dependency-register",
+  "source_schema": "OW_BILLING",
+  "recorded_at": "2026-10-07T07:20:24Z",
+  "ticket": "UNT7-9",
+  "confirmed": false,
+  "plugin_head": "ce82133329740dbfd3c11c2655619b46395c7904",
+  "plugin_tree": "6f1b121812e3de4c60ddabd203878c7bc4f06fe6",
+  "plugin_base": {
+    "branch": "devin/1791335937-app-aware-modeling-next",
+    "branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+    "cherry_pick": "865b105d695090615d1efa908fd9621e7bbd7bff",
+    "cherry_pick_patch_id": "e102025d"
+  },
+  "inputs": {
+    "census.json": "live ro-tier census (20 tables, 13 relationships, 7 triggers, 0 PL/SQL units / jobs \u2014 F14); the only census input access_scan.py reads",
+    "census_ddl.json": "ddl_census.py bundle used for the PL/SQL unit, sequence and scheduler-job inventory the live census cannot see (F26)",
+    "access_patterns.json": {
+      "access_version": 1,
+      "census_sha256": "8218c3b20cc35739078b92768352b90ff7e4a14d117b854b1cddc40dd3d1935a",
+      "patterns": 100
+    },
+    "scanner": "skills/schema-modeling/access_scan.py --census .migration/census.json --root services/legacy-billing/db/oracle/{packages,schema,ops} (run via an os.chdir wrapper from $HOME so paths stay repo-relative, F31)",
+    "static_analysis_only": true
+  },
+  "note": "Plugin step s2.3 has no machine contract ('lands as step text + discussion entries, not a file', migration-planning SKILL.md:56) and wave-preflight MIGRATION_LAYOUT does not list this file; shape defined by this run (F35).",
+  "dependencies": [
+    {
+      "id": "dep-job-nightly-dunning",
+      "kind": "scheduler_job",
+      "name": "JOB_NIGHTLY_DUNNING",
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "lines": [
+          10,
+          17
+        ]
+      },
+      "schedule": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0",
+      "enabled_in_fixture": false,
+      "calls": [
+        "pkg_dunning.sp_schedule_dunning",
+        "pkg_dunning.sp_suspend_overdue"
+      ],
+      "reads": [
+        "DUNNING_ATTEMPTS",
+        "INVOICES",
+        "NOTIFICATIONS",
+        "TENANTS"
+      ],
+      "writes": [
+        "BILLING_AUDIT_LOG",
+        "DUNNING_ATTEMPTS",
+        "NOTIFICATIONS",
+        "SUBSCRIPTIONS",
+        "TENANTS"
+      ],
+      "disposition": "stays_on_oracle",
+      "mongo_equivalent": false,
+      "reason": "no Mongo equivalent is built in this run; the dunning/suspension sweep keeps running against Oracle. The ops handbook (ops/OPERATIONS_HANDBOOK.doc.txt:27,49) notes it can overlap the CUSTBILL load; its writes to TENANTS/SUBSCRIPTIONS/DUNNING_ATTEMPTS/NOTIFICATIONS are a parallel-run drift source to reconcile.",
+      "scanner_saw_it": false,
+      "finding": "F29"
+    },
+    {
+      "id": "dep-job-purge-audit-log",
+      "kind": "scheduler_job",
+      "name": "JOB_PURGE_AUDIT_LOG",
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "lines": [
+          21,
+          28
+        ]
+      },
+      "schedule": "FREQ=DAILY;BYHOUR=3;BYMINUTE=30",
+      "enabled_in_fixture": false,
+      "calls": [],
+      "reads": [],
+      "writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "disposition": "stays_on_oracle",
+      "mongo_equivalent": false,
+      "reason": "90-day retention DELETE on BILLING_AUDIT_LOG, errors swallowed; no Mongo equivalent built (a TTL index would be the model-side answer, decided in s3.1).",
+      "scanner_saw_it": "statement only \u2014 routine null, no job attribution, no schedule hint",
+      "finding": "F29"
+    },
+    {
+      "id": "dep-ops-deploy-script",
+      "kind": "ops_script",
+      "name": "ops/deploy_prod_FINAL_v2.sh.txt",
+      "source": {
+        "file": "services/legacy-billing/db/oracle/ops/deploy_prod_FINAL_v2.sh.txt",
+        "lines": [
+          1,
+          60
+        ]
+      },
+      "reads": [],
+      "writes": [],
+      "disposition": "documentation_only",
+      "mongo_equivalent": false,
+      "reason": "inert .txt transcript (header lines 1-6), never invoked by anything in the repo; documents sqlplus release-apply + DBMS_UTILITY.COMPILE_SCHEMA in the 02:20-02:55 window between the two jobs. Not an OW_BILLING reader/writer.",
+      "scanner_saw_it": false,
+      "finding": "F29"
+    },
+    {
+      "id": "dep-ops-handbook",
+      "kind": "ops_script",
+      "name": "ops/OPERATIONS_HANDBOOK.doc.txt",
+      "source": {
+        "file": "services/legacy-billing/db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt",
+        "lines": [
+          1,
+          60
+        ]
+      },
+      "reads": [],
+      "writes": [],
+      "disposition": "documentation_only",
+      "mongo_equivalent": false,
+      "reason": "prose; the 'morning check' query (line 29) references BILLING_AUDIT_LOG.LOG_TS, a column that does not exist (the column is LOGGED_AT) \u2014 stale documentation, not a caller.",
+      "scanner_saw_it": false,
+      "finding": "F29"
+    }
+  ],
+  "triggers": [
+    {
+      "name": "TRG_BILLING_AUDIT_LOG_ID",
+      "table": "BILLING_AUDIT_LOG",
+      "timing": "BEFORE",
+      "events": [
+        "insert"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          179,
+          185
+        ]
+      },
+      "classification": "identity",
+      "disposition": "application_level_decision",
+      "reason": "sequence-fed surrogate (seq_billing_audit_log -> LOG_ID); becomes the document _id / an ObjectId, no versioning decision",
+      "scanner_saw_it": false,
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_SUBSCRIPTIONS_HIST",
+      "table": "SUBSCRIPTIONS",
+      "timing": "AFTER",
+      "events": [
+        "update",
+        "delete"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          206,
+          226
+        ]
+      },
+      "classification": "history_shadow",
+      "disposition": "application_level_decision",
+      "reason": "full-row :OLD copy into SUBSCRIPTIONS_HIST on every update/delete; application-level versioning decision in the model (embedded version array vs. separate history collection vs. drop) \u2014 s3.1",
+      "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_SUB_NO_UNCANCEL",
+      "table": "SUBSCRIPTIONS",
+      "timing": "BEFORE",
+      "events": [
+        "update"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          228,
+          237
+        ]
+      },
+      "classification": "state_rule",
+      "disposition": "application_level_decision",
+      "reason": "cancelled (30) subscriptions cannot change status_cd; no SQL \u2014 becomes an application-level state-machine validation",
+      "scanner_saw_it": false,
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_USAGE_EVENTS_CHECK",
+      "table": "USAGE_EVENTS",
+      "timing": "BEFORE",
+      "events": [
+        "insert"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          239,
+          253
+        ]
+      },
+      "classification": "validation",
+      "disposition": "application_level_decision",
+      "reason": "units > 0 and kind_cd must exist in CODES (USAGE_KIND); becomes schema validation / enum in the model",
+      "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_CUSTOMER_MASTER_SEQ",
+      "table": "CUSTOMER_MASTER",
+      "timing": "BEFORE",
+      "events": [
+        "insert"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "lines": [
+          346,
+          356
+        ]
+      },
+      "classification": "identity",
+      "disposition": "application_level_decision",
+      "reason": "sequence-fed CUST_SEQ_NO when null; identity, no versioning decision",
+      "scanner_saw_it": false,
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_CUSTOMER_MASTER_HIST",
+      "table": "CUSTOMER_MASTER",
+      "timing": "AFTER",
+      "events": [
+        "update",
+        "delete"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "lines": [
+          358,
+          389
+        ]
+      },
+      "classification": "history_shadow",
+      "disposition": "application_level_decision",
+      "reason": "155-column :OLD copy into CUSTOMER_MASTER_HIST; application-level versioning decision in the model \u2014 s3.1",
+      "scanner_saw_it": "statement only \u2014 no trigger context, routine misattributed",
+      "finding": "F27/F28"
+    },
+    {
+      "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+      "table": "ENTITY_ATTR_VALUE",
+      "timing": "BEFORE",
+      "events": [
+        "insert"
+      ],
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "lines": [
+          391,
+          401
+        ]
+      },
+      "classification": "identity",
+      "disposition": "application_level_decision",
+      "reason": "sequence-fed EAV_ID when null; identity, no versioning decision",
+      "scanner_saw_it": false,
+      "finding": "F27/F28"
+    }
+  ],
+  "excluded": [
+    {
+      "kind": "postgres_procs",
+      "path": "services/legacy-billing/db/procs/",
+      "disposition": "excluded",
+      "reason": "Postgres port of the same entrypoints; not an Oracle caller and not in the scanner roots per the plan step."
+    }
+  ],
+  "not_registered": [
+    {
+      "what": "application-tier callers of the packages",
+      "why": "not in the repo; the intake names the five packages as the application. Which entrypoint the app calls, how often, and whether it ever calls pkg_ow_util.f_code_desc (no PL/SQL caller) is unknown to static analysis \u2014 frequency stays null everywhere."
+    },
+    {
+      "what": "mainframe CUSTBILL nightly feed into INVOICE_HEADER / INVOICE_LINE",
+      "why": "mentioned only in ops/OPERATIONS_HANDBOOK.doc.txt:22,49; no artifact in the repo and not in the intake's dependency list. Flagged for the reviewer: if real, it is an external writer with no access pattern in this file."
+    },
+    {
+      "what": "startup/00_init.sh and setup/01_users.sql",
+      "why": "fixture bootstrap (MERGE INTO fixture_meta, catalog counts, user grants) \u2014 SQL issued only by the Oracle Free container start, against FIXTURE_META and the catalog, not OW_BILLING application tables."
+    }
+  ],
+  "routines": [
+    {
+      "routine": "pkg_ow_util.f_code_desc",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "entrypoint": false,
+      "reads": [
+        "CODES"
+      ],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": true,
+      "cursor_loops": [],
+      "dynamic_sql": [
+        "01_pkg_util.sql:39-40 EXECUTE IMMEDIATE ... USING"
+      ],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-d9d4207c37"
+      ]
+    },
+    {
+      "routine": "pkg_ow_util.f_dt2str",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "entrypoint": false,
+      "reads": [],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": []
+    },
+    {
+      "routine": "pkg_ow_util.f_md5_uuid",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "entrypoint": false,
+      "reads": [],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": []
+    },
+    {
+      "routine": "pkg_ow_util.f_str2dt",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "entrypoint": false,
+      "reads": [],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": []
+    },
+    {
+      "routine": "pkg_ow_util.log_msg",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "entrypoint": false,
+      "reads": [],
+      "writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-779ce5b5b7"
+      ]
+    },
+    {
+      "routine": "pkg_plans.fn_entitlement",
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "entrypoint": true,
+      "reads": [
+        "PLANS",
+        "SUBSCRIPTIONS",
+        "TENANTS"
+      ],
+      "writes": [],
+      "joins": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ],
+        [
+          "TENANTS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "outer_joins": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-df26fbfed9",
+        "ap-60ec05ff91",
+        "ap-95a0f9e481"
+      ]
+    },
+    {
+      "routine": "pkg_plans.fn_list_plans",
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "entrypoint": true,
+      "reads": [
+        "PLANS"
+      ],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_reads": [],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-33e1dc2584"
+      ]
+    },
+    {
+      "routine": "pkg_plans.sp_change_plan",
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "entrypoint": true,
+      "reads": [
+        "SUBSCRIPTIONS"
+      ],
+      "writes": [
+        "SUBSCRIPTIONS"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "c_open_subs FOR UPDATE (02_pkg_plans.sql:75-80) -> UPDATE WHERE CURRENT OF (:88-95)"
+      ],
+      "dynamic_sql": [
+        "02_pkg_plans.sql:101-105 EXECUTE IMMEDIATE INSERT"
+      ],
+      "calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_reads": [],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-781940a6e5",
+        "ap-a7af1a6156",
+        "ap-875f85e898"
+      ]
+    },
+    {
+      "routine": "pkg_rating.compute_rating",
+      "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+      "entrypoint": false,
+      "reads": [
+        "PLANS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "SUBSCRIPTIONS",
+        "USAGE_EVENTS"
+      ],
+      "writes": [],
+      "joins": [
+        [
+          "RATING_PERIODS",
+          "RATING_RESULTS"
+        ]
+      ],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "usage_events per tenant, period filter in PL/SQL (03_pkg_rating.sql:77-83)",
+        "rating_results x rating_periods 3-month rollover (:87-93)"
+      ],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_reads": [],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-22fec4f2aa",
+        "ap-1fe02141ee",
+        "ap-cd877ffc6d",
+        "ap-61c2839e36",
+        "ap-81929b0d21"
+      ]
+    },
+    {
+      "routine": "pkg_rating.fn_usage_rating",
+      "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+      "entrypoint": true,
+      "reads": [],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.log_msg",
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_reads": [
+        "PLANS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "SUBSCRIPTIONS",
+        "USAGE_EVENTS"
+      ],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": []
+    },
+    {
+      "routine": "pkg_rating.fn_usage_summary",
+      "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+      "entrypoint": true,
+      "reads": [
+        "USAGE_EVENTS"
+      ],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-2b3995792f"
+      ]
+    },
+    {
+      "routine": "pkg_rating.sp_finalize_rating",
+      "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+      "entrypoint": true,
+      "reads": [
+        "SUBSCRIPTIONS"
+      ],
+      "writes": [
+        "RATING_PERIODS",
+        "RATING_RESULTS"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_rating.compute_rating",
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg",
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_reads": [
+        "PLANS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "USAGE_EVENTS"
+      ],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-b6d8685d76",
+        "ap-2cc202a47e",
+        "ap-8e58932397",
+        "ap-8ee13949bc",
+        "ap-d7af986eeb",
+        "ap-76af3595e0"
+      ]
+    },
+    {
+      "routine": "pkg_invoicing.compute_preview",
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "entrypoint": false,
+      "reads": [
+        "CREDIT_NOTES",
+        "PLANS",
+        "SUBSCRIPTIONS",
+        "TENANTS"
+      ],
+      "writes": [],
+      "joins": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "credit_notes remaining_amount > 0 (04_pkg_invoicing.sql:53-56)"
+      ],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.log_msg",
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_reads": [
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "USAGE_EVENTS"
+      ],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-ee373ebbd1",
+        "ap-160686ae25",
+        "ap-2e59f9675d",
+        "ap-41de3e5203"
+      ]
+    },
+    {
+      "routine": "pkg_invoicing.fn_invoice_lines",
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "entrypoint": true,
+      "reads": [
+        "INVOICE_LINES"
+      ],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-620d0a2057"
+      ]
+    },
+    {
+      "routine": "pkg_invoicing.fn_invoice_preview",
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "entrypoint": true,
+      "reads": [],
+      "writes": [],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_invoicing.compute_preview"
+      ],
+      "transitive_calls": [
+        "pkg_invoicing.compute_preview",
+        "pkg_ow_util.log_msg",
+        "pkg_rating.compute_rating"
+      ],
+      "transitive_reads": [
+        "CREDIT_NOTES",
+        "PLANS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "SUBSCRIPTIONS",
+        "TENANTS",
+        "USAGE_EVENTS"
+      ],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": []
+    },
+    {
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "entrypoint": true,
+      "reads": [
+        "CREDIT_NOTES"
+      ],
+      "writes": [
+        "CREDIT_NOTES",
+        "INVOICES",
+        "INVOICE_LINES"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "fn_invoice_preview refcursor FETCH loop -> INSERT invoice_lines (04_pkg_invoicing.sql:152-166)",
+        "credit_notes oldest-first consumption -> UPDATE (:182-190)"
+      ],
+      "dynamic_sql": [
+        "04_pkg_invoicing.sql:149-150 EXECUTE IMMEDIATE DELETE"
+      ],
+      "calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_rating.sp_finalize_rating",
+        "pkg_invoicing.fn_invoice_preview",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_invoicing.compute_preview",
+        "pkg_invoicing.fn_invoice_preview",
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg",
+        "pkg_rating.compute_rating",
+        "pkg_rating.sp_finalize_rating"
+      ],
+      "transitive_reads": [
+        "PLANS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "SUBSCRIPTIONS",
+        "TENANTS",
+        "USAGE_EVENTS"
+      ],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG",
+        "RATING_PERIODS",
+        "RATING_RESULTS"
+      ],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-c026ebf3a8",
+        "ap-c43f1f14dc",
+        "ap-5c6c87e418",
+        "ap-56d46b7c81",
+        "ap-75910aef55",
+        "ap-b259650bfe",
+        "ap-7a575dfc2d"
+      ]
+    },
+    {
+      "routine": "pkg_dunning.fn_overdue_accounts",
+      "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+      "entrypoint": true,
+      "reads": [
+        "INVOICES",
+        "TENANTS"
+      ],
+      "writes": [],
+      "joins": [
+        [
+          "TENANTS",
+          "INVOICES"
+        ]
+      ],
+      "outer_joins": [
+        [
+          "TENANTS",
+          "INVOICES"
+        ]
+      ],
+      "codes_lookup": false,
+      "cursor_loops": [],
+      "dynamic_sql": [],
+      "calls": [],
+      "transitive_calls": [],
+      "transitive_reads": [],
+      "transitive_writes": [],
+      "invoked_by": [],
+      "schedule_hint": null,
+      "pattern_ids": [
+        "ap-46a8eb988b"
+      ]
+    },
+    {
+      "routine": "pkg_dunning.sp_schedule_dunning",
+      "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+      "entrypoint": true,
+      "reads": [
+        "DUNNING_ATTEMPTS",
+        "INVOICES"
+      ],
+      "writes": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "invoices status_cd=40 -> MAX(attempt_no) + INSERT dunning_attempts per row (05_pkg_dunning.sql:40-65)"
+      ],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_reads": [],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [
+        {
+          "path": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "pattern_ids": [
+        "ap-644c102b12",
+        "ap-37287a11b5",
+        "ap-68fdfcc880"
+      ]
+    },
+    {
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+      "entrypoint": true,
+      "reads": [
+        "INVOICES",
+        "NOTIFICATIONS",
+        "TENANTS"
+      ],
+      "writes": [
+        "NOTIFICATIONS",
+        "SUBSCRIPTIONS",
+        "TENANTS"
+      ],
+      "joins": [],
+      "outer_joins": [],
+      "codes_lookup": false,
+      "cursor_loops": [
+        "DISTINCT tenant_id of invoices overdue >= 14d -> count tenants, UPDATE tenants, UPDATE subscriptions, INSERT notifications, log_msg per tenant (05_pkg_dunning.sql:74-98)"
+      ],
+      "dynamic_sql": [],
+      "calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_calls": [
+        "pkg_ow_util.f_md5_uuid",
+        "pkg_ow_util.log_msg"
+      ],
+      "transitive_reads": [],
+      "transitive_writes": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "invoked_by": [
+        {
+          "path": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "pattern_ids": [
+        "ap-eb72a29af5",
+        "ap-c089416cd9",
+        "ap-8e4baaa9a0",
+        "ap-d3754b6b8a",
+        "ap-7692fe1e9a",
+        "ap-cd2440f5ed",
+        "ap-d0e6a55401"
+      ]
+    }
+  ],
+  "callers_of": {
+    "pkg_invoicing.compute_preview": [
+      "pkg_invoicing.fn_invoice_preview"
+    ],
+    "pkg_invoicing.fn_invoice_preview": [
+      "pkg_invoicing.sp_issue_invoice"
+    ],
+    "pkg_ow_util.f_md5_uuid": [
+      "pkg_dunning.sp_schedule_dunning",
+      "pkg_dunning.sp_suspend_overdue",
+      "pkg_invoicing.sp_issue_invoice",
+      "pkg_plans.sp_change_plan",
+      "pkg_rating.sp_finalize_rating"
+    ],
+    "pkg_ow_util.log_msg": [
+      "pkg_dunning.sp_schedule_dunning",
+      "pkg_dunning.sp_suspend_overdue",
+      "pkg_invoicing.sp_issue_invoice",
+      "pkg_plans.fn_list_plans",
+      "pkg_plans.sp_change_plan",
+      "pkg_rating.compute_rating",
+      "pkg_rating.sp_finalize_rating"
+    ],
+    "pkg_rating.compute_rating": [
+      "pkg_invoicing.compute_preview",
+      "pkg_rating.fn_usage_rating",
+      "pkg_rating.sp_finalize_rating"
+    ],
+    "pkg_rating.sp_finalize_rating": [
+      "pkg_invoicing.sp_issue_invoice"
+    ]
+  }
+}
