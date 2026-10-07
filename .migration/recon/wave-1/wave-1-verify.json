@@ -92,10 +92,11 @@
     "all batches: RECON_REDACT_SALT is not set on the fixture host, so all 10 verifier result.json files record redaction_salted=false (unsalted hashes, low-entropy values enumerable offline).",
     "all batches: the verifier shared the fixture host with the batch worker (same machine, same Oracle fixture volume, same MMP_RT_SRC_DSN export, same Atlas principal, same ~/mmp and ~/.venvs/mmp); independence holds at the working-tree and process level (fresh clone at 7e66c71a, no loader run, read-only harness, sha256-verified spec bytes) but not at the host level.",
     "w1-b2-tenant-children-depth1: usageEvents carries no subscriptionId in map-v1.1 (USAGE_EVENTS has none), so the subscription pointer check applies to ratingResults.subscriptionId (8/8 resolve) and subscriptionsHist.id (6/6 resolve) only.",
-    "cluster: mmp_rt_b4_oracle holds one empty collection outside the mapping, _connectivity_probe (0 docs, left by the UNT8-4 connectivity round-trip); no other unexpected collection or database write was observed."
+    "cluster: mmp_rt_b4_oracle holds one empty collection outside the mapping, _connectivity_probe (0 docs, left by the UNT8-4 connectivity round-trip); no other unexpected collection or database write was observed.",
+    "all batches: the plugin's fixed verifier branch name recon/wave-1 collides across runs on the same repo (origin/recon/wave-1 already held another run's wave-1 evidence at 36873379, off 32baffd8, manifest b11c0e7b2f31), so this run's evidence lives on recon/wave-1-UNT8-18 by manager decision instead of force-pushing or merging foreign .migration/ content (to 05_decisions.md \u00a75)."
   ],
-  "report_path": "recon/wave-1:.migration/recon/wave-1/verify-report.md",
-  "branch": "recon/wave-1",
+  "report_path": "recon/wave-1-UNT8-18:.migration/recon/wave-1/verify-report.md",
+  "branch": "recon/wave-1-UNT8-18",
   "verified_run_branch_head": "7e66c71ada0766b2f8e08f41b0b45b7781cdba93",
   "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",

@@ -3,7 +3,7 @@ manifest_sha: 55e68257b3f9
 
 # Wave 1 independent verification — OtterWorks Oracle billing → MongoDB Atlas (`mmp_rt_b4_oracle`)
 
-- Run branch verified: `tp-run/mongodb-20261007T161014Z` @ `7e66c71a` (fresh clone `~/verify-w1`, branch `recon/wave-1`; the batch worker's tree was never used).
+- Run branch verified: `tp-run/mongodb-20261007T161014Z` @ `7e66c71a` (fresh clone `~/verify-w1`, branch `recon/wave-1-UNT8-18` (see finding on the `recon/wave-1` name collision); the batch worker's tree was never used).
 - Contracts: mapping map-v1.1 sha256 `3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6`, tolerances tol-1 sha256 `a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da` — recomputed from the committed bytes in the clone and matched by every result.json below.
 - Harness: mongo-recon-harness 0.3.3 from `~/mmp` @ `353280fc837193a40ccc005cb62fb4ffaf8ac16f` (unpatched), one `--mode live --target-class migration_cluster --source-concurrency 1` run per unit, `MMP_RT_SRC_DSN` / `MONGODB_ATLAS_URI` by name. The verifier wrote nothing to Atlas: no loader, no drop, no index; the harness and every probe are read-only (SELECT/aggregate/dbStats).
 - Axes: source_access live (Oracle fixture `otterworks-oracle-billing-oracle-billing-1`, post-exercise mmprt mini seed), target_access migration_cluster. No live mismatch occurred, so no source re-run / drift call was needed.
@@ -156,8 +156,11 @@ Collections present: _connectivity_probe, billingAuditLog, codes, customerMaster
 7. all batches: the verifier shared the fixture host with the batch worker (same machine, same Oracle fixture volume, same MMP_RT_SRC_DSN export, same Atlas principal, same ~/mmp and ~/.venvs/mmp); independence holds at the working-tree and process level (fresh clone at 7e66c71a, no loader run, read-only harness, sha256-verified spec bytes) but not at the host level.
 8. w1-b2-tenant-children-depth1: usageEvents carries no subscriptionId in map-v1.1 (USAGE_EVENTS has none), so the subscription pointer check applies to ratingResults.subscriptionId (8/8 resolve) and subscriptionsHist.id (6/6 resolve) only.
 9. cluster: mmp_rt_b4_oracle holds one empty collection outside the mapping, _connectivity_probe (0 docs, left by the UNT8-4 connectivity round-trip); no other unexpected collection or database write was observed.
+10. all batches: the plugin's fixed verifier branch name recon/wave-1 collides across runs on the same repo (origin/recon/wave-1 already held another run's wave-1 evidence at 36873379, off 32baffd8, manifest b11c0e7b2f31), so this run's evidence lives on recon/wave-1-UNT8-18 by manager decision instead of force-pushing or merging foreign .migration/ content (to 05_decisions.md §5).
 
-## Evidence files on `recon/wave-1`
+## Evidence files on `recon/wave-1-UNT8-18`
+
+report_path: `recon/wave-1-UNT8-18:.migration/recon/wave-1/verify-report.md`
 
 - `.migration/recon/wave-1/<batch>/<unit>/result.json` (+ report.md, recon.summary.md) — the verifier's own runs (10 units).
 - `.migration/recon/wave-1/probes/target_probes.json`, `source_probes.json`, `tier4_replay.json`, `dbstats_mongosh.txt`.
