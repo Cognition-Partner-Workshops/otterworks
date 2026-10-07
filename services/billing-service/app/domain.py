@@ -190,7 +190,7 @@ class DunningRepository(Protocol):
 
 
 def md5_uuid(text: str) -> UUID:
-    return UUID(hashlib.md5(text.encode()).hexdigest())
+    return UUID(hashlib.md5(text.encode(), usedforsecurity=False).hexdigest())
 
 
 def utc_date(value: datetime) -> date:
