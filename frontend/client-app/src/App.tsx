@@ -24,6 +24,7 @@ import BillingPlansPage from "@/features/billing/plans-page";
 import BillingEntitlementPage from "@/features/billing/entitlement-page";
 import BillingChangePlanPage from "@/features/billing/change-plan-page";
 import BillingUsageRatingPage from "@/features/billing/usage-rating-page";
+import BillingInvoicePage from "@/features/billing/invoice-page";
 
 const BILLING_FIXTURE_ENABLED =
   import.meta.env.VITE_ENABLE_BILLING_FIXTURE === "true" ||
@@ -77,6 +78,10 @@ export default function App() {
               <Route
                 path="/billing/rating/:tenantId"
                 element={<BillingUsageRatingPage />}
+              />
+              <Route
+                path="/billing/invoice/:tenantId"
+                element={<BillingInvoicePage />}
               />
             </>
           )}

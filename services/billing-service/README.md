@@ -1,8 +1,8 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans and rating modules.
+This FastAPI service is the extraction target for the plans, rating and invoicing modules.
 It owns a separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and
-places plans and rating behavior in a plain-Python domain layer.
+places plans, rating and invoicing behavior in a plain-Python domain layer.
 
 ## Development
 
@@ -71,3 +71,29 @@ HTTP 404 (approved in `RATING-R01`); the legacy function returns a row of nulls
 and the legacy finalize fails on a NOT NULL constraint. Finalizing a period that
 already exists under an id other than `md5(tenant_id || period_start)` returns
 HTTP 409, where the legacy procedure fails on the foreign key.
+
+## Invoicing
+
+| Legacy entrypoint | Target endpoint |
+| --- | --- |
+| `billing.fn_invoice_preview` | `GET /api/tenants/{tenant_id}/invoice-preview?period_start=&period_end=` |
+| `billing.sp_issue_invoice` | `POST /api/tenants/{tenant_id}/invoices` |
+| `billing.fn_invoice_lines` | `GET /api/invoices/{invoice_id}/lines` |
+
+The rules are `INVOICING-R01` to `INVOICING-R10` in
+`procs/rules/invoicing.rules.yaml`. Invoicing reuses `rate_usage` and
+`finalize_rating` from the rating module unchanged. The extraction copies
+legacy behaviour, recorded as follow-ups in the ledger: the full monthly fee is
+never prorated; tax is a hard-coded 8.25% split into two unrounded halves;
+`tax_amount` is always 0; every positive credit note applies regardless of its
+issue date; the credit cap rounds the gross with the unrounded tax while the
+invoice rounds each tax half separately; re-issuing resets a paid or overdue
+invoice to `issued` and consumes the remaining credit again.
+
+When no subscription overlaps the period, preview and issue return HTTP 404
+(`INVOICING-R01`). Where per-half tax rounding would make a fully credited
+total `-0.01`, issue returns HTTP 409 and writes nothing; the legacy procedure
+rolls back on the `total >= 0` check (`INVOICING-R08`). Issue reuses the rating
+responses for a reversed period (422) and a mismatched period id (409). An
+unknown invoice id returns HTTP 200 with an empty list of lines
+(`INVOICING-R10`).

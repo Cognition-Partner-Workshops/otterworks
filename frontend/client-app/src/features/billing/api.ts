@@ -74,6 +74,45 @@ export type RatingFinalization = RatingResult & {
   rating_result: RatingResult[];
 };
 
+export type InvoicePreviewLine = {
+  line_no: number;
+  line_type: string;
+  description: string;
+  amount: string;
+  tax_amount: string;
+  credit_applied: string;
+  total: string;
+};
+
+export type InvoiceState = {
+  status: string;
+  subtotal: string;
+  tax: string;
+  total: string;
+};
+
+export type CreditNote = {
+  credit_id: string;
+  issued_on: string;
+  amount: string;
+  remaining_amount: string;
+};
+
+export type IssuedInvoice = InvoiceState & {
+  invoice_id: string;
+  period_id: string;
+  issued_at: string;
+  invoice_state: InvoiceState[];
+  credit_notes: CreditNote[];
+};
+
+export type InvoiceLine = {
+  line_no: number;
+  line_type: string;
+  description: string;
+  amount: string;
+};
+
 function periodQuery(periodStart: string, periodEnd: string) {
   return `period_start=${encodeURIComponent(periodStart)}&period_end=${encodeURIComponent(periodEnd)}`;
 }
@@ -121,4 +160,19 @@ export const billingApi = {
         body: JSON.stringify({ period_start: periodStart, period_end: periodEnd }),
       }
     ),
+  invoicePreview: (tenantId: string, periodStart: string, periodEnd: string) =>
+    request<InvoicePreviewLine[]>(
+      `/api/tenants/${encodeURIComponent(tenantId)}/invoice-preview?${periodQuery(periodStart, periodEnd)}`
+    ),
+  issueInvoice: (tenantId: string, periodStart: string, periodEnd: string) =>
+    request<IssuedInvoice>(
+      `/api/tenants/${encodeURIComponent(tenantId)}/invoices`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ period_start: periodStart, period_end: periodEnd }),
+      }
+    ),
+  invoiceLines: (invoiceId: string) =>
+    request<InvoiceLine[]>(`/api/invoices/${encodeURIComponent(invoiceId)}/lines`),
 };

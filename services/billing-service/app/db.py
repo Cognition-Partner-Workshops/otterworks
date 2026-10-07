@@ -31,7 +31,10 @@ def reset() -> None:
         _apply_migrations(connection)
         connection.execute(
             """
-            TRUNCATE TABLE billing_svc.rating_results,
+            TRUNCATE TABLE billing_svc.invoice_lines,
+                           billing_svc.invoices,
+                           billing_svc.credit_notes,
+                           billing_svc.rating_results,
                            billing_svc.rating_periods,
                            billing_svc.usage_events,
                            billing_svc.subscriptions,

@@ -13,6 +13,9 @@ TABLES = (
     "usage_events",
     "rating_periods",
     "rating_results",
+    "invoices",
+    "credit_notes",
+    "invoice_lines",
 )
 
 

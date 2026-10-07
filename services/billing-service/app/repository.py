@@ -7,7 +7,11 @@ from uuid import UUID
 import psycopg
 
 from app.domain import (
+    CreditNoteRow,
     EntitlementRow,
+    InvoiceLineRow,
+    InvoiceRow,
+    InvoiceTotals,
     PlanRow,
     RatingHistoryRow,
     RatingPeriodRow,
@@ -251,6 +255,155 @@ class PostgresRatingRepository(PostgresPlansRepository):
         ).fetchall()
         return [_result_row(row) for row in rows]
 
+
+
+class PostgresInvoicingRepository(PostgresRatingRepository):
+    def find_tax_exempt(self, tenant_id: UUID) -> bool | None:
+        row = self.connection.execute(
+            "SELECT tax_exempt FROM billing_svc.tenants WHERE id = %s",
+            (tenant_id,),
+        ).fetchone()
+        return None if row is None else row["tax_exempt"]
+
+    def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
+        rows = self.connection.execute(
+            """
+            SELECT id, tenant_id, issued_on, amount, remaining_amount
+            FROM billing_svc.credit_notes
+            WHERE tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [
+            CreditNoteRow(
+                credit_id=row["id"],
+                tenant_id=row["tenant_id"],
+                issued_on=row["issued_on"],
+                amount=Decimal(row["amount"]),
+                remaining_amount=Decimal(row["remaining_amount"]),
+            )
+            for row in rows
+        ]
+
+    def update_credit_remaining(self, credit_id: UUID, remaining_amount: Decimal) -> None:
+        self.connection.execute(
+            "UPDATE billing_svc.credit_notes SET remaining_amount = %s WHERE id = %s",
+            (remaining_amount, credit_id),
+        )
+
+    def find_invoice(self, invoice_id: UUID) -> InvoiceRow | None:
+        row = self.connection.execute(
+            """
+            SELECT id, tenant_id, period_id, issued_at, subtotal, tax, total, status
+            FROM billing_svc.invoices
+            WHERE id = %s
+            """,
+            (invoice_id,),
+        ).fetchone()
+        return None if row is None else _invoice_row(row)
+
+    def list_period_invoices(self, period_id: UUID) -> list[InvoiceRow]:
+        rows = self.connection.execute(
+            """
+            SELECT id, tenant_id, period_id, issued_at, subtotal, tax, total, status
+            FROM billing_svc.invoices
+            WHERE period_id = %s
+            """,
+            (period_id,),
+        ).fetchall()
+        return [_invoice_row(row) for row in rows]
+
+    def insert_invoice(self, invoice: InvoiceRow) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.invoices
+                (id, tenant_id, period_id, issued_at, subtotal, tax, total, status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                invoice.invoice_id,
+                invoice.tenant_id,
+                invoice.period_id,
+                invoice.issued_at,
+                invoice.subtotal,
+                invoice.tax,
+                invoice.total,
+                invoice.status,
+            ),
+        )
+
+    def update_invoice_status(self, invoice_id: UUID, status: str) -> None:
+        self.connection.execute(
+            "UPDATE billing_svc.invoices SET status = %s WHERE id = %s",
+            (status, invoice_id),
+        )
+
+    def update_invoice_totals(self, invoice_id: UUID, totals: InvoiceTotals) -> None:
+        self.connection.execute(
+            """
+            UPDATE billing_svc.invoices
+            SET subtotal = %s, tax = %s, total = %s
+            WHERE id = %s
+            """,
+            (totals.subtotal, totals.tax, totals.total, invoice_id),
+        )
+
+    def delete_invoice_lines(self, invoice_id: UUID) -> None:
+        self.connection.execute(
+            "DELETE FROM billing_svc.invoice_lines WHERE invoice_id = %s",
+            (invoice_id,),
+        )
+
+    def insert_invoice_line(self, line: InvoiceLineRow) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.invoice_lines
+                (id, invoice_id, line_no, line_type, description, amount)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                line.line_id,
+                line.invoice_id,
+                line.line_no,
+                line.line_type,
+                line.description,
+                line.amount,
+            ),
+        )
+
+    def list_invoice_lines(self, invoice_id: UUID) -> list[InvoiceLineRow]:
+        rows = self.connection.execute(
+            """
+            SELECT id, invoice_id, line_no, line_type, description, amount
+            FROM billing_svc.invoice_lines
+            WHERE invoice_id = %s
+            """,
+            (invoice_id,),
+        ).fetchall()
+        return [
+            InvoiceLineRow(
+                line_id=row["id"],
+                invoice_id=row["invoice_id"],
+                line_no=row["line_no"],
+                line_type=row["line_type"],
+                description=row["description"],
+                amount=Decimal(row["amount"]),
+            )
+            for row in rows
+        ]
+
+
+def _invoice_row(row: dict) -> InvoiceRow:
+    return InvoiceRow(
+        invoice_id=row["id"],
+        tenant_id=row["tenant_id"],
+        period_id=row["period_id"],
+        issued_at=row["issued_at"],
+        subtotal=Decimal(row["subtotal"]),
+        tax=Decimal(row["tax"]),
+        total=Decimal(row["total"]),
+        status=row["status"],
+    )
 
 def _result_row(row: dict) -> RatingResultRow:
     return RatingResultRow(
