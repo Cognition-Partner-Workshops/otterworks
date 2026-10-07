@@ -97,6 +97,7 @@ make etl-parity SCRIPT=audit_archive_weekly                                    #
 make etl-parity SCRIPT=audit_archive_weekly SCENARIO=smoke                     # one scenario
 make etl-parity SCRIPT=audit_archive_weekly DAG=parity_wrong__audit_archive_weekly EXPECT=failed
 make etl-parity SCRIPT=storage_cleanup_daily VARIANT=reference_mismatches_normalize_keys
+make etl-parity SCRIPT=all                                                     # every script in parity/dags.yaml, one after another
 ```
 
 1. **Same seed, snapshot and normalizer**: each scenario goes through
