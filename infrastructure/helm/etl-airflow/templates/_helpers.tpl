@@ -12,6 +12,10 @@ platform/team: otterworks
 
 {{- define "etl-airflow.env" -}}
 env:
+  - name: AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_SERVER_PORT
+    value: {{ .Values.scheduler.healthPort | quote }}
+  - name: AIRFLOW__LOGGING__WORKER_LOG_SERVER_PORT
+    value: {{ .Values.scheduler.logServerPort | quote }}
   {{- range $key, $value := .Values.env }}
   - name: {{ $key }}
     value: {{ $value | quote }}
