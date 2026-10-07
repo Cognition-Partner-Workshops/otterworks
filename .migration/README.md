@@ -31,3 +31,7 @@ Connect test (`/home/ubuntu/.venvs/recon/bin/python` has `oracledb`):
 ```
 
 `OW_BILLING_RO` holds exactly the oracle profile's assessment tier (`CREATE SESSION`, `SELECT_CATALOG_ROLE`, `SELECT` on the 20 tables). Under that tier the `ALL_*` catalog views the census runs are blind to PL/SQL source, sequences and scheduler jobs (finding F11); the `DBA_*` views see them. Counting inside the container still uses the owner: `docker exec -i otterworks-oracle-billing-oracle-billing-1 bash -c "sqlplus -s ow_billing/ow_billing@localhost:1521/FREEPDB1"`.
+
+## Fixture manifest (s2.4-fixture)
+
+`fixtures/mmp-rt-mini.json` is the fixture manifest `wave-preflight` requires on every batch (`fixture_manifest`). In this run the fixture *is* the live source (the mini-seeded Oracle Free above; no masked export exists), so `method: synthetic`, `masked_columns: []`, `fixture_is_live_source: true`: `recon --mode fixture` is only a dry-run of the load, the single `--mode live` run is the merge verdict (finding F24). `row_counts` are whole-table counts copied from `fixture_counts.json` because the census carries no row counts (F25). The manifest also lists the planted hostile shapes (37 orphan `INVOICE_LINE` rows, 41 dirty `SIGNUP_DT` text dates, 23 malformed `RELATED_ACCT_IDS` CSV lists, 66 EAV rows, dangling power-law tenant ids) with the rule that finds each one.
