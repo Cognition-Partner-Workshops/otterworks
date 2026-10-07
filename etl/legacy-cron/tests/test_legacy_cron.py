@@ -138,3 +138,26 @@ def test_rendered_credentials_and_hosts_are_not_the_committed_ones(tmp_path):
         ("services", "meilisearch_api_key"),
     ]:
         assert rendered[section][key] != committed[section][key], (section, key)
+
+
+def test_concurrent_renders_do_not_share_a_staging_file(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    target = tmp_path / "config.ini"
+    (tmp_path / "config.ini.tmp").write_text("stale")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [
+            pool.submit(
+                legacy_cron.render_config, str(target), str(GOLDEN_DIR), LOCAL_SERVICES
+            )
+            for _ in range(32)
+        ]
+        for future in futures:
+            future.result()
+    rendered = configparser.ConfigParser()
+    rendered.read(target)
+    assert rendered["services"]["file_service_url"] == "http://files:2"
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        "config.ini",
+        "config.ini.tmp",
+    ]
