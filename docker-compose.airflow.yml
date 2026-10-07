@@ -6,6 +6,10 @@ x-airflow-common: &airflow-common
   build:
     context: ./etl/airflow
   image: otterworks/etl-airflow:local
+  # Connections and Variables (AIRFLOW_CONN_* / AIRFLOW_VAR_*): etl/airflow/CONFIG.md.
+  # `make airflow-up` creates this untracked file from etl/airflow/.env.example.
+  env_file:
+  - etl/airflow/.env
   environment: &airflow-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@airflow-postgres:5432/airflow
