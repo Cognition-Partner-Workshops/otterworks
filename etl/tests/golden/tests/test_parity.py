@@ -116,3 +116,30 @@ def test_toy_dags_reuse_the_harness_legacy_run():
     for call in ("runner.legacy_command(", "runner.legacy_environment(", "runner.legacy_mounts("):
         assert call in TOY_DAGS
     assert "DockerOperator(" in TOY_DAGS
+
+
+def test_override_check_uses_what_the_dag_read():
+    output = "\n".join(
+        [
+            "noise",
+            'PARITY_VARIABLE_READ {"key": "data_lake_bucket", "value": "otterworks-data-lake"}',
+            '[2026] x PARITY_VARIABLE_READ {"key": "audit_archive_delete_enabled", "value": "true"}',
+        ]
+    )
+    read = airflow_container.variables_read(output)
+    assert read == {"data_lake_bucket": ["otterworks-data-lake"], "audit_archive_delete_enabled": ["true"]}
+    entry = parity.resolve_dag("audit_archive_weekly", None)
+    (case,) = parity.cases("audit_archive_weekly", entry, None, "smoke_delete_enabled")
+    (row,) = parity.override_rows(case, read)
+    assert (row.result, row.before, row.after) == (differences.IDENTICAL, "true", "true")
+
+    (row,) = parity.override_rows(case, {})
+    assert row.result == differences.FAILED and row.after is ABSENT
+    assert "never read" in row.reason
+    (row,) = parity.override_rows(case, {"audit_archive_delete_enabled": ["true", "false"]})
+    assert row.result == differences.FAILED and "different value" in row.reason
+
+
+def test_secrets_backend_marker_matches_the_runner():
+    backend = (airflow_container.PARITY_DIR / "parity_secrets.py").read_text()
+    assert 'MARKER = "%s"' % airflow_container.VARIABLE_MARKER in backend

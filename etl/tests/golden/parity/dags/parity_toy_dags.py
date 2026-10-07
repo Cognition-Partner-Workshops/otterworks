@@ -81,8 +81,9 @@ for _script in settings.SCRIPTS:
 
 
 def write_stray_object() -> None:
+    flag = Variable.get("audit_archive_delete_enabled")
     S3Hook(aws_conn_id="aws_default").load_string(
-        '{"deliberately": "wrong"}',
+        '{"deliberately": "wrong", "audit_archive_delete_enabled": "%s"}' % flag,
         key=STRAY_KEY,
         bucket_name=Variable.get("data_lake_bucket"),
         replace=True,

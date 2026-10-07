@@ -110,9 +110,12 @@ make etl-parity SCRIPT=storage_cleanup_daily VARIANT=reference_mismatches_normal
    LocalStack, Postgres (`otterworks_etl_golden`) and MeiliSearch, and the
    document/file-service Connections at the scenario's HTTP stub. Variables
    are the committed defaults from `.env.example` plus the scenario's
-   overrides, as `AIRFLOW_VAR_*` on that run only; the runner reads each
-   override back with `airflow variables get` and fails the run if it did not
-   resolve. `--conf {"run_date": <frozen date>}` pins the legacy run date. The
+   overrides, as `AIRFLOW_VAR_*` env on that `docker exec ... airflow dags
+   test` only (env Variables take precedence over `airflow variables set`, so
+   a `set` would silently do nothing). The container's secrets backend
+   (`parity/parity_secrets.py`) logs every Variable the DAG reads, and each
+   override adds a check `Airflow Variable <key> as read by the DAG`: failed
+   unless the DAG read it, with the override value. `--conf {"run_date": <frozen date>}` pins the legacy run date. The
    DAG run's state (success/failed) becomes `result.json` `exit_code` 0/1,
    which is what the legacy goldens hold (0 or 1).
 3. **Report** (`harness/differences.py`): golden and DAG snapshots are split

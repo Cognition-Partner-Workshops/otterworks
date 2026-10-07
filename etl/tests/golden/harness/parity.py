@@ -118,7 +118,7 @@ def run_case(
             services_url, case.variables, config_path, case.scn.frozen_time, legacy_image
         )
         result = container.dags_test(entry.dag_id, case.scn.frozen_time, env, entry.subdir)
-        meta["variables"] = container.resolved_variables(sorted(case.variables), env)
+        meta["variables"] = airflow_container.variables_read(result.output)
         return result
 
     golden = {k: json.loads(v) for k, v in cli.read_golden(case.scn).items()}
@@ -128,15 +128,30 @@ def run_case(
     log = (run_dir / "run-1.log").read_text()
     if entry.dag_folder == "toy" and cli.SHIM_BANNER not in log:
         raise cli.HarnessError("%s: legacy shim banner missing from the DAG run log" % case.label)
-    for key, want in case.variables.items():
-        if meta["variables"].get(key) != airflow_container.variable_value(want):
-            raise cli.HarnessError(
-                "%s: Variable %s resolved to %r in Airflow, expected %r"
-                % (case.label, key, meta["variables"].get(key), want)
-            )
     actual = {k: json.loads(v) for k, v in rendered.items()}
     meta["exit_code"] = exit_code
-    return differences.classify(case.label, golden, actual, case.accepted), meta
+    rows = override_rows(case, meta["variables"])
+    return rows + differences.classify(case.label, golden, actual, case.accepted), meta
+
+
+def override_rows(case: Case, read: dict[str, list]) -> list[Row]:
+    """One check per Variable override: the DAG must have read it, with the override value."""
+    rows = []
+    for key, value in case.variables.items():
+        want = airflow_container.variable_value(value)
+        seen = read.get(key, [])
+        check = "Airflow Variable %s as read by the DAG" % key
+        if seen and all(v == want for v in seen):
+            rows.append(Row(case.label, check, want, want, differences.IDENTICAL))
+        else:
+            after = " / ".join(sorted({str(v) for v in seen})) if seen else differences.ABSENT
+            reason = (
+                "the DAG read a different value than the per-scenario override"
+                if seen
+                else "the DAG never read this Variable, so the override did not reach it"
+            )
+            rows.append(Row(case.label, check, want, after, FAILED, reason))
+    return rows
 
 
 def report(
@@ -155,12 +170,17 @@ def report(
         "**%s: %d checks, %d identical, %d accepted difference, %d failed.**"
         % (verdict, len(rows), totals[differences.IDENTICAL], totals[differences.ACCEPTED], totals[FAILED]),
         "",
-        "| Scenario | Variable overrides (resolved in Airflow) | Checks | identical | accepted difference | failed |",
+        "| Scenario | Variable overrides | Checks | identical | accepted difference | failed |",
         "|---|---|---|---|---|---|",
     ]
     for case, case_rows, meta in results:
         t = differences.summary(case_rows)
-        overrides = ", ".join("`%s=%s`" % kv for kv in meta.get("variables", {}).items()) or "none"
+        overrides = (
+            ", ".join(
+                "`%s=%s`" % (k, airflow_container.variable_value(v)) for k, v in case.variables.items()
+            )
+            or "none"
+        )
         lines.append(
             "| %s | %s | %d | %d | %d | %d |"
             % (case.label, overrides, len(case_rows), t[differences.IDENTICAL], t[differences.ACCEPTED], t[FAILED])

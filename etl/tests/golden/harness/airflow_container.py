@@ -28,6 +28,7 @@ TOY_DAG_FOLDER = PARITY_DIR / "dags"
 REQUIREMENTS = PARITY_DIR / "requirements-airflow.txt"
 DOCKER_SOCKET = Path(os.environ.get("GOLDEN_DOCKER_SOCKET", "/var/run/docker.sock"))
 DAG_STATES = ("success", "failed")
+VARIABLE_MARKER = "PARITY_VARIABLE_READ "  # parity/parity_secrets.py MARKER
 # `airflow dags state` needs the DAG in the serialized `dag` table, which `dags test` skips.
 DAG_RUN_STATE = """
 import sys
@@ -155,6 +156,8 @@ class AirflowContainer:
             "-e", "AIRFLOW__CORE__LOAD_EXAMPLES=false",
             "-e", "AIRFLOW__CORE__EXECUTOR=SequentialExecutor",
             "-e", "PYTHONDONTWRITEBYTECODE=1",
+            "-e", "PYTHONPATH=%s" % PARITY_DIR,
+            "-e", "AIRFLOW__SECRETS__BACKEND=parity_secrets.ParityVariableLog",
             *[
                 arg
                 for key in ("GOLDEN_DOCKER_NETWORK", "GOLDEN_LOCALSTACK_URL", "GOLDEN_CONTAINER_TIMEOUT")
@@ -228,9 +231,13 @@ class AirflowContainer:
             )
         return runner.RunResult(exit_code=0 if last == "success" else 1, output=proc.stdout)
 
-    def resolved_variables(self, keys: list[str], env: dict[str, str]) -> dict[str, str]:
-        out = {}
-        for key in keys:
-            proc = self.exec(["airflow", "variables", "get", key], env)
-            out[key] = (proc.stdout.strip().splitlines() or [""])[-1] if not proc.returncode else "<error>"
-        return out
+
+def variables_read(output: str) -> dict[str, list]:
+    """{key: [values]} the DAG read, from parity/parity_secrets.py marker lines."""
+    out: dict[str, list] = {}
+    for line in output.splitlines():
+        _, sep, payload = line.partition(VARIABLE_MARKER)
+        if sep:
+            read = json.loads(payload)
+            out.setdefault(read["key"], []).append(read["value"])
+    return out

@@ -100,6 +100,7 @@ jobs:
         run: |
           make etl-parity SCRIPT=audit_archive_weekly SCENARIO=smoke DAG=parity_wrong__audit_archive_weekly EXPECT=failed
           make etl-parity SCRIPT=audit_archive_weekly VARIANT=smoke_delete_enabled EXPECT=failed
+          make etl-parity SCRIPT=audit_archive_weekly VARIANT=smoke_delete_enabled DAG=parity_wrong__audit_archive_weekly EXPECT=failed
       - name: Parity report
         if: ${{ !cancelled() }}
         run: |
