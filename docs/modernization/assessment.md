@@ -59,7 +59,6 @@ Rows marked **in scope** are production estates per the programme decision in §
 | `etl/legacy-extra/` CUSTBILL chain (ksh, Bash/awk, Perl, Python Oracle extract) (**in scope**) | Absent | Present. Live: finance gets the CUSTBILL report every morning |
 | `procs/oracle` parity tooling | Absent | Present |
 | `mise.toml` toolchain pins, `tp-golden-smoke.yml` CI | Absent | Present |
-| client-app nginx runtime | `nginx-unprivileged:1.25-alpine` | `nginx-unprivileged:1.27-alpine` |
 | api-gateway Redis client (`go-redis/v9`) | Present | Absent |
 
 ---
@@ -95,7 +94,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 
 | Workload | Path | Br | Runtime | Framework & key versions | Supported? | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
-| Web client (SPA) | `frontend/client-app` | both (23 files differ) | Node 20 build, nginx-unprivileged 1.25 (M) / 1.27 (TP) | React 18.2, Vite 8.1.4, TS 5.3, React Router 7.18, TanStack Query 5.28, TipTap 2.2, Zustand 4.5, Tailwind 3.4, Vitest 4, Playwright 1.59 | **Partial.** The libraries are current or maintained. The Node 20 build image is EOL. Both nginx branches (1.25, 1.27) are superseded mainline lines | API Gateway (`/api/v1`), collab WebSocket |
+| Web client (SPA) | `frontend/client-app` | both (23 files differ) | Node 20 build, nginx-unprivileged 1.27 (both branches) | React 18.2, Vite 8.1.4, TS 5.3, React Router 7.18, TanStack Query 5.28, TipTap 2.2, Zustand 4.5, Tailwind 3.4, Vitest 4, Playwright 1.59 | **Partial.** The libraries are current or maintained. The Node 20 build image is EOL. nginx 1.27 is a superseded mainline line | API Gateway (`/api/v1`), collab WebSocket |
 | Mobile (Capacitor) | `frontend/client-app/mobile` | both | Capacitor 8.4.2 | Android minSdk 24 / target 36, AGP 8.13. iOS deployment target 15.0 | **Yes** | Same web bundle, gateway over HTTPS |
 | Desktop (Electron) | `frontend/client-app/desktop` | both | Electron 43.1.0 (embedded Node) | electron-builder 26.15.3, TS 5.3 | **Likely yes.** Electron supports the latest 3 majors (*verify* the current major) | Same web bundle, embedded proxy to gateway |
 | Admin Dashboard | `frontend/admin-dashboard` | both (23 files differ) | Node 20 build, nginx-unprivileged 1.25 | Angular 17.3, Angular Material 17.3, RxJS 7.8, TS 5.4, Karma 6.4 / Jasmine | **No.** Angular 17 LTS ended 2025-05-15. Karma is deprecated | API Gateway (admin, audit, analytics routes) |
@@ -115,10 +114,11 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 | CUSTBILL `sftp_ingest_poll.ksh` (*/15) | `etl/legacy-extra/jobs` | TP only (**in scope**) | ksh | none | **N/A.** Unowned script, no framework | SFTP drop, local filesystem |
 | CUSTBILL `parse_custbill_fixedwidth.sh` (5-59/15) | `etl/legacy-extra/jobs` | TP only (**in scope**) | Bash, sed, awk, cut | none | **N/A** | Files from the ksh poller (no lock) |
 | CUSTBILL `finance_excel_report.pl` (02:10 daily) | `etl/legacy-extra/jobs` | TP only (**in scope**) | Perl 5 (5.005-style, no modules) | None. It writes a CSV renamed to `.xls` and "emails" it through a sendmail pipe that silently no-ops | **N/A** | Parsed CUSTBILL `.psv` output. Overlaps `analytics_daily` at 02:00 |
-| CUSTBILL `run_all.sh` (Sun 06:00) + `tools/oracle_custbill_extract.py` | `etl/legacy-extra` | TP only (**in scope**) | Bash + Python (`oracledb`) | None. Stage dependency is `sleep 600`, and errors are discarded (`\|\| true`) | **N/A** | Oracle `OW_BILLING` |
+| CUSTBILL `run_all.sh` (Sun 06:00) | `etl/legacy-extra` | TP only (**in scope**) | Bash | None. Stage dependency is `sleep 600`, and errors are discarded (`\|\| true`) | **N/A** | The three CUSTBILL jobs above. Input is the mainframe feed (job CB77340) dropped over SFTP, not Oracle |
+| CUSTBILL month-end extract `tools/oracle_custbill_extract.py` (via `make tp-month-end`, not cron) | `etl/legacy-extra/tools` | TP only (**in scope**) | Python (`oracledb`) | None | **N/A** | Oracle `OW_BILLING` invoices, written as fixed-width CUSTBILL input for the parse + finance-report stages |
 | Oracle `JOB_NIGHTLY_DUNNING` (DBMS_SCHEDULER, 02:00 daily) | `services/legacy-billing/db/oracle/schema/04_jobs.sql` | TP only (**in scope**) | Oracle DBMS_SCHEDULER | `pkg_dunning.sp_schedule_dunning` + `sp_suspend_overdue` | **Tied to the Oracle licence** | `OW_BILLING` |
 | Oracle `JOB_PURGE_AUDIT_LOG` (DBMS_SCHEDULER, 03:30 daily) | same | TP only (**in scope**) | Oracle DBMS_SCHEDULER | 90-day `billing_audit_log` delete, `EXCEPTION WHEN OTHERS THEN NULL` | **Tied to the Oracle licence** | `OW_BILLING` |
-| Analytics `usage-rollup` CronJob (`0 2 * * *`, `Forbid`) | `infrastructure/helm/analytics-service/templates/cronjob.yaml` | both | JVM 17 (analytics image) | `com.otterworks.analytics.batch.UsageRollupJob` (Scala 3.4 / Akka stack) | **No** (inherits analytics-service status) | `usage-events.ndjson` / S3, PostgreSQL metrics tables |
+| Analytics `usage-rollup` CronJob (`0 2 * * *`, `Forbid`) | `infrastructure/helm/analytics-service/templates/cronjob.yaml` | both | JVM 17 (analytics image) | `com.otterworks.analytics.batch.UsageRollupJob` (Scala 3.4 / Akka stack) | **No** (inherits analytics-service status) | Reads usage events (`usage-events.ndjson` / S3). Writes a JSON report to an `emptyDir` volume, so the output is discarded with the pod |
 | LDM migration job | `migration/job` + `migration-job` chart | M only | Python 3.12 (`python:3.12-slim-bookworm`) | Pydantic 2, PyYAML 6, ibm_db 3.2 (optional), Spark local mode | **Yes** | Db2 / Oracle source, PostgreSQL / Azure SQL target |
 | Demo reaper (`reaper-cronjob`) / tenant runner | `demo-platform/reaper`, `demo-platform/runner` | both | Bash on `alpine:3.20` (runner image) | kubectl, helm, terraform | **No.** Alpine 3.20 EOL Apr 2026 | EKS, Terraform state |
 | Otter Projects poller | `demo-platform/otter-projects/helm/.../poller-cronjob.yaml` | both | Node 20 | Next.js app code | **No** (Node 20) | Otter Projects DB |
@@ -180,7 +180,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 
 ## 4. Risks
 
-1. **The Oracle licence is a hard, near-term deadline.** The `OW_BILLING` licence renewal is due next quarter and will not be renewed. Billing reads, the RPT-114 month-end finance report (`reports.py`), the CUSTBILL extract (`oracle_custbill_extract.py`) and two DBMS_SCHEDULER jobs all depend on Oracle today. If the takeout slips past the renewal date, the options are an unplanned renewal or an outage of billing and finance reporting.
+1. **The Oracle licence is a hard, near-term deadline.** The `OW_BILLING` licence renewal is due next quarter and will not be renewed. Billing reads, the RPT-114 month-end finance report (`reports.py`), the CUSTBILL month-end extract (`oracle_custbill_extract.py`, run through `make tp-month-end`) and two DBMS_SCHEDULER jobs all depend on Oracle today. The daily cron chain itself (`run_all.sh`) reads the mainframe SFTP feed, so which feed actually produces finance's morning report in production still has to be confirmed (§6). If the takeout slips past the renewal date, the options are an unplanned renewal or an outage of billing and finance reporting.
 2. **The billing extraction is mostly not started.** billing-service implements only `plans` today (3 endpoints: list plans, entitlement, plan change). `rating`, `invoicing`, `dunning`, the nightly dunning job, the audit purge and the 155-column `CUSTOMER_MASTER` / EAV data model all still have to move. Invoicing and dunning only prove out over a full billing cycle, so a month-end has to fall inside the dual-run window, before the renewal date.
 3. **Known anomalies must be carried over on purpose.** The finance report drops orphaned `INVOICE_LINE` rows "exactly as finance always ran it", and the seed manifests record exact known-anomaly counts. A clean-room rewrite that "fixes" these will fail reconciliation with finance. Each anomaly needs a keep-or-change decision recorded in the procs rule ledger.
 4. **billing-service is not production-hardened.** Its README says the endpoints are "intentionally unauthenticated in this parity fixture". Making it the system of record means adding auth and tenant scoping before cutover, and that is behaviour the parity harness does not cover.
@@ -200,7 +200,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 
 ## 5. Waves
 
-The order is set by the decision in §6. **Wave 1 covers everything with a hard external deadline: the Oracle licence, plus runtimes that are already out of support or about to lose it on internet-facing paths. The CUSTBILL offload goes in Wave 1 too, because it reads from Oracle and cannot outlive it.** Wave 2 takes the remaining framework jumps and harness-backed extractions. Wave 3 is the rest of the data and batch estate.
+The order is set by the decision in §6. **Wave 1 covers everything with a hard external deadline: the Oracle licence, plus runtimes that are already out of support or about to lose it on internet-facing paths. The CUSTBILL offload goes in Wave 1 too, because the month-end extract reads from Oracle and the programme owner put it next to the takeout.** Wave 2 takes the remaining framework jumps and harness-backed extractions. Wave 3 is the rest of the data and batch estate.
 
 ### Wave 1: Oracle takeout, CUSTBILL offload, deadline runtimes
 
@@ -208,7 +208,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 
 - Extract `rating`, `invoicing` and `dunning` from `pkg_rating` / `pkg_invoicing` / `pkg_dunning` into billing-service, using the procs record/replay harness against both the PostgreSQL procs and the `procs/oracle` transcripts. Record every rule and known anomaly in the rule ledger.
 - Move `JOB_NIGHTLY_DUNNING` and `JOB_PURGE_AUDIT_LOG` out of DBMS_SCHEDULER into scheduled jobs owned by billing-service. The purge must not keep the `WHEN OTHERS THEN NULL` silent failure.
-- Migrate `OW_BILLING` data (`CUSTOMER_MASTER` + `_HIST`, `ENTITY_ATTR_VALUE`, invoices, audit log) to PostgreSQL. Reuse the LDM job's `oracle` → `postgresql` drivers and reconcile/validate stages from `main` rather than building a new loader.
+- Migrate `OW_BILLING` data (`CUSTOMER_MASTER` + `_HIST`, `ENTITY_ATTR_VALUE`, invoices, audit log) to PostgreSQL. Reuse the LDM job's `oracle` → `postgresql` drivers and its reconcile/validate stages from `main`. LDM's existing copybooks and manifests describe only the document-retention archive tables, so budget for new `OW_BILLING` copybooks, field maps, record lengths and reconciliation rules (the 155-column `CUSTOMER_MASTER` and the EAV table are the bulk of that work).
 - Re-point legacy-billing reads and the RPT-114 finance report to billing-service / PostgreSQL. Point usage-bridge at billing-service, or retire it.
 - Add auth and tenant scoping to billing-service before it becomes the system of record.
 - Dual-run Oracle and PostgreSQL through at least one month-end, cut over, then decommission Oracle.
@@ -216,7 +216,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 #### Track B: CUSTBILL offload (target: the daily finance report no longer depends on Oracle or the cron host)
 
 - Replace the ksh/Bash/Perl chain with one orchestrated pipeline (Databricks per `ETL_UPGRADE_GUIDE_ADDENDUM.md`, or the Wave 3 orchestrator if chosen first). It needs locking/`max_active_runs=1`, explicit stage dependencies, a real XLSX artifact and verified delivery to a managed distribution list.
-- Source CUSTBILL from PostgreSQL / billing-service instead of `oracle_custbill_extract.py`. This depends on the Track A data migration.
+- Replace the month-end Oracle extract (`oracle_custbill_extract.py` / `make tp-month-end`) with a PostgreSQL / billing-service source. This depends on the Track A data migration. Keep the mainframe CB77340 SFTP feed as an input unless the mainframe side is also being retired.
 - Dual-run against the legacy chain until finance signs off, then remove `etl/legacy-extra/crontab`.
 
 #### Track C: deadline runtime upgrades
@@ -246,7 +246,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 ### Wave 2: Framework jumps and harness-backed extractions
 
 - report-service: Java 8 / Boot 2.5 → Java 17/21 / Boot 3.x per `UPGRADE_GUIDE.md` (SpringFox → springdoc, iText 5 → OpenPDF, POI 5, commons-lang3)
-- legacy-portal: cut traffic over to the three Lambdas, then retire the Boot 2.7 monolith
+- legacy-portal (`main` estate): cut traffic over to the three Lambdas, then retire the Boot 2.7 monolith. The Lambdas exist only on `main`. `tech-partnerships`' legacy-portal is outside the production scope set in §6, so it needs no cutover unless that scope changes
 - auth-service: Spring Boot 3.2 → 3.5.x. admin-service: Rails 7.1 → 7.2 (planted-bug check per `AGENTS.md`). *Both moved here from Wave 1 to make room for the Oracle and CUSTBILL work. They are unsupported but have no external deadline.*
 - notification-service: Kotlin 2 / Ktor 3
 - analytics-service: Akka → Pekko, Scala 3.4 → 3.3 LTS or a current 3.x
@@ -268,9 +268,9 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 ### Wave 3: Remaining data and batch estate
 
 - Legacy ETL: replatform the 5 Python cron scripts onto the orchestrator chosen in Wave 1 Track B. Decommission the cron host
-- `usage-rollup`: replace the CronJob with event-driven processing
+- `usage-rollup`: first persist the nightly batch report (it is written to an `emptyDir` today), so there is a baseline to compare against. Then replace the CronJob with event-driven processing
 - LDM: run the Db2 (and Oracle archive) migrations to PostgreSQL / Azure SQL, then purge and retire the archives
-- Insurance commission PL/SQL: extract (a fixture today, not a production estate)
+- Insurance commission PL/SQL: extract the packages and migrate the commission OLTP/OLAP data. LDM does not cover this, because its Oracle overlay (`o27-*`) moves the document-retention tables only, so the data move needs its own mapping and reconciliation (a fixture today, not a production estate)
 - Windows desktop: retire in favour of Electron after a usage check
 
 **Measure Wave 3 worked:**
@@ -278,7 +278,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 - Cron entries on the ETL host (`etl/crontab`): 0
 - Batch success rate ≥ 99% over 30 days, every failure alerted (no silent `except: pass`), and every job safe to re-run (idempotency test)
 - LDM reconciliation: row counts and hashes match for every migrated table, with rejects triaged to 0 unexplained before purge
-- usage-rollup: daily aggregates from the event-driven path match the batch output for 14 consecutive days. Data freshness goes from up to 24 h to under 15 min
+- usage-rollup: daily aggregates from the event-driven path match the persisted batch reports for 14 consecutive days. Data freshness goes from up to 24 h to under 15 min
 - Legacy stores (Db2 archive, Oracle archive, insurance Oracle) still serving reads: 0
 - Active Windows desktop installs (telemetry or gateway user-agent): 0 before removal
 
@@ -297,7 +297,10 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 - auth-service (Spring Boot 3.2), admin-service (Rails 7.1), document/file dependency bumps, observability and MeiliSearch moved from Wave 1 to Wave 2 to keep Wave 1 deliverable.
 - Risks 1–4, 6 and 8 were added or rewritten for the Oracle deadline.
 
-**Still to confirm:** the exact Oracle renewal date. Every Wave 1 Track A milestone works back from it, and the dual-run must include a month-end before it.
+**Still to confirm:**
+
+- The exact Oracle renewal date. Every Wave 1 Track A milestone works back from it, and the dual-run must include a month-end before it.
+- Which feed produces finance's morning CUSTBILL report in production. In the repo, the daily cron chain parses the mainframe CB77340 SFTP drop, and only the month-end path (`make tp-month-end`) extracts from Oracle. If the daily report is mainframe-fed, Track B's Oracle dependency is only the month-end run, and the daily offload can land after the takeout without blocking it.
 
 ---
 
