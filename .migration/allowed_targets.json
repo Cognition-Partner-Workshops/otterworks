@@ -1,0 +1,1 @@
+{"databases": ["mmp_rt_b3_oracle"], "mode": "block", "legacy_hosts": ["localhost"], "legacy_dsn_secrets": ["MMP_RT_SRC_DSN"]}
