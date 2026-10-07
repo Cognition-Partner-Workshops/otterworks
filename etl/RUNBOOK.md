@@ -12,6 +12,13 @@ Target design: [`ETL_UPGRADE_GUIDE.md`](ETL_UPGRADE_GUIDE.md). Connections and V
 [`legacy-cron/README.md`](legacy-cron/README.md). Characterization goldens:
 [`tests/golden/README.md`](tests/golden/README.md).
 
+**Configuration is Airflow Connections and Variables** ([`airflow/CONFIG.md`](airflow/CONFIG.md),
+checked by `make airflow-config-check`). The plaintext `etl/config.ini` is removed from the
+repository; nothing in the repo reads it. The only `config.ini` files left are the box-local
+`/opt/etl/config.ini` that cron needs for rollback (§5.1 step 4) and, in a rehearsal, the dev-only
+one the golden harness and `legacy-etl-cron` render for themselves. Rotating the credentials the
+removed file exposed is a human follow-up ([§10](#10-human-follow-ups)).
+
 Stacked on open PRs: this branch has the Airflow scaffold and `legacy-etl-cron` (#1909).
 `airflow/CONFIG.md`, `.env.example` and `make airflow-config-check` come from #1908; the shared
 DAG library `otterworks_etl.common` (`otterworks_dag_kwargs`, `LEGACY_SCHEDULES`,
@@ -244,8 +251,10 @@ wrong. Order matters: Airflow stops first, so the slot never has two owners.
    # expect ['aws', 'database', 's3', 'services'] (sections only, never print values)
    ls -l /opt/etl/.env 2>/dev/null || true                  # optional, sourced by run.sh
    ```
-   The box-local `config.ini` is the only copy of the real values; the committed `etl/config.ini`
-   is not it. If it is missing, stop and get it restored before the next slot.
+   The box-local `config.ini` is the only copy of the real values; the repository has none
+   (`etl/config.ini` was removed, and the copy in git history holds exposed values that are being
+   rotated, §10). Never restore it from git. If the box copy is missing, stop and get it restored
+   from the secret store before the next slot.
 5. **Do the destructive-script checks** for this DAG (5.3 audit, 5.4 storage) **before**
    re-running anything for the failed day.
 6. **Catch up the missed day, if needed, by cron only:** `/opt/etl/run.sh $SCRIPT >> /var/log/etl/<name>.log 2>&1`
@@ -505,7 +514,7 @@ no cloud endpoints: `aws` only ever talks to `http://localhost:4566` (LocalStack
 | infra | `docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch` |
 | Airflow up / health | `make airflow-up` (UI `http://localhost:8280`), `make airflow-check`, `make airflow-config-check` |
 | document-service / file-service (`search_reindex_weekly`) | `make etl-search-stub-up` (serves `ETL_SEARCH_STUB_SCENARIO`, default `search_reindex_weekly/smoke`, at `http://etl-search-stub:8089`); set `LEGACY_CRON_DOCUMENT_SERVICE_URL=http://etl-search-stub:8089/document-service`, `LEGACY_CRON_FILE_SERVICE_URL=http://etl-search-stub:8089/file-service` for `make legacy-cron-up` **and every `make legacy-cron-reload`** (each recreates the container; without them cron calls `document-service:8083` again), the `otterworks_postgres` Connection's `schema` to `otterworks_etl_golden` (the database the harness seeds and cron writes), and the `otterworks_document_service` / `otterworks_file_service` Connections in `etl/airflow/.env` to `{"conn_type": "http", "host": "http://etl-search-stub:8089/<service>"}` before `make airflow-up` |
-| cron running `etl/crontab` | `make legacy-cron-up` (renders a dev-only `config.ini`; the committed `etl/config.ini` is not used) |
+| cron running `etl/crontab` | `make legacy-cron-up` (renders a dev-only `config.ini`; the repository has none) |
 | `crontab /opt/etl/crontab` after removing/restoring a line | edit `etl/crontab` (or point `LEGACY_ETL_CRONTAB` at a copy), then `make legacy-cron-reload` |
 | `/opt/etl/run.sh <script>` once | `make legacy-cron-run SCRIPT=<script-without-.py>` (exit 3 if its line was removed: cut over) |
 | `/var/log/etl/*.log` | `docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs legacy-etl-cron` |
@@ -571,8 +580,10 @@ git rm etl/scripts/$SCRIPT
 git commit -m "etl: retire $SCRIPT ($DAG completed one weekly cycle)"
 ```
 
-Same commit: drop anything that still runs that script (its `legacy-cron` smoke usage and the
-legacy side of its golden check; the recorded goldens stay as the DAG's contract). Then remove
+Same commit: drop anything that still runs that script (its `legacy-cron` usage, e.g.
+`make legacy-cron-run SCRIPT=storage_cleanup_daily` in `.github/workflows/etl-legacy-cron.yml`).
+The golden harness needs no change: the recorded goldens stay as the DAG's contract and keep
+being checked ([§9.3](#93-golden-harness-after-a-script-is-gone)). Then remove
 `/opt/etl/scripts/$SCRIPT` from the box.
 
 With the **last** script, two more commits, each on its own, after that script's commit:
@@ -583,5 +594,57 @@ git rm etl/crontab && git commit -m "etl: remove crontab (all ETL schedules run 
 ```
 
 On the box, after the crontab commit: `crontab -l` has no ETL lines left, then `crontab -r` for
-the ETL user (only if it holds nothing else), and remove `/opt/etl/run.sh`. The box-local
-`config.ini` and its credentials are retired separately (they back no Airflow Connection).
+the ETL user (only if it holds nothing else), and remove `/opt/etl/run.sh`. Then remove the
+box-local `/opt/etl/config.ini` (no cron script is left to roll back to) and revoke what only it
+used ([§10](#10-human-follow-ups) item 2): its credentials back no Airflow Connection.
+
+### 9.3 Golden harness after a script is gone
+
+- **Check mode keeps working.** `make etl-golden SCRIPT=<name>|all MODE=check` sees that
+  `etl/scripts/<name>.py` is gone, skips the legacy run and validates the committed goldens
+  instead (present and valid JSON); its report row reads
+  `PASS: SKIP legacy run: script retired; <n> golden file(s) kept as the DAG contract`. When every
+  selected script is retired it needs no infra and no Docker.
+- **DAG parity is unchanged.** `make etl-parity` diffs the DAG against those committed goldens and
+  never runs the legacy script.
+- **Record and repeat need the script.** They run the legacy code, so they stop with
+  `... is retired; restore it from git history first`. To re-record a retired script's goldens
+  (a deliberate legacy-behavior change, which is rare once the DAG owns the slot):
+  ```bash
+  RETIRE=$(git log -n1 --format=%H -- etl/scripts/$SCRIPT)   # the retirement commit
+  mkdir -p etl/scripts                                       # gone with the last script
+  git show "$RETIRE^:etl/scripts/$SCRIPT" > etl/scripts/$SCRIPT
+  test -f etl/run.sh || git show "$(git log -n1 --format=%H -- etl/run.sh)^:etl/run.sh" > etl/run.sh
+  chmod +x etl/run.sh
+  make etl-golden SCRIPT=${SCRIPT%.py} MODE=record
+  git add etl/tests/golden/${SCRIPT%.py}       # commit the goldens only
+  rm etl/scripts/$SCRIPT; git checkout -- etl/run.sh 2>/dev/null || rm -f etl/run.sh
+  ```
+  Then `make etl-parity SCRIPT=${SCRIPT%.py}` against the new goldens.
+
+## 10. Human follow-ups
+
+Not done by the repository changes; each needs a person with the access named.
+
+1. **The cutover `start_date` is release-only** (from the per-script rehearsal, PR #1939). The
+   `start_date=<LAST>` edit of §5.0 step 1 goes into the release that deploys the DAG, never into a
+   branch that CI or `make etl-parity` runs: parity at a golden scenario's frozen date earlier than
+   `start_date` schedules no task and fails. Run parity on the commit before it; committed DAG
+   modules keep the code default `start_date` (`2026-01-01`). Owner: whoever releases the DAG.
+2. **Rotate the secrets `etl/config.ini` exposed** (ETL_UPGRADE_GUIDE.md step 9). Deleting the
+   file does not unexpose them: they stay in git history. Needs someone with the real AWS account
+   and the production database; nothing here touched either.
+   - [ ] AWS: deactivate and delete the IAM access key pair that was in `[aws]`; if a script still
+         in its rollback window (§9) needs AWS, give the box the ETL instance role or a new key
+         written only to the box-local `/opt/etl/config.ini`.
+   - [ ] Postgres: change the password of the `[database]` user (and review that user's
+         grants); update the `otterworks_postgres` Connection in the secrets backend and the
+         box-local `/opt/etl/config.ini` in the same change, then confirm a scheduled run and
+         §5.1 step 4.
+   - [ ] MeiliSearch: rotate the `[services] meilisearch_api_key` (master and derived keys) and
+         update `otterworks_meilisearch` the same way.
+   - [ ] Check CloudTrail and the database logs for use of the old credentials since they were
+         first committed (`git log --diff-filter=A -- etl/config.ini`).
+   - [ ] Record the rotation (ticket link). Purging git history is a separate decision; rotation
+         is what makes the old values harmless.
+

@@ -14,20 +14,21 @@ def rendered(overrides=None):
 
 def test_has_every_option_the_scripts_read():
     parser = rendered()
-    for script in settings.SCRIPTS:
-        source = (settings.ETL_DIR / "scripts" / ("%s.py" % script)).read_text()
+    # Retired scripts (etl/RUNBOOK.md section 9) are skipped: nothing reads their options.
+    present = [
+        path
+        for path in (settings.ETL_DIR / "scripts" / ("%s.py" % s) for s in settings.SCRIPTS)
+        if path.is_file()
+    ]
+    for path in present:
+        script, source = path.stem, path.read_text()
         for section, option in CONFIG_READ.findall(source):
             assert parser.has_option(section, option), (script, section, option)
 
 
-def test_never_contains_committed_values():
-    committed = configparser.ConfigParser()
-    committed.read(settings.ETL_DIR / "config.ini")
-    text = config_ini.render("http://127.0.0.1:9")
-    for section in ("aws", "database"):
-        for option in ("access_key", "secret_key", "host", "user", "password"):
-            if committed.has_option(section, option):
-                assert committed.get(section, option) not in text, (section, option)
+def test_committed_config_ini_is_retired():
+    # The legacy runner and legacy-etl-cron mount only this renderer's output.
+    assert not (settings.ETL_DIR / "config.ini").exists()
 
 
 def test_only_local_endpoints():

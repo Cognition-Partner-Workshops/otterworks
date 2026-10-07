@@ -72,7 +72,7 @@ airflow-up: airflow-env ## Start the Airflow ETL stack on the infra network and 
 airflow-check: ## Fail unless Airflow webserver + scheduler are healthy and no DAG has an import error
 	AIRFLOW_WEB_PORT=$(AIRFLOW_WEB_PORT) etl/airflow/scripts/check-stack.sh
 
-airflow-config-check: airflow-env ## Check Connections/Variables: static (docs, defaults, no config.ini credentials) + resolve and probe AIRFLOW_INFRA_SERVICES in the scheduler
+airflow-config-check: airflow-env ## Check Connections/Variables: static (docs, defaults, etl/config.ini stays removed) + resolve and probe AIRFLOW_INFRA_SERVICES in the scheduler
 	python3 etl/airflow/scripts/check_config.py static
 	$(AIRFLOW_COMPOSE) exec -T airflow-scheduler python - live --probe $(AIRFLOW_INFRA_SERVICES) < etl/airflow/scripts/check_config.py
 

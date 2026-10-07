@@ -1,7 +1,8 @@
 """Generates the /opt/etl/config.ini mounted into the legacy container.
 
-The committed etl/config.ini holds production-looking values and is never
-read; this file only ever contains local endpoints and dev credentials.
+The repository has no config.ini (etl/config.ini was removed, ETL_UPGRADE_GUIDE.md
+step 9); the legacy scripts get this generated file instead, which only ever contains
+local endpoints and dev credentials.
 """
 
 from __future__ import annotations

@@ -37,8 +37,8 @@ stack** before each run.
 3. **Legacy runner** (`harness/runner.py`, `legacy/Dockerfile`): `docker run`
    of `/opt/etl/run.sh <script>.py`, the crontab command, with `run.sh`,
    `scripts/`, a generated `config.ini` (`harness/config_ini.py`, dev
-   credentials and local endpoints only; the committed `etl/config.ini` is
-   never used) and `legacy/sitecustomize.py` bind-mounted read-only under
+   credentials and local endpoints only; the repository has no `config.ini`,
+   `etl/config.ini` was removed) and `legacy/sitecustomize.py` bind-mounted read-only under
    `/opt/etl`.
 4. **Shim** (`legacy/sitecustomize.py`), picked up through run.sh's
    `PYTHONPATH=/opt/etl`:

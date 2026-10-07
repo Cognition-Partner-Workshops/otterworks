@@ -10,7 +10,7 @@ recreating the container is the cutover, restoring it is the rollback.
 
 /opt/etl/config.ini is a symlink to a file rendered at start by the golden
 harness renderer (etl/tests/golden/harness/config_ini.py): local endpoints and
-dev credentials only. The committed etl/config.ini is never read.
+dev credentials only. The repository has no config.ini (etl/config.ini was removed).
 
   legacy_cron.py serve              render config, link logs, exec supercronic
   legacy_cron.py run <script>.py    run that script's crontab line now (exit 3 if absent)

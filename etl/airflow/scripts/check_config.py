@@ -1,8 +1,7 @@
 """Check the ETL Airflow Connections and Variables (etl/airflow/CONFIG.md).
 
 static  (repo root, stdlib only): .env.example and CONFIG.md declare the same Connections and
-        Variables, the decided defaults hold, and no credential from etl/config.ini is in
-        etl/airflow/ or docker-compose.airflow.yml.
+        Variables, the decided defaults hold, and etl/config.ini stays deleted.
 live    (inside an Airflow container, script on stdin): every Connection and Variable resolves,
         then probe the services passed to --probe (postgres, localstack, meilisearch).
 """
@@ -10,7 +9,6 @@ live    (inside an Airflow container, script on stdin): every Connection and Var
 from __future__ import annotations
 
 import argparse
-import configparser
 import json
 import os
 import re
@@ -28,13 +26,7 @@ DECIDED_DEFAULTS = {
     "audit_archive_delete_enabled": False,
     "storage_cleanup_normalize_keys": False,
 }
-# config.ini credentials and database identity: none may appear (as a whole token) in the new
-# config. Other config.ini values that equal a local-stack value are listed, not failed.
-FORBIDDEN_INI_OPTIONS = {
-    "aws": ("access_key", "secret_key"),
-    "database": ("host", "database", "user", "password"),
-    "services": ("meilisearch_api_key",),
-}
+RETIRED_INI = Path("etl") / "config.ini"
 
 
 def parse_env_file(path: Path) -> dict[str, str]:
@@ -52,10 +44,6 @@ def parse_env_file(path: Path) -> dict[str, str]:
 
 def prefixed(env: dict[str, str], prefix: str) -> dict[str, str]:
     return {k.removeprefix(prefix).lower(): v for k, v in env.items() if k.startswith(prefix)}
-
-
-def token(value: str) -> re.Pattern[str]:
-    return re.compile(r"(?<![\w.-])" + re.escape(value) + r"(?![\w.-])")
 
 
 def documented(config_md: str, heading: str) -> set[str]:
@@ -102,36 +90,14 @@ def check_static(root: Path) -> list[str]:
         if key not in variables or json.loads(variables[key]) is not default:
             errors.append(f"{key}: must default to {json.dumps(default)}")
 
-    ini = configparser.ConfigParser()
-    ini.read(root / "etl" / "config.ini")
-    forbidden = {
-        f"{section}.{option}": token(ini.get(section, option))
-        for section, options in FORBIDDEN_INI_OPTIONS.items()
-        for option in options
-        if ini.has_option(section, option) and ini.get(section, option)
-    }
-    scanned = [p for p in airflow_dir.rglob("*") if p.is_file() and p.name != ".env"]
-    scanned.append(root / "docker-compose.airflow.yml")
-    for path in scanned:
-        try:
-            text = path.read_text()
-        except UnicodeDecodeError:
-            continue
-        for option, pattern in sorted(forbidden.items()):
-            if pattern.search(text):
-                errors.append(f"{path.relative_to(root)}: contains etl/config.ini {option}")
-
-    example = (airflow_dir / ".env.example").read_text()
-    same = sorted(
-        f"{section}.{option}"
-        for section in ini.sections()
-        for option, value in ini.items(section)
-        if f"{section}.{option}" not in forbidden and value and token(value).search(example)
-    )
-    print(f"static: config.ini options equal to a local-stack value (not credentials): {same}")
+    if (root / RETIRED_INI).exists():
+        errors.append(
+            f"{RETIRED_INI}: retired (ETL_UPGRADE_GUIDE.md step 9); configuration is the "
+            "Connections and Variables in etl/airflow/CONFIG.md"
+        )
     print(
         f"static: {len(conns)} Connections, {len(variables)} Variables, "
-        f"{len(scanned)} files scanned for etl/config.ini credentials"
+        f"{RETIRED_INI} {'PRESENT' if (root / RETIRED_INI).exists() else 'absent'}"
     )
     return errors
 

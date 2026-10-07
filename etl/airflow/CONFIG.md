@@ -1,6 +1,7 @@
 # ETL configuration: `config.ini` to Airflow Connections and Variables
 
-The DAGs never read `etl/config.ini`. Credentials and endpoints are Airflow **Connections**;
+`etl/config.ini` is removed from the repository (ETL_UPGRADE_GUIDE.md step 9) and the DAGs
+never read a `config.ini`. Credentials and endpoints are Airflow **Connections**;
 bucket names, prefixes, table and queue names and tunables are flat Airflow **Variables**,
 named `<area>_<setting>` (shared buckets have no area prefix). Locally both come from
 environment variables (`AIRFLOW_CONN_<ID>` / `AIRFLOW_VAR_<KEY>`, upper-cased) in the
@@ -162,12 +163,12 @@ paging parameter names.
 
 ## Where the local values come from
 
-No value is copied from `etl/config.ini`. Credentials and hosts come from
+No value is copied from the removed `etl/config.ini`. Credentials and hosts come from
 `docker-compose.infra.yml` (Postgres `otterworks`/`otterworks_dev`, LocalStack `test`/`test`,
 `us-east-1`) and `docker-compose.yml` (service ports); bucket, table and queue names from
 `scripts/localstack-init.sh` and the golden harness (`etl/tests/golden/harness/settings.py`), which
 creates `otterworks-analytics`, `otterworks-analytics-events`, `otterworks-file-storage` and
 `otterworks-file-quarantine` that `localstack-init.sh` does not. Some of these non-secret names
 equal the ones in `config.ini` because both describe the same resources; `check_config.py static`
-fails if any credential, database host/name/user or API key from `config.ini` appears in this
-directory.
+fails if `etl/config.ini` is back in the tree, and CI's `secret-scan` (gitleaks) rejects
+credentials committed anywhere.
