@@ -600,14 +600,15 @@ used ([§10](#10-human-follow-ups) item 2): its credentials back no Airflow Conn
 
 ### 9.3 Golden harness after a script is gone
 
-- **Check mode keeps working.** `make etl-golden SCRIPT=<name>|all MODE=check` sees that
-  `etl/scripts/<name>.py` is gone, skips the legacy run and validates the committed goldens
-  instead (present and valid JSON); its report row reads
+- **Check and repeat keep working.** `make etl-golden SCRIPT=<name>|all MODE=check` (and
+  `MODE=repeat`, which CI also runs) sees that `etl/scripts/<name>.py` is gone, skips the legacy
+  run and validates the committed goldens instead (all six surfaces present, valid JSON); its
+  report row reads
   `PASS: SKIP legacy run: script retired; <n> golden file(s) kept as the DAG contract`. When every
   selected script is retired it needs no infra and no Docker.
 - **DAG parity is unchanged.** `make etl-parity` diffs the DAG against those committed goldens and
   never runs the legacy script.
-- **Record and repeat need the script.** They run the legacy code, so they stop with
+- **Record needs the script.** It runs the legacy code, so it stops with
   `... is retired; restore it from git history first`. To re-record a retired script's goldens
   (a deliberate legacy-behavior change, which is rare once the DAG owns the slot):
   ```bash

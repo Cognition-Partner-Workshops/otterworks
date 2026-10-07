@@ -8,9 +8,9 @@ check   run each scenario and diff the normalized snapshot against golden/
 repeat  run each scenario twice and require byte-identical normalized snapshots
 
 Once a script is retired (removed from etl/scripts/, etl/RUNBOOK.md section 9), check
-skips its legacy run and only validates the committed goldens, which stay as the DAG's
-contract for `make etl-parity`. record and repeat need the legacy script: restore it from
-git history first (etl/RUNBOOK.md section 9.3).
+and repeat skip its legacy run and only validate the committed goldens (every surface
+present, valid JSON), which stay as the DAG's contract for `make etl-parity`. record needs
+the legacy script: restore it from git history first (etl/RUNBOOK.md section 9.3).
 """
 
 from __future__ import annotations
@@ -38,6 +38,16 @@ class HarnessError(RuntimeError):
 
 Run = Callable[[Path, str], runner.RunResult]
 
+# One file per surface harness/snapshot.py captures.
+GOLDEN_SURFACES = (
+    "dynamodb.json",
+    "meilisearch.json",
+    "postgres.json",
+    "result.json",
+    "s3.json",
+    "sqs.json",
+)
+
 
 def legacy_script(script: str) -> Path:
     return settings.ETL_DIR / "scripts" / ("%s.py" % script)
@@ -57,20 +67,33 @@ def require_legacy_runtime(scn: scenario.Scenario, mode: str) -> None:
         raise HarnessError(
             "%s: %s mode runs the legacy script, but %s %s retired; restore it from "
             "git history first (etl/RUNBOOK.md section 9.3)"
-            % (scn.label, mode, " and ".join(missing), "are" if len(missing) > 1 else "is")
+            % (
+                scn.label,
+                mode,
+                " and ".join(missing),
+                "are" if len(missing) > 1 else "is",
+            )
         )
 
 
 def check_retired(scn: scenario.Scenario) -> tuple[bool, str]:
-    """Check mode for a retired script: the goldens must still be there and parse."""
+    """Check/repeat of a retired script: every golden surface must be there and parse."""
     golden = read_golden(scn)
     if not golden:
         return False, "script retired and no golden recorded"
+    missing = [name for name in GOLDEN_SURFACES if name not in golden]
+    if missing:
+        return False, "script retired; golden incomplete, missing %s" % ", ".join(
+            missing
+        )
     for name, content in golden.items():
         try:
             json.loads(content)
         except json.JSONDecodeError as exc:
-            return False, "script retired; golden/%s is not valid JSON (%s)" % (name, exc)
+            return False, "script retired; golden/%s is not valid JSON (%s)" % (
+                name,
+                exc,
+            )
     return True, (
         "SKIP legacy run: script retired; %d golden file(s) kept as the DAG contract "
         "sha256=%s" % (len(golden), digest(golden)[:16])
@@ -187,7 +210,7 @@ def report_diff(scn: scenario.Scenario, lines: list[str]) -> None:
 
 def execute(scn: scenario.Scenario, image: str | None, mode: str) -> tuple[bool, str]:
     print("== %s [%s] frozen_time=%s" % (scn.label, mode, scn.frozen_time))
-    if mode == "check" and is_retired(scn.script):
+    if mode in ("check", "repeat") and is_retired(scn.script):
         return check_retired(scn)
     require_legacy_runtime(scn, mode)
     assert image is not None
@@ -238,7 +261,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    if args.mode != "check":
+    if args.mode == "record":
         try:
             for scn in scenarios:
                 require_legacy_runtime(scn, args.mode)
@@ -247,7 +270,7 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     image = None
-    if args.mode != "check" or not all(is_retired(s.script) for s in scenarios):
+    if args.mode == "record" or not all(is_retired(s.script) for s in scenarios):
         infra.wait_ready()
         infra.ensure_resources()
         image = runner.ensure_image()
