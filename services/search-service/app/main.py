@@ -21,7 +21,9 @@ from app.middleware.auth import AuthMiddleware
 from app.middleware.cors import CORSMiddleware
 from app.middleware.metrics import MetricsMiddleware
 from app.routing import install_flask_router
+from app.services.indexer import Indexer
 from app.services.meilisearch_client import MeiliSearchService
+from app.services.sqs_consumer import SQSConsumer
 
 logger = structlog.get_logger()
 
@@ -91,6 +93,11 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
         except Exception:
             logger.warning("meilisearch_indices_creation_deferred", reason="MeiliSearch not available")
 
+        sqs_consumer = None
+        if config.sqs.enabled:
+            sqs_consumer = SQSConsumer.from_config(config.sqs, Indexer(search_service))
+            sqs_consumer.start()
+
         logger.info(
             "search_service_created",
             port=config.port,
@@ -98,6 +105,8 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
             sqs_enabled=config.sqs.enabled,
         )
         yield
+        if sqs_consumer is not None:
+            await sqs_consumer.stop()
 
     app = SearchServiceApp(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.config = config
