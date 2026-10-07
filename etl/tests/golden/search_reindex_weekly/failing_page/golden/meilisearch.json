@@ -1,0 +1,1191 @@
+{
+  "documents": {
+    "documents": [
+      {
+        "content": "",
+        "created_at": "2026-02-02T09:00:00Z",
+        "id": "doc-001",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 001",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-03T09:00:00Z",
+        "id": "doc-002",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 002",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 3.",
+        "created_at": "2026-02-04T09:00:00Z",
+        "id": "doc-003",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 003",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-05T09:00:00Z",
+        "id": "doc-004",
+        "owner_id": "user-bob",
+        "tags": [
+          "t4"
+        ],
+        "title": "Doc 004",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-06T09:00:00Z",
+        "id": "doc-005",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 005",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 6.",
+        "created_at": "2026-02-07T09:00:00Z",
+        "id": "doc-006",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 006",
+        "type": "document",
+        "updated_at": "2026-03-07T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-08T09:00:00Z",
+        "id": "doc-007",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 007",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-09T09:00:00Z",
+        "id": "doc-008",
+        "owner_id": "user-carol",
+        "tags": [
+          "t3"
+        ],
+        "title": "Doc 008",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 9.",
+        "created_at": "2026-02-10T09:00:00Z",
+        "id": "doc-009",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 009",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-11T09:00:00Z",
+        "id": "doc-010",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 010",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-12T09:00:00Z",
+        "id": "doc-011",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 011",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 12.",
+        "created_at": "2026-02-13T09:00:00Z",
+        "id": "doc-012",
+        "owner_id": "user-alice",
+        "tags": [
+          "t2"
+        ],
+        "title": "Doc 012",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-14T09:00:00Z",
+        "id": "doc-013",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 013",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-15T09:00:00Z",
+        "id": "doc-014",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 014",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 15.",
+        "created_at": "2026-02-16T09:00:00Z",
+        "id": "doc-015",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 015",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-17T09:00:00Z",
+        "id": "doc-016",
+        "owner_id": "user-bob",
+        "tags": [
+          "t1"
+        ],
+        "title": "Doc 016",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-18T09:00:00Z",
+        "id": "doc-017",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 017",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 18.",
+        "created_at": "2026-02-19T09:00:00Z",
+        "id": "doc-018",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 018",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-20T09:00:00Z",
+        "id": "doc-019",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 019",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-21T09:00:00Z",
+        "id": "doc-020",
+        "owner_id": "user-carol",
+        "tags": [
+          "t0"
+        ],
+        "title": "Doc 020",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "Body of doc 21.",
+        "created_at": "2026-02-22T09:00:00Z",
+        "id": "doc-021",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 021",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-23T09:00:00Z",
+        "id": "doc-022",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 022",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-24T09:00:00Z",
+        "id": "doc-023",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 023",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 24.",
+        "created_at": "2026-02-25T09:00:00Z",
+        "id": "doc-024",
+        "owner_id": "user-alice",
+        "tags": [
+          "t4"
+        ],
+        "title": "Doc 024",
+        "type": "document",
+        "updated_at": "2026-03-11T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-26T09:00:00Z",
+        "id": "doc-025",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 025",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-27T09:00:00Z",
+        "id": "doc-026",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 026",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 27.",
+        "created_at": "2026-02-28T09:00:00Z",
+        "id": "doc-027",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 027",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-01T09:00:00Z",
+        "id": "doc-028",
+        "owner_id": "user-bob",
+        "tags": [
+          "t3"
+        ],
+        "title": "Doc 028",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-02T09:00:00Z",
+        "id": "doc-029",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 029",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 30.",
+        "created_at": "2026-02-03T09:00:00Z",
+        "id": "doc-030",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 030",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-04T09:00:00Z",
+        "id": "doc-031",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 031",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-05T09:00:00Z",
+        "id": "doc-032",
+        "owner_id": "user-carol",
+        "tags": [
+          "t2"
+        ],
+        "title": "Doc 032",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 33.",
+        "created_at": "2026-02-06T09:00:00Z",
+        "id": "doc-033",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 033",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-07T09:00:00Z",
+        "id": "doc-034",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 034",
+        "type": "document",
+        "updated_at": "2026-03-07T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-08T09:00:00Z",
+        "id": "doc-035",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 035",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 36.",
+        "created_at": "2026-02-09T09:00:00Z",
+        "id": "doc-036",
+        "owner_id": "user-alice",
+        "tags": [
+          "t1"
+        ],
+        "title": "Doc 036",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-10T09:00:00Z",
+        "id": "doc-037",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 037",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-11T09:00:00Z",
+        "id": "doc-038",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 038",
+        "type": "document",
+        "updated_at": "2026-03-11T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 39.",
+        "created_at": "2026-02-12T09:00:00Z",
+        "id": "doc-039",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 039",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-13T09:00:00Z",
+        "id": "doc-040",
+        "owner_id": "user-bob",
+        "tags": [
+          "t0"
+        ],
+        "title": "Doc 040",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-14T09:00:00Z",
+        "id": "doc-041",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 041",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 42.",
+        "created_at": "2026-02-15T09:00:00Z",
+        "id": "doc-042",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 042",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-16T09:00:00Z",
+        "id": "doc-043",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 043",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-17T09:00:00Z",
+        "id": "doc-044",
+        "owner_id": "user-carol",
+        "tags": [
+          "t4"
+        ],
+        "title": "Doc 044",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 45.",
+        "created_at": "2026-02-18T09:00:00Z",
+        "id": "doc-045",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 045",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-19T09:00:00Z",
+        "id": "doc-046",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 046",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-20T09:00:00Z",
+        "id": "doc-047",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 047",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 48.",
+        "created_at": "2026-02-21T09:00:00Z",
+        "id": "doc-048",
+        "owner_id": "user-alice",
+        "tags": [
+          "t3"
+        ],
+        "title": "Doc 048",
+        "type": "document",
+        "updated_at": "2026-03-07T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-22T09:00:00Z",
+        "id": "doc-049",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 049",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-23T09:00:00Z",
+        "id": "doc-050",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 050",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "Body of doc 51.",
+        "created_at": "2026-02-24T09:00:00Z",
+        "id": "doc-051",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 051",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-25T09:00:00Z",
+        "id": "doc-052",
+        "owner_id": "user-bob",
+        "tags": [
+          "t2"
+        ],
+        "title": "Doc 052",
+        "type": "document",
+        "updated_at": "2026-03-11T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-26T09:00:00Z",
+        "id": "doc-053",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 053",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 54.",
+        "created_at": "2026-02-27T09:00:00Z",
+        "id": "doc-054",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 054",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-28T09:00:00Z",
+        "id": "doc-055",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 055",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-01T09:00:00Z",
+        "id": "doc-056",
+        "owner_id": "user-carol",
+        "tags": [
+          "t1"
+        ],
+        "title": "Doc 056",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 57.",
+        "created_at": "2026-02-02T09:00:00Z",
+        "id": "doc-057",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 057",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-03T09:00:00Z",
+        "id": "doc-058",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 058",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-04T09:00:00Z",
+        "id": "doc-059",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 059",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 60.",
+        "created_at": "2026-02-05T09:00:00Z",
+        "id": "doc-060",
+        "owner_id": "user-alice",
+        "tags": [
+          "t0"
+        ],
+        "title": "Doc 060",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-06T09:00:00Z",
+        "id": "doc-061",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 061",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-07T09:00:00Z",
+        "id": "doc-062",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 062",
+        "type": "document",
+        "updated_at": "2026-03-07T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 63.",
+        "created_at": "2026-02-08T09:00:00Z",
+        "id": "doc-063",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 063",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-09T09:00:00Z",
+        "id": "doc-064",
+        "owner_id": "user-bob",
+        "tags": [
+          "t4"
+        ],
+        "title": "Doc 064",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-10T09:00:00Z",
+        "id": "doc-065",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 065",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 66.",
+        "created_at": "2026-02-11T09:00:00Z",
+        "id": "doc-066",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 066",
+        "type": "document",
+        "updated_at": "2026-03-11T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-12T09:00:00Z",
+        "id": "doc-067",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 067",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-13T09:00:00Z",
+        "id": "doc-068",
+        "owner_id": "user-carol",
+        "tags": [
+          "t3"
+        ],
+        "title": "Doc 068",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 69.",
+        "created_at": "2026-02-14T09:00:00Z",
+        "id": "doc-069",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 069",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-15T09:00:00Z",
+        "id": "doc-070",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 070",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-16T09:00:00Z",
+        "id": "doc-071",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 071",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 72.",
+        "created_at": "2026-02-17T09:00:00Z",
+        "id": "doc-072",
+        "owner_id": "user-alice",
+        "tags": [
+          "t2"
+        ],
+        "title": "Doc 072",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-18T09:00:00Z",
+        "id": "doc-073",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 073",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-19T09:00:00Z",
+        "id": "doc-074",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 074",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 75.",
+        "created_at": "2026-02-20T09:00:00Z",
+        "id": "doc-075",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 075",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-21T09:00:00Z",
+        "id": "doc-076",
+        "owner_id": "user-bob",
+        "tags": [
+          "t1"
+        ],
+        "title": "Doc 076",
+        "type": "document",
+        "updated_at": "2026-03-07T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-22T09:00:00Z",
+        "id": "doc-077",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 077",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 78.",
+        "created_at": "2026-02-23T09:00:00Z",
+        "id": "doc-078",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 078",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-24T09:00:00Z",
+        "id": "doc-079",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 079",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-25T09:00:00Z",
+        "id": "doc-080",
+        "owner_id": "user-carol",
+        "tags": [
+          "t0"
+        ],
+        "title": "Doc 080",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "Body of doc 81.",
+        "created_at": "2026-02-26T09:00:00Z",
+        "id": "doc-081",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 081",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-27T09:00:00Z",
+        "id": "doc-082",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 082",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-28T09:00:00Z",
+        "id": "doc-083",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 083",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 84.",
+        "created_at": "2026-02-01T09:00:00Z",
+        "id": "doc-084",
+        "owner_id": "user-alice",
+        "tags": [
+          "t4"
+        ],
+        "title": "Doc 084",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-02T09:00:00Z",
+        "id": "doc-085",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 085",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-03T09:00:00Z",
+        "id": "doc-086",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 086",
+        "type": "document",
+        "updated_at": "2026-03-03T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 87.",
+        "created_at": "2026-02-04T09:00:00Z",
+        "id": "doc-087",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 087",
+        "type": "document",
+        "updated_at": "2026-03-04T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-05T09:00:00Z",
+        "id": "doc-088",
+        "owner_id": "user-bob",
+        "tags": [
+          "t3"
+        ],
+        "title": "Doc 088",
+        "type": "document",
+        "updated_at": "2026-03-05T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-06T09:00:00Z",
+        "id": "doc-089",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 089",
+        "type": "document",
+        "updated_at": "2026-03-06T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 90.",
+        "created_at": "2026-02-07T09:00:00Z",
+        "id": "doc-090",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 090",
+        "type": "document",
+        "updated_at": null
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-08T09:00:00Z",
+        "id": "doc-091",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 091",
+        "type": "document",
+        "updated_at": "2026-03-08T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-09T09:00:00Z",
+        "id": "doc-092",
+        "owner_id": "user-carol",
+        "tags": [
+          "t2"
+        ],
+        "title": "Doc 092",
+        "type": "document",
+        "updated_at": "2026-03-09T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 93.",
+        "created_at": "2026-02-10T09:00:00Z",
+        "id": "doc-093",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 093",
+        "type": "document",
+        "updated_at": "2026-03-10T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-11T09:00:00Z",
+        "id": "doc-094",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 094",
+        "type": "document",
+        "updated_at": "2026-03-11T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-12T09:00:00Z",
+        "id": "doc-095",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 095",
+        "type": "document",
+        "updated_at": "2026-03-12T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 96.",
+        "created_at": "2026-02-13T09:00:00Z",
+        "id": "doc-096",
+        "owner_id": "user-alice",
+        "tags": [
+          "t1"
+        ],
+        "title": "Doc 096",
+        "type": "document",
+        "updated_at": "2026-03-13T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-14T09:00:00Z",
+        "id": "doc-097",
+        "owner_id": "user-bob",
+        "tags": [],
+        "title": "Doc 097",
+        "type": "document",
+        "updated_at": "2026-03-14T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-15T09:00:00Z",
+        "id": "doc-098",
+        "owner_id": "user-carol",
+        "tags": [],
+        "title": "Doc 098",
+        "type": "document",
+        "updated_at": "2026-03-01T09:00:00Z"
+      },
+      {
+        "content": "Body of doc 99.",
+        "created_at": "2026-02-16T09:00:00Z",
+        "id": "doc-099",
+        "owner_id": "user-alice",
+        "tags": [],
+        "title": "Doc 099",
+        "type": "document",
+        "updated_at": "2026-03-02T09:00:00Z"
+      },
+      {
+        "content": "",
+        "created_at": "2026-02-17T09:00:00Z",
+        "id": "doc-100",
+        "owner_id": "user-bob",
+        "tags": [
+          "t0"
+        ],
+        "title": "Doc 100",
+        "type": "document",
+        "updated_at": null
+      }
+    ],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "title",
+        "content",
+        "tags"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {
+        "content": 100,
+        "created_at": 100,
+        "id": 100,
+        "owner_id": 100,
+        "tags": 100,
+        "title": 100,
+        "type": 100,
+        "updated_at": 100
+      },
+      "isIndexing": false,
+      "numberOfDocuments": 100
+    }
+  },
+  "files": {
+    "documents": [],
+    "primary_key": "id",
+    "settings": {
+      "dictionary": [],
+      "displayedAttributes": [
+        "*"
+      ],
+      "distinctAttribute": null,
+      "faceting": {
+        "maxValuesPerFacet": 100,
+        "sortFacetValuesBy": {
+          "*": "alpha"
+        }
+      },
+      "filterableAttributes": [
+        "created_at",
+        "folder_id",
+        "mime_type",
+        "owner_id",
+        "tags",
+        "type",
+        "updated_at"
+      ],
+      "nonSeparatorTokens": [],
+      "pagination": {
+        "maxTotalHits": 1000
+      },
+      "proximityPrecision": "byWord",
+      "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attribute",
+        "sort",
+        "exactness"
+      ],
+      "searchableAttributes": [
+        "name",
+        "tags",
+        "mime_type"
+      ],
+      "separatorTokens": [],
+      "sortableAttributes": [
+        "created_at",
+        "size",
+        "updated_at"
+      ],
+      "stopWords": [],
+      "synonyms": {},
+      "typoTolerance": {
+        "disableOnAttributes": [],
+        "disableOnWords": [],
+        "enabled": true,
+        "minWordSizeForTypos": {
+          "oneTypo": 5,
+          "twoTypos": 9
+        }
+      }
+    },
+    "stats": {
+      "fieldDistribution": {},
+      "isIndexing": false,
+      "numberOfDocuments": 0
+    }
+  }
+}

@@ -1,8 +1,10 @@
 """In-process stand-in for document-service and file-service.
 
 search_reindex_weekly.py pages through GET {document_service_url}/api/v1/documents
-and GET {file_service_url}/api/v1/files with ?page=&size=. The stub serves the
-scenario's seed.http lists with the same paging so the script runs unchanged.
+(?page=&size=) and GET {file_service_url}/api/v1/files (?page=&page_size=). The
+stub serves the scenario's seed.http lists with the same paging so the script
+runs unchanged. seed.http.errors maps {kind: {page: status}} to make a page
+answer with that HTTP status instead.
 """
 
 from __future__ import annotations
@@ -34,7 +36,11 @@ class ServiceStub:
                     return
                 query = parse_qs(parsed.query)
                 page = int(query.get("page", ["1"])[0])
-                size = int(query.get("size", ["100"])[0])
+                size = int(query.get("page_size", query.get("size", ["100"]))[0])
+                status = stub.data.get("errors", {}).get(kind, {}).get(str(page))
+                if status is not None:
+                    self.send_error(int(status))
+                    return
                 items = stub.data.get(kind, [])
                 chunk = items[(page - 1) * size : page * size]
                 body = json.dumps(
