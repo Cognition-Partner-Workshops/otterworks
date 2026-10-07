@@ -1,0 +1,125 @@
+{
+  "wave": 1,
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "auto_merge": false,
+  "batches": [
+    {
+      "id": "w1-b01",
+      "units": [
+        "codes",
+        "tenants",
+        "plans",
+        "customerMaster",
+        "billingAuditLog"
+      ],
+      "write_targets": [
+        "mmp_rt_b3_oracle.codes",
+        "mmp_rt_b3_oracle.tenants",
+        "mmp_rt_b3_oracle.plans",
+        "mmp_rt_b3_oracle.customerMaster",
+        "mmp_rt_b3_oracle.billingAuditLog"
+      ],
+      "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
+      "recon_tolerances_version": "1",
+      "mapping_version": "map-draft-2",
+      "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+      "loader_obligations": [
+        {
+          "unit": "customerMaster",
+          "id": "ob-tenant-resolved",
+          "finding": "F48",
+          "rule": "bool per document: CUSTOMER_MASTER.TENANT_ID IN (SELECT ID FROM TENANTS) at load time; TENANT_ID itself stays the raw string (no tenants reference); fixture truth 1/201 true",
+          "recon": "sum(tenantResolved) == source count of CUSTOMER_MASTER rows whose TENANT_ID resolves (1 of 201)"
+        },
+        {
+          "unit": "customerMaster",
+          "id": "ob-signup-dt-raw-plus-parsed",
+          "finding": "F49",
+          "rule": "signupDtRaw keeps the VARCHAR2(9) text verbatim for every row; signupDt is the parsed BSON date when the text conforms to %d-%b-%y and is absent otherwise (41 of 201 fixture values are unparseable, e.g. 31-FEB-24, N/A); same rule for the other four CUSTOMER_MASTER *_DT text columns if the loader types them",
+          "recon": "count(signupDt missing) == 41; signupDtRaw compares byte-for-byte against SIGNUP_DT for all 201 rows"
+        }
+      ]
+    },
+    {
+      "id": "w1-b02",
+      "units": [
+        "ratingPeriods",
+        "creditNotes",
+        "usageEvents",
+        "notifications",
+        "subscriptions"
+      ],
+      "write_targets": [
+        "mmp_rt_b3_oracle.ratingPeriods",
+        "mmp_rt_b3_oracle.creditNotes",
+        "mmp_rt_b3_oracle.usageEvents",
+        "mmp_rt_b3_oracle.notifications",
+        "mmp_rt_b3_oracle.subscriptions"
+      ],
+      "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
+      "recon_tolerances_version": "1",
+      "mapping_version": "map-draft-2",
+      "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
+    },
+    {
+      "id": "w1-b03",
+      "units": [
+        "invoiceHeader",
+        "customerMasterHist"
+      ],
+      "write_targets": [
+        "mmp_rt_b3_oracle.invoiceHeader",
+        "mmp_rt_b3_oracle.customerMasterHist"
+      ],
+      "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
+      "recon_tolerances_version": "1",
+      "mapping_version": "map-draft-2",
+      "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+      "loader_obligations": [
+        {
+          "unit": "invoiceHeader",
+          "id": "ob-invoice-lines-orphaned",
+          "finding": "F47",
+          "rule": "every INVOICE_LINE row with no INVOICE_HEADER.INVOICE_ID match (NOT EXISTS; 37 rows in the fixture, invoice_no LIKE 'MMPRT-GHOST-%') is written as its own document to invoice_lines_orphaned with the mapped line fields plus `orphan: true` and the raw `invoiceId`; it is never dropped and never embedded",
+          "recon": "count(invoiceHeader.lines[]) + count(mmp_rt_b3_oracle.invoice_lines_orphaned) == INVOICE_LINE rows (1500); 1463 embedded + 37 orphaned"
+        }
+      ]
+    },
+    {
+      "id": "w1-b04",
+      "units": [
+        "invoices",
+        "subscriptionsHist",
+        "ratingResults"
+      ],
+      "write_targets": [
+        "mmp_rt_b3_oracle.invoices",
+        "mmp_rt_b3_oracle.subscriptionsHist",
+        "mmp_rt_b3_oracle.ratingResults"
+      ],
+      "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
+      "recon_tolerances_version": "1",
+      "mapping_version": "map-draft-2",
+      "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
+    },
+    {
+      "id": "w1-b05",
+      "units": [
+        "dunningAttempts"
+      ],
+      "write_targets": [
+        "mmp_rt_b3_oracle.dunningAttempts"
+      ],
+      "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json",
+      "recon_tolerances_version": "1",
+      "mapping_version": "map-draft-2",
+      "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+      "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01"
+    }
+  ]
+}

@@ -1,0 +1,1061 @@
+{
+  "kind": "migration-units",
+  "run": "mmp_rt_b3_oracle",
+  "plan_step": "s4.0-derive-units",
+  "mapping_version": "map-draft-2",
+  "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+  "recon_tolerances_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "inputs": {
+    "data_profile": {
+      "file": ".migration/data_profile.json",
+      "profile_version": 1,
+      "origin": "live",
+      "as_of": "2026-10-07T07:09:09.563136+00:00",
+      "census_sha256": "8218c3b20cc35739078b92768352b90ff7e4a14d117b854b1cddc40dd3d1935a"
+    },
+    "handcheck": ".migration/data_profile_handcheck.json",
+    "fixture_counts": ".migration/fixture_counts.json",
+    "fixture_manifest": ".migration/fixtures/mmp-rt-mini.json"
+  },
+  "target_database": "mmp_rt_b3_oracle",
+  "rules": {
+    "unit": "one unit per target collection of map-draft-2; a unit owns its collection plus any loader-side extra write target; fixtureMeta is excluded (design decision, F45) and is never a unit",
+    "depth": "0 = no reference to another unit; otherwise 1 + max depth of the referenced units. Edges: mapping_spec decision.references, plus the two edge kinds the spec cannot carry \u2014 history_copy of_table (F52) and the unenforced CUST_ID chain INVOICE_HEADER->CUSTOMER_MASTER (F48). Dangling TENANT_ID columns (customerMaster, invoiceHeader, hist tables; 0-1 of N resolve) are raw strings and add no edge.",
+    "estimate": "documents = fixture_counts tables_total of the root table; bytes = rows x data_profile row_bytes avg per contributing table (root, embedded children minus orphans, extended-reference parent row as upper bound); max_doc_bytes_upper_bound = max root row + max embedded bytes per parent (handcheck) or max child row x max fan-out. Oracle VSIZE bytes, so BSON documents will be somewhat larger (field names, type tags).",
+    "wave": "d-waves: one wave. The reference layer (codes, tenants, plans; reference_layer: true) is depth 0 but nothing downstream needs it in the target before it can be reconciled: every reference is kept as the raw source key and every extended reference (invoices.tenant, subscriptions.plan) is copied from the source parent row at load time, and recon compares each collection against its own source tables. Depth therefore orders batches, it does not gate waves."
+  },
+  "excluded": [
+    {
+      "collection": "fixtureMeta",
+      "table": "FIXTURE_META",
+      "rows": 2,
+      "why": "excluded by design decision (F45): seeder bookkeeping, not billing data"
+    }
+  ],
+  "totals": {
+    "units": 16,
+    "documents": 1386,
+    "orphan_documents": 37,
+    "estimated_bytes": 642054,
+    "estimated_mib": 0.612,
+    "budget_mib": 10,
+    "by_depth": {
+      "0": [
+        "codes",
+        "tenants",
+        "plans",
+        "customerMaster",
+        "billingAuditLog"
+      ],
+      "1": [
+        "ratingPeriods",
+        "creditNotes",
+        "usageEvents",
+        "notifications",
+        "subscriptions",
+        "invoiceHeader",
+        "customerMasterHist"
+      ],
+      "2": [
+        "invoices",
+        "subscriptionsHist",
+        "ratingResults"
+      ],
+      "3": [
+        "dunningAttempts"
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "codes",
+      "collection": "codes",
+      "write_targets": [
+        "mmp_rt_b3_oracle.codes"
+      ],
+      "source_tables": [
+        "CODES"
+      ],
+      "root_table": "CODES",
+      "key": {
+        "source": [
+          "CODE_TYPE",
+          "CODE_VAL"
+        ],
+        "target": [
+          "codeType",
+          "codeVal"
+        ]
+      },
+      "pattern": "reference_data",
+      "reference_layer": true,
+      "embeds": [],
+      "depends_on": [],
+      "depth": 0,
+      "mapped_fields": 1,
+      "indexes": [
+        [
+          "codeType",
+          "codeVal"
+        ]
+      ],
+      "estimate": {
+        "documents": 32,
+        "total_bytes": 618,
+        "avg_doc_bytes": 19.3,
+        "max_doc_bytes_upper_bound": 29,
+        "from": [
+          {
+            "table": "CODES",
+            "rows": 32,
+            "avg_row_bytes": 19.31,
+            "max_row_bytes": 29.0,
+            "stat": "row_bytes:CODES"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "tenants",
+      "collection": "tenants",
+      "write_targets": [
+        "mmp_rt_b3_oracle.tenants"
+      ],
+      "source_tables": [
+        "TENANTS"
+      ],
+      "root_table": "TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": true,
+      "embeds": [],
+      "depends_on": [],
+      "depth": 0,
+      "mapped_fields": 3,
+      "indexes": [
+        [
+          "name"
+        ]
+      ],
+      "estimate": {
+        "documents": 15,
+        "total_bytes": 790,
+        "avg_doc_bytes": 52.7,
+        "max_doc_bytes_upper_bound": 57,
+        "from": [
+          {
+            "table": "TENANTS",
+            "rows": 15,
+            "avg_row_bytes": 52.67,
+            "max_row_bytes": 57.0,
+            "stat": "row_bytes:TENANTS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "plans",
+      "collection": "plans",
+      "write_targets": [
+        "mmp_rt_b3_oracle.plans"
+      ],
+      "source_tables": [
+        "PLANS"
+      ],
+      "root_table": "PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": true,
+      "embeds": [],
+      "depends_on": [],
+      "depth": 0,
+      "mapped_fields": 6,
+      "indexes": [
+        [
+          "monthlyFee",
+          "code"
+        ],
+        [
+          "code"
+        ]
+      ],
+      "estimate": {
+        "documents": 3,
+        "total_bytes": 157,
+        "avg_doc_bytes": 52.3,
+        "max_doc_bytes_upper_bound": 53,
+        "from": [
+          {
+            "table": "PLANS",
+            "rows": 3,
+            "avg_row_bytes": 52.33,
+            "max_row_bytes": 53.0,
+            "stat": "row_bytes:PLANS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "customerMaster",
+      "collection": "customerMaster",
+      "write_targets": [
+        "mmp_rt_b3_oracle.customerMaster"
+      ],
+      "source_tables": [
+        "CUSTOMER_MASTER",
+        "ENTITY_ATTR_VALUE"
+      ],
+      "root_table": "CUSTOMER_MASTER",
+      "key": {
+        "source": [
+          "CUST_ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": "attribute",
+      "reference_layer": false,
+      "embeds": [
+        {
+          "array_path": "attributes",
+          "child_table": "ENTITY_ATTR_VALUE",
+          "cardinality": "1:few"
+        }
+      ],
+      "depends_on": [],
+      "depth": 0,
+      "mapped_fields": 159,
+      "indexes": [
+        [
+          "attributes.k",
+          "attributes.v"
+        ]
+      ],
+      "estimate": {
+        "documents": 201,
+        "total_bytes": 72417,
+        "avg_doc_bytes": 360.3,
+        "max_doc_bytes_upper_bound": 466,
+        "from": [
+          {
+            "table": "CUSTOMER_MASTER",
+            "rows": 201,
+            "avg_row_bytes": 333.79,
+            "max_row_bytes": 373.0,
+            "stat": "row_bytes:CUSTOMER_MASTER"
+          },
+          {
+            "table": "ENTITY_ATTR_VALUE",
+            "rows": 70,
+            "avg_row_bytes": 76.07,
+            "max_row_bytes": 93.0,
+            "stat": "row_bytes:ENTITY_ATTR_VALUE",
+            "fanout": {
+              "max_attrs_per_entity": 1,
+              "p99_attrs_per_entity": 1,
+              "basis": "data_profile_handcheck.json HC5"
+            }
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": [
+        {
+          "id": "ob-tenant-resolved",
+          "finding": "F48",
+          "field": "tenantResolved",
+          "rule": "bool per document: CUSTOMER_MASTER.TENANT_ID IN (SELECT ID FROM TENANTS) at load time; TENANT_ID itself stays the raw string (no tenants reference); fixture truth 1/201 true",
+          "recon": "sum(tenantResolved) == source count of CUSTOMER_MASTER rows whose TENANT_ID resolves (1 of 201)"
+        },
+        {
+          "id": "ob-signup-dt-raw-plus-parsed",
+          "finding": "F49",
+          "field": "signupDt / signupDtRaw",
+          "rule": "signupDtRaw keeps the VARCHAR2(9) text verbatim for every row; signupDt is the parsed BSON date when the text conforms to %d-%b-%y and is absent otherwise (41 of 201 fixture values are unparseable, e.g. 31-FEB-24, N/A); same rule for the other four CUSTOMER_MASTER *_DT text columns if the loader types them",
+          "recon": "count(signupDt missing) == 41; signupDtRaw compares byte-for-byte against SIGNUP_DT for all 201 rows"
+        }
+      ]
+    },
+    {
+      "unit": "billingAuditLog",
+      "collection": "billingAuditLog",
+      "write_targets": [
+        "mmp_rt_b3_oracle.billingAuditLog"
+      ],
+      "source_tables": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "root_table": "BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [],
+      "depth": 0,
+      "mapped_fields": 3,
+      "indexes": [],
+      "estimate": {
+        "documents": 0,
+        "total_bytes": 0,
+        "avg_doc_bytes": 0,
+        "max_doc_bytes_upper_bound": 0,
+        "from": [
+          {
+            "table": "BILLING_AUDIT_LOG",
+            "rows": 0,
+            "avg_row_bytes": 0.0,
+            "max_row_bytes": 0,
+            "stat": "row_bytes:BILLING_AUDIT_LOG"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "ratingPeriods",
+      "collection": "ratingPeriods",
+      "write_targets": [
+        "mmp_rt_b3_oracle.ratingPeriods"
+      ],
+      "source_tables": [
+        "RATING_PERIODS"
+      ],
+      "root_table": "RATING_PERIODS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 3,
+      "indexes": [
+        [
+          "tenantId",
+          "periodStart"
+        ],
+        [
+          "tenantId",
+          "periodStart"
+        ]
+      ],
+      "estimate": {
+        "documents": 3,
+        "total_bytes": 258,
+        "avg_doc_bytes": 86.0,
+        "max_doc_bytes_upper_bound": 86,
+        "from": [
+          {
+            "table": "RATING_PERIODS",
+            "rows": 3,
+            "avg_row_bytes": 86.0,
+            "max_row_bytes": 86.0,
+            "stat": "row_bytes:RATING_PERIODS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "creditNotes",
+      "collection": "creditNotes",
+      "write_targets": [
+        "mmp_rt_b3_oracle.creditNotes"
+      ],
+      "source_tables": [
+        "CREDIT_NOTES"
+      ],
+      "root_table": "CREDIT_NOTES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 4,
+      "indexes": [
+        [
+          "tenantId",
+          "remainingAmount"
+        ],
+        [
+          "tenantId",
+          "issuedOn",
+          "_id",
+          "remainingAmount"
+        ]
+      ],
+      "estimate": {
+        "documents": 5,
+        "total_bytes": 415,
+        "avg_doc_bytes": 83.0,
+        "max_doc_bytes_upper_bound": 83,
+        "from": [
+          {
+            "table": "CREDIT_NOTES",
+            "rows": 5,
+            "avg_row_bytes": 83.0,
+            "max_row_bytes": 83.0,
+            "stat": "row_bytes:CREDIT_NOTES"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "usageEvents",
+      "collection": "usageEvents",
+      "write_targets": [
+        "mmp_rt_b3_oracle.usageEvents"
+      ],
+      "source_tables": [
+        "USAGE_EVENTS"
+      ],
+      "root_table": "USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 4,
+      "indexes": [
+        [
+          "tenantId",
+          "occurredAt"
+        ]
+      ],
+      "estimate": {
+        "documents": 103,
+        "total_bytes": 8636,
+        "avg_doc_bytes": 83.8,
+        "max_doc_bytes_upper_bound": 84,
+        "from": [
+          {
+            "table": "USAGE_EVENTS",
+            "rows": 103,
+            "avg_row_bytes": 83.84,
+            "max_row_bytes": 84.0,
+            "stat": "row_bytes:USAGE_EVENTS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "notifications",
+      "collection": "notifications",
+      "write_targets": [
+        "mmp_rt_b3_oracle.notifications"
+      ],
+      "source_tables": [
+        "NOTIFICATIONS"
+      ],
+      "root_table": "NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 3,
+      "indexes": [
+        [
+          "tenantId",
+          "kindCd",
+          "sentAt"
+        ]
+      ],
+      "estimate": {
+        "documents": 1,
+        "total_bytes": 81,
+        "avg_doc_bytes": 81.0,
+        "max_doc_bytes_upper_bound": 81,
+        "from": [
+          {
+            "table": "NOTIFICATIONS",
+            "rows": 1,
+            "avg_row_bytes": 81.0,
+            "max_row_bytes": 81.0,
+            "stat": "row_bytes:NOTIFICATIONS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "subscriptions",
+      "collection": "subscriptions",
+      "write_targets": [
+        "mmp_rt_b3_oracle.subscriptions"
+      ],
+      "source_tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "root_table": "SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": "extended_reference",
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "plans",
+          "via": [
+            "PLAN_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        },
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 6,
+      "indexes": [
+        [
+          "tenantId",
+          "endsOn",
+          "startsOn"
+        ],
+        [
+          "endsOn",
+          "startsOn"
+        ],
+        [
+          "planId"
+        ]
+      ],
+      "estimate": {
+        "documents": 15,
+        "total_bytes": 2547,
+        "avg_doc_bytes": 169.8,
+        "max_doc_bytes_upper_bound": 177,
+        "from": [
+          {
+            "table": "SUBSCRIPTIONS",
+            "rows": 15,
+            "avg_row_bytes": 117.47,
+            "max_row_bytes": 124.0,
+            "stat": "row_bytes:SUBSCRIPTIONS"
+          }
+        ],
+        "extended_references": [
+          {
+            "copied_from": "PLANS",
+            "detail": "subscriptions.plan.{code, tierCd, monthlyFee, includedUnits}",
+            "avg_row_bytes_upper_bound": 52.33
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "invoiceHeader",
+      "collection": "invoiceHeader",
+      "write_targets": [
+        "mmp_rt_b3_oracle.invoiceHeader"
+      ],
+      "extra_write_targets_ungraded": [
+        {
+          "target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+          "obligation": "ob-invoice-lines-orphaned",
+          "why_not_in_wave_write_targets": "preflight.py validation accepts any string here, but --grade refuses the batch with \"recon_results did not grade collections ['invoice_lines_orphaned'] the ticket writes\" because the harness can only grade mapping-spec collections (F57); the loader still writes it and the batch worker proves the 1,500-row arithmetic in its recon evidence"
+        }
+      ],
+      "source_tables": [
+        "INVOICE_HEADER",
+        "INVOICE_LINE"
+      ],
+      "root_table": "INVOICE_HEADER",
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINE",
+          "cardinality": "1:N"
+        }
+      ],
+      "depends_on": [
+        {
+          "unit": "customerMaster",
+          "via": [
+            "CUST_ID"
+          ],
+          "basis": "unenforced pointer chain CUSTOMER_MASTER->INVOICE_HEADER(CUST_ID), data_profile_handcheck.json manual_stats; index {custId} (F48); loader reads customerMaster to set nothing \u2014 ordering only"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 26,
+      "indexes": [
+        [
+          "custId"
+        ]
+      ],
+      "estimate": {
+        "documents": 1000,
+        "total_bytes": 544651,
+        "avg_doc_bytes": 544.7,
+        "max_doc_bytes_upper_bound": 1765,
+        "from": [
+          {
+            "table": "INVOICE_HEADER",
+            "rows": 1000,
+            "avg_row_bytes": 152.48,
+            "max_row_bytes": 153.0,
+            "stat": "row_bytes:INVOICE_HEADER"
+          },
+          {
+            "table": "INVOICE_LINE",
+            "rows": 1463,
+            "rows_excluded_as_orphans": 37,
+            "avg_row_bytes": 268.06,
+            "max_row_bytes": 291.0,
+            "stat": "row_bytes:INVOICE_LINE",
+            "embedded_bytes_per_parent": {
+              "p50": 525,
+              "p99": 1346.65,
+              "max": 1612
+            },
+            "fanout": {
+              "p50": 1,
+              "p99": 5,
+              "max": 6
+            },
+            "basis": "data_profile_handcheck.json manual_stats (tool produced no INVOICE_HEADER->INVOICE_LINE stat, F18)"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": [
+        {
+          "id": "ob-invoice-lines-orphaned",
+          "finding": "F47",
+          "write_target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+          "rule": "every INVOICE_LINE row with no INVOICE_HEADER.INVOICE_ID match (NOT EXISTS; 37 rows in the fixture, invoice_no LIKE 'MMPRT-GHOST-%') is written as its own document to invoice_lines_orphaned with the mapped line fields plus `orphan: true` and the raw `invoiceId`; it is never dropped and never embedded",
+          "recon": "count(invoiceHeader.lines[]) + count(mmp_rt_b3_oracle.invoice_lines_orphaned) == INVOICE_LINE rows (1500); 1463 embedded + 37 orphaned",
+          "expected_rows": 37
+        }
+      ]
+    },
+    {
+      "unit": "customerMasterHist",
+      "collection": "customerMasterHist",
+      "write_targets": [
+        "mmp_rt_b3_oracle.customerMasterHist"
+      ],
+      "source_tables": [
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "root_table": "CUSTOMER_MASTER_HIST",
+      "key": {
+        "source": [
+          "CUST_ID",
+          "HIST_ID"
+        ],
+        "target": [
+          "custId",
+          "histId"
+        ]
+      },
+      "pattern": "history_copy",
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "customerMaster",
+          "via": [
+            "CUST_ID"
+          ],
+          "basis": "history_copy of_table CUSTOMER_MASTER; edge not expressible in the spec (F52)"
+        }
+      ],
+      "depth": 1,
+      "mapped_fields": 156,
+      "indexes": [
+        [
+          "custId",
+          "histId"
+        ]
+      ],
+      "estimate": {
+        "documents": 0,
+        "total_bytes": 0,
+        "avg_doc_bytes": 0,
+        "max_doc_bytes_upper_bound": 0,
+        "from": [
+          {
+            "table": "CUSTOMER_MASTER_HIST",
+            "rows": 0,
+            "avg_row_bytes": 0.0,
+            "max_row_bytes": 0,
+            "stat": "row_bytes:CUSTOMER_MASTER_HIST"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "invoices",
+      "collection": "invoices",
+      "write_targets": [
+        "mmp_rt_b3_oracle.invoices"
+      ],
+      "source_tables": [
+        "INVOICES",
+        "INVOICE_LINES"
+      ],
+      "root_table": "INVOICES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": "extended_reference",
+      "reference_layer": false,
+      "embeds": [
+        {
+          "array_path": "lines",
+          "child_table": "INVOICE_LINES",
+          "cardinality": "1:N"
+        }
+      ],
+      "depends_on": [
+        {
+          "unit": "ratingPeriods",
+          "via": [
+            "PERIOD_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        },
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 2,
+      "mapped_fields": 11,
+      "indexes": [
+        [
+          "lines.lineNo"
+        ],
+        [
+          "statusCd",
+          "issuedAt",
+          "_id"
+        ],
+        [
+          "tenantId"
+        ]
+      ],
+      "estimate": {
+        "documents": 4,
+        "total_bytes": 1081,
+        "avg_doc_bytes": 270.2,
+        "max_doc_bytes_upper_bound": 279,
+        "from": [
+          {
+            "table": "INVOICES",
+            "rows": 4,
+            "avg_row_bytes": 126.5,
+            "max_row_bytes": 127.0,
+            "stat": "row_bytes:INVOICES"
+          },
+          {
+            "table": "INVOICE_LINES",
+            "rows": 4,
+            "avg_row_bytes": 91.0,
+            "max_row_bytes": 95.0,
+            "stat": "row_bytes:INVOICE_LINES"
+          }
+        ],
+        "extended_references": [
+          {
+            "copied_from": "TENANTS",
+            "detail": "invoices.tenant.statusCd",
+            "avg_row_bytes_upper_bound": 52.67
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "subscriptionsHist",
+      "collection": "subscriptionsHist",
+      "write_targets": [
+        "mmp_rt_b3_oracle.subscriptionsHist"
+      ],
+      "source_tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "root_table": "SUBSCRIPTIONS_HIST",
+      "key": {
+        "source": [
+          "ID",
+          "HIST_ID"
+        ],
+        "target": [
+          "id",
+          "histId"
+        ]
+      },
+      "pattern": "history_copy",
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "subscriptions",
+          "via": [
+            "ID"
+          ],
+          "basis": "history_copy of_table SUBSCRIPTIONS; edge not expressible in the spec (F52)"
+        }
+      ],
+      "depth": 2,
+      "mapped_fields": 8,
+      "indexes": [
+        [
+          "id",
+          "histId"
+        ]
+      ],
+      "estimate": {
+        "documents": 0,
+        "total_bytes": 0,
+        "avg_doc_bytes": 0,
+        "max_doc_bytes_upper_bound": 0,
+        "from": [
+          {
+            "table": "SUBSCRIPTIONS_HIST",
+            "rows": 0,
+            "avg_row_bytes": 0.0,
+            "max_row_bytes": 0,
+            "stat": "row_bytes:SUBSCRIPTIONS_HIST"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "ratingResults",
+      "collection": "ratingResults",
+      "write_targets": [
+        "mmp_rt_b3_oracle.ratingResults"
+      ],
+      "source_tables": [
+        "RATING_RESULTS"
+      ],
+      "root_table": "RATING_RESULTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "ratingPeriods",
+          "via": [
+            "PERIOD_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        },
+        {
+          "unit": "subscriptions",
+          "via": [
+            "SUBSCRIPTION_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 2,
+      "mapped_fields": 8,
+      "indexes": [
+        [
+          "periodId"
+        ]
+      ],
+      "estimate": {
+        "documents": 3,
+        "total_bytes": 366,
+        "avg_doc_bytes": 122.0,
+        "max_doc_bytes_upper_bound": 122,
+        "from": [
+          {
+            "table": "RATING_RESULTS",
+            "rows": 3,
+            "avg_row_bytes": 122.0,
+            "max_row_bytes": 122.0,
+            "stat": "row_bytes:RATING_RESULTS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    },
+    {
+      "unit": "dunningAttempts",
+      "collection": "dunningAttempts",
+      "write_targets": [
+        "mmp_rt_b3_oracle.dunningAttempts"
+      ],
+      "source_tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "root_table": "DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": "_id"
+      },
+      "pattern": null,
+      "reference_layer": false,
+      "embeds": [],
+      "depends_on": [
+        {
+          "unit": "invoices",
+          "via": [
+            "INVOICE_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        },
+        {
+          "unit": "tenants",
+          "via": [
+            "TENANT_ID"
+          ],
+          "basis": "mapping_spec decision.references"
+        }
+      ],
+      "depth": 3,
+      "mapped_fields": 5,
+      "indexes": [
+        [
+          "invoiceId",
+          "attemptNo"
+        ]
+      ],
+      "estimate": {
+        "documents": 1,
+        "total_bytes": 119,
+        "avg_doc_bytes": 119.0,
+        "max_doc_bytes_upper_bound": 119,
+        "from": [
+          {
+            "table": "DUNNING_ATTEMPTS",
+            "rows": 1,
+            "avg_row_bytes": 119.0,
+            "max_row_bytes": 119.0,
+            "stat": "row_bytes:DUNNING_ATTEMPTS"
+          }
+        ],
+        "basis": "fixture_counts.json tables_total x data_profile.json row_bytes (live, as_of 2026-10-07T07:09:09.563136+00:00); extended-reference bytes added as the parent's whole row (upper bound)"
+      },
+      "loader_obligations": []
+    }
+  ]
+}
