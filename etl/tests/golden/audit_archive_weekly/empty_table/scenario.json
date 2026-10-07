@@ -1,0 +1,5 @@
+{
+  "description": "No audit events at all: the scan returns nothing, the script exits 0 and writes nothing.",
+  "frozen_time": "2026-03-15T03:00:00Z",
+  "seed": {}
+}

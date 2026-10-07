@@ -1,0 +1,269 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-after-1s"
+        },
+        "id": {
+          "S": "b-after-1s"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15T00:00:01Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-before-1s"
+        },
+        "id": {
+          "S": "b-before-1s"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-14T23:59:59Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-date-only-same-day"
+        },
+        "id": {
+          "S": "b-date-only-same-day"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-epoch-number-old"
+        },
+        "id": {
+          "S": "b-epoch-number-old"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "N": "1700000000"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-exact"
+        },
+        "id": {
+          "S": "b-exact"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-exact-lower-z"
+        },
+        "id": {
+          "S": "b-exact-lower-z"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15T00:00:00z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-exact-millis"
+        },
+        "id": {
+          "S": "b-exact-millis"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15T00:00:00.000Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-exact-plus-offset"
+        },
+        "id": {
+          "S": "b-exact-plus-offset"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-15T00:00:00+00:00"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-minus5-after-cutoff"
+        },
+        "id": {
+          "S": "b-minus5-after-cutoff"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-12-14T23:00:00-05:00"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-no-timestamp"
+        },
+        "id": {
+          "S": "b-no-timestamp"
+        },
+        "resource_id": {
+          "S": "file-1"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "b-recent"
+        },
+        "id": {
+          "S": "b-recent"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-03-14T12:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}

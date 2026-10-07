@@ -1,0 +1,32 @@
+{
+  "description": "An old item without an event_id attribute (keyed by id only): the archive is uploaded with both old events, then building the delete key raises KeyError('event_id'), main() exits 1 via the FATAL handler and no compliance report is written.",
+  "frozen_time": "2026-03-15T03:00:00Z",
+  "seed": {
+    "dynamodb": {
+      "otterworks-audit-events": [
+        {
+          "id": "e-ok",
+          "event_id": "e-ok",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2025-11-01T00:00:00Z"
+        },
+        {
+          "id": "e-no-event-id",
+          "timestamp": "2025-11-02T00:00:00Z",
+          "action": "file.delete",
+          "actor_id": "user-bob"
+        },
+        {
+          "id": "e-recent",
+          "event_id": "e-recent",
+          "action": "file.download",
+          "actor_id": "user-alice",
+          "resource_id": "file-1",
+          "timestamp": "2026-03-01T00:00:00Z"
+        }
+      ]
+    }
+  }
+}

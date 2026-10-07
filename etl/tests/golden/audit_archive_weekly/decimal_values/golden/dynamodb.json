@@ -1,0 +1,234 @@
+{
+  "otterworks-analytics-events": {
+    "items": [],
+    "key_schema": [
+      "event_id"
+    ]
+  },
+  "otterworks-audit-events": {
+    "items": [
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "d-floats"
+        },
+        "half": {
+          "N": "-0.5"
+        },
+        "id": {
+          "S": "d-floats"
+        },
+        "neg_zero": {
+          "N": "0"
+        },
+        "ratio": {
+          "N": "1.1"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-02T00:00:00Z"
+        },
+        "tiny": {
+          "N": "0.0000000001"
+        },
+        "whole_float": {
+          "N": "100"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "big": {
+          "N": "12345678901234567890123456789012345678"
+        },
+        "bytes": {
+          "N": "42"
+        },
+        "event_id": {
+          "S": "d-ints"
+        },
+        "id": {
+          "S": "d-ints"
+        },
+        "negative": {
+          "N": "-7"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-01T00:00:00Z"
+        },
+        "zero": {
+          "N": "0"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "details": {
+          "M": {
+            "geo": {
+              "M": {
+                "lat": {
+                  "N": "47.6062"
+                },
+                "lon": {
+                  "N": "-122.3321"
+                }
+              }
+            },
+            "scores": {
+              "L": [
+                {
+                  "N": "1"
+                },
+                {
+                  "N": "2.5"
+                },
+                {
+                  "N": "3.0"
+                }
+              ]
+            },
+            "size": {
+              "N": "2048"
+            }
+          }
+        },
+        "event_id": {
+          "S": "d-nested"
+        },
+        "flags": {
+          "L": [
+            {
+              "BOOL": true
+            },
+            {
+              "BOOL": false
+            },
+            {
+              "NULL": true
+            }
+          ]
+        },
+        "id": {
+          "S": "d-nested"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-04T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "event_id": {
+          "S": "d-precision"
+        },
+        "id": {
+          "S": "d-precision"
+        },
+        "pi": {
+          "N": "3.141592653589793"
+        },
+        "price": {
+          "N": "19.99"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2025-10-03T00:00:00Z"
+        }
+      },
+      {
+        "action": {
+          "S": "file.download"
+        },
+        "actor_id": {
+          "S": "user-alice"
+        },
+        "bytes": {
+          "N": "7"
+        },
+        "event_id": {
+          "S": "d-recent"
+        },
+        "id": {
+          "S": "d-recent"
+        },
+        "ratio": {
+          "N": "0.25"
+        },
+        "resource_id": {
+          "S": "file-1"
+        },
+        "timestamp": {
+          "S": "2026-03-10T00:00:00Z"
+        }
+      }
+    ],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-metadata": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-shares": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-file-versions": {
+    "items": [],
+    "key_schema": [
+      "file_id",
+      "version"
+    ]
+  },
+  "otterworks-folders": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  },
+  "otterworks-notification-preferences": {
+    "items": [],
+    "key_schema": [
+      "userId"
+    ]
+  },
+  "otterworks-notifications": {
+    "items": [],
+    "key_schema": [
+      "id"
+    ]
+  }
+}
