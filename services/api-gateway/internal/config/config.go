@@ -48,16 +48,39 @@ type Config struct {
 	ShutdownTimeout time.Duration
 
 	// Circuit breaker
-	CBMaxRequests   uint32
-	CBInterval      time.Duration
-	CBTimeout       time.Duration
-	CBFailureRatio  float64
+	CBMaxRequests  uint32
+	CBInterval     time.Duration
+	CBTimeout      time.Duration
+	CBFailureRatio float64
+}
+
+// knownDefaultJWTSecrets are signing secrets that have been committed to this repository;
+// anyone can mint tokens with them, so the gateway refuses to start when configured with one.
+var knownDefaultJWTSecrets = map[string]struct{}{
+	"otterworks-local-dev-jwt-secret-change-me-in-production": {},
+	"dev-jwt-secret-otterworks-2024-change-in-production":     {},
+	"otterworks-dev-secret":                                   {},
+	"dev_jwt_secret_key":                                      {},
+	"changeme":                                                {},
+	"change-me":                                               {},
+	"secret":                                                  {},
+}
+
+func isKnownDefaultJWTSecret(secret string) bool {
+	_, ok := knownDefaultJWTSecrets[strings.TrimSpace(secret)]
+	return ok
 }
 
 // Validate checks that required security-sensitive configuration is present.
 func (c *Config) Validate() error {
-	if c.JWTSecret == "" {
+	if strings.TrimSpace(c.JWTSecret) == "" {
 		return fmt.Errorf("JWT_SECRET environment variable is required but not set")
+	}
+	if isKnownDefaultJWTSecret(c.JWTSecret) {
+		return fmt.Errorf("JWT_SECRET is a publicly known default value; set it to a random secret (e.g. openssl rand -hex 32)")
+	}
+	if isKnownDefaultJWTSecret(c.JWTPeerSecret) {
+		return fmt.Errorf("JWT_PEER_SECRET is a publicly known default value; unset it or use the peer deployment's real JWT_SECRET")
 	}
 	return nil
 }
