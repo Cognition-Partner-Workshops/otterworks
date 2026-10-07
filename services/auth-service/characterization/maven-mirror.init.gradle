@@ -1,0 +1,17 @@
+// Optional: route Maven Central / Gradle Plugin Portal traffic through a mirror
+// (used when repo.maven.apache.org rate-limits with HTTP 429). Does not change the build.
+def mirror = System.getenv('MAVEN_MIRROR') ?: 'https://maven-central.storage-download.googleapis.com/maven2/'
+beforeSettings { settings ->
+  settings.pluginManagement.repositories {
+    maven { url mirror }
+    gradlePluginPortal()
+  }
+}
+allprojects {
+  buildscript.repositories { maven { url mirror } }
+  repositories.configureEach { repo ->
+    if (repo instanceof MavenArtifactRepository && repo.url.toString().contains('repo.maven.apache.org')) {
+      repo.url = mirror
+    }
+  }
+}
