@@ -228,6 +228,7 @@ import {
     }
     .source-badge.engine-oracle { background: #fff3e0; color: #e65100; }
     .source-badge.engine-mongodb { background: #e8f5e9; color: #2e7d32; }
+    .source-badge.engine-postgresql { background: #e3f2fd; color: #1565c0; }
 
     .recon-banner {
       display: flex; align-items: center; gap: 12px;
@@ -356,6 +357,7 @@ export class BillingReportComponent implements OnInit {
     switch (this.report?.source.engine) {
       case 'oracle': return 'Legacy Oracle Estate';
       case 'mongodb': return 'MongoDB Atlas';
+      case 'postgresql': return 'PostgreSQL Billing Estate';
       default: return this.report?.source.engine ?? '';
     }
   }

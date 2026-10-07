@@ -118,6 +118,50 @@ endif
 	$(call validate_ns)
 	DB_PORT=$(ORACLE_BILLING_DB_PORT) $(ORACLE_BILLING_UV) testdata/legacy/oracle_billing_seed.py --ns $(NS) --scale $(or $(SCALE),demo)
 
+# --- Legacy Billing: OW_BILLING on PostgreSQL 15 (takeout target; own container, not infra Postgres) ---
+
+BILLING_PG_COMPOSE = docker compose -f docker-compose.billing-postgres.yml
+BILLING_PG_PORT ?= 55433
+BILLING_PG_UV = uv run -q --python 3.12 --with oracledb==2.5.1 --with 'psycopg[binary]==3.2.9'
+BILLING_CHAR_DIR = services/legacy-billing/tests/characterization
+BILLING_RECON_DIR = docs/tech-partnerships/recon
+
+billing-pg-up: ## Start the OW_BILLING PostgreSQL 15 target (localhost:$(BILLING_PG_PORT), db ow_tp_billing, schema ow_billing)
+	BILLING_PG_PORT=$(BILLING_PG_PORT) $(BILLING_PG_COMPOSE) up -d --wait
+
+billing-pg-down: ## Stop the OW_BILLING PostgreSQL target and drop its data
+	BILLING_PG_PORT=$(BILLING_PG_PORT) $(BILLING_PG_COMPOSE) down -v
+
+billing-pg-migrate: ## Reload every OW_BILLING table from Oracle into Postgres (idempotent; refuses if Postgres has post-cutover writes unless FORCE=1)
+	BILLING_PG_PORT=$(BILLING_PG_PORT) ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(BILLING_PG_UV) services/legacy-billing/migration/migrate.py $(if $(filter 1 true yes,$(FORCE)),--force)
+
+billing-pg-recon: ## Reconcile Oracle vs Postgres (NS=<namespace>; reruns the migration to prove idempotency)
+ifndef NS
+	$(error NS is required, e.g. make billing-pg-recon NS=demo)
+endif
+	$(call validate_ns)
+	BILLING_PG_PORT=$(BILLING_PG_PORT) ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(BILLING_PG_UV) services/legacy-billing/migration/recon.py --ns $(NS)
+	$(MAKE) tp-validate-recon FILE=$(BILLING_RECON_DIR)/legacy-billing-oracle-to-postgres.$(NS).recon.json
+
+billing-char-capture: ## Record the characterization scenario against a running app (URL=<base url>, OUT=<json>)
+	uv run -q --python 3.12 --with requests==2.32.5 $(BILLING_CHAR_DIR)/capture.py --base-url $(or $(URL),http://127.0.0.1:8096) --out $(or $(OUT),$(BILLING_CHAR_DIR)/runs/postgres.json)
+
+billing-char-parity: ## Grade a Postgres characterization run against the Oracle golden (NS=<namespace>)
+ifndef NS
+	$(error NS is required, e.g. make billing-char-parity NS=demo)
+endif
+	python3 $(BILLING_CHAR_DIR)/parity.py --before $(BILLING_CHAR_DIR)/golden/oracle.json --after $(BILLING_CHAR_DIR)/runs/postgres.json --out $(BILLING_RECON_DIR)/legacy-billing-app-parity.$(NS).md
+
+billing-state-parity: ## After the scenario ran on both engines: compare every table Oracle vs Postgres (NS=<namespace>)
+ifndef NS
+	$(error NS is required, e.g. make billing-state-parity NS=demo)
+endif
+	BILLING_PG_PORT=$(BILLING_PG_PORT) ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(BILLING_PG_UV) services/legacy-billing/migration/state_parity.py --out $(BILLING_RECON_DIR)/legacy-billing-state-parity.$(NS).md
+
+define tp_billing_pg_namespace_present
+docker exec otterworks-billing-pg-billing-postgres-1 psql -U ow_billing -d ow_tp_billing -Atc "select case when count(*) > 0 then 'present' else 'missing' end from ow_billing.invoice_header where batch_no = $$(python3 -c 'import hashlib; print(int(hashlib.sha256(b"$(NS)").hexdigest()[:8], 16) % 90000000 + 1000000)')"
+endef
+
 TP_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.tp.yml
 TP_SERVICES = $(if $(filter core,$(PROFILE)),api-gateway auth-service document-service file-service web-app admin-dashboard legacy-billing usage-bridge,)
 
@@ -130,14 +174,18 @@ ifndef NS
 	$(error NS is required, e.g. make tp-up NS=dev)
 endif
 	$(call validate_ns)
-	$(MAKE) oracle-billing-up
-	@if test -f testdata/legacy/manifests/$(NS).json && { $(call tp_oracle_namespace_present); } | grep -qx present; then :; else $(MAKE) oracle-billing-seed NS=$(NS); fi
+	$(MAKE) billing-pg-up
+	@if { $(call tp_billing_pg_namespace_present); } | grep -qx present; then :; else \
+		echo "ns=$(NS) not in billing Postgres yet: seeding Oracle and migrating it"; \
+		$(MAKE) oracle-billing-up && \
+		{ { test -f testdata/legacy/manifests/$(NS).json && { $(call tp_oracle_namespace_present); } | grep -qx present; } || $(MAKE) oracle-billing-seed NS=$(NS); } && \
+		$(MAKE) billing-pg-migrate; fi
 	$(MAKE) infra-up
 	$(TP_COMPOSE) up -d --build --wait $(TP_SERVICES)
 	@echo "Web: http://localhost:3000"
 	@echo "Admin: http://localhost:4200"
 	@echo "Legacy billing: http://localhost:8096"
-	@echo "Oracle: localhost:$(ORACLE_BILLING_DB_PORT)"
+	@echo "Billing Postgres: localhost:$(BILLING_PG_PORT)"
 
 tp-down: ## Stop the opt-in tech-partnerships wired estate (does not tear down Oracle)
 	$(TP_COMPOSE) down
@@ -308,8 +356,11 @@ tp-smoke: ## Golden-path smoke gate for tech-partnerships (mirrors .github/workf
 	@$(MAKE) -n legacy-etl-list > /dev/null
 	@$(MAKE) -n procs-parity NS=ci > /dev/null
 	@$(MAKE) -n tp-up NS=ci > /dev/null
+	@$(MAKE) -n billing-pg-up billing-pg-migrate > /dev/null
+	@$(MAKE) -n billing-pg-recon billing-char-parity billing-state-parity NS=ci > /dev/null
 	@echo "=== Oracle billing compose config lint ==="
 	docker compose -f docker-compose.oracle-billing.yml config > /dev/null
+	docker compose -f docker-compose.billing-postgres.yml config > /dev/null
 	docker compose -f docker-compose.yml -f docker-compose.tp.yml config > /dev/null
 	@echo "=== Golden 'make -n test' still parses ==="
 	@$(MAKE) -n test > /dev/null
