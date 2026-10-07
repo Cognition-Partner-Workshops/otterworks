@@ -39,6 +39,9 @@ spec:
             - name: health
               containerPort: {{ .Values.scheduler.healthPort }}
               protocol: TCP
+            - name: worker-logs
+              containerPort: {{ .Values.scheduler.logServerPort }}
+              protocol: TCP
           {{- include "etl-airflow.env" . | nindent 10 }}
           {{- include "etl-airflow.containerSecurityContext" . | nindent 10 }}
           livenessProbe:

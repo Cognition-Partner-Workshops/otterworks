@@ -20,7 +20,7 @@ make airflow-check  # re-run the gate
 make airflow-down   # stop Airflow (keeps its metadata volume; infra stays up)
 ```
 
-UI: http://localhost:8280 (`airflow` / `airflow`, override with `AIRFLOW_ADMIN_USER` /
+UI: http://localhost:8280, bound to 127.0.0.1 unless `AIRFLOW_WEB_BIND` is set (`airflow` / `airflow`, override with `AIRFLOW_ADMIN_USER` /
 `AIRFLOW_ADMIN_PASSWORD`). Metadata lives in its own `airflow-postgres` container and `airflow`
 database, never in the application `otterworks` database. Airflow joins `otterworks-network`, so
 DAGs reach `postgres`, `localstack` and `meilisearch` by service name.

@@ -68,7 +68,7 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-    - ${AIRFLOW_WEB_PORT:-8280}:8080
+    - ${AIRFLOW_WEB_BIND:-127.0.0.1}:${AIRFLOW_WEB_PORT:-8280}:8080
     healthcheck:
       test:
       - CMD
