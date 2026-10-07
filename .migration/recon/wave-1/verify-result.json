@@ -1,0 +1,81 @@
+{
+ "run_id": "ticket-cf5c46af9c3345b98534ff860bb73f38",
+ "manifest_sha": "b11c0e7b2f31",
+ "wave": 1,
+ "branch": "recon/wave-1",
+ "wave_verdict": "PASS",
+ "unit_verdicts": {
+  "w1-b04": "PASS",
+  "w1-b05": "PASS"
+ },
+ "recon_results": {
+  "w1-b01": [
+   ".migration/recon/wave-1/w1-b01/codes/result.json",
+   ".migration/recon/wave-1/w1-b01/tenants/result.json",
+   ".migration/recon/wave-1/w1-b01/plans/result.json",
+   ".migration/recon/wave-1/w1-b01/customerMaster/result.json",
+   ".migration/recon/wave-1/w1-b01/billingAuditLog/result.json"
+  ],
+  "w1-b02": [
+   ".migration/recon/wave-1/w1-b02/ratingPeriods/result.json",
+   ".migration/recon/wave-1/w1-b02/creditNotes/result.json",
+   ".migration/recon/wave-1/w1-b02/usageEvents/result.json",
+   ".migration/recon/wave-1/w1-b02/notifications/result.json",
+   ".migration/recon/wave-1/w1-b02/subscriptions/result.json"
+  ],
+  "w1-b03": [
+   ".migration/recon/wave-1/w1-b03/invoiceHeader/result.json",
+   ".migration/recon/wave-1/w1-b03/customerMasterHist/result.json"
+  ],
+  "w1-b04": [
+   ".migration/recon/wave-1/w1-b04/invoices/result.json",
+   ".migration/recon/wave-1/w1-b04/subscriptionsHist/result.json",
+   ".migration/recon/wave-1/w1-b04/ratingResults/result.json"
+  ],
+  "w1-b05": [
+   ".migration/recon/wave-1/w1-b05/dunningAttempts/result.json"
+  ]
+ },
+ "unverified_units": {
+  "billingAuditLog": "source 0 rows; target collection never created",
+  "customerMasterHist": "source 0 rows; empty collection + index only",
+  "subscriptionsHist": "source 0 rows; TRG_SUBSCRIPTIONS_HIST never fired in the fixture (F73)"
+ },
+ "merge_notes": {
+  "invoiceHeader": "harness PASS, merge_eligible false (F72 scoped-embed warning); hand proof 1463+37=1500 in verify-report.md \u00a74.1"
+ },
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "plugin_head_sha": "88dea6ae4f876e9d9fe7828bb8a24337c7873145",
+ "plugin_branch_tip_sha": "ada6699dbbc0112288884a050766ef1332da7ac1",
+ "mode": "live",
+ "target_class": "migration_cluster",
+ "findings": [
+  "F75: loader-only target fields (`customerMaster.signupDtRaw`/`lastActivityDtRaw`/`tenantResolved`, `invoiceHeader.invoiceDtRaw`/`dueDtRaw`, `attributes[].createdDtRaw`/`eavId`) are outside the spec and the harness has no unmapped-field check, so the 41 `signupDt` values the `unparseable: null` alias drops (24 non-shape incl. 4 x `1/1/1900`, 17 shape-conformant but calendar-impossible) are symmetric on both sides and invisible to every tier; proven only by hand.",
+  "F76: the F74 check finds all 16 fixture-first artifacts present, but 11 fixture and 11 batch live `result.json` cite `map-draft-2`/`map-draft-3` while the wave pins `map-draft-4`, and `preflight.py:314` grades against the batch ticket's pin, not the wave's; the verifier's 16 re-runs under `map-draft-4`/tolerances 1 all PASS with no verdict change between versions.",
+  "F76 (observed): `preflight.py --grade` on the five committed batch results under manifest b11c0e7b2f31 downgrades w1-b01, w1-b02 and w1-b03 to FAIL `insufficient_evidence` because their cited result.json files grade `map-draft-3` (b03: customerMasterHist not re-run), so only w1-b04 and w1-b05 are gradable PASS batches today although all three were merged into the run branch; the verifier's own 16 live runs under map-draft-4 are PASS for every unit of all five batches.",
+  "F77: no tier grades cross-unit reference resolution: 200/201 `customerMaster.tenantId` (18 distinct) and 11 distinct `invoiceHeader.tenantId` values resolve to no `tenants` document, identical on the source (horror tenant ids, F19), so a fixture property not a load defect; 13 reference edges and both extended-reference copies were checked by hand and are equal on both sides.",
+  "F70/F68 re-confirmed under map-draft-4: `billingAuditLog` (collection never created), `customerMasterHist` and `subscriptionsHist` are harness PASS / merge_eligible true on 0 rows and are reported UNVERIFIED here, not PASS.",
+  "F72 re-confirmed: `invoiceHeader` is PASS / merge_eligible false on the scoped embed warning; the hand proof holds (1463 + 37 = 1500, 0 lineIds on both sides, 0 embedded elements outside child_where, 37 orphan invoiceIds resolve to no header on either side).",
+  "F73 confirmed by reading `01_tables.sql` and the spec: the trigger writes `TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS')` into `HIST_DT VARCHAR2(20)` and the spec maps `histDt` with the bare `date_string_to_date` rule; 0 rows hide it; not fixed.",
+  "F63(b) in force: every verifier live run printed the unsalted-redaction warning and wrote `redaction_salted: false`; `RECON_REDACT_SALT` is still named by no skill or ticket."
+ ],
+ "report_path": "recon/wave-1:.migration/recon/wave-1/verify-report.md",
+ "verifier_batch_verdicts": {
+  "w1-b01": "PASS",
+  "w1-b02": "PASS",
+  "w1-b03": "PASS",
+  "w1-b04": "PASS",
+  "w1-b05": "PASS"
+ },
+ "preflight_grade_under_manifest_b11c0e7b2f31": {
+  "w1-b01": "FAIL insufficient_evidence (artifacts cite map-draft-3 / manifest ed1747e90f6e)",
+  "w1-b02": "FAIL insufficient_evidence (artifacts cite map-draft-3 / manifest ed1747e90f6e)",
+  "w1-b03": "FAIL insufficient_evidence (customerMasterHist artifact cites map-draft-3, not re-run)",
+  "w1-b04": "PASS",
+  "w1-b05": "PASS"
+ },
+ "unit_verdicts_note": "unit_verdicts covers exactly the batches preflight --grade marks PASS under the current manifest (w1-b04, w1-b05), as the contract requires; the verifier re-ran all 16 units of all five batches under map-draft-4 and every one is PASS \u2014 see verifier_batch_verdicts and recon_results."
+}

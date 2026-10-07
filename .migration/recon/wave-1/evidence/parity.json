@@ -1,0 +1,326 @@
+{
+ "fn_invoice_lines": [
+  {
+   "invoice_id": "60000000-0000-0000-0000-000000000001",
+   "source_rows": 2,
+   "target_lines": 2,
+   "target_has_lineNo": true,
+   "exact_match_incl_line_no": true,
+   "match_ignoring_line_no_and_order": true,
+   "match_ignoring_line_no_in_stored_order": true,
+   "source": [
+    [
+     "1",
+     "plan",
+     "GROWTH",
+     "149.00"
+    ],
+    [
+     "2",
+     "usage",
+     "usage overage",
+     "12.29"
+    ]
+   ],
+   "target": [
+    [
+     "1",
+     "plan",
+     "GROWTH",
+     "149.00"
+    ],
+    [
+     "2",
+     "usage",
+     "usage overage",
+     "12.29"
+    ]
+   ]
+  },
+  {
+   "invoice_id": "60000000-0000-0000-0000-000000000002",
+   "source_rows": 0,
+   "target_lines": 0,
+   "target_has_lineNo": true,
+   "exact_match_incl_line_no": true,
+   "match_ignoring_line_no_and_order": true,
+   "match_ignoring_line_no_in_stored_order": true,
+   "source": [],
+   "target": []
+  },
+  {
+   "invoice_id": "60000000-0000-0000-0000-000000000003",
+   "source_rows": 0,
+   "target_lines": 0,
+   "target_has_lineNo": true,
+   "exact_match_incl_line_no": true,
+   "match_ignoring_line_no_and_order": true,
+   "match_ignoring_line_no_in_stored_order": true,
+   "source": [],
+   "target": []
+  },
+  {
+   "invoice_id": "60000000-0000-0000-0000-000000000009",
+   "source_rows": 2,
+   "target_lines": 2,
+   "target_has_lineNo": true,
+   "exact_match_incl_line_no": true,
+   "match_ignoring_line_no_and_order": true,
+   "match_ignoring_line_no_in_stored_order": true,
+   "source": [
+    [
+     "1",
+     "plan",
+     "GROWTH",
+     "149.00"
+    ],
+    [
+     "2",
+     "usage",
+     "usage overage",
+     "12.29"
+    ]
+   ],
+   "target": [
+    [
+     "1",
+     "plan",
+     "GROWTH",
+     "149.00"
+    ],
+    [
+     "2",
+     "usage",
+     "usage overage",
+     "12.29"
+    ]
+   ]
+  }
+ ],
+ "fn_overdue_accounts": [
+  {
+   "as_of": "2026-10-07T00:00:00",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match_copied_tenant_status": true,
+   "match_via_tenants_lookup": true,
+   "source": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "248",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "236",
+     "active"
+    ]
+   ],
+   "target": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "248",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "236",
+     "active"
+    ]
+   ]
+  },
+  {
+   "as_of": "2025-01-01T00:00:00",
+   "source_rows": 0,
+   "target_rows": 0,
+   "match_copied_tenant_status": true,
+   "match_via_tenants_lookup": true,
+   "source": [],
+   "target": []
+  },
+  {
+   "as_of": "2099-12-31T00:00:00",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match_copied_tenant_status": true,
+   "match_via_tenants_lookup": true,
+   "source": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "26996",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "26984",
+     "active"
+    ]
+   ],
+   "target": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "26996",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "26984",
+     "active"
+    ]
+   ]
+  },
+  {
+   "as_of": "2026-02-14T00:00:00",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match_copied_tenant_status": true,
+   "match_via_tenants_lookup": true,
+   "source": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "13",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "1",
+     "active"
+    ]
+   ],
+   "target": [
+    [
+     "00000000-0000-0000-0000-000000000002",
+     "60000000-0000-0000-0000-000000000001",
+     "161.29",
+     "13",
+     "suspended"
+    ],
+    [
+     "00000000-0000-0000-0000-000000000005",
+     "60000000-0000-0000-0000-000000000002",
+     "161.29",
+     "1",
+     "active"
+    ]
+   ]
+  },
+  {
+   "as_of": "2026-02-01T00:00:00",
+   "source_rows": 0,
+   "target_rows": 0,
+   "match_copied_tenant_status": true,
+   "match_via_tenants_lookup": true,
+   "source": [],
+   "target": []
+  }
+ ],
+ "fn_entitlement": {
+  "cases": 45,
+  "mismatches": [],
+  "non_empty_source": 45,
+  "tie_risk_same_starts_on": 0,
+  "sample": [
+   {
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "on": "2026-10-07T00:00:00",
+    "source": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-10-07 00:00:00"
+     ]
+    ],
+    "target": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-10-07 00:00:00"
+     ]
+    ],
+    "match": true
+   },
+   {
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "on": "2026-01-01T00:00:00",
+    "source": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-01-01 00:00:00"
+     ]
+    ],
+    "target": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-01-01 00:00:00"
+     ]
+    ],
+    "match": true
+   },
+   {
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "on": "2026-01-02T00:00:00",
+    "source": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-01-02 00:00:00"
+     ]
+    ],
+    "target": [
+     [
+      "00000000-0000-0000-0000-000000000001",
+      "STARTER",
+      "starter",
+      "49.00",
+      "100",
+      "active",
+      "2026-01-02 00:00:00"
+     ]
+    ],
+    "match": true
+   }
+  ]
+ }
+}
