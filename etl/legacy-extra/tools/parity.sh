@@ -85,6 +85,10 @@ run_into() {  # dest cmd...   (runs under det_env, snapshots afterwards)
 capture() {  # impl job ns outdir
   local impl=$1 job=$2 ns=$3 out=$4
   valid_job "$job"; valid_ns "$ns"
+  # The legacy stages swallow their own errors, so a missing interpreter would
+  # otherwise yield a silently empty capture.
+  command -v ksh > /dev/null || die "ksh required (sudo apt-get install -y ksh)"
+  command -v perl > /dev/null || die "perl required"
   [ "$impl" = legacy ] || [ "$impl" = python ] || die "impl must be legacy or python"
   rm -rf "$out"; mkdir -p "$out"
   ROOT=$(mktemp -d /tmp/custbill-parity-root.XXXXXX)
