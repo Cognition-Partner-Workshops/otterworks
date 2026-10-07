@@ -90,6 +90,10 @@ export class AuthService {
     );
   }
 
+  /**
+   * Offline fallback only. The token is a non-credential placeholder: real bearer tokens come
+   * from the gateway, so no backend-signed JWT may be embedded here.
+   */
   private mockLogin(email: string, password: string): Observable<AuthUser> {
     if (password.length < 1) {
       return throwError(() => new Error('Invalid credentials'));
@@ -99,7 +103,7 @@ export class AuthService {
       email,
       displayName: 'Admin User',
       role: 'admin',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VyX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJhZG1pbkBvdHRlcndvcmtzLmRldiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxOTI0OTA1NjAwfQ.hD5dwgrPNRTzbXa6lbA83Aru7BvQVIQc0rGVySkF1fA',
+      token: 'mock-jwt-token-' + Date.now(),
     };
     return of(user).pipe(delay(800));
   }
