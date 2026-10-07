@@ -27,9 +27,9 @@ scripts:
     dag_folder: toy
     variants: false
   user_activity_daily:
-    dag_id: parity_passthrough__user_activity_daily
-    dag_folder: toy
-    variants: false
+    dag_id: otterworks_user_activity_report
+    dag_folder: image
+    variants: true
 
 # Toy DAGs that exist to prove the gate fails: `make etl-parity ... EXPECT=failed`.
 # parity_passthrough__audit_archive_weekly stays a control once its port lands: it runs
