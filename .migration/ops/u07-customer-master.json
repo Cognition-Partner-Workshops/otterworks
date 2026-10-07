@@ -1,0 +1,122 @@
+[
+  {
+    "name": "customer-balances-by-conversion-batch",
+    "evidence": "reports.py BALANCES_SQL (services/legacy-billing/app/reports.py:83-89, ap-c9b3d38c2c): customer count, current balance and past-due totals per conversion_batch_no (the :batch_no bind replaced by GROUP BY)",
+    "source_sql": "SELECT conversion_batch_no AS \"batchNo\", COUNT(*) AS \"customerCount\", NVL(SUM(cur_bal_amt), 0) AS \"currentBalanceTotal\", NVL(SUM(past_due_amt), 0) AS \"pastDueTotal\" FROM customer_master GROUP BY conversion_batch_no",
+    "collection": "customerMaster",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$conversionBatchNo",
+          "customerCount": {
+            "$sum": 1
+          },
+          "currentBalanceTotal": {
+            "$sum": {
+              "$ifNull": [
+                "$curBalAmt",
+                0
+              ]
+            }
+          },
+          "pastDueTotal": {
+            "$sum": {
+              "$ifNull": [
+                "$pastDueAmt",
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "batchNo": "$_id",
+          "customerCount": 1,
+          "currentBalanceTotal": 1,
+          "pastDueTotal": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "customer-first-by-tenant",
+    "evidence": "facade.py GET /customer (services/legacy-billing/app/facade.py:287, ap-e45fe9768e; :121-126, ap-bd510b9356): first customer of a tenant by cust_seq_no; folded to one row per TENANT_ID pointer (200 of 201 pointers are orphans by design, d-orphan-cm-tenant)",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", COUNT(*) AS \"customers\", MIN(cust_seq_no) AS \"firstCustSeqNo\", MAX(cust_seq_no) AS \"lastCustSeqNo\" FROM customer_master GROUP BY tenant_id",
+    "collection": "customerMaster",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$tenantId",
+          "customers": {
+            "$sum": 1
+          },
+          "firstCustSeqNo": {
+            "$min": "$custSeqNo"
+          },
+          "lastCustSeqNo": {
+            "$max": "$custSeqNo"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "customers": 1,
+          "firstCustSeqNo": 1,
+          "lastCustSeqNo": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "customer-eav-attributes",
+    "evidence": "facade.py GET /customer attributes read (services/legacy-billing/app/facade.py:294-296, ap-6c1786cb2d): entity_attr_value rows of a customer (entity_type = 'CUSTOMER'), read from the attributes embed; one row per customer that has attributes",
+    "source_sql": "SELECT entity_id AS \"custId\", COUNT(*) AS \"attributes\", MIN(attr_name) AS \"firstAttrName\", MAX(eav_id) AS \"lastEavId\" FROM entity_attr_value WHERE entity_type = 'CUSTOMER' GROUP BY entity_id",
+    "collection": "customerMaster",
+    "target_pipeline": [
+      {
+        "$match": {
+          "attributes.0": {
+            "$exists": true
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "custId": "$_id",
+          "attributes": {
+            "$size": "$attributes"
+          },
+          "firstAttrName": {
+            "$min": "$attributes.attrName"
+          },
+          "lastEavId": {
+            "$max": "$attributes.eavId"
+          }
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

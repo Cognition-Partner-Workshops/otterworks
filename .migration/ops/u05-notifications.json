@@ -1,0 +1,67 @@
+[
+  {
+    "name": "notifications-suspension-dedupe",
+    "evidence": "pkg_dunning.sp_suspend_overdue NOT EXISTS guard (05_pkg_dunning.sql:92-94, ap-d0e6a55401): suspension notifications (kind_cd = 3) keyed by tenant and sent_at",
+    "source_sql": "SELECT id AS \"notificationId\", tenant_id AS \"tenantId\", kind_cd AS \"kindCd\", sent_at AS \"sentAt\" FROM notifications WHERE kind_cd = 3",
+    "collection": "notifications",
+    "target_pipeline": [
+      {
+        "$match": {
+          "kindCd": 3
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "notificationId": "$_id",
+          "tenantId": 1,
+          "kindCd": 1,
+          "sentAt": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "notifications-by-tenant-kind",
+    "evidence": "pkg_dunning.sp_suspend_overdue INSERT ... SELECT (05_pkg_dunning.sql:86-94, ap-7692fe1e9a): one notification per tenant per kind per day; counts per (tenant, kind)",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", kind_cd AS \"kindCd\", COUNT(*) AS \"sent\", MAX(sent_at) AS \"lastSentAt\" FROM notifications GROUP BY tenant_id, kind_cd",
+    "collection": "notifications",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": {
+            "tenantId": "$tenantId",
+            "kindCd": "$kindCd"
+          },
+          "sent": {
+            "$sum": 1
+          },
+          "lastSentAt": {
+            "$max": "$sentAt"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id.tenantId",
+          "kindCd": "$_id.kindCd",
+          "sent": 1,
+          "lastSentAt": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

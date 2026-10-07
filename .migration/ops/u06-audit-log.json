@@ -1,0 +1,68 @@
+[
+  {
+    "name": "audit-entries-by-module",
+    "evidence": "pkg_ow_util.log_msg (01_pkg_util.sql:70-71, ap-779ce5b5b7): autonomous-transaction writer called from every package entry point; entries per module with the logged span",
+    "source_sql": "SELECT module AS \"module\", COUNT(*) AS \"entries\", MIN(logged_at) AS \"firstLoggedAt\", MAX(logged_at) AS \"lastLoggedAt\" FROM billing_audit_log GROUP BY module",
+    "collection": "billingAuditLog",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$module",
+          "entries": {
+            "$sum": 1
+          },
+          "firstLoggedAt": {
+            "$min": "$loggedAt"
+          },
+          "lastLoggedAt": {
+            "$max": "$loggedAt"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "module": "$_id",
+          "entries": 1,
+          "firstLoggedAt": 1,
+          "lastLoggedAt": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "audit-issued-invoice-entries",
+    "evidence": "pkg_invoicing.sp_issue_invoice log line (04_pkg_invoicing.sql:192-193 via pkg_ow_util.log_msg): one 'issued invoice=' entry per issue; the loaded message text must survive verbatim",
+    "source_sql": "SELECT log_id AS \"logId\", module AS \"module\", message AS \"message\" FROM billing_audit_log WHERE message LIKE 'issued invoice=%'",
+    "collection": "billingAuditLog",
+    "target_pipeline": [
+      {
+        "$match": {
+          "message": {
+            "$regex": "^issued invoice="
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "logId": "$_id",
+          "module": 1,
+          "message": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

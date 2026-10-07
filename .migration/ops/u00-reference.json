@@ -1,0 +1,158 @@
+[
+  {
+    "name": "codes-lookup-domain",
+    "evidence": "pkg_ow_util.f_code_desc (01_pkg_util.sql:40, ap-d9d4207c37): SELECT code_desc FROM codes WHERE code_type = :1 AND code_val = :2 \u2014 replayed over the whole static domain",
+    "source_sql": "SELECT code_type AS \"codeType\", code_val AS \"codeVal\", code_desc AS \"codeDesc\" FROM codes",
+    "collection": "codes",
+    "target_pipeline": [
+      {
+        "$project": {
+          "_id": 0,
+          "codeType": 1,
+          "codeVal": 1,
+          "codeDesc": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "plans-fn-list-plans",
+    "evidence": "pkg_plans.fn_list_plans (02_pkg_plans.sql:25-31, ap-33e1dc2584): active plans with the DECODE tier label",
+    "source_sql": "SELECT id AS \"planId\", code AS \"code\", DECODE(tier_cd, 1, 'starter', 2, 'growth', 3, 'scale', 'UNKNOWN') AS \"tier\", monthly_fee AS \"monthlyFee\", included_units AS \"includedUnits\", overage_rate AS \"overageRate\" FROM plans WHERE NVL(active_yn, 'N') = 'Y' ORDER BY monthly_fee, code",
+    "collection": "plans",
+    "target_pipeline": [
+      {
+        "$match": {
+          "active": true
+        }
+      },
+      {
+        "$sort": {
+          "monthlyFee": 1,
+          "code": 1
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "planId": "$_id",
+          "code": 1,
+          "tier": {
+            "$switch": {
+              "branches": [
+                {
+                  "case": {
+                    "$eq": [
+                      "$tierCd",
+                      1
+                    ]
+                  },
+                  "then": "starter"
+                },
+                {
+                  "case": {
+                    "$eq": [
+                      "$tierCd",
+                      2
+                    ]
+                  },
+                  "then": "growth"
+                },
+                {
+                  "case": {
+                    "$eq": [
+                      "$tierCd",
+                      3
+                    ]
+                  },
+                  "then": "scale"
+                }
+              ],
+              "default": "UNKNOWN"
+            }
+          },
+          "monthlyFee": 1,
+          "includedUnits": 1,
+          "overageRate": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "tenants-open-credit-notes",
+    "evidence": "pkg_invoicing.compute_preview (04_pkg_invoicing.sql:53-54 ap-2e59f9675d, :59-60 ap-41de3e5203): per-tenant tax flag read and the open credit_notes loop (remaining_amount > 0), folded to one row per tenant over the creditNotes embed",
+    "source_sql": "SELECT t.id AS \"tenantId\", t.status_cd AS \"statusCd\", (SELECT COUNT(*) FROM credit_notes c WHERE c.tenant_id = t.id AND c.remaining_amount > 0) AS \"openCreditNotes\", (SELECT NVL(SUM(c.remaining_amount), 0) FROM credit_notes c WHERE c.tenant_id = t.id AND c.remaining_amount > 0) AS \"openCredit\" FROM tenants t",
+    "collection": "tenants",
+    "target_pipeline": [
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "statusCd": 1,
+          "openCreditNotes": {
+            "$size": {
+              "$filter": {
+                "input": {
+                  "$ifNull": [
+                    "$creditNotes",
+                    []
+                  ]
+                },
+                "as": "c",
+                "cond": {
+                  "$gt": [
+                    "$$c.remainingAmount",
+                    0
+                  ]
+                }
+              }
+            }
+          },
+          "openCredit": {
+            "$sum": {
+              "$map": {
+                "input": {
+                  "$filter": {
+                    "input": {
+                      "$ifNull": [
+                        "$creditNotes",
+                        []
+                      ]
+                    },
+                    "as": "c",
+                    "cond": {
+                      "$gt": [
+                        "$$c.remainingAmount",
+                        0
+                      ]
+                    }
+                  }
+                },
+                "as": "c",
+                "in": "$$c.remainingAmount"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

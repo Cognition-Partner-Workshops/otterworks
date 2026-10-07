@@ -1,0 +1,97 @@
+[
+  {
+    "name": "invoices-fn-overdue-accounts",
+    "evidence": "pkg_dunning.fn_overdue_accounts (05_pkg_dunning.sql:21-29, ap-46a8eb988b) and sp_schedule_dunning driver (:40-42, ap-644c102b12): invoices in status 40 (overdue); the tenants outer join is dropped so the op stays inside the unit",
+    "source_sql": "SELECT i.id AS \"invoiceId\", i.tenant_id AS \"tenantId\", i.period_id AS \"periodId\", i.issued_at AS \"issuedAt\", i.total AS \"total\" FROM invoices i WHERE i.status_cd = 40",
+    "collection": "invoices",
+    "target_pipeline": [
+      {
+        "$match": {
+          "statusCd": 40
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "invoiceId": "$_id",
+          "tenantId": 1,
+          "periodId": 1,
+          "issuedAt": 1,
+          "total": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "invoices-fn-invoice-lines",
+    "evidence": "pkg_invoicing.fn_invoice_lines (04_pkg_invoicing.sql:106-109, ap-620d0a2057): lines of an invoice ordered by line_no, replayed for every invoice over the lines embed",
+    "source_sql": "SELECT invoice_id AS \"invoiceId\", line_no AS \"lineNo\", line_type AS \"lineType\", description AS \"description\", amount AS \"amount\" FROM invoice_lines ORDER BY invoice_id, line_no",
+    "collection": "invoices",
+    "target_pipeline": [
+      {
+        "$unwind": "$lines"
+      },
+      {
+        "$sort": {
+          "_id": 1,
+          "lines.lineNo": 1
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "invoiceId": "$_id",
+          "lineNo": "$lines.lineNo",
+          "lineType": "$lines.lineType",
+          "description": "$lines.description",
+          "amount": "$lines.amount"
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "invoices-next-dunning-attempt",
+    "evidence": "pkg_dunning.sp_schedule_dunning (05_pkg_dunning.sql:43-44, ap-37287a11b5): NVL(MAX(attempt_no), 0) per overdue invoice, read from the dunningAttempts embed",
+    "source_sql": "SELECT i.id AS \"invoiceId\", (SELECT NVL(MAX(d.attempt_no), 0) FROM dunning_attempts d WHERE d.invoice_id = i.id) AS \"lastAttemptNo\" FROM invoices i WHERE i.status_cd = 40",
+    "collection": "invoices",
+    "target_pipeline": [
+      {
+        "$match": {
+          "statusCd": 40
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "invoiceId": "$_id",
+          "lastAttemptNo": {
+            "$ifNull": [
+              {
+                "$max": "$dunningAttempts.attemptNo"
+              },
+              0
+            ]
+          }
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

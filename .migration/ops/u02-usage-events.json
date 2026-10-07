@@ -1,0 +1,160 @@
+[
+  {
+    "name": "usage-fn-usage-summary-feb-2026",
+    "evidence": "pkg_rating.fn_usage_summary (03_pkg_rating.sql:147-158, ap-2b3995792f): per-kind event count and units over the exercised period, replayed for every tenant (string-compared YYYYMMDD window == [2026-02-01, 2026-03-01))",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", DECODE(kind_cd, 1, 'api', 2, 'storage', 3, 'compute', 'UNKNOWN') AS \"kind\", COUNT(*) AS \"eventCount\", NVL(SUM(units), 0) AS \"units\" FROM usage_events WHERE TO_CHAR(occurred_at, 'YYYYMMDD') BETWEEN '20260201' AND '20260228' GROUP BY tenant_id, DECODE(kind_cd, 1, 'api', 2, 'storage', 3, 'compute', 'UNKNOWN')",
+    "collection": "usageEvents",
+    "target_pipeline": [
+      {
+        "$match": {
+          "occurredAt": {
+            "$gte": {
+              "$date": "2026-02-01T00:00:00Z"
+            },
+            "$lt": {
+              "$date": "2026-03-01T00:00:00Z"
+            }
+          }
+        }
+      },
+      {
+        "$group": {
+          "_id": {
+            "tenantId": "$tenantId",
+            "kind": {
+              "$switch": {
+                "branches": [
+                  {
+                    "case": {
+                      "$eq": [
+                        "$kindCd",
+                        1
+                      ]
+                    },
+                    "then": "api"
+                  },
+                  {
+                    "case": {
+                      "$eq": [
+                        "$kindCd",
+                        2
+                      ]
+                    },
+                    "then": "storage"
+                  },
+                  {
+                    "case": {
+                      "$eq": [
+                        "$kindCd",
+                        3
+                      ]
+                    },
+                    "then": "compute"
+                  }
+                ],
+                "default": "UNKNOWN"
+              }
+            }
+          },
+          "eventCount": {
+            "$sum": 1
+          },
+          "units": {
+            "$sum": {
+              "$ifNull": [
+                "$units",
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id.tenantId",
+          "kind": "$_id.kind",
+          "eventCount": 1,
+          "units": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "usage-compute-rating-used-units",
+    "evidence": "pkg_rating.compute_rating usage loop (03_pkg_rating.sql:77-78, ap-61c2839e36): all events of a tenant summed one row at a time; folded to the per-tenant total",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", COUNT(*) AS \"events\", NVL(SUM(units), 0) AS \"usedUnits\" FROM usage_events GROUP BY tenant_id",
+    "collection": "usageEvents",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$tenantId",
+          "events": {
+            "$sum": 1
+          },
+          "usedUnits": {
+            "$sum": {
+              "$ifNull": [
+                "$units",
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "events": 1,
+          "usedUnits": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "usage-kind-domain-trigger-check",
+    "evidence": "trg_usage_events_check (01_tables.sql:239-254, ap-fe087c4e0c): BEFORE INSERT rule units > 0 and kind_cd in CODES('USAGE_KIND'); the loaded rows must still satisfy it",
+    "source_sql": "SELECT kind_cd AS \"kindCd\", COUNT(*) AS \"events\", MIN(units) AS \"minUnits\" FROM usage_events GROUP BY kind_cd",
+    "collection": "usageEvents",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": "$kindCd",
+          "events": {
+            "$sum": 1
+          },
+          "minUnits": {
+            "$min": "$units"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "kindCd": "$_id",
+          "events": 1,
+          "minUnits": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]

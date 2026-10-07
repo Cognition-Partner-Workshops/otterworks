@@ -1,0 +1,118 @@
+[
+  {
+    "name": "subscriptions-open-for-change-plan",
+    "evidence": "pkg_plans.sp_change_plan cursor c_open_subs (02_pkg_plans.sql:75-80, ap-781940a6e5): open subscriptions (ends_on IS NULL), without the FOR UPDATE lock",
+    "source_sql": "SELECT id AS \"subscriptionId\", tenant_id AS \"tenantId\", plan_id AS \"planId\", status_cd AS \"statusCd\", starts_on AS \"startsOn\" FROM subscriptions WHERE ends_on IS NULL",
+    "collection": "subscriptions",
+    "target_pipeline": [
+      {
+        "$match": {
+          "endsOn": null
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "subscriptionId": "$_id",
+          "tenantId": 1,
+          "planId": 1,
+          "statusCd": 1,
+          "startsOn": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "subscriptions-covering-feb-2026",
+    "evidence": "pkg_rating.compute_rating / sp_finalize_rating covering-subscription lookup (03_pkg_rating.sql:55-63 ap-22fec4f2aa, :172-178 ap-b6d8685d76) for the exercised period 2026-02-01..2026-02-28, folded to one row per tenant",
+    "source_sql": "SELECT tenant_id AS \"tenantId\", COUNT(*) AS \"coveringSubs\", MAX(starts_on) AS \"latestStartsOn\" FROM subscriptions WHERE starts_on <= DATE '2026-02-28' AND (ends_on IS NULL OR ends_on >= DATE '2026-02-01') GROUP BY tenant_id",
+    "collection": "subscriptions",
+    "target_pipeline": [
+      {
+        "$match": {
+          "startsOn": {
+            "$lte": {
+              "$date": "2026-02-28T00:00:00Z"
+            }
+          },
+          "$or": [
+            {
+              "endsOn": null
+            },
+            {
+              "endsOn": {
+                "$gte": {
+                  "$date": "2026-02-01T00:00:00Z"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "$group": {
+          "_id": "$tenantId",
+          "coveringSubs": {
+            "$sum": 1
+          },
+          "latestStartsOn": {
+            "$max": "$startsOn"
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "tenantId": "$_id",
+          "coveringSubs": 1,
+          "latestStartsOn": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  },
+  {
+    "name": "subscriptions-hist-revisions",
+    "evidence": "trg_subscriptions_hist (01_tables.sql:206-222, ap-bdfdef0db0): :OLD rows written by the confirmed UPDATEs of pkg_plans.sp_change_plan (ap-a7af1a6156) and pkg_dunning.sp_suspend_overdue (ap-d3754b6b8a); revisions per subscription and operation",
+    "source_sql": "SELECT id AS \"subscriptionId\", hist_op AS \"histOp\", COUNT(*) AS \"revisions\" FROM subscriptions_hist GROUP BY id, hist_op",
+    "collection": "subscriptionsHist",
+    "target_pipeline": [
+      {
+        "$group": {
+          "_id": {
+            "id": "$id",
+            "histOp": "$histOp"
+          },
+          "revisions": {
+            "$sum": 1
+          }
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "subscriptionId": "$_id.id",
+          "histOp": "$_id.histOp",
+          "revisions": 1
+        }
+      }
+    ],
+    "rules": [
+      "decimal_round",
+      "datetime_utc_truncate_ms",
+      "empty_string_is_null",
+      "null_missing_equiv"
+    ]
+  }
+]
