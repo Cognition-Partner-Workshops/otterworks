@@ -70,6 +70,11 @@ def replay(job: str, ns: str, tmp_path: Path) -> tuple[dict[str, bytes], dict[st
     lock_dir = tmp_path / "locks"
     lock_dir.mkdir()
     shutil.copytree(case / "before" / "tree", root, symlinks=True)
+    # git does not keep empty directories, so restore them from the manifest.
+    for line in (case / "before" / "manifest").read_text().splitlines():
+        path, kind, _size = line.rsplit(" ", 2)
+        if kind == "d":
+            (root / path).mkdir(parents=True, exist_ok=True)
     for line in (case / "before" / "locks").read_text().splitlines():
         name, state = line.split()
         if state == "present":
