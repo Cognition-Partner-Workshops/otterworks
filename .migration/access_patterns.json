@@ -26,8 +26,8 @@
         "CUSTOMER_MASTER.CUST_NO",
         "INVOICE_HEADER.INVOICE_ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "etl/legacy-extra/tools/oracle_custbill_extract.py",
         "lines": [
@@ -35,7 +35,8 @@
           28
         ]
       },
-      "statement": "SELECT h.invoice_id, c.cust_no, c.cust_name, TO_DATE(h.invoice_dt, ?) AS period_end, h.total_amt, CASE WHEN h.total_amt < ? THEN ? ELSE ? END AS record_type FROM invoice_header h JOIN customer_master c ON c.cust_id = h.cust_id LEFT JOIN tenants t ON t.id = h.tenant_id WHERE h.batch_no = :batch_no OR"
+      "statement": "SELECT h.invoice_id, c.cust_no, c.cust_name, TO_DATE(h.invoice_dt, ?) AS period_end, h.total_amt, CASE WHEN h.total_amt < ? THEN ? ELSE ? END AS record_type FROM invoice_header h JOIN customer_master c ON c.cust_id = h.cust_id LEFT JOIN tenants t ON t.id = h.tenant_id WHERE h.batch_no = :batch_no OR",
+      "pinned": true
     },
     {
       "id": "ap-f95317f034",
@@ -60,8 +61,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/backends/oracle.py",
         "lines": [
@@ -72,7 +73,8 @@
       "statement": "UPDATE subscriptions SET ends_on = :eff - ?, status_cd = DECODE(status_cd, ?, ?, ?) WHERE tenant_id = :t AND ends_on IS NULL AND starts_on = :eff",
       "cascades": [
         "ap-bdfdef0db0"
-      ]
+      ],
+      "pinned": true
     },
     {
       "id": "ap-e8dc34dca7",
@@ -89,8 +91,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/backends/oracle.py",
         "lines": [
@@ -110,8 +112,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/backends/oracle.py",
         "lines": [
@@ -140,8 +142,8 @@
         "PLANS.MONTHLY_FEE",
         "PLANS.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/backends/oracle.py",
         "lines": [
@@ -195,8 +197,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -223,8 +225,8 @@
       "sort": [
         "CUSTOMER_MASTER.CUST_SEQ_NO"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -232,7 +234,8 @@
           126
         ]
       },
-      "statement": "SELECT cust_no, cust_name, cur_bal_amt, past_due_amt, credit_hold_yn FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY"
+      "statement": "SELECT cust_no, cust_name, cur_bal_amt, past_due_amt, credit_hold_yn FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY",
+      "pinned": true
     },
     {
       "id": "ap-3fbad6ec1e",
@@ -258,8 +261,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -298,8 +301,8 @@
         "INVOICES.ISSUED_AT",
         "INVOICES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -328,8 +331,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -356,8 +359,8 @@
       "sort": [
         "CUSTOMER_MASTER.CUST_SEQ_NO"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -365,7 +368,8 @@
           287
         ]
       },
-      "statement": "SELECT * FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY"
+      "statement": "SELECT * FROM customer_master WHERE tenant_id = :? ORDER BY cust_seq_no FETCH FIRST ? ROWS ONLY",
+      "pinned": true
     },
     {
       "id": "ap-6c1786cb2d",
@@ -388,8 +392,8 @@
       "sort": [
         "ENTITY_ATTR_VALUE.EAV_ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -397,7 +401,8 @@
           296
         ]
       },
-      "statement": "SELECT * FROM entity_attr_value WHERE entity_type = ? AND entity_id = :? ORDER BY eav_id"
+      "statement": "SELECT * FROM entity_attr_value WHERE entity_type = ? AND entity_id = :? ORDER BY eav_id",
+      "pinned": true
     },
     {
       "id": "ap-0a1051eac3",
@@ -419,8 +424,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -450,8 +455,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -471,8 +476,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/facade.py",
         "lines": [
@@ -483,7 +488,8 @@
       "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) VALUES (:?, :?, :?, :?, :?)",
       "cascades": [
         "ap-fe087c4e0c"
-      ]
+      ],
+      "pinned": true
     },
     {
       "id": "ap-6167f9171f",
@@ -505,8 +511,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/reports.py",
         "lines": [
@@ -514,7 +520,8 @@
           53
         ]
       },
-      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, COUNT(*) AS invoice_count, TO_CHAR(SUM(h.total_amt), ?) AS header_total_amt FROM invoice_header h, codes st WHERE h.batch_no = :batch_no AND st.code_type (+) = ? AND st.code_val (+) = h.status_cd GROUP BY NVL(st.code_desc, ? ||"
+      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, COUNT(*) AS invoice_count, TO_CHAR(SUM(h.total_amt), ?) AS header_total_amt FROM invoice_header h, codes st WHERE h.batch_no = :batch_no AND st.code_type (+) = ? AND st.code_val (+) = h.status_cd GROUP BY NVL(st.code_desc, ? ||",
+      "pinned": true
     },
     {
       "id": "ap-89c88ad4c6",
@@ -537,8 +544,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/reports.py",
         "lines": [
@@ -546,7 +553,8 @@
           81
         ]
       },
-      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, DECODE(l.line_type_cd, ?, ?, ?, ?, ?, ?, ?, ?, ? || TO_CHAR(l.line_type_cd) || ?) AS line_type, COUNT(*) AS line_count, TO_CHAR(SUM(l.amount), ?) AS line_amount, TO_CHAR(SUM(l.tax_amt), ?) AS line_tax, COUNT(DISTINCT h.invoice_"
+      "statement": "SELECT NVL(st.code_desc, ? || TO_CHAR(h.status_cd) || ?) AS status_desc, DECODE(l.line_type_cd, ?, ?, ?, ?, ?, ?, ?, ?, ? || TO_CHAR(l.line_type_cd) || ?) AS line_type, COUNT(*) AS line_count, TO_CHAR(SUM(l.amount), ?) AS line_amount, TO_CHAR(SUM(l.tax_amt), ?) AS line_tax, COUNT(DISTINCT h.invoice_",
+      "pinned": true
     },
     {
       "id": "ap-c9b3d38c2c",
@@ -563,8 +571,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/app/reports.py",
         "lines": [
@@ -572,7 +580,8 @@
           89
         ]
       },
-      "statement": "SELECT COUNT(*) AS customer_count, TO_CHAR(SUM(cur_bal_amt), ?) AS current_balance_total, TO_CHAR(SUM(past_due_amt), ?) AS past_due_total FROM customer_master WHERE conversion_batch_no = :batch_no"
+      "statement": "SELECT COUNT(*) AS customer_count, TO_CHAR(SUM(cur_bal_amt), ?) AS current_balance_total, TO_CHAR(SUM(past_due_amt), ?) AS past_due_total FROM customer_master WHERE conversion_batch_no = :batch_no",
+      "pinned": true
     },
     {
       "id": "ap-d9d4207c37",
@@ -593,8 +602,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
         "lines": [
@@ -615,8 +624,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
         "lines": [
@@ -625,7 +634,8 @@
         ]
       },
       "statement": "INSERT INTO billing_audit_log (module, message) VALUES (SUBSTR(p_module, ?, ?), SUBSTR(p_message, ?, ?))",
-      "routine": "pkg_ow_util.log_msg"
+      "routine": "pkg_ow_util.log_msg",
+      "pinned": true
     },
     {
       "id": "ap-33e1dc2584",
@@ -646,8 +656,8 @@
         "PLANS.MONTHLY_FEE",
         "PLANS.CODE"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -688,8 +698,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -744,8 +754,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -802,8 +812,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -844,8 +854,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -880,8 +890,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
         "lines": [
@@ -895,7 +905,8 @@
       "in_loop": true,
       "cascades": [
         "ap-bdfdef0db0"
-      ]
+      ],
+      "pinned": true
     },
     {
       "id": "ap-875f85e898",
@@ -949,8 +960,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -990,8 +1001,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1018,8 +1029,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1045,8 +1056,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1083,8 +1094,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1116,8 +1127,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1155,8 +1166,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1196,8 +1207,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1219,8 +1230,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1250,8 +1261,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1272,8 +1283,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1299,8 +1310,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
         "lines": [
@@ -1344,8 +1355,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1391,8 +1402,8 @@
       "sort": [
         "SUBSCRIPTIONS.STARTS_ON"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1423,8 +1434,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1451,8 +1462,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1480,8 +1491,8 @@
       "sort": [
         "INVOICE_LINES.LINE_NO"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1490,7 +1501,8 @@
         ]
       },
       "statement": "SELECT line_no, line_type, description, amount FROM invoice_lines WHERE invoice_id = p_invoice_id ORDER BY line_no",
-      "routine": "pkg_invoicing.fn_invoice_lines"
+      "routine": "pkg_invoicing.fn_invoice_lines",
+      "pinned": true
     },
     {
       "id": "ap-c026ebf3a8",
@@ -1502,8 +1514,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1529,8 +1541,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1556,8 +1568,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1578,8 +1590,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1606,8 +1618,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1640,8 +1652,8 @@
         "CREDIT_NOTES.ISSUED_ON",
         "CREDIT_NOTES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1668,8 +1680,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
         "lines": [
@@ -1710,8 +1722,8 @@
         "INVOICES.ISSUED_AT",
         "INVOICES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1746,8 +1758,8 @@
         "INVOICES.ISSUED_AT",
         "INVOICES.ID"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1764,7 +1776,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-37287a11b5",
@@ -1781,8 +1794,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1799,7 +1812,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-68fdfcc880",
@@ -1811,8 +1825,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1829,7 +1843,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-eb72a29af5",
@@ -1851,8 +1866,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1869,7 +1884,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-c089416cd9",
@@ -1890,8 +1906,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1908,7 +1924,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-8e4baaa9a0",
@@ -1925,8 +1942,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1943,7 +1960,8 @@
           "line": 13
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     },
     {
       "id": "ap-d3754b6b8a",
@@ -1964,8 +1982,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -1985,7 +2003,8 @@
       "schedule_hint": "daily",
       "cascades": [
         "ap-bdfdef0db0"
-      ]
+      ],
+      "pinned": true
     },
     {
       "id": "ap-7692fe1e9a",
@@ -2010,8 +2029,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -2097,8 +2116,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
         "lines": [
@@ -2116,7 +2135,8 @@
         }
       ],
       "schedule_hint": "daily",
-      "nested_in": "ap-cd2440f5ed"
+      "nested_in": "ap-cd2440f5ed",
+      "pinned": true
     },
     {
       "id": "ap-f1cd68c5b3",
@@ -2128,8 +2148,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
@@ -2150,8 +2170,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
@@ -2167,7 +2187,8 @@
           "update",
           "delete"
         ]
-      }
+      },
+      "pinned": true
     },
     {
       "id": "ap-fe087c4e0c",
@@ -2188,8 +2209,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
         "lines": [
@@ -2205,7 +2226,8 @@
           "insert"
         ]
       },
-      "may_rollback": true
+      "may_rollback": true,
+      "pinned": true
     },
     {
       "id": "ap-89ac1728cb",
@@ -2217,8 +2239,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
         "lines": [
@@ -2239,8 +2261,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
         "lines": [
@@ -2256,7 +2278,8 @@
           "update",
           "delete"
         ]
-      }
+      },
+      "pinned": true
     },
     {
       "id": "ap-872aee5734",
@@ -2268,8 +2291,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2290,8 +2313,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2362,8 +2385,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2387,8 +2410,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2409,8 +2432,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2431,8 +2454,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2453,8 +2476,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2475,8 +2498,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2497,8 +2520,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2519,8 +2542,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2566,8 +2589,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
         "lines": [
@@ -2593,8 +2616,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2647,8 +2670,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2731,8 +2754,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2758,8 +2781,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2815,8 +2838,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2842,8 +2865,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2896,8 +2919,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2923,8 +2946,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -2977,8 +3000,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -3061,8 +3084,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -3088,8 +3111,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -3142,8 +3165,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -3169,8 +3192,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
         "lines": [
@@ -3196,8 +3219,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
         "lines": [
@@ -3213,7 +3236,8 @@
           "line": 24
         }
       ],
-      "schedule_hint": "daily"
+      "schedule_hint": "daily",
+      "pinned": true
     }
   ]
 }
