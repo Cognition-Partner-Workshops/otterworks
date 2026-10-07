@@ -1,8 +1,9 @@
 """Check the ETL Airflow Connections and Variables (etl/airflow/CONFIG.md).
 
 static  (repo root, stdlib only): .env.example and CONFIG.md declare the same Connections and
-        Variables, the decided defaults hold, and no credential from etl/config.ini is in
-        etl/airflow/ or docker-compose.airflow.yml.
+        Variables with the same values, each script default CONFIG.md maps is still in that
+        etl/scripts file with that value, the decided defaults hold, and no credential from
+        etl/config.ini is in etl/airflow/ or docker-compose.airflow.yml.
 live    (inside an Airflow container, script on stdin): every Connection and every Variable in
         VARIABLES resolves, then probe the services passed to --probe (postgres, localstack,
         meilisearch). The localstack probe also checks that every bucket, queue and table a
@@ -114,6 +115,42 @@ def documented(config_md: str, heading: str) -> set[str]:
     return set(re.findall(r"^\| `([a-z0-9_]+)` \|", section, re.MULTILINE))
 
 
+def legacy_mappings(config_md: str) -> list[tuple[str, str, str, str]]:
+    """(key, script, legacy snippet, local value) for CONFIG.md rows that map a script value."""
+    section = config_md.split("## Variables", 1)[1].split("\n## ", 1)[0]
+    rows, script = [], None
+    for line in section.splitlines():
+        if line.startswith("### "):
+            found = re.search(r"\(`([a-z_]+\.py)`\)", line)
+            script = found.group(1) if found else None
+            continue
+        row = re.match(r"^\| `([a-z0-9_]+)` \| (.*?) \| `([^`]*)` \|$", line)
+        snippet = re.search(r"`([^`]+)`", row.group(2)) if row else None
+        if script and row and snippet and not row.group(2).startswith(("*new*", "`[s3]")):
+            rows.append((row.group(1), script, snippet.group(1), row.group(3)))
+    return rows
+
+
+def check_legacy(root: Path, config_md: str, variables: dict[str, str]) -> tuple[list[str], int]:
+    errors = []
+    mappings = legacy_mappings(config_md)
+    for key, script, snippet, local in mappings:
+        if variables.get(key) != local:
+            errors.append(
+                f"{key}: CONFIG.md value {local!r} != .env.example {variables.get(key)!r}"
+            )
+        source = (root / "etl" / "scripts" / script).read_text()
+        if "=" in snippet:
+            legacy = snippet.split("=", 1)[1].strip().strip("\"'")
+            if snippet not in source:
+                errors.append(f"{key}: `{snippet}` no longer in etl/scripts/{script}")
+            elif legacy != local:
+                errors.append(f"{key}: etl/scripts/{script} has {legacy!r}, mapped to {local!r}")
+        elif not token(snippet).search(source):
+            errors.append(f"{key}: `{snippet}` no longer in etl/scripts/{script}")
+    return errors, len(mappings)
+
+
 def check_static(root: Path) -> list[str]:
     airflow_dir = root / "etl" / "airflow"
     env = parse_env_file(airflow_dir / ".env.example")
@@ -158,6 +195,9 @@ def check_static(root: Path) -> list[str]:
         if key not in variables or json.loads(variables[key]) is not default:
             errors.append(f"{key}: must default to {json.dumps(default)}")
 
+    legacy_errors, legacy_count = check_legacy(root, config_md, variables)
+    errors += legacy_errors
+
     ini = configparser.ConfigParser()
     ini.read(root / "etl" / "config.ini")
     forbidden = {
@@ -186,7 +226,8 @@ def check_static(root: Path) -> list[str]:
     )
     print(f"static: config.ini options equal to a local-stack value (not credentials): {same}")
     print(
-        f"static: {len(conns)} Connections, {len(variables)} Variables, "
+        f"static: {len(conns)} Connections, {len(variables)} Variables "
+        f"({legacy_count} checked against etl/scripts), "
         f"{len(scanned)} files scanned for etl/config.ini credentials"
     )
     return errors

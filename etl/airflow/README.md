@@ -13,7 +13,7 @@ until their DAGs are ported; this directory only provides the image, local stack
 | `scripts/check-stack.sh` | Gate: webserver + scheduler healthy, expected DAG parsed, zero import errors |
 | `CONFIG.md` | Airflow Connections and Variables that replace `etl/config.ini`, old key to new key |
 | `.env.example` | Local `AIRFLOW_CONN_*` / `AIRFLOW_VAR_*` (dev values only), copied to the untracked `.env` |
-| `scripts/check_config.py` | Config check: static (docs, decided defaults, no `config.ini` credentials) and live (resolve + probe) |
+| `scripts/check_config.py` | Config check: static (docs, values vs. `etl/scripts` defaults, decided defaults, no `config.ini` credentials) and live (resolve + probe) |
 
 ## Local stack
 

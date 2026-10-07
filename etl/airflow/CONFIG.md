@@ -33,7 +33,10 @@ table, queue and index in the shared local stack.
 
 Edit `etl/airflow/.env` (never `.env.example`) to point a local run elsewhere, then
 `make airflow-up` again to recreate the containers. `etl/airflow/scripts/check_config.py static`
-keeps this file, `.env.example` and the legacy scripts in step (run in CI).
+(run in CI) fails if this file and `.env.example` disagree on a Connection, a Variable or its value,
+or if a script default that a Variable table row maps (the first `code` in its "Replaces" cell) is
+no longer in that `etl/scripts` file with that value. `[s3]` rows come from `config.ini` and *new*
+rows have no legacy default, so those are not checked against the scripts.
 
 ## Reading values in a DAG
 
