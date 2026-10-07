@@ -1,0 +1,87 @@
+{
+  "kind": "fixture-counts",
+  "run": "mmp_rt_b3_oracle",
+  "plan_step": "s1.2-fixture",
+  "recorded_at": "2026-10-07T06:45:00Z",
+  "plugin_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+  "plugin_base": {
+    "branch": "devin/1791335937-app-aware-modeling-next",
+    "branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+    "cherry_pick": "865b105d695090615d1efa908fd9621e7bbd7bff"
+  },
+  "source": {
+    "container": "otterworks-oracle-billing-oracle-billing-1",
+    "image": "container-registry.oracle.com/database/free:latest",
+    "banner": "Oracle AI Database 26ai Free Release 23.26.3.0.0",
+    "health": "healthy",
+    "service": "FREEPDB1",
+    "host_port": 52521,
+    "schema": "OW_BILLING",
+    "principal": "OW_BILLING_RO",
+    "principal_grants": ["CREATE SESSION", "SELECT_CATALOG_ROLE", "SELECT on every OW_BILLING table and view"],
+    "dsn_env": "MMP_RT_SRC_DSN",
+    "counted_by": "sqlplus ow_billing@localhost:1521/FREEPDB1 inside the container"
+  },
+  "seed": {
+    "script": "testdata/legacy/mmp_rt_mini_seed.py",
+    "namespace": "mmprt",
+    "scale": "mini",
+    "scale_params": {"customers": 200, "invoice_lines": 1500, "core_tenants": 5},
+    "seed": 2443531857,
+    "batch_no": 14531857,
+    "manifest": "testdata/legacy/manifests/mmprt.json (gitignored runtime artifact)",
+    "manifest_checksums": {
+      "oracle.OW_BILLING.CUSTOMER_MASTER": "8fb3e04ad0c4aa65870241b877889753",
+      "oracle.OW_BILLING.INVOICE_LINE": "4e9f3611fd52dfc2e58f1216c10627e3"
+    }
+  },
+  "tables_total": {
+    "BILLING_AUDIT_LOG": 0,
+    "CODES": 32,
+    "CREDIT_NOTES": 5,
+    "CUSTOMER_MASTER": 201,
+    "CUSTOMER_MASTER_HIST": 0,
+    "DUNNING_ATTEMPTS": 1,
+    "ENTITY_ATTR_VALUE": 70,
+    "FIXTURE_META": 2,
+    "INVOICES": 4,
+    "INVOICE_HEADER": 1000,
+    "INVOICE_LINE": 1500,
+    "INVOICE_LINES": 4,
+    "NOTIFICATIONS": 1,
+    "PLANS": 3,
+    "RATING_PERIODS": 3,
+    "RATING_RESULTS": 3,
+    "SUBSCRIPTIONS": 15,
+    "SUBSCRIPTIONS_HIST": 0,
+    "TENANTS": 15,
+    "USAGE_EVENTS": 103
+  },
+  "tables_namespace_mmprt": {
+    "CUSTOMER_MASTER": {"rows": 200, "filter": "cust_no LIKE 'MMPRT-%'", "distinct_tenant_id": 18, "dirty_signup_dt": 41},
+    "INVOICE_HEADER": {"rows": 1000, "filter": "batch_no = 14531857"},
+    "INVOICE_LINE": {"rows": 1500, "filter": "batch_no = 14531857", "orphans": 37, "orphan_rule": "NOT EXISTS invoice_header h WHERE h.invoice_id = l.invoice_id"},
+    "ENTITY_ATTR_VALUE": {"rows": 66, "filter": "entity_id IN mmprt CUSTOMER_MASTER.cust_id"},
+    "TENANTS": {"rows": 5, "filter": "name LIKE 'mmprt::%'"},
+    "SUBSCRIPTIONS": {"rows": 5, "filter": "tenant_id IN mmprt TENANTS"},
+    "USAGE_EVENTS": {"rows": 90, "filter": "tenant_id IN mmprt TENANTS"},
+    "CREDIT_NOTES": {"rows": 0, "filter": "tenant_id IN mmprt TENANTS"},
+    "RATING_PERIODS": {"rows": 0, "filter": "tenant_id IN mmprt TENANTS"},
+    "SUBSCRIPTIONS_HIST": {"rows": 0, "filter": "tenant_id IN mmprt TENANTS"}
+  },
+  "static_rows_outside_namespace": {
+    "CUSTOMER_MASTER": "1 (OW-ADMIN-0001)",
+    "ENTITY_ATTR_VALUE": 4,
+    "TENANTS": "10 (Tenant One..Nine + OtterWorks Admin)",
+    "note": "shipped by schema/03_seed_static.sql; shared across namespaces, not part of the mmprt seed"
+  },
+  "orphans_total": 37,
+  "schema_objects": {"TABLE": 20, "VIEW": 0, "INDEX": 25, "SEQUENCE": 5, "PACKAGE": 5, "PACKAGE BODY": 5, "TRIGGER": 7, "JOB": 2},
+  "ro_principal_visibility": {
+    "all_tables": 20, "all_triggers": 7, "all_source_objects": 0, "all_sequences": 0, "all_scheduler_jobs": 0,
+    "dba_source_objects": 12, "dba_sequences": 5, "dba_scheduler_jobs": 2,
+    "write_probe": "INSERT rejected (ORA-41900 missing INSERT privilege)",
+    "session_privs": ["CREATE SESSION"],
+    "see": "05_decisions.md F6"
+  }
+}
