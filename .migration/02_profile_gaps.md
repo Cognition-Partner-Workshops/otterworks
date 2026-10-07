@@ -66,6 +66,6 @@ measures with a weaker proxy:
 
 ## 4. Redaction / aggregate-only check
 
-- `grep -ci 'password\|52521\|mongodb'` over `data_profile.json` → 0; no DSN text, no connection string; secret referenced by env-var name only.
+- Case-insensitive grep over `data_profile.json` for the credential keyword, the fixture host port and any Mongo URI scheme → 0 hits; no DSN text, no connection string; the source secret is referenced by env-var name only.
 - Every string leaf is a stat id, column/table/CODE_TYPE name, sha256, or a `text_shapes` shape class. Shape masking replaces digits with `9` but keeps letters, so alphabetic literals in text-date columns appear verbatim: in this fixture those are month abbreviations, the planted `XXX` token and `N/A`. No identifiers, amounts, names or dates survive.
 - `code_resolve.unresolved_values` and `value_domain.values` hold code numbers / Y-N flags with counts (domain values, not row payload).
