@@ -39,6 +39,9 @@ jobs:
         with:
           version: latest
       - run: make legacy-cron-test
+      # docker-compose.airflow.yml's Airflow services read etl/airflow/.env (untracked); compose
+      # refuses every command, legacy-cron profile included, until it exists.
+      - run: make airflow-env
       - run: shellcheck etl/legacy-cron/scripts/smoke.sh
       - run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow --profile legacy-cron config --quiet
       # etl/crontab is empty once every script has cut over; run against the pre-cutover lines.
