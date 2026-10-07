@@ -34,5 +34,6 @@ jobs:
         with:
           name: etl-golden-run-logs
           path: etl/tests/golden/.runs/**/*.log
+          include-hidden-files: true
       - if: always()
         run: docker compose -f docker-compose.infra.yml down -v
