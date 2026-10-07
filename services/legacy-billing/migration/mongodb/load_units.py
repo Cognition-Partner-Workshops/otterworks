@@ -5,7 +5,8 @@ Reads `.migration/mapping_spec.json` and writes exactly the documents the recon 
 grades: `key.target` (`_id` or composite fields), every `fields[]` entry converted by its
 `bson_type` + canonicalization `rules`, and every `embeds[]` array keyed by the embed's
 `key`. Loader-side obligations the spec cannot express (units.json `loader_obligations`)
-are the per-unit hooks in DERIVED.
+are the per-unit hooks in DERIVED (derived fields) and ORPHAN_SINKS (embed child rows with
+no root row written as their own documents to an ungraded sink named in --extra-write-targets).
 
 Secrets are passed by NAME (env var); the value is never printed. Writes go only to
 `--target-db` (must be in `.migration/allowed_targets.json`) and only to the collections in
@@ -164,6 +165,13 @@ def derive_customer_master(unit: str, docs: list[dict], rows: dict[str, dict], c
 
 DERIVED = {"customerMaster": derive_customer_master}
 
+# F47 / units.json ob-invoice-lines-orphaned: an embed child row whose parent key resolves to no
+# root row is never dropped and never embedded; it is written as its own document to the sink
+# collection with the mapped child fields, `orphan: true` and the raw parent-key value(s). The sink
+# is not a mapping-spec collection (the harness cannot grade it, F57), so it must be named in
+# --extra-write-targets and is proven by hand (embedded + orphaned == child rows).
+ORPHAN_SINKS = {"invoiceHeader": {"lines": "invoice_lines_orphaned"}}
+
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -171,6 +179,8 @@ def main() -> int:
     ap.add_argument("--allowed-targets", required=True)
     ap.add_argument("--units", required=True, help="comma-separated mapping-spec collection names")
     ap.add_argument("--write-targets", required=True, help="comma-separated db.collection the ticket allows")
+    ap.add_argument("--extra-write-targets", default="",
+                    help="comma-separated db.collection for ungraded loader-obligation sinks (units.json extra_write_targets_ungraded)")
     ap.add_argument("--source-dsn-secret", required=True)
     ap.add_argument("--target-uri-secret", required=True)
     ap.add_argument("--target-db", required=True)
@@ -194,6 +204,16 @@ def main() -> int:
             raise SystemExit(f"refused: {u!r} is not a collection of {args.spec} ({spec.get('version')})")
         if f"{args.target_db}.{u}" not in targets:
             raise SystemExit(f"refused: {args.target_db}.{u} is not in --write-targets (plan gap, halt)")
+    extra_targets = {t for t in args.extra_write_targets.split(",") if t}
+    for t in extra_targets:
+        if t.split(".", 1)[0] != args.target_db:
+            raise SystemExit(f"refused: extra write target {t} is outside --target-db {args.target_db}")
+        if t in targets or t.split(".", 1)[1] in by_name:
+            raise SystemExit(f"refused: extra write target {t} is a graded mapping-spec collection")
+    for u in units:
+        for sink in ORPHAN_SINKS.get(u, {}).values():
+            if f"{args.target_db}.{sink}" not in extra_targets:
+                raise SystemExit(f"refused: orphan sink {args.target_db}.{sink} for {u} is not in --extra-write-targets (plan gap, halt)")
 
     import oracledb
     from bson.int64 import Int64
@@ -247,6 +267,7 @@ def main() -> int:
             rows[rkey] = row
             docs.append(doc)
         embed_stats = {}
+        orphan_docs: dict[str, list[dict]] = {}
         for e in embeds:
             pk = [ident(x) for x in e["parent_key"]]
             pref = [ident(x) for x in (e.get("parent_ref") or key_src)]
@@ -255,6 +276,8 @@ def main() -> int:
             ek_tgt = [ek_tgt] if isinstance(ek_tgt, str) else list(ek_tgt)
             efields = e.get("fields", [])
             ekf = {k["source"]: k for k in e.get("child_fields", []) if k["source"] in ek_src}
+            pkf = {k["source"]: k for k in e.get("parent_key_fields", [])}
+            sink = ORPHAN_SINKS.get(u, {}).get(e["array_path"])
             ecols = list(dict.fromkeys(pk + ek_src + [ident(f["source"]) for f in efields]))
             cur.execute(f"SELECT {', '.join(ecols)} FROM {ident(e['child_table'])}")
             source_queries += 1
@@ -270,7 +293,7 @@ def main() -> int:
                 erow = dict(zip(ecols, rec))
                 pv = tuple(erow[x] for x in pk)
                 rkey = parent_index.get(pv[0] if len(pv) == 1 else pv)
-                if rkey is None:
+                if rkey is None and sink is None:
                     orphans += 1
                     continue
                 el: dict[str, Any] = {}
@@ -278,10 +301,22 @@ def main() -> int:
                     el[kt], _ = conv.convert(erow[ks], ekf.get(ks, {"bson_type": "", "rules": []}))
                 for f in efields:
                     put(el, f, erow[f["source"]], conv)
+                if rkey is None:
+                    orphans += 1
+                    if any(el[kt] is None for kt in ek_tgt):
+                        raise SystemExit(f"refused: NULL child key {ek_src} on orphan {e['child_table']} row")
+                    od = {"_id": el[ek_tgt[0]] if len(ek_tgt) == 1 else {kt: el[kt] for kt in ek_tgt}}
+                    od.update(el)
+                    for ks in pk:  # raw parent-key value, unconverted (the pointer that failed to resolve)
+                        od[pkf.get(ks, {}).get("target", ks)] = erow[ks]
+                    od["orphan"] = True
+                    orphan_docs.setdefault(e["array_path"], []).append(od)
+                    continue
                 doc_by_key[rkey].setdefault(e["array_path"], []).append(el)
                 attached += 1
             embed_stats[e["array_path"]] = {"child_table": e["child_table"], "elements": attached,
-                                            "orphan_child_rows": orphans}
+                                            "orphan_child_rows": orphans,
+                                            "orphan_sink": f"{args.target_db}.{sink}" if sink else None}
         copied_stats = {}
         for cf in copied:
             # extended_reference: copy parent fields joined local == remote (unit-migration skill, step 4);
@@ -318,12 +353,22 @@ def main() -> int:
         written = 0
         index_names: list[str] = []
         index_conflicts: list[dict] = []
+        sink_stats: dict[str, dict] = {}
         if not args.dry_run:
             coll = db[u]
             coll.delete_many({})
             for i in range(0, len(docs), BATCH):
                 if docs[i:i + BATCH]:
                     written += len(coll.insert_many(docs[i:i + BATCH], ordered=True).inserted_ids)
+            for path, sink in ORPHAN_SINKS.get(u, {}).items():
+                scoll = db[sink]
+                scoll.delete_many({})
+                odocs = orphan_docs.get(path, [])
+                sw = 0
+                for i in range(0, len(odocs), BATCH):
+                    if odocs[i:i + BATCH]:
+                        sw += len(scoll.insert_many(odocs[i:i + BATCH], ordered=True).inserted_ids)
+                sink_stats[f"{args.target_db}.{sink}"] = {"array_path": path, "documents_written": sw}
             # unique first: a spec may declare the same key list twice (access + natural_key);
             # MongoDB holds one index per key pattern, and recon accepts a unique index for a
             # non-unique declaration, so the duplicate is skipped and recorded, never retried.
@@ -339,10 +384,11 @@ def main() -> int:
         report["units"][u] = {"root_table": c["root_table"], "source_rows": len(docs),
                               "documents_written": written, "embeds": embed_stats,
                               "copied_fields": copied_stats, "derived": derived,
+                              "orphan_sinks": sink_stats,
                               "indexes": index_names, "index_conflicts": index_conflicts,
                               "elapsed_s": round(time.time() - t0, 3)}
         print(f"{u}: {len(docs)} rows -> {written} docs; embeds {embed_stats or '-'}; copied {copied_stats or '-'}; "
-              f"derived {derived or '-'}; indexes {index_names}; index_conflicts {len(index_conflicts)}")
+              f"derived {derived or '-'}; orphan_sinks {sink_stats or '-'}; indexes {index_names}; index_conflicts {len(index_conflicts)}")
     report["source_queries"] = source_queries
     report["source_concurrency"] = 1
     report["finished_at"] = dt.datetime.now(dt.timezone.utc).isoformat()

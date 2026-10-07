@@ -1,0 +1,76 @@
+{
+ "batch": "w1-b03",
+ "status": "FAIL",
+ "recon_results": [
+  ".migration/recon/invoiceHeader/result.json",
+  ".migration/recon/customerMasterHist/result.json"
+ ],
+ "write_targets": [
+  "mmp_rt_b3_oracle.invoiceHeader",
+  "mmp_rt_b3_oracle.customerMasterHist"
+ ],
+ "pr_url": "",
+ "branch": "devin/1791365757-w1-b03-load",
+ "failure_class": "harness_cannot_grade_obligation",
+ "one_line_summary": "invoiceHeader 1000/1000 rows loaded, 1463 INVOICE_LINE rows embedded + 37 orphan lines written to invoice_lines_orphaned (orphan: true, raw invoiceId; 1463+37=1500 proven by hand), customerMasterHist 0/0 PASS merge_eligible; harness verdict for invoiceHeader is FAIL at Tier 1 (embed_cardinality rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463) because the F47 remainder collection is ungradable in any spec shape (F69: without overflow Tier 1 fails, with overflow Tier 3 reports 74 embed_orphan_child); loader gained the ORPHAN_SINKS hook + --extra-write-targets; nothing dropped, b01/b02 collections unchanged.",
+ "per_unit": {
+  "invoiceHeader": {
+   "live_verdict": "FAIL",
+   "live_merge_eligible": false,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": false,
+     "checks_run": 3,
+     "findings": 1
+    }
+   ],
+   "tier1_findings": [
+    "embed_cardinality: rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463"
+   ],
+   "fixture_verdict": "FAIL",
+   "mapping_version": "map-draft-3"
+  },
+  "customerMasterHist": {
+   "live_verdict": "PASS",
+   "live_merge_eligible": true,
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 15,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": true,
+     "checks_run": 0,
+     "findings": 0
+    }
+   ],
+   "tier1_findings": [],
+   "fixture_verdict": "PASS",
+   "mapping_version": "map-draft-3"
+  }
+ },
+ "loader_obligations": {
+  "ob-invoice-lines-orphaned": {
+   "finding": "F47",
+   "write_target": "mmp_rt_b3_oracle.invoice_lines_orphaned",
+   "expected_rows": 37,
+   "written": 37,
+   "embedded": 1463,
+   "sum": 1500,
+   "holds": true,
+   "graded_by_harness": false
+  }
+ },
+ "mapping_version": "map-draft-3",
+ "manifest_sha": "ed1747e90f6e"
+}

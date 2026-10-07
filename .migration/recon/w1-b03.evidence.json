@@ -1,0 +1,493 @@
+{
+ "kind": "batch-evidence",
+ "ticket": "UNT7-20",
+ "plan_step": "s4.1.b03",
+ "batch": "w1-b03",
+ "wave_manifest": ".migration/waves/wave-1.json",
+ "manifest_sha": "ed1747e90f6e",
+ "run_branch_base": "ebb486dd (tp-run/mongodb-20261007T062215Z, after PR #1863)",
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1 (devin/1791335937-app-aware-modeling-next; cherry-pick 865b105d applied, patch-id e102025d)",
+ "mapping_version": "map-draft-3",
+ "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "source": {
+  "dsn_secret": "MMP_RT_SRC_DSN",
+  "principal": "OW_BILLING_RO (CURRENT_SCHEMA=OW_BILLING via logon trigger, F60)",
+  "concurrency": 1,
+  "fixture_counts_recheck_owner_side": {
+   "INVOICE_HEADER": 1000,
+   "INVOICE_LINE": 1500,
+   "INVOICE_LINE_orphans_not_exists_header": 37,
+   "INVOICE_LINE_ghost_invoice_no": 37,
+   "ghost_and_orphan": 37,
+   "INVOICE_LINE_null_invoice_id": 0,
+   "CUSTOMER_MASTER_HIST": 0,
+   "sql": "select (select count(*) from invoice_line l where not exists (select 1 from invoice_header h where h.invoice_id=l.invoice_id)), (select count(*) from invoice_line where invoice_no like 'MMPRT-GHOST-%'), (select count(*) from invoice_line l where invoice_no like 'MMPRT-GHOST-%' and not exists (select 1 from invoice_header h where h.invoice_id=l.invoice_id)), (select count(*) from invoice_line where invoice_id is null) from dual",
+   "matches_fixture_counts_json": true
+  }
+ },
+ "loader": {
+  "script": "services/legacy-billing/migration/mongodb/load_units.py",
+  "recon_wrapper": "services/legacy-billing/migration/mongodb/recon_unit.sh",
+  "interpreter": "/home/ubuntu/.venvs/recon/bin/python",
+  "reload_semantics": "delete_many({}) on the unit's own collection (and on its orphan sink) then insert_many; nothing dropped",
+  "changes_this_batch": [
+   "ORPHAN_SINKS per-unit hook (F47 ob-invoice-lines-orphaned): an embed child row whose parent key resolves to no root row is converted with the same embed key/fields/rules, given _id = its embed key (lineId), the raw unconverted parent-key value under the parent_key_fields target (invoiceId) and orphan: true, and written to the sink collection; it is never embedded and never dropped",
+   "--extra-write-targets: the sink must be named here (same --target-db, not a mapping-spec collection, not in --write-targets); refused up front with 'plan gap, halt' before any write otherwise",
+   "load report: embeds.<path>.orphan_sink and units.<u>.orphan_sinks.<db.coll>.documents_written"
+  ],
+  "command": "load_units.py --spec .migration/mapping_spec.json --allowed-targets .migration/allowed_targets.json --units invoiceHeader,customerMasterHist --write-targets mmp_rt_b3_oracle.invoiceHeader,mmp_rt_b3_oracle.customerMasterHist --extra-write-targets mmp_rt_b3_oracle.invoice_lines_orphaned --source-dsn-secret MMP_RT_SRC_DSN --target-uri-secret MONGODB_ATLAS_URI --target-db mmp_rt_b3_oracle (absolute paths, from $HOME)",
+  "guard_check_without_extra_target": "refused: orphan sink mmp_rt_b3_oracle.invoice_lines_orphaned for invoiceHeader is not in --extra-write-targets (plan gap, halt)",
+  "dry_run": {
+   "invoiceHeader": {
+    "root_table": "INVOICE_HEADER",
+    "source_rows": 1000,
+    "documents_written": 0,
+    "embeds": {
+     "lines": {
+      "child_table": "INVOICE_LINE",
+      "elements": 1463,
+      "orphan_child_rows": 37,
+      "orphan_sink": "mmp_rt_b3_oracle.invoice_lines_orphaned"
+     }
+    },
+    "copied_fields": {},
+    "derived": {},
+    "orphan_sinks": {},
+    "indexes": [],
+    "index_conflicts": [],
+    "elapsed_s": 0.245
+   },
+   "customerMasterHist": {
+    "root_table": "CUSTOMER_MASTER_HIST",
+    "source_rows": 0,
+    "documents_written": 0,
+    "embeds": {},
+    "copied_fields": {},
+    "derived": {},
+    "orphan_sinks": {},
+    "indexes": [],
+    "index_conflicts": [],
+    "elapsed_s": 0.021
+   }
+  },
+  "load_1": {
+   "kind": "load-report",
+   "spec_version": "map-draft-3",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": false,
+   "started_at": "2026-10-07T09:38:17.315627+00:00",
+   "units": {
+    "invoiceHeader": {
+     "root_table": "INVOICE_HEADER",
+     "source_rows": 1000,
+     "documents_written": 1000,
+     "embeds": {
+      "lines": {
+       "child_table": "INVOICE_LINE",
+       "elements": 1463,
+       "orphan_child_rows": 37,
+       "orphan_sink": "mmp_rt_b3_oracle.invoice_lines_orphaned"
+      }
+     },
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {
+      "mmp_rt_b3_oracle.invoice_lines_orphaned": {
+       "array_path": "lines",
+       "documents_written": 37
+      }
+     },
+     "indexes": [
+      "custId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 5.448
+    },
+    "customerMasterHist": {
+     "root_table": "CUSTOMER_MASTER_HIST",
+     "source_rows": 0,
+     "documents_written": 0,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "custId_1_histId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.181
+    }
+   },
+   "source_queries": 3,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T09:38:22.944470+00:00"
+  },
+  "load_2_idempotency": {
+   "report": {
+    "invoiceHeader": {
+     "root_table": "INVOICE_HEADER",
+     "source_rows": 1000,
+     "documents_written": 1000,
+     "embeds": {
+      "lines": {
+       "child_table": "INVOICE_LINE",
+       "elements": 1463,
+       "orphan_child_rows": 37,
+       "orphan_sink": "mmp_rt_b3_oracle.invoice_lines_orphaned"
+      }
+     },
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {
+      "mmp_rt_b3_oracle.invoice_lines_orphaned": {
+       "array_path": "lines",
+       "documents_written": 37
+      }
+     },
+     "indexes": [
+      "custId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 5.64
+    },
+    "customerMasterHist": {
+     "root_table": "CUSTOMER_MASTER_HIST",
+     "source_rows": 0,
+     "documents_written": 0,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "custId_1_histId_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.8
+    }
+   },
+   "content_sha256_prefix_before_and_after": {
+    "invoiceHeader": "77c66942568bd5bb",
+    "invoice_lines_orphaned": "e8b05c3cda404838",
+    "customerMasterHist": "e3b0c44298fc1c14"
+   },
+   "identical": true,
+   "note": "load 2 ran after the single live recon; identical per-collection content hashes (sorted by _id) prove the graded target state is unchanged by a rerun"
+  }
+ },
+ "recon": {
+  "fixture_first": {
+   "invoiceHeader": {
+    "verdict": "FAIL",
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": false,
+      "checks_run": 2,
+      "findings": 1
+     }
+    ],
+    "tier1_findings": [
+     "embed_cardinality: rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463"
+    ],
+    "path": ".migration/recon/invoiceHeader/fixture/result.json"
+   },
+   "customerMasterHist": {
+    "verdict": "PASS",
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 15,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 0,
+      "findings": 0
+     }
+    ],
+    "tier1_findings": [],
+    "path": ".migration/recon/customerMasterHist/fixture/result.json"
+   }
+  },
+  "live_one_run_per_unit": {
+   "invoiceHeader": {
+    "verdict": "FAIL",
+    "merge_eligible": false,
+    "target_class": "migration_cluster",
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": false,
+      "checks_run": 3,
+      "findings": 1
+     }
+    ],
+    "tier1_findings": [
+     "embed_cardinality: rows(INVOICE_LINE)=1500 vs sum(len(lines))=1463"
+    ],
+    "path": ".migration/recon/invoiceHeader/result.json"
+   },
+   "customerMasterHist": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "target_class": "migration_cluster",
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 2,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 15,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 0,
+      "findings": 0
+     }
+    ],
+    "tier1_findings": [],
+    "path": ".migration/recon/customerMasterHist/result.json"
+   }
+  },
+  "orphan_obligation_hand_proof": {
+   "query": {
+    "embedded": "db.invoiceHeader.aggregate([{$project:{n:{$size:{$ifNull:['$lines',[]]}}}},{$group:{_id:null,lines:{$sum:'$n'},headers:{$sum:1},lineless:{$sum:{$cond:[{$eq:['$n',0]},1,0]}},maxFan:{$max:'$n'}}}])",
+    "orphaned": "db.invoice_lines_orphaned.countDocuments({})",
+    "orphan_shape": "db.invoice_lines_orphaned.countDocuments({orphan:true, invoiceId:{$type:'string'}, invoiceNo:/^MMPRT-GHOST-/})",
+    "orphan_pointer_unresolved": "db.invoiceHeader.countDocuments({_id:{$in: db.invoice_lines_orphaned.distinct('invoiceId')}})",
+    "lineId_disjoint": "db.invoiceHeader.countDocuments({'lines.lineId':{$in: db.invoice_lines_orphaned.distinct('lineId')}})"
+   },
+   "embedded_lines": 1463,
+   "headers": 1000,
+   "lineless_headers": 232,
+   "max_fanout": 6,
+   "orphaned_docs": 37,
+   "sum": 1500,
+   "expected_INVOICE_LINE_rows": 1500,
+   "holds": true,
+   "orphan_shape_ok": 37,
+   "orphan_pointer_resolves_to_header": 0,
+   "orphan_lineId_also_embedded": 0,
+   "orphan_indexes": [
+    "_id_"
+   ]
+  },
+  "orphan_sample_doc": {
+   "_id": "031b288b-102b-9e76-2312-34448dbfcd4a",
+   "lineId": "031b288b-102b-9e76-2312-34448dbfcd4a",
+   "invoiceNo": "MMPRT-GHOST-000000314",
+   "custId": "0f3a07c8-bc53-36ba-27e9-e420f94aee40",
+   "custNo": "MMPRT-00000029",
+   "custName": "Drew Tanaka",
+   "tenantId": "6c5f3bdd-5ea2-c525-2e8d-aca9515dd4b6",
+   "lineNo": 15,
+   "lineTypeCd": 3,
+   "itemDesc": "Compute overage",
+   "qty": "430",
+   "unitPrice": "84.1652",
+   "amount": "36191.04",
+   "taxAmt": "2985.76",
+   "invoiceDtRaw": "08-JAN-16",
+   "invoiceDt": "2016-01-08 00:00:00",
+   "servicePeriod": "062015-062023",
+   "posted": true,
+   "glAcct": "['46194', '40830']",
+   "batchNo": 14531857,
+   "srcSystem": "MAINFRAME",
+   "invoiceId": "2196730b-5bfe-1223-fb69-8d6401657c97",
+   "orphan": true
+  },
+  "diagnostic_not_a_verdict": {
+   "why": "F69: find out whether any spec shape lets the harness grade the F47 remainder collection",
+   "mode": "fixture",
+   "mapping": "scratch copy of map-draft-3 with embeds[lines].overflow added (never committed, not the wave pin)",
+   "overflow_added": {
+    "collection": "invoice_lines_orphaned",
+    "threshold": 6,
+    "parent_fields": [
+     "invoiceId"
+    ]
+   },
+   "first_attempt": "recon refused: invoiceHeader embed lines: overflow.threshold must be an integer >= 1 (threshold 6 = HC1 max fan-out then used)",
+   "verdict": "FAIL",
+   "tiers": [
+    {
+     "tier": 1,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 2,
+     "passed": true,
+     "checks_run": 2,
+     "findings": 0
+    },
+    {
+     "tier": 3,
+     "passed": false,
+     "checks_run": 3537,
+     "findings": 74
+    }
+   ],
+   "tier3_findings_by_kind": {
+    "INVOICE_LINE overflow doc has no root row": 37,
+    "INVOICE_LINE row has no root row": 37
+   },
+   "tier3_stats": {
+    "invoiceHeader": {
+     "mode": "full_diff",
+     "population": 1000,
+     "duplicate_source_key_count": 0
+    },
+    "embeds_graded": {
+     "invoiceHeader.lines": 1463
+    }
+   },
+   "reading": "Tier 1 passes as sum(len(lines))+docs(invoice_lines_orphaned) = 1463+37 = 1500 and Tier 3 grades 1463 embedded elements with 0 field diffs, but every orphan is reported twice as embed_orphan_child (37 source rows with no root, 37 overflow docs with no root): the obligation is ungradable"
+  }
+ },
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "uri_secret": "MONGODB_ATLAS_URI",
+  "write_targets": [
+   "mmp_rt_b3_oracle.invoiceHeader",
+   "mmp_rt_b3_oracle.customerMasterHist"
+  ],
+  "extra_write_targets_ungraded": [
+   "mmp_rt_b3_oracle.invoice_lines_orphaned"
+  ],
+  "dbstats_before": {
+   "collections": 9,
+   "objects": 378,
+   "dataSize": 253303,
+   "storageSize": 585728,
+   "indexes": 22,
+   "indexSize": 856064
+  },
+  "collections_before": [
+   "codes",
+   "creditNotes",
+   "customerMaster",
+   "notifications",
+   "plans",
+   "ratingPeriods",
+   "subscriptions",
+   "tenants",
+   "usageEvents"
+  ],
+  "counts_before": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "subscriptions": 15,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "dbstats_after": {
+   "collections": 12,
+   "objects": 1415,
+   "dataSize": 1455726,
+   "storageSize": 1069056,
+   "indexes": 27,
+   "indexSize": 1003520
+  },
+  "collections_after": [
+   "codes",
+   "creditNotes",
+   "customerMaster",
+   "customerMasterHist",
+   "invoiceHeader",
+   "invoice_lines_orphaned",
+   "notifications",
+   "plans",
+   "ratingPeriods",
+   "subscriptions",
+   "tenants",
+   "usageEvents"
+  ],
+  "counts_after": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "subscriptions": 15,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "b01_b02_collections_unchanged": true,
+  "new_collections": [
+   "customerMasterHist",
+   "invoiceHeader",
+   "invoice_lines_orphaned"
+  ],
+  "customerMasterHist_materialised_empty_by_create_index": {
+   "docs": 0,
+   "indexes": [
+    "_id_",
+    "custId_1_histId_1"
+   ]
+  },
+  "size_budget_bytes": 10485760,
+  "storageSize_after": 1069056,
+  "under_budget": true,
+  "databases_seen_names_only": [
+   "admin",
+   "local",
+   "mmp_rt_b1_mysql",
+   "mmp_rt_b1_tsql",
+   "mmp_rt_b2_tsql",
+   "mmp_rt_b3_oracle",
+   "ow_billing_migration",
+   "ow_tp_billing_20261001T233613Z",
+   "ow_tp_mmp_live"
+  ],
+  "dropped": "nothing",
+  "connectivity_json": "unchanged (target.blocked: true, UNT7-4)"
+ },
+ "mongo_guard": {
+  "base_ref": "origin/tp-run/mongodb-20261007T062215Z",
+  "extra_collection_blocked": false,
+  "note": "database-level allowlist; invoice_lines_orphaned written without a guard block. The org dbx guard rejected one command that cd'd into the checkout (F4/F9), rerun via the wrapper"
+ },
+ "pr_url": "",
+ "pre_pr_self_check": {
+  "null_missing": "NULL root/orphan key refused by the loader; NULL non-key fields written as null or omitted under null_missing_equiv per the spec rules the harness grades; 0 INVOICE_LINE rows with NULL invoice_id (owner-side)",
+  "namespace_scope": "writes only to mmp_rt_b3_oracle.{invoiceHeader,customerMasterHist} (wave write_targets) + mmp_rt_b3_oracle.invoice_lines_orphaned (units.json extra_write_targets_ungraded, passed as --extra-write-targets); loader refuses any target outside --target-db; the generic checklist's ow_tp prefix rule does not apply to this run's allowlisted db (as b01/b02)",
+  "ddl": "no drop/replace/alter; create_index only on the two unit collections; Oracle untouched (ro principal)",
+  "rerun": "load 2 after the live recon: identical content hashes on all three collections; delete_many + insert_many on own collections only",
+  "evidence_retained": "fixture-first runs in recon/<unit>/fixture/, live verdicts in recon/<unit>/result.json, dbStats before/after + hand proof + diagnostic here; b01/b02 artifacts untouched",
+  "secrets": "grep for URI/password/mongodb+srv over all new artifacts clean; secrets by name",
+  "tolerances": "tolerances 1 (1a8ebb6c\u2026) unchanged, mapping map-draft-3 unchanged (the overflow diagnostic ran on a scratch copy, not committed)",
+  "recon_recomputed": "both result.json files are fresh harness runs against the loaded target; hand proof and dbStats read live from the target",
+  "unverified": "invoice_lines_orphaned is not graded by the harness (F57/F69) \u2014 proven by hand only; customerMasterHist graded on 0 rows (F70); no application reader exists for either collection (F38)",
+  "recon_schema": "harness result.json schema (not the *.recon.json schema), as in b01/b02",
+  "capability_preflight": "wave preflight OK (ed1747e90f6e); connectivity.json stays blocked (target principal over-scoped, UNT7-4)",
+  "tp_smoke": "6 passed (make -C tp-smoke)"
+ }
+}
