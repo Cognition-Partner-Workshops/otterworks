@@ -139,3 +139,26 @@ def test_committed_config_ini_is_retired_and_rendered_hosts_are_local(tmp_path):
     assert rendered["database"]["host"] in ("localhost", "127.0.0.1", "postgres")
     assert rendered["aws"]["access_key"] == rendered["aws"]["secret_key"] == "test"
     assert set(LOCAL_SERVICES.values()) <= set(rendered["services"].values())
+
+
+def test_concurrent_renders_do_not_share_a_staging_file(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    target = tmp_path / "config.ini"
+    (tmp_path / "config.ini.tmp").write_text("stale")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [
+            pool.submit(
+                legacy_cron.render_config, str(target), str(GOLDEN_DIR), LOCAL_SERVICES
+            )
+            for _ in range(32)
+        ]
+        for future in futures:
+            future.result()
+    rendered = configparser.ConfigParser()
+    rendered.read(target)
+    assert rendered["services"]["file_service_url"] == "http://files:2"
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        "config.ini",
+        "config.ini.tmp",
+    ]

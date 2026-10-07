@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from typing import List, NamedTuple, Optional
 
 CRONTAB = "/opt/etl/crontab"
@@ -106,11 +107,16 @@ def render_config(
             }
         },
     )
-    tmp = path + ".tmp"
-    with open(tmp, "w") as fh:
-        fh.write(text)
-    os.chmod(tmp, 0o600)
-    os.replace(tmp, path)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path) or ".", prefix=".config.ini.")
+    try:
+        with os.fdopen(fd, "w") as fh:
+            fh.write(text)
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.lexists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def prepare() -> List[Job]:

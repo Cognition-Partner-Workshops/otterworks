@@ -99,8 +99,11 @@ legacy-cron-reload: ## Recreate legacy-etl-cron so it re-reads etl/crontab (afte
 	$(LEGACY_CRON_COMPOSE) up -d --force-recreate --wait legacy-etl-cron
 
 legacy-cron-run: ## Run one script's crontab line now in legacy-etl-cron (SCRIPT=<name>; exit 3 if its line was removed)
-	@test -n "$(SCRIPT)" || (echo "SCRIPT is required, e.g. make legacy-cron-run SCRIPT=analytics_daily" >&2; exit 2)
-	$(LEGACY_CRON_COMPOSE) exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run $(SCRIPT).py
+	@script='$(subst ','"'"',$(SCRIPT))'; \
+	case "$$script" in \
+	  ''|*[!A-Za-z0-9_]*) echo "SCRIPT must be a script name like analytics_daily (letters, digits, _)" >&2; exit 2;; \
+	esac; \
+	set -x; $(LEGACY_CRON_COMPOSE) exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run "$$script.py"
 
 legacy-cron-down: ## Stop legacy-etl-cron (Airflow and infra stay up)
 	$(LEGACY_CRON_COMPOSE) rm -sf legacy-etl-cron
