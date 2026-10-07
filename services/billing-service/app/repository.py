@@ -6,7 +6,15 @@ from uuid import UUID
 
 import psycopg
 
-from app.domain import EntitlementRow, PlanRow, SubscriptionRow
+from app.domain import (
+    EntitlementRow,
+    PlanRow,
+    RatingHistoryRow,
+    RatingPeriodRow,
+    RatingResultRow,
+    SubscriptionRow,
+    UsageEventRow,
+)
 
 
 class PostgresPlansRepository:
@@ -108,3 +116,151 @@ class PostgresPlansRepository:
             """,
             (subscription_id, tenant_id, plan_id, starts_on, status),
         )
+
+
+class PostgresRatingRepository(PostgresPlansRepository):
+    def list_usage_events(self, tenant_id: UUID) -> list[UsageEventRow]:
+        rows = self.connection.execute(
+            """
+            SELECT tenant_id, occurred_at, units, kind
+            FROM billing_svc.usage_events
+            WHERE tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [
+            UsageEventRow(
+                tenant_id=row["tenant_id"],
+                occurred_at=row["occurred_at"],
+                units=row["units"],
+                kind=row["kind"],
+            )
+            for row in rows
+        ]
+
+    def list_rating_history(self, tenant_id: UUID) -> list[RatingHistoryRow]:
+        rows = self.connection.execute(
+            """
+            SELECT rp.period_start, rr.rollover_units
+            FROM billing_svc.rating_results rr
+            JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
+            WHERE rp.tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [
+            RatingHistoryRow(period_start=row["period_start"], rollover_units=row["rollover_units"])
+            for row in rows
+        ]
+
+    def find_rating_period(self, tenant_id: UUID, period_start: date) -> RatingPeriodRow | None:
+        row = self.connection.execute(
+            """
+            SELECT id, tenant_id, period_start, period_end
+            FROM billing_svc.rating_periods
+            WHERE tenant_id = %s AND period_start = %s
+            """,
+            (tenant_id, period_start),
+        ).fetchone()
+        if row is None:
+            return None
+        return RatingPeriodRow(
+            period_id=row["id"],
+            tenant_id=row["tenant_id"],
+            period_start=row["period_start"],
+            period_end=row["period_end"],
+        )
+
+    def insert_rating_period(self, period: RatingPeriodRow) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_periods (id, tenant_id, period_start, period_end)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (period.period_id, period.tenant_id, period.period_start, period.period_end),
+        )
+
+    def update_rating_period_end(self, period_id: UUID, period_end: date) -> None:
+        self.connection.execute(
+            "UPDATE billing_svc.rating_periods SET period_end = %s WHERE id = %s",
+            (period_end, period_id),
+        )
+
+    def find_rating_result(self, result_id: UUID) -> RatingResultRow | None:
+        row = self.connection.execute(
+            f"{_RESULT_SELECT} WHERE id = %s",
+            (result_id,),
+        ).fetchone()
+        return None if row is None else _result_row(row)
+
+    def insert_rating_result(self, result: RatingResultRow) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_results (
+                id, period_id, subscription_id, used_units, quota_units, rollover_units,
+                billable_units, overage_amount, created_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                result.result_id,
+                result.period_id,
+                result.subscription_id,
+                result.used_units,
+                result.quota_units,
+                result.rollover_units,
+                result.billable_units,
+                result.overage_amount,
+                result.created_at,
+            ),
+        )
+
+    def update_rating_result(self, result: RatingResultRow) -> None:
+        self.connection.execute(
+            """
+            UPDATE billing_svc.rating_results
+            SET used_units = %s, rollover_units = %s, billable_units = %s, overage_amount = %s
+            WHERE id = %s
+            """,
+            (
+                result.used_units,
+                result.rollover_units,
+                result.billable_units,
+                result.overage_amount,
+                result.result_id,
+            ),
+        )
+
+    def list_rating_results(self, tenant_id: UUID, period_start: date) -> list[RatingResultRow]:
+        rows = self.connection.execute(
+            f"""
+            {_RESULT_SELECT}
+            WHERE period_id IN (
+                SELECT id FROM billing_svc.rating_periods
+                WHERE tenant_id = %s AND period_start = %s
+            )
+            ORDER BY id
+            """,
+            (tenant_id, period_start),
+        ).fetchall()
+        return [_result_row(row) for row in rows]
+
+
+_RESULT_SELECT = """
+    SELECT id, period_id, subscription_id, used_units, quota_units, rollover_units,
+           billable_units, overage_amount, created_at
+    FROM billing_svc.rating_results
+"""
+
+
+def _result_row(row: dict) -> RatingResultRow:
+    return RatingResultRow(
+        result_id=row["id"],
+        period_id=row["period_id"],
+        subscription_id=row["subscription_id"],
+        used_units=row["used_units"],
+        quota_units=row["quota_units"],
+        rollover_units=row["rollover_units"],
+        billable_units=row["billable_units"],
+        overage_amount=Decimal(row["overage_amount"]),
+        created_at=row["created_at"],
+    )
