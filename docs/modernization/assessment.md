@@ -1,7 +1,7 @@
 # OtterWorks Modernization Estate Assessment
 
-| | |
-|---|---|
+|   |   |
+| --- | --- |
 | Status | Draft for review. Documentation only, no code changes. Wave order updated with the programme owner's answer (§6). |
 | Assessed on | 2026-10-07 |
 | Branches | `main` @ `af476560`, `tech-partnerships` @ `32baffd8` (merge base `5d89a40c`; `tech-partnerships` is 600 commits ahead of and 210 behind `main`) |
@@ -19,7 +19,7 @@ Support statuses are as of 2026-10-07. They come from upstream lifecycle policie
 All pages of the DeepWiki for `Cognition-Partner-Workshops/otterworks` were retrieved (about 0.98 M characters). The pages below were read in detail and used for this assessment. The rest were skimmed for inventory only.
 
 | Read in detail | Skimmed for inventory |
-|---|---|
+| --- | --- |
 | 1 OtterWorks Overview, 1.2 System Architecture | 1.1 Getting Started |
 | 2 Backend Services, 2.6 Search Service, 2.8 Analytics Service, 2.10 Audit Service, 2.11 Report Service & Legacy Portal | 2.1–2.5, 2.7, 2.9 (other service pages) |
 | 3.1 Web App (React/Next.js), 3.2 Mobile & Desktop Clients, 3.3 Admin Dashboard (Angular) | 4.2 Helm Charts & Kubernetes, 4.3 Local Development with Docker Compose |
@@ -35,7 +35,7 @@ All pages of the DeepWiki for `Cognition-Partner-Workshops/otterworks` were retr
 The repository on each branch is the source of truth for the inventory. These mismatches matter because people will plan from the docs:
 
 | Claim | Source | What the code says |
-|---|---|---|
+| --- | --- | --- |
 | Gateway lives at `services/gateway/`, collab at `services/collaboration-service/` | DeepWiki overview | `services/api-gateway/`, `services/collab-service/` |
 | File service is "Rust 1.77" | DeepWiki overview, System Architecture | `services/file-service/Dockerfile` builds from `rust:latest`. No toolchain pin, no `rust-toolchain.toml` |
 | Web app is React/Next.js | DeepWiki page title, `ARCHITECTURE.md` (`frontend/web-app`) | `frontend/client-app` is React 18 + Vite 8. There is no Next.js in the product web app. Next.js is only used by the demo-platform dashboard and Otter Projects |
@@ -48,7 +48,7 @@ The repository on each branch is the source of truth for the inventory. These mi
 Rows marked **in scope** are production estates per the programme decision in §6.
 
 | Area | `main` | `tech-partnerships` |
-|---|---|---|
+| --- | --- | --- |
 | Legacy data migration (`migration/`: LDM job, Db2/Oracle archive charts, target SQL) | Present | **Absent** |
 | `cloudworker/`, `incident/` harnesses | Present | Absent |
 | `services/legacy-portal-lambda/` (3 Java 21 Lambdas) | Present | Absent |
@@ -71,7 +71,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 ### 2.1 Services
 
 | Workload | Path | Br | Runtime | Framework & key versions | Supported? | Depends on |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | API Gateway | `services/api-gateway` | both | Go 1.22, `alpine:3.19` | Chi v5.0.12, golang-jwt v5.2.1, prometheus client 1.19.0, zerolog 1.32.0, go-redis v9.5.1 (M only) | **No.** Go 1.22 lost support Feb 2025. Alpine 3.19 EOL Nov 2025 | Every backend service URL, Redis (M), JWT secret shared with auth |
 | Auth Service | `services/auth-service` | both | Java 17 (Temurin), Gradle 8.6 | Spring Boot 3.2.4, Spring Security 6, JJWT 0.12.5, Flyway 10.8.1 | **Partial.** Java 17 is supported. Spring Boot 3.2 OSS support ended Dec 2024 | PostgreSQL (shared `otterworks` DB), Redis |
 | File Service | `services/file-service` | both | Rust edition 2021, `rust:latest` builder | Actix-Web 4, Tokio 1, aws-sdk-s3 1.15 / dynamodb 1.14 / sns 1.13, redis 0.25, opentelemetry 0.21 | **Partial.** The crates are maintained, but the toolchain is unpinned, so builds are not reproducible | S3, DynamoDB, SNS, Redis |
@@ -94,7 +94,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 ### 2.2 Clients
 
 | Workload | Path | Br | Runtime | Framework & key versions | Supported? | Depends on |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | Web client (SPA) | `frontend/client-app` | both (23 files differ) | Node 20 build, nginx-unprivileged 1.25 (M) / 1.27 (TP) | React 18.2, Vite 8.1.4, TS 5.3, React Router 7.18, TanStack Query 5.28, TipTap 2.2, Zustand 4.5, Tailwind 3.4, Vitest 4, Playwright 1.59 | **Partial.** The libraries are current or maintained. The Node 20 build image is EOL. Both nginx branches (1.25, 1.27) are superseded mainline lines | API Gateway (`/api/v1`), collab WebSocket |
 | Mobile (Capacitor) | `frontend/client-app/mobile` | both | Capacitor 8.4.2 | Android minSdk 24 / target 36, AGP 8.13. iOS deployment target 15.0 | **Yes** | Same web bundle, gateway over HTTPS |
 | Desktop (Electron) | `frontend/client-app/desktop` | both | Electron 43.1.0 (embedded Node) | electron-builder 26.15.3, TS 5.3 | **Likely yes.** Electron supports the latest 3 majors (*verify* the current major) | Same web bundle, embedded proxy to gateway |
@@ -106,7 +106,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 ### 2.3 Batch jobs
 
 | Workload | Path | Br | Runtime | Framework & key versions | Supported? | Depends on |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | ETL `analytics_daily.py` (02:00 daily) | `etl/scripts` | both | Host `python3` (unpinned) via `/opt/etl/run.sh` on a single cron host | pandas 1.3.5, boto3 1.26.0, psycopg2-binary 2.9.3, requests 2.27.0 | **No.** The dependency set dates from 2021–22. pandas 1.3.5 has no wheels past Python 3.10, and the host Python is not pinned | SQS, DynamoDB, S3 data lake, PostgreSQL |
 | ETL `storage_cleanup_daily.py` (02:30 daily) | `etl/scripts` | both | same | same | **No** | S3 file/quarantine buckets, DynamoDB metadata |
 | ETL `audit_archive_weekly.py` (Sun 03:00) | `etl/scripts` | both | same | same | **No** | DynamoDB audit table, S3 archive |
@@ -126,7 +126,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 ### 2.4 Data estates and platform dependencies
 
 | Component | Version in repo | Br | Supported? |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | EKS | `1.32` (`platform/terraform/modules/eks`) | both | **Partial.** Standard support ended about Mar 2026. Extended support (paid) runs to about Mar 2027 (*verify*) |
 | RDS PostgreSQL | 15.7 | both | **Yes** for the major (community EOL Nov 2027). The minor version is stale |
 | Aurora Serverless v2 (legacy portal) | PostgreSQL 16.13 | M | Yes |
@@ -144,7 +144,7 @@ Columns: **Br** = branch presence (M = `main`, TP = `tech-partnerships`, both = 
 ## 3. Pattern per workload
 
 | Workload | Pattern | One-line reason |
-|---|---|---|
+| --- | --- | --- |
 | API Gateway | upgrade | Go 1.22 and Alpine 3.19 are out of support. The code is small idiomatic Chi with no stack problem. |
 | Auth Service | upgrade | Spring Boot 3.2 → 3.5.x stays inside the Jakarta/Boot 3 line with no API break. |
 | File Service | upgrade | The stack is healthy. It needs a pinned toolchain and newer OTel/AWS crates, not a rewrite. |
@@ -204,7 +204,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 
 ### Wave 1: Oracle takeout, CUSTBILL offload, deadline runtimes
 
-**Track A: Oracle billing takeout (target: Oracle switched off before the renewal date)**
+#### Track A: Oracle billing takeout (target: Oracle switched off before the renewal date)
 
 - Extract `rating`, `invoicing` and `dunning` from `pkg_rating` / `pkg_invoicing` / `pkg_dunning` into billing-service, using the procs record/replay harness against both the PostgreSQL procs and the `procs/oracle` transcripts. Record every rule and known anomaly in the rule ledger.
 - Move `JOB_NIGHTLY_DUNNING` and `JOB_PURGE_AUDIT_LOG` out of DBMS_SCHEDULER into scheduled jobs owned by billing-service. The purge must not keep the `WHEN OTHERS THEN NULL` silent failure.
@@ -213,13 +213,13 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 - Add auth and tenant scoping to billing-service before it becomes the system of record.
 - Dual-run Oracle and PostgreSQL through at least one month-end, cut over, then decommission Oracle.
 
-**Track B: CUSTBILL offload (target: the daily finance report no longer depends on Oracle or the cron host)**
+#### Track B: CUSTBILL offload (target: the daily finance report no longer depends on Oracle or the cron host)
 
 - Replace the ksh/Bash/Perl chain with one orchestrated pipeline (Databricks per `ETL_UPGRADE_GUIDE_ADDENDUM.md`, or the Wave 3 orchestrator if chosen first). It needs locking/`max_active_runs=1`, explicit stage dependencies, a real XLSX artifact and verified delivery to a managed distribution list.
 - Source CUSTBILL from PostgreSQL / billing-service instead of `oracle_custbill_extract.py`. This depends on the Track A data migration.
 - Dual-run against the legacy chain until finance signs off, then remove `etl/legacy-extra/crontab`.
 
-**Track C: deadline runtime upgrades**
+#### Track C: deadline runtime upgrades
 
 - audit-service: .NET 8 → .NET 10 (first, because of the 2026-11-10 deadline)
 - collab-service, client-app build, admin-dashboard build, demo-platform dashboard, Otter Projects: Node 20 → Node 22/24 LTS
@@ -227,7 +227,7 @@ The order is set by the decision in §6. **Wave 1 covers everything with a hard 
 - EKS 1.32 → a version in standard support
 - Hygiene: pin floating images, move `etl/config.ini` secrets to a secrets manager
 
-**Track D: branch convergence (enables A and B)**
+#### Track D: branch convergence (enables A and B)
 
 - Choose one home for the modernized billing-service, the legacy-billing Oracle facade and the CUSTBILL replacement, so Wave 1 work is not done twice across `main` and `tech-partnerships`.
 
