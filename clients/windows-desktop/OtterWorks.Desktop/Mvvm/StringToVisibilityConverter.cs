@@ -12,7 +12,7 @@ namespace OtterWorks.Desktop.Mvvm
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string text = value as string;
+            string? text = value as string;
             return string.IsNullOrWhiteSpace(text) ? Visibility.Collapsed : Visibility.Visible;
         }
 
