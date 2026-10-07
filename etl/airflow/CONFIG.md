@@ -101,6 +101,11 @@ before the cutoff instant: the legacy string filter archives same-instant spelli
 | `search_reindex_task_timeout_seconds` | literal `60` (delete/create/settings task polling) | `60` |
 | `search_reindex_bulk_task_timeout_seconds` | literal `120` (document batch task polling) | `120` |
 
+Legacy defines `bulk_batch_size` but sends each fetched page as one batch; the DAG splits a
+page into batches of at most `search_reindex_bulk_batch_size`, which is the same while it is at
+least `search_reindex_api_page_size`. A polling timeout fails the task (legacy carried on).
+The MeiliSearch index settings stay in code (`otterworks_etl.search_reindex.mapping`).
+
 ### `otterworks_storage_cleanup` (`storage_cleanup_daily.py`)
 
 | Variable | Replaces | Local value |
