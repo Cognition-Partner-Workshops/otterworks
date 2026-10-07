@@ -329,6 +329,13 @@ compliance signs off on the 90-day retention**, having reviewed the two items in
 4. Take an on-demand table backup on the deployment (`aws dynamodb create-backup`) as the
    restore path; the archive is JSON, and DynamoDB numbers that are not integral come back as
    floats (`decimal_values` golden), so it is not a lossless restore.
+5. **Partial-delete recovery path in place.** A prerequisite, not yet implemented (#1926 review):
+   if `cleanup_dynamodb` deletes some batches and then fails for good, a fresh run or a cleared
+   scan/upload scans only the surviving events, the upload guard refuses to overwrite the date's
+   archive with that smaller set, and the rest is never deleted or reported. Do not enable until
+   the DAG reuses and verifies the existing archive for the same `<ds>` in that case (keeping every
+   archived event, adding any new ones, then cleanup and report from it, including an empty scan).
+   Until then a task retry of `cleanup_dynamodb` alone is the only safe resume.
 
 **Enable:** change the configured value to `true`, deploy, `$AF variables get audit_archive_delete_enabled`
 → `true`. After the run: `events_deleted_from_source` equals `events_archived`, and the table
@@ -353,6 +360,13 @@ that run's archive object (keep it, 5.3 rollback).
   compliance until these are computed or removed.
 - Related: an old item without `event_id` makes legacy exit 1 after uploading the archive and
   before the report (`missing_event_id` golden). How the DAG treats it is in its parity report.
+- **Follow-up: live audit-service events use `Timestamp`, not `timestamp`.** `SaveEventAsync`
+  (`services/audit-service/src/Services/DynamoDbAuditRepository.cs`) writes the capitalized
+  attribute; legacy and the DAG filter on lowercase `timestamp` (kept for cutover parity), and
+  DynamoDB attribute names are case-sensitive, so service-written events are never archived and,
+  with deletes on, never deleted. A known gap carried over from legacy. The fix (archive and
+  delete on either attribute, using one value for both the filter and the retention check) is its
+  own change, alongside this flag.
 
 ### 6.2 `storage_cleanup_normalize_keys`
 
