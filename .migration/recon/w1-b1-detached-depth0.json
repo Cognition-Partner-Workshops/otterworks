@@ -1,0 +1,265 @@
+{
+  "batch": "w1-b1-detached-depth0",
+  "wave": 1,
+  "units": [
+    "u06-audit-log",
+    "u07-customer-master",
+    "u08-customer-master-hist",
+    "u09-custbill-invoices"
+  ],
+  "status": "PASS",
+  "status_basis": "worker status per preflight.py BATCH_STATUS (PASS/FAIL/BLOCKED): every load completed and every tier of every unit passed with 0 findings; the grader derives recon_verdict/merge_eligible from the committed result.json files, where u08-customer-master-hist is UNVERIFIED (0 source rows, merge_eligible=false) and u06/u07/u09 are PASS merge_eligible=true",
+  "merge_eligible_units": [
+    "u06-audit-log",
+    "u07-customer-master",
+    "u09-custbill-invoices"
+  ],
+  "unverified_units": [
+    "u08-customer-master-hist"
+  ],
+  "recon_results": [
+    ".migration/recon/u06-audit-log/result.json",
+    ".migration/recon/u07-customer-master/result.json",
+    ".migration/recon/u08-customer-master-hist/result.json",
+    ".migration/recon/u09-custbill-invoices/result.json"
+  ],
+  "recon_verdicts": {
+    "u06-audit-log": {
+      "verdict": "PASS",
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "merge_eligible": true,
+      "warnings": [],
+      "mapping_version": "map-v1.1",
+      "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+      "tolerance_version": "tol-1",
+      "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+      "generated_at": "2026-10-07T19:39:39.063593+00:00",
+      "collections": [
+        "billingAuditLog"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 1,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 73,
+          "findings": 0
+        },
+        {
+          "tier": 4,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        }
+      ]
+    },
+    "u07-customer-master": {
+      "verdict": "PASS",
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "merge_eligible": true,
+      "warnings": [],
+      "mapping_version": "map-v1.1",
+      "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+      "tolerance_version": "tol-1",
+      "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+      "generated_at": "2026-10-07T19:40:18.522050+00:00",
+      "collections": [
+        "customerMaster"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 4,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 20,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 271,
+          "findings": 0
+        },
+        {
+          "tier": 4,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        }
+      ]
+    },
+    "u08-customer-master-hist": {
+      "verdict": "UNVERIFIED",
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "merge_eligible": false,
+      "warnings": [
+        "UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised"
+      ],
+      "mapping_version": "map-v1.1",
+      "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+      "tolerance_version": "tol-1",
+      "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+      "generated_at": "2026-10-07T19:40:54.321381+00:00",
+      "collections": [
+        "customerMasterHist"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 21,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 0,
+          "findings": 0
+        },
+        {
+          "tier": 4,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        }
+      ]
+    },
+    "u09-custbill-invoices": {
+      "verdict": "PASS",
+      "mode": "live",
+      "target_class": "migration_cluster",
+      "merge_eligible": true,
+      "warnings": [],
+      "mapping_version": "map-v1.1",
+      "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+      "tolerance_version": "tol-1",
+      "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+      "generated_at": "2026-10-07T19:41:11.838184+00:00",
+      "collections": [
+        "invoiceHeader",
+        "invoiceLine"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 8,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 2500,
+          "findings": 0
+        },
+        {
+          "tier": 4,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        }
+      ]
+    }
+  },
+  "load_summary": {
+    "u06-audit-log": {
+      "billingAuditLog": {
+        "source_rows": 73,
+        "docs_inserted": 73,
+        "embeds": {},
+        "indexes_created": [
+          "loggedAt_1"
+        ]
+      }
+    },
+    "u07-customer-master": {
+      "customerMaster": {
+        "source_rows": 201,
+        "docs_inserted": 201,
+        "embeds": {
+          "attributes": 70
+        },
+        "indexes_created": [
+          "tenantId_1_custSeqNo_1",
+          "attributes.k_1_attributes.v_1"
+        ]
+      }
+    },
+    "u08-customer-master-hist": {
+      "customerMasterHist": {
+        "source_rows": 0,
+        "docs_inserted": 0,
+        "embeds": {},
+        "indexes_created": [
+          "custId_1__id_1"
+        ]
+      }
+    },
+    "u09-custbill-invoices": {
+      "invoiceHeader": {
+        "source_rows": 1000,
+        "docs_inserted": 1000,
+        "embeds": {},
+        "indexes_created": []
+      },
+      "invoiceLine": {
+        "source_rows": 1500,
+        "docs_inserted": 1500,
+        "embeds": {},
+        "indexes_created": []
+      }
+    }
+  },
+  "write_targets": [
+    "mmp_rt_b4_oracle.billingAuditLog",
+    "mmp_rt_b4_oracle.customerMaster",
+    "mmp_rt_b4_oracle.customerMasterHist",
+    "mmp_rt_b4_oracle.invoiceHeader",
+    "mmp_rt_b4_oracle.invoiceLine"
+  ],
+  "manifest_sha": "55e68257b3f9",
+  "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "pr_url": "",
+  "branch": "devin/1791401642-s5-1-w1-b1-detached-depth0",
+  "failure_class": "",
+  "unverified_paths": [
+    "u08-customer-master-hist: CUSTOMER_MASTER_HIST has 0 source rows (no package path updates CUSTOMER_MASTER, UNT8-2 decision) -> key, shape, histDt %d-%b-%y %H:%M:%S + histDtRaw, 5 text dates + *Raw, csv_to_array, yn_to_bool rules unexercised; collection created empty with index (custId,_id); not seeded around",
+    "date_string_to_date unparseable->null path exercised only on customerMaster (41 docs with signupDt null and signupDtRaw kept); invoiceHeader/invoiceLine text dates all parsed",
+    "RECON_REDACT_SALT unset: live result.json values redacted with unsalted hashes (redaction_salted=false)"
+  ],
+  "one_line_summary": "u06 PASS, u07 PASS, u09 PASS (merge_eligible=True), u08 UNVERIFIED (0 source rows, merge_eligible=False): billingAuditLog 73, customerMaster 201 (+70 attributes), customerMasterHist 0, invoiceHeader 1000, invoiceLine 1500 (37 ghost lines kept verbatim, graded by op custbill-ghost-lines) loaded into mmp_rt_b4_oracle; 0 findings in any tier.",
+  "recon_verdict_worst": "UNVERIFIED"
+}

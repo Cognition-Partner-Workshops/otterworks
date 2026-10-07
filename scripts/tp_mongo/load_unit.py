@@ -9,7 +9,8 @@ collections named on the batch ticket, and for each one:
     (NUMBER(p,0) -> Int64, NUMBER(p,s) -> Decimal128, CHAR(1) *_YN -> bool,
     DATE -> BSON date, VARCHAR2 -> string, Oracle NULL -> null),
   * embeds each `embeds[]` child table as an array under `array_path`, one element
-    per child row, sorted by the embed's element key so reloads are idempotent,
+    per child row (element key + `fields` + any extra `child_fields`, e.g. the attribute
+    pattern's `attrName` next to `k`), sorted by the element key so reloads are idempotent,
   * creates every `indexes[]` entry with its `unique` flag.
 
 Secrets are passed by environment-variable NAME; the values are never printed.
@@ -192,7 +193,8 @@ def load_collection(coll: dict, conv: Converter, cur, schema: str, db, stats: di
         ekey_targets = [ekey_targets] if isinstance(ekey_targets, str) else list(ekey_targets)
         efields = e.get("fields", [])
         child_cols = list(dict.fromkeys(e["parent_key"] + list(ekey.get("source", []))
-                                        + [f["source"] for f in efields]))
+                                        + [f["source"] for f in efields]
+                                        + [f["source"] for f in e.get("child_fields", [])]))
         by_source = {f["source"]: f for f in e.get("child_fields", [])}
         by_source.update({f["source"]: f for f in efields})
         n = 0
@@ -205,6 +207,9 @@ def load_collection(coll: dict, conv: Converter, cur, schema: str, db, stats: di
                 el[tgt] = conv.convert(row[col], by_source.get(col, {"source": col, "bson_type": "string"}))
             for f in efields:
                 el[f["target"]] = conv.convert(row[f["source"]], f)
+            for f in e.get("child_fields", []):
+                if f["target"] not in el and f["source"] in row:
+                    el[f["target"]] = conv.convert(row[f["source"]], f)
             if e.get("shape") == "subdocument":
                 parent[e["array_path"]] = el
             else:

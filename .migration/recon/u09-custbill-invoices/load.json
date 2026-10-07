@@ -1,0 +1,45 @@
+{
+  "kind": "unit-load",
+  "mapping_version": "map-v1.1",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "target_db": "mmp_rt_b4_oracle",
+  "schema": "OW_BILLING",
+  "write_targets": [
+    "mmp_rt_b4_oracle.billingAuditLog",
+    "mmp_rt_b4_oracle.customerMaster",
+    "mmp_rt_b4_oracle.customerMasterHist",
+    "mmp_rt_b4_oracle.invoiceHeader",
+    "mmp_rt_b4_oracle.invoiceLine"
+  ],
+  "loaded_at": "2026-10-07T19:41:02.616598+00:00",
+  "collections": {
+    "invoiceHeader": {
+      "root_table": "INVOICE_HEADER",
+      "source_rows": 1000,
+      "docs_inserted": 1000,
+      "embeds": {},
+      "indexes_created": [],
+      "collStats": {
+        "count": 1000,
+        "size": 329000,
+        "storageSize": 4096,
+        "totalIndexSize": 4096,
+        "nindexes": 1
+      }
+    },
+    "invoiceLine": {
+      "root_table": "INVOICE_LINE",
+      "source_rows": 1500,
+      "docs_inserted": 1500,
+      "embeds": {},
+      "indexes_created": [],
+      "collStats": {
+        "count": 1500,
+        "size": 931863,
+        "storageSize": 4096,
+        "totalIndexSize": 4096,
+        "nindexes": 1
+      }
+    }
+  }
+}
