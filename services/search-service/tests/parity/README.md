@@ -11,7 +11,7 @@ route, status code, header and metric identical. It is not collected by
 | `harness.py` | `record` runs `cases.py`; `replay` re-sends the requests stored in the transcript and diffs. |
 | `flask_transcript.json` | Recorded against the Flask app: request → status, `Content-Type`, `Allow`, `Vary`, `Location`, `Access-Control-*`, body. |
 | `flask_metrics.json` | `/metrics` at the end of the run: the four `search_service_*` families, label names, label values and samples. |
-| `compose.parity.yml` | Compose overlay: sets `SEARCH_SERVICE_TOKEN`, `REQUIRE_AUTH=true`, single gunicorn worker. |
+| `compose.parity.yml` | Compose overlay: sets `SEARCH_SERVICE_TOKEN`, `REQUIRE_AUTH=true`, single uvicorn worker. |
 
 ## Run
 
@@ -48,8 +48,9 @@ analytics start from zero, and it briefly stops MeiliSearch for the 503 cases.
 
 ## Why one worker
 
-The image runs `gunicorn --workers 2`. Prometheus metrics and search analytics
-are per-process in-memory state, so with two workers `/metrics` and
-`/analytics` depend on which worker answered and cannot replay. The overlay
-pins one worker (same app, same threads) for recording and replay; run the
-FastAPI build the same way.
+The image runs two worker processes (`gunicorn --workers 2` when the Flask
+transcript was recorded, `uvicorn --workers 2` now). Prometheus metrics and
+search analytics are per-process in-memory state, so with two workers
+`/metrics` and `/analytics` depend on which worker answered and cannot replay.
+The overlay pins one worker (`gunicorn --workers 1 --threads 4` for the Flask
+recording, `uvicorn --workers 1` for the FastAPI replay).

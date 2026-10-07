@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import structlog
-from flask import Blueprint, current_app, jsonify
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse, Response
 from prometheus_client import (
     Counter,
     Histogram,
@@ -12,7 +13,7 @@ from prometheus_client import (
 
 logger = structlog.get_logger()
 
-health_bp = Blueprint("health", __name__)
+router = APIRouter()
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -36,34 +37,27 @@ INDEX_COUNT = Counter(
 )
 
 
-@health_bp.route("/health")
-def health() -> tuple:
+@router.get("/health")
+def health() -> JSONResponse:
     """Liveness check — returns 200 if the process is running."""
-    return jsonify({
-        "status": "alive",
-        "service": "search-service",
-    }), 200
+    return JSONResponse({"status": "alive", "service": "search-service"}, status_code=200)
 
 
-@health_bp.route("/health/ready")
-def readiness() -> tuple:
+@router.get("/health/ready")
+def readiness(request: Request) -> JSONResponse:
     """Readiness check — returns 503 if MeiliSearch is unreachable."""
-    search_service = current_app.config.get("SEARCH_SERVICE")
+    search_service = getattr(request.app.state, "search_service", None)
 
     healthy = False
     if search_service:
         healthy = search_service.ping()
 
     if healthy:
-        return jsonify({"ready": True}), 200
-    return jsonify({"ready": False, "reason": "meilisearch_unavailable"}), 503
+        return JSONResponse({"ready": True}, status_code=200)
+    return JSONResponse({"ready": False, "reason": "meilisearch_unavailable"}, status_code=503)
 
 
-@health_bp.route("/metrics")
-def metrics() -> tuple:
+@router.get("/metrics")
+def metrics() -> Response:
     """Prometheus metrics endpoint."""
-    return (
-        generate_latest(),
-        200,
-        {"Content-Type": "text/plain; charset=utf-8"},
-    )
+    return Response(generate_latest(), status_code=200, media_type="text/plain; charset=utf-8")
