@@ -1,0 +1,4 @@
+Thu Jan 15 00:00:00 UTC 2026 sftp_ingest_poll starting, drop=$OTTERWORKS_LEGACY_ROOT/sftp-drop/upload
+Thu Jan 15 00:00:00 UTC 2026 ingested CUSTBILL_DEV_001.dat (3430 bytes)
+Thu Jan 15 00:00:00 UTC 2026 ingested CUSTBILL_DEV_002.dat (3430 bytes)
+Thu Jan 15 00:00:00 UTC 2026 sftp_ingest_poll done
