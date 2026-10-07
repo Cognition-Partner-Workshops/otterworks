@@ -23,6 +23,7 @@ services:
       POSTGRES_PASSWORD: ${BILLING_PG_ADMIN_PASSWORD:-postgres_dev}
       POSTGRES_INITDB_ARGS: --locale=C --encoding=UTF8
       BILLING_PG_APP_PASSWORD: ${BILLING_PG_PASSWORD:-ow_billing}
+      BILLING_PG_AUDIT_PASSWORD: ${BILLING_PG_AUDIT_PASSWORD:-ow_billing_audit}
       TZ: UTC
       PGTZ: UTC
     ports:

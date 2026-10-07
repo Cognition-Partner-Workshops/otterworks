@@ -133,7 +133,7 @@ billing-pg-down: ## Stop the OW_BILLING PostgreSQL target and drop its data
 	BILLING_PG_PORT=$(BILLING_PG_PORT) $(BILLING_PG_COMPOSE) down -v
 
 billing-pg-migrate: ## Reload every OW_BILLING table from Oracle into Postgres (idempotent; refuses if Postgres has post-cutover writes unless FORCE=1)
-	BILLING_PG_PORT=$(BILLING_PG_PORT) ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(BILLING_PG_UV) services/legacy-billing/migration/migrate.py $(if $(FORCE),--force)
+	BILLING_PG_PORT=$(BILLING_PG_PORT) ORACLE_PORT=$(ORACLE_BILLING_DB_PORT) $(BILLING_PG_UV) services/legacy-billing/migration/migrate.py $(if $(filter 1 true yes,$(FORCE)),--force)
 
 billing-pg-recon: ## Reconcile Oracle vs Postgres (NS=<namespace>; reruns the migration to prove idempotency)
 ifndef NS

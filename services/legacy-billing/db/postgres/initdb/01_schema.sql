@@ -170,7 +170,8 @@ CREATE TABLE notifications (
     CONSTRAINT fk_notif_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id)
 );
 
--- Oracle wrote this from an AUTONOMOUS_TRANSACTION; see pkg_ow_util.log_msg.
+-- Oracle wrote this from an AUTONOMOUS_TRANSACTION; pkg_ow_util.log_msg
+-- does the same through its own connection as ow_billing_audit.
 CREATE TABLE billing_audit_log (
     log_id     bigint NOT NULL,
     logged_at  timestamp(0) DEFAULT LOCALTIMESTAMP(0) NOT NULL,
@@ -180,6 +181,9 @@ CREATE TABLE billing_audit_log (
 );
 
 CREATE SEQUENCE seq_billing_audit_log START WITH 1 INCREMENT BY 1;
+GRANT USAGE ON SCHEMA ow_billing TO ow_billing_audit;
+GRANT INSERT ON billing_audit_log TO ow_billing_audit;
+GRANT USAGE ON SEQUENCE seq_billing_audit_log TO ow_billing_audit;
 
 CREATE TABLE subscriptions_hist (
     hist_id       bigint NOT NULL,

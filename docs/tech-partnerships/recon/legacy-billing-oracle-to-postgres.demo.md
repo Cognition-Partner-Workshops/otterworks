@@ -1,6 +1,6 @@
 # Reconciliation: legacy-billing-oracle-to-postgres (ns=demo)
 
-Generated 2026-10-07T14:12:22Z, run mode `live`. Expected values are read live from Oracle `OW_BILLING` (FREEPDB1) or the seed manifest; actual values are recomputed from the PostgreSQL 15 target `ow_tp_billing.ow_billing`.
+Generated 2026-10-07T14:26:41Z, run mode `live`. Expected values are read live from Oracle `OW_BILLING` (FREEPDB1) or the seed manifest; actual values are recomputed from the PostgreSQL 15 target `ow_tp_billing.ow_billing`.
 
 **Result: 167/167 checks pass.**
 
@@ -74,7 +74,7 @@ Generated 2026-10-07T14:12:22Z, run mode `live`. Expected values are read live f
 | `fixture_meta` | columns | 3 | 3 | pass | same column names on both sides |
 | `fixture_meta` | row_count | 2 | 2 | pass |  |
 | `fixture_meta` | key_coverage(marker) | 2 | 2 | pass | missing=0 extra=0 |
-| `fixture_meta` | row_checksum(all columns) | 9a7513320595ce4d494445cfb1244953 | 9a7513320595ce4d494445cfb1244953 | pass | order-independent md5 over every column of every row |
+| `fixture_meta` | row_checksum(all columns) | a456d0484ceb2084b262bb10761eb047 | a456d0484ceb2084b262bb10761eb047 | pass | order-independent md5 over every column of every row |
 | `customer_master` | columns | 155 | 155 | pass | same column names on both sides |
 | `customer_master` | row_count | 25001 | 25001 | pass |  |
 | `customer_master` | sum(cur_bal_amt) | 39799599.31 | 39799599.31 | pass |  |
@@ -174,13 +174,12 @@ Generated 2026-10-07T14:12:22Z, run mode `live`. Expected values are read live f
 | `customer_master` | anomaly dirty_dates (ns=demo) | 50 | 50 | pass | oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT |
 | `customer_master` | anomaly malformed_csv_lists (ns=demo) | 31 | 31 | pass | oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS |
 
-**Idempotency rerun:** pass. migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=165b8642747d1aae
+**Idempotency rerun:** pass. migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=0d43d5b00f772f65
 
 **Planted anomalies** (manifest vs detected on Postgres): expected ['dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50', 'malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31', 'orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37'], detected ['dirty_dates:oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT:50', 'malformed_csv_lists:oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS:31', 'orphaned_rows:oracle.OW_BILLING.INVOICE_LINE:37'], missing none, unexpected none.
 
 **Unverified paths:**
 
-- pkg_ow_util.log_msg: Oracle wrote BILLING_AUDIT_LOG in an autonomous transaction; on Postgres the log row commits or rolls back with the caller. Only the commit path is exercised by the parity run.
 - pkg_jobs.job_nightly_dunning / job_purge_audit_log: the DBMS_SCHEDULER jobs were created DISABLED in Oracle and never ran; the Postgres procedure bodies exist but no scheduler is wired and they were not executed.
 - Concurrent writers: Oracle row-lock behaviour (SELECT ... FOR UPDATE in sp_change_plan) is ported but not exercised under concurrency.
 - Scales other than demo (SCALE=ci/full) were not migrated or reconciled.

@@ -1568,7 +1568,6 @@
   "status": 200
  },
  "after:me:00000000-0000-0000-0000-000000000004": {
-  "attempts": 2,
   "body": {
    "customer": null,
    "entitlement": [
@@ -1632,6 +1631,7 @@
   "status": 200
  },
  "after:me:00000000-0000-0000-0000-000000000007": {
+  "attempts": 2,
   "body": {
    "customer": null,
    "entitlement": [
@@ -2713,7 +2713,6 @@
   "status": 200
  },
  "after:usage:fbfef46c-1c83-389e-d1cc-3108d4e8e0be": {
-  "attempts": 2,
   "body": {
    "events": [],
    "rating": [
@@ -4295,7 +4294,6 @@
   "status": 200
  },
  "before:usage:00000000-0000-0000-0000-000000000007": {
-  "attempts": 2,
   "body": {
    "events": [
     {

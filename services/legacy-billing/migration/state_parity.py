@@ -22,12 +22,8 @@ from recon import checksum_rows, ora_rows
 # table -> {column: reason}
 WALL_CLOCK = {
     "subscriptions_hist": {"hist_dt": "SYSDATE / now() at write time"},
+    "billing_audit_log": {"logged_at": "SYSDATE / LOCALTIMESTAMP at write time"},
 }
-# PKG_OW_UTIL.LOG_MSG is an AUTONOMOUS_TRANSACTION on Oracle: a log row survives
-# when the call that wrote it later fails. The Postgres port logs inside the
-# caller's transaction. Accepted when every Postgres log row has an Oracle
-# twin and the Oracle-only rows are listed.
-AUDIT_LOG = "billing_audit_log"
 
 
 def _sources(table: estate.Table) -> list[str]:
@@ -55,32 +51,26 @@ def compare(ora, pg, table: estate.Table) -> dict:
         pc = _pg_checksum(pg, table, [col])
         if oc.hexdigest() != pc.hexdigest():
             row["columns"].append(col)
-    if table.name == AUDIT_LOG:
-        return _audit_log(ora, pg, row)
     allowed = WALL_CLOCK.get(table.name, {})
     if o.count == p.count and row["columns"] and all(c in allowed for c in row["columns"]):
         row["result"] = "accepted difference with reason"
         row["reason"] = "; ".join(f"{c}: {allowed[c]}" for c in row["columns"])
     else:
         row["result"] = "failed"
+        row["reason"] = _row_diff(ora, pg, table, [c for c in cols if c not in allowed])
     return row
 
 
-def _audit_log(ora, pg, row: dict) -> dict:
-    sql = f"SELECT module, message FROM {AUDIT_LOG}"
-    o = collections.Counter(tuple(r) for r in ora_rows(ora, sql))
-    p = collections.Counter(tuple(r) for r in pg.execute(sql))
-    if p - o:
-        row["result"] = "failed"
-        row["reason"] = f"Postgres-only log rows: {dict(p - o)}"
-        return row
-    extra = ", ".join(f"{n} x {m}: {msg}" for (m, msg), n in sorted((o - p).items()))
-    row["result"] = "accepted difference with reason"
-    row["reason"] = ("every Postgres (module, message) row has an Oracle twin; log_id/logged_at are "
-                     "sequence/wall-clock. Oracle-only rows come from calls that failed after "
-                     "logging (LOG_MSG is autonomous on Oracle, transactional on Postgres): "
-                     + (extra or "none"))
-    return row
+def _row_diff(ora, pg, table: estate.Table, cols: list[str]) -> str:
+    """Rows (on the non-wall-clock columns) present on one engine only."""
+    sql = f"SELECT {', '.join(cols)} FROM "
+    o = collections.Counter(tuple(r) for r in ora_rows(ora, sql + table.name))
+    p = collections.Counter()
+    for name in _sources(table):
+        p.update(tuple(r) for r in pg.execute(sql + name))
+    def fmt(c):
+        return "; ".join(f"{n} x {row}" for row, n in sorted(c.items(), key=str)[:10]) or "none"
+    return f"Oracle-only rows: {fmt(o - p)}. Postgres-only rows: {fmt(p - o)}"
 
 
 def main() -> int:

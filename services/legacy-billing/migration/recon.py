@@ -368,9 +368,6 @@ def seed_checks(report: Report, ora, pg, ns: str) -> dict:
 
 
 UNVERIFIED = [
-    "pkg_ow_util.log_msg: Oracle wrote BILLING_AUDIT_LOG in an autonomous transaction; "
-    "on Postgres the log row commits or rolls back with the caller. Only the commit path "
-    "is exercised by the parity run.",
     "pkg_jobs.job_nightly_dunning / job_purge_audit_log: the DBMS_SCHEDULER jobs were "
     "created DISABLED in Oracle and never ran; the Postgres procedure bodies exist but no "
     "scheduler is wired and they were not executed.",

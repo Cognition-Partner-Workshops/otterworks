@@ -87,16 +87,36 @@ EXCEPTION
 END
 $$;
 
--- Oracle logged through an AUTONOMOUS_TRANSACTION. Postgres has no
--- autonomous transactions: the row commits with the caller and rolls back
--- with it. Logging failures are still swallowed.
+-- Oracle logged through an AUTONOMOUS_TRANSACTION, so the row survives a
+-- rollback of the caller. Postgres has no autonomous transactions; the row
+-- is written on a separate dblink session (as ow_billing_audit, via the
+-- ow_billing_audit_loopback user mapping) that autocommits. The session is
+-- kept per backend and reopened if it died. Logging failures are still
+-- swallowed, as on Oracle.
 CREATE PROCEDURE pkg_ow_util.log_msg(p_module varchar, p_message text)
 LANGUAGE plpgsql SET search_path = ow_billing, public AS $$
+DECLARE
+    c_conn CONSTANT text := 'ow_billing_audit';
+    v_sql  text := format(
+        'INSERT INTO ow_billing.billing_audit_log (module, message) VALUES (%L, %L)',
+        substr(p_module, 1, 30), substr(p_message, 1, 4000));
 BEGIN
-    INSERT INTO billing_audit_log (module, message)
-    VALUES (substr(p_module, 1, 30), substr(p_message, 1, 4000));
-EXCEPTION
-    WHEN OTHERS THEN NULL;
+    FOR attempt IN 1..2 LOOP
+        BEGIN
+            IF NOT coalesce(c_conn = ANY (ow_billing_dblink.dblink_get_connections()), false) THEN
+                PERFORM ow_billing_dblink.dblink_connect(c_conn, 'ow_billing_audit_loopback');
+            END IF;
+            PERFORM ow_billing_dblink.dblink_exec(c_conn, v_sql);
+            RETURN;
+        EXCEPTION
+            WHEN OTHERS THEN
+                BEGIN
+                    PERFORM ow_billing_dblink.dblink_disconnect(c_conn);
+                EXCEPTION
+                    WHEN OTHERS THEN NULL;
+                END;
+        END;
+    END LOOP;
 END
 $$;
 

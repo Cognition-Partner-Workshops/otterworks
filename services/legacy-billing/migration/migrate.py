@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import estate  # noqa: E402
 
 FETCH = 5000
+LOCK_TIMEOUT = "30s"
 LOAD_MARK = (0, "target-fingerprint")
 
 
@@ -216,9 +217,15 @@ def migrate(verbose: bool = True, force: bool = False) -> dict:
     started = time.monotonic()
     summary: dict = {"tables": {}, "sequences": {}}
     with estate.oracle_connect() as ora, estate.pg_connect() as pg:
+        all_tables = [t.name for t in estate.TABLES] + [estate.ORPHAN_TABLE, estate.BASELINE_TABLE]
+        # Hold every table from the divergence check through the commit so no
+        # app write can land between the check and the TRUNCATE. The timeout
+        # gives up instead of waiting on (or deadlocking with) a live caller,
+        # including log_msg's separate dblink session.
+        pg.execute(f"SET LOCAL lock_timeout = '{LOCK_TIMEOUT}'")
+        pg.execute(f"LOCK TABLE {', '.join(all_tables)} IN ACCESS EXCLUSIVE MODE")
         if not force:
             check_reloadable(pg)
-        all_tables = [t.name for t in estate.TABLES] + [estate.ORPHAN_TABLE, estate.BASELINE_TABLE]
         pg.execute("TRUNCATE " + ", ".join(all_tables))
         # Row triggers (sequence fillers, history copies, usage checks) must
         # not rewrite migrated rows. FK constraint triggers stay enabled, so

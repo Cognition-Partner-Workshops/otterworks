@@ -12,7 +12,7 @@
 | credit_notes | 5 | 5 | identical | all columns, order-independent checksum |
 | dunning_attempts | 5 | 5 | identical | all columns, order-independent checksum |
 | notifications | 2 | 2 | identical | all columns, order-independent checksum |
-| billing_audit_log | 140 | 134 | accepted difference with reason | every Postgres (module, message) row has an Oracle twin; log_id/logged_at are sequence/wall-clock. Oracle-only rows come from calls that failed after logging (LOG_MSG is autonomous on Oracle, transactional on Postgres): 5 x PLANS: sp_change_plan tenant=fbd4c57e-8413-fb09-5842-22c318e2a5af plan=10000000-0000-0000-0000-000000000002 eff=2026-12-01, 1 x RATING: compute tenant=fbfef46c-1c83-389e-d1cc-3108d4e8e0be used=0 billable=0 |
+| billing_audit_log | 139 | 139 | accepted difference with reason | logged_at: SYSDATE / LOCALTIMESTAMP at write time |
 | subscriptions_hist | 3 | 3 | accepted difference with reason | hist_dt: SYSDATE / now() at write time |
 | fixture_meta | 2 | 2 | identical | all columns, order-independent checksum |
 | customer_master | 25001 | 25001 | identical | all columns, order-independent checksum |

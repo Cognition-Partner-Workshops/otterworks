@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "legacy-billing-oracle-to-postgres",
   "namespace": "demo",
-  "generated_at": "2026-10-07T14:12:22Z",
+  "generated_at": "2026-10-07T14:26:41Z",
   "run_mode": "live",
   "summary": {
     "total": 167,
@@ -670,8 +670,8 @@
       "id": "fixture_meta.row_checksum(all columns)",
       "table": "fixture_meta",
       "check": "row_checksum(all columns)",
-      "expected": "9a7513320595ce4d494445cfb1244953",
-      "actual": "9a7513320595ce4d494445cfb1244953",
+      "expected": "a456d0484ceb2084b262bb10761eb047",
+      "actual": "a456d0484ceb2084b262bb10761eb047",
       "source_of_truth": "oracle:OW_BILLING.FIXTURE_META",
       "result": "pass",
       "detail": "order-independent md5 over every column of every row"
@@ -1607,7 +1607,7 @@
   "idempotency_rerun": {
     "performed": true,
     "result": "pass",
-    "evidence": "migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=165b8642747d1aae"
+    "evidence": "migrate.py executed again against the loaded target; 27 objects (22 tables + 5 sequences) fingerprinted before and after (row count + order-independent md5 of every column): identical; fingerprint sha256[:16]=0d43d5b00f772f65"
   },
   "planted_anomaly_detections": {
     "expected_set": [
@@ -1624,7 +1624,6 @@
     "unexpected": []
   },
   "unverified_paths": [
-    "pkg_ow_util.log_msg: Oracle wrote BILLING_AUDIT_LOG in an autonomous transaction; on Postgres the log row commits or rolls back with the caller. Only the commit path is exercised by the parity run.",
     "pkg_jobs.job_nightly_dunning / job_purge_audit_log: the DBMS_SCHEDULER jobs were created DISABLED in Oracle and never ran; the Postgres procedure bodies exist but no scheduler is wired and they were not executed.",
     "Concurrent writers: Oracle row-lock behaviour (SELECT ... FOR UPDATE in sp_change_plan) is ported but not exercised under concurrency.",
     "Scales other than demo (SCALE=ci/full) were not migrated or reconciled."
