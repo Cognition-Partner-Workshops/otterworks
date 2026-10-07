@@ -24,6 +24,8 @@ import zipfile
 import pytest
 
 BASE = os.environ.get("REPORT_SERVICE_URL", "http://localhost:8091").rstrip("/")
+if not BASE.startswith(("http://", "https://")):
+    raise SystemExit("REPORT_SERVICE_URL must be an http(s) URL, got " + BASE)
 RUN = uuid.uuid4().hex[:8]
 OK_USER = "char-ok-" + RUN
 FAIL_USER = "char-fail-" + RUN
@@ -65,6 +67,7 @@ def call(method, path, body=None, content_type=None):
         headers["Content-Type"] = content_type or "application/json"
     req = urllib.request.Request(BASE + path, data=data, method=method, headers=headers)
     try:
+        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         with urllib.request.urlopen(req, timeout=30) as r:
             return Resp(r.status, r.headers, r.read())
     except urllib.error.HTTPError as e:
