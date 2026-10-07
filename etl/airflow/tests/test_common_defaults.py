@@ -34,6 +34,19 @@ def test_default_args_overrides_do_not_leak():
     assert default_args()["retries"] == 3
 
 
+def test_task_retries_default_to_three(monkeypatch):
+    monkeypatch.delenv("OTTERWORKS_ETL_TASK_RETRIES", raising=False)
+    assert default_args()["retries"] == 3
+    assert otterworks_dag_kwargs()["default_args"]["retries"] == 3
+
+
+def test_task_retries_env_override_applies(monkeypatch):
+    monkeypatch.setenv("OTTERWORKS_ETL_TASK_RETRIES", "0")
+    assert default_args()["retries"] == 0
+    assert otterworks_dag_kwargs()["default_args"]["retries"] == 0
+    assert otterworks_dag_kwargs(default_args={"retries": 2})["default_args"]["retries"] == 2
+
+
 def test_dag_kwargs_merge_tags_and_task_overrides():
     kwargs = otterworks_dag_kwargs(tags=["analytics", "otterworks"], default_args={"retries": 1})
     assert kwargs["tags"] == ["otterworks", "analytics"]

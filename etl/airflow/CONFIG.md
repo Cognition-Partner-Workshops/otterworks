@@ -101,6 +101,13 @@ before the cutoff instant: the legacy string filter archives same-instant spelli
 | `search_reindex_task_timeout_seconds` | literal `60` (delete/create/settings task polling) | `60` |
 | `search_reindex_bulk_task_timeout_seconds` | literal `120` (document batch task polling) | `120` |
 
+Legacy defines `bulk_batch_size` but sends each fetched page as one batch; the DAG splits a
+page into batches of at most `search_reindex_bulk_batch_size`, which is the same while it is at
+least `search_reindex_api_page_size`. A polling timeout fails the task (legacy carried on).
+`search_reindex_api_page_size` must be at most 100, which is the limit of both upstream list endpoints. Timeouts must be
+positive and finite. Invalid values fail before `clear_indices` touches an index.
+The MeiliSearch index settings stay in code (`otterworks_etl.search_reindex.mapping`).
+
 ### `otterworks_storage_cleanup` (`storage_cleanup_daily.py`)
 
 | Variable | Replaces | Local value |
@@ -128,6 +135,18 @@ matching; that is an accepted difference from the goldens, opt-in only.
 
 The per-day partitions it reads are under `analytics_prefix` (legacy hardcodes `analytics/daily`,
 the same value).
+
+## Test-only environment
+
+| Variable | Default | Set by |
+| --- | --- | --- |
+| `OTTERWORKS_ETL_TASK_RETRIES` | `3` | the parity runner (`etl/tests/golden/harness/airflow_container.py`), to `0` |
+
+Plain environment variable, read when the DAG file is parsed (`otterworks_etl.common.default_args`);
+not an Airflow Variable, and never set in the image, chart or `.env.example`. It exists because
+`airflow dags test` on Airflow 2.8 (`dag.test()`) runs tasks through `_run_raw_task` without
+incrementing `try_number`, so a failing task with retries is retried forever. With `0` a parity run
+makes one attempt per task, like the legacy cron job. Retry behaviour is covered by DAG tests.
 
 ## Stays in code
 
