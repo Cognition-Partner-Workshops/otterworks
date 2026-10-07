@@ -1,0 +1,122 @@
+{
+  "run_id": "UNT8-18",
+  "manifest_sha": "55e68257b3f9",
+  "wave": 1,
+  "wave_verdict": "PASS",
+  "unit_verdicts": {
+    "w1-b0-reference": "PASS",
+    "w1-b1-detached-depth0": "PASS",
+    "w1-b2-tenant-children-depth1": "PASS",
+    "w1-b3-rating-invoicing-depth2": "PASS"
+  },
+  "recon_results": {
+    "w1-b0-reference": [
+      ".migration/recon/wave-1/w1-b0-reference/u00-reference/result.json"
+    ],
+    "w1-b1-detached-depth0": [
+      ".migration/recon/wave-1/w1-b1-detached-depth0/u06-audit-log/result.json",
+      ".migration/recon/wave-1/w1-b1-detached-depth0/u07-customer-master/result.json",
+      ".migration/recon/wave-1/w1-b1-detached-depth0/u08-customer-master-hist/result.json",
+      ".migration/recon/wave-1/w1-b1-detached-depth0/u09-custbill-invoices/result.json"
+    ],
+    "w1-b2-tenant-children-depth1": [
+      ".migration/recon/wave-1/w1-b2-tenant-children-depth1/u01-subscriptions/result.json",
+      ".migration/recon/wave-1/w1-b2-tenant-children-depth1/u02-usage-events/result.json",
+      ".migration/recon/wave-1/w1-b2-tenant-children-depth1/u05-notifications/result.json"
+    ],
+    "w1-b3-rating-invoicing-depth2": [
+      ".migration/recon/wave-1/w1-b3-rating-invoicing-depth2/u03-rating/result.json",
+      ".migration/recon/wave-1/w1-b3-rating-invoicing-depth2/u04-invoices/result.json"
+    ]
+  },
+  "unit_recon_verdicts": {
+    "u00-reference": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u06-audit-log": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u07-customer-master": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u08-customer-master-hist": {
+      "verdict": "UNVERIFIED",
+      "merge_eligible": false,
+      "warnings": [
+        "UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised"
+      ]
+    },
+    "u09-custbill-invoices": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u01-subscriptions": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u02-usage-events": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u05-notifications": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u03-rating": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    },
+    "u04-invoices": {
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "warnings": []
+    }
+  },
+  "findings": [
+    "w1-b1-detached-depth0: u08-customer-master-hist is UNVERIFIED (CUSTOMER_MASTER_HIST has 0 source rows; customerMasterHist has 0 documents and index custId_1__id_1), so the batch verdict rests on the three live PASS units under plan decision d-unverified-batch-merge and the pinned grader may still grade it insufficient_evidence.",
+    "w1-b1-detached-depth0: 4 customerMaster.relatedAcctIds arrays are [\"NULL\",\"NONE\"] because the harness csv_to_array keeps the literal NULL token from RELATED_ACCT_IDS 'NULL,NONE,' while d-csv-to-array says to drop it (known mismatch, graded PASS by the harness, not changed).",
+    "w1-b1-detached-depth0: the 37 planted INVOICE_LINE ghost pointers landed as declared (37 invoiceLine.invoiceId values resolve to no invoiceHeader, matching 37 in Oracle); the pointer is kept verbatim and the orphan flag exists only as the Tier-4 op custbill-ghost-lines, not as a field on the document.",
+    "w1-b1-detached-depth0: all 1000 invoiceHeader.tenantId and 1500 invoiceLine.tenantId values resolve to no tenants document, which is source-faithful (the same 1000/1500 CUSTBILL rows resolve to no TENANTS row in Oracle; detached estate, see data profile).",
+    "w1-b1-detached-depth0: customerMaster.signupDt is null on 41 of 201 documents; every source SIGNUP_DT is non-ISO text (DD-MON-YY or 'N/A'), the raw copy is kept on all 201 documents, and the harness graded it PASS.",
+    "all batches: RECON_REDACT_SALT is not set on the fixture host, so all 10 verifier result.json files record redaction_salted=false (unsalted hashes, low-entropy values enumerable offline).",
+    "all batches: the verifier shared the fixture host with the batch worker (same machine, same Oracle fixture volume, same MMP_RT_SRC_DSN export, same Atlas principal, same ~/mmp and ~/.venvs/mmp); independence holds at the working-tree and process level (fresh clone at 7e66c71a, no loader run, read-only harness, sha256-verified spec bytes) but not at the host level.",
+    "w1-b2-tenant-children-depth1: usageEvents carries no subscriptionId in map-v1.1 (USAGE_EVENTS has none), so the subscription pointer check applies to ratingResults.subscriptionId (8/8 resolve) and subscriptionsHist.id (6/6 resolve) only.",
+    "cluster: mmp_rt_b4_oracle holds one empty collection outside the mapping, _connectivity_probe (0 docs, left by the UNT8-4 connectivity round-trip); no other unexpected collection or database write was observed."
+  ],
+  "report_path": "recon/wave-1:.migration/recon/wave-1/verify-report.md",
+  "branch": "recon/wave-1",
+  "verified_run_branch_head": "7e66c71ada0766b2f8e08f41b0b45b7781cdba93",
+  "mapping_sha256": "3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6",
+  "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+  "plugin_head": "353280fc837193a40ccc005cb62fb4ffaf8ac16f",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "dbStats": {
+    "avgObjSize": 590.8842281879195,
+    "collections": 16,
+    "dataSize": 1760835,
+    "db": "mmp_rt_b4_oracle",
+    "indexSize": 1105920,
+    "indexes": 42,
+    "objects": 2980,
+    "storageSize": 1716224,
+    "views": 0
+  },
+  "tier4_replay": {
+    "ops": 27,
+    "matched": 27,
+    "mismatched": [],
+    "note": "27 ops replayed from .migration/ops/*.json: source_sql on Oracle (CURRENT_SCHEMA=OW_BILLING, read-only), target_pipeline on mmp_rt_b4_oracle, both canonicalized (decimal_round 2dp, UTC ms truncation, empty_string_is_null, null_missing_equiv) and compared as sorted multisets"
+  }
+}

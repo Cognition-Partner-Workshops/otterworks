@@ -1,0 +1,9 @@
+{
+  db: 'mmp_rt_b4_oracle',
+  collections: 16,
+  objects: Long('2980'),
+  dataSize: Long('1760835'),
+  storageSize: Long('1716224'),
+  indexes: 42,
+  indexSize: Long('1122304')
+}

@@ -1,0 +1,2583 @@
+{
+ "collections": [
+  "_connectivity_probe",
+  "billingAuditLog",
+  "codes",
+  "customerMaster",
+  "customerMasterHist",
+  "invoiceHeader",
+  "invoiceLine",
+  "invoices",
+  "notifications",
+  "plans",
+  "ratingPeriods",
+  "ratingResults",
+  "subscriptions",
+  "subscriptionsHist",
+  "tenants",
+  "usageEvents"
+ ],
+ "cross_unit_references": {
+  "billingAuditLog.tenantId": {
+   "refs": 0,
+   "sample": [],
+   "unresolved": 0
+  },
+  "invoiceHeader.custId": {
+   "refs": 1000,
+   "sample": [],
+   "unresolved": 0
+  },
+  "invoiceHeader.tenantId": {
+   "refs": 1000,
+   "sample": [
+    "02d88813-09d4-edbd-9bb3-12620db63775",
+    "179cbf41-a310-f666-2185-59e19e219d0d",
+    "41d5ed8c-c854-062a-20e4-8325e7bd7df9"
+   ],
+   "unresolved": 1000
+  },
+  "invoiceLine.custId": {
+   "refs": 1500,
+   "sample": [],
+   "unresolved": 0
+  },
+  "invoiceLine.invoiceId": {
+   "refs": 1500,
+   "sample": [
+    "0ba92789-efca-3421-86ce-fc6227ad3f0e",
+    "0d1a9a5a-0605-b835-5def-a841e29f2736",
+    "0ea9d326-d527-85ed-a248-0b07e2b72fa2"
+   ],
+   "unresolved": 37
+  },
+  "invoiceLine.tenantId": {
+   "refs": 1500,
+   "sample": [
+    "02d88813-09d4-edbd-9bb3-12620db63775",
+    "179cbf41-a310-f666-2185-59e19e219d0d",
+    "41d5ed8c-c854-062a-20e4-8325e7bd7df9"
+   ],
+   "unresolved": 1500
+  },
+  "invoices.periodId": {
+   "refs": 9,
+   "sample": [],
+   "unresolved": 0
+  },
+  "invoices.tenantId": {
+   "refs": 9,
+   "sample": [],
+   "unresolved": 0
+  },
+  "notifications.tenantId": {
+   "refs": 2,
+   "sample": [],
+   "unresolved": 0
+  },
+  "ratingPeriods.tenantId": {
+   "refs": 8,
+   "sample": [],
+   "unresolved": 0
+  },
+  "ratingResults.periodId": {
+   "refs": 8,
+   "sample": [],
+   "unresolved": 0
+  },
+  "ratingResults.subscriptionId": {
+   "refs": 8,
+   "sample": [],
+   "unresolved": 0
+  },
+  "subscriptions.planId": {
+   "refs": 20,
+   "sample": [],
+   "unresolved": 0
+  },
+  "subscriptions.tenantId": {
+   "refs": 20,
+   "sample": [],
+   "unresolved": 0
+  },
+  "subscriptionsHist.id": {
+   "refs": 6,
+   "sample": [],
+   "unresolved": 0
+  },
+  "subscriptionsHist.planId": {
+   "refs": 6,
+   "sample": [],
+   "unresolved": 0
+  },
+  "subscriptionsHist.tenantId": {
+   "refs": 6,
+   "sample": [],
+   "unresolved": 0
+  },
+  "usageEvents.subscriptionId": {
+   "refs": 0,
+   "sample": [],
+   "unresolved": 0
+  },
+  "usageEvents.tenantId": {
+   "refs": 103,
+   "sample": [],
+   "unresolved": 0
+  }
+ },
+ "customerMasterHist": {
+  "count": 0,
+  "indexes": [
+   "_id_",
+   "custId_1__id_1"
+  ]
+ },
+ "customerMaster_attributes_total": [
+  {
+   "_id": null,
+   "docs_with": 58,
+   "total": 70
+  }
+ ],
+ "customerMaster_relatedAcctIds_NULL_token": {
+  "docs_with_literal_NULL": 4,
+  "sample": [
+   [
+    "NULL",
+    "NONE"
+   ],
+   [
+    "NULL",
+    "NONE"
+   ],
+   [
+    "NULL",
+    "NONE"
+   ],
+   [
+    "NULL",
+    "NONE"
+   ]
+  ]
+ },
+ "db": "mmp_rt_b4_oracle",
+ "dbStats": {
+  "avgObjSize": 590.8842281879195,
+  "collections": 16,
+  "dataSize": 1760835,
+  "db": "mmp_rt_b4_oracle",
+  "indexSize": 1105920,
+  "indexes": 42,
+  "objects": 2980,
+  "storageSize": 1716224,
+  "views": 0
+ },
+ "dunning_statusCd_types": [
+  {
+   "_id": "long",
+   "n": 5
+  }
+ ],
+ "generated_at": "2026-10-07T20:17:35.852820+00:00",
+ "invoiceLine_ghost_pointers": {
+  "flagged_docs": 0,
+  "invoiceId_not_in_invoiceHeader": 37
+ },
+ "invoiceLine_ghost_sample_keys": [
+  "amount",
+  "batchNo",
+  "custId",
+  "custName",
+  "custNo",
+  "glAcct",
+  "invoiceDt",
+  "invoiceDtRaw",
+  "invoiceId",
+  "invoiceNo",
+  "itemDesc",
+  "lineNo",
+  "lineTypeCd",
+  "posted",
+  "qty",
+  "servicePeriod",
+  "srcSystem",
+  "taxAmt",
+  "tenantId",
+  "unitPrice"
+ ],
+ "non_batch_collections": [
+  "_connectivity_probe"
+ ],
+ "per_collection": {
+  "_connectivity_probe": {
+   "count": 0,
+   "indexes": [
+    [
+     "_id_",
+     false
+    ]
+   ]
+  },
+  "billingAuditLog": {
+   "count": 73,
+   "field_rates": {
+    "loggedAt": {
+     "missing": 0,
+     "n": 73,
+     "null": 0
+    },
+    "message": {
+     "missing": 0,
+     "n": 73,
+     "null": 0
+    },
+    "module": {
+     "missing": 0,
+     "n": 73,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "loggedAt_1",
+     false
+    ]
+   ]
+  },
+  "codes": {
+   "count": 32,
+   "field_rates": {
+    "codeDesc": {
+     "missing": 0,
+     "n": 32,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "codeDesc_1_codeType_1",
+     false
+    ],
+    [
+     "codeType_1_codeVal_1",
+     false
+    ]
+   ]
+  },
+  "customerMaster": {
+   "count": 201,
+   "embeds": {
+    "attributes": {
+     "child_table": "ENTITY_ATTR_VALUE",
+     "length_distribution": {
+      "0": 143,
+      "1": 49,
+      "2": 7,
+      "3": 1,
+      "4": 1
+     },
+     "shape": "array",
+     "total_elements": 70
+    }
+   },
+   "field_rates": {
+    "addrLine1": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "addrLine2": {
+     "missing": 0,
+     "n": 201,
+     "null": 71
+    },
+    "addrLine3": {
+     "missing": 0,
+     "n": 201,
+     "null": 130
+    },
+    "addrLine4": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "addrLine5": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "addrLine6": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "channelCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "childAcctIds": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "city": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "contactNotes": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "conversionBatchNo": {
+     "missing": 0,
+     "n": 201,
+     "null": 1
+    },
+    "countryCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 200
+    },
+    "createdBy": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "createdDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "creditHold": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "creditLimitAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 42
+    },
+    "curBalAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "custName": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "custNameUpper": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "custNo": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "custSeqNo": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "custTypeCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "dbaName": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "dunningExempt": {
+     "missing": 0,
+     "n": 201,
+     "null": 200
+    },
+    "email1": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "email2": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "email3": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "fax": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag01": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag02": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag03": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag04": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag05": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag06": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag07": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag08": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag09": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag10": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag11": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag12": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag13": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag14": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag15": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag16": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag17": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag18": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag19": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "flag20": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "lastActivityDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "lastActivityDtRaw": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "lastInvoiceDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "lastInvoiceDtRaw": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "lastPaymentDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "lastPaymentDtRaw": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "legacySysKey": {
+     "missing": 0,
+     "n": 201,
+     "null": 1
+    },
+    "legalName": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "ltdBilledAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 200
+    },
+    "mailAddrLine1": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailAddrLine2": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailAddrLine3": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailAddrLine4": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailAddrLine5": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailAddrLine6": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailCity": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailStateCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mailZip": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "mainframeAcctNo": {
+     "missing": 0,
+     "n": 201,
+     "null": 1
+    },
+    "pastDueAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "phone1": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "phone1TypeCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "phone2": {
+     "missing": 0,
+     "n": 201,
+     "null": 92
+    },
+    "phone2TypeCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 1
+    },
+    "phone3": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "phone3TypeCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "phone4": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "phone4TypeCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "promoCodes": {
+     "missing": 0,
+     "n": 201,
+     "null": 60
+    },
+    "rateClassCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "regionCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "relatedAcctIds": {
+     "missing": 0,
+     "n": 201,
+     "null": 41
+    },
+    "rowVersionNo": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "segmentCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "signupDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 41
+    },
+    "signupDtRaw": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "stateCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "subStatusCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 66
+    },
+    "taxExempt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "terminateDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "terminateDtRaw": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "territoryCd": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf01": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf02": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf03": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf04": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf05": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf06": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf07": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf08": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf09": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf10": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf11": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf12": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf13": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf14": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf15": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf16": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf17": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf18": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf19": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf20": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf21": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf22": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf23": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf24": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf25": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf26": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf27": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf28": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf29": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf30": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf31": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf32": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf33": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf34": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf35": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf36": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf37": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf38": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf39": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udf40": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt01": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt02": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt03": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt04": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt05": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt06": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt07": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt08": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt09": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfAmt10": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt01": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt02": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt03": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt04": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt05": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt06": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt07": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt08": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt09": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "udfDt10": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    },
+    "updatedBy": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "updatedDt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "vip": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "ytdBilledAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "ytdPaidAmt": {
+     "missing": 0,
+     "n": 201,
+     "null": 200
+    },
+    "zip": {
+     "missing": 0,
+     "n": 201,
+     "null": 0
+    },
+    "zip4": {
+     "missing": 0,
+     "n": 201,
+     "null": 201
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_custSeqNo_1",
+     false
+    ],
+    [
+     "attributes.k_1_attributes.v_1",
+     false
+    ]
+   ]
+  },
+  "customerMasterHist": {
+   "count": 0,
+   "field_rates": {
+    "addrLine1": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "addrLine2": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "addrLine3": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "addrLine4": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "addrLine5": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "addrLine6": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "channelCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "childAcctIds": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "city": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "contactNotes": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "conversionBatchNo": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "countryCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "createdBy": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "createdDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "creditHold": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "creditLimitAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "curBalAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custId": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custName": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custNameUpper": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custNo": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custSeqNo": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "custTypeCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "dbaName": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "dunningExempt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "email1": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "email2": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "email3": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "fax": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag01": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag02": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag03": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag04": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag05": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag06": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag07": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag08": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag09": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag10": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag11": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag12": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag13": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag14": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag15": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag16": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag17": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag18": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag19": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "flag20": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "histDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "histDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "histOp": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastActivityDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastActivityDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastInvoiceDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastInvoiceDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastPaymentDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "lastPaymentDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "legacySysKey": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "legalName": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "ltdBilledAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine1": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine2": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine3": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine4": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine5": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailAddrLine6": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailCity": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailStateCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mailZip": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "mainframeAcctNo": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "pastDueAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone1": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone1TypeCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone2": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone2TypeCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone3": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone3TypeCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone4": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "phone4TypeCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "promoCodes": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "rateClassCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "regionCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "relatedAcctIds": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "rowVersionNo": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "segmentCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "signupDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "signupDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "stateCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "subStatusCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "taxExempt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "terminateDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "terminateDtRaw": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "territoryCd": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf01": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf02": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf03": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf04": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf05": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf06": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf07": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf08": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf09": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf10": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf11": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf12": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf13": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf14": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf15": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf16": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf17": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf18": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf19": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf20": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf21": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf22": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf23": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf24": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf25": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf26": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf27": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf28": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf29": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf30": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf31": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf32": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf33": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf34": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf35": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf36": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf37": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf38": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf39": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udf40": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt01": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt02": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt03": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt04": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt05": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt06": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt07": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt08": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt09": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfAmt10": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt01": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt02": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt03": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt04": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt05": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt06": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt07": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt08": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt09": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "udfDt10": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "updatedBy": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "updatedDt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "vip": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "ytdBilledAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "ytdPaidAmt": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "zip": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    },
+    "zip4": {
+     "missing": 0,
+     "n": 0,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "custId_1__id_1",
+     false
+    ]
+   ]
+  },
+  "invoiceHeader": {
+   "count": 1000,
+   "field_rates": {
+    "batchNo": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "custId": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "dueDt": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "dueDtRaw": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "invoiceDt": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "invoiceDtRaw": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "invoiceNo": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    },
+    "totalAmt": {
+     "missing": 0,
+     "n": 1000,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ]
+   ]
+  },
+  "invoiceLine": {
+   "count": 1500,
+   "field_rates": {
+    "amount": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "batchNo": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "custId": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "custName": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "custNo": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "glAcct": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "invoiceDt": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "invoiceDtRaw": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "invoiceId": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "invoiceNo": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "itemDesc": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "lineNo": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "lineTypeCd": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "posted": {
+     "missing": 0,
+     "n": 1500,
+     "null": 313
+    },
+    "qty": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "servicePeriod": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "srcSystem": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "taxAmt": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    },
+    "unitPrice": {
+     "missing": 0,
+     "n": 1500,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ]
+   ]
+  },
+  "invoices": {
+   "count": 9,
+   "embeds": {
+    "dunningAttempts": {
+     "child_table": "DUNNING_ATTEMPTS",
+     "length_distribution": {
+      "0": 7,
+      "2": 1,
+      "3": 1
+     },
+     "shape": "array",
+     "total_elements": 5
+    },
+    "lines": {
+     "child_table": "INVOICE_LINES",
+     "length_distribution": {
+      "0": 2,
+      "2": 2,
+      "5": 5
+     },
+     "shape": "array",
+     "total_elements": 29
+    }
+   },
+   "field_rates": {
+    "issuedAt": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "periodId": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "subtotal": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "tax": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    },
+    "total": {
+     "missing": 0,
+     "n": 9,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_issuedAt_1__id_1",
+     false
+    ],
+    [
+     "_id_1_tenantId_1",
+     false
+    ],
+    [
+     "dunningAttempts.scheduledFor_1",
+     false
+    ],
+    [
+     "lines.lineNo_1",
+     false
+    ],
+    [
+     "statusCd_1_issuedAt_1__id_1",
+     false
+    ],
+    [
+     "periodId_1",
+     false
+    ]
+   ]
+  },
+  "notifications": {
+   "count": 2,
+   "duplicate_natural_keys": {
+    "tenantId,kindCd,sentAt": 0
+   },
+   "field_rates": {
+    "kindCd": {
+     "missing": 0,
+     "n": 2,
+     "null": 0
+    },
+    "sentAt": {
+     "missing": 0,
+     "n": 2,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 2,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_kindCd_1_sentAt_1",
+     true
+    ]
+   ]
+  },
+  "plans": {
+   "count": 3,
+   "duplicate_natural_keys": {
+    "code": 0
+   },
+   "field_rates": {
+    "active": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    },
+    "code": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    },
+    "includedUnits": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    },
+    "monthlyFee": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    },
+    "overageRate": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    },
+    "tierCd": {
+     "missing": 0,
+     "n": 3,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "monthlyFee_1__id_1",
+     false
+    ],
+    [
+     "monthlyFee_1_code_1",
+     false
+    ],
+    [
+     "code_1",
+     true
+    ]
+   ]
+  },
+  "ratingPeriods": {
+   "count": 8,
+   "duplicate_natural_keys": {
+    "tenantId,periodStart": 0
+   },
+   "field_rates": {
+    "periodEnd": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "periodStart": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_periodStart_1",
+     true
+    ]
+   ]
+  },
+  "ratingResults": {
+   "count": 8,
+   "field_rates": {
+    "billableUnits": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "createdAt": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "overageAmount": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "periodId": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "quotaUnits": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "rolloverUnits": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "subscriptionId": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    },
+    "usedUnits": {
+     "missing": 0,
+     "n": 8,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "periodId_1",
+     false
+    ]
+   ]
+  },
+  "subscriptions": {
+   "count": 20,
+   "field_rates": {
+    "endsOn": {
+     "missing": 0,
+     "n": 20,
+     "null": 15
+    },
+    "planId": {
+     "missing": 0,
+     "n": 20,
+     "null": 0
+    },
+    "startsOn": {
+     "missing": 0,
+     "n": 20,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 20,
+     "null": 0
+    },
+    "suspendedOn": {
+     "missing": 0,
+     "n": 20,
+     "null": 18
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 20,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_endsOn_1_startsOn_1",
+     false
+    ],
+    [
+     "endsOn_1_startsOn_1",
+     false
+    ],
+    [
+     "planId_1",
+     false
+    ]
+   ]
+  },
+  "subscriptionsHist": {
+   "count": 6,
+   "field_rates": {
+    "endsOn": {
+     "missing": 0,
+     "n": 6,
+     "null": 6
+    },
+    "histDt": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "histDtRaw": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "histOp": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "id": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "planId": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "startsOn": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    },
+    "suspendedOn": {
+     "missing": 0,
+     "n": 6,
+     "null": 6
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 6,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "id_1__id_1",
+     false
+    ]
+   ]
+  },
+  "tenants": {
+   "count": 15,
+   "duplicate_natural_keys": {
+    "name": 0
+   },
+   "embeds": {
+    "creditNotes": {
+     "child_table": "CREDIT_NOTES",
+     "length_distribution": {
+      "0": 12,
+      "1": 1,
+      "2": 2
+     },
+     "shape": "array",
+     "total_elements": 5
+    }
+   },
+   "field_rates": {
+    "name": {
+     "missing": 0,
+     "n": 15,
+     "null": 0
+    },
+    "statusCd": {
+     "missing": 0,
+     "n": 15,
+     "null": 0
+    },
+    "taxExempt": {
+     "missing": 0,
+     "n": 15,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "creditNotes.remainingAmount_1",
+     false
+    ],
+    [
+     "creditNotes.issuedOn_1_creditNotes.id_1_creditNotes.remainingAmount_1",
+     false
+    ],
+    [
+     "name_1",
+     true
+    ]
+   ]
+  },
+  "usageEvents": {
+   "count": 103,
+   "field_rates": {
+    "kindCd": {
+     "missing": 0,
+     "n": 103,
+     "null": 0
+    },
+    "occurredAt": {
+     "missing": 0,
+     "n": 103,
+     "null": 0
+    },
+    "tenantId": {
+     "missing": 0,
+     "n": 103,
+     "null": 0
+    },
+    "units": {
+     "missing": 0,
+     "n": 103,
+     "null": 0
+    }
+   },
+   "indexes": [
+    [
+     "_id_",
+     false
+    ],
+    [
+     "tenantId_1_occurredAt_1",
+     false
+    ]
+   ]
+  }
+ },
+ "subscriptionsHist_histDtRaw_present": 6
+}

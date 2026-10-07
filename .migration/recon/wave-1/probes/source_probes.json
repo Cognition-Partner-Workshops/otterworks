@@ -1,0 +1,211 @@
+{
+ "generated_at": "2026-10-07T20:19:41.639032+00:00",
+ "schema": "OW_BILLING",
+ "row_counts": {
+  "BILLING_AUDIT_LOG": 73,
+  "CODES": 32,
+  "CREDIT_NOTES": 5,
+  "CUSTOMER_MASTER": 201,
+  "CUSTOMER_MASTER_HIST": 0,
+  "DUNNING_ATTEMPTS": 5,
+  "ENTITY_ATTR_VALUE": 70,
+  "FIXTURE_META": 2,
+  "INVOICES": 9,
+  "INVOICE_HEADER": 1000,
+  "INVOICE_LINE": 1500,
+  "INVOICE_LINES": 29,
+  "NOTIFICATIONS": 2,
+  "PLANS": 3,
+  "RATING_PERIODS": 8,
+  "RATING_RESULTS": 8,
+  "SUBSCRIPTIONS": 20,
+  "SUBSCRIPTIONS_HIST": 6,
+  "TENANTS": 15,
+  "USAGE_EVENTS": 103
+ },
+ "invoice_lines_per_invoice": [
+  [
+   "36daca1b-4124-8073-550d-1fc2c37c9041",
+   5
+  ],
+  [
+   "60000000-0000-0000-0000-000000000001",
+   2
+  ],
+  [
+   "60000000-0000-0000-0000-000000000009",
+   2
+  ],
+  [
+   "99de6c9e-37d9-0c7f-5187-8a96895deca8",
+   5
+  ],
+  [
+   "af4068fe-cf37-2443-cedb-ecff53d88e08",
+   5
+  ],
+  [
+   "bc9d26c3-092f-d0d5-4ad6-e12bb7d3f350",
+   5
+  ],
+  [
+   "c1a9b008-ecb8-1112-38a9-637696ab0539",
+   5
+  ]
+ ],
+ "dunning_per_invoice": [
+  [
+   "60000000-0000-0000-0000-000000000001",
+   2
+  ],
+  [
+   "60000000-0000-0000-0000-000000000002",
+   3
+  ]
+ ],
+ "credit_notes_per_tenant": [
+  [
+   "00000000-0000-0000-0000-000000000003",
+   1
+  ],
+  [
+   "00000000-0000-0000-0000-000000000004",
+   2
+  ],
+  [
+   "00000000-0000-0000-0000-000000000009",
+   2
+  ]
+ ],
+ "orphan_invoice_lines": [
+  [
+   0
+  ]
+ ],
+ "orphan_dunning": [
+  [
+   0
+  ]
+ ],
+ "custbill_ghost_invoice_line_pointers": [
+  [
+   37
+  ]
+ ],
+ "custbill_invoice_line_posted_yn_null": [
+  [
+   313
+  ]
+ ],
+ "customer_master_related_acct_NULL_token": [
+  [
+   4
+  ]
+ ],
+ "customer_master_related_acct_NULL_samples": [
+  [
+   "NULL,NONE,"
+  ],
+  [
+   "NULL,NONE,"
+  ],
+  [
+   "NULL,NONE,"
+  ],
+  [
+   "NULL,NONE,"
+  ]
+ ],
+ "customer_master_signup_dt_unparseable_or_null": [
+  [
+   0
+  ]
+ ],
+ "customer_attrs_per_cust": "ERR ORA-00942: table or view \"OW_BILLING\".\"CUSTOMER_ATTRS\" does not exist\nHelp: https://docs.oracle.com/error-help/db/ora-00942/",
+ "subscriptions_hist_count": [
+  [
+   6
+  ]
+ ],
+ "customer_master_hist_count": [
+  [
+   0
+  ]
+ ],
+ "usage_events_unresolved_tenant": [
+  [
+   0
+  ]
+ ],
+ "invoice_header_cust_unresolved": [
+  [
+   0
+  ]
+ ],
+ "customer_master_probe_columns": [
+  [
+   "SIGNUP_DT",
+   "VARCHAR2"
+  ],
+  [
+   "RELATED_ACCT_IDS",
+   "VARCHAR2"
+  ],
+  [
+   "CHILD_ACCT_IDS",
+   "VARCHAR2"
+  ]
+ ],
+ "entity_attr_value_columns": [
+  "EAV_ID",
+  "ENTITY_TYPE",
+  "ENTITY_ID",
+  "ATTR_NAME",
+  "ATTR_VALUE",
+  "ATTR_TYPE",
+  "CREATED_DT"
+ ],
+ "entity_attr_value_entities": [
+  [
+   58,
+   70
+  ]
+ ],
+ "entity_attr_value_unresolved_to_customer_master": [
+  [
+   0
+  ]
+ ],
+ "custbill_invoice_header_tenant_unresolved_to_TENANTS": [
+  [
+   1000
+  ]
+ ],
+ "custbill_invoice_line_tenant_unresolved_to_TENANTS": [
+  [
+   1500
+  ]
+ ],
+ "customer_master_signup_dt_not_iso_or_null": [
+  [
+   201
+  ]
+ ],
+ "customer_master_signup_dt_samples_nonstandard": [
+  [
+   "02-MAY-25"
+  ],
+  [
+   "20-MAR-18"
+  ],
+  [
+   "05-JAN-14"
+  ],
+  [
+   "N/A"
+  ],
+  [
+   "01-APR-25"
+  ]
+ ]
+}

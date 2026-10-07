@@ -1,0 +1,229 @@
+{
+ "generated_at": "2026-10-07T20:20:28.584732+00:00",
+ "ops": [
+  {
+   "unit": "u00-reference",
+   "name": "codes-lookup-domain",
+   "collection": "codes",
+   "source_rows": 32,
+   "target_rows": 32,
+   "match": true
+  },
+  {
+   "unit": "u00-reference",
+   "name": "plans-fn-list-plans",
+   "collection": "plans",
+   "source_rows": 3,
+   "target_rows": 3,
+   "match": true
+  },
+  {
+   "unit": "u00-reference",
+   "name": "tenants-open-credit-notes",
+   "collection": "tenants",
+   "source_rows": 15,
+   "target_rows": 15,
+   "match": true
+  },
+  {
+   "unit": "u01-subscriptions",
+   "name": "subscriptions-open-for-change-plan",
+   "collection": "subscriptions",
+   "source_rows": 15,
+   "target_rows": 15,
+   "match": true
+  },
+  {
+   "unit": "u01-subscriptions",
+   "name": "subscriptions-covering-feb-2026",
+   "collection": "subscriptions",
+   "source_rows": 15,
+   "target_rows": 15,
+   "match": true,
+   "note": "pipeline date literals parsed as BSON extended JSON ($date) via bson.json_util, as the harness does; first naive replay passed them as strings and returned 0 target rows"
+  },
+  {
+   "unit": "u01-subscriptions",
+   "name": "subscriptions-hist-revisions",
+   "collection": "subscriptionsHist",
+   "source_rows": 6,
+   "target_rows": 6,
+   "match": true
+  },
+  {
+   "unit": "u02-usage-events",
+   "name": "usage-fn-usage-summary-feb-2026",
+   "collection": "usageEvents",
+   "source_rows": 28,
+   "target_rows": 28,
+   "match": true,
+   "note": "pipeline date literals parsed as BSON extended JSON ($date) via bson.json_util, as the harness does; first naive replay passed them as strings and returned 0 target rows"
+  },
+  {
+   "unit": "u02-usage-events",
+   "name": "usage-compute-rating-used-units",
+   "collection": "usageEvents",
+   "source_rows": 15,
+   "target_rows": 15,
+   "match": true
+  },
+  {
+   "unit": "u02-usage-events",
+   "name": "usage-kind-domain-trigger-check",
+   "collection": "usageEvents",
+   "source_rows": 3,
+   "target_rows": 3,
+   "match": true
+  },
+  {
+   "unit": "u03-rating",
+   "name": "rating-rollover-by-tenant",
+   "collection": "ratingResults",
+   "source_rows": 6,
+   "target_rows": 6,
+   "match": true
+  },
+  {
+   "unit": "u03-rating",
+   "name": "rating-periods-by-tenant",
+   "collection": "ratingPeriods",
+   "source_rows": 6,
+   "target_rows": 6,
+   "match": true
+  },
+  {
+   "unit": "u03-rating",
+   "name": "rating-results-billable",
+   "collection": "ratingResults",
+   "source_rows": 5,
+   "target_rows": 5,
+   "match": true
+  },
+  {
+   "unit": "u04-invoices",
+   "name": "invoices-fn-overdue-accounts",
+   "collection": "invoices",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match": true
+  },
+  {
+   "unit": "u04-invoices",
+   "name": "invoices-fn-invoice-lines",
+   "collection": "invoices",
+   "source_rows": 29,
+   "target_rows": 29,
+   "match": true
+  },
+  {
+   "unit": "u04-invoices",
+   "name": "invoices-next-dunning-attempt",
+   "collection": "invoices",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match": true
+  },
+  {
+   "unit": "u05-notifications",
+   "name": "notifications-suspension-dedupe",
+   "collection": "notifications",
+   "source_rows": 1,
+   "target_rows": 1,
+   "match": true
+  },
+  {
+   "unit": "u05-notifications",
+   "name": "notifications-by-tenant-kind",
+   "collection": "notifications",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match": true
+  },
+  {
+   "unit": "u06-audit-log",
+   "name": "audit-entries-by-module",
+   "collection": "billingAuditLog",
+   "source_rows": 4,
+   "target_rows": 4,
+   "match": true
+  },
+  {
+   "unit": "u06-audit-log",
+   "name": "audit-issued-invoice-entries",
+   "collection": "billingAuditLog",
+   "source_rows": 10,
+   "target_rows": 10,
+   "match": true
+  },
+  {
+   "unit": "u07-customer-master",
+   "name": "customer-balances-by-conversion-batch",
+   "collection": "customerMaster",
+   "source_rows": 2,
+   "target_rows": 2,
+   "match": true
+  },
+  {
+   "unit": "u07-customer-master",
+   "name": "customer-first-by-tenant",
+   "collection": "customerMaster",
+   "source_rows": 19,
+   "target_rows": 19,
+   "match": true
+  },
+  {
+   "unit": "u07-customer-master",
+   "name": "customer-eav-attributes",
+   "collection": "customerMaster",
+   "source_rows": 58,
+   "target_rows": 58,
+   "match": true
+  },
+  {
+   "unit": "u08-customer-master-hist",
+   "name": "customer-hist-revisions",
+   "collection": "customerMasterHist",
+   "source_rows": 0,
+   "target_rows": 0,
+   "match": true
+  },
+  {
+   "unit": "u08-customer-master-hist",
+   "name": "customer-hist-raw-timestamps",
+   "collection": "customerMasterHist",
+   "source_rows": 0,
+   "target_rows": 0,
+   "match": true
+  },
+  {
+   "unit": "u09-custbill-invoices",
+   "name": "custbill-header-status-by-batch",
+   "collection": "invoiceHeader",
+   "source_rows": 3,
+   "target_rows": 3,
+   "match": true
+  },
+  {
+   "unit": "u09-custbill-invoices",
+   "name": "custbill-lines-by-batch-type",
+   "collection": "invoiceLine",
+   "source_rows": 4,
+   "target_rows": 4,
+   "match": true
+  },
+  {
+   "unit": "u09-custbill-invoices",
+   "name": "custbill-ghost-lines",
+   "collection": "invoiceLine",
+   "source_rows": 1,
+   "target_rows": 1,
+   "match": true
+  }
+ ],
+ "summary": {
+  "ops": 27,
+  "matched": 27,
+  "mismatched": [],
+  "note": "27 ops replayed from .migration/ops/*.json: source_sql on Oracle (CURRENT_SCHEMA=OW_BILLING, read-only), target_pipeline on mmp_rt_b4_oracle, both canonicalized (decimal_round 2dp, UTC ms truncation, empty_string_is_null, null_missing_equiv) and compared as sorted multisets"
+ }
+}
