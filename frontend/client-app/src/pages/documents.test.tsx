@@ -6,6 +6,8 @@ import { MemoryRouter } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import DocumentsPage from "./documents";
+import { DocumentCard } from "@/components/documents/document-card";
+import type { Document } from "@/types";
 import { billingServer as server } from "../test-setup";
 import { useUIStore } from "@/stores/ui-store";
 
@@ -133,5 +135,20 @@ describe.each(["grid", "list"] as const)("Make a copy (%s view)", (viewMode) => 
     expect(await screen.findByText("Document not found")).toBeInTheDocument();
     expect(screen.queryByText("Copy created")).not.toBeInTheDocument();
     expect(documentTitles()).toEqual(["Quarterly plan"]);
+  });
+});
+
+describe("DocumentCard menu without a copy handler", () => {
+  it("does not offer Make a copy", () => {
+    render(
+      <MemoryRouter>
+        <DocumentCard document={doc("doc-1", "Quarterly plan") as unknown as Document} />
+      </MemoryRouter>
+    );
+    const card = screen.getByText("Quarterly plan").closest("a") as HTMLElement;
+    const buttons = within(card).getAllByRole("button");
+    fireEvent.click(buttons[buttons.length - 1]);
+    expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Make a copy" })).not.toBeInTheDocument();
   });
 });

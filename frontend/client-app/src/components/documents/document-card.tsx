@@ -214,18 +214,20 @@ function DocMenu({
           <Share2 size={14} />
           Share
         </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onCopy?.(docId);
-            onClose();
-          }}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-        >
-          <Copy size={14} />
-          Make a copy
-        </button>
+        {onCopy && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCopy(docId);
+              onClose();
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Copy size={14} />
+            Make a copy
+          </button>
+        )}
         <button
           onClick={(e) => {
             e.preventDefault();
