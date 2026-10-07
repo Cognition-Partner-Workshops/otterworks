@@ -525,7 +525,7 @@
   "blocked": false,
   "note": "all commands from $HOME via absolute paths / wrapper (F4/F9)"
  },
- "pr_url": null,
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
  "pre_pr_self_check": {
   "null_missing": "NULL root key refused by the loader; NULL non-key fields written per spec rules the harness grades; 0 NULL TENANT_ID / 0 orphan child or reference rows owner-side",
   "namespace_scope": "writes only to the three wave write_targets in mmp_rt_b3_oracle; loader refuses any target outside --target-db; the generic checklist's ow_tp prefix rule does not apply to this run's allowlisted db (as b01-b03)",

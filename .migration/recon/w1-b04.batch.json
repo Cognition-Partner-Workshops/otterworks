@@ -11,7 +11,7 @@
   "mmp_rt_b3_oracle.subscriptionsHist",
   "mmp_rt_b3_oracle.ratingResults"
  ],
- "pr_url": null,
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1865",
  "branch": "devin/1791367911-w1-b04-load",
  "failure_class": null,
  "one_line_summary": "invoices 4/4 (4 INVOICE_LINES embedded, tenant.statusCd copied from TENANTS 4/4), subscriptionsHist 0/0 (SUBSCRIPTIONS_HIST empty: trigger cascade never fired in the fixture, histDt rule would reject real rows \u2014 F73), ratingResults 3/3; all three live PASS merge_eligible under map-draft-4 / manifest_sha b11c0e7b2f31, one live run per unit, concurrency 1; loader unchanged, second load identical hashes, nothing dropped, b01-b03 collections unchanged.",
