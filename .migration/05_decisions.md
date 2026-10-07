@@ -4,6 +4,8 @@
 |---|---|
 | mapping version | **`map-v1`** (`.migration/mapping_spec.json`) |
 | `mapping_sha256` | **`949a8891f7fe837ad528d3f8aa54575e0fb50c71346c581310457855540201b2`** (`sha256sum .migration/mapping_spec.json`) |
+| mapping version (s4.3, UNT8-13) | **`map-v1.1`** — `map-v1` + 16 `note` decisions (known incompatibilities, §3b); the patcher stamps every patch as a new version, so `map-v1` could not absorb the notes without a bump. **Last permitted bump before the wave.** |
+| `mapping_sha256` (`map-v1.1`) | **`3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6`** (`sha256sum .migration/mapping_spec.json`); collections and canonicalization rules byte-identical to `map-v1`, only `version`, `canonicalization.version` (`map-v1.1-canon`) and `modeling.decisions` (100 → 116) differ |
 | input proposal | `map-draft-1`, sha256 `54d2e3173602e82f44a89ddc96cb1c67a4a31c7b98c89585b47f120a9e7713bb` (run branch commit `963160a2`) |
 | decisions file | `.migration/design_decisions.json` — 100 decisions, every one with `evidence {file, lines, quote/note}`, a confirmed `access_pattern` ref, or an `ok` `data_profile` stat |
 | plugin | `Cognition-Partner-Workshops/mongo-migration-plugin` @ `353280fc837193a40ccc005cb62fb4ffaf8ac16f` (`~/mmp`, unpatched; `skills/schema-modeling/model_patch.py`) |
@@ -131,6 +133,73 @@ Identified by collection / `kind` / column(s) as the proposer emitted them (`04_
 
 `modeling.answered` (9) was left as generated; the one wrong answer (`TRG_CUSTOMER_MASTER_HIST`) is superseded by `d-cust-hist-trigger` (§2 #2). The other eight (`TRG_BILLING_AUDIT_LOG_ID`, `TRG_CUSTOMER_MASTER_SEQ`, `TRG_ENTITY_ATTR_VALUE_SEQ` as `sequence_trigger_identity`; five `date_format_assumed` → `data_profile` at conformance 1.0) were checked against the DDL and the profile and stand.
 
+## 3b. Known incompatibilities (s4.3-known-incompat, UNT8-13) — every row of `profiles/oracle.md → known_incompatibilities`
+
+Scope reminder for every row below: **this run loads data and verifies parity only and stops before parallel-run.** It does **not** port the PL/SQL packages, triggers or scheduler jobs; where a row's remedy lives in application or package code, the disposition is "out of scope for this run; access evidence only" and the loaded data reflects the Oracle-side logic's past effects verbatim. A missing port is therefore not an omission. Each row has a matching `note` decision in `design_decisions.json` (decisions #101–#116, tag in `evidence.note`); "hit" means the construct exists in this estate's census, access patterns or source.
+
+| # | incompatibility | hit? | evidence | decision |
+|---|---|---|---|---|
+| 1 | empty string IS NULL | **hit by construction** — every VARCHAR2 column (`census.json`: 20 tables / 434 columns); Oracle stores `''` as NULL. No app/package/seed code compares to `''` (grep of `services/legacy-billing/app`, `db/oracle/packages`, `testdata/legacy`: none) | `census.json` tables[*].columns; `design_decisions.json` `d-empty-string-policy` | unchanged from s4.2: `d-empty-string-policy = null`; rule `empty_string_is_null` (canonicalization); loader never writes `''`; recon `null_missing_equiv`. No mapping change (`d-known-incompat-empty-string`) |
+| 2 | sequences / `NEXTVAL` | **hit** — 5 sequences, each consumed by exactly one `BEFORE INSERT` trigger; 0 app-side `NEXTVAL` | `census.json` `sequences` (5), `triggers`; `schema/01_tables.sql:177,184,204,217`; `schema/02_horror.sql:343-344,351,369,389,396`; `ap-bdfdef0db0`, `ap-f1cd68c5b3`, `ap-89ac1728cb`, `ap-dbf1b410e9` | **all 5 retired** (table below): every root keeps its source natural key (`set_key`, `d-natural-keys`), sequence-generated values load verbatim into the field they already populate, no counter collection / `NEXTVAL` emulation. Replacement generator for post-cutover inserts = port-time decision outside this run's stop point (`d-known-incompat-sequences`) |
+| 3 | ROWID-based access | **not hit** — `census.json` `inputs` `rowid_usage` rows = 0; no `ROWID`/`UROWID`/`CHARTOROWID` in app, packages, schema or any of the 105 `access_patterns.json` statements. `ROWNUM`/`FETCH FIRST` (`ap-3fbad6ec1e`, `ap-0a1051eac3`, `ap-b720c4157e`, `ap-bd510b9356`, `ap-e45fe9768e`, `ap-df26fbfed9`, `ap-b6d8685d76`, `ap-ee373ebbd1`) is row limiting, not ROWID addressing | `census.json:50`; `access_patterns.json` | no ROWID surrogate carried; comparison keys are the natural keys (`d-known-incompat-rowid`) |
+| 4 | PL/SQL packages, triggers, materialized views (+ scheduler jobs) | **hit** — 10 PL/SQL units (5 packages `pkg_ow_util`, `pkg_plans`, `pkg_rating`, `pkg_invoicing`, `pkg_dunning`, spec+body), 7 triggers (`TRG_BILLING_AUDIT_LOG_ID`, `TRG_SUBSCRIPTIONS_HIST`, `TRG_SUB_NO_UNCANCEL`, `TRG_USAGE_EVENTS_CHECK`, `TRG_CUSTOMER_MASTER_SEQ`, `TRG_CUSTOMER_MASTER_HIST`, `TRG_ENTITY_ATTR_VALUE_SEQ`), 2 scheduler jobs (`JOB_NIGHTLY_DUNNING`, `JOB_PURGE_AUDIT_LOG`, `schema/04_jobs.sql:8-28`), **0 materialized views, 0 views** | `census.json:4982-5098` (`triggers`, `materialized_views: []`, `plsql_units`, `scheduler_jobs`); `access_patterns.json` per unit: `01_pkg_util` 2, `02_pkg_plans` 7, `03_pkg_rating` 12, `04_pkg_invoicing` 12, `05_pkg_dunning` 11 patterns, trigger bodies `ap-f1cd68c5b3`/`ap-bdfdef0db0`/`ap-fe087c4e0c`/`ap-89ac1728cb`/`ap-dbf1b410e9`, job `ap-e7b18e81b8`; `02_dependency_register.md` | **out of scope for this run; access evidence only.** Not ported here (stop point is before parallel-run) — not an omission. Target-shape intent for the eventual port stays in the s4.2 decisions `d-plsql-pkg-*`, `d-trg-no-uncancel`, `d-trg-usage-check`, `d-job-nightly-dunning`, `d-audit-detached`. Loaded data carries the triggers' past effects (sequence values, history rows, `cust_name_upper`) verbatim (`d-known-incompat-plsql`) |
+| 5 | `CONNECT BY` | **not hit** — no `CONNECT BY` / `START WITH` / `PRIOR` / `SYS_CONNECT_BY_PATH` / `LEVEL` in any pattern or source file. Only hierarchy-shaped data: `CUSTOMER_MASTER.RELATED_ACCT_IDS` / `CHILD_ACCT_IDS` CSV text, walked by no query | `access_patterns.json` (105 statements); `schema/02_horror.sql` | no `$graphLookup` / materialized-path modeling; the CSV columns load as the strings they are (`d-known-incompat-connect-by`) |
+| 6 | `MERGE` | **hit in fixture plumbing only** — the single `MERGE INTO fixture_meta` (`schema/04_upgrade_static.sql:170-177`, `ap-f84584cd2a`; repeated by `startup/00_init.sh:52,155`). `FIXTURE_META` is in `modeling.excluded_tables`; no app/package statement uses `MERGE` (`04_pkg_invoicing.sql:171-176` does DELETE + INSERT) | `access_patterns.json` `ap-f84584cd2a`; `mapping_spec.json` `modeling.excluded_tables` | the fixture `MERGE` does not change the migration model; no upsert emulation for the loaded collections. If a writer with MERGE semantics is ever ported it becomes one `updateOne`/`bulkWrite` upsert per row (`d-known-incompat-merge`) |
+| 7 | analytic / window functions | **not hit** — no `OVER()`, `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `LISTAGG`, `PIVOT` in any pattern or source. Aggregates are plain `GROUP BY` (`reports.py:42-81`, `ap-6167f9171f`/`ap-89c88ad4c6`/`ap-c9b3d38c2c`); top-N is `ORDER BY` + `ROWNUM`/`FETCH FIRST` | `access_patterns.json` (105 statements) | no `$setWindowFields` modeling; recon Tier 2 aggregates are the only grouped computations in this run (`d-known-incompat-analytic`) |
+| 8 | `DATE` arithmetic | **hit** — `app/facade.py:220` `TO_DATE(:3,'YYYY-MM-DD') + 1` (`ap-3fbad6ec1e`, hot); `02_pkg_plans.sql:92` `ends_on = p_effective_on - 1` (`ap-a7af1a6156`); `05_pkg_dunning.sql:22` `TRUNC(p_as_of) - TRUNC(CAST(i.issued_at AS DATE))` (`ap-46a8eb988b`) and `:77` `TRUNC(p_as_of) - 14` (`ap-eb72a29af5`); `03_pkg_rating.sql:87,92` `ADD_MONTHS` (`ap-81929b0d21`), `:111-112` `(p_period_end - v_suspended_on + 1) / (p_period_end - p_period_start + 1)`; `schema/04_jobs.sql:24` `SYSDATE - 90` (`ap-e7b18e81b8`) | as cited | DATE columns load as UTC BSON dates (`datetime_utc_truncate_ms`; Oracle DATE has no zone and the estate sets no session TZ), business dates stay midnight-truncated; day arithmetic is the application's job at port time (`$dateAdd`/`$dateDiff` in day units, never epoch-seconds math). Nothing in this run's load or recon performs date arithmetic; dirty text dates stay on `d-dirty-dates` (`d-known-incompat-date-arith`) |
+| 9 | NLS / case-insensitivity | **hit in one explicit site** — `app/facade.py:396` `LOWER(code_desc) = LOWER(:1)` on `CODES('USAGE_KIND')` (`ap-6470faec0f`). No `NLS_COMP`/`NLS_SORT` anywhere (app, `startup/00_init.sh`, `setup/01_users.sql`), so Oracle compares `BINARY` elsewhere; the estate's own workaround is the shadow column `CUSTOMER_MASTER.CUST_NAME_UPPER` filled by `TRG_CUSTOMER_MASTER_SEQ` (`02_horror.sql:28,353`), read by no query. `NLS_DATE_LANGUAGE=ENGLISH` in `pkg_ow_util.f_dt2str/f_str2dt` (`01_pkg_util.sql:52,57`) | as cited | no case-insensitive collation on any collection or index in `map-v1.1`; `codes` is a small cached lookup (`d-codes-cached`), so the lowercase match happens in the application on the cached `codeDesc` at port time; `custNameUpper` loads verbatim as data (its derivation moves with the trigger port — out of scope); date-language handling is `d-dirty-dates` (`d-known-incompat-nls-case`) |
+| 10 | heap-table row order | **hit by construction** — every table is a heap (no `ORGANIZATION INDEX` in `01_tables.sql`/`02_horror.sql`); **dispositioned**: every embed element key in the patcher output is unique within its parent and sorts deterministically (table below). Root reads with no `ORDER BY` (`05_pkg_dunning.sql:43-44` `ap-37287a11b5`, `04_pkg_invoicing.sql:59-60` `ap-41de3e5203`) are single-row aggregates with no order dependency | `mapping_spec.json` `collections[*].embeds[*].key`; `schema/01_tables.sql:131,153`; readers cited below | loader writes every embedded array sorted ascending by its element key → a reload of the same source rows is byte-identical (idempotent) and never depends on Oracle scan order; the recon harness grades embed elements by element key, not position (`mongo-recon-harness/harness/recon/tiers.py` `_grade_embeds`) (`d-known-incompat-heap-order`) |
+| 11 | numbers rendered as text | **hit in the read facades** — `app/reports.py:45,64-65,85-86` `TO_CHAR(SUM(...),'FM999999999999990.00')` and `'UNKNOWN(' \|\| TO_CHAR(h.status_cd) \|\| ')'` (`ap-6167f9171f`, `ap-89c88ad4c6`, `ap-c9b3d38c2c`); `reports.py:250` `f"{total_amount:.2f}"`; `app/backends/oracle.py:19-20` `str(Decimal)` with `oracledb.defaults.fetch_decimals = True` (`app/oracle_conn.py:5`); packages: `01_pkg_util.sql:45` `TO_CHAR(NVL(p_val,-1))`, `04_pkg_invoicing.sql:160` / `05_pkg_dunning.sql:56` `TO_CHAR(counter)` feeding `f_md5_uuid` | as cited | amounts load as `Decimal128` at the declared scale (`decimal_round`; `numeric_abs_tol 0` in `recon_tolerances.json`), counts/codes as `int` — never strings or doubles; text rendering stays application-tier at port time (format from the Decimal; `FM…0.00` = two fixed decimals; integral NUMBER → `str(int)`). Recon compares numbers numerically on both sides (`d-known-incompat-num-text`) |
+
+### 3b.1 The five retired sequences (row 2)
+
+| sequence | DDL | consumer trigger → column | what the column is in `map-v1.1` | note decision |
+|---|---|---|---|---|
+| `SEQ_BILLING_AUDIT_LOG` | `01_tables.sql:177` `START WITH 1 INCREMENT BY 1 NOCACHE` | `TRG_BILLING_AUDIT_LOG_ID` (`01_tables.sql:180-186`) → `LOG_ID` | `billingAuditLog._id` (`set_key`); loaded verbatim; new audit rows not written in this run (`d-audit-detached`) | `d-seq-billing-audit-log` |
+| `SEQ_SUBSCRIPTIONS_HIST` | `01_tables.sql:204` `START WITH 1 INCREMENT BY 1 NOCACHE` | `TRG_SUBSCRIPTIONS_HIST` (`01_tables.sql:213-222`, `ap-bdfdef0db0`) → `HIST_ID` | `subscriptionsHist._id` (`set_key`); loaded verbatim; history write moves to the app per `d-sub-hist-edge` (not ported here) | `d-seq-subscriptions-hist` |
+| `SEQ_CUSTOMER_MASTER` | `02_horror.sql:343` `START WITH 100000 INCREMENT BY 1 NOCACHE` | `TRG_CUSTOMER_MASTER_SEQ` (`02_horror.sql:347-356`) → `CUST_SEQ_NO` (**not** the key; `CUST_ID` is) | `customerMaster.custSeqNo`, the hot sort column (`facade.py:125,287` `ORDER BY cust_seq_no`; `ap-bd510b9356`, `ap-e45fe9768e`) under index `{tenantId:1, custSeqNo:1}`; loaded verbatim | `d-seq-customer-master` |
+| `SEQ_CUSTOMER_MASTER_HIST` | `02_horror.sql:344` `START WITH 1 INCREMENT BY 1 NOCACHE` | `TRG_CUSTOMER_MASTER_HIST` (`02_horror.sql:360-375`, `ap-dbf1b410e9`) → `HIST_ID` | `customerMasterHist._id` (`set_key`); loaded verbatim; history write moves to the app per `d-cust-hist-trigger` (not ported here) | `d-seq-customer-master-hist` |
+| `SEQ_ENTITY_ATTR_VALUE` | `02_horror.sql:389` `START WITH 1 INCREMENT BY 1 CACHE 1000` (gaps on restart are data, not a defect) | `TRG_ENTITY_ATTR_VALUE_SEQ` (`02_horror.sql:392-398`) → `EAV_ID` | `customerMaster.attributes[].eavId`, second column of the embed element key `[ATTR_NAME, EAV_ID]` (`d-eav-embed`); read order `ORDER BY eav_id` (`facade.py:296`, `ap-6c1786cb2d`) | `d-seq-entity-attr-value` |
+
+No counters collection, no `$inc` sequence document, no `NEXTVAL` shim is created in this run. Parity is graded on the loaded values only.
+
+### 3b.2 Embed element keys sort deterministically (row 10)
+
+| embed (patcher output) | child table | element key `source → target` | unique within parent because | legacy read order |
+|---|---|---|---|---|
+| `invoices.lines` | `INVOICE_LINES` | `LINE_NO → lineNo` | `uq_invoice_lines UNIQUE (invoice_id, line_no)` (`01_tables.sql:131`) | `ORDER BY line_no` (`04_pkg_invoicing.sql:109`, `ap-620d0a2057`) |
+| `invoices.dunningAttempts` | `DUNNING_ATTEMPTS` | `ID → id` | `ID` is the primary key (VARCHAR2(36)); also `uq_dunning_attempts (invoice_id, attempt_no)` (`01_tables.sql:153`) | `ORDER BY scheduled_for DESC, id DESC` (`facade.py:346`, `ap-0a1051eac3`) |
+| `tenants.creditNotes` | `CREDIT_NOTES` | `ID → id` | `ID` is the primary key | `ORDER BY issued_on, id` (`04_pkg_invoicing.sql:184`, `ap-b259650bfe`) |
+| `customerMaster.attributes` | `ENTITY_ATTR_VALUE` | `[ATTR_NAME, EAV_ID] → [k, eavId]` | `EAV_ID` is the primary key (`element_key_basis: surrogate_pk`) | `ORDER BY eav_id` (`facade.py:296`, `ap-6c1786cb2d`) |
+
+Every key is a total order over the child rows of one parent, so the loader's "sort elements ascending by element key" rule makes reloads idempotent (same rows in → byte-identical array out) independent of Oracle heap scan order. Legacy readers that need another order (`scheduled_for DESC`, `issued_on`) sort at read time on fields that are present in every element; that is an application concern at port time, not a load concern.
+
+### 3b.3 How the notes were applied — version bump to `map-v1.1`
+
+`model_patch.py` stamps every patch with the `--version` it is given ("each patch is a new version") and the 16 notes change `modeling.decisions`, so `map-v1` could not absorb them under the same label without one version pointing at two different hashes. The single permitted fallback `map-v1.1` was used; **no further bump is permitted before the wave.**
+
+```sh
+# reproducibility check first: re-applying the 100 s4.2 decisions to map-draft-1 (963160a2) reproduces map-v1 byte for byte
+git show 963160a2:.migration/mapping_spec.json > /tmp/map-draft-1.json           # sha256 54d2e317…7713bb
+python3 ~/mmp/skills/schema-modeling/model_patch.py --spec /tmp/map-draft-1.json \
+  --decisions .migration/design_decisions.json --out /tmp/map-v1-repro.json --version map-v1 \
+  --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json --census .migration/census.json
+sha256sum /tmp/map-v1-repro.json                                                   # 949a8891…0201b2 == map-v1
+
+# then map-v1.1 = the same patcher over map-draft-1 with all 116 decisions (100 s4.2 + 16 notes)
+python3 ~/mmp/skills/schema-modeling/model_patch.py --spec /tmp/map-draft-1.json \
+  --decisions .migration/design_decisions.json --out .migration/mapping_spec.json --version map-v1.1 \
+  --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json --census .migration/census.json
+# → mapping spec map-v1.1 written: collections=15 embeds=4 (derived=4) unresolved=0 decisions=116
+sha256sum .migration/mapping_spec.json                                             # 3dc4060d3a4bdc39f0904c3e79eff2568fb32e5560cad822280a0aa95b2539b6
+
+python3 ~/mmp/skills/schema-modeling/model_patch.py --spec .migration/mapping_spec.json --check \
+  --data-profile .migration/data_profile.json --access-patterns .migration/access_patterns.json --census .migration/census.json
+# → open items: 0 modeling.unresolved, 0 collection open_questions / check OK (140 decisions, 251 evidence refs), exit 0
+```
+
+Cross-check: applying only the 16 notes to the committed `map-v1` with `--version map-v1.1` produces the identical file (same sha256 `3dc4060d…539b6`). `collections[]` and the canonicalization rules are byte-identical to `map-v1`; the only differences are `version`, `canonicalization.version` (`map-v1-canon` → `map-v1.1-canon`, stamped by the patcher) and `modeling.decisions` (100 → 116). No generated JSON was edited by hand; the legacy estate and `~/mmp` were not touched; `tp-run/mongodb-20261007T062215Z` was not read.
+
 ## 4. Plan defaults as applied
 
 | default | decision id | applied as |
@@ -170,4 +239,17 @@ Legacy source (`services/legacy-billing/db/oracle/`, `testdata/legacy/oracle_bil
 | secrets | none referenced; `MONGODB_ATLAS_URI` not used (no database access in this step) |
 | NULL/missing attribution, unit namespace `ow_tp`/`ow-tp-`, shared-table DDL, rerun retention, recon report, capability preflight, parity tolerance | not applicable to this step (modeling artifacts only; no load, no target writes); recorded, not claimed |
 | unverified paths | loader behaviour named in the `d-orphan-*`, `d-dirty-dates` and `d-eav-embed` decisions is a contract for the load step, not yet executed |
+| previous run branch | `tp-run/mongodb-20261007T062215Z` not read |
+
+### 6.1 Pre-PR self-check for s4.3-known-incompat (UNT8-13, `map-v1.1`)
+
+| check | result |
+|---|---|
+| `model_patch.py --check` on `map-v1.1` | exit 0 — `open items: 0 modeling.unresolved, 0 collection open_questions`, `check OK (140 decisions, 251 evidence refs)` |
+| `make tp-smoke` | `tp-smoke: all checks passed`, exit 0 (after `mise trust` of the repo's `mise.toml` on this VM — environment, not a repo change) |
+| generated JSON edited by hand | no — `mapping_spec.json` is the patcher's output of the `map-v1.1` command in §3b.3; `design_decisions.json` (100 → 116 decisions, all `op: note`) is the only hand-written input |
+| legacy estate / plugin untouched | `git diff --stat` touches only `.migration/design_decisions.json`, `.migration/mapping_spec.json`, `.migration/05_decisions.md`; `~/mmp` still at `353280fc837193a40ccc005cb62fb4ffaf8ac16f`, unpatched |
+| secrets | none referenced; `MONGODB_ATLAS_URI` not used (no database access in this step) |
+| NULL/missing attribution, unit namespace `ow_tp`/`ow-tp-`, shared-table DDL, rerun retention, recon report, capability preflight, parity tolerance | not applicable (modeling/documentation artifacts only; no load, no target writes); recorded, not claimed |
+| unverified paths | "loader sorts embedded arrays by element key" (§3b.2) and the port-time dispositions in §3b rows 4, 8, 9, 11 are contracts for later steps, not yet executed |
 | previous run branch | `tp-run/mongodb-20261007T062215Z` not read |
