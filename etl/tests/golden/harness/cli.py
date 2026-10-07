@@ -19,6 +19,7 @@ import argparse
 import difflib
 import hashlib
 import json
+import shutil
 import sys
 import time
 from collections.abc import Callable
@@ -100,10 +101,16 @@ def check_retired(scn: scenario.Scenario) -> tuple[bool, str]:
     )
 
 
+def mode_dir(scn: scenario.Scenario, mode: str) -> Path:
+    """Where one mode keeps its snapshots and diff, so modes never overwrite each other."""
+    return settings.RUNS_DIR / scn.script / scn.name / mode
+
+
 def run_scenario(
     scn: scenario.Scenario,
     image: str,
     attempt: int,
+    mode: str = "check",
     run: Run | None = None,
     run_dir: Path | None = None,
 ) -> tuple[dict[str, str], int, int]:
@@ -111,9 +118,11 @@ def run_scenario(
 
     By default the legacy script runs in the pinned image and its log must
     carry the shim banner. The DAG parity runner passes ``run`` (called with
-    the generated config.ini and the HTTP stub URL) and its own ``run_dir``;
-    seeding, snapshot and normalization stay exactly the same.
+    the generated config.ini and the HTTP stub URL) and its own ``run_dir``, which
+    then also holds the snapshots; seeding, snapshot and normalization stay exactly
+    the same. Otherwise snapshots go to ``mode_dir`` so check and repeat never mix.
     """
+    snapshot_dir = run_dir or mode_dir(scn, mode)
     run_dir = run_dir or settings.RUNS_DIR / scn.script / scn.name
     run_dir.mkdir(parents=True, exist_ok=True)
     infra.reset()
@@ -139,7 +148,7 @@ def run_scenario(
         )
     files, replaced = normalize.normalize(snapshot.capture(result.exit_code))
     rendered = snapshot.render(files)
-    write_files(run_dir / ("snapshot-%d" % attempt), rendered)
+    write_files(snapshot_dir / ("snapshot-%d" % attempt), rendered)
     print(
         "  run %d: exit=%d in %.1fs, %d volatile value(s) normalized, log %s"
         % (
@@ -202,10 +211,12 @@ def write_golden(scn: scenario.Scenario, files: dict[str, str]) -> None:
     write_files(scn.golden_dir, files)
 
 
-def report_diff(scn: scenario.Scenario, lines: list[str]) -> None:
+def report_diff(scn: scenario.Scenario, mode: str, lines: list[str]) -> None:
     """Print a diff and keep it next to the run logs for the CI artifact."""
     sys.stdout.writelines(lines)
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).write_text("".join(lines))
+    out = mode_dir(scn, mode)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / DIFF_FILE).write_text("".join(lines))
 
 
 def execute(scn: scenario.Scenario, image: str | None, mode: str) -> tuple[bool, str]:
@@ -214,8 +225,8 @@ def execute(scn: scenario.Scenario, image: str | None, mode: str) -> tuple[bool,
         return check_retired(scn)
     require_legacy_runtime(scn, mode)
     assert image is not None
-    (settings.RUNS_DIR / scn.script / scn.name / DIFF_FILE).unlink(missing_ok=True)
-    files, exit_code, _ = run_scenario(scn, image, 1)
+    shutil.rmtree(mode_dir(scn, mode), ignore_errors=True)
+    files, exit_code, _ = run_scenario(scn, image, 1, mode)
     if mode == "record":
         write_golden(scn, files)
         return True, "recorded exit=%d sha256=%s" % (exit_code, digest(files)[:16])
@@ -225,14 +236,14 @@ def execute(scn: scenario.Scenario, image: str | None, mode: str) -> tuple[bool,
             return False, "no golden recorded (run MODE=record)"
         delta = diff(golden, files)
         if delta:
-            report_diff(scn, delta)
+            report_diff(scn, mode, delta)
             return False, "differs from golden"
         return True, "identical to golden sha256=%s" % digest(files)[:16]
-    second, _, _ = run_scenario(scn, image, 2)
+    second, _, _ = run_scenario(scn, image, 2, mode)
     first_digest, second_digest = digest(files), digest(second)
     print("  run 1 sha256=%s\n  run 2 sha256=%s" % (first_digest, second_digest))
     if files != second:
-        report_diff(scn, diff(files, second))
+        report_diff(scn, mode, diff(files, second))
         return False, "runs differ"
     return True, "byte-identical across 2 runs sha256=%s" % first_digest[:16]
 
