@@ -1,0 +1,19 @@
+{
+  "policy": "online",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "source": {
+    "access": "live",
+    "reason": "probe_ok",
+    "blocked": false,
+    "detail": ""
+  },
+  "target": {
+    "access": "migration_cluster",
+    "reason": "privilege_excess",
+    "blocked": true,
+    "detail": "over-scoped principal: readWriteAnyDatabase@admin, dbAdminAnyDatabase@admin"
+  },
+  "blocked": true,
+  "probed_at": "2026-10-07T06:51:05.577313+00:00"
+}
