@@ -1,0 +1,383 @@
+{
+ "kind": "batch-evidence",
+ "ticket": "UNT7-22",
+ "plan_step": "s4.1.b05",
+ "batch": "w1-b05",
+ "wave_manifest": ".migration/waves/wave-1.json",
+ "manifest_sha": "b11c0e7b2f31",
+ "run_branch_base": "8787f0ca (tp-run/mongodb-20261007T062215Z, after PR #1865)",
+ "branch": "devin/1791368621-w1-b05-load",
+ "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+ "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1 (devin/1791335937-app-aware-modeling-next; cherry-pick 865b105d applied, patch-id e102025d)",
+ "mapping_version": "map-draft-4",
+ "mapping_sha256": "f5f8df83ed10647698a6451bb195ad44a20aa3d80dd01cb99058ab51ee5ba763",
+ "tolerance_version": "1",
+ "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+ "source": {
+  "dsn_secret": "MMP_RT_SRC_DSN",
+  "principal": "OW_BILLING_RO (CURRENT_SCHEMA=OW_BILLING via logon trigger, F60)",
+  "concurrency": 1,
+  "fixture_counts_recheck_owner_side": {
+   "DUNNING_ATTEMPTS": 1,
+   "matches_fixture_counts_json": true,
+   "columns": [
+    "ID VARCHAR2(36) NOT NULL",
+    "TENANT_ID VARCHAR2(36) NOT NULL",
+    "INVOICE_ID VARCHAR2(36) NOT NULL",
+    "ATTEMPT_NO NUMBER NOT NULL",
+    "SCHEDULED_FOR DATE NOT NULL",
+    "STATUS_CD NUMBER NOT NULL"
+   ],
+   "fks_all_constraints": [
+    [
+     "TENANT_ID",
+     "TENANTS",
+     "ID"
+    ],
+    [
+     "INVOICE_ID",
+     "INVOICES",
+     "ID"
+    ]
+   ],
+   "INVOICE_ID_dangling_vs_INVOICES": 0,
+   "INVOICE_ID_null": 0,
+   "TENANT_ID_dangling_vs_TENANTS": 0,
+   "TENANT_ID_null": 0,
+   "INVOICE_ID_not_in_legacy_INVOICE_HEADER": 1,
+   "SUBSCRIPTION_ID_column": "absent"
+  },
+  "queries": [
+   "SELECT COUNT(*) FROM DUNNING_ATTEMPTS",
+   "SELECT column_name,data_type,data_length,nullable FROM all_tab_columns WHERE owner='OW_BILLING' AND table_name='DUNNING_ATTEMPTS'",
+   "all_cons_columns/all_constraints join, constraint_type='R', table_name='DUNNING_ATTEMPTS'",
+   "SELECT COUNT(*) FROM DUNNING_ATTEMPTS d WHERE d.INVOICE_ID IS NOT NULL AND NOT EXISTS (SELECT 1 FROM INVOICES r WHERE r.ID=d.INVOICE_ID)",
+   "SELECT COUNT(*) FROM DUNNING_ATTEMPTS d WHERE d.TENANT_ID IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TENANTS r WHERE r.ID=d.TENANT_ID)",
+   "SELECT COUNT(*) FROM DUNNING_ATTEMPTS d WHERE NOT EXISTS (SELECT 1 FROM INVOICE_HEADER h WHERE h.INVOICE_ID=d.INVOICE_ID)"
+  ]
+ },
+ "loader": {
+  "script": "services/legacy-billing/migration/mongodb/load_units.py",
+  "recon_wrapper": "services/legacy-billing/migration/mongodb/recon_unit.sh",
+  "interpreter": "/home/ubuntu/.venvs/recon/bin/python",
+  "changes_this_batch": [],
+  "reload_semantics": "delete_many({}) on the unit's own collection then insert_many; create_index per spec; nothing dropped",
+  "command": "load_units.py --spec .migration/mapping_spec.json --allowed-targets .migration/allowed_targets.json --units dunningAttempts --write-targets mmp_rt_b3_oracle.dunningAttempts --source-dsn-secret MMP_RT_SRC_DSN --target-uri-secret MONGODB_ATLAS_URI --target-db mmp_rt_b3_oracle --report <scratch>",
+  "dry_run_first": true,
+  "dry_run": {
+   "kind": "load-report",
+   "spec_version": "map-draft-4",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": true,
+   "started_at": "2026-10-07T10:23:48.593170+00:00",
+   "units": {
+    "dunningAttempts": {
+     "root_table": "DUNNING_ATTEMPTS",
+     "source_rows": 1,
+     "documents_written": 0,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [],
+     "index_conflicts": [],
+     "elapsed_s": 0.002
+    }
+   },
+   "source_queries": 1,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T10:23:48.595256+00:00"
+  },
+  "load1": {
+   "kind": "load-report",
+   "spec_version": "map-draft-4",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": false,
+   "started_at": "2026-10-07T10:24:31.103002+00:00",
+   "units": {
+    "dunningAttempts": {
+     "root_table": "DUNNING_ATTEMPTS",
+     "source_rows": 1,
+     "documents_written": 1,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "invoiceId_1_attemptNo_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.895
+    }
+   },
+   "source_queries": 1,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T10:24:31.998530+00:00"
+  },
+  "load2_after_live_recon": {
+   "kind": "load-report",
+   "spec_version": "map-draft-4",
+   "target_db": "mmp_rt_b3_oracle",
+   "dry_run": false,
+   "started_at": "2026-10-07T10:25:05.051350+00:00",
+   "units": {
+    "dunningAttempts": {
+     "root_table": "DUNNING_ATTEMPTS",
+     "source_rows": 1,
+     "documents_written": 1,
+     "embeds": {},
+     "copied_fields": {},
+     "derived": {},
+     "orphan_sinks": {},
+     "indexes": [
+      "invoiceId_1_attemptNo_1"
+     ],
+     "index_conflicts": [],
+     "elapsed_s": 0.797
+    }
+   },
+   "source_queries": 1,
+   "source_concurrency": 1,
+   "finished_at": "2026-10-07T10:25:05.848224+00:00"
+  },
+  "content_hashes_load1": {
+   "dunningAttempts": {
+    "count": 1,
+    "hash": "0e43f7e9cf06add3",
+    "indexes": [
+     "_id_",
+     "invoiceId_1_attemptNo_1"
+    ]
+   }
+  },
+  "content_hashes_load2": {
+   "dunningAttempts": {
+    "count": 1,
+    "hash": "0e43f7e9cf06add3",
+    "indexes": [
+     "_id_",
+     "invoiceId_1_attemptNo_1"
+    ]
+   }
+  },
+  "idempotent": true
+ },
+ "recon": {
+  "fixture_first": {
+   "dunningAttempts": {
+    "verdict": "PASS",
+    "merge_eligible": false,
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 3,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     }
+    ],
+    "path": ".migration/recon/dunningAttempts/fixture/result.json",
+    "runs": 2,
+    "note": "run 1 (before the live run) wrote to the default path .migration/recon/dunningAttempts/ and was overwritten by the live run; run 2 re-executed with --out .migration/recon/dunningAttempts/fixture after the live run to retain the artifact; live result.json sha256 91fe075a7e3f4721 unchanged by it (F74). Fixture-mode runs are repeatable and are not merge evidence.",
+    "run1_log_verdict": "recon PASS: unit=dunningAttempts mode=fixture target_class=migration_cluster mapping=map-draft-4 tolerances=1 merge_eligible=False"
+   }
+  },
+  "live_one_run_per_unit": {
+   "dunningAttempts": {
+    "verdict": "PASS",
+    "merge_eligible": true,
+    "target_class": "migration_cluster",
+    "warnings": [],
+    "tiers": [
+     {
+      "tier": 1,
+      "passed": true,
+      "checks_run": 2,
+      "findings": 0
+     },
+     {
+      "tier": 2,
+      "passed": true,
+      "checks_run": 3,
+      "findings": 0
+     },
+     {
+      "tier": 3,
+      "passed": true,
+      "checks_run": 1,
+      "findings": 0
+     }
+    ],
+    "tier3_stats": {
+     "dunningAttempts": {
+      "mode": "full_diff",
+      "population": 1,
+      "duplicate_source_key_count": 0
+     }
+    },
+    "path": ".migration/recon/dunningAttempts/result.json",
+    "runs": 1,
+    "generated_at": "2026-10-07T10:24:36.456035+00:00"
+   }
+  },
+  "hand_checks_on_target": {
+   "dunningAttempts_docs": 1,
+   "fields": [
+    "_id",
+    "attemptNo",
+    "invoiceId",
+    "scheduledFor",
+    "statusCd",
+    "tenantId"
+   ],
+   "invoiceId->invoices._id": {
+    "pointers": 1,
+    "null": 0,
+    "resolved_distinct": 1,
+    "dangling": 0
+   },
+   "tenantId->tenants._id": {
+    "pointers": 1,
+    "null": 0,
+    "resolved_distinct": 1,
+    "dangling": 0
+   },
+   "invoiceId->invoiceHeader._id": {
+    "resolved": 0,
+    "note": "legacy header collection; FK is to INVOICES, not INVOICE_HEADER"
+   },
+   "subscriptionId_field_present": false,
+   "indexes": [
+    "_id_",
+    "invoiceId_1_attemptNo_1"
+   ],
+   "sample": {
+    "_id": "80000000-0000-0000-0000-000000000001",
+    "tenantId": "00000000-0000-0000-0000-000000000005",
+    "invoiceId": "60000000-0000-0000-0000-000000000002",
+    "attemptNo": 1,
+    "scheduledFor": "2026-02-16 00:00:00",
+    "statusCd": 20
+   }
+  },
+  "hand_check_queries": [
+   "db.dunningAttempts.find({}) -> invoiceId / tenantId pointers",
+   "db.invoices.count_documents({_id:{$in:[invoiceId...]}})",
+   "db.tenants.count_documents({_id:{$in:[tenantId...]}})",
+   "db.invoiceHeader.count_documents({_id:{$in:[invoiceId...]}}) (legacy header key space, expected 0)"
+  ]
+ },
+ "target": {
+  "db": "mmp_rt_b3_oracle",
+  "uri_secret": "MONGODB_ATLAS_URI",
+  "write_targets": [
+   "mmp_rt_b3_oracle.dunningAttempts"
+  ],
+  "dbstats_before": {
+   "collections": 15,
+   "objects": 1422,
+   "dataSize": 1458352,
+   "storageSize": 2027520,
+   "indexes": 35,
+   "indexSize": 1449984
+  },
+  "counts_before": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "dbstats_after": {
+   "collections": 16,
+   "objects": 1423,
+   "dataSize": 1458565,
+   "storageSize": 2048000,
+   "indexes": 37,
+   "indexSize": 1490944
+  },
+  "counts_after": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "dunningAttempts": 1,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "final_collection_list_with_counts": {
+   "codes": 32,
+   "creditNotes": 5,
+   "customerMaster": 201,
+   "customerMasterHist": 0,
+   "dunningAttempts": 1,
+   "invoiceHeader": 1000,
+   "invoice_lines_orphaned": 37,
+   "invoices": 4,
+   "notifications": 1,
+   "plans": 3,
+   "ratingPeriods": 3,
+   "ratingResults": 3,
+   "subscriptions": 15,
+   "subscriptionsHist": 0,
+   "tenants": 15,
+   "usageEvents": 103
+  },
+  "wave1_write_target_collections_total_docs": 1386,
+  "new_collections": [
+   "dunningAttempts"
+  ],
+  "b01_b04_collections_unchanged": true,
+  "under_10mb": true,
+  "dropped": []
+ },
+ "mongo_guard": {
+  "base_ref": "origin/tp-run/mongodb-20261007T062215Z",
+  "blocked": false,
+  "note": "all commands from $HOME via absolute paths / wrapper (F4/F9)"
+ },
+ "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/1866",
+ "pre_pr_self_check": {
+  "null_missing": "all six DUNNING_ATTEMPTS columns NOT NULL owner-side; 0 NULL / 0 dangling reference pointers on both sides",
+  "namespace_scope": "writes only to mmp_rt_b3_oracle.dunningAttempts (the single wave write_target); loader refuses any target outside --target-db; ow_tp prefix rule does not apply to this allowlisted db (as b01-b04)",
+  "ddl": "no drop/replace/alter; create_index invoiceId_1_attemptNo_1 (unique natural key) only; Oracle untouched (ro principal)",
+  "rerun": "load 2 after the live recon: identical content hash 0e43f7e9cf06add3",
+  "evidence_retained": "fixture run retained in recon/dunningAttempts/fixture/ (re-run with --out, F74), live verdict in recon/dunningAttempts/result.json, dbStats before/after + final collection list + hand checks here; b01-b04 artifacts untouched",
+  "secrets": "fragment + pattern scan over all new/changed artifacts: 0 value fragments; secrets by name",
+  "tolerances": "tolerances 1 (1a8ebb6c\u2026) unchanged, mapping map-draft-4 unchanged",
+  "recon_recomputed": "result.json is a fresh harness run against the loaded target; hand checks recomputed on the target",
+  "unverified": "population 1: every field rule ran on exactly one row; fixture-mode run is not merge evidence by design",
+  "capability_preflight": "preflight.py OK on wave-1 (manifest_sha b11c0e7b2f31, recorded in s3.4); connectivity.json stays blocked: true by human decision d-target-principal",
+  "tp_smoke": "see commit / PR body"
+ }
+}
