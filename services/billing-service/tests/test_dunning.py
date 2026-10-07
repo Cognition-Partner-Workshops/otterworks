@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 
+import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
@@ -411,6 +412,20 @@ def test_suspension_conflict_returns_409(monkeypatch) -> None:
         response = client.post("/api/dunning/suspend", json={"as_of": "2026-02-28"})
 
     assert response.status_code == 409
+
+
+def test_concurrent_suspension_returns_409(monkeypatch) -> None:
+    def duplicate(*_args: object) -> None:
+        raise psycopg.errors.UniqueViolation("duplicate notification")
+
+    monkeypatch.setattr(main, "migrate", lambda: None)
+    monkeypatch.setattr(main, "connect", FakeConnection)
+    monkeypatch.setattr(main, "suspend_overdue", duplicate)
+    with TestClient(main.app) as client:
+        response = client.post("/api/dunning/suspend", json={"as_of": "2026-02-28"})
+
+    assert response.status_code == 409
+    assert "concurrent" in response.json()["detail"]
 
 
 def test_schedule_and_suspend_responses_expose_contract_fields(monkeypatch) -> None:

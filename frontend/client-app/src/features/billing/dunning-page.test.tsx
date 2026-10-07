@@ -92,4 +92,28 @@ describe("Billing dunning", () => {
     fireEvent.click(screen.getByRole("button", { name: "Dismiss error" }));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+
+  it("reports a schedule conflict as a scheduling failure", async () => {
+    billingServer.use(
+      http.post(`${BASE}/schedule`, () => HttpResponse.json({ detail: "conflict" }, { status: 409 })),
+    );
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Schedule dunning" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Dunning was not scheduled");
+    expect(alert).not.toHaveTextContent("Suspension");
+  });
+
+  it("clears results from the previous date when the date changes", async () => {
+    billingServer.use(
+      http.post(`${BASE}/suspend`, () =>
+        HttpResponse.json({ suspended_tenants: [TENANT], suspended_subscriptions: [], notifications: [] }),
+      ),
+    );
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Suspend overdue tenants" }));
+    expect(await screen.findByText("1 tenants suspended.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("As of"), { target: { value: "2026-03-01" } });
+    expect(screen.queryByText("1 tenants suspended.")).not.toBeInTheDocument();
+  });
 });

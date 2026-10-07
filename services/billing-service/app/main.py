@@ -215,6 +215,11 @@ def suspend_overdue_run(request: DunningRun) -> dict:
             status_code=409,
             detail="a subscription to suspend starts after the requested date",
         ) from error
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="a concurrent suspension run already suspended these tenants",
+        ) from error
     return {
         "suspended_tenants": [str(item) for item in result.suspended_tenants],
         "suspended_subscriptions": [

@@ -24,6 +24,7 @@ export default function BillingDunningPage() {
     call: () => Promise<T>,
     onSuccess: (value: T) => void,
     failure: string,
+    conflict = failure,
   ) => {
     if (!asOf) {
       setError("Choose an as-of date.");
@@ -39,15 +40,21 @@ export default function BillingDunningPage() {
       })
       .catch((caught: unknown) => {
         if (!isCurrent()) return;
-        setError(
-          caught instanceof BillingApiError && caught.status === 409
-            ? "Suspension was rolled back: a subscription starts after the as-of date."
-            : failure,
-        );
+        setError(caught instanceof BillingApiError && caught.status === 409 ? conflict : failure);
       })
       .finally(() => {
         if (isCurrent()) setPending(null);
       });
+  };
+
+  const changeAsOf = (value: string) => {
+    requestVersion.current += 1;
+    setAsOf(value);
+    setAccounts(null);
+    setSchedule(null);
+    setSuspension(null);
+    setPending(null);
+    setError("");
   };
 
   const buttonClass =
@@ -67,7 +74,7 @@ export default function BillingDunningPage() {
             id="dunning-as-of"
             type="date"
             value={asOf}
-            onChange={(event) => setAsOf(event.target.value)}
+            onChange={(event) => changeAsOf(event.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2"
           />
         </div>
@@ -86,7 +93,13 @@ export default function BillingDunningPage() {
           disabled={pending !== null}
           className={buttonClass}
           onClick={() =>
-            run("schedule", () => billingApi.scheduleDunning(asOf), setSchedule, "Dunning could not be scheduled.")
+            run(
+              "schedule",
+              () => billingApi.scheduleDunning(asOf),
+              setSchedule,
+              "Dunning could not be scheduled.",
+              "Dunning was not scheduled: another run scheduled these attempts at the same time.",
+            )
           }
         >
           {pending === "schedule" ? "Scheduling…" : "Schedule dunning"}
@@ -96,7 +109,13 @@ export default function BillingDunningPage() {
           disabled={pending !== null}
           className={buttonClass}
           onClick={() =>
-            run("suspend", () => billingApi.suspendOverdue(asOf), setSuspension, "Overdue tenants could not be suspended.")
+            run(
+              "suspend",
+              () => billingApi.suspendOverdue(asOf),
+              setSuspension,
+              "Overdue tenants could not be suspended.",
+              "Suspension was rolled back: a subscription starts after the as-of date, or another run is suspending the same tenants.",
+            )
           }
         >
           {pending === "suspend" ? "Suspending…" : "Suspend overdue tenants"}
