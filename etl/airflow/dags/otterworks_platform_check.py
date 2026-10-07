@@ -15,6 +15,7 @@ from airflow.providers.http.hooks.http import HttpHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 import otterworks_etl
+from otterworks_etl.common import otterworks_dag_kwargs
 
 DISTRIBUTIONS = (
     "apache-airflow",
@@ -29,9 +30,8 @@ DISTRIBUTIONS = (
     dag_id="otterworks_platform_check",
     schedule=None,
     start_date=pendulum.datetime(2026, 1, 1, tz="UTC"),
-    catchup=False,
-    tags=["otterworks", "platform"],
     doc_md=__doc__,
+    **otterworks_dag_kwargs(tags=["platform"]),
 )
 def otterworks_platform_check():
     @task
