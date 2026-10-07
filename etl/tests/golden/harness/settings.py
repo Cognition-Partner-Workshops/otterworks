@@ -55,6 +55,14 @@ S3_CONFIG = {
     "quarantine_bucket": "otterworks-file-quarantine",
 }
 
+# infra.reset() empties every bucket, table, queue and index it can reach. It only
+# runs when every endpoint is one of these hosts and the caller opted in
+# (`make etl-golden` sets RESET_OPT_IN_ENV=1).
+RESET_ALLOWED_HOSTS = frozenset(
+    {"localhost", "127.0.0.1", "::1", "localstack", "postgres", "meilisearch"}
+)
+RESET_OPT_IN_ENV = "GOLDEN_ALLOW_RESET"
+
 LEGACY_IMAGE_REPO = "otterworks-etl-legacy"
 LEGACY_BASE_IMAGE = os.environ.get("GOLDEN_LEGACY_BASE_IMAGE", "python:3.9-slim")
 DOCKER_NETWORK = os.environ.get("GOLDEN_DOCKER_NETWORK", "host")

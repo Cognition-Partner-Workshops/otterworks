@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 import time
 from decimal import Decimal
+from urllib.parse import urlsplit
 
 import boto3
 import psycopg2
@@ -24,6 +26,10 @@ from . import settings
 
 
 class InfraNotReady(RuntimeError):
+    pass
+
+
+class ResetRefused(RuntimeError):
     pass
 
 
@@ -171,7 +177,36 @@ def pg_tables(conn) -> list[str]:
         return [r[0] for r in cur.fetchall()]
 
 
+def check_reset_allowed(env=None) -> None:
+    """Refuse reset unless opted in and every endpoint is the local Compose stack."""
+    env = os.environ if env is None else env
+    if env.get(settings.RESET_OPT_IN_ENV) != "1":
+        raise ResetRefused(
+            "reset wipes every bucket, table, queue and index on the stack; "
+            "set %s=1 to run it (make etl-golden does)" % settings.RESET_OPT_IN_ENV
+        )
+    endpoints = {
+        "GOLDEN_LOCALSTACK_URL": urlsplit(settings.LOCALSTACK_URL).hostname,
+        "GOLDEN_MEILI_URL": urlsplit(settings.MEILI_URL).hostname,
+        "GOLDEN_PG_HOST": settings.PG_HOST,
+    }
+    remote = {
+        name: host
+        for name, host in endpoints.items()
+        if (host or "").lower() not in settings.RESET_ALLOWED_HOSTS
+    }
+    if remote:
+        raise ResetRefused(
+            "reset only runs against the local Compose stack (%s); refusing %s"
+            % (
+                ", ".join(sorted(settings.RESET_ALLOWED_HOSTS)),
+                ", ".join("%s=%s" % kv for kv in sorted(remote.items())),
+            )
+        )
+
+
 def reset() -> None:
+    check_reset_allowed()
     bucket_client = s3()
     for bucket in bucket_client.list_buckets()["Buckets"]:
         paginator = bucket_client.get_paginator("list_objects_v2")

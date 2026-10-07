@@ -54,6 +54,8 @@ the DAG has cut over ([§6](#6-follow-up-flags-separate-changes)).
 ```bash
 # Airflow CLI. On the deployment: the CLI in the scheduler. Locally:
 AF="docker compose -f docker-compose.airflow.yml -p otterworks-airflow exec -T airflow-scheduler airflow"
+# A shell in the scheduler container (task processes run there under LocalExecutor). Locally:
+SCHED="docker compose -f docker-compose.airflow.yml -p otterworks-airflow exec -T airflow-scheduler"
 # AWS CLI. On the box: the ETL instance role. Locally (LocalStack, dummy creds, no account):
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
 AWS="aws --endpoint-url http://localhost:4566"
@@ -119,6 +121,42 @@ All must hold before the cutover window. Record the evidence in the cutover tick
 
 ## 5. Per-DAG procedure
 
+### Task barrier (before either side takes the slot)
+
+Pausing a DAG stops new runs, and *Mark failed* only changes states in the metadata DB. Neither
+stops a task process that is already running under LocalExecutor. Measured on Airflow 2.8.4
+(probe in the PR): after pause plus *Mark failed*, `dags list-runs --state running` printed
+`No data found` while the task kept writing for another ~8 s, until the next heartbeat killed it.
+The run then went back to `running` for about a minute before it settled on `failed`. Run state
+alone is therefore not a barrier. The barrier passes only when all four checks pass in one round:
+
+```bash
+# B1. paused
+$AF dags list -o plain | grep "$DAG"                                  # paused True
+# B2. no run running or queued
+$AF dags list-runs -d "$DAG" --state running -o plain                 # No data found
+$AF dags list-runs -d "$DAG" --state queued  -o plain                 # No data found
+# B3. no unfinished task instance in any run of the last 8 days (covers weekly DAGs and
+#     runs already marked failed); prints nothing when clean
+for RUN in $($AF dags list-runs -d "$DAG" --start-date "$(date -u -d '8 days ago' +%F)" -o plain \
+             | awk -v d="$DAG" '$1==d {print $2}'); do
+  $AF tasks states-for-dag-run "$DAG" "$RUN" -o plain
+done | grep -Ew 'running|queued|scheduled|up_for_retry|up_for_reschedule|restarting|deferred'
+# B4. no task process left in the scheduler container (the image has no ps); prints nothing
+$SCHED sh -c 'for p in /proc/[0-9]*; do tr "\0" " " < "$p/cmdline" 2>/dev/null; echo; done' \
+  | grep -F -e "$DAG"
+```
+
+If any check prints something, wait for it to finish and repeat the round. To stop a running
+task sooner, mark *that task instance* failed (UI → task → Mark failed): its supervisor sends
+SIGTERM at the next heartbeat. Then repeat the round. Do not start the other owner until a full
+round is clean. Treat a run interrupted this way as partial (see the destructive-script checks
+in 5.3 and 5.4).
+
+The barrier for cron is: `pgrep -af -- "$SCRIPT"` on the box prints nothing (locally:
+`docker compose -f docker-compose.airflow.yml -p otterworks-airflow top legacy-etl-cron | grep -F -- "$SCRIPT"`).
+Removing a crontab line does not stop a job cron already started.
+
 ### 5.0 Cutover, common steps (pause-safe, no double run)
 
 The risk is one slot run twice (cron and Airflow), or Airflow back-running a slot cron already
@@ -163,14 +201,20 @@ at the next slot" means *the first run is at the next slot*; set `start_date` to
    # on the box, after deploying the commit:
    crontab /opt/etl/crontab && diff <(crontab -l) /opt/etl/crontab && ! crontab -l | grep -F "$SCRIPT"
    ```
-   From here until step 4, neither side runs this script: there is no window with both.
-4. **Unpause:** `$AF dags unpause "$DAG"` (prints `paused: False`). `list-runs` must still show
-   no run until `FIRST`. If one appears with an earlier logical date, pause, mark it failed
-   (UI → run → Mark failed) before its tasks write, and fix `start_date`.
-5. **Watch `FIRST`:** in the UI (Grid view) the run `scheduled__<LAST>` starts at `FIRST`, every
+   From here until step 5, neither side runs this script: there is no window with both.
+   Locally, check the cron barrier *before* `make legacy-cron-reload`, because the reload
+   recreates the container and kills a job that is in flight.
+4. **Barrier, cron → Airflow:** the cron barrier is clean (no `$SCRIPT` process left from a cron
+   start before the line was removed), and the [task barrier](#task-barrier-before-either-side-takes-the-slot)
+   B1–B4 is clean for `$DAG` (nothing left from a rehearsal or test trigger).
+5. **Unpause:** `$AF dags unpause "$DAG"` (prints `paused: False`). `list-runs` must still show
+   no run until `FIRST`. If one appears with an earlier logical date, pause it, run the task
+   barrier until it is clean (marking the run failed does not stop its tasks), do the
+   destructive-script checks for anything it wrote, and fix `start_date`.
+6. **Watch `FIRST`:** in the UI (Grid view) the run `scheduled__<LAST>` starts at `FIRST`, every
    task is green; no `task_failed` event in the scheduler log. Then check the outputs for
    `<ds>` = the date of `FIRST` (per DAG below), compared with the last cron run's outputs.
-6. **Record** `LAST`, `FIRST`, the run id and the output check in the ticket; the retirement count
+7. **Record** `LAST`, `FIRST`, the run id and the output check in the ticket; the retirement count
    ([§9](#9-retirement-after-one-weekly-cycle)) starts with this run.
 
 ### 5.1 Rollback to cron, common steps
@@ -178,17 +222,18 @@ at the next slot" means *the first run is at the next slot*; set `start_date` to
 Roll back when a scheduled run fails and cannot be fixed before the next slot, or outputs are
 wrong. Order matters: Airflow stops first, so the slot never has two owners.
 
-1. **Pause the DAG:** `$AF dags pause "$DAG"`. If a run is in progress, let the current task
-   finish or mark the run failed in the UI; then confirm `$AF dags list-runs -d "$DAG" --state running`
-   prints `No data found`.
-2. **Restore the crontab line from git**, unchanged:
+1. **Pause the DAG:** `$AF dags pause "$DAG"`.
+2. **Barrier, Airflow → cron:** run the [task barrier](#task-barrier-before-either-side-takes-the-slot)
+   B1–B4 until one round is clean. Until then the crontab line stays out, even if the next cron
+   slot is close: a missed slot can be caught up in step 6; a double run cannot be undone.
+3. **Restore the crontab line from git**, unchanged:
    ```bash
    git log --oneline -- etl/crontab                         # find the cutover commit
    git revert --no-edit <cutover-commit>                    # restores exactly that line
    # on the box, after deploying the commit:
    crontab /opt/etl/crontab && diff <(crontab -l) /opt/etl/crontab && crontab -l | grep -F "$SCRIPT"
    ```
-3. **Confirm the runtime cron needs is still on the box:**
+4. **Confirm the runtime cron needs is still on the box:**
    ```bash
    test -x /opt/etl/run.sh && test -f "/opt/etl/scripts/$SCRIPT"
    test -s /opt/etl/config.ini && python3 -c 'import configparser as c; p=c.ConfigParser(); p.read("/opt/etl/config.ini"); print(sorted(p.sections()))'
@@ -197,11 +242,11 @@ wrong. Order matters: Airflow stops first, so the slot never has two owners.
    ```
    The box-local `config.ini` is the only copy of the real values; the committed `etl/config.ini`
    is not it. If it is missing, stop and get it restored before the next slot.
-4. **Do the destructive-script checks** for this DAG (5.3 audit, 5.4 storage) **before**
+5. **Do the destructive-script checks** for this DAG (5.3 audit, 5.4 storage) **before**
    re-running anything for the failed day.
-5. **Catch up the missed day, if needed, by cron only:** `/opt/etl/run.sh $SCRIPT >> /var/log/etl/<name>.log 2>&1`
+6. **Catch up the missed day, if needed, by cron only:** `/opt/etl/run.sh $SCRIPT >> /var/log/etl/<name>.log 2>&1`
    once. Never `$AF dags trigger` and cron for the same day.
-6. **Restart the retirement count** at zero for this DAG ([§9](#9-retirement-after-one-weekly-cycle))
+7. **Restart the retirement count** at zero for this DAG ([§9](#9-retirement-after-one-weekly-cycle))
    and note the rollback in the ticket. Cut over again with §5.0 once fixed.
 
 ### 5.2 `otterworks_analytics_etl`
@@ -342,9 +387,12 @@ compliance signs off on the 90-day retention**, having reviewed the two items in
 count dropped by that number.
 
 **Switch off:** change the configured value back to `false` and redeploy before the next Sunday
-slot; confirm with `$AF variables get`. If a delete-enabled run is in progress and must stop,
-pause the DAG and mark the running delete task failed in the UI; what it already deleted is in
-that run's archive object (keep it, 5.3 rollback).
+slot; confirm with `$AF variables get`. If a delete-enabled run is in progress and must stop:
+pause the DAG and mark the running delete task instance failed in the UI. That only asks the task
+to stop. It keeps deleting until its process exits, so run the
+[task barrier](#task-barrier-before-either-side-takes-the-slot) B1–B4 until one round is clean.
+Only then count deletes, switch the flag off, or hand the slot to anyone else. What it already
+deleted is in that run's archive object (keep it, 5.3 rollback).
 
 #### 6.1.1 Flagged for compliance (reproduced at cutover, review before enabling deletes)
 
@@ -458,6 +506,23 @@ no cloud endpoints: `aws` only ever talks to `http://localhost:4566` (LocalStack
 | `/var/log/etl/*.log` | `docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs legacy-etl-cron` |
 | wait for the next slot | `$AF dags trigger $DAG` only in a rehearsal, with cron's line removed; a scheduled run is still needed to rehearse `start_date` |
 | teardown | `make legacy-cron-down`, `make airflow-down` |
+
+**Before running the golden harness on this stack** (`make etl-golden`, including the scenario
+seeds below): each scenario starts with `infra.reset()`, which empties every S3 bucket, DynamoDB
+table, SQS queue and MeiliSearch index it can reach, and every table in the golden Postgres
+database. That includes app data.
+
+- The harness refuses to reset unless `GOLDEN_ALLOW_RESET=1` (set only by `make etl-golden`,
+  which CI uses) **and** every endpoint (`GOLDEN_LOCALSTACK_URL`, `GOLDEN_MEILI_URL`,
+  `GOLDEN_PG_HOST`) is `localhost`, `127.0.0.1`, `::1` or the Compose service name `localstack`,
+  `meilisearch` or `postgres`. It cannot reach AWS or any other remote host.
+- The guard cannot tell a disposable stack from one holding data. Run the harness only on a
+  **fresh infra volume that holds no app data you want to keep**: `docker volume ls | grep -E 'localstack_data|meilisearch_data|postgres_data'`
+  shows only volumes you created for this rehearsal. If the app's own data lives there, stop
+  and use another machine; do not run `down -v` on a stack that is not yours.
+- **Never run it while a DAG or cron is running on that stack.** Seed first, then start cron and
+  Airflow. To reseed mid-rehearsal: `make legacy-cron-down`, pause every `otterworks_*` DAG and run
+  the task barrier for each until clean (or `make airflow-down`), then `make etl-golden ...`.
 
 Rehearse in the order of [§1](#1-cutover-order): cut analytics over, roll it back, cut it over
 again; then audit archive with the flag `false`; then the other three. For 6.1 and 6.2 seed the

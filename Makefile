@@ -78,7 +78,8 @@ LEGACY_CRON_COMPOSE = $(AIRFLOW_COMPOSE) --profile legacy-cron
 
 legacy-cron-up: ## Start legacy-etl-cron (etl/crontab via etl/run.sh, golden shim) next to Airflow; creates the harness resources first
 	docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch
-	$(ETL_GOLDEN_UV) python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
+	cd etl/tests/golden && GOLDEN_LOCALSTACK_URL=http://localhost:4566 GOLDEN_PG_HOST=localhost GOLDEN_PG_PORT=5432 GOLDEN_MEILI_URL=http://localhost:7700 \
+		uv run --quiet --python 3.11 --with-requirements requirements.txt python -c "from harness import infra; infra.wait_ready(); infra.ensure_resources()"
 	$(LEGACY_CRON_COMPOSE) up -d --build --wait legacy-etl-cron
 
 legacy-cron-reload: ## Recreate legacy-etl-cron so it re-reads etl/crontab (after removing or restoring a line)
@@ -104,6 +105,7 @@ infra-up: ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearc
 
 ETL_GOLDEN_UV = cd etl/tests/golden && uv run --quiet --python 3.11 --with-requirements requirements.txt
 
+etl-golden: export GOLDEN_ALLOW_RESET = 1
 etl-golden: ## Record/check legacy ETL goldens against local infra (SCRIPT=<name>|all, MODE=check|record|repeat, SCENARIO optional)
 	@test -n "$(SCRIPT)" || (echo "SCRIPT is required, e.g. make etl-golden SCRIPT=analytics_daily MODE=check" >&2; exit 2)
 	$(ETL_GOLDEN_UV) python -m harness --script $(SCRIPT) --mode $(or $(MODE),check) $(if $(SCENARIO),--scenario $(SCENARIO),)
