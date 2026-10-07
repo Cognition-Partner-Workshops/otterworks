@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FileText, MoreVertical, Trash2, Share2, ExternalLink, Star } from "lucide-react";
+import { FileText, MoreVertical, Trash2, Share2, ExternalLink, Star, Copy } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import type { Document } from "@/types";
 import { formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
@@ -10,11 +10,12 @@ interface DocumentCardProps {
   document: Document;
   onDelete?: (id: string) => void;
   onShare?: (id: string) => void;
+  onCopy?: (id: string) => void;
   view?: "grid" | "list";
   onStarToggle?: () => void;
 }
 
-export function DocumentCard({ document, onDelete, onShare, view = "grid", onStarToggle }: DocumentCardProps) {
+export function DocumentCard({ document, onDelete, onShare, onCopy, view = "grid", onStarToggle }: DocumentCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuthStore();
   const userId = user?.id ?? "";
@@ -92,6 +93,7 @@ export function DocumentCard({ document, onDelete, onShare, view = "grid", onSta
               onClose={() => setMenuOpen(false)}
               onDelete={onDelete}
               onShare={onShare}
+              onCopy={onCopy}
             />
           )}
         </div>
@@ -149,6 +151,7 @@ export function DocumentCard({ document, onDelete, onShare, view = "grid", onSta
                   onClose={() => setMenuOpen(false)}
                   onDelete={onDelete}
                   onShare={onShare}
+                  onCopy={onCopy}
                 />
               )}
             </div>
@@ -179,11 +182,13 @@ function DocMenu({
   onClose,
   onDelete,
   onShare,
+  onCopy,
 }: {
   docId: string;
   onClose: () => void;
   onDelete?: (id: string) => void;
   onShare?: (id: string) => void;
+  onCopy?: (id: string) => void;
 }) {
   return (
     <>
@@ -208,6 +213,18 @@ function DocMenu({
         >
           <Share2 size={14} />
           Share
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onCopy?.(docId);
+            onClose();
+          }}
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          <Copy size={14} />
+          Make a copy
         </button>
         <button
           onClick={(e) => {

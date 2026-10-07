@@ -349,6 +349,10 @@ export const documentsApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/documents/${id}`);
   },
+  copy: async (id: string): Promise<Document> => {
+    const { data } = await apiClient.post<Document>(`/documents/${id}/copy`);
+    return data;
+  },
   share: async (id: string, users: SharedUser[]): Promise<void> => {
     await apiClient.post(`/documents/${id}/share`, { users });
   },
