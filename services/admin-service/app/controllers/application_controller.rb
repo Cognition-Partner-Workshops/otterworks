@@ -1,4 +1,8 @@
 class ApplicationController < ActionController::API
+  # Routes on JwtAuthenticator::EXCLUDED_PATHS that verify their own shared-secret header instead of a JWT.
+  SECRET_GUARDED_CONTROLLERS = %w[api/v1/admin/alerts api/v1/admin/chaos].freeze
+
+  before_action :require_admin!, unless: :secret_guarded_controller?
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -30,6 +34,23 @@ class ApplicationController < ActionController::API
 
   def current_user_role
     request.env['jwt.user_role']
+  end
+
+  def current_user_roles
+    payload = request.env['jwt.payload']
+    AdminAuthorization.normalize_roles(current_user_role, payload.is_a?(Hash) ? payload['roles'] : nil)
+  end
+
+  def require_admin!
+    return if AdminAuthorization.admin?(current_user_roles)
+
+    Rails.logger.warn("Forbidden: user=#{current_user_id.inspect} roles=#{current_user_roles.inspect} " \
+                      "#{request.method} #{request.path}")
+    render json: { error: 'Forbidden' }, status: :forbidden
+  end
+
+  def secret_guarded_controller?
+    SECRET_GUARDED_CONTROLLERS.include?(controller_path)
   end
 
   def set_request_metadata

@@ -15,6 +15,7 @@ module Api
             operation: operation,
             user_ids: user_ids,
             params: bulk_params,
+            actor_roles: current_user_roles,
             request: request
           )
 
@@ -41,7 +42,9 @@ module Api
         end
 
         def bulk_params
-          params.permit(:reason, :role).to_h.symbolize_keys # nosemgrep: ruby.lang.security.model-attr-accessible.model-attr-accessible
+          permitted = params.permit(:reason).to_h.symbolize_keys
+          permitted[:role] = params.require(:role) if params[:operation] == 'update_role'
+          permitted
         end
       end
     end

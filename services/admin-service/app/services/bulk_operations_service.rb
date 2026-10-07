@@ -3,25 +3,25 @@ class BulkOperationsService
 
   VALID_OPERATIONS = %w[suspend activate delete update_role].freeze
 
-  def self.process(operation:, user_ids:, params: {}, request: nil)
+  def self.process(operation:, user_ids:, params: {}, actor_roles: [], request: nil)
     unless VALID_OPERATIONS.include?(operation)
       return Result.new(success_count: 0, failure_count: 0, errors: ["Invalid operation: #{operation}"])
     end
 
-    counts = execute_operations(operation, user_ids, params)
+    counts = execute_operations(operation, user_ids, params, actor_roles)
     log_bulk_operation(operation, user_ids, counts, request)
 
     Result.new(**counts)
   end
 
-  def self.execute_operations(operation, user_ids, params)
+  def self.execute_operations(operation, user_ids, params, actor_roles)
     users = AdminUser.where(id: user_ids)
     success_count = 0
     failure_count = 0
     errors = []
 
     users.find_each do |user|
-      apply_operation(user, operation, params)
+      apply_operation(user, operation, params, actor_roles)
       success_count += 1
     rescue StandardError => e
       failure_count += 1
@@ -47,7 +47,7 @@ class BulkOperationsService
     )
   end
 
-  def self.apply_operation(user, operation, params)
+  def self.apply_operation(user, operation, params, actor_roles)
     case operation
     when 'suspend'
       user.suspend!(reason: params[:reason])
@@ -56,6 +56,7 @@ class BulkOperationsService
     when 'delete'
       user.soft_delete!
     when 'update_role'
+      AdminAuthorization.authorize_role_change!(actor_roles: actor_roles, target: user, new_role: params[:role])
       user.update!(role: params[:role])
     end
   end

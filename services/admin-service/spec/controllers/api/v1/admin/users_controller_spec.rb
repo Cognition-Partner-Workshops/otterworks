@@ -64,8 +64,23 @@ RSpec.describe Api::V1::Admin::UsersController do
     end
 
     it 'returns errors for invalid params' do
-      put :update, params: { id: user.id, user: { role: 'invalid_role' } }
+      put :update, params: { id: user.id, user: { email: 'not-an-email' } }
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'ignores role in the update payload' do
+      put :update, params: { id: user.id, user: { role: 'super_admin', display_name: 'New Name' } }
+      expect(response).to have_http_status(:ok)
+      expect(user.reload.role).to eq('viewer')
+    end
+  end
+
+  describe 'non-admin caller' do
+    before { set_jwt_env(request, role: 'viewer') }
+
+    it 'returns 403' do
+      get :index
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
