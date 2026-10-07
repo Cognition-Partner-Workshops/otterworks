@@ -1099,5 +1099,39 @@
       "file": ".migration/model_proposal_triage.json",
       "note": "horror_tables_without_access_evidence: 5 tables, 0 patterns"
     }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "SIGNUP_DT",
+    "format": "%d-%b-%y",
+    "unparseable": "null",
+    "applied_by": "manual",
+    "evidence": {
+      "file": ".migration/recon/customerMaster/result.json",
+      "kind": "recon",
+      "note": "F61/F65 (s3.3-spec-correction): model_patch applies the format alias but ignores 'unparseable'; hand edit adds the scoped alias date_string_to_date:dby-b3d57e-unparseable-null (params format=%d-%b-%y, unparseable=null) and points SIGNUP_DT.rules at it, so the 41 non-conformant source strings canonicalise to null and match the omitted signupDt (F49)"
+    }
+  },
+  {
+    "op": "set_key",
+    "embed": {
+      "into": "customerMaster",
+      "child_table": "ENTITY_ATTR_VALUE"
+    },
+    "columns": [
+      "ATTR_NAME",
+      "EAV_ID"
+    ],
+    "key_target": [
+      "k",
+      "eavId"
+    ],
+    "applied_by": "manual",
+    "evidence": {
+      "file": ".migration/recon/customerMaster/result.json",
+      "kind": "recon",
+      "note": "F62/F66 (s3.3-spec-correction): model_patch refused ('index keys with no target field after decisions: customerMaster [[attributes.k,1],[attributes.v,1]]' \u2014 _key_target would rename k to attrName); hand edit sets embeds[attributes].key = {source:[ATTR_NAME,EAV_ID], target:[k,eavId]}, drops EAV_ID from the element fields (it is the key now), child_key [ENTITY_ID,ATTR_NAME,EAV_ID]"
+    }
   }
 ]

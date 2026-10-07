@@ -1,0 +1,76 @@
+{
+  "unit": "plans",
+  "mode": "live",
+  "target_class": "migration_cluster",
+  "mapping_version": "map-draft-3",
+  "mapping_sha256": "38bd108c02845aa6128639a5e160132efb081059742a0b1172e68d0c495a89e5",
+  "tolerance_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "collections": [
+    "plans"
+  ],
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-07T09:11:58.342086+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "plans": 3
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "deferred_to_tier3": [
+          "plans.code",
+          "plans.monthlyFee",
+          "plans.overageRate",
+          "plans.active"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "plans.code",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 1
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "plans": {
+          "mode": "full_diff",
+          "population": 3,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": true,
+  "error": null
+}

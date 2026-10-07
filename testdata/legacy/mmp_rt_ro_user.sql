@@ -24,4 +24,14 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('ow_billing_ro ready');
 END;
 /
+-- UNT7-14 (finding F60): the recon harness queries bare table names and has no
+-- schema option, so a principal other than the owner sees ORA-00942 on every
+-- table. Default the ro session's name resolution to OW_BILLING without granting
+-- anything: a logon trigger in the ro user's own schema (no new privilege).
+CREATE OR REPLACE TRIGGER ow_billing_ro.trg_mmp_rt_ro_logon
+  AFTER LOGON ON ow_billing_ro.SCHEMA
+BEGIN
+  EXECUTE IMMEDIATE 'ALTER SESSION SET CURRENT_SCHEMA = OW_BILLING';
+END;
+/
 EXIT;

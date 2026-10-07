@@ -1,5 +1,5 @@
 {
-  "version": "map-draft-2",
+  "version": "map-draft-3",
   "source_family": "oracle",
   "collections": [
     {
@@ -2303,9 +2303,12 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e-unparseable-null",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": ".migration/recon/customerMaster/result.json: F61: 41/201 SIGNUP_DT values are not %d-%b-%y; the F49 obligation omits signupDt for them, so the harness must canonicalise an unparseable source string to null (rule param unparseable=null) instead of reporting date_string_to_date!unconverted",
+          "date_format_basis": "decision+manual"
         },
         {
           "source": "LAST_ACTIVITY_DT",
@@ -3466,7 +3469,8 @@
           "child_table": "ENTITY_ATTR_VALUE",
           "child_key": [
             "ENTITY_ID",
-            "ATTR_NAME"
+            "ATTR_NAME",
+            "EAV_ID"
           ],
           "child_fields": [
             {
@@ -3543,9 +3547,13 @@
           ],
           "key": {
             "source": [
-              "ATTR_NAME"
+              "ATTR_NAME",
+              "EAV_ID"
             ],
-            "target": "k"
+            "target": [
+              "k",
+              "eavId"
+            ]
           },
           "fields": [
             {
@@ -3588,13 +3596,6 @@
               ],
               "date_format": "%d-%b-%y",
               "date_format_evidence": "data_profile text_shapes:ENTITY_ATTR_VALUE.CREATED_DT: measured conformance 1.0 over 70 values (F44)"
-            },
-            {
-              "source": "EAV_ID",
-              "target": "eavId",
-              "source_type": "NUMBER(14,0)",
-              "bson_type": "long",
-              "rules": []
             }
           ],
           "cardinality": "1:few",
@@ -3602,7 +3603,7 @@
           "basis_sources": [
             "ddl"
           ],
-          "evidence": "unenforced pointer (no FK in DDL) ['ENTITY_ID']; .migration/data_profile_handcheck.json: HC5: 70 rows / 58 entities / max 4 attributes per entity, 8 distinct names \u2014 bounded by the attribute vocabulary, not by time; all 70 ENTITY_ID resolve to CUSTOMER_MASTER. <plugin>/skills/schema-modeling/design/pattern-attribute.md:10 'If documents have many optional fields, move them into a key-value array'. No application reader/writer of ENTITY_ATTR_VALUE (F38)",
+          "evidence": "unenforced pointer (no FK in DDL) ['ENTITY_ID']; .migration/data_profile_handcheck.json: HC5: 70 rows / 58 entities / max 4 attributes per entity, 8 distinct names \u2014 bounded by the attribute vocabulary, not by time; all 70 ENTITY_ID resolve to CUSTOMER_MASTER. <plugin>/skills/schema-modeling/design/pattern-attribute.md:10 'If documents have many optional fields, move them into a key-value array'. No application reader/writer of ENTITY_ATTR_VALUE (F38); element key ['ATTR_NAME', 'EAV_ID'] set by hand (F66): 70 rows / 69 distinct (ENTITY_ID, ATTR_NAME), set_key refused (index attributes.k would lose its target field)",
           "shape": "array",
           "parent_ref": [
             "CUST_ID"
@@ -6796,7 +6797,7 @@
     }
   ],
   "canonicalization": {
-    "version": "map-draft-2-canon",
+    "version": "map-draft-3-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -6851,6 +6852,15 @@
         "applies_to": "date",
         "params": {
           "format": "%d-%b-%y"
+        }
+      },
+      {
+        "name": "date_string_to_date:dby-b3d57e-unparseable-null",
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y",
+          "unparseable": "null"
         }
       }
     ]
@@ -9019,6 +9029,61 @@
           "note": "horror_tables_without_access_evidence: 5 tables, 0 patterns"
         },
         "cited": ".migration/model_proposal_triage.json: horror_tables_without_access_evidence: 5 tables, 0 patterns",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMaster",
+        "field": "SIGNUP_DT",
+        "format": "%d-%b-%y",
+        "unparseable": "null",
+        "evidence": {
+          "file": ".migration/recon/customerMaster/result.json",
+          "kind": "recon",
+          "note": "F61: 41/201 SIGNUP_DT values are not %d-%b-%y; the F49 obligation omits signupDt for them, so the harness must canonicalise an unparseable source string to null (rule param unparseable=null) instead of reporting date_string_to_date!unconverted"
+        },
+        "cited": ".migration/recon/customerMaster/result.json: F61: 41/201 SIGNUP_DT values are not %d-%b-%y; the F49 obligation omits signupDt for them, so the harness must canonicalise an unparseable source string to null (rule param unparseable=null) instead of reporting date_string_to_date!unconverted",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "set_key",
+        "embed": {
+          "into": "customerMaster",
+          "child_table": "ENTITY_ATTR_VALUE"
+        },
+        "columns": [
+          "ATTR_NAME",
+          "EAV_ID"
+        ],
+        "key_target": [
+          "k",
+          "eavId"
+        ],
+        "applied_by": "manual",
+        "evidence": {
+          "file": ".migration/recon/customerMaster/result.json",
+          "kind": "recon",
+          "note": "F62/F66: 70 ENTITY_ATTR_VALUE rows, 69 distinct (ENTITY_ID, ATTR_NAME); set_key refused: 'index keys with no target field after decisions: customerMaster [[attributes.k,1],[attributes.v,1]]' because _key_target renames k to attrName"
+        },
+        "cited": ".migration/recon/customerMaster/result.json: F62/F66 duplicate (ENTITY_ID, ATTR_NAME) pair EAV_ID 25/46",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "canonicalization_rule",
+        "collection": "customerMaster",
+        "field": "SIGNUP_DT",
+        "rule": "date_string_to_date:dby-b3d57e-unparseable-null",
+        "params": {
+          "format": "%d-%b-%y",
+          "unparseable": "null"
+        },
+        "applied_by": "manual",
+        "evidence": {
+          "file": ".migration/recon/customerMaster/result.json",
+          "kind": "recon",
+          "note": "F61/F65: date_format op accepts but ignores 'unparseable'; the harness rule supports params.unparseable='null' (canon.py _date_string_to_date) \u2014 scoped alias added by hand, used by SIGNUP_DT only"
+        },
+        "cited": ".migration/recon/customerMaster/result.json: F61/F65 41 date_string_to_date!unconverted on the dirty SIGNUP_DT rows",
         "status": "PROPOSED"
       }
     ],
