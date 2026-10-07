@@ -1,0 +1,73 @@
+replicaCount: 1
+
+global:
+  environment: dev
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/workshop/otterworks-preferences-service
+  tag: ""  # Set at deploy time (ECR uses IMMUTABLE tags)
+  pullPolicy: IfNotPresent
+
+# ClusterIP only: the shared ingress-nginx controller is the single LoadBalancer (AGENTS.md).
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8098
+
+# Strangler slice: only the extracted context's paths are routed here. Prefix matching is by
+# path element, so /api/preferences and /api/preferences/** match and /api/preferencesX does not.
+# The rest of the portal host stays with legacy-portal.
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: legacy-portal.otterworks.workshop.example.com
+      paths:
+        - path: /api/preferences
+          pathType: Prefix
+  tls:
+    - secretName: legacy-portal-tls
+      hosts:
+        - legacy-portal.otterworks.workshop.example.com
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+healthCheck:
+  path: /health
+  initialDelaySeconds: 30
+  periodSeconds: 15
+
+monitoring:
+  enabled: true
+  path: /actuator/prometheus
+  port: 8098
+
+networkPolicy:
+  enabled: true
+  ingressNamespace: ingress-nginx
+  monitoringNamespace: monitoring
+
+# Matches USER appuser (uid 1001) in services/preferences-service/Dockerfile.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+
+# Non-sensitive service configuration rendered into {{ .Release.Name }}-config
+# and injected via envFrom. SPRING_DATASOURCE_URL and SPRING_DATASOURCE_USERNAME point at the
+# service's own database and are populated at deploy time (e.g. from Terraform outputs).
+config:
+  SPRING_PROFILES_ACTIVE: postgres
+
+# Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
+# stringData) and injected via envFrom. Populate at deploy time (SPRING_DATASOURCE_PASSWORD);
+# never commit values.
+secrets: {}

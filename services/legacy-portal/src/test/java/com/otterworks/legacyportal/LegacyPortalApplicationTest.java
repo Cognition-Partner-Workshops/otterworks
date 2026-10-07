@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** Full-context test: the whole modular monolith boots and every module's routes are wired. */
+/** Full-context test: the whole modular monolith boots and every remaining module's routes are wired. */
 @SpringBootTest
 @AutoConfigureMockMvc
 class LegacyPortalApplicationTest {
@@ -48,10 +48,8 @@ class LegacyPortalApplicationTest {
     }
 
     @Test
-    void preferencesModuleReturnsDefaults() throws Exception {
-        mockMvc.perform(get("/api/preferences/newuser"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.theme").value("light"));
+    void preferencesAreServedByPreferencesServiceNotTheMonolith() throws Exception {
+        mockMvc.perform(get("/api/preferences/newuser")).andExpect(status().isNotFound());
     }
 
     @Test

@@ -1,0 +1,8 @@
+com/otterworks/preferences/UserPreferenceRepository.class
+com/otterworks/preferences/HealthController.class
+com/otterworks/preferences/UserPreferenceController.class
+com/otterworks/preferences/UserPreferenceController$UpdatePreferenceRequest.class
+com/otterworks/preferences/UserPreferenceService.class
+com/otterworks/preferences/PreferencesServiceApplication.class
+com/otterworks/preferences/UserPreference.class
+com/otterworks/preferences/UserPreferenceController$PreferenceResponse.class
