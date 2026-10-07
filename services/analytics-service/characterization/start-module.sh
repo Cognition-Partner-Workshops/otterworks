@@ -50,7 +50,7 @@ sleep 2
 
 # Same environment as the docker-compose.yml analytics-service entry, minus
 # localstack/redis/otel (SQS start-up failure is non-fatal by design).
-docker run -d --name "$APP" --network "$NET" -p "${HOST_PORT}:8088" \
+docker run -d --name "$APP" --network "$NET" -p "127.0.0.1:${HOST_PORT}:8088" \
   -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=test -e AWS_SECRET_ACCESS_KEY=test \
   -e AWS_ENDPOINT_URL=http://localstack.invalid:4566 \
   -e POSTGRES_HOST="$PG" -e POSTGRES_PORT=5432 -e POSTGRES_USER=otterworks \
