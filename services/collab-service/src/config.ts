@@ -27,6 +27,10 @@ export interface Config {
     endpoint: string;
     serviceName: string;
   };
+  documentService: {
+    url: string;
+    timeoutMs: number;
+  };
 }
 
 export function loadConfig(): Config {
@@ -60,6 +64,10 @@ export function loadConfig(): Config {
       enabled: process.env.OTEL_ENABLED === 'true',
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318',
       serviceName: process.env.OTEL_SERVICE_NAME || 'collab-service',
+    },
+    documentService: {
+      url: process.env.DOCUMENT_SERVICE_URL || 'http://document-service:8083',
+      timeoutMs: parseInt(process.env.DOCUMENT_SERVICE_TIMEOUT_MS || '3000', 10),
     },
   };
 }
