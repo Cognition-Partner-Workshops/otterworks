@@ -1,0 +1,328 @@
+{
+  "kind": "w1-b01-load-evidence",
+  "ticket": "UNT7-14",
+  "plan_step": "s4.1.b01",
+  "wave_manifest": ".migration/waves/wave-1.json",
+  "manifest_sha": "790ff9c4775a",
+  "run_branch_base": "e0613f71",
+  "plugin_clone_head": "6bae4f891953ec0822a5fb30707087a718e9df01",
+  "plugin_branch_tip": "ada6699dbbc0112288884a050766ef1332da7ac1",
+  "mapping_version": "map-draft-2",
+  "mapping_sha256": "232efbd7d88b752c6d044093adc98f6f18ce222b3af4feaad4158f51829e3c4e",
+  "tolerance_version": "1",
+  "tolerance_sha256": "1a8ebb6c4c572bdfae68eb424d68007ef89416cd8d96eef0d504054fe70e0c01",
+  "source": {
+    "principal": "OW_BILLING_RO (SELECT only; session_privs = CREATE SESSION; role SELECT_CATALOG_ROLE; INSERT refused ORA-41900)",
+    "dsn_env": "MMP_RT_SRC_DSN",
+    "concurrency": 1,
+    "fixture_counts_recheck": "owner-side COUNT(*) per OW_BILLING table == .migration/fixture_counts.json tables_total (20/20) before the load",
+    "logon_trigger": "ow_billing_ro.trg_mmp_rt_ro_logon (AFTER LOGON ON ow_billing_ro.SCHEMA -> CURRENT_SCHEMA=OW_BILLING), added to testdata/legacy/mmp_rt_ro_user.sql, F60"
+  },
+  "loader": {
+    "script": "services/legacy-billing/migration/mongodb/load_units.py",
+    "recon_wrapper": "services/legacy-billing/migration/mongodb/recon_unit.sh",
+    "interpreter": "/home/ubuntu/.venvs/recon/bin/python",
+    "reload_semantics": "delete_many({}) on the unit's own collection then insert_many; nothing dropped",
+    "loads": [
+      {
+        "kind": "load-report",
+        "spec_version": "map-draft-2",
+        "target_db": "mmp_rt_b3_oracle",
+        "dry_run": false,
+        "started_at": "2026-10-07T08:50:58.947517+00:00",
+        "units": {
+          "codes": {
+            "root_table": "CODES",
+            "source_rows": 32,
+            "documents_written": 32,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "codeType_1_codeVal_1"
+            ],
+            "elapsed_s": 0.891
+          },
+          "tenants": {
+            "root_table": "TENANTS",
+            "source_rows": 15,
+            "documents_written": 15,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "name_1"
+            ],
+            "elapsed_s": 0.323
+          },
+          "plans": {
+            "root_table": "PLANS",
+            "source_rows": 3,
+            "documents_written": 3,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "monthlyFee_1_code_1",
+              "code_1"
+            ],
+            "elapsed_s": 0.485
+          },
+          "customerMaster": {
+            "root_table": "CUSTOMER_MASTER",
+            "source_rows": 201,
+            "documents_written": 201,
+            "embeds": {
+              "attributes": {
+                "child_table": "ENTITY_ATTR_VALUE",
+                "elements": 70,
+                "orphan_child_rows": 0
+              }
+            },
+            "derived": {
+              "tenantResolved_true": 1,
+              "tenantResolved_false": 200,
+              "signupDt_missing": 41,
+              "signupDtRaw_present": 201
+            },
+            "indexes": [
+              "attributes.k_1_attributes.v_1"
+            ],
+            "elapsed_s": 0.757
+          },
+          "billingAuditLog": {
+            "root_table": "BILLING_AUDIT_LOG",
+            "source_rows": 0,
+            "documents_written": 0,
+            "embeds": {},
+            "derived": {},
+            "indexes": [],
+            "elapsed_s": 0.064
+          }
+        },
+        "source_queries": 7,
+        "source_concurrency": 1,
+        "finished_at": "2026-10-07T08:51:01.468131+00:00"
+      },
+      {
+        "kind": "load-report",
+        "spec_version": "map-draft-2",
+        "target_db": "mmp_rt_b3_oracle",
+        "dry_run": false,
+        "started_at": "2026-10-07T08:54:17.787891+00:00",
+        "units": {
+          "codes": {
+            "root_table": "CODES",
+            "source_rows": 32,
+            "documents_written": 32,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "codeType_1_codeVal_1"
+            ],
+            "elapsed_s": 0.823
+          },
+          "tenants": {
+            "root_table": "TENANTS",
+            "source_rows": 15,
+            "documents_written": 15,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "name_1"
+            ],
+            "elapsed_s": 0.235
+          },
+          "plans": {
+            "root_table": "PLANS",
+            "source_rows": 3,
+            "documents_written": 3,
+            "embeds": {},
+            "derived": {},
+            "indexes": [
+              "monthlyFee_1_code_1",
+              "code_1"
+            ],
+            "elapsed_s": 0.342
+          },
+          "customerMaster": {
+            "root_table": "CUSTOMER_MASTER",
+            "source_rows": 201,
+            "documents_written": 201,
+            "embeds": {
+              "attributes": {
+                "child_table": "ENTITY_ATTR_VALUE",
+                "elements": 70,
+                "orphan_child_rows": 0
+              }
+            },
+            "derived": {
+              "tenantResolved_true": 1,
+              "tenantResolved_false": 200,
+              "signupDt_missing": 41,
+              "signupDtRaw_present": 201
+            },
+            "indexes": [
+              "attributes.k_1_attributes.v_1"
+            ],
+            "elapsed_s": 1.969
+          },
+          "billingAuditLog": {
+            "root_table": "BILLING_AUDIT_LOG",
+            "source_rows": 0,
+            "documents_written": 0,
+            "embeds": {},
+            "derived": {},
+            "indexes": [],
+            "elapsed_s": 0.067
+          }
+        },
+        "source_queries": 7,
+        "source_concurrency": 1,
+        "finished_at": "2026-10-07T08:54:21.223601+00:00"
+      }
+    ],
+    "idempotency": "load 2 (same command) reproduced every count of load 1; live recon ran against load 2"
+  },
+  "recon": {
+    "fixture_first": {
+      "codes": "PASS",
+      "tenants": "PASS",
+      "plans": "PASS",
+      "customerMaster": "FAIL",
+      "billingAuditLog": "PASS"
+    },
+    "live_once": {
+      "codes": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "generated_at": "2026-10-07T08:54:22.950425+00:00"
+      },
+      "tenants": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "generated_at": "2026-10-07T08:54:25.271507+00:00"
+      },
+      "plans": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "generated_at": "2026-10-07T08:54:27.774009+00:00"
+      },
+      "customerMaster": {
+        "verdict": "FAIL",
+        "merge_eligible": false,
+        "generated_at": "2026-10-07T08:55:00.104047+00:00"
+      },
+      "billingAuditLog": {
+        "verdict": "PASS",
+        "merge_eligible": true,
+        "generated_at": "2026-10-07T08:55:02.161057+00:00"
+      }
+    },
+    "redaction": "RECON_REDACT_SALT unset -> unsalted hashes (harness warning, F63)",
+    "customerMaster_tier3_findings": {
+      "SIGNUP_DT->signupDt field_diff date_string_to_date!unconverted": 41,
+      "attributes embed_field_diff (v, createdDt, eavId) same parent/key": 3
+    }
+  },
+  "target": {
+    "db": "mmp_rt_b3_oracle",
+    "dbStats_before": {
+      "when": "before_w1_b01_load",
+      "db": "mmp_rt_b3_oracle",
+      "collections": 0,
+      "objects": 0,
+      "dataSize": 0,
+      "storageSize": 0,
+      "indexes": 0,
+      "indexSize": 0,
+      "collection_names": [],
+      "listDatabases_names": [
+        "admin",
+        "local",
+        "mmp_rt_b1_mysql",
+        "mmp_rt_b1_tsql",
+        "mmp_rt_b2_tsql",
+        "ow_billing_migration",
+        "ow_tp_billing_20261001T233613Z",
+        "ow_tp_mmp_live"
+      ]
+    },
+    "dbStats_after": {
+      "when": "after_w1_b01_load",
+      "db": "mmp_rt_b3_oracle",
+      "collections": 4,
+      "objects": 251,
+      "dataSize": 231841,
+      "storageSize": 151552,
+      "indexes": 9,
+      "indexSize": 192512,
+      "collection_names": [
+        "codes",
+        "customerMaster",
+        "plans",
+        "tenants"
+      ],
+      "listDatabases_names": [
+        "admin",
+        "local",
+        "mmp_rt_b1_mysql",
+        "mmp_rt_b1_tsql",
+        "mmp_rt_b2_tsql",
+        "mmp_rt_b3_oracle",
+        "ow_billing_migration",
+        "ow_tp_billing_20261001T233613Z",
+        "ow_tp_mmp_live"
+      ],
+      "per_collection": {
+        "codes": {
+          "count": 32,
+          "indexes": [
+            "_id_",
+            "codeType_1_codeVal_1"
+          ]
+        },
+        "customerMaster": {
+          "count": 201,
+          "indexes": [
+            "_id_",
+            "attributes.k_1_attributes.v_1"
+          ]
+        },
+        "plans": {
+          "count": 3,
+          "indexes": [
+            "_id_",
+            "code_1",
+            "monthlyFee_1_code_1"
+          ]
+        },
+        "tenants": {
+          "count": 15,
+          "indexes": [
+            "_id_",
+            "name_1"
+          ]
+        }
+      },
+      "customerMaster_checks": {
+        "signupDt_missing": 41,
+        "signupDtRaw_present": 201,
+        "tenantResolved_true": 1,
+        "tenantId_present": 201,
+        "attributes_total": 70,
+        "docs_with_attributes": 58
+      }
+    },
+    "written_collections": [
+      "codes",
+      "customerMaster",
+      "plans",
+      "tenants"
+    ],
+    "billingAuditLog": "0 source rows -> collection never created (insert_many of nothing; no indexes declared)",
+    "size_budget_bytes": 10485760,
+    "storageSize_after": 151552
+  },
+  "mongo_guard": {
+    "MONGO_GUARD_BASE_REF": "origin/tp-run/mongodb-20261007T062215Z",
+    "note": "exported for every command; the mongo-migration hooks are not installed as a PreToolUse hook in this session (plugin used as a clone), the active hook is the org dbx guard (F4/F9)"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "batch": "w1-b01",
+  "status": "FAIL",
+  "recon_results": [
+    ".migration/recon/codes/result.json",
+    ".migration/recon/tenants/result.json",
+    ".migration/recon/plans/result.json",
+    ".migration/recon/customerMaster/result.json",
+    ".migration/recon/billingAuditLog/result.json"
+  ],
+  "write_targets": [
+    "mmp_rt_b3_oracle.codes",
+    "mmp_rt_b3_oracle.tenants",
+    "mmp_rt_b3_oracle.plans",
+    "mmp_rt_b3_oracle.customerMaster",
+    "mmp_rt_b3_oracle.billingAuditLog"
+  ],
+  "pr_url": "",
+  "branch": "devin/1791363491-w1-b01-load",
+  "failure_class": "spec_cannot_express_obligation",
+  "one_line_summary": "codes/tenants/plans/billingAuditLog PASS merge_eligible (live, migration_cluster); customerMaster FAIL 44/271 Tier-3 checks: 41 SIGNUP_DT rows the spec's date_string_to_date cannot grade under the F49 raw+parsed obligation (F61) and 1 duplicate ENTITY_ATTR_VALUE (ENTITY_ID, ATTR_NAME) pair the attributes embed key collapses (F62); loader-side F48/F49 obligations hold (tenantResolved 1/201, signupDt missing 41/201, signupDtRaw 201/201).",
+  "per_unit": {
+    "codes": {
+      "fixture_verdict": "PASS",
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 0,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 32,
+          "findings": 0
+        }
+      ]
+    },
+    "tenants": {
+      "fixture_verdict": "PASS",
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 2,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 15,
+          "findings": 0
+        }
+      ]
+    },
+    "plans": {
+      "fixture_verdict": "PASS",
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 5,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        }
+      ]
+    },
+    "customerMaster": {
+      "fixture_verdict": "FAIL",
+      "live_verdict": "FAIL",
+      "live_merge_eligible": false,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 3,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 15,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": false,
+          "checks_run": 271,
+          "findings": 44
+        }
+      ]
+    },
+    "billingAuditLog": {
+      "fixture_verdict": "PASS",
+      "live_verdict": "PASS",
+      "live_merge_eligible": true,
+      "tiers": [
+        {
+          "tier": 1,
+          "passed": true,
+          "checks_run": 1,
+          "findings": 0
+        },
+        {
+          "tier": 2,
+          "passed": true,
+          "checks_run": 1,
+          "findings": 0
+        },
+        {
+          "tier": 3,
+          "passed": true,
+          "checks_run": 0,
+          "findings": 0
+        }
+      ]
+    }
+  }
+}
