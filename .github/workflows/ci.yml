@@ -554,7 +554,12 @@ jobs:
           --set secrets.AIRFLOW__CORE__FERNET_KEY=ci --set config.AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
           | kubeconform -strict -summary -kubernetes-version 1.29.0
       - if: steps.changes.outputs.airflow == 'true'
-        run: make airflow-up AIRFLOW_INFRA_SERVICES=postgres
+        run: make airflow-up AIRFLOW_INFRA_SERVICES="postgres localstack"
+      - if: steps.changes.outputs.airflow == 'true'
+        name: DAG conventions + integrity tests (pytest in the Airflow image, S3 staging on LocalStack)
+        env:
+          OTTERWORKS_LOCALSTACK_URL: http://localstack:4566
+        run: etl/airflow/scripts/run-tests.sh tests -p no:warnings
       - if: steps.changes.outputs.airflow == 'true'
         run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow exec -T airflow-scheduler airflow dags test otterworks_platform_check
       - if: failure() && steps.changes.outputs.airflow == 'true'
