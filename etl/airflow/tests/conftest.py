@@ -10,7 +10,12 @@ os.environ.setdefault("AIRFLOW__CORE__LOAD_EXAMPLES", "false")
 
 AIRFLOW_ROOT = Path(__file__).resolve().parents[1]
 DAGS_FOLDER = AIRFLOW_ROOT / "dags"
-LEGACY_CRONTAB = Path(os.environ.get("OTTERWORKS_LEGACY_CRONTAB", AIRFLOW_ROOT.parent / "crontab"))
+# etl/crontab before the cutover (etl/RUNBOOK.md §5); etl/crontab itself ends up empty.
+LEGACY_CRONTAB = Path(
+    os.environ.get(
+        "OTTERWORKS_LEGACY_CRONTAB", AIRFLOW_ROOT.parent / "legacy-cron" / "crontab.pre-cutover"
+    )
+)
 
 
 def _no_connection(*args, **kwargs):
@@ -20,10 +25,13 @@ def _no_connection(*args, **kwargs):
 @pytest.fixture(scope="session")
 def dagbag():
     from airflow.hooks.base import BaseHook
-    from airflow.models import DagBag, Variable
+    from airflow.models import Connection, DagBag, Variable
 
+    # The secrets-backend lookups catch reads that bypass BaseHook.get_connection/Variable.get.
     with (
         mock.patch.object(BaseHook, "get_connection", side_effect=_no_connection),
+        mock.patch.object(Connection, "get_connection_from_secrets", side_effect=_no_connection),
         mock.patch.object(Variable, "get", side_effect=_no_connection),
+        mock.patch.object(Variable, "get_variable_from_secrets", side_effect=_no_connection),
     ):
         return DagBag(dag_folder=str(DAGS_FOLDER), include_examples=False, read_dags_from_db=False)

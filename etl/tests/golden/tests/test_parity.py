@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 
 from harness import airflow_container, differences, parity, scenario, settings
 from harness.differences import ABSENT
@@ -47,9 +48,9 @@ def test_default_differences_are_reviewed_against_the_golden(script):
     for name, entries in accepted.items():
         golden = golden_checks(script, name)
         for acc in entries:
-            assert differences.canon(golden.get(acc.check, ABSENT)) == differences.canon(
-                acc.before
-            ), acc.check
+            assert differences.canon(
+                golden.get(acc.check, ABSENT)
+            ) == differences.canon(acc.before), acc.check
 
 
 def test_decided_flags_default_false_and_each_has_a_flag_on_variant():
@@ -225,3 +226,31 @@ def test_config_overrides_reach_the_dag_inputs():
         )
     with pytest.raises(airflow_container.AirflowError, match="removed"):
         airflow_container.config_inputs({"database": None})
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        ["--dag", "parity_wrong__audit_archive_weekly"],
+        ["--scenario", "smoke"],
+        ["--variant", "smoke_delete_enabled"],
+        ["--expect", "failed"],
+    ],
+)
+def test_script_all_rejects_narrowing_options(extra):
+    with pytest.raises(SystemExit) as exc:
+        parity.main(["--script", "all", *extra])
+    assert exc.value.code == 2
+
+
+def test_script_all_runs_every_registered_script(monkeypatch):
+    seen = []
+
+    def fake_run_script(args):
+        seen.append(args.script)
+        return 1 if args.script == "search_reindex_weekly" else 0
+
+    monkeypatch.setattr(parity, "run_script", fake_run_script)
+    assert parity.main(["--script", "all"]) == 1
+    registry = yaml.safe_load(parity.REGISTRY.read_text())["scripts"]
+    assert seen == list(registry)

@@ -108,6 +108,48 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  # Seeded document-service/file-service stand-in for the local cutover rehearsal
+  # (etl/RUNBOOK.md §8): the infra stack has neither service. Opt-in via the
+  # search-stub profile (`make etl-search-stub-up`); serves one golden scenario's seed.http.
+  etl-search-stub:
+    profiles:
+    - search-stub
+    build:
+      context: ./etl/airflow
+    image: otterworks/etl-airflow:local
+    entrypoint:
+    - python
+    - -m
+    - harness.stub_http
+    command:
+    - --scenario
+    - ${ETL_SEARCH_STUB_SCENARIO:-search_reindex_weekly/smoke}
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8089'
+    working_dir: /opt/golden
+    environment:
+      PYTHONDONTWRITEBYTECODE: '1'
+    volumes:
+    - ./etl/tests/golden:/opt/golden:ro
+    networks:
+    - otterworks
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8089/file-service/api/v1/files?page=1&size=1')
+      interval: 5s
+      timeout: 5s
+      start_period: 5s
+      retries: 6
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+
   # Legacy cron for strangler coexistence and rollback (etl/legacy-cron/README.md).
   # Opt-in via the legacy-cron profile (`make legacy-cron-up`); runs only the lines
   # still present in etl/crontab, through etl/run.sh, with the golden harness shim.

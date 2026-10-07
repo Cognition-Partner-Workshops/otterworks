@@ -211,6 +211,21 @@ def test_source_and_copy_both_missing_is_a_failure():
     assert result.failed_keys == ["files/gone"]
 
 
+def test_retry_with_source_gone_fails_on_a_damaged_copy():
+    s3 = _s3_with()
+    s3.put(QUARANTINE, "quarantined/2026-06-01/files/a", "x" * 20)
+    result = _quarantine(s3, [_obj("files/a", 100)])
+    assert (result.already_quarantined, result.failed_keys) == (0, ["files/a"])
+    assert s3.keys(QUARANTINE) == ["quarantined/2026-06-01/files/a"]
+
+
+def test_retry_with_source_gone_accepts_a_full_size_copy():
+    s3 = _s3_with()
+    s3.put(QUARANTINE, "quarantined/2026-06-01/files/a", "x" * 100)
+    result = _quarantine(s3, [_obj("files/a", 100)])
+    assert (result.already_quarantined, result.failed) == (1, 0)
+
+
 def _report(**overrides):
     args = {
         "ds": "2026-06-01",

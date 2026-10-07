@@ -83,6 +83,10 @@ All must hold before the cutover window. Record the evidence in the cutover tick
       goldens for every scenario of the script; every row is *identical* or *accepted
       difference* with a reason. The legacy side is still green:
       `make etl-golden SCRIPT=<script-without-.py> MODE=check`.
+      "Every scenario" means the full list in [§7](#7-accepted-differences-and-parity-reports),
+      not `smoke` alone. The harness on this branch (from #1909/#1879) records only `smoke`; the
+      edge-case goldens come with #1904 and must be on the branch the parity report runs from.
+      A report that covers only `smoke` does not meet this precondition.
 - [ ] **DAG unit and integrity tests green** on the DAG PR's CI and locally:
       `etl/airflow/scripts/run-tests.sh` (DAG bag import, no cycles, `dag_id`, `schedule` equal
       to `LEGACY_SCHEDULES[dag_id]`, `catchup=False`, `max_active_runs=1`, failure callback set),
@@ -185,6 +189,10 @@ at the next slot" means *the first run is at the next slot*; set `start_date` to
 1. **Release the DAG with its cutover `start_date`.** In the DAG module set
    `start_date=<LAST>` (`pendulum.datetime(..., tz="UTC")`) and keep `catchup=False` (both from
    the DAG PR / `otterworks_dag_kwargs`). Deploy. The DAG stays **paused**.
+   This is a release-only change: run `make etl-parity` before it, not after. `airflow dags test`
+   at a golden scenario's frozen date (2026-03-15) earlier than `start_date` schedules no task, so
+   parity fails on any commit that carries a cutover `start_date`. Never unpause a DAG still
+   on the code default (`2026-01-01`): on unpause it runs the latest slot cron already ran.
 2. **Confirm what Airflow will do before unpausing:**
    ```bash
    $AF dags list -o plain | grep "$DAG"     # paused True
@@ -438,25 +446,35 @@ in the next report.
 `quarantined`). Do this with the flag already `true`, otherwise the next run moves them again.
 
 ```bash
-# 1. References that only match after normalization (the wrongly quarantined set)
+# 1. References that only match after normalization (the wrongly quarantined set).
+#    The CLI follows the scan's 1 MB pages itself, so this reads the whole table.
 $AWS dynamodb scan --table-name otterworks-file-metadata --projection-expression s3_key \
   | jq -r '.Items[].s3_key.S // empty' | grep -E '^(/|s3://)' \
   | sed -E 's#^s3://[^/]+/##; s#^/+##' | sort -u > keys_to_restore
-# 2. Find each key's quarantine copy <prefix>/<ds>/<key> (newest <ds> wins) and copy it back
+# 2. List the quarantine prefix once. The CLI follows continuation tokens (1000 keys per page)
+#    unless --max-items or --no-paginate is given; the two counts must be equal.
 P=quarantined
 $AWS s3api list-objects-v2 --bucket otterworks-file-quarantine --prefix "$P/" \
   | jq -r '.Contents[]?.Key' > quarantined_keys
-while IFS= read -r KEY; do
-  SRC=$(awk -v p="$P/" -v k="$KEY" 'index($0, p) == 1 && substr($0, length(p) + 12) == k' quarantined_keys | sort | tail -1)
-  [ -n "$SRC" ] || { echo "NOT QUARANTINED: $KEY"; continue; }
+wc -l < quarantined_keys; $AWS s3 ls --recursive "s3://otterworks-file-quarantine/$P/" | wc -l
+# 3. Plan in one pass: the newest <prefix>/<ds>/<key> for each key. Review it before copying:
+#    line count, a sample, and the NOT QUARANTINED keys printed on stderr.
+awk -v p="$P/" '
+  NR == FNR { if (index($0, p) == 1) { k = substr($0, length(p) + 12); if (!(k in src) || $0 > src[k]) src[k] = $0 }; next }
+  ($0 in src) { print src[$0] "\t" $0; next }
+  { print "NOT QUARANTINED: " $0 > "/dev/stderr" }' quarantined_keys keys_to_restore > restore_plan
+wc -l < restore_plan; head restore_plan
+# 4. Copy back, two API calls per key; never over a newer upload. Rerunning is safe: restored
+#    keys are skipped.
+while IFS=$'\t' read -r SRC KEY; do
   if $AWS s3api head-object --bucket otterworks-file-storage --key "$KEY" >/dev/null 2>&1; then
     echo "SKIP exists in file storage: $KEY"; continue      # never overwrite a newer upload
   fi
   $AWS s3api copy-object --bucket otterworks-file-storage --key "$KEY" \
     --copy-source "otterworks-file-quarantine/$SRC" --metadata-directive COPY >/dev/null \
     && echo "RESTORED $SRC -> $KEY"
-done < keys_to_restore
-# 3. Verify: ContentLength/ETag equal on both sides; keep the quarantine copy until the next
+done < restore_plan | tee restore_log
+# 5. Verify: ContentLength/ETag equal on both sides; keep the quarantine copy until the next
 #    cleanup report no longer lists the key, then it may be removed.
 ```
 
@@ -500,10 +518,12 @@ no cloud endpoints: `aws` only ever talks to `http://localhost:4566` (LocalStack
 | --- | --- |
 | infra | `docker compose -f docker-compose.infra.yml up -d --wait postgres localstack meilisearch` |
 | Airflow up / health | `make airflow-up` (UI `http://localhost:8280`), `make airflow-check`, `make airflow-config-check` |
+| document-service / file-service (`search_reindex_weekly`) | `make etl-search-stub-up` (serves `ETL_SEARCH_STUB_SCENARIO`, default `search_reindex_weekly/smoke`, at `http://etl-search-stub:8089`); set `LEGACY_CRON_DOCUMENT_SERVICE_URL=http://etl-search-stub:8089/document-service`, `LEGACY_CRON_FILE_SERVICE_URL=http://etl-search-stub:8089/file-service` for `make legacy-cron-up` **and every `make legacy-cron-reload`** (each recreates the container; without them cron calls `document-service:8083` again), the `otterworks_postgres` Connection's `schema` to `otterworks_etl_golden` (the database the harness seeds and cron writes), and the `otterworks_document_service` / `otterworks_file_service` Connections in `etl/airflow/.env` to `{"conn_type": "http", "host": "http://etl-search-stub:8089/<service>"}` before `make airflow-up` |
 | cron running `etl/crontab` | `make legacy-cron-up` (renders a dev-only `config.ini`; the committed `etl/config.ini` is not used) |
 | `crontab /opt/etl/crontab` after removing/restoring a line | edit `etl/crontab` (or point `LEGACY_ETL_CRONTAB` at a copy), then `make legacy-cron-reload` |
 | `/opt/etl/run.sh <script>` once | `make legacy-cron-run SCRIPT=<script-without-.py>` (exit 3 if its line was removed: cut over) |
 | `/var/log/etl/*.log` | `docker compose -f docker-compose.airflow.yml -p otterworks-airflow logs legacy-etl-cron` |
+| release with the cutover `start_date` (5.0 step 1) | edit `start_date=<LAST>` in the DAG modules without committing, then `make airflow-up` (the DAGs are baked into the image, so the rebuild deploys them); commit only `etl/crontab` (`git commit ... etl/crontab`) |
 | wait for the next slot | `$AF dags trigger $DAG` only in a rehearsal, with cron's line removed; a scheduled run is still needed to rehearse `start_date` |
 | teardown | `make legacy-cron-down`, `make airflow-down` |
 
@@ -512,8 +532,8 @@ seeds below): each scenario starts with `infra.reset()`, which empties every S3 
 table, SQS queue and MeiliSearch index it can reach, and every table in the golden Postgres
 database. That includes app data.
 
-- The harness refuses to reset unless `GOLDEN_ALLOW_RESET=1` (set only by `make etl-golden`,
-  which CI uses) **and** every endpoint (`GOLDEN_LOCALSTACK_URL`, `GOLDEN_MEILI_URL`,
+- The harness refuses to reset unless `GOLDEN_ALLOW_RESET=1` (set only by `make etl-golden` and
+  `make etl-parity`, which CI uses) **and** every endpoint (`GOLDEN_LOCALSTACK_URL`, `GOLDEN_MEILI_URL`,
   `GOLDEN_PG_HOST`) is `localhost`, `127.0.0.1`, `::1` or the Compose service name `localstack`,
   `meilisearch` or `postgres`. It cannot reach AWS or any other remote host.
 - The guard cannot tell a disposable stack from one holding data. Run the harness only on a
@@ -527,7 +547,8 @@ database. That includes app data.
 Rehearse in the order of [§1](#1-cutover-order): cut analytics over, roll it back, cut it over
 again; then audit archive with the flag `false`; then the other three. For 6.1 and 6.2 seed the
 `cutoff_boundary` / `reference_mismatches` scenarios (`make etl-golden ... SCENARIO=`) and run the
-pre-check and restore commands against LocalStack.
+pre-check and restore commands against LocalStack. Those scenarios come with the #1904 goldens;
+they are not on a branch that has only `smoke`.
 
 ## 9. Retirement after one weekly cycle
 

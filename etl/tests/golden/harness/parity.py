@@ -3,6 +3,7 @@
   python -m harness.parity --script audit_archive_weekly
   python -m harness.parity --script audit_archive_weekly --dag parity_wrong__audit_archive_weekly --expect failed
   python -m harness.parity --script storage_cleanup_daily --variant reference_mismatches_normalize_keys
+  python -m harness.parity --script all   # every script in parity/dags.yaml, one after another
 
 Per scenario: reset and seed exactly like the golden harness, run
 `airflow dags test <dag_id> <frozen_time>` in a container of the Airflow image
@@ -241,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--script", required=True, choices=settings.SCRIPTS)
+    parser.add_argument("--script", required=True, choices=settings.SCRIPTS + ("all",))
     parser.add_argument(
         "--dag", help="DAG id (default: the script's entry in parity/dags.yaml)"
     )
@@ -253,7 +254,29 @@ def main(argv: list[str] | None = None) -> int:
         "--expect", choices=("identical", "failed"), default="identical"
     )
     args = parser.parse_args(argv)
+    if args.script == "all":
+        if args.dag or args.scenario or args.variant or args.expect != "identical":
+            parser.error(
+                "--script all takes no --dag, --scenario, --variant or --expect"
+            )
+        return run_all()
+    return run_script(args)
 
+
+def run_all() -> int:
+    """Every script in the registry with its own DAG, all scenarios and variants."""
+    scripts = list(yaml.safe_load(REGISTRY.read_text())["scripts"])
+    codes = {}
+    for script in scripts:
+        print("==== %s" % script)
+        codes[script] = main(["--script", script])
+    print()
+    for script, code in codes.items():
+        print("%-24s %s" % (script, "OK" if code == 0 else "FAILED (exit %d)" % code))
+    return 0 if all(code == 0 for code in codes.values()) else 1
+
+
+def run_script(args: argparse.Namespace) -> int:
     entry = resolve_dag(args.script, args.dag)
     selected = cases(args.script, entry, args.scenario, args.variant)
     if not selected:

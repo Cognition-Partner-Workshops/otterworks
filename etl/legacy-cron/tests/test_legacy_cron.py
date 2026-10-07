@@ -8,11 +8,21 @@ import legacy_cron
 
 ETL_DIR = Path(__file__).resolve().parents[2]
 GOLDEN_DIR = ETL_DIR / "tests" / "golden"
+# etl/crontab as it was before the Airflow cutover (etl/RUNBOOK.md §5): the schedule contract.
+PRE_CUTOVER = ETL_DIR / "legacy-cron" / "crontab.pre-cutover"
 
 
 @pytest.fixture
 def committed_jobs():
-    return legacy_cron.parse_crontab((ETL_DIR / "crontab").read_text())
+    return legacy_cron.parse_crontab(PRE_CUTOVER.read_text())
+
+
+def test_crontab_keeps_only_unmodified_pre_cutover_lines():
+    pre = PRE_CUTOVER.read_text().splitlines()
+    current = (ETL_DIR / "crontab").read_text().splitlines()
+    assert current[:2] == pre[:2]
+    assert [line for line in current if line in pre] == current
+    legacy_cron.parse_crontab("\n".join(current))
 
 
 def test_committed_crontab_parses_to_five_unmodified_lines(committed_jobs):
@@ -23,7 +33,7 @@ def test_committed_crontab_parses_to_five_unmodified_lines(committed_jobs):
         "30 2 * * *",
         "0 5 * * *",
     ]
-    raw = (ETL_DIR / "crontab").read_text()
+    raw = PRE_CUTOVER.read_text()
     for job in committed_jobs:
         assert "%s %s" % (job.schedule, job.command) in raw
         assert job.command.startswith("/opt/etl/run.sh ")
@@ -138,3 +148,26 @@ def test_rendered_credentials_and_hosts_are_not_the_committed_ones(tmp_path):
         ("services", "meilisearch_api_key"),
     ]:
         assert rendered[section][key] != committed[section][key], (section, key)
+
+
+def test_concurrent_renders_do_not_share_a_staging_file(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    target = tmp_path / "config.ini"
+    (tmp_path / "config.ini.tmp").write_text("stale")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [
+            pool.submit(
+                legacy_cron.render_config, str(target), str(GOLDEN_DIR), LOCAL_SERVICES
+            )
+            for _ in range(32)
+        ]
+        for future in futures:
+            future.result()
+    rendered = configparser.ConfigParser()
+    rendered.read(target)
+    assert rendered["services"]["file_service_url"] == "http://files:2"
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        "config.ini",
+        "config.ini.tmp",
+    ]

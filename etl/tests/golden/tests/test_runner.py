@@ -7,7 +7,7 @@ def test_runs_like_the_crontab_with_read_only_mounts():
     cmd = runner.docker_command(
         "img:tag", "analytics_daily", "2026-03-15T02:00:00Z", Path("/tmp/x/config.ini")
     )
-    crontab = (settings.ETL_DIR / "crontab").read_text()
+    crontab = (settings.ETL_DIR / "legacy-cron" / "crontab.pre-cutover").read_text()
     assert "/opt/etl/run.sh analytics_daily.py" in crontab
     assert cmd[-3:] == ["img:tag", "/opt/etl/run.sh", "analytics_daily.py"]
     mounts = [cmd[i + 1] for i, arg in enumerate(cmd) if arg == "--mount"]

@@ -155,11 +155,13 @@ def quarantine_object(
     already moved it (source gone, copy present). A same-day copy is overwritten, as legacy."""
     source_key = obj["key"]
     if hook.head_object(source_key, bucket_name=file_storage_bucket) is None:
-        if hook.head_object(dest_key, bucket_name=quarantine_bucket) is not None:
+        copied_size = _copy_size(hook, quarantine_bucket, dest_key)
+        if copied_size == int(obj["size"]):
             return False
         raise QuarantineVerifyError(
             f"s3://{file_storage_bucket}/{source_key} is gone and "
-            f"s3://{quarantine_bucket}/{dest_key} does not exist"
+            f"s3://{quarantine_bucket}/{dest_key} has size {copied_size}, "
+            f"listed size {obj['size']}"
         )
     hook.copy_object(
         source_key,
@@ -168,15 +170,20 @@ def quarantine_object(
         dest_bucket_name=quarantine_bucket,
         MetadataDirective="COPY",
     )
-    copy = hook.head_object(dest_key, bucket_name=quarantine_bucket)
-    copied_size = None if copy is None else copy.get("ContentLength")
-    if copied_size is None or int(copied_size) != int(obj["size"]):
+    copied_size = _copy_size(hook, quarantine_bucket, dest_key)
+    if copied_size != int(obj["size"]):
         raise QuarantineVerifyError(
             f"copy s3://{quarantine_bucket}/{dest_key} has size {copied_size}, "
             f"source has {obj['size']}; source kept"
         )
     hook.delete_objects(file_storage_bucket, [source_key])
     return True
+
+
+def _copy_size(hook: QuarantineHook, bucket: str, key: str) -> int | None:
+    head = hook.head_object(key, bucket_name=bucket)
+    size = None if head is None else head.get("ContentLength")
+    return None if size is None else int(size)
 
 
 def quarantine_orphans(
