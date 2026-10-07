@@ -74,6 +74,18 @@ class DocumentService:
         )
         return document
 
+    async def copy(self, source: Document, owner_id: UUID) -> Document:
+        title = f"Copy of {source.title}"[:500]
+        return await self.create(
+            DocumentCreate(
+                title=title,
+                content=source.content,
+                content_type=source.content_type,
+                owner_id=owner_id,
+                folder_id=source.folder_id if source.owner_id == owner_id else None,
+            )
+        )
+
     async def get(self, document_id: UUID) -> Document | None:
         result = await self.db.execute(
             select(Document).where(
