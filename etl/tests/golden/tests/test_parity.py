@@ -34,9 +34,20 @@ def test_every_registered_dag_is_a_known_toy_or_image_dag():
 
 
 @pytest.mark.parametrize("script", settings.SCRIPTS)
-def test_defaults_accept_nothing(script):
-    """Both decided flags default to false, which is the legacy goldens: no default difference."""
-    assert differences.load(script).default == {}
+def test_default_differences_are_reviewed_against_the_golden(script):
+    """The pass-through runs legacy, so it accepts nothing. A ported DAG lists only what it
+    changes, each `before` being the committed golden. The decided flags default to false,
+    which is the legacy goldens, so they add no default difference."""
+    scripts, _ = parity.load_registry()
+    accepted = differences.load(script).default
+    if scripts[script].dag_folder == "toy":
+        assert accepted == {}
+    for name, entries in accepted.items():
+        golden = golden_checks(script, name)
+        for acc in entries:
+            assert differences.canon(golden.get(acc.check, ABSENT)) == differences.canon(
+                acc.before
+            ), acc.check
 
 
 def test_decided_flags_default_false_and_each_has_a_flag_on_variant():

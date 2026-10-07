@@ -11,9 +11,9 @@
 # its own dag_id, `dag_folder: image` and `variants: true`.
 scripts:
   analytics_daily:
-    dag_id: parity_passthrough__analytics_daily
-    dag_folder: toy
-    variants: false
+    dag_id: otterworks_analytics_etl
+    dag_folder: image
+    variants: true
   audit_archive_weekly:
     dag_id: parity_passthrough__audit_archive_weekly
     dag_folder: toy
