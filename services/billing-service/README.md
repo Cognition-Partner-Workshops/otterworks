@@ -1,8 +1,8 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans module. It owns a
-separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and places
-plans behavior in a plain-Python domain layer.
+This FastAPI service is the extraction target for the plans and rating modules.
+It owns a separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and
+places plans and rating behavior in a plain-Python domain layer.
 
 ## Development
 
@@ -21,7 +21,7 @@ python scripts/generate_seed.py
 ```
 
 The generated-seed test prevents the target fixture from drifting from the
-legacy before-state. `POST /internal/reset` applies the migration, truncates
+legacy before-state. `POST /internal/reset` applies the migrations, truncates
 the `billing_svc` schema, and reseeds it so the parity harness can isolate
 every scenario.
 
@@ -51,3 +51,23 @@ enables their routes by default; a preview requires building with
 `/billing-api` proxy is used by the dev server and by that explicitly flagged
 preview. Builds without the flag leave the routes unregistered. No deployed
 app or shared-infrastructure deployment is provided for this fixture.
+
+## Rating
+
+| Legacy entrypoint | Target endpoint |
+| --- | --- |
+| `billing.fn_usage_rating` | `GET /api/tenants/{tenant_id}/usage-rating?period_start=&period_end=` |
+| `billing.fn_usage_summary` | `GET /api/tenants/{tenant_id}/usage-summary?period_start=&period_end=` |
+| `billing.sp_finalize_rating` | `POST /api/tenants/{tenant_id}/rating-finalizations` |
+
+The rules are `RATING-R01` to `RATING-R10` in `procs/rules/rating.rules.yaml`.
+The extraction copies legacy behaviour, including the 101-unit first tier, the
+gross rollover sum, the suspended-share proration with double rounding, and
+PostgreSQL's numeric quotient precision (`pg_numeric_quotient`). Those quirks
+are recorded as follow-ups in the ledger rather than changed here.
+
+When no subscription overlaps the period, both rating and finalization return
+HTTP 404 (approved in `RATING-R01`); the legacy function returns a row of nulls
+and the legacy finalize fails on a NOT NULL constraint. Finalizing a period that
+already exists under an id other than `md5(tenant_id || period_start)` returns
+HTTP 409, where the legacy procedure fails on the foreign key.
