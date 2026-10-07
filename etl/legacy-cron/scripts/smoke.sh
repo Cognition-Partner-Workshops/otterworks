@@ -3,8 +3,9 @@
 #   1. a crontab line fires on its schedule and its /var/log/etl output reaches stdout
 #   2. removing that line (cutover) stops it: `run` exits 3, nothing fires
 #   3. restoring the line (rollback) brings it back
-# Uses a scratch copy of etl/crontab with storage_cleanup_daily set to every minute;
-# etl/crontab itself is never touched. Expects `make legacy-cron-up` to have run.
+# Uses a scratch copy of the pre-cutover crontab (etl/legacy-cron/crontab.pre-cutover) with
+# storage_cleanup_daily set to every minute; etl/crontab itself is never touched.
+# Expects `make legacy-cron-up` to have run.
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
 
@@ -19,12 +20,13 @@ reload() {
 }
 logs() { "${COMPOSE[@]}" logs --no-log-prefix legacy-etl-cron 2>&1; }
 
-# Same lines as etl/crontab; only the storage_cleanup schedule becomes "* * * * *".
-sed -E "s|^[^#].* (/opt/etl/run.sh ${SCRIPT} .*)$|* * * * * \1|" etl/crontab >"$WORK/crontab.fires"
-grep -v " ${SCRIPT} " etl/crontab >"$WORK/crontab.cutover"
+BASE=etl/legacy-cron/crontab.pre-cutover
+# Same lines as the pre-cutover crontab; only the storage_cleanup schedule becomes "* * * * *".
+sed -E "s|^[^#].* (/opt/etl/run.sh ${SCRIPT} .*)$|* * * * * \1|" "$BASE" >"$WORK/crontab.fires"
+grep -v " ${SCRIPT} " "$BASE" >"$WORK/crontab.cutover"
 
 step "scheduled: ${SCRIPT} every minute"
-diff etl/crontab "$WORK/crontab.fires" || true
+diff "$BASE" "$WORK/crontab.fires" || true
 reload "$WORK/crontab.fires"
 # supercronic logs the job's own stdout as msg="..." channel=stdout job.command="...".
 FIRED="${SCRIPT} completed successfully\" channel=stdout .*job.command=\"/opt/etl/run.sh ${SCRIPT} >> /var/log/etl/storage.log"
@@ -38,7 +40,7 @@ logs | grep -q "$FIRED" \
 echo "PASS: fired on schedule, run.sh output reached container stdout via /var/log/etl/storage.log"
 
 step "cutover: remove the ${SCRIPT} line"
-diff etl/crontab "$WORK/crontab.cutover" || true
+diff "$BASE" "$WORK/crontab.cutover" || true
 reload "$WORK/crontab.cutover"
 logs | grep "job(s) scheduled"
 set +e
@@ -52,8 +54,8 @@ if logs | grep -q "job.command=\"/opt/etl/run.sh ${SCRIPT}"; then
 fi
 echo "PASS: run exits 3 and nothing fired for 65s after the line was removed"
 
-step "rollback: restore etl/crontab unchanged"
-reload "$PWD/etl/crontab"
+step "rollback: restore the line unchanged"
+reload "$PWD/$BASE"
 logs | grep "job(s) scheduled"
 "${COMPOSE[@]}" exec -T legacy-etl-cron python3 /opt/legacy-cron/legacy_cron.py run "$SCRIPT" | tail -2
 echo "PASS: line restored, ${SCRIPT} runs again"

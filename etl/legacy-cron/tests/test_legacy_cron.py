@@ -8,11 +8,21 @@ import legacy_cron
 
 ETL_DIR = Path(__file__).resolve().parents[2]
 GOLDEN_DIR = ETL_DIR / "tests" / "golden"
+# etl/crontab as it was before the Airflow cutover (etl/RUNBOOK.md §5): the schedule contract.
+PRE_CUTOVER = ETL_DIR / "legacy-cron" / "crontab.pre-cutover"
 
 
 @pytest.fixture
 def committed_jobs():
-    return legacy_cron.parse_crontab((ETL_DIR / "crontab").read_text())
+    return legacy_cron.parse_crontab(PRE_CUTOVER.read_text())
+
+
+def test_crontab_keeps_only_unmodified_pre_cutover_lines():
+    pre = PRE_CUTOVER.read_text().splitlines()
+    current = (ETL_DIR / "crontab").read_text().splitlines()
+    assert current[:2] == pre[:2]
+    assert [line for line in current if line in pre] == current
+    legacy_cron.parse_crontab("\n".join(current))
 
 
 def test_committed_crontab_parses_to_five_unmodified_lines(committed_jobs):
@@ -23,7 +33,7 @@ def test_committed_crontab_parses_to_five_unmodified_lines(committed_jobs):
         "30 2 * * *",
         "0 5 * * *",
     ]
-    raw = (ETL_DIR / "crontab").read_text()
+    raw = PRE_CUTOVER.read_text()
     for job in committed_jobs:
         assert "%s %s" % (job.schedule, job.command) in raw
         assert job.command.startswith("/opt/etl/run.sh ")

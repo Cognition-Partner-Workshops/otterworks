@@ -41,7 +41,10 @@ jobs:
       - run: make legacy-cron-test
       - run: shellcheck etl/legacy-cron/scripts/smoke.sh
       - run: docker compose -f docker-compose.airflow.yml -p otterworks-airflow --profile legacy-cron config --quiet
+      # etl/crontab is empty once every script has cut over; run against the pre-cutover lines.
       - run: make legacy-cron-up
+        env:
+          LEGACY_ETL_CRONTAB: ${{ github.workspace }}/etl/legacy-cron/crontab.pre-cutover
       - run: make legacy-cron-run SCRIPT=storage_cleanup_daily
       - run: make legacy-cron-smoke
       - if: failure()

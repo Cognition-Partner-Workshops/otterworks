@@ -10,7 +10,12 @@ os.environ.setdefault("AIRFLOW__CORE__LOAD_EXAMPLES", "false")
 
 AIRFLOW_ROOT = Path(__file__).resolve().parents[1]
 DAGS_FOLDER = AIRFLOW_ROOT / "dags"
-LEGACY_CRONTAB = Path(os.environ.get("OTTERWORKS_LEGACY_CRONTAB", AIRFLOW_ROOT.parent / "crontab"))
+# etl/crontab before the cutover (etl/RUNBOOK.md §5); etl/crontab itself ends up empty.
+LEGACY_CRONTAB = Path(
+    os.environ.get(
+        "OTTERWORKS_LEGACY_CRONTAB", AIRFLOW_ROOT.parent / "legacy-cron" / "crontab.pre-cutover"
+    )
+)
 
 
 def _no_connection(*args, **kwargs):

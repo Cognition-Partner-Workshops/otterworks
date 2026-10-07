@@ -2,7 +2,8 @@
 # Run the pytest suite (etl/airflow/tests) inside the built Airflow image, so tests see the
 # exact Airflow, provider and Python versions that run the DAGs. The source tree is mounted
 # read-only; pytest is installed against the image's own Airflow constraints file.
-# The legacy etl/crontab is mounted read-only so the schedule map can be checked against it.
+# The pre-cutover crontab (etl/legacy-cron/crontab.pre-cutover) is mounted read-only so the
+# schedule map can be checked against it.
 # With LocalStack up on otterworks-network the S3 staging roundtrip runs against it too.
 set -euo pipefail
 
@@ -20,7 +21,7 @@ fi
 
 exec docker run --rm "${net_args[@]}" \
   -v "$ROOT:/opt/otterworks-etl:ro" -w /opt/otterworks-etl \
-  -v "$ROOT/../crontab:/opt/legacy/crontab:ro" -e OTTERWORKS_LEGACY_CRONTAB=/opt/legacy/crontab \
+  -v "$ROOT/../legacy-cron/crontab.pre-cutover:/opt/legacy/crontab:ro" -e OTTERWORKS_LEGACY_CRONTAB=/opt/legacy/crontab \
   -e OTTERWORKS_LOCALSTACK_URL="$LOCALSTACK_URL" \
   -e PYTHONDONTWRITEBYTECODE=1 \
   --entrypoint bash "$IMAGE" -c '
