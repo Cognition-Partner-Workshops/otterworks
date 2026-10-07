@@ -72,7 +72,7 @@ Say first: "A product manager wrote one paragraph: users want to duplicate a doc
 
 Tests: 3, 4 (the DeepWiki page for the repository, the repository knowledge, the document-service, the gateway and the web app), 5 (API tests, frontend tests and the browser run).
 
-What to open: the DeepWiki read before any code change, the spec Devin wrote back, the new `POST /documents/{id}/copy` route and the card menu action, the API and frontend tests (16 client tests, 81 service tests passing), the four browser screenshots and the recording of `Copy created` on the real Compose stack, the Devin Review finding (three other card views showed a menu item that did nothing) and the commit that fixed it, the skill Devin asked to save for the browser check, and `docker compose down -v` at the end. The one decision the persona made: copying stays owner-only, because the service has no per-user sharing yet.
+What to open: the DeepWiki read before any code change, the spec Devin wrote back, the new `POST /documents/{id}/copy` route and the card menu action, the API and frontend tests (16 client tests, 81 service tests passing), the four browser screenshots and the recording of `Copy created` on the real Compose stack, the Devin Review finding (three other card views showed a menu item that did nothing) and the commit that fixed it, the skill Devin offered to save for the browser check (it stayed an offer; the saved one is in act 5), and `docker compose down -v` at the end. The one decision the persona made: copying stays owner-only, because the service has no per-user sharing yet.
 
 ### 3. Text4Shell across the JVM modules, as a workflow
 
@@ -132,7 +132,7 @@ Say first: "Two defects a user sees: delete in Trash asks nothing, and Download 
 
 Tests: 3, 5 (the defect has to be visible before and gone after).
 
-What to open: the before pass on `main` (Download flashes a spinner and a toast, then the tab leaves the app for the raw storage URL and nothing is saved; Trash already confirms, so Devin said so instead of claiming a fix), the one question it asked (how to get a real download when storage sends no CORS headers; the persona chose the file-service `?disposition=attachment` URL), the after pass with the file saved byte for byte and the app still on the page, the failed state with a retry when storage is blocked, the keyboard-safe delete dialog that names the file, the ten before and after screenshots in the PR body, `npm test` 25 of 25, and `docker compose down -v` at the end.
+What to open: the organization skill `otterworks-local-browser` that the persona approved from this session (Customize, then Skills; it holds the local browser-check notes a future session follows), the before pass on `main` (Download flashes a spinner and a toast, then the tab leaves the app for the raw storage URL and nothing is saved; Trash already confirms, so Devin said so instead of claiming a fix), the one question it asked (how to get a real download when storage sends no CORS headers; the persona chose the file-service `?disposition=attachment` URL), the after pass with the file saved byte for byte and the app still on the page, the failed state with a retry when storage is blocked, the keyboard-safe delete dialog that names the file, the ten before and after screenshots in the PR body, `npm test` 25 of 25, and `docker compose down -v` at the end.
 
 ### 5b. The iOS safe area
 
