@@ -12,7 +12,7 @@
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:13:43.875280+00:00",
+  "generated_at": "2026-10-08T13:34:20.242758+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -31,7 +31,7 @@
     {
       "tier": 2,
       "name": "per_field_aggregates",
-      "passed": true,
+      "passed": false,
       "checks_run": 1,
       "stats": {
         "deferred_to_tier3": [
@@ -59,12 +59,35 @@
         ],
         "fields_fully_deferred": 2
       },
-      "findings": []
+      "findings": [
+        {
+          "collection": "billingAuditLog",
+          "check": "aggregate_min",
+          "detail": "field LOGGED_AT->loggedAt",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "datetime_utc_truncate_ms"
+          ],
+          "rules_configured": []
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "aggregate_max",
+          "detail": "field LOGGED_AT->loggedAt",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "datetime_utc_truncate_ms"
+          ],
+          "rules_configured": []
+        }
+      ]
     },
     {
       "tier": 3,
       "name": "keyed_diffs",
-      "passed": true,
+      "passed": false,
       "checks_run": 37,
       "stats": {
         "billingAuditLog": {
@@ -73,11 +96,419 @@
           "duplicate_source_key_count": 0
         }
       },
-      "findings": []
+      "findings": [
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:28cb03b06c28",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:0555debc8a65",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:4079e4af87d7",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:3912a1d67a34",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:666aa17826ad",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:3af5d6e7f947",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:24a6ade6d35f",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:8c98d396d4e2",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:6fd93f706bb5",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:3623a2e9858c",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:d66a370d279e",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:dfece6a4d633",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:f4998cc8d9fd",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:187d5a0656b5",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:4fdda04c7f66",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:0a480dc88dda",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:78232db12513",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:25cfb52fcfe2",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:d9220edbfa6b",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:821902cf7e59",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:dafc7efeb735",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:0e4fc813171d",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:5503efdc6ad9",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:46ff29167351",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:67884d458137",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:29a680646cef",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:ce7ccce47fb2",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:9f256d9b7934",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:7c077263a4b1",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:0d99aae3df50",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:f56a3e9962be",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:ab344921928c",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:bfa1862dfc3d",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:a97f6d93c2ea",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:d4109b4f7194",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:40f5a64b1398",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "collection": "billingAuditLog",
+          "check": "field_diff",
+          "detail": "field LOGGED_AT->loggedAt key=tuple:b07cad823739",
+          "source_value": "datetime:330647912f41",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [],
+          "rules_configured": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ]
     }
   ],
   "warnings": [],
-  "verdict": "PASS",
-  "merge_eligible": true,
+  "verdict": "FAIL",
+  "merge_eligible": false,
   "error": null
 }

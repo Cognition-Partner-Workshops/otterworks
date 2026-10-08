@@ -7,7 +7,7 @@
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `codes`, `tenants`, `plans`
 - Seed: `0`
-- Generated: 2026-10-08T13:12:33.340128+00:00
+- Generated: 2026-10-08T13:33:02.515301+00:00
 - 7 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 3 string fields: min/max/distinct deferred to Tier 3
 

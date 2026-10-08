@@ -13,7 +13,7 @@
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:12:25.650117+00:00",
+  "generated_at": "2026-10-08T13:34:28.985878+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -118,7 +118,7 @@
     {
       "tier": 3,
       "name": "keyed_diffs",
-      "passed": true,
+      "passed": false,
       "checks_run": 46,
       "stats": {
         "subscriptions": {
@@ -132,11 +132,150 @@
           "duplicate_source_key_count": 0
         }
       },
-      "findings": []
+      "findings": [
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:28cb03b06c28",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:28cb03b06c28",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:0555debc8a65",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:0555debc8a65",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:4079e4af87d7",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:4079e4af87d7",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:3912a1d67a34",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:3912a1d67a34",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:666aa17826ad",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:666aa17826ad",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDt key=tuple:3af5d6e7f947",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "datetime:8a0170ff10a6",
+          "rules_applied": [
+            "date_string_to_date:dbyHMS-70a36e"
+          ],
+          "rules_configured": [
+            "date_string_to_date:dbyHMS-70a36e",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "collection": "subscriptionsHist",
+          "check": "field_diff",
+          "detail": "field HIST_DT->histDtRaw key=tuple:3af5d6e7f947",
+          "source_value": "str:e19d0660e5fc",
+          "target_value": "str:d6c462864d56",
+          "rules_applied": [],
+          "rules_configured": []
+        }
+      ]
     }
   ],
   "warnings": [],
-  "verdict": "PASS",
-  "merge_eligible": true,
+  "verdict": "FAIL",
+  "merge_eligible": false,
   "error": null
 }

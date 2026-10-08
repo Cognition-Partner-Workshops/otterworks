@@ -7,7 +7,7 @@
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `creditNotes`
 - Seed: `0`
-- Generated: 2026-10-08T13:12:21.226510+00:00
+- Generated: 2026-10-08T13:34:24.360970+00:00
 - 4 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 1 string fields: min/max/distinct deferred to Tier 3
 

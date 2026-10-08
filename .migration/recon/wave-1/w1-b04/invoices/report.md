@@ -7,7 +7,7 @@
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `invoices`
 - Seed: `0`
-- Generated: 2026-10-08T13:20:10.185065+00:00
+- Generated: 2026-10-08T13:34:36.236620+00:00
 - 6 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 2 string fields: min/max/distinct deferred to Tier 3
 

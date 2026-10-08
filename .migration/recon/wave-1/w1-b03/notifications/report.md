@@ -7,7 +7,7 @@
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `notifications`
 - Seed: `0`
-- Generated: 2026-10-08T13:12:29.883130+00:00
+- Generated: 2026-10-08T13:34:33.407110+00:00
 - 2 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 1 string fields: min/max/distinct deferred to Tier 3
 

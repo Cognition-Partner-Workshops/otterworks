@@ -1,0 +1,865 @@
+{
+  "run_id": "UNT9-7",
+  "manifest_sha": "ec9a01d04e88",
+  "wave": 1,
+  "wave_verdict": "FAIL",
+  "unit_verdicts": {
+    "w1-b01": "PASS",
+    "w1-b02": "FAIL",
+    "w1-b03": "FAIL",
+    "w1-b04": "PASS",
+    "w1-b05": "PASS"
+  },
+  "recon_results": {
+    "w1-b01": [
+      ".migration/recon/wave-1/w1-b01/reference-data/result.json",
+      ".migration/recon/wave-1/w1-b01/customer-master/result.json",
+      ".migration/recon/wave-1/w1-b01/entity-attr-value/result.json",
+      ".migration/recon/wave-1/w1-b01/invoice-header/result.json",
+      ".migration/recon/wave-1/w1-b01/invoice-line/result.json"
+    ],
+    "w1-b02": [
+      ".migration/recon/wave-1/w1-b02/billing-audit-log/result.json"
+    ],
+    "w1-b03": [
+      ".migration/recon/wave-1/w1-b03/rating-periods/result.json",
+      ".migration/recon/wave-1/w1-b03/credit-notes/result.json",
+      ".migration/recon/wave-1/w1-b03/subscriptions/result.json",
+      ".migration/recon/wave-1/w1-b03/usage-events/result.json",
+      ".migration/recon/wave-1/w1-b03/notifications/result.json"
+    ],
+    "w1-b04": [
+      ".migration/recon/wave-1/w1-b04/invoices/result.json",
+      ".migration/recon/wave-1/w1-b04/rating-results/result.json"
+    ],
+    "w1-b05": [
+      ".migration/recon/wave-1/w1-b05/dunning-attempts/result.json"
+    ]
+  },
+  "verifier_batch_verdicts": {
+    "w1-b01": "PASS",
+    "w1-b02": "DRIFT-EXPLAINED",
+    "w1-b03": "DRIFT-EXPLAINED",
+    "w1-b04": "PASS",
+    "w1-b05": "PASS"
+  },
+  "verifier_batch_verdicts_note": "harness verdicts of the verifier's own live re-runs; w1-b02 and w1-b03 fail only on the wall-clock columns the fixture exercise stamps (LOGGED_AT, HIST_DT), source stable across three re-runs \u2014 DRIFT-EXPLAINED, not a defect; unit_verdicts carries FAIL because the pinned grader accepts only PASS/FAIL and grades a PASS from result.json",
+  "unverified_units": {
+    "customer-master": "customerMasterHist: 0 source rows, collection absent on target; fixture cannot exercise it"
+  },
+  "unit_recon_verdicts": {
+    "customer-master": {
+      "batch": "w1-b01",
+      "collections": [
+        "customerMasterHist",
+        "customerMaster"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": false,
+      "generated_at": "2026-10-08T13:34:07.490902+00:00",
+      "warnings": [
+        "UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised"
+      ]
+    },
+    "entity-attr-value": {
+      "batch": "w1-b01",
+      "collections": [
+        "entityAttrValue"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:09.903079+00:00",
+      "warnings": []
+    },
+    "invoice-header": {
+      "batch": "w1-b01",
+      "collections": [
+        "invoiceHeader"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:13.082155+00:00",
+      "warnings": []
+    },
+    "invoice-line": {
+      "batch": "w1-b01",
+      "collections": [
+        "invoiceLine"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:18.455206+00:00",
+      "warnings": []
+    },
+    "reference-data": {
+      "batch": "w1-b01",
+      "collections": [
+        "codes",
+        "tenants",
+        "plans"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:33:02.515301+00:00",
+      "warnings": []
+    },
+    "billing-audit-log": {
+      "batch": "w1-b02",
+      "collections": [
+        "billingAuditLog"
+      ],
+      "verdict": "FAIL",
+      "merge_eligible": false,
+      "generated_at": "2026-10-08T13:34:20.242758+00:00",
+      "warnings": []
+    },
+    "credit-notes": {
+      "batch": "w1-b03",
+      "collections": [
+        "creditNotes"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:24.360970+00:00",
+      "warnings": []
+    },
+    "notifications": {
+      "batch": "w1-b03",
+      "collections": [
+        "notifications"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:33.407110+00:00",
+      "warnings": []
+    },
+    "rating-periods": {
+      "batch": "w1-b03",
+      "collections": [
+        "ratingPeriods"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:22.321699+00:00",
+      "warnings": []
+    },
+    "subscriptions": {
+      "batch": "w1-b03",
+      "collections": [
+        "subscriptions",
+        "subscriptionsHist"
+      ],
+      "verdict": "FAIL",
+      "merge_eligible": false,
+      "generated_at": "2026-10-08T13:34:28.985878+00:00",
+      "warnings": []
+    },
+    "usage-events": {
+      "batch": "w1-b03",
+      "collections": [
+        "usageEvents"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:31.392566+00:00",
+      "warnings": []
+    },
+    "invoices": {
+      "batch": "w1-b04",
+      "collections": [
+        "invoices"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:36.236620+00:00",
+      "warnings": []
+    },
+    "rating-results": {
+      "batch": "w1-b04",
+      "collections": [
+        "ratingResults"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:38.856950+00:00",
+      "warnings": []
+    },
+    "dunning-attempts": {
+      "batch": "w1-b05",
+      "collections": [
+        "dunningAttempts"
+      ],
+      "verdict": "PASS",
+      "merge_eligible": true,
+      "generated_at": "2026-10-08T13:34:41.173306+00:00",
+      "warnings": []
+    }
+  },
+  "findings": [
+    "w1-b02: the verifier's live re-run of billing-audit-log is FAIL on exactly one field \u2014 all 37 billingAuditLog.loggedAt values differ (source 2026-10-08 13:32:23, target 2026-10-08 12:11:03); LOGGED_AT is the wall-clock stamp pkg_ow_util.log_msg writes when testdata/legacy/mmp_rt_exercise.sql runs, the source value was identical across three re-runs (unit re-run twice more), keys, counts, module and message all match, so the batch is DRIFT-EXPLAINED (fixture re-exercised on a fresh host), recorded as FAIL in unit_verdicts because the pinned grader accepts only PASS/FAIL and a PASS must be graded from a PASS result.json.",
+    "w1-b03: the verifier's live re-run of subscriptions is FAIL on subscriptionsHist only \u2014 all 6 rows differ on histDt and histDtRaw (source '08-OCT-26 13:32:23', target '08-OCT-26 12:11:03'); HIST_DT is TO_CHAR(SYSDATE) written by TRG_SUBSCRIPTIONS_HIST when the exercise script closes the open subscriptions, the source value was identical across three re-runs, the other 4 units of the batch and the 20 subscriptions documents PASS with 0 findings, so the batch is DRIFT-EXPLAINED, recorded as FAIL in unit_verdicts for the same grader reason.",
+    "plugin/fixture: .migration/fixtures/mmprt-mini.json pins row counts but not the two wall-clock columns (BILLING_AUDIT_LOG.LOGGED_AT, SUBSCRIPTIONS_HIST.HIST_DT) that mmp_rt_exercise.sql stamps with SYSDATE, so the fixture is reproducible by count but not by value and an independent live re-verification on a fresh host can never PASS w1-b02 or the subscriptions unit of w1-b03 against a target loaded elsewhere; the exercise should stamp a fixed clock or the manifest should declare volatile columns for the recon to exclude.",
+    "plugin: skills/wave-verify/SKILL.md allows a per-batch DRIFT-EXPLAINED verdict, but skills/wave-preflight/preflight.py validate_verify rejects anything but PASS/FAIL per batch and for wave_verdict, so there is no grader-clean way to report drift; this run carries the drift verdicts in verifier_batch_verdicts beside the PASS/FAIL unit_verdicts.",
+    "plugin: preflight.py verify_report_path hard-codes recon/wave-1 with no branch override, so report_path 'recon/wave-1-UNT9-7:.migration/recon/wave-1/verify-report.md' (the branch rule of this ticket; recon/wave-1 holds another run's evidence) is rejected by --verify as 'report_path must be exactly recon/wave-1:...' \u2014 known mismatch, reported, branch not renamed.",
+    "plugin: the harness CLI requires --canonicalization, but the ticket's method command omits it; the verifier passed skills/mongo-migration/profiles/oracle.md from the pinned plugin clone (the harness skill's documented value), which the batch result.json files do not record, so canonicalization-file identity is not part of the evidence the grader checks.",
+    "w1-b01: customer-master is harness PASS with merge_eligible False because customerMasterHist has 0 source rows (CUSTOMER_MASTER_HIST=0 per the fixture manifest) and no collection on the target (17 of 18 write targets exist); the unit is UNVERIFIED for that collection \u2014 the fixture cannot exercise it \u2014 and the batch PASS rests on the four other live-PASS units plus the customerMaster collection (201/201, T3 201 checks, 0 findings).",
+    "w1-b01: customerMaster.signupDt is null/missing on 41 of 201 documents where the source SIGNUP_DT is non-null text ('N/A', '31-FEB-24', '00-XXX-00', '1/1/1900', ...); this is the map-v3 date_string_to_date:dby-90c10b unparseable->null rule with the raw text kept in signupDtRaw on all 201 documents (plan decision d-date-unparseable), graded PASS by the harness \u2014 explained, not a defect; every other field's null/missing count equals the source NULL count across all 17 collections.",
+    "all batches: probes past the gate found no defect \u2014 17/17 collections match COUNT(*) exactly, 0 duplicate keys, invoices.lines embeds 29/29 INVOICE_LINES rows over 7 parents with identical per-parent lengths (2 invoices legitimately have 0 lines), the 37 planted invoiceLine.invoiceId orphans are preserved verbatim (37 source / 37 target), 14 cross-unit reference checks show 0 dangling pointers on both sides, boundary keys resolve once, and no unexpected collection exists in mmp_rt_b5_oracle.",
+    "all batches: RECON_REDACT_SALT is not set on this host, so all 14 verifier result.json files record redaction_salted=false (unsalted hashes; low-entropy values enumerable offline).",
+    "environment: the org blueprint note says the recon harness lives in /home/ubuntu/.venvs/recon, but on this fresh host the venv had no recon entry point (UNT9-1 finding reproduced); the verifier pip-installed mongo-recon-harness 0.3.3 from the pinned plugin clone into that venv and ran recon selftest (PASS, 9 rules) first.",
+    "manager contract: the verifier could not reproduce the manager's wave spec from the ticket block (eight canonical reconstructions hash to other values than ec9a01d04e88), so preflight.py --grade/--verify was run locally against a reconstructed spec only to capture the validator's problem list; the manifest_sha header is the one the ticket pins.",
+    "independence: fresh host, fresh clone of the run branch at 36885ce7, fresh Oracle volume seeded with mmp_rt_mini_seed.py and exercised once (row counts equal to the fixture manifest, no DRIFT on counts), no loader run, read-only harness and probes; the Atlas principal MONGODB_ATLAS_URI and the mapping/tolerance bytes are the same the batch workers used (sha256 verified)."
+  ],
+  "report_path": "recon/wave-1-UNT9-7:.migration/recon/wave-1/verify-report.md",
+  "branch": "recon/wave-1-UNT9-7",
+  "verified_run_branch_head": "36885ce7",
+  "run_branch": "tp-run/mongodb-20261008T120222Z",
+  "mapping_version": "map-v3",
+  "mapping_sha256": "c158f8bb469d1e2733cfae5aa26e315d0ade4490f1164048ee161230c866dbd7",
+  "tolerance_version": "tol-1",
+  "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
+  "plugin_head": "349cb2d17dccb246409e7750657e25843bf53be8",
+  "harness_version": "0.3.3",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "target_db": "mmp_rt_b5_oracle",
+  "dbStats": {
+    "collections": 17,
+    "objects": 3022,
+    "dataSize": 1428179,
+    "storageSize": 1667072,
+    "indexSize": 1032192,
+    "totalSize": null
+  },
+  "footprint_bytes_data_plus_index": 2460371,
+  "fixture_row_counts_match_manifest": true,
+  "probes": {
+    "collections": {
+      "ratingPeriods": {
+        "source_rows": "8",
+        "target_docs": 8,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "customerMasterHist": {
+        "source_rows": "0",
+        "target_docs": null,
+        "duplicate_keys": null,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": true
+      },
+      "invoices": {
+        "source_rows": "9",
+        "target_docs": 9,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "creditNotes": {
+        "source_rows": "5",
+        "target_docs": 5,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "codes": {
+        "source_rows": "32",
+        "target_docs": 32,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "tenants": {
+        "source_rows": "15",
+        "target_docs": 15,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "plans": {
+        "source_rows": "3",
+        "target_docs": 3,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "subscriptions": {
+        "source_rows": "20",
+        "target_docs": 20,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {
+          "endsOn": 15,
+          "suspendedOn": 18
+        },
+        "source_null": {
+          "endsOn": "15",
+          "suspendedOn": "18"
+        },
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "usageEvents": {
+        "source_rows": "103",
+        "target_docs": 103,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "dunningAttempts": {
+        "source_rows": "3",
+        "target_docs": 3,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "notifications": {
+        "source_rows": "2",
+        "target_docs": 2,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "customerMaster": {
+        "source_rows": "201",
+        "target_docs": 201,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {
+          "dbaName": 201,
+          "addrLine2": 71,
+          "addrLine3": 130,
+          "addrLine4": 201,
+          "addrLine5": 201,
+          "addrLine6": 201,
+          "zip4": 201,
+          "countryCd": 200,
+          "mailAddrLine1": 201,
+          "mailAddrLine2": 201,
+          "mailAddrLine3": 201,
+          "mailAddrLine4": 201,
+          "mailAddrLine5": 201,
+          "mailAddrLine6": 201,
+          "mailCity": 201,
+          "mailStateCd": 201,
+          "mailZip": 201,
+          "phone2": 92,
+          "phone3": 201,
+          "phone4": 201,
+          "phone2TypeCd": 1,
+          "phone3TypeCd": 201,
+          "phone4TypeCd": 201,
+          "fax": 201,
+          "email2": 201,
+          "email3": 201,
+          "signupDt": 41,
+          "lastInvoiceDt": 201,
+          "lastPaymentDt": 201,
+          "terminateDt": 201,
+          "subStatusCd": 66,
+          "territoryCd": 201,
+          "channelCd": 201,
+          "rateClassCd": 201,
+          "dunningExempt": 200,
+          "ltdBilledAmt": 200,
+          "ytdPaidAmt": 200,
+          "creditLimitAmt": 42,
+          "relatedAcctIds": 41,
+          "childAcctIds": 201,
+          "promoCodes": 60,
+          "contactNotes": 201,
+          "legacySysKey": 1,
+          "mainframeAcctNo": 1,
+          "conversionBatchNo": 1,
+          "flag01": 201,
+          "flag02": 201,
+          "flag03": 201,
+          "flag04": 201,
+          "flag05": 201,
+          "flag06": 201,
+          "flag07": 201,
+          "flag08": 201,
+          "flag09": 201,
+          "flag10": 201,
+          "flag11": 201,
+          "flag12": 201,
+          "flag13": 201,
+          "flag14": 201,
+          "flag15": 201,
+          "flag16": 201,
+          "flag17": 201,
+          "flag18": 201,
+          "flag19": 201,
+          "flag20": 201,
+          "udf01": 201,
+          "udf02": 201,
+          "udf03": 201,
+          "udf04": 201,
+          "udf05": 201,
+          "udf06": 201,
+          "udf07": 201,
+          "udf08": 201,
+          "udf09": 201,
+          "udf10": 201,
+          "udf11": 201,
+          "udf12": 201,
+          "udf13": 201,
+          "udf14": 201,
+          "udf15": 201,
+          "udf16": 201,
+          "udf17": 201,
+          "udf18": 201,
+          "udf19": 201,
+          "udf20": 201,
+          "udf21": 201,
+          "udf22": 201,
+          "udf23": 201,
+          "udf24": 201,
+          "udf25": 201,
+          "udf26": 201,
+          "udf27": 201,
+          "udf28": 201,
+          "udf29": 201,
+          "udf30": 201,
+          "udf31": 201,
+          "udf32": 201,
+          "udf33": 201,
+          "udf34": 201,
+          "udf35": 201,
+          "udf36": 201,
+          "udf37": 201,
+          "udf38": 201,
+          "udf39": 201,
+          "udf40": 201,
+          "udfAmt01": 201,
+          "udfAmt02": 201,
+          "udfAmt03": 201,
+          "udfAmt04": 201,
+          "udfAmt05": 201,
+          "udfAmt06": 201,
+          "udfAmt07": 201,
+          "udfAmt08": 201,
+          "udfAmt09": 201,
+          "udfAmt10": 201,
+          "udfDt01": 201,
+          "udfDt02": 201,
+          "udfDt03": 201,
+          "udfDt04": 201,
+          "udfDt05": 201,
+          "udfDt06": 201,
+          "udfDt07": 201,
+          "udfDt08": 201,
+          "udfDt09": 201,
+          "udfDt10": 201
+        },
+        "source_null": {
+          "dbaName": "201",
+          "addrLine2": "71",
+          "addrLine3": "130",
+          "addrLine4": "201",
+          "addrLine5": "201",
+          "addrLine6": "201",
+          "zip4": "201",
+          "countryCd": "200",
+          "mailAddrLine1": "201",
+          "mailAddrLine2": "201",
+          "mailAddrLine3": "201",
+          "mailAddrLine4": "201",
+          "mailAddrLine5": "201",
+          "mailAddrLine6": "201",
+          "mailCity": "201",
+          "mailStateCd": "201",
+          "mailZip": "201",
+          "phone2": "92",
+          "phone3": "201",
+          "phone4": "201",
+          "phone2TypeCd": "1",
+          "phone3TypeCd": "201",
+          "phone4TypeCd": "201",
+          "fax": "201",
+          "email2": "201",
+          "email3": "201",
+          "signupDt": "0",
+          "lastInvoiceDt": "201",
+          "lastPaymentDt": "201",
+          "terminateDt": "201",
+          "subStatusCd": "66",
+          "territoryCd": "201",
+          "channelCd": "201",
+          "rateClassCd": "201",
+          "dunningExempt": "200",
+          "ltdBilledAmt": "200",
+          "ytdPaidAmt": "200",
+          "creditLimitAmt": "42",
+          "relatedAcctIds": "41",
+          "childAcctIds": "201",
+          "promoCodes": "60",
+          "contactNotes": "201",
+          "legacySysKey": "1",
+          "mainframeAcctNo": "1",
+          "conversionBatchNo": "1",
+          "flag01": "201",
+          "flag02": "201",
+          "flag03": "201",
+          "flag04": "201",
+          "flag05": "201",
+          "flag06": "201",
+          "flag07": "201",
+          "flag08": "201",
+          "flag09": "201",
+          "flag10": "201",
+          "flag11": "201",
+          "flag12": "201",
+          "flag13": "201",
+          "flag14": "201",
+          "flag15": "201",
+          "flag16": "201",
+          "flag17": "201",
+          "flag18": "201",
+          "flag19": "201",
+          "flag20": "201",
+          "udf01": "201",
+          "udf02": "201",
+          "udf03": "201",
+          "udf04": "201",
+          "udf05": "201",
+          "udf06": "201",
+          "udf07": "201",
+          "udf08": "201",
+          "udf09": "201",
+          "udf10": "201",
+          "udf11": "201",
+          "udf12": "201",
+          "udf13": "201",
+          "udf14": "201",
+          "udf15": "201",
+          "udf16": "201",
+          "udf17": "201",
+          "udf18": "201",
+          "udf19": "201",
+          "udf20": "201",
+          "udf21": "201",
+          "udf22": "201",
+          "udf23": "201",
+          "udf24": "201",
+          "udf25": "201",
+          "udf26": "201",
+          "udf27": "201",
+          "udf28": "201",
+          "udf29": "201",
+          "udf30": "201",
+          "udf31": "201",
+          "udf32": "201",
+          "udf33": "201",
+          "udf34": "201",
+          "udf35": "201",
+          "udf36": "201",
+          "udf37": "201",
+          "udf38": "201",
+          "udf39": "201",
+          "udf40": "201",
+          "udfAmt01": "201",
+          "udfAmt02": "201",
+          "udfAmt03": "201",
+          "udfAmt04": "201",
+          "udfAmt05": "201",
+          "udfAmt06": "201",
+          "udfAmt07": "201",
+          "udfAmt08": "201",
+          "udfAmt09": "201",
+          "udfAmt10": "201",
+          "udfDt01": "201",
+          "udfDt02": "201",
+          "udfDt03": "201",
+          "udfDt04": "201",
+          "udfDt05": "201",
+          "udfDt06": "201",
+          "udfDt07": "201",
+          "udfDt08": "201",
+          "udfDt09": "201",
+          "udfDt10": "201"
+        },
+        "null_rate_mismatch": {
+          "signupDt": [
+            41,
+            "0"
+          ]
+        },
+        "empty": false
+      },
+      "entityAttrValue": {
+        "source_rows": "70",
+        "target_docs": 70,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "invoiceHeader": {
+        "source_rows": "1000",
+        "target_docs": 1000,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "invoiceLine": {
+        "source_rows": "1500",
+        "target_docs": 1500,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {
+          "posted": 313
+        },
+        "source_null": {
+          "posted": "313"
+        },
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "billingAuditLog": {
+        "source_rows": "37",
+        "target_docs": 37,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "subscriptionsHist": {
+        "source_rows": "6",
+        "target_docs": 6,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {
+          "endsOn": 6,
+          "suspendedOn": 6
+        },
+        "source_null": {
+          "endsOn": "6",
+          "suspendedOn": "6"
+        },
+        "null_rate_mismatch": {},
+        "empty": false
+      },
+      "ratingResults": {
+        "source_rows": "8",
+        "target_docs": 8,
+        "duplicate_keys": 0,
+        "target_null_or_missing": {},
+        "source_null": {},
+        "null_rate_mismatch": {},
+        "empty": false
+      }
+    },
+    "invoices_lines_embed": {
+      "source_child_rows": "29",
+      "target_embedded": 29,
+      "parents_source": 7,
+      "parents_target_with_lines": 7,
+      "length_mismatches": {},
+      "source_child_rows_without_parent": "0",
+      "length_distribution": {
+        "2": 2,
+        "0": 2,
+        "5": 5
+      }
+    },
+    "orphan_invoice_lines": {
+      "source": "37",
+      "target": 37
+    },
+    "cross_unit_refs": {
+      "subscriptions.tenantId->tenants": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 20
+      },
+      "subscriptions.planId->plans": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 20
+      },
+      "subscriptionsHist.id->subscriptions": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 6
+      },
+      "usageEvents.tenantId->tenants": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 103
+      },
+      "ratingResults.periodId->ratingPeriods": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 8
+      },
+      "ratingResults.subscriptionId->subscriptions": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 8
+      },
+      "invoices.periodId->ratingPeriods": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 9
+      },
+      "invoices.tenantId->tenants": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 9
+      },
+      "dunningAttempts.invoiceId->invoices": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 3
+      },
+      "creditNotes.tenantId->tenants": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 5
+      },
+      "notifications.tenantId->tenants": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 2
+      },
+      "invoiceHeader.custId->customerMaster": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 1000
+      },
+      "invoiceLine.custId->customerMaster": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 1500
+      },
+      "entityAttrValue.entityId->customerMaster": {
+        "source_dangling": "0",
+        "target_dangling": 0,
+        "checked": 70
+      }
+    },
+    "boundary_keys": {
+      "invoiceHeader": {
+        "000871b4-7c0a-dc91-8e9a-9c1db6b1d5f7": 1,
+        "ff16629f-44a2-5988-59e9-f8dddb2c1364": 1
+      },
+      "usageEvents": {
+        "01083c3d-4389-06d8-e74e-5cd618eda819": 1,
+        "fefa0b2a-2156-f1be-3484-79e63262b911": 1
+      },
+      "billingAuditLog": {
+        "1": 1,
+        "37": 1
+      }
+    },
+    "indexes": {
+      "billingAuditLog": [
+        "_id_"
+      ],
+      "codes": [
+        "_id_"
+      ],
+      "creditNotes": [
+        "_id_"
+      ],
+      "customerMaster": [
+        "_id_"
+      ],
+      "dunningAttempts": [
+        "_id_",
+        "invoiceId_1_attemptNo_1"
+      ],
+      "entityAttrValue": [
+        "_id_"
+      ],
+      "invoiceHeader": [
+        "_id_"
+      ],
+      "invoiceLine": [
+        "_id_"
+      ],
+      "invoices": [
+        "_id_",
+        "statusCd_1_issuedAt_1__id_1",
+        "tenantId_1"
+      ],
+      "notifications": [
+        "_id_",
+        "tenantId_1_kindCd_1_sentAt_1"
+      ],
+      "plans": [
+        "_id_",
+        "code_1",
+        "monthlyFee_1_code_1"
+      ],
+      "ratingPeriods": [
+        "_id_",
+        "tenantId_1_periodStart_1"
+      ],
+      "ratingResults": [
+        "_id_"
+      ],
+      "subscriptions": [
+        "_id_",
+        "endsOn_1_startsOn_1",
+        "planId_1",
+        "tenantId_1"
+      ],
+      "subscriptionsHist": [
+        "_id_"
+      ],
+      "tenants": [
+        "_id_",
+        "name_1"
+      ],
+      "usageEvents": [
+        "_id_",
+        "tenantId_1_occurredAt_1"
+      ]
+    }
+  },
+  "collections_present": [
+    "billingAuditLog",
+    "codes",
+    "creditNotes",
+    "customerMaster",
+    "dunningAttempts",
+    "entityAttrValue",
+    "invoiceHeader",
+    "invoiceLine",
+    "invoices",
+    "notifications",
+    "plans",
+    "ratingPeriods",
+    "ratingResults",
+    "subscriptions",
+    "subscriptionsHist",
+    "tenants",
+    "usageEvents"
+  ],
+  "collections_missing": [
+    "customerMasterHist"
+  ]
+}

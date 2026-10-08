@@ -7,7 +7,7 @@
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `dunningAttempts`
 - Seed: `0`
-- Generated: 2026-10-08T13:25:11.654802+00:00
+- Generated: 2026-10-08T13:34:41.173306+00:00
 - 3 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 2 string fields: min/max/distinct deferred to Tier 3
 
