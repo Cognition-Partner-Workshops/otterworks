@@ -1,5 +1,5 @@
 {
-  "version": "map-draft-1",
+  "version": "map-v1",
   "source_family": "oracle",
   "collections": [
     {
@@ -76,7 +76,9 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "RATING_PERIODS",
@@ -90,10 +92,11 @@
                 "kind": "foreign_key"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
         {
@@ -129,9 +132,11 @@
           "source_type": "VARCHAR2(20)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dbyHMS-30dd8b",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y %H:%M:%S",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
         },
         {
           "source": "HIST_OP",
@@ -544,9 +549,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
         },
         {
           "source": "LAST_ACTIVITY_DT",
@@ -554,9 +561,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
         },
         {
           "source": "LAST_INVOICE_DT",
@@ -564,9 +573,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
         },
         {
           "source": "LAST_PAYMENT_DT",
@@ -574,9 +585,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
         },
         {
           "source": "TERMINATE_DT",
@@ -584,9 +597,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
         },
         {
           "source": "STATUS_CD",
@@ -1714,26 +1729,77 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "pattern": "history_copy",
+        "of_table": "CUSTOMER_MASTER",
+        "proposal": "separate versions collection keyed by history id; do not embed unbounded history",
+        "patterns": [
           {
-            "kind": "no_access_evidence",
+            "pattern": "history_copy",
+            "detail": "separate versions collection keyed by history id; do not embed unbounded history",
+            "evidence": "proposed from census trap"
+          }
+        ],
+        "resolved_questions": [
+          {
+            "kind": "date_as_string",
             "table": "CUSTOMER_MASTER_HIST",
-            "tables": [
-              "CUSTOMER_MASTER_HIST"
+            "evidence": "date kept as text",
+            "columns": [
+              "HIST_DT"
             ],
-            "index_candidates": [
-              {
-                "table": "CUSTOMER_MASTER_HIST",
-                "column": "CUST_ID",
-                "kind": "unenforced_pointer"
-              },
-              {
-                "table": "CUSTOMER_MASTER_HIST",
-                "column": "TENANT_ID",
-                "kind": "unenforced_pointer"
-              }
+            "resolution": "format %d-%b-%y %H:%M:%S; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER_HIST",
+            "evidence": "date kept as text",
+            "columns": [
+              "SIGNUP_DT"
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER_HIST",
+            "evidence": "date kept as text",
+            "columns": [
+              "LAST_ACTIVITY_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER_HIST",
+            "evidence": "date kept as text",
+            "columns": [
+              "LAST_INVOICE_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER_HIST",
+            "evidence": "date kept as text",
+            "columns": [
+              "LAST_PAYMENT_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER_HIST",
+            "evidence": "date kept as text",
+            "columns": [
+              "TERMINATE_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
           },
           {
             "kind": "repeating_group",
@@ -1856,7 +1922,9 @@
                 "UDF_DT_10"
               ]
             },
-            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then"
+            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then",
+            "resolution": "keep numbered ADDR_LINE/MAIL_ADDR_LINE/PHONE/FLAG/UDF columns as flat fields for column-level parity recon; array folding deferred until a reader needs it",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: customer_master wide mainframe layout"
           },
           {
             "kind": "unenforced_pointer",
@@ -1874,7 +1942,9 @@
               "pk_column",
               "table_name"
             ],
-            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+            "proposal": "treat as reference; verify pointer resolves before embedding anything",
+            "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -2137,20 +2207,9 @@
                   "unresolved_values": []
                 }
               }
-            }
-          },
-          {
-            "kind": "date_as_string",
-            "table": "CUSTOMER_MASTER_HIST",
-            "evidence": "date kept as text",
-            "columns": [
-              "HIST_DT",
-              "SIGNUP_DT",
-              "LAST_ACTIVITY_DT",
-              "LAST_INVOICE_DT",
-              "LAST_PAYMENT_DT",
-              "TERMINATE_DT"
-            ]
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           },
           {
             "kind": "csv_list",
@@ -2187,18 +2246,9 @@
                 "max_elements": null,
                 "avg_elements": null
               }
-            }
-          }
-        ],
-        "access_basis": "ddl_only",
-        "pattern": "history_copy",
-        "of_table": "CUSTOMER_MASTER",
-        "proposal": "separate versions collection keyed by history id; do not embed unbounded history",
-        "patterns": [
-          {
-            "pattern": "history_copy",
-            "detail": "separate versions collection keyed by history id; do not embed unbounded history",
-            "evidence": "proposed from census trap"
+            },
+            "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns"
           }
         ]
       },
@@ -2446,33 +2496,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "INVOICES",
-            "tables": [
-              "INVOICES",
-              "INVOICE_LINES"
-            ],
-            "index_candidates": [
-              {
-                "table": "INVOICES",
-                "column": "PERIOD_ID",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "INVOICES",
-                "column": "TENANT_ID",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "INVOICE_LINES",
-                "column": "INVOICE_ID",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "INVOICES",
@@ -2526,12 +2551,96 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
+          },
+          {
+            "kind": "extended_reference_candidate",
+            "parent": "TENANTS",
+            "child": "INVOICES",
+            "pattern_ids": [
+              "ap-46a8eb988b"
+            ],
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+            "resolution": "applied: extended_reference copies TENANTS.STATUS_CD onto invoices (pattern decision above)",
+            "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: t.status_cd read with every overdue invoice"
           }
         ],
-        "access_basis": "ddl_only"
+        "patterns": [
+          {
+            "pattern": "extended_reference",
+            "detail": "fn_overdue_accounts reads t.status_cd with every overdue invoice",
+            "evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id ... t.status_cd"
+          }
+        ],
+        "pattern": "extended_reference",
+        "proposal": "fn_overdue_accounts reads t.status_cd with every overdue invoice",
+        "pattern_evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id ... t.status_cd"
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "statusCd",
+              1
+            ],
+            [
+              "issuedAt",
+              1
+            ],
+            [
+              "_id",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-46a8eb988b"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ]
+          ],
+          "origin": "reference_fk",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-46a8eb988b"
+            }
+          ]
+        }
+      ],
+      "copied_fields": [
+        {
+          "from_table": "TENANTS",
+          "join": {
+            "local": [
+              "TENANT_ID"
+            ],
+            "remote": [
+              "ID"
+            ]
+          },
+          "path": "tenants",
+          "fields": [
+            {
+              "source": "STATUS_CD",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [],
+              "target": "tenants.statusCd"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "creditNotes",
@@ -2608,24 +2717,7 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "CREDIT_NOTES",
-            "tables": [
-              "CREDIT_NOTES"
-            ],
-            "index_candidates": [
-              {
-                "table": "CREDIT_NOTES",
-                "column": "TENANT_ID",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          }
-        ],
-        "access_basis": "ddl_only"
+        "open_questions": []
       },
       "indexes": []
     },
@@ -2677,7 +2769,9 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "CODES",
@@ -2685,10 +2779,11 @@
               "CODES"
             ],
             "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: lookup joined by convention only"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -2752,16 +2847,8 @@
           }
         ],
         "references": [],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "TENANTS",
-            "tables": [
-              "TENANTS"
-            ],
-            "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "TENANTS",
@@ -2818,10 +2905,11 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
         {
@@ -2922,16 +3010,8 @@
           }
         ],
         "references": [],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "PLANS",
-            "tables": [
-              "PLANS"
-            ],
-            "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "PLANS",
@@ -3000,12 +3080,47 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
+          },
+          {
+            "kind": "single_valued_index_key",
+            "table": "PLANS",
+            "column": "ACTIVE_YN",
+            "distinct_values": 1,
+            "evidence": [
+              {
+                "kind": "data_profile",
+                "ref": "value_domain:PLANS.ACTIVE_YN"
+              }
+            ],
+            "proposal": "profile shows one non-null value; confirm the domain on the real estate before relying on this access-index plan",
+            "resolution": "fixture shows one value; keep activeYn as a field, no index (fn_list_plans filters NVL(active_yn,'N')='Y' over 3 rows)",
+            "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: WHERE NVL(active_yn, 'N') = 'Y'"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
+        {
+          "keys": [
+            [
+              "monthlyFee",
+              1
+            ],
+            [
+              "code",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-33e1dc2584"
+            }
+          ]
+        },
         {
           "keys": [
             [
@@ -3122,27 +3237,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "SUBSCRIPTIONS",
-            "tables": [
-              "SUBSCRIPTIONS"
-            ],
-            "index_candidates": [
-              {
-                "table": "SUBSCRIPTIONS",
-                "column": "PLAN_ID",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "SUBSCRIPTIONS",
-                "column": "TENANT_ID",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "SUBSCRIPTIONS",
@@ -3199,12 +3295,155 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
+          },
+          {
+            "kind": "extended_reference_candidate",
+            "parent": "TENANTS",
+            "child": "SUBSCRIPTIONS",
+            "pattern_ids": [
+              "ap-60ec05ff91"
+            ],
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+            "resolution": "fn_entitlement joins tenants only on t.id = p_tenant_id and copies no tenant field; plain reference suffices",
+            "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: WHERE s.tenant_id = t.id AND t.id = p_tenant_id"
+          },
+          {
+            "kind": "extended_reference_candidate",
+            "parent": "PLANS",
+            "child": "SUBSCRIPTIONS",
+            "pattern_ids": [
+              "ap-60ec05ff91"
+            ],
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+            "resolution": "applied: extended_reference copies PLANS CODE/TIER_CD/MONTHLY_FEE/INCLUDED_UNITS onto subscriptions (pattern decision above)",
+            "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: plan fields read with the covering subscription"
           }
         ],
-        "access_basis": "ddl_only"
+        "patterns": [
+          {
+            "pattern": "extended_reference",
+            "detail": "fn_entitlement reads plan code/tier/fee/units with the covering subscription",
+            "evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: p.code, p.tier_cd, p.monthly_fee, p.included_units joined via p.id (+) = s.plan_id"
+          }
+        ],
+        "pattern": "extended_reference",
+        "proposal": "fn_entitlement reads plan code/tier/fee/units with the covering subscription",
+        "pattern_evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: p.code, p.tier_cd, p.monthly_fee, p.included_units joined via p.id (+) = s.plan_id"
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "endsOn",
+              1
+            ],
+            [
+              "startsOn",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-60ec05ff91"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-95a0f9e481"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "planId",
+              1
+            ]
+          ],
+          "origin": "reference_fk",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-60ec05ff91"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-95a0f9e481"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ]
+          ],
+          "origin": "reference_fk",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-60ec05ff91"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-95a0f9e481"
+            }
+          ]
+        }
+      ],
+      "copied_fields": [
+        {
+          "from_table": "PLANS",
+          "join": {
+            "local": [
+              "PLAN_ID"
+            ],
+            "remote": [
+              "ID"
+            ]
+          },
+          "path": "plans",
+          "fields": [
+            {
+              "source": "CODE",
+              "source_type": "VARCHAR2(50)",
+              "bson_type": "string",
+              "rules": [
+                "empty_string_is_null"
+              ],
+              "target": "plans.code"
+            },
+            {
+              "source": "TIER_CD",
+              "source_type": "NUMBER(4,0)",
+              "bson_type": "long",
+              "rules": [],
+              "target": "plans.tierCd"
+            },
+            {
+              "source": "MONTHLY_FEE",
+              "source_type": "NUMBER(12,2)",
+              "bson_type": "decimal",
+              "rules": [
+                "decimal_round"
+              ],
+              "target": "plans.monthlyFee"
+            },
+            {
+              "source": "INCLUDED_UNITS",
+              "source_type": "NUMBER(10,0)",
+              "bson_type": "long",
+              "rules": [],
+              "target": "plans.includedUnits"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "usageEvents",
@@ -3277,22 +3516,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "USAGE_EVENTS",
-            "tables": [
-              "USAGE_EVENTS"
-            ],
-            "index_candidates": [
-              {
-                "table": "USAGE_EVENTS",
-                "column": "TENANT_ID",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "USAGE_EVENTS",
@@ -3361,12 +3586,33 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ],
+            [
+              "occurredAt",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-2b3995792f"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "dunningAttempts",
@@ -3466,7 +3712,9 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "DUNNING_ATTEMPTS",
@@ -3485,7 +3733,9 @@
                 "kind": "foreign_key"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -3543,10 +3793,11 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
         {
@@ -3639,22 +3890,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "NOTIFICATIONS",
-            "tables": [
-              "NOTIFICATIONS"
-            ],
-            "index_candidates": [
-              {
-                "table": "NOTIFICATIONS",
-                "column": "TENANT_ID",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "code_lookup",
             "table": "NOTIFICATIONS",
@@ -3723,10 +3960,11 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
         {
@@ -4175,9 +4413,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
         },
         {
           "source": "LAST_PAYMENT_DT",
@@ -4185,9 +4425,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
         },
         {
           "source": "TERMINATE_DT",
@@ -4195,9 +4437,11 @@
           "source_type": "VARCHAR2(9)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dby-b3d57e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
         },
         {
           "source": "STATUS_CD",
@@ -5327,20 +5571,38 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
-            "kind": "date_format_nonconforming",
+            "kind": "date_as_string",
             "table": "CUSTOMER_MASTER",
-            "column": "SIGNUP_DT",
-            "measured_format": "%d-%b-%y",
-            "conformance": 0.845771,
-            "rows_shaped": 201,
-            "est_bad_rows": 32,
-            "evidence": {
-              "kind": "data_profile",
-              "ref": "text_shapes:CUSTOMER_MASTER.SIGNUP_DT"
-            },
-            "proposal": "quarantine approximately 32 rows that do not match '%d-%b-%y' before converting CUSTOMER_MASTER.SIGNUP_DT; confirm the bad-row handling policy"
+            "evidence": "date kept as text",
+            "columns": [
+              "LAST_INVOICE_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER",
+            "evidence": "date kept as text",
+            "columns": [
+              "LAST_PAYMENT_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "CUSTOMER_MASTER",
+            "evidence": "date kept as text",
+            "columns": [
+              "TERMINATE_DT"
+            ],
+            "resolution": "format %d-%b-%y; unparseable -> keep",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
           },
           {
             "kind": "no_access_evidence",
@@ -5355,7 +5617,9 @@
                 "kind": "unenforced_pointer"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed the seeder fills; no package reads it"
           },
           {
             "kind": "repeating_group",
@@ -5478,7 +5742,9 @@
                 "UDF_DT_10"
               ]
             },
-            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then"
+            "proposal": "collapse each numbered series into one array field; needs app evidence, mapped 1:1 until then",
+            "resolution": "keep numbered ADDR_LINE/MAIL_ADDR_LINE/PHONE/FLAG/UDF columns as flat fields for column-level parity recon; array folding deferred until a reader needs it",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: customer_master wide mainframe layout"
           },
           {
             "kind": "unenforced_pointer",
@@ -5493,7 +5759,9 @@
             "target_basis": [
               "table_name"
             ],
-            "proposal": "treat as reference; verify pointer resolves before embedding anything"
+            "proposal": "treat as reference; verify pointer resolves before embedding anything",
+            "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -6073,7 +6341,9 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           },
           {
             "kind": "date_as_string",
@@ -6081,11 +6351,10 @@
             "evidence": "date kept as text",
             "columns": [
               "SIGNUP_DT",
-              "LAST_ACTIVITY_DT",
-              "LAST_INVOICE_DT",
-              "LAST_PAYMENT_DT",
-              "TERMINATE_DT"
-            ]
+              "LAST_ACTIVITY_DT"
+            ],
+            "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column"
           },
           {
             "kind": "csv_list",
@@ -6122,7 +6391,25 @@
                 "max_elements": 2.0,
                 "avg_elements": 1.475177304964539
               }
-            }
+            },
+            "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns"
+          },
+          {
+            "kind": "date_format_nonconforming",
+            "table": "CUSTOMER_MASTER",
+            "column": "SIGNUP_DT",
+            "measured_format": "%d-%b-%y",
+            "conformance": 0.845771,
+            "rows_shaped": 201,
+            "est_bad_rows": 32,
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "text_shapes:CUSTOMER_MASTER.SIGNUP_DT"
+            },
+            "proposal": "quarantine approximately 32 rows that do not match '%d-%b-%y' before converting CUSTOMER_MASTER.SIGNUP_DT; confirm the bad-row handling policy",
+            "resolution": "keep DD-MON-YY rule (84.6% conform); the ~32 nonconforming rows keep the raw string and are counted, not repaired",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "pointer_unresolved",
@@ -6135,10 +6422,11 @@
               "kind": "data_profile",
               "ref": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS"
             },
-            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding"
+            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding",
+            "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -6227,7 +6515,24 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "pattern": "eav",
+        "proposal": "attribute pattern: array of {k, v, type} under the owning entity once ownership is known; separate collection until then",
+        "eav_measurements": {
+          "distinct_attrs": 8,
+          "p99_attrs_per_entity": 1,
+          "max_attrs_per_entity": 1,
+          "entities": 70
+        },
+        "patterns": [
+          {
+            "pattern": "eav",
+            "detail": "attribute pattern: array of {k, v, type} under the owning entity once ownership is known; separate collection until then",
+            "evidence": "proposed from census trap"
+          }
+        ],
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "ENTITY_ATTR_VALUE",
@@ -6235,7 +6540,19 @@
               "ENTITY_ATTR_VALUE"
             ],
             "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: EAV dumping ground; no package reads it"
+          },
+          {
+            "kind": "date_as_string",
+            "table": "ENTITY_ATTR_VALUE",
+            "evidence": "date kept as text",
+            "columns": [
+              "CREATED_DT"
+            ],
+            "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column"
           },
           {
             "kind": "polymorphic_pointer",
@@ -6257,31 +6574,9 @@
             "proposal": "polymorphic reference (ENTITY_TYPE, ENTITY_ID): store as {coll: <type>, id: <id>} or one optional ref field per type; it cannot be embedded or FK-joined; confirm the type domain",
             "observed_types": [
               "CUSTOMER"
-            ]
-          },
-          {
-            "kind": "date_as_string",
-            "table": "ENTITY_ATTR_VALUE",
-            "evidence": "date kept as text",
-            "columns": [
-              "CREATED_DT"
-            ]
-          }
-        ],
-        "access_basis": "ddl_only",
-        "pattern": "eav",
-        "proposal": "attribute pattern: array of {k, v, type} under the owning entity once ownership is known; separate collection until then",
-        "eav_measurements": {
-          "distinct_attrs": 8,
-          "p99_attrs_per_entity": 1,
-          "max_attrs_per_entity": 1,
-          "entities": 70
-        },
-        "patterns": [
-          {
-            "pattern": "eav",
-            "detail": "attribute pattern: array of {k, v, type} under the owning entity once ownership is known; separate collection until then",
-            "evidence": "proposed from census trap"
+            ],
+            "resolution": "keep EAV as its own collection keyed by eavId with (entityType, entityId, attrName) as the lookup; polymorphic parent rules out an attribute-pattern embed into one parent",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: entity_type identifies the target type for entity_id"
           }
         ]
       },
@@ -6291,20 +6586,12 @@
       "collection": "fixtureMeta",
       "root_table": "FIXTURE_META",
       "key": {
-        "source": [],
-        "target": []
+        "source": [
+          "MARKER"
+        ],
+        "target": "_id"
       },
       "fields": [
-        {
-          "source": "MARKER",
-          "target": "marker",
-          "source_type": "VARCHAR2(100)",
-          "bson_type": "string",
-          "rules": [
-            "empty_string_is_null",
-            "null_missing_equiv"
-          ]
-        },
         {
           "source": "VALUE",
           "target": "value",
@@ -6328,11 +6615,24 @@
       "embeds": [],
       "decision": {
         "shape": "collection",
-        "key_strategy": "no primary key and no usable unique key: comparison key needed (set_key decision)",
-        "key_fields": [],
+        "key_strategy": "comparison key set by decision: services/legacy-billing/db/oracle/schema/04_upgrade_static.sql: fixture_meta ADD (marker, value): marker identifies a row",
+        "key_fields": [
+          {
+            "source": "MARKER",
+            "target": "marker",
+            "source_type": "VARCHAR2(100)",
+            "bson_type": "string",
+            "rules": [
+              "empty_string_is_null",
+              "null_missing_equiv"
+            ]
+          }
+        ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "FIXTURE_META",
@@ -6340,10 +6640,11 @@
               "FIXTURE_META"
             ],
             "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql: boot-time upgrade marker table"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -6457,7 +6758,9 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "INVOICE_HEADER",
@@ -6476,7 +6779,9 @@
                 "kind": "unenforced_pointer"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: bulk feed, no runtime caller"
           },
           {
             "kind": "unenforced_pointer",
@@ -6506,7 +6811,9 @@
             "proposal": "all profiled values resolve: model as a reference and enforce it in the application",
             "measured": {
               "resolve_rate": 1.0
-            }
+            },
+            "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -6561,7 +6868,9 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           },
           {
             "kind": "date_as_string",
@@ -6570,20 +6879,9 @@
             "columns": [
               "INVOICE_DT",
               "DUE_DT"
-            ]
-          },
-          {
-            "kind": "pointer_target_suspect",
-            "table": "INVOICE_HEADER",
-            "column": "TENANT_ID",
-            "target": "TENANTS",
-            "alternatives": [],
-            "resolve_rate": 0.0,
-            "evidence": {
-              "kind": "data_profile",
-              "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS"
-            },
-            "proposal": "no profiled TENANT_ID values resolve to TENANTS; verify the target against other primary-key columns in the census before treating the pointer as unresolved"
+            ],
+            "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column"
           },
           {
             "kind": "pointer_unresolved",
@@ -6596,10 +6894,26 @@
               "kind": "data_profile",
               "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS"
             },
-            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding"
+            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding",
+            "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+          },
+          {
+            "kind": "pointer_target_suspect",
+            "table": "INVOICE_HEADER",
+            "column": "TENANT_ID",
+            "target": "TENANTS",
+            "alternatives": [],
+            "resolve_rate": 0.0,
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS"
+            },
+            "proposal": "no profiled TENANT_ID values resolve to TENANTS; verify the target against other primary-key columns in the census before treating the pointer as unresolved",
+            "resolution": "target stays TENANTS by name; 0% resolve is the mainframe-feed tenant ids of the planted estate, preserved not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed; no FKs"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -6820,7 +7134,9 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "INVOICE_LINE",
@@ -6844,7 +7160,9 @@
                 "kind": "unenforced_pointer"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: bulk feed, no runtime caller"
           },
           {
             "kind": "unenforced_pointer",
@@ -6884,7 +7202,9 @@
             "proposal": "all profiled values resolve: model as a reference and enforce it in the application",
             "measured": {
               "resolve_rate": 1.0
-            }
+            },
+            "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -6952,7 +7272,9 @@
                   ]
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           },
           {
             "kind": "date_as_string",
@@ -6960,7 +7282,9 @@
             "evidence": "date kept as text",
             "columns": [
               "INVOICE_DT"
-            ]
+            ],
+            "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column"
           },
           {
             "kind": "csv_list",
@@ -6979,7 +7303,9 @@
                 "max_elements": 3.0,
                 "avg_elements": 2.042
               }
-            }
+            },
+            "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns"
           },
           {
             "kind": "pointer_unresolved",
@@ -6992,20 +7318,9 @@
               "kind": "data_profile",
               "ref": "pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICE_HEADER"
             },
-            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding"
-          },
-          {
-            "kind": "pointer_target_suspect",
-            "table": "INVOICE_LINE",
-            "column": "TENANT_ID",
-            "target": "TENANTS",
-            "alternatives": [],
-            "resolve_rate": 0.0,
-            "evidence": {
-              "kind": "data_profile",
-              "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS"
-            },
-            "proposal": "no profiled TENANT_ID values resolve to TENANTS; verify the target against other primary-key columns in the census before treating the pointer as unresolved"
+            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding",
+            "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "pointer_unresolved",
@@ -7018,10 +7333,26 @@
               "kind": "data_profile",
               "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS"
             },
-            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding"
+            "proposal": "some pointer rows do not resolve; decide orphan handling before embedding",
+            "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+          },
+          {
+            "kind": "pointer_target_suspect",
+            "table": "INVOICE_LINE",
+            "column": "TENANT_ID",
+            "target": "TENANTS",
+            "alternatives": [],
+            "resolve_rate": 0.0,
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS"
+            },
+            "proposal": "no profiled TENANT_ID values resolve to TENANTS; verify the target against other primary-key columns in the census before treating the pointer as unresolved",
+            "resolution": "target stays TENANTS by name; 0% resolve is the mainframe-feed tenant ids of the planted estate, preserved not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed; no FKs"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -7080,18 +7411,7 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "BILLING_AUDIT_LOG",
-            "tables": [
-              "BILLING_AUDIT_LOG"
-            ],
-            "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          }
-        ],
-        "access_basis": "ddl_only"
+        "open_questions": []
       },
       "indexes": []
     },
@@ -7210,7 +7530,19 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "pattern": "history_copy",
+        "of_table": "SUBSCRIPTIONS",
+        "proposal": "separate versions collection keyed by history id; do not embed unbounded history",
+        "patterns": [
+          {
+            "pattern": "history_copy",
+            "detail": "separate versions collection keyed by history id; do not embed unbounded history",
+            "evidence": "proposed from census trap"
+          }
+        ],
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "SUBSCRIPTIONS_HIST",
@@ -7229,7 +7561,9 @@
                 "kind": "unenforced_pointer"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: written only by trigger"
           },
           {
             "kind": "unenforced_pointer",
@@ -7263,7 +7597,9 @@
             "proposal": "all profiled values resolve: model as a reference and enforce it in the application",
             "measured": {
               "resolve_rate": 1.0
-            }
+            },
+            "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           },
           {
             "kind": "code_lookup",
@@ -7321,7 +7657,9 @@
                   "unresolved_values": []
                 }
               }
-            }
+            },
+            "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it"
           },
           {
             "kind": "date_as_string",
@@ -7329,18 +7667,9 @@
             "evidence": "date kept as text",
             "columns": [
               "HIST_DT"
-            ]
-          }
-        ],
-        "access_basis": "ddl_only",
-        "pattern": "history_copy",
-        "of_table": "SUBSCRIPTIONS",
-        "proposal": "separate versions collection keyed by history id; do not embed unbounded history",
-        "patterns": [
-          {
-            "pattern": "history_copy",
-            "detail": "separate versions collection keyed by history id; do not embed unbounded history",
-            "evidence": "proposed from census trap"
+            ],
+            "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+            "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: VARCHAR2 date column"
           }
         ]
       },
@@ -7459,7 +7788,9 @@
             "why": "child owns its own lifecycle"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "access_basis": "ddl_only",
+        "resolved_questions": [
           {
             "kind": "no_access_evidence",
             "table": "RATING_RESULTS",
@@ -7478,16 +7809,17 @@
                 "kind": "foreign_key"
               }
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence",
+            "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+            "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     }
   ],
   "canonicalization": {
-    "version": "map-draft-1-canon",
+    "version": "map-v1-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -7542,6 +7874,14 @@
         "applies_to": "date",
         "params": {
           "format": "%d-%b-%y"
+        }
+      },
+      {
+        "name": "date_string_to_date:dbyHMS-30dd8b",
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y %H:%M:%S"
         }
       }
     ]
@@ -7609,191 +7949,7 @@
     "not_known_from_ddl": [
       "semantics of triggers, packages, and scheduler jobs (names and targets only)"
     ],
-    "unresolved": [
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "HIST_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "SIGNUP_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "LAST_ACTIVITY_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "LAST_INVOICE_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "LAST_PAYMENT_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER_HIST",
-        "column": "TERMINATE_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER",
-        "column": "LAST_INVOICE_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER",
-        "column": "LAST_PAYMENT_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "CUSTOMER_MASTER",
-        "column": "TERMINATE_DT",
-        "format": "%d-%b-%y",
-        "note": "unmeasurable in this profile",
-        "rows_shaped": 0
-      },
-      {
-        "kind": "no_comparison_key",
-        "table": "FIXTURE_META",
-        "proposal": "name the columns that identify a row (set_key) or accept load-order only"
-      },
-      {
-        "kind": "date_format_assumed",
-        "table": "SUBSCRIPTIONS_HIST",
-        "column": "HIST_DT",
-        "format": "%d-%b-%y",
-        "note": "no profiled format fits enough rows to pin; name the conversion rule in a decision",
-        "measured_format": "%Y%m%d",
-        "conformance": 0.0
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE",
-        "name": "PKG_OW_UTIL"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE BODY",
-        "name": "PKG_OW_UTIL"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE",
-        "name": "PKG_PLANS"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE BODY",
-        "name": "PKG_PLANS"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE",
-        "name": "PKG_RATING"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE BODY",
-        "name": "PKG_RATING"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE",
-        "name": "PKG_INVOICING"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE BODY",
-        "name": "PKG_INVOICING"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE",
-        "name": "PKG_DUNNING"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PACKAGE BODY",
-        "name": "PKG_DUNNING"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "BILLING_AUDIT_LOG",
-        "name": "TRG_BILLING_AUDIT_LOG_ID"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "SUBSCRIPTIONS",
-        "name": "TRG_SUBSCRIPTIONS_HIST"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "SUBSCRIPTIONS",
-        "name": "TRG_SUB_NO_UNCANCEL"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "USAGE_EVENTS",
-        "name": "TRG_USAGE_EVENTS_CHECK"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "CUSTOMER_MASTER",
-        "name": "TRG_CUSTOMER_MASTER_SEQ"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "CUSTOMER_MASTER",
-        "name": "TRG_CUSTOMER_MASTER_HIST"
-      },
-      {
-        "kind": "trigger_business_logic",
-        "table": "ENTITY_ATTR_VALUE",
-        "name": "TRG_ENTITY_ATTR_VALUE_SEQ"
-      },
-      {
-        "kind": "scheduler_job",
-        "name": "JOB_NIGHTLY_DUNNING",
-        "repeat_interval": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0",
-        "note": "batch logic lives in the database; needs an owner after migration"
-      },
-      {
-        "kind": "scheduler_job",
-        "name": "JOB_PURGE_AUDIT_LOG",
-        "repeat_interval": "FREQ=DAILY;BYHOUR=3;BYMINUTE=30",
-        "note": "batch logic lives in the database; needs an owner after migration"
-      }
-    ],
+    "unresolved": [],
     "answered": [
       {
         "kind": "date_format_assumed",
@@ -7969,7 +8125,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-7a575dfc2d"
+          }
+        ],
         "measurements": {
           "fanout:CREDIT_NOTES->TENANTS(TENANT_ID)": {
             "parents": 15,
@@ -7995,7 +8156,10 @@
             "avg_bytes": 52.666666666666664,
             "max_bytes": 57.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-7a575dfc2d"
+        ]
       },
       {
         "parent": "PLANS",
@@ -8009,7 +8173,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-a7af1a6156"
+          }
+        ],
         "measurements": {
           "fanout:SUBSCRIPTIONS->PLANS(PLAN_ID)": {
             "parents": 3,
@@ -8035,7 +8204,10 @@
             "avg_bytes": 52.333333333333336,
             "max_bytes": 53.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-a7af1a6156"
+        ]
       },
       {
         "parent": "TENANTS",
@@ -8049,7 +8221,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-a7af1a6156"
+          }
+        ],
         "measurements": {
           "fanout:SUBSCRIPTIONS->TENANTS(TENANT_ID)": {
             "parents": 15,
@@ -8075,7 +8252,10 @@
             "avg_bytes": 52.666666666666664,
             "max_bytes": 57.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-a7af1a6156"
+        ]
       },
       {
         "parent": "TENANTS",
@@ -8083,13 +8263,19 @@
         "child_columns": [
           "TENANT_ID"
         ],
-        "rule": "default",
+        "rule": "child_read_alone",
         "decision": "reference",
-        "basis": "assumed",
+        "basis": "derived",
         "basis_sources": [
-          "ddl"
+          "ddl",
+          "access"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-2b3995792f"
+          }
+        ],
         "measurements": {
           "fanout:USAGE_EVENTS->TENANTS(TENANT_ID)": {
             "parents": 15,
@@ -8115,7 +8301,10 @@
             "avg_bytes": 52.666666666666664,
             "max_bytes": 57.0
           }
-        }
+        },
+        "access_ids": [
+          "ap-2b3995792f"
+        ]
       },
       {
         "parent": "INVOICES",
@@ -8399,6 +8588,10 @@
         ],
         "evidence": [
           {
+            "kind": "access_pattern",
+            "ref": "ap-dbf1b410e9"
+          },
+          {
             "kind": "ddl",
             "ref": "*_ID column with a matching table and no FK"
           }
@@ -8410,6 +8603,9 @@
             "max_bytes": 373.0
           }
         },
+        "element_write_ids": [
+          "ap-dbf1b410e9"
+        ],
         "edge": "pointer_only"
       },
       {
@@ -8426,6 +8622,10 @@
         ],
         "evidence": [
           {
+            "kind": "access_pattern",
+            "ref": "ap-dbf1b410e9"
+          },
+          {
             "kind": "ddl",
             "ref": "*_ID column with a matching table and no FK"
           }
@@ -8437,6 +8637,9 @@
             "max_bytes": 57.0
           }
         },
+        "element_write_ids": [
+          "ap-dbf1b410e9"
+        ],
         "edge": "pointer_only"
       },
       {
@@ -8662,17 +8865,1568 @@
     },
     "data_profile": {
       "path": ".migration/data_profile.json",
-      "sha256": "106dd37404d0f81b1545713acb4d84ef753db1b569ed56ad880d6968848791ac",
-      "as_of": "2026-10-08T12:19:45.394315+00:00"
+      "sha256": "6158a327451b531b202fea60fd9d2f4b3904e2c6acd8d121ae067928a98a8524",
+      "as_of": "2026-10-08T12:27:20.629354+00:00"
     },
     "access_patterns": {
       "path": ".migration/access_patterns.json",
-      "sha256": "4405eae91a0e8fbd689bf50efdb75112faa1482a7d0425f59e5e53608b18ed9f"
+      "sha256": "191107dec11899da5ef934195f8f92ccb6f1b37d8bf11b33b5351e614653e17c"
     },
     "application_evidence": {
-      "confirmed_patterns": 0,
-      "files": []
+      "confirmed_patterns": 11,
+      "files": [
+        "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "services/legacy-billing/db/oracle/schema/04_jobs.sql"
+      ]
     },
-    "dropped_indexes": []
+    "dropped_indexes": [
+      {
+        "table": "USAGE_EVENTS",
+        "columns": [
+          "TENANT_ID"
+        ],
+        "reason": "left prefix of planned index"
+      }
+    ],
+    "decisions": [
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "HIST_DT",
+        "format": "%d-%b-%y %H:%M:%S",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "372",
+          "note": "trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "SIGNUP_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "225",
+          "note": "VARCHAR2(9) DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "LAST_ACTIVITY_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "226",
+          "note": "VARCHAR2(9) DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "227",
+          "note": "VARCHAR2(9) DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "228",
+          "note": "VARCHAR2(9) DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMasterHist",
+        "field": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "229",
+          "note": "VARCHAR2(9) DD-MON-YY"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMaster",
+        "field": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "65",
+          "note": "VARCHAR2(9) DD-MON-YY text date"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMaster",
+        "field": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "66",
+          "note": "VARCHAR2(9) DD-MON-YY text date"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "customerMaster",
+        "field": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "67",
+          "note": "VARCHAR2(9) DD-MON-YY text date"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "set_key",
+        "collection": "fixtureMeta",
+        "columns": [
+          "MARKER"
+        ],
+        "nullable_ok": true,
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+          "lines": "15",
+          "note": "fixture_meta ADD (marker, value): marker identifies a row"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql: fixture_meta ADD (marker, value): marker identifies a row",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_format_assumed",
+          "table": "SUBSCRIPTIONS_HIST",
+          "column": "HIST_DT"
+        },
+        "resolution": "mixed text formats: trigger writes DD-MON-YY HH24:MI:SS, seeded rows measure YYYYMMDD (0% conformance); conversion rule = try both, keep raw string when neither parses; no repair",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "218",
+          "note": "TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') in trg_subscriptions_hist"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') in trg_subscriptions_hist",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_OW_UTIL",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_OW_UTIL",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_PLANS",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_PLANS",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_RATING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_RATING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_INVOICING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_INVOICING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_DUNNING",
+          "unit_kind": "PACKAGE"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "PKG_DUNNING",
+          "unit_kind": "PACKAGE BODY"
+        },
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "lines": "1-2",
+          "note": "package header lists entrypoints"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package header lists entrypoints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "BILLING_AUDIT_LOG",
+          "name": "TRG_BILLING_AUDIT_LOG_ID"
+        },
+        "resolution": "sequence-fill trigger -> app assigns logId at insert",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "179",
+          "note": "sequence-fill trigger -> app assigns logId at insert"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: sequence-fill trigger -> app assigns logId at insert",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "SUBSCRIPTIONS",
+          "name": "TRG_SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "AFTER UPDATE OR DELETE copies :OLD row -> app writes subscriptionsHist (history_copy) in the same transaction",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "206",
+          "note": "AFTER UPDATE OR DELETE copies :OLD row -> app writes subscriptionsHist (history_copy) in the same transaction"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: AFTER UPDATE OR DELETE copies :OLD row -> app writes subscriptionsHist (history_copy) in the same transaction",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "SUBSCRIPTIONS",
+          "name": "TRG_SUB_NO_UNCANCEL"
+        },
+        "resolution": "cancelled-stays-cancelled rule -> application rule + schema validation on subscriptions.statusCd",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "228",
+          "note": "cancelled-stays-cancelled rule -> application rule + schema validation on subscriptions.statusCd"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: cancelled-stays-cancelled rule -> application rule + schema validation on subscriptions.statusCd",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "USAGE_EVENTS",
+          "name": "TRG_USAGE_EVENTS_CHECK"
+        },
+        "resolution": "row check -> schema validation on usageEvents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "239",
+          "note": "row check -> schema validation on usageEvents"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: row check -> schema validation on usageEvents",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "CUSTOMER_MASTER",
+          "name": "TRG_CUSTOMER_MASTER_SEQ"
+        },
+        "resolution": "sequence-fill trigger -> app assigns custSeqNo",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "346",
+          "note": "sequence-fill trigger -> app assigns custSeqNo"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: sequence-fill trigger -> app assigns custSeqNo",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "CUSTOMER_MASTER",
+          "name": "TRG_CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "AFTER UPDATE OR DELETE copies :OLD row -> app writes customerMasterHist (history_copy) in the same transaction",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "358",
+          "note": "AFTER UPDATE OR DELETE copies :OLD row -> app writes customerMasterHist (history_copy) in the same transaction"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: AFTER UPDATE OR DELETE copies :OLD row -> app writes customerMasterHist (history_copy) in the same transaction",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "trigger_business_logic",
+          "table": "ENTITY_ATTR_VALUE",
+          "name": "TRG_ENTITY_ATTR_VALUE_SEQ"
+        },
+        "resolution": "sequence-fill trigger -> app assigns eavId",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "391",
+          "note": "sequence-fill trigger -> app assigns eavId"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: sequence-fill trigger -> app assigns eavId",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job",
+          "name": "JOB_NIGHTLY_DUNNING"
+        },
+        "resolution": "owner after migration: billing service scheduler runs sp_schedule_dunning + sp_suspend_overdue daily 02:00 (cold patterns ap-cd2440f5ed/ap-d0e6a55401)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "lines": "10-17",
+          "note": "CREATE_JOB JOB_NIGHTLY_DUNNING FREQ=DAILY;BYHOUR=2"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql: CREATE_JOB JOB_NIGHTLY_DUNNING FREQ=DAILY;BYHOUR=2",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "scheduler_job",
+          "name": "JOB_PURGE_AUDIT_LOG"
+        },
+        "resolution": "owner after migration: 90-day retention becomes a TTL index on billingAuditLog.loggedAt (expireAfterSeconds=7776000); TTL is recorded here, not as a compiled pattern",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "lines": "21-28",
+          "note": "DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90, daily 03:30"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/04_jobs.sql: DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90, daily 03:30",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "RATING_PERIODS"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "ratingPeriods",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "CODES"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "lookup joined by convention only"
+        },
+        "collection": "codes",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: lookup joined by convention only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "DUNNING_ATTEMPTS"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "dunningAttempts",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "401-405",
+          "note": "mainframe-conversion feed the seeder fills; no package reads it"
+        },
+        "collection": "customerMaster",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed the seeder fills; no package reads it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "ENTITY_ATTR_VALUE"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "376-377",
+          "note": "EAV dumping ground; no package reads it"
+        },
+        "collection": "entityAttrValue",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: EAV dumping ground; no package reads it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "FIXTURE_META"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+          "lines": "1",
+          "note": "boot-time upgrade marker table"
+        },
+        "collection": "fixtureMeta",
+        "cited": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql: boot-time upgrade marker table",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "INVOICE_HEADER"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "401-405",
+          "note": "bulk feed, no runtime caller"
+        },
+        "collection": "invoiceHeader",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: bulk feed, no runtime caller",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "INVOICE_LINE"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "401-405",
+          "note": "bulk feed, no runtime caller"
+        },
+        "collection": "invoiceLine",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: bulk feed, no runtime caller",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "206",
+          "note": "written only by trigger"
+        },
+        "collection": "subscriptionsHist",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: written only by trigger",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "no_access_evidence",
+          "table": "RATING_RESULTS"
+        },
+        "resolution": "no runtime caller outside the intake register (DBMS_SCHEDULER jobs + ops/); keep as its own collection, indexes deferred to the index ticket",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "ratingResults",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "repeating_group",
+          "table": "CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "keep numbered ADDR_LINE/MAIL_ADDR_LINE/PHONE/FLAG/UDF columns as flat fields for column-level parity recon; array folding deferred until a reader needs it",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "22",
+          "note": "customer_master wide mainframe layout"
+        },
+        "collection": "customerMasterHist",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: customer_master wide mainframe layout",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "repeating_group",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "keep numbered ADDR_LINE/MAIL_ADDR_LINE/PHONE/FLAG/UDF columns as flat fields for column-level parity recon; array folding deferred until a reader needs it",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "22",
+          "note": "customer_master wide mainframe layout"
+        },
+        "collection": "customerMaster",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: customer_master wide mainframe layout",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unenforced_pointer",
+          "table": "CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "customerMasterHist",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unenforced_pointer",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "customerMaster",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unenforced_pointer",
+          "table": "INVOICE_HEADER"
+        },
+        "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "invoiceHeader",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unenforced_pointer",
+          "table": "INVOICE_LINE"
+        },
+        "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "invoiceLine",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "unenforced_pointer",
+          "table": "SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "keep as reference by id; unresolved pointers are loaded as-is (planted orphans preserved, not repaired)",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "subscriptionsHist",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "customerMasterHist",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "INVOICES"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "invoices",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "TENANTS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "tenants",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "PLANS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "plans",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "SUBSCRIPTIONS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "subscriptions",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "USAGE_EVENTS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "usageEvents",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "DUNNING_ATTEMPTS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "dunningAttempts",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "NOTIFICATIONS"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "notifications",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "customerMaster",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "INVOICE_HEADER"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "invoiceHeader",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "INVOICE_LINE"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "invoiceLine",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "code_lookup",
+          "table": "SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "keep the numeric *_CD value; codes stays a reference_data collection; description resolution stays in the app (DECODE in packages), no copy onto documents",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "8-14",
+          "note": "codes joined by convention; nothing enforces it"
+        },
+        "collection": "subscriptionsHist",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: codes joined by convention; nothing enforces it",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_as_string",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "63-67",
+          "note": "VARCHAR2 date column"
+        },
+        "collection": "customerMaster",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_as_string",
+          "table": "ENTITY_ATTR_VALUE"
+        },
+        "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "385",
+          "note": "VARCHAR2 date column"
+        },
+        "collection": "entityAttrValue",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_as_string",
+          "table": "INVOICE_HEADER"
+        },
+        "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "435",
+          "note": "VARCHAR2 date column"
+        },
+        "collection": "invoiceHeader",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_as_string",
+          "table": "INVOICE_LINE"
+        },
+        "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "421",
+          "note": "VARCHAR2 date column"
+        },
+        "collection": "invoiceLine",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2 date column",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_as_string",
+          "table": "SUBSCRIPTIONS_HIST"
+        },
+        "resolution": "text dates canonicalize to BSON date with the family default DD-MON-YY rule (named per-column where decided above); unparseable values keep the raw string, not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "192",
+          "note": "VARCHAR2 date column"
+        },
+        "collection": "subscriptionsHist",
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: VARCHAR2 date column",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "csv_list",
+          "table": "CUSTOMER_MASTER_HIST"
+        },
+        "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "225",
+          "note": "comma-separated list columns"
+        },
+        "collection": "customerMasterHist",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "csv_list",
+          "table": "CUSTOMER_MASTER"
+        },
+        "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "22",
+          "note": "comma-separated list columns"
+        },
+        "collection": "customerMaster",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "csv_list",
+          "table": "INVOICE_LINE"
+        },
+        "resolution": "split CSV columns into string arrays at load (measured max 3 elements); source string retained for recon",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "424",
+          "note": "comma-separated list columns"
+        },
+        "collection": "invoiceLine",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: comma-separated list columns",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "invoices",
+        "pattern": "extended_reference",
+        "from_table": "TENANTS",
+        "join": {
+          "local": [
+            "TENANT_ID"
+          ],
+          "remote": [
+            "ID"
+          ]
+        },
+        "fields": [
+          "STATUS_CD"
+        ],
+        "detail": "fn_overdue_accounts reads t.status_cd with every overdue invoice",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "lines": "21-29",
+          "note": "FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id ... t.status_cd"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id ... t.status_cd",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "subscriptions",
+        "pattern": "extended_reference",
+        "from_table": "PLANS",
+        "join": {
+          "local": [
+            "PLAN_ID"
+          ],
+          "remote": [
+            "ID"
+          ]
+        },
+        "fields": [
+          "CODE",
+          "TIER_CD",
+          "MONTHLY_FEE",
+          "INCLUDED_UNITS"
+        ],
+        "detail": "fn_entitlement reads plan code/tier/fee/units with the covering subscription",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "53-68",
+          "note": "p.code, p.tier_cd, p.monthly_fee, p.included_units joined via p.id (+) = s.plan_id"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: p.code, p.tier_cd, p.monthly_fee, p.included_units joined via p.id (+) = s.plan_id",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "TENANTS",
+          "child": "SUBSCRIPTIONS"
+        },
+        "resolution": "fn_entitlement joins tenants only on t.id = p_tenant_id and copies no tenant field; plain reference suffices",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "61-63",
+          "note": "WHERE s.tenant_id = t.id AND t.id = p_tenant_id"
+        },
+        "collection": "subscriptions",
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: WHERE s.tenant_id = t.id AND t.id = p_tenant_id",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "single_valued_index_key",
+          "table": "PLANS",
+          "column": "ACTIVE_YN"
+        },
+        "resolution": "fixture shows one value; keep activeYn as a field, no index (fn_list_plans filters NVL(active_yn,'N')='Y' over 3 rows)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "30",
+          "note": "WHERE NVL(active_yn, 'N') = 'Y'"
+        },
+        "collection": "plans",
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: WHERE NVL(active_yn, 'N') = 'Y'",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "date_format_nonconforming",
+          "table": "CUSTOMER_MASTER",
+          "column": "SIGNUP_DT"
+        },
+        "resolution": "keep DD-MON-YY rule (84.6% conform); the ~32 nonconforming rows keep the raw string and are counted, not repaired",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "customerMaster",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_unresolved",
+          "table": "CUSTOMER_MASTER",
+          "column": "TENANT_ID"
+        },
+        "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "customerMaster",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_unresolved",
+          "table": "INVOICE_HEADER",
+          "column": "TENANT_ID"
+        },
+        "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "invoiceHeader",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_unresolved",
+          "table": "INVOICE_LINE",
+          "column": "INVOICE_ID"
+        },
+        "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "invoiceLine",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_unresolved",
+          "table": "INVOICE_LINE",
+          "column": "TENANT_ID"
+        },
+        "resolution": "planted orphans / foreign tenant ids are loaded as-is and reconciled by exact row count; not repaired",
+        "evidence": {
+          "source": "customer",
+          "note": "intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only"
+        },
+        "collection": "invoiceLine",
+        "cited": "customer statement: intake: exact row counts; planted orphans are preserved, not repaired; legacy read-only",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_target_suspect",
+          "table": "INVOICE_HEADER",
+          "column": "TENANT_ID"
+        },
+        "resolution": "target stays TENANTS by name; 0% resolve is the mainframe-feed tenant ids of the planted estate, preserved not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "401-405",
+          "note": "mainframe-conversion feed; no FKs"
+        },
+        "collection": "invoiceHeader",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed; no FKs",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "pointer_target_suspect",
+          "table": "INVOICE_LINE",
+          "column": "TENANT_ID"
+        },
+        "resolution": "target stays TENANTS by name; 0% resolve is the mainframe-feed tenant ids of the planted estate, preserved not repaired",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "401-405",
+          "note": "mainframe-conversion feed; no FKs"
+        },
+        "collection": "invoiceLine",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: mainframe-conversion feed; no FKs",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "polymorphic_pointer",
+          "table": "ENTITY_ATTR_VALUE"
+        },
+        "resolution": "keep EAV as its own collection keyed by eavId with (entityType, entityId, attrName) as the lookup; polymorphic parent rules out an attribute-pattern embed into one parent",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+          "lines": "376-385",
+          "note": "entity_type identifies the target type for entity_id"
+        },
+        "collection": "entityAttrValue",
+        "cited": "services/legacy-billing/db/oracle/schema/02_horror.sql: entity_type identifies the target type for entity_id",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities",
+        "decision": "key absent from data_profile.json (0 hits reported by the pinned plugin); treated as a blind spot, not as proof of none",
+        "evidence": {
+          "file": ".migration/data_profile.json",
+          "note": "no known_incompatibilities key in the profile"
+        },
+        "cited": ".migration/data_profile.json: no known_incompatibilities key in the profile",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "invoices",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "TENANTS",
+          "child": "INVOICES"
+        },
+        "resolution": "applied: extended_reference copies TENANTS.STATUS_CD onto invoices (pattern decision above)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+          "lines": "21-29",
+          "note": "t.status_cd read with every overdue invoice"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: t.status_cd read with every overdue invoice",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptions",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "PLANS",
+          "child": "SUBSCRIPTIONS"
+        },
+        "resolution": "applied: extended_reference copies PLANS CODE/TIER_CD/MONTHLY_FEE/INCLUDED_UNITS onto subscriptions (pattern decision above)",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+          "lines": "53-68",
+          "note": "plan fields read with the covering subscription"
+        },
+        "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: plan fields read with the covering subscription",
+        "status": "PROPOSED"
+      }
+    ],
+    "resolved": [
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "HIST_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y %H:%M:%S; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SIGNUP_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_ACTIVITY_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER",
+        "column": "LAST_INVOICE_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER",
+        "column": "LAST_PAYMENT_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "CUSTOMER_MASTER",
+        "column": "TERMINATE_DT",
+        "format": "%d-%b-%y",
+        "note": "unmeasurable in this profile",
+        "rows_shaped": 0,
+        "resolution": "format %d-%b-%y; unparseable -> keep",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: VARCHAR2(9) DD-MON-YY text date"
+      },
+      {
+        "kind": "date_format_assumed",
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "HIST_DT",
+        "format": "%d-%b-%y",
+        "note": "no profiled format fits enough rows to pin; name the conversion rule in a decision",
+        "measured_format": "%Y%m%d",
+        "conformance": 0.0,
+        "resolution": "mixed text formats: trigger writes DD-MON-YY HH24:MI:SS, seeded rows measure YYYYMMDD (0% conformance); conversion rule = try both, keep raw string when neither parses; no repair",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: TO_CHAR(SYSDATE, 'DD-MON-YY HH24:MI:SS') in trg_subscriptions_hist"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_OW_UTIL",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_OW_UTIL",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_PLANS",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_PLANS",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_RATING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_RATING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_INVOICING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_INVOICING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE",
+        "name": "PKG_DUNNING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PACKAGE BODY",
+        "name": "PKG_DUNNING",
+        "resolution": "logic ports to the billing service; data access already captured as routine patterns in access_patterns.json; no model change",
+        "evidence": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql: package header lists entrypoints"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "BILLING_AUDIT_LOG",
+        "name": "TRG_BILLING_AUDIT_LOG_ID",
+        "resolution": "sequence-fill trigger -> app assigns logId at insert",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: sequence-fill trigger -> app assigns logId at insert"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "SUBSCRIPTIONS",
+        "name": "TRG_SUBSCRIPTIONS_HIST",
+        "resolution": "AFTER UPDATE OR DELETE copies :OLD row -> app writes subscriptionsHist (history_copy) in the same transaction",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: AFTER UPDATE OR DELETE copies :OLD row -> app writes subscriptionsHist (history_copy) in the same transaction"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "SUBSCRIPTIONS",
+        "name": "TRG_SUB_NO_UNCANCEL",
+        "resolution": "cancelled-stays-cancelled rule -> application rule + schema validation on subscriptions.statusCd",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: cancelled-stays-cancelled rule -> application rule + schema validation on subscriptions.statusCd"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "USAGE_EVENTS",
+        "name": "TRG_USAGE_EVENTS_CHECK",
+        "resolution": "row check -> schema validation on usageEvents",
+        "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: row check -> schema validation on usageEvents"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "CUSTOMER_MASTER",
+        "name": "TRG_CUSTOMER_MASTER_SEQ",
+        "resolution": "sequence-fill trigger -> app assigns custSeqNo",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: sequence-fill trigger -> app assigns custSeqNo"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "CUSTOMER_MASTER",
+        "name": "TRG_CUSTOMER_MASTER_HIST",
+        "resolution": "AFTER UPDATE OR DELETE copies :OLD row -> app writes customerMasterHist (history_copy) in the same transaction",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: AFTER UPDATE OR DELETE copies :OLD row -> app writes customerMasterHist (history_copy) in the same transaction"
+      },
+      {
+        "kind": "trigger_business_logic",
+        "table": "ENTITY_ATTR_VALUE",
+        "name": "TRG_ENTITY_ATTR_VALUE_SEQ",
+        "resolution": "sequence-fill trigger -> app assigns eavId",
+        "evidence": "services/legacy-billing/db/oracle/schema/02_horror.sql: sequence-fill trigger -> app assigns eavId"
+      },
+      {
+        "kind": "scheduler_job",
+        "name": "JOB_NIGHTLY_DUNNING",
+        "repeat_interval": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0",
+        "note": "batch logic lives in the database; needs an owner after migration",
+        "resolution": "owner after migration: billing service scheduler runs sp_schedule_dunning + sp_suspend_overdue daily 02:00 (cold patterns ap-cd2440f5ed/ap-d0e6a55401)",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_jobs.sql: CREATE_JOB JOB_NIGHTLY_DUNNING FREQ=DAILY;BYHOUR=2"
+      },
+      {
+        "kind": "scheduler_job",
+        "name": "JOB_PURGE_AUDIT_LOG",
+        "repeat_interval": "FREQ=DAILY;BYHOUR=3;BYMINUTE=30",
+        "note": "batch logic lives in the database; needs an owner after migration",
+        "resolution": "owner after migration: 90-day retention becomes a TTL index on billingAuditLog.loggedAt (expireAfterSeconds=7776000); TTL is recorded here, not as a compiled pattern",
+        "evidence": "services/legacy-billing/db/oracle/schema/04_jobs.sql: DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90, daily 03:30"
+      }
+    ]
   }
 }
