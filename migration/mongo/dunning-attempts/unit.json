@@ -1,0 +1,21 @@
+{
+  "unit_id": "dunning-attempts",
+  "batch": "w1-b05",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "dunningAttempts"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.dunningAttempts"
+  ],
+  "source_tables": {
+    "roots": [
+      "DUNNING_ATTEMPTS"
+    ],
+    "embedded": [],
+    "referenced": [
+      "INVOICES",
+      "TENANTS"
+    ]
+  }
+}
