@@ -108,13 +108,20 @@ def _check_targets(db_name: str, collections: list[str], spec_by_name: dict) -> 
         raise SystemExit(f"refused: collections not in mapping spec: {unknown}")
 
 
+def _set_path(doc: dict, path: str, value) -> None:
+    parts = path.split(".")
+    for part in parts[:-1]:
+        doc = doc.setdefault(part, {})
+    doc[parts[-1]] = value
+
+
 def _row_doc(row: tuple, cols: list[dict], key: dict, rule_params: dict) -> dict:
     doc = {}
     values = dict(zip([c["source"] for c in cols], row))
     for c in cols:
         v = convert(values[c["source"]], c, rule_params)
         if v is not None:
-            doc[c["target"]] = v
+            _set_path(doc, c["target"], v)
     key_src, key_tgt = key["source"], key["target"]
     if isinstance(key_tgt, str):
         kv = values[key_src[0]]
@@ -139,7 +146,18 @@ def load(collections: list[str], db_name: str = TARGET_DB) -> dict:
         c = spec_by_name[name]
         key_cols = [{"source": s, "target": "__key__", "bson_type": None} for s in c["key"]["source"]]
         cols = list(c["fields"]) + [k for k in key_cols if k["source"] not in {f["source"] for f in c["fields"]}]
-        sql = "SELECT " + ", ".join(col["source"] for col in cols) + f" FROM {c['root_table']}"
+        select = [f"r.{col['source']}" for col in cols]
+        joins = []
+        # extended_reference: parent fields copied onto the child via an outer join (orphans keep nulls)
+        for i, cf in enumerate(c.get("copied_fields") or []):
+            alias = f"j{i}"
+            on = " AND ".join(f"{alias}.{rm} = r.{lc}" for lc, rm in zip(cf["join"]["local"], cf["join"]["remote"]))
+            joins.append(f" LEFT OUTER JOIN {cf['from_table']} {alias} ON {on}")
+            for f in cf["fields"]:
+                src = f"{alias}__{f['source']}"
+                select.append(f"{alias}.{f['source']} AS {src}")
+                cols.append({**f, "source": src})
+        sql = "SELECT " + ", ".join(select) + f" FROM {c['root_table']} r" + "".join(joins)
         if c.get("root_where"):
             sql += " WHERE " + c["root_where"]
         if c.get("embeds"):

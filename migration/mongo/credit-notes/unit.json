@@ -1,0 +1,20 @@
+{
+  "unit_id": "credit-notes",
+  "batch": "w1-b03",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "creditNotes"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.creditNotes"
+  ],
+  "source_tables": {
+    "roots": [
+      "CREDIT_NOTES"
+    ],
+    "embedded": [],
+    "referenced": [
+      "TENANTS"
+    ]
+  }
+}

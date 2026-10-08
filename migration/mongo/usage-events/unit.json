@@ -1,0 +1,20 @@
+{
+  "unit_id": "usage-events",
+  "batch": "w1-b03",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "usageEvents"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.usageEvents"
+  ],
+  "source_tables": {
+    "roots": [
+      "USAGE_EVENTS"
+    ],
+    "embedded": [],
+    "referenced": [
+      "TENANTS"
+    ]
+  }
+}

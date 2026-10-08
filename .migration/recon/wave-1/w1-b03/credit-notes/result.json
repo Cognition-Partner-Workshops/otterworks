@@ -1,5 +1,5 @@
 {
-  "unit": "entity-attr-value",
+  "unit": "credit-notes",
   "mode": "live",
   "target_class": "migration_cluster",
   "mapping_version": "map-v3",
@@ -7,12 +7,12 @@
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
-    "entityAttrValue"
+    "creditNotes"
   ],
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:13:33.189475+00:00",
+  "generated_at": "2026-10-08T13:12:21.226510+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -23,7 +23,7 @@
       "checks_run": 1,
       "stats": {
         "source_counts": {
-          "entityAttrValue": 70
+          "creditNotes": 5
         }
       },
       "findings": []
@@ -32,51 +32,17 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 0,
+      "checks_run": 3,
       "stats": {
         "deferred_to_tier3": [
-          "entityAttrValue.entityType",
-          "entityAttrValue.entityId",
-          "entityAttrValue.attrName",
-          "entityAttrValue.attrValue",
-          "entityAttrValue.attrType",
-          "entityAttrValue.createdDt"
+          "creditNotes.tenantId",
+          "creditNotes.issuedOn",
+          "creditNotes.amount",
+          "creditNotes.remainingAmount"
         ],
         "string_aggregates_deferred_to_tier3": [
           {
-            "field": "entityAttrValue.entityType",
-            "stats": [
-              "min",
-              "max",
-              "distinct_count"
-            ]
-          },
-          {
-            "field": "entityAttrValue.entityId",
-            "stats": [
-              "min",
-              "max",
-              "distinct_count"
-            ]
-          },
-          {
-            "field": "entityAttrValue.attrName",
-            "stats": [
-              "min",
-              "max",
-              "distinct_count"
-            ]
-          },
-          {
-            "field": "entityAttrValue.attrValue",
-            "stats": [
-              "min",
-              "max",
-              "distinct_count"
-            ]
-          },
-          {
-            "field": "entityAttrValue.attrType",
+            "field": "creditNotes.tenantId",
             "stats": [
               "min",
               "max",
@@ -84,7 +50,7 @@
             ]
           }
         ],
-        "fields_fully_deferred": 6
+        "fields_fully_deferred": 1
       },
       "findings": []
     },
@@ -92,11 +58,11 @@
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 70,
+      "checks_run": 5,
       "stats": {
-        "entityAttrValue": {
+        "creditNotes": {
           "mode": "full_diff",
-          "population": 70,
+          "population": 5,
           "duplicate_source_key_count": 0
         }
       },

@@ -1,5 +1,5 @@
 {
-  "unit": "billing-audit-log",
+  "unit": "rating-periods",
   "mode": "live",
   "target_class": "migration_cluster",
   "mapping_version": "map-v3",
@@ -7,12 +7,12 @@
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
-    "billingAuditLog"
+    "ratingPeriods"
   ],
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:13:43.875280+00:00",
+  "generated_at": "2026-10-08T13:12:19.050424+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -20,10 +20,10 @@
       "tier": 1,
       "name": "counts_through_mapping",
       "passed": true,
-      "checks_run": 1,
+      "checks_run": 2,
       "stats": {
         "source_counts": {
-          "billingAuditLog": 37
+          "ratingPeriods": 8
         }
       },
       "findings": []
@@ -32,24 +32,16 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 1,
+      "checks_run": 2,
       "stats": {
         "deferred_to_tier3": [
-          "billingAuditLog.loggedAt",
-          "billingAuditLog.module",
-          "billingAuditLog.message"
+          "ratingPeriods.tenantId",
+          "ratingPeriods.periodStart",
+          "ratingPeriods.periodEnd"
         ],
         "string_aggregates_deferred_to_tier3": [
           {
-            "field": "billingAuditLog.module",
-            "stats": [
-              "min",
-              "max",
-              "distinct_count"
-            ]
-          },
-          {
-            "field": "billingAuditLog.message",
+            "field": "ratingPeriods.tenantId",
             "stats": [
               "min",
               "max",
@@ -57,7 +49,7 @@
             ]
           }
         ],
-        "fields_fully_deferred": 2
+        "fields_fully_deferred": 1
       },
       "findings": []
     },
@@ -65,11 +57,11 @@
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 37,
+      "checks_run": 8,
       "stats": {
-        "billingAuditLog": {
+        "ratingPeriods": {
           "mode": "full_diff",
-          "population": 37,
+          "population": 8,
           "duplicate_source_key_count": 0
         }
       },

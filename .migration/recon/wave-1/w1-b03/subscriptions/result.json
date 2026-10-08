@@ -1,5 +1,5 @@
 {
-  "unit": "entity-attr-value",
+  "unit": "subscriptions",
   "mode": "live",
   "target_class": "migration_cluster",
   "mapping_version": "map-v3",
@@ -7,12 +7,13 @@
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
-    "entityAttrValue"
+    "subscriptions",
+    "subscriptionsHist"
   ],
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:13:33.189475+00:00",
+  "generated_at": "2026-10-08T13:12:25.650117+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -20,10 +21,11 @@
       "tier": 1,
       "name": "counts_through_mapping",
       "passed": true,
-      "checks_run": 1,
+      "checks_run": 5,
       "stats": {
         "source_counts": {
-          "entityAttrValue": 70
+          "subscriptions": 20,
+          "subscriptionsHist": 6
         }
       },
       "findings": []
@@ -32,19 +34,28 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 0,
+      "checks_run": 4,
       "stats": {
         "deferred_to_tier3": [
-          "entityAttrValue.entityType",
-          "entityAttrValue.entityId",
-          "entityAttrValue.attrName",
-          "entityAttrValue.attrValue",
-          "entityAttrValue.attrType",
-          "entityAttrValue.createdDt"
+          "subscriptions.tenantId",
+          "subscriptions.planId",
+          "subscriptions.startsOn",
+          "subscriptions.endsOn",
+          "subscriptions.suspendedOn",
+          "subscriptionsHist.histDt",
+          "subscriptionsHist.histOp",
+          "subscriptionsHist.id",
+          "subscriptionsHist.tenantId",
+          "subscriptionsHist.planId",
+          "subscriptionsHist.startsOn",
+          "subscriptionsHist.endsOn",
+          "subscriptionsHist.statusCd",
+          "subscriptionsHist.suspendedOn",
+          "subscriptionsHist.histDtRaw"
         ],
         "string_aggregates_deferred_to_tier3": [
           {
-            "field": "entityAttrValue.entityType",
+            "field": "subscriptions.tenantId",
             "stats": [
               "min",
               "max",
@@ -52,7 +63,7 @@
             ]
           },
           {
-            "field": "entityAttrValue.entityId",
+            "field": "subscriptions.planId",
             "stats": [
               "min",
               "max",
@@ -60,7 +71,7 @@
             ]
           },
           {
-            "field": "entityAttrValue.attrName",
+            "field": "subscriptionsHist.histOp",
             "stats": [
               "min",
               "max",
@@ -68,7 +79,7 @@
             ]
           },
           {
-            "field": "entityAttrValue.attrValue",
+            "field": "subscriptionsHist.id",
             "stats": [
               "min",
               "max",
@@ -76,7 +87,23 @@
             ]
           },
           {
-            "field": "entityAttrValue.attrType",
+            "field": "subscriptionsHist.tenantId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionsHist.planId",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptionsHist.histDtRaw",
             "stats": [
               "min",
               "max",
@@ -84,7 +111,7 @@
             ]
           }
         ],
-        "fields_fully_deferred": 6
+        "fields_fully_deferred": 12
       },
       "findings": []
     },
@@ -92,11 +119,16 @@
       "tier": 3,
       "name": "keyed_diffs",
       "passed": true,
-      "checks_run": 70,
+      "checks_run": 46,
       "stats": {
-        "entityAttrValue": {
+        "subscriptions": {
           "mode": "full_diff",
-          "population": 70,
+          "population": 20,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptionsHist": {
+          "mode": "full_diff",
+          "population": 6,
           "duplicate_source_key_count": 0
         }
       },

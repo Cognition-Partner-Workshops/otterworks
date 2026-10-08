@@ -1,0 +1,20 @@
+{
+  "unit_id": "notifications",
+  "batch": "w1-b03",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "notifications"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.notifications"
+  ],
+  "source_tables": {
+    "roots": [
+      "NOTIFICATIONS"
+    ],
+    "embedded": [],
+    "referenced": [
+      "TENANTS"
+    ]
+  }
+}

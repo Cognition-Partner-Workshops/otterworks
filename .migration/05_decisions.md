@@ -4,7 +4,7 @@
 |---|---|
 | Run branch | `tp-run/mongodb-20261008T120222Z` |
 | Plugin | `349cb2d17dccb246409e7750657e25843bf53be8` (unpatched) |
-| Mapping | `map-v2` — `.migration/mapping_spec.json` sha256 `ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c` (`model_patch.py --check` exit 0, 83 decisions); supersedes `map-v1` sha256 `a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752` after the UNT9-12 round-1 correction (b.1/b.7 below) |
+| Mapping | `map-v3` — `.migration/mapping_spec.json` sha256 `c158f8bb469d1e2733cfae5aa26e315d0ade4490f1164048ee161230c866dbd7` (`model_patch.py --check --census` exit 0, 84 decisions); supersedes `map-v2` sha256 `ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c` (UNT9-10 round-1 correction b.13) and `map-v1` sha256 `a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752` (UNT9-12 round-1 correction b.1/b.7) |
 | Input | `map-draft-2` proposal `.migration/mapping_spec.proposed.json`: 30 `modeling.unresolved`, 50 collection `open_questions`, 0 `child_open_questions`, `known_incompatibilities` key absent |
 | Decisions file | `.migration/design_decisions.json` — 83 entries (67 resolve, 10 date_format, 2 pattern, 1 set_key, 1 note); every entry cites `file:line` under `services/legacy-billing/db/oracle/` or `source: customer` |
 | Tolerances | `tol-1` — `.migration/recon_tolerances.json` sha256 `a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da` (untouched) |
@@ -35,7 +35,7 @@ Evidence flags observed in `.migration/access_patterns.json` (125 patterns):
 | `suggested_frequency` | — | — | yes, 91 of 125 patterns (from `.migration/workload.json`); the other 34 confirmed/rejected in UNT9-4 |
 | `known_incompatibilities` | key absent from `data_profile.json` → blind spot (recorded as a `note` decision), not evidence of none | | |
 
-## (b) Manual corrections (12; UNT8 needed 7)
+## (b) Manual corrections (13; UNT8 needed 7)
 
 | # | Op | Target | Why | Cite |
 |---|---|---|---|---|
@@ -45,6 +45,7 @@ Evidence flags observed in `.migration/access_patterns.json` (125 patterns):
 | 10 | `set_key` | `fixtureMeta` → `MARKER` (`nullable_ok`) | proposer had no comparison key (load-order only) | `schema/04_upgrade_static.sql:15` |
 | 11 | `pattern extended_reference` | `invoices` ← TENANTS.`STATUS_CD` (join TENANT_ID = ID) | `fn_overdue_accounts` reads tenant status with every overdue invoice | `packages/05_pkg_dunning.sql:21-29` |
 | 12 | `pattern extended_reference` | `subscriptions` ← PLANS.`CODE`,`TIER_CD`,`MONTHLY_FEE`,`INCLUDED_UNITS` (join PLAN_ID = ID) | `fn_entitlement` reads the plan fields with the covering subscription | `packages/02_pkg_plans.sql:53-68` |
+| 13 (map-v3) | `date_format` + `raw_field: histDtRaw` | `subscriptionsHist` HIST_DT, format `%d-%b-%y %H:%M:%S`; `unparseable → null` | w1-b03 live recon FAIL under map-v2: 6/6 SUBSCRIPTIONS_HIST.HIST_DT rows are `DD-MON-YY HH24:MI:SS` text but map-v1/v2 carried only a `resolve` ("try both formats, keep raw") with no `date_format` op, so the family default DD-MON-YY applied; same policy as d-date-unparseable; the new op is ordered after that `resolve` (model_patch refuses a `resolve` whose question a preceding `date_format` already consumed) | `schema/01_tables.sql:218` — trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'); seeded rows measured YYYYMMDD 0% conformance → raw kept |
 
 Not corrected on purpose: TENANTS → SUBSCRIPTIONS extended-reference candidate (only `t.id` is read, `packages/02_pkg_plans.sql:61-63`); SUBSCRIPTIONS_HIST.HIST_DT (mixed formats — rule recorded as a resolve, no repair); repeating groups kept flat for column-level recon.
 
@@ -79,6 +80,8 @@ _placeholder — written by the record ticket_
 
 ## (e) Recon plan
 _placeholder — written by the record ticket_
+
+Plugin blind spot (UNT9-10 round 1): the design-decisions pass resolved SUBSCRIPTIONS_HIST.HIST_DT without emitting a rule; `model_patch --check` did not flag a resolved date question with no `date_format`.
 
 ## (f) Rehearsal and evidence
 _placeholder — written by the record ticket_

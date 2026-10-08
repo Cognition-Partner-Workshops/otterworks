@@ -1,0 +1,24 @@
+{
+  "unit_id": "subscriptions",
+  "batch": "w1-b03",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "subscriptions",
+    "subscriptionsHist"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.subscriptions",
+    "mmp_rt_b5_oracle.subscriptionsHist"
+  ],
+  "source_tables": {
+    "roots": [
+      "SUBSCRIPTIONS",
+      "SUBSCRIPTIONS_HIST"
+    ],
+    "embedded": [],
+    "referenced": [
+      "PLANS",
+      "TENANTS"
+    ]
+  }
+}
