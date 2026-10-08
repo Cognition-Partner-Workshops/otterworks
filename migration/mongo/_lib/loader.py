@@ -115,6 +115,31 @@ def _set_path(doc: dict, path: str, value) -> None:
     doc[parts[-1]] = value
 
 
+def _attach_embed(ora, emb: dict, rows: list, cols: list[dict], docs: list[dict], rule_params: dict) -> None:
+    """Embed child rows as an ordered array on their parent: parent_ref -> parent_key, ordered by the embed key then child_key."""
+    pk, pref = emb["parent_key"], emb["parent_ref"]
+    ref_idx = [[col["source"] for col in cols].index(src) for src in pref]
+    children = {}
+    ccols = list(emb["child_fields"])
+    order = list(emb.get("key", {}).get("source") or []) + [k for k in emb["child_key"] if k not in (emb.get("key", {}).get("source") or [])]
+    csql = "SELECT " + ", ".join(pk + [f["source"] for f in ccols]) + f" FROM {emb['child_table']} ORDER BY " + ", ".join(pk + order)
+    cur = ora.cursor()
+    cur.execute(csql)
+    for row in cur:
+        parent = tuple(row[: len(pk)])
+        values = dict(zip([f["source"] for f in ccols], row[len(pk):]))
+        child = {}
+        for f in ccols:
+            v = convert(values[f["source"]], f, rule_params)
+            if v is not None:
+                _set_path(child, f["target"], v)
+        children.setdefault(parent, []).append(child)
+    for row, doc in zip(rows, docs):
+        doc[emb["array_path"]] = children.pop(tuple(row[i] for i in ref_idx), [])
+    if children:
+        raise SystemExit(f"refused: {sum(len(v) for v in children.values())} {emb['child_table']} rows have no parent in the loaded roots")
+
+
 def _row_doc(row: tuple, cols: list[dict], key: dict, rule_params: dict) -> dict:
     doc = {}
     values = dict(zip([c["source"] for c in cols], row))
@@ -160,13 +185,16 @@ def load(collections: list[str], db_name: str = TARGET_DB) -> dict:
         sql = "SELECT " + ", ".join(select) + f" FROM {c['root_table']} r" + "".join(joins)
         if c.get("root_where"):
             sql += " WHERE " + c["root_where"]
-        if c.get("embeds"):
-            raise SystemExit(f"refused: {name} declares embeds; this loader handles root-only collections")
         cur = ora.cursor()
         cur.execute(sql)
-        docs = [_row_doc(r, cols, c["key"], rule_params) for r in cur]
+        rows = list(cur)
+        docs = [_row_doc(r, cols, c["key"], rule_params) for r in rows]
         for d in docs:
             d.pop("__key__", None)
+        for emb in c.get("embeds") or []:
+            if emb.get("shape") != "array":
+                raise SystemExit(f"refused: {name} embed {emb['array_path']} shape {emb.get('shape')!r} not supported")
+            _attach_embed(ora, emb, rows, cols, docs, rule_params)
         db.drop_collection(name)  # own write target only
         if docs:
             db[name].insert_many(docs, ordered=True)
