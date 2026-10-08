@@ -1,0 +1,21 @@
+{
+  "unit_id": "rating-results",
+  "batch": "w1-b04",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "ratingResults"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.ratingResults"
+  ],
+  "source_tables": {
+    "roots": [
+      "RATING_RESULTS"
+    ],
+    "embedded": [],
+    "referenced": [
+      "RATING_PERIODS",
+      "SUBSCRIPTIONS"
+    ]
+  }
+}

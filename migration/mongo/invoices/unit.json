@@ -1,0 +1,23 @@
+{
+  "unit_id": "invoices",
+  "batch": "w1-b04",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "invoices"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.invoices"
+  ],
+  "source_tables": {
+    "roots": [
+      "INVOICES"
+    ],
+    "embedded": [
+      "INVOICE_LINES"
+    ],
+    "referenced": [
+      "RATING_PERIODS",
+      "TENANTS"
+    ]
+  }
+}
