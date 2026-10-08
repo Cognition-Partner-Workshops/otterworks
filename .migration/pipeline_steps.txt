@@ -1,14 +1,17 @@
 census written to .migration/census.json: tables=20 columns=434 fks=13 triggers=7 plsql_units=10 traps=37 findings=19 mode=live_catalog
 data profile written to .migration/data_profile.json: stats=173 ok=173
-125 candidates (0 confirmed, 2 deploy_script)
+125 candidates (11 confirmed, 2 deploy_script)
 call_dynamic: services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:149 pkg_invoicing.sp_issue_invoice: EXECUTE IMMEDIATE '...' USING v_invoice_id
 call_dynamic: services/legacy-billing/db/oracle/packages/01_pkg_util.sql:41 pkg_ow_util.f_code_desc: EXECUTE IMMEDIATE v_sql INTO v_desc USING p_type, p_val
 call_dynamic: services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:103 pkg_plans.sp_change_plan: EXECUTE IMMEDIATE v_sql USING v_new_id, p_tenant_id, p_plan_id, p_effective_on
-mapping spec written to .migration/mapping_spec.json: collections=19 embeds=1 unresolved=30 (basis: assumed=21 derived=2)
-open items: 30 modeling.unresolved, 55 collection open_questions; per-kind: code_lookup=12, csv_list=3, date_as_string=6, date_format_assumed=10, date_format_nonconforming=1, no_access_evidence=19, no_comparison_key=1, plsql_unit_needs_manual_review=10, pointer_target_suspect=2, pointer_unresolved=4, polymorphic_pointer=1, repeating_group=2, scheduler_job=2, trigger_business_logic=7, unenforced_pointer=5
-model_patch: check OK (23 decisions, 107 evidence refs)
+mapping spec written to .migration/mapping_spec.proposed.json: collections=19 embeds=1 unresolved=30 (basis: assumed=20 derived=3)
+open items: 30 modeling.unresolved, 50 collection open_questions; per-kind: code_lookup=12, csv_list=3, date_as_string=6, date_format_assumed=10, date_format_nonconforming=1, extended_reference_candidate=3, no_access_evidence=10, no_comparison_key=1, plsql_unit_needs_manual_review=10, pointer_target_suspect=2, pointer_unresolved=4, polymorphic_pointer=1, repeating_group=2, scheduler_job=2, single_valued_index_key=1, trigger_business_logic=7, unenforced_pointer=5
+model_patch: check OK (23 decisions, 124 evidence refs)
+edge       TENANTS→USAGE_EVENTS[TENANT_ID]: {"rule": "child_read_alone", "decision": "reference"} -> {"rule": "default", "decision": "reference"}
+1 difference(s)
 pipeline census: ok -> .migration/census.json
 pipeline data_profile: ok -> .migration/data_profile.json
 pipeline access_scan: ok -> .migration/access_patterns.json
-pipeline model_proposal: ok -> .migration/mapping_spec.json
+pipeline model_proposal: ok -> .migration/mapping_spec.proposed.json
 pipeline model_patch --check: ok
+pipeline spec_diff vs pinned: exit 1
