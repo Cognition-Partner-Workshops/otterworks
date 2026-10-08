@@ -71,6 +71,10 @@ config: {}
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
 secrets: {}
+# JWT_SECRET is required: report-service verifies the auth-service access token itself
+# (gateway-forwarded headers are not trusted). JWT_PEER_SECRET (optional) mirrors the
+# api-gateway's: a peer deployment's JWT_SECRET so its admin dashboard can read this
+# deployment's archive (Before/After panel).
 
 # Legacy-data-migration archive read path (migration/CONTRACTS.md §10.4).
 # Leave `store` empty for ordinary tenants: the archive feature stays off and the

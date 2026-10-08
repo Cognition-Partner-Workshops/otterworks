@@ -4,6 +4,7 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportResponse;
 import com.otterworks.report.model.ReportStatus;
+import com.otterworks.report.security.ReportCaller;
 import com.otterworks.report.service.ReportService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +50,9 @@ import java.util.stream.Collectors;
  * - ByteArrayResource loads entire file into memory (target: InputStreamResource for streaming)
  * - No pagination on list endpoint
  * - Manual response mapping without MapStruct or similar
+ *
+ * Every action resolves the caller from the JWT-backed {@link Authentication} and hands it to
+ * {@link ReportService}, which scopes each lookup to that caller's own reports.
  */
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -69,13 +74,15 @@ public class ReportController {
             @ApiResponse(code = 400, message = "Invalid request")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request,
+            Authentication authentication) {
 
+        ReportCaller caller = ReportCaller.from(authentication);
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
-                request.getReportType(), request.getRequestedBy());
+                request.getReportType(), caller.getUserId());
 
-        Report report = reportService.createReport(request);
+        Report report = reportService.createReport(request, caller);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(ReportResponse.fromEntity(report));
     }
@@ -88,9 +95,10 @@ public class ReportController {
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> report = reportService.getReport(id);
+        Optional<Report> report = reportService.getReport(id, ReportCaller.from(authentication));
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
@@ -103,15 +111,17 @@ public class ReportController {
             @ApiParam(value = "Filter by user ID")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status,
+            Authentication authentication) {
 
+        ReportCaller caller = ReportCaller.from(authentication);
         List<Report> reports;
         if (userId != null) {
-            reports = reportService.getReportsByUser(userId);
+            reports = reportService.getReportsByUser(userId, caller);
         } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
+            reports = reportService.getReportsByStatus(status, caller);
         } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED, caller);
         }
 
         List<ReportResponse> responses = reports.stream()
@@ -135,9 +145,10 @@ public class ReportController {
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> optReport = reportService.getReport(id);
+        Optional<Report> optReport = reportService.getReport(id, ReportCaller.from(authentication));
         if (!optReport.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -187,9 +198,10 @@ public class ReportController {
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        boolean deleted = reportService.deleteReport(id);
+        boolean deleted = reportService.deleteReport(id, ReportCaller.from(authentication));
         if (!deleted) {
             return ResponseEntity.notFound().build();
         }
