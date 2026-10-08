@@ -25,4 +25,7 @@ spec:
       ports:
         - port: {{ .Values.database.port }}
           protocol: TCP
+        # Istio ambient mTLS: meshed traffic arrives as HBONE on 15008.
+        - port: 15008
+          protocol: TCP
 {{- end }}

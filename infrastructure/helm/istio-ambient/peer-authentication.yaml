@@ -1,0 +1,17 @@
+# Mesh-wide peer authentication for the ambient mesh (scripts/lib/service-mesh.sh).
+#
+# Lives in the Istio root namespace, so it applies to every namespace enrolled in
+# the mesh: the golden `otterworks` namespace and every `otterworks-<id>` tenant.
+# STRICT means ztunnel only accepts mTLS (HBONE) connections into a meshed pod,
+# so the in-cluster `http://<service>:<port>` calls the gateway, report-service,
+# search-service and the frontends make are encrypted and peer-authenticated on
+# the wire even though the applications themselves still speak plain HTTP to
+# their local ztunnel. A pod that is not in the mesh cannot talk to one that is.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
