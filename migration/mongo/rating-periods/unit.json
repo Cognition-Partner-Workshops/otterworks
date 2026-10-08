@@ -1,0 +1,20 @@
+{
+  "unit_id": "rating-periods",
+  "batch": "w1-b03",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "ratingPeriods"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.ratingPeriods"
+  ],
+  "source_tables": {
+    "roots": [
+      "RATING_PERIODS"
+    ],
+    "embedded": [],
+    "referenced": [
+      "TENANTS"
+    ]
+  }
+}
