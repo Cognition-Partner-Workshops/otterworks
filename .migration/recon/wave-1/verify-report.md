@@ -83,6 +83,17 @@ manifest_sha: ec9a01d04e88
 12. manager contract: the verifier could not reproduce the manager's wave spec from the ticket block (eight canonical reconstructions hash to other values than ec9a01d04e88), so preflight.py --grade/--verify was run locally against a reconstructed spec only to capture the validator's problem list; the manifest_sha header is the one the ticket pins.
 13. independence: fresh host, fresh clone of the run branch at 36885ce7, fresh Oracle volume seeded with mmp_rt_mini_seed.py and exercised once (row counts equal to the fixture manifest, no DRIFT on counts), no loader run, read-only harness and probes; the Atlas principal MONGODB_ATLAS_URI and the mapping/tolerance bytes are the same the batch workers used (sha256 verified).
 
+5. plugin: preflight.py --verify (pinned 349cb2d, run locally with a reconstructed wave spec, manifest_sha 482a5e27ccc0, and five reconstructed batch results that --grade accepts as PASS/PASS live/migration_cluster) exits 1 with four problems: the known report_path mismatch, and three 'verifier PASS ... is not evidence' because the grader reads recon_results from origin/recon/wave-1 (hard-coded, like report_path) where another run's evidence lives (w1-b04 there is map-draft-4/tol 1; w1-b01 and w1-b05 are absent) instead of from the branch this result names; the FAIL verdicts for w1-b02/w1-b03 drew no problem. The verifier's actual evidence is on origin/recon/wave-1-UNT9-7 as committed; nothing was renamed.
+
+## preflight.py --verify (pinned plugin, local run)
+
+Exit 1. `--grade` accepted all five reconstructed batch results (PASS/PASS, live/migration_cluster, w1-b01 merge_eligible False). `--verify` problems, verbatim:
+
+- `verifier PASS for w1-b01 is not evidence: .migration/recon/wave-1/w1-b01/reference-data/result.json is not committed on origin/recon/wave-1`
+- `verifier PASS for w1-b04 is not evidence: .migration/recon/wave-1/w1-b04/invoices/result.json graded mapping map-draft-4 / tolerances 1; the ticket is map-v3 / tol-1`
+- `verifier PASS for w1-b05 is not evidence: .migration/recon/wave-1/w1-b05/dunning-attempts/result.json is not committed on origin/recon/wave-1`
+- `verifier output invalid: report_path must be exactly 'recon/wave-1:.migration/recon/wave-1/verify-report.md'`
+
 ## Evidence
 
 - `.migration/recon/wave-1/wave-1-verify.json` — verify result (wave_verdict, unit_verdicts by batch id, recon_results, verifier_batch_verdicts, probes, dbStats).
