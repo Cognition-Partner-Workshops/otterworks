@@ -116,7 +116,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@d9c87d481d55275bb5441eef3fe0e46805f9ef70 # v3.5.0
         with:
           gradle-version: '8.6'
       - run: gradle check --no-daemon
@@ -131,7 +131,7 @@ jobs:
         working-directory: services/file-service
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
         with:
           components: clippy, rustfmt
       - run: cargo fmt --check
@@ -189,7 +189,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@d9c87d481d55275bb5441eef3fe0e46805f9ef70 # v3.5.0
         with:
           gradle-version: '8.6'
       - run: gradle check --no-daemon
@@ -263,7 +263,7 @@ jobs:
       RAILS_ENV: test
     steps:
       - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
@@ -370,7 +370,7 @@ jobs:
         working-directory: infrastructure/terraform
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: 1.7.0
       - run: terraform fmt -check -recursive
