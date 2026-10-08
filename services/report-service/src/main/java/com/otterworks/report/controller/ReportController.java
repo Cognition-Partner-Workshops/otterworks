@@ -79,8 +79,8 @@ public class ReportController {
 
         ReportCaller caller = ReportCaller.from(authentication);
         logger.info("Report request: name={}, category={}, type={}, by={}",
-                request.getReportName(), request.getCategory(),
-                request.getReportType(), caller.getUserId());
+                logSafe(request.getReportName()), request.getCategory(),
+                request.getReportType(), logSafe(caller.getUserId()));
 
         Report report = reportService.createReport(request, caller);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -209,6 +209,11 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    /** Strips line breaks so a caller-supplied value cannot forge extra log lines. */
+    private static String logSafe(String value) {
+        return value == null ? null : value.replaceAll("[\\r\\n]", "");
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax

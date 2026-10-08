@@ -46,6 +46,9 @@ public class JwtTokenVerifier {
      * @throws JwtException when the signature, expiry or token type is not acceptable
      */
     public Claims verifyAccessToken(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("no bearer token");
+        }
         Claims claims;
         try {
             claims = parse(token, key);

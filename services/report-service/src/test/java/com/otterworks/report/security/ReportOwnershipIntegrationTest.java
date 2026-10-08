@@ -217,7 +217,7 @@ public class ReportOwnershipIntegrationTest {
 
     /** Persists a COMPLETED report with a real file on disk, as the generation worker would. */
     private Long completedReportOwnedBy(String userId) throws Exception {
-        File file = File.createTempFile("ownership-test-", ".csv");
+        File file = Files.createTempFile("ownership-test-", ".csv").toFile();
         file.deleteOnExit();
         Files.write(file.toPath(), "owner's report contents".getBytes(StandardCharsets.UTF_8));
 

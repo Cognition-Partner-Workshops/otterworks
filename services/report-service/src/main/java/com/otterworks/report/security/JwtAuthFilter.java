@@ -42,19 +42,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = extractToken(request);
-        if (token != null) {
-            try {
-                Claims claims = tokenVerifier.verifyAccessToken(token);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                claims.getSubject(), null, authoritiesOf(claims));
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (JwtException | IllegalArgumentException e) {
-                logger.debug("Rejected bearer token: {}", e.getMessage());
-                SecurityContextHolder.clearContext();
-            }
+        try {
+            // An absent or malformed token (empty string) fails verification like a forged one,
+            // so the request simply stays anonymous and the authorization rules return 401.
+            Claims claims = tokenVerifier.verifyAccessToken(extractToken(request));
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            claims.getSubject(), null, authoritiesOf(claims));
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.trace("No usable bearer token: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
         filterChain.doFilter(request, response);
     }
@@ -72,12 +71,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return authorities;
     }
 
+    /** The bearer token of the request, or an empty string when it carries none. */
     private static String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
-            String token = header.substring(BEARER_PREFIX.length()).trim();
-            return token.isEmpty() ? null : token;
+            return header.substring(BEARER_PREFIX.length()).trim();
         }
-        return null;
+        return "";
     }
 }
