@@ -137,12 +137,13 @@ Figures copied from the manager's hand-off on the UNT9-8 card (board attribution
 | UNT9-9 | w1-b04 | 5.54 | 5.7 |
 | UNT9-13 | w1-b05 | 5.54 | 5.4 |
 | UNT9-7 | s4.1.verify | 9.71 | 9.7 |
-| UNT9-8 | s5.1-record | read from the board card at close (see the UNT9-8 card) | — |
+| UNT9-8 | s5.1-record | 11.55 (board card at PR 2 open; the card keeps counting until the session ends) | — |
 
 | Total | Value |
 |---|---|
-| Worker sessions | 70.0 (UNT9-1 4.89 + fixture-host session 55.43 for UNT9-2…13 + verifier 9.71) |
-| Manager session | 51.4 at hand-off; final figure posted by the manager on the UNT9-8 card after PR 1 |
+| Worker sessions | 70.0 (UNT9-1 4.89 + fixture-host session 55.43 for UNT9-2…13 + verifier 9.71) + UNT9-8 11.55 = 81.55 |
+| Manager session | 51.4 at hand-off; no later figure had been posted on the UNT9-8 card when PR 2 opened — the manager's final number supersedes this row |
 | Running total at hand-off | 121.4 of the 140 target |
+| Running total at PR 2 open | 132.95 of the 140 target (81.55 worker + 51.4 manager at hand-off) |
 | Tickets | 13 vs the 12 target (e.12) |
 | Prior run (UNT8) | 24 tickets / ~425 ACU |
