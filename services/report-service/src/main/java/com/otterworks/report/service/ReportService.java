@@ -7,9 +7,11 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.repository.ReportRepository;
+import com.otterworks.report.security.ReportCaller;
 import com.otterworks.report.util.ReportDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -31,6 +33,11 @@ import java.util.Optional;
  * - @Async delegated to ReportGenerationWorker (fire-and-forget, no error propagation)
  * - Manual JSON serialization for parameters
  * - Checked exceptions caught and rethrown as generic RuntimeException
+ *
+ * AUTHORIZATION: every read/write takes the {@link ReportCaller} the request was
+ * authenticated as. Reports are owned by {@code requestedBy}; a caller only sees its own
+ * rows unless it is an admin. Enforcing this here (not per route) means the controller
+ * cannot forget it, and a report another user owns is indistinguishable from a missing one.
  */
 @Service
 public class ReportService {
@@ -53,15 +60,16 @@ public class ReportService {
     }
 
     /**
-     * Create a new report request and start async generation.
+     * Create a new report request owned by the caller and start async generation.
+     * The {@code requestedBy} field of the body is ignored: ownership comes from the token.
      */
     @Transactional
-    public Report createReport(ReportRequest request) {
+    public Report createReport(ReportRequest request, ReportCaller caller) {
         Report report = new Report();
         report.setReportName(request.getReportName());
         report.setCategory(request.getCategory());
         report.setReportType(request.getReportType());
-        report.setRequestedBy(request.getRequestedBy());
+        report.setRequestedBy(caller.getUserId());
         report.setStatus(ReportStatus.PENDING);
         report.setCreatedAt(new Date()); // LEGACY: new Date() instead of Instant.now()
 
@@ -97,33 +105,42 @@ public class ReportService {
     }
 
     /**
-     * Get a report by ID.
+     * Get a report by ID, if the caller owns it (or is an admin). Empty otherwise.
      */
-    public Optional<Report> getReport(Long id) {
-        return reportRepository.findById(id);
+    public Optional<Report> getReport(Long id, ReportCaller caller) {
+        if (caller.isAdmin()) {
+            return reportRepository.findById(id);
+        }
+        return reportRepository.findByIdAndRequestedBy(id, caller.getUserId());
     }
 
     /**
-     * List all reports for a user.
+     * List all reports for a user. Non-admins may only list their own.
      */
-    public List<Report> getReportsByUser(String userId) {
+    public List<Report> getReportsByUser(String userId, ReportCaller caller) {
+        if (!caller.isAdmin() && !caller.getUserId().equals(userId)) {
+            throw new AccessDeniedException("cannot list another user's reports");
+        }
         return reportRepository.findByRequestedByOrderByCreatedAtDesc(userId);
     }
 
     /**
-     * List reports by status.
+     * List reports by status: every user's for admins, the caller's own otherwise.
      */
-    public List<Report> getReportsByStatus(ReportStatus status) {
-        return reportRepository.findByStatusOrderByCreatedAtAsc(status);
+    public List<Report> getReportsByStatus(ReportStatus status, ReportCaller caller) {
+        if (caller.isAdmin()) {
+            return reportRepository.findByStatusOrderByCreatedAtAsc(status);
+        }
+        return reportRepository.findByRequestedByAndStatusOrderByCreatedAtAsc(caller.getUserId(), status);
     }
 
     /**
-     * Delete a report and its generated file.
+     * Delete a report the caller owns (or any report, for admins) and its generated file.
      * File deletion is deferred to afterCommit to avoid inconsistency on rollback.
      */
     @Transactional
-    public boolean deleteReport(Long id) {
-        Optional<Report> optReport = reportRepository.findById(id);
+    public boolean deleteReport(Long id, ReportCaller caller) {
+        Optional<Report> optReport = getReport(id, caller);
         if (!optReport.isPresent()) {
             return false;
         }
