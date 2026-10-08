@@ -1,0 +1,21 @@
+{
+  "unit_id": "customer-master",
+  "batch": "w1-b01",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "customerMaster",
+    "customerMasterHist"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.customerMaster",
+    "mmp_rt_b5_oracle.customerMasterHist"
+  ],
+  "source_tables": {
+    "roots": [
+      "CUSTOMER_MASTER",
+      "CUSTOMER_MASTER_HIST"
+    ],
+    "embedded": [],
+    "referenced": []
+  }
+}
