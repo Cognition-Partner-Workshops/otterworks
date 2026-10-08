@@ -1,0 +1,18 @@
+{
+  "unit_id": "billing-audit-log",
+  "batch": "w1-b02",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "billingAuditLog"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.billingAuditLog"
+  ],
+  "source_tables": {
+    "roots": [
+      "BILLING_AUDIT_LOG"
+    ],
+    "embedded": [],
+    "referenced": []
+  }
+}
