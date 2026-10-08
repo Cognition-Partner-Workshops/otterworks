@@ -1,0 +1,18 @@
+{
+  "unit_id": "invoice-header",
+  "batch": "w1-b01",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "invoiceHeader"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.invoiceHeader"
+  ],
+  "source_tables": {
+    "roots": [
+      "INVOICE_HEADER"
+    ],
+    "embedded": [],
+    "referenced": []
+  }
+}

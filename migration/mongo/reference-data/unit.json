@@ -1,0 +1,24 @@
+{
+  "unit_id": "reference-data",
+  "batch": "w1-b01",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "codes",
+    "plans",
+    "tenants"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.codes",
+    "mmp_rt_b5_oracle.plans",
+    "mmp_rt_b5_oracle.tenants"
+  ],
+  "source_tables": {
+    "roots": [
+      "CODES",
+      "PLANS",
+      "TENANTS"
+    ],
+    "embedded": [],
+    "referenced": []
+  }
+}

@@ -16,10 +16,10 @@
     "field": "SIGNUP_DT",
     "format": "%d-%b-%y",
     "evidence": {
-      "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
-      "lines": "225",
-      "note": "VARCHAR2(9) DD-MON-YY"
-    }
+      "source": "customer",
+      "note": "planted horrors preserved, not repaired; exact parity \u2014 41 CUSTOMER_MASTER.SIGNUP_DT values are not DD-MON-YY (recon w1-b01 map-v1: date_string_to_date!unconverted); raw text kept in signupDtRaw, parsed field null (plan decision d-date-unparseable \u2192 raw_field)"
+    },
+    "raw_field": "signupDtRaw"
   },
   {
     "op": "date_format",
@@ -96,6 +96,17 @@
       "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
       "lines": "67",
       "note": "VARCHAR2(9) DD-MON-YY text date"
+    }
+  },
+  {
+    "op": "date_format",
+    "collection": "customerMaster",
+    "field": "SIGNUP_DT",
+    "format": "%d-%b-%y",
+    "raw_field": "signupDtRaw",
+    "evidence": {
+      "source": "customer",
+      "note": "planted horrors preserved, not repaired; exact parity \u2014 41 CUSTOMER_MASTER.SIGNUP_DT values are not DD-MON-YY (recon w1-b01 map-v1: date_string_to_date!unconverted); raw text kept in signupDtRaw, parsed field null (plan decision d-date-unparseable \u2192 raw_field)"
     }
   },
   {

@@ -4,9 +4,9 @@
 |---|---|
 | Run branch | `tp-run/mongodb-20261008T120222Z` |
 | Plugin | `349cb2d17dccb246409e7750657e25843bf53be8` (unpatched) |
-| Mapping | `map-v1` — `.migration/mapping_spec.json` sha256 `a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752` (`model_patch.py --check` exit 0; 105 decisions, 124 evidence refs) |
+| Mapping | `map-v2` — `.migration/mapping_spec.json` sha256 `ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c` (`model_patch.py --check` exit 0, 83 decisions); supersedes `map-v1` sha256 `a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752` after the UNT9-12 round-1 correction (b.1/b.7 below) |
 | Input | `map-draft-2` proposal `.migration/mapping_spec.proposed.json`: 30 `modeling.unresolved`, 50 collection `open_questions`, 0 `child_open_questions`, `known_incompatibilities` key absent |
-| Decisions file | `.migration/design_decisions.json` — 82 entries (67 resolve, 9 date_format, 2 pattern, 1 set_key, 1 note); every entry cites `file:line` under `services/legacy-billing/db/oracle/` or `source: customer` |
+| Decisions file | `.migration/design_decisions.json` — 83 entries (67 resolve, 10 date_format, 2 pattern, 1 set_key, 1 note); every entry cites `file:line` under `services/legacy-billing/db/oracle/` or `source: customer` |
 | Tolerances | `tol-1` — `.migration/recon_tolerances.json` sha256 `a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da` (untouched) |
 | Target | Atlas database `mmp_rt_b5_oracle` only |
 
@@ -41,6 +41,7 @@ Evidence flags observed in `.migration/access_patterns.json` (125 patterns):
 |---|---|---|---|---|
 | 1-6 | `date_format` | `customerMasterHist` HIST_DT (`%d-%b-%y %H:%M:%S`), SIGNUP_DT, LAST_ACTIVITY_DT, LAST_INVOICE_DT, LAST_PAYMENT_DT, TERMINATE_DT (`%d-%b-%y`) | proposer assumed the format on an empty table; DDL and the trigger name it | `schema/02_horror.sql:372`, `:225-229` |
 | 7-9 | `date_format` | `customerMaster` LAST_INVOICE_DT, LAST_PAYMENT_DT, TERMINATE_DT (`%d-%b-%y`) | `VARCHAR2(9)` DD-MON-YY text dates | `schema/02_horror.sql:65-67` |
+| 1/7 (map-v2 edit-in-place) | `date_format` + `raw_field: signupDtRaw` | `customerMasterHist` SIGNUP_DT (existing entry edited) and `customerMaster` SIGNUP_DT (entry added — map-v1 relied on the proposer's `data_profile` format with no decision row); `unparseable → null` | w1-b01 live recon FAIL under map-v1: 41 CUSTOMER_MASTER.SIGNUP_DT values are not DD-MON-YY (`N/A`, `9/9/9999`, `99-99-999`, blanks, impossible DD-MON-YY) and the harness cannot PASS `unparseable: keep` on planted garbage; plan decision d-date-unparseable → raw_field; count stays 12 (correction, not a new shape) | `source: customer` — "planted horrors preserved, not repaired; exact parity" |
 | 10 | `set_key` | `fixtureMeta` → `MARKER` (`nullable_ok`) | proposer had no comparison key (load-order only) | `schema/04_upgrade_static.sql:15` |
 | 11 | `pattern extended_reference` | `invoices` ← TENANTS.`STATUS_CD` (join TENANT_ID = ID) | `fn_overdue_accounts` reads tenant status with every overdue invoice | `packages/05_pkg_dunning.sql:21-29` |
 | 12 | `pattern extended_reference` | `subscriptions` ← PLANS.`CODE`,`TIER_CD`,`MONTHLY_FEE`,`INCLUDED_UNITS` (join PLAN_ID = ID) | `fn_entitlement` reads the plan fields with the covering subscription | `packages/02_pkg_plans.sql:53-68` |
@@ -67,7 +68,7 @@ Not corrected on purpose: TENANTS → SUBSCRIPTIONS extended-reference candidate
 | `repeating_group` | 2 | keep numbered columns flat for parity recon; array folding deferred until a reader needs it | file:line |
 | `polymorphic_pointer` | 1 | EAV stays its own collection keyed `eavId`, lookup (entityType, entityId, attrName) | file:line |
 | `single_valued_index_key` | 1 | keep `activeYn` field, no index | file:line |
-| `date_format_nonconforming` | 1 | CUSTOMER_MASTER.SIGNUP_DT keeps DD-MON-YY; ~32 nonconforming rows keep the raw string, counted not repaired | customer |
+| `date_format_nonconforming` | 1 | CUSTOMER_MASTER.SIGNUP_DT keeps DD-MON-YY; 41 nonconforming rows (measured by recon, map-v2) keep the raw string in `signupDtRaw`, parsed field null — counted not repaired | customer |
 | `child_open_questions` | 0 | none raised | — |
 | `known_incompatibilities` | 0 hits (key absent) | blind spot recorded as `note` decision | profile |
 

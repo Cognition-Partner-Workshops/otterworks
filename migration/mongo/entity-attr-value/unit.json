@@ -1,0 +1,18 @@
+{
+  "unit_id": "entity-attr-value",
+  "batch": "w1-b01",
+  "database": "mmp_rt_b5_oracle",
+  "collections": [
+    "entityAttrValue"
+  ],
+  "write_targets": [
+    "mmp_rt_b5_oracle.entityAttrValue"
+  ],
+  "source_tables": {
+    "roots": [
+      "ENTITY_ATTR_VALUE"
+    ],
+    "embedded": [],
+    "referenced": []
+  }
+}
