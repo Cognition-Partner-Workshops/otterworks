@@ -376,6 +376,8 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
+      - run: terraform -chdir=modules/storage init -backend=false
+      - run: terraform -chdir=modules/storage test
 
   # The tenant control plane: dashboard typecheck/lint, plus the shell tests for
   # the reaper and idle-suspend. Those two decide what gets deleted and what gets
