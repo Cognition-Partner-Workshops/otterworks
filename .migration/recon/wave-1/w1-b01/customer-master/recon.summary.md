@@ -2,8 +2,8 @@
 
 - Mode: `live`
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping `map-v2` / tolerances `tol-1` / seed `0`
-- Generated: 2026-10-08T12:58:24.036757+00:00
+- Mapping `map-v3` / tolerances `tol-1` / seed `0`
+- Generated: 2026-10-08T13:13:30.515895+00:00
 - **WARNING: UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised**
 
 | Tier | Checks | Result |

@@ -3,11 +3,11 @@
 - **Verdict: PASS** (values redacted)
 - Mode: `live`
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping version: `map-v2` (sha256 `ccd1078bedc9`)
+- Mapping version: `map-v3` (sha256 `c158f8bb469d`)
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `customerMasterHist`, `customerMaster`
 - Seed: `0`
-- Generated: 2026-10-08T12:58:24.036757+00:00
+- Generated: 2026-10-08T13:13:30.515895+00:00
 - **WARNING: UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised**
 - 313 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 222 string fields: min/max/distinct deferred to Tier 3

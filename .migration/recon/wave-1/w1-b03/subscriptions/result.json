@@ -2,8 +2,8 @@
   "unit": "subscriptions",
   "mode": "live",
   "target_class": "migration_cluster",
-  "mapping_version": "map-v2",
-  "mapping_sha256": "ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c",
+  "mapping_version": "map-v3",
+  "mapping_sha256": "c158f8bb469d1e2733cfae5aa26e315d0ade4490f1164048ee161230c866dbd7",
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
@@ -13,7 +13,7 @@
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T13:07:32.457182+00:00",
+  "generated_at": "2026-10-08T13:12:25.650117+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -34,7 +34,7 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 3,
+      "checks_run": 4,
       "stats": {
         "deferred_to_tier3": [
           "subscriptions.tenantId",
@@ -50,7 +50,8 @@
           "subscriptionsHist.startsOn",
           "subscriptionsHist.endsOn",
           "subscriptionsHist.statusCd",
-          "subscriptionsHist.suspendedOn"
+          "subscriptionsHist.suspendedOn",
+          "subscriptionsHist.histDtRaw"
         ],
         "string_aggregates_deferred_to_tier3": [
           {
@@ -100,6 +101,14 @@
               "max",
               "distinct_count"
             ]
+          },
+          {
+            "field": "subscriptionsHist.histDtRaw",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
           }
         ],
         "fields_fully_deferred": 12
@@ -109,7 +118,7 @@
     {
       "tier": 3,
       "name": "keyed_diffs",
-      "passed": false,
+      "passed": true,
       "checks_run": 46,
       "stats": {
         "subscriptions": {
@@ -123,96 +132,11 @@
           "duplicate_source_key_count": 0
         }
       },
-      "findings": [
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:28cb03b06c28",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:0555debc8a65",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:4079e4af87d7",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:3912a1d67a34",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:666aa17826ad",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "subscriptionsHist",
-          "check": "field_diff",
-          "detail": "field HIST_DT->histDt key=tuple:3af5d6e7f947",
-          "source_value": "str:d6c462864d56",
-          "target_value": "str:d6c462864d56",
-          "rules_applied": [
-            "date_string_to_date!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date",
-            "null_missing_equiv"
-          ]
-        }
-      ]
+      "findings": []
     }
   ],
   "warnings": [],
-  "verdict": "FAIL",
-  "merge_eligible": false,
+  "verdict": "PASS",
+  "merge_eligible": true,
   "error": null
 }

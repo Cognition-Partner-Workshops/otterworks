@@ -2,8 +2,8 @@
 
 - Mode: `live`
 - Merge eligible: yes (fixture/continuous evidence never merges)
-- Mapping `map-v2` / tolerances `tol-1` / seed `0`
-- Generated: 2026-10-08T13:07:06.013822+00:00
+- Mapping `map-v3` / tolerances `tol-1` / seed `0`
+- Generated: 2026-10-08T13:12:21.226510+00:00
 
 | Tier | Checks | Result |
 |---|---|---|

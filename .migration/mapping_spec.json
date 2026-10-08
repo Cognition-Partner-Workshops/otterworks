@@ -1,5 +1,5 @@
 {
-  "version": "map-v2",
+  "version": "map-v3",
   "source_family": "oracle",
   "collections": [
     {
@@ -7463,9 +7463,12 @@
           "source_type": "VARCHAR2(20)",
           "bson_type": "date",
           "rules": [
-            "date_string_to_date",
+            "date_string_to_date:dbyHMS-70a36e",
             "null_missing_equiv"
-          ]
+          ],
+          "date_format": "%d-%b-%y %H:%M:%S",
+          "date_format_evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'); seeded rows measured YYYYMMDD 0% conformance \u2192 raw kept",
+          "raw_field": "histDtRaw"
         },
         {
           "source": "HIST_OP",
@@ -7545,6 +7548,16 @@
             "datetime_utc_truncate_ms",
             "null_missing_equiv"
           ]
+        },
+        {
+          "source": "HIST_DT",
+          "target": "histDtRaw",
+          "source_type": "VARCHAR2(20)",
+          "bson_type": "string",
+          "rules": [],
+          "raw_copy_of": "histDt",
+          "evidence": "services/legacy-billing/db/oracle/schema/01_tables.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'); seeded rows measured YYYYMMDD 0% conformance \u2192 raw kept",
+          "note": "loader copies the source text unchanged"
         }
       ],
       "embeds": [],
@@ -7851,7 +7864,7 @@
     }
   ],
   "canonicalization": {
-    "version": "map-v2-canon",
+    "version": "map-v3-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -7922,6 +7935,15 @@
         "applies_to": "date",
         "params": {
           "format": "%d-%b-%y",
+          "unparseable": "null"
+        }
+      },
+      {
+        "name": "date_string_to_date:dbyHMS-70a36e",
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%d-%b-%y %H:%M:%S",
           "unparseable": "null"
         }
       }
@@ -10241,6 +10263,20 @@
           "note": "plan fields read with the covering subscription"
         },
         "cited": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql: plan fields read with the covering subscription",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "date_format",
+        "collection": "subscriptionsHist",
+        "field": "HIST_DT",
+        "format": "%d-%b-%y %H:%M:%S",
+        "raw_field": "histDtRaw",
+        "evidence": {
+          "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+          "lines": "218",
+          "note": "trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'); seeded rows measured YYYYMMDD 0% conformance \u2192 raw kept"
+        },
+        "cited": "services/legacy-billing/db/oracle/schema/01_tables.sql: trigger writes TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS'); seeded rows measured YYYYMMDD 0% conformance \u2192 raw kept",
         "status": "PROPOSED"
       }
     ],
