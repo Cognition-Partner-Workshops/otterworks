@@ -1,0 +1,4171 @@
+{
+  "access_version": 1,
+  "census_sha256": "603f89c85ee497052ffdf6ae80b6201046a01f71dca7ca52dca8127101bff36f",
+  "patterns": [
+    {
+      "id": "ap-d9d4207c37",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "CODES.CODE_VAL",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+        "lines": [
+          40,
+          40
+        ]
+      },
+      "statement": "SELECT code_desc FROM codes WHERE code_type = :? AND code_val = :?",
+      "routine": "pkg_ow_util.f_code_desc",
+      "txn": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql:36:5",
+      "workload": {
+        "calls": 90,
+        "share": 0.1070154577883472,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-779ce5b5b7",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+        "lines": [
+          70,
+          71
+        ]
+      },
+      "statement": "INSERT INTO billing_audit_log (module, message) VALUES (SUBSTR(p_module, ?, ?), SUBSTR(p_message, ?, ?))",
+      "routine": "pkg_ow_util.log_msg",
+      "txn": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql:66:5",
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 1,
+      "via": [
+        "pkg_dunning.sp_schedule_dunning"
+      ],
+      "workload": {
+        "calls": 37,
+        "share": 0.04399524375743163,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-33e1dc2584",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "PLANS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "PLANS.ACTIVE_YN",
+          "op": "eq",
+          "wrapped": "NVL"
+        }
+      ],
+      "sort": [
+        "PLANS.MONTHLY_FEE",
+        "PLANS.CODE"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          25,
+          31
+        ]
+      },
+      "statement": "SELECT id AS plan_id, code, DECODE(tier_cd, ?, ?, ?, ?, ?, ?, ?) AS tier, monthly_fee, included_units, overage_rate FROM plans WHERE NVL(active_yn, ?) = ? ORDER BY monthly_fee, code",
+      "routine": "pkg_plans.fn_list_plans",
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:20:5",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-df26fbfed9",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS",
+        "PLANS"
+      ],
+      "join_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range",
+          "wrapped": "NVL"
+        },
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          41,
+          47
+        ]
+      },
+      "statement": "SELECT p.code INTO g_last_plan_code FROM subscriptions s, plans p WHERE p.id (+) = s.plan_id AND s.tenant_id = p_tenant_id AND s.starts_on <= p_on AND NVL(s.ends_on, TO_DATE(?, ?)) >= p_on AND ROWNUM = ?",
+      "routine": "pkg_plans.fn_entitlement",
+      "outer_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:35:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-60ec05ff91",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS",
+        "SUBSCRIPTIONS",
+        "PLANS"
+      ],
+      "join_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ],
+        [
+          "TENANTS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          53,
+          68
+        ]
+      },
+      "statement": "SELECT * FROM ( SELECT t.id AS tenant_id, p.code AS plan_code, DECODE(p.tier_cd, ?, ?, ?, ?, ?, ?, ?) AS tier, p.monthly_fee, p.included_units, DECODE(s.status_cd, ?, ?, ?, ?, ?, ?, ?) AS subscription_status, GREATEST(s.starts_on, p_on) AS effective_on FROM tenants t, subscriptions s, plans p WHERE ",
+      "routine": "pkg_plans.fn_entitlement",
+      "outer_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:35:5",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-95a0f9e481",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS",
+        "SUBSCRIPTIONS",
+        "PLANS"
+      ],
+      "join_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ],
+        [
+          "TENANTS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "SUBSCRIPTIONS.STARTS_ON"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          54,
+          68
+        ]
+      },
+      "statement": "SELECT t.id AS tenant_id, p.code AS plan_code, DECODE(p.tier_cd, ?, ?, ?, ?, ?, ?, ?) AS tier, p.monthly_fee, p.included_units, DECODE(s.status_cd, ?, ?, ?, ?, ?, ?, ?) AS subscription_status, GREATEST(s.starts_on, p_on) AS effective_on FROM tenants t, subscriptions s, plans p WHERE s.tenant_id = t.",
+      "routine": "pkg_plans.fn_entitlement",
+      "outer_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:35:5",
+      "nested_in": "ap-60ec05ff91",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-781940a6e5",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          75,
+          80
+        ]
+      },
+      "statement": "SELECT id, status_cd FROM subscriptions WHERE tenant_id = p_tenant_id AND ends_on IS NULL AND starts_on < p_effective_on FOR UPDATE",
+      "routine": "pkg_plans.sp_change_plan",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:72:5",
+      "workload": {
+        "calls": 30,
+        "share": 0.0356718192627824,
+        "digests": 3
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-a7af1a6156",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          91,
+          94
+        ]
+      },
+      "statement": "UPDATE subscriptions SET ends_on = p_effective_on - ?, status_cd = DECODE(r.status_cd, ?, ?, ?) WHERE CURRENT OF c_open_subs",
+      "routine": "pkg_plans.sp_change_plan",
+      "current_of": "c_open_subs",
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:72:5",
+      "in_loop": true,
+      "cascades": [
+        "ap-bdfdef0db0"
+      ],
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-875f85e898",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+        "lines": [
+          101,
+          101
+        ]
+      },
+      "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, status_cd)",
+      "routine": "pkg_plans.sp_change_plan",
+      "txn": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql:72:5",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 3
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-22fec4f2aa",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          55,
+          63
+        ]
+      },
+      "statement": "SELECT id, status_cd, suspended_on, plan_id INTO v_sub_id, v_sub_status, v_suspended_on, v_plan_id FROM (SELECT s.id, s.status_cd, s.suspended_on, s.plan_id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORD",
+      "routine": "pkg_rating.compute_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:32:5",
+      "workload": {
+        "calls": 30,
+        "share": 0.0356718192627824,
+        "digests": 3
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-1fe02141ee",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "SUBSCRIPTIONS.STARTS_ON"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          57,
+          62
+        ]
+      },
+      "statement": "SELECT s.id, s.status_cd, s.suspended_on, s.plan_id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
+      "routine": "pkg_rating.compute_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:32:5",
+      "nested_in": "ap-22fec4f2aa",
+      "workload": {
+        "calls": 30,
+        "share": 0.0356718192627824,
+        "digests": 3
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-cd877ffc6d",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "PLANS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "PLANS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          69,
+          70
+        ]
+      },
+      "statement": "SELECT included_units, overage_rate INTO v_included, v_rate FROM plans WHERE id = v_plan_id",
+      "routine": "pkg_rating.compute_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:32:5",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-61c2839e36",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          77,
+          78
+        ]
+      },
+      "statement": "SELECT u.units, u.occurred_at FROM usage_events u WHERE u.tenant_id = p_tenant_id)",
+      "routine": "pkg_rating.compute_rating",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:32:5",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-81929b0d21",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "RATING_RESULTS",
+        "RATING_PERIODS"
+      ],
+      "join_edges": [
+        [
+          "RATING_PERIODS",
+          "RATING_RESULTS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "RATING_PERIODS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "RATING_PERIODS.PERIOD_START",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          87,
+          92
+        ]
+      },
+      "statement": "SELECT rr.rollover_units FROM rating_results rr, rating_periods rp WHERE rp.id = rr.period_id AND rp.tenant_id = p_tenant_id AND rp.period_start < p_period_start AND rp.period_start >= ADD_MONTHS(p_period_start, -?))",
+      "routine": "pkg_rating.compute_rating",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:32:5",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-2b3995792f",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.OCCURRED_AT",
+          "op": "range",
+          "wrapped": "TO_CHAR"
+        },
+        {
+          "col": "USAGE_EVENTS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          147,
+          158
+        ]
+      },
+      "statement": "SELECT DECODE(u.kind_cd, ?, ?, ?, ?, ?, ?, ?) AS kind, COUNT(*) AS event_count, NVL(SUM(u.units), ?) AS units FROM usage_events u WHERE u.tenant_id = p_tenant_id AND TO_CHAR(u.occurred_at, ?) BETWEEN TO_CHAR(p_period_start, ?) AND TO_CHAR(p_period_end, ?) GROUP BY DECODE(u.kind_cd, ?, ?, ?, ?, ?, ?,",
+      "routine": "pkg_rating.fn_usage_summary",
+      "txn": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql:142:5",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-b6d8685d76",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          172,
+          178
+        ]
+      },
+      "statement": "SELECT id INTO v_sub_id FROM (SELECT s.id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC) WHERE ROWNUM <= ?",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 30,
+        "share": 0.0356718192627824,
+        "digests": 3
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-2cc202a47e",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "SUBSCRIPTIONS.STARTS_ON"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          173,
+          177
+        ]
+      },
+      "statement": "SELECT s.id FROM subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "nested_in": "ap-b6d8685d76",
+      "workload": {
+        "calls": 30,
+        "share": 0.0356718192627824,
+        "digests": 3
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-8e58932397",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_PERIODS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          185,
+          186
+        ]
+      },
+      "statement": "INSERT INTO rating_periods (id, tenant_id, period_start, period_end) VALUES (v_period_id, p_tenant_id, p_period_start, p_period_end)",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-8ee13949bc",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_PERIODS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "RATING_PERIODS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "RATING_PERIODS.PERIOD_START",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          189,
+          192
+        ]
+      },
+      "statement": "UPDATE rating_periods SET period_end = p_period_end WHERE tenant_id = p_tenant_id AND period_start = p_period_start",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-d7af986eeb",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_RESULTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          199,
+          206
+        ]
+      },
+      "statement": "INSERT INTO rating_results ( id, period_id, subscription_id, used_units, quota_units, rollover_units, billable_units, overage_amount, created_at ) VALUES ( v_result_id, v_period_id, v_sub_id, g_used_units, g_quota_units, GREATEST(g_quota_units - g_used_units, ?), g_billable_units, g_overage_amount, ",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-76af3595e0",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_RESULTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "RATING_RESULTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/03_pkg_rating.sql",
+        "lines": [
+          209,
+          214
+        ]
+      },
+      "statement": "UPDATE rating_results SET used_units = g_used_units, rollover_units = GREATEST(g_quota_units - g_used_units, ?), billable_units = g_billable_units, overage_amount = g_overage_amount WHERE id = v_result_id",
+      "routine": "pkg_rating.sp_finalize_rating",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-ee373ebbd1",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS",
+        "PLANS"
+      ],
+      "join_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          35,
+          43
+        ]
+      },
+      "statement": "SELECT code, monthly_fee INTO g_plan_code, g_plan_fee FROM (SELECT p.code, p.monthly_fee FROM subscriptions s, plans p WHERE p.id = s.plan_id AND s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC) WHERE ROWNUM <",
+      "routine": "pkg_invoicing.compute_preview",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:71:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-160686ae25",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS",
+        "PLANS"
+      ],
+      "join_edges": [
+        [
+          "PLANS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STARTS_ON",
+          "op": "range"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "SUBSCRIPTIONS.STARTS_ON"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          36,
+          42
+        ]
+      },
+      "statement": "SELECT p.code, p.monthly_fee FROM subscriptions s, plans p WHERE p.id = s.plan_id AND s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC)",
+      "routine": "pkg_invoicing.compute_preview",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:71:5",
+      "nested_in": "ap-ee373ebbd1",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-2e59f9675d",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CREDIT_NOTES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CREDIT_NOTES.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "CREDIT_NOTES.REMAINING_AMOUNT",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          53,
+          54
+        ]
+      },
+      "statement": "SELECT remaining_amount FROM credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ?)",
+      "routine": "pkg_invoicing.compute_preview",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:71:5",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 2
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-41de3e5203",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          59,
+          60
+        ]
+      },
+      "statement": "SELECT NVL(tax_exempt_yn, ?) INTO v_exempt FROM tenants WHERE id = p_tenant_id",
+      "routine": "pkg_invoicing.compute_preview",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:71:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-620d0a2057",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.INVOICE_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "INVOICE_LINES.LINE_NO"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          106,
+          109
+        ]
+      },
+      "statement": "SELECT line_no, line_type, description, amount FROM invoice_lines WHERE invoice_id = p_invoice_id ORDER BY line_no",
+      "routine": "pkg_invoicing.fn_invoice_lines",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:102:5",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-c026ebf3a8",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          137,
+          142
+        ]
+      },
+      "statement": "INSERT INTO invoices ( id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd ) VALUES ( v_invoice_id, p_tenant_id, v_period_id, CAST(p_period_end AS TIMESTAMP), ?, ?, ?, ? )",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-c43f1f14dc",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          145,
+          145
+        ]
+      },
+      "statement": "UPDATE invoices SET status_cd = ? WHERE id = v_invoice_id",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-5c6c87e418",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.INVOICE_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          150,
+          150
+        ]
+      },
+      "statement": "DELETE FROM invoice_lines WHERE invoice_id = :?",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-56d46b7c81",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          157,
+          163
+        ]
+      },
+      "statement": "INSERT INTO invoice_lines ( id, invoice_id, line_no, line_type, description, amount ) VALUES ( pkg_ow_util.f_md5_uuid(v_invoice_id || TO_CHAR(v_line_no)), v_invoice_id, v_line_no, v_line_type, v_descr, DECODE(v_line_type, ?, v_line_total, v_amount) )",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "in_loop": true,
+      "workload": {
+        "calls": 25,
+        "share": 0.029726516052318668,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-75910aef55",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          175,
+          178
+        ]
+      },
+      "statement": "UPDATE invoices SET subtotal = ROUND(v_subtotal, ?), tax = ROUND(v_tax, ?), total = v_total WHERE id = v_invoice_id",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-b259650bfe",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CREDIT_NOTES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CREDIT_NOTES.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "CREDIT_NOTES.REMAINING_AMOUNT",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "CREDIT_NOTES.ISSUED_ON",
+        "CREDIT_NOTES.ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          182,
+          184
+        ]
+      },
+      "statement": "SELECT id, remaining_amount FROM credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ? ORDER BY issued_on, id)",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 2
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-7a575dfc2d",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CREDIT_NOTES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CREDIT_NOTES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+        "lines": [
+          186,
+          188
+        ]
+      },
+      "statement": "UPDATE credit_notes SET remaining_amount = GREATEST(remaining_amount - v_credit, ?) WHERE id = r.id",
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "txn": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql:113:5",
+      "in_loop": true,
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-46a8eb988b",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES",
+        "TENANTS"
+      ],
+      "join_edges": [
+        [
+          "TENANTS",
+          "INVOICES"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "INVOICES.ISSUED_AT",
+          "op": "range",
+          "wrapped": "TO_CHAR"
+        },
+        {
+          "col": "INVOICES.STATUS_CD",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "INVOICES.ISSUED_AT",
+        "INVOICES.ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          21,
+          29
+        ]
+      },
+      "statement": "SELECT i.tenant_id, i.id AS invoice_id, i.total, TRUNC(p_as_of) - TRUNC(CAST(i.issued_at AS DATE)) AS days_overdue, DECODE(t.status_cd, ?, ?, ?, ?, ?) AS tenant_status FROM invoices i, tenants t WHERE t.id (+) = i.tenant_id AND i.status_cd = ? AND TO_CHAR(i.issued_at, ?) < TO_CHAR(p_as_of, ?) ORDER ",
+      "routine": "pkg_dunning.fn_overdue_accounts",
+      "outer_edges": [
+        [
+          "TENANTS",
+          "INVOICES"
+        ]
+      ],
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:17:5",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-644c102b12",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.STATUS_CD",
+          "op": "eq"
+        }
+      ],
+      "sort": [
+        "INVOICES.ISSUED_AT",
+        "INVOICES.ID"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          40,
+          42
+        ]
+      },
+      "statement": "SELECT id, tenant_id FROM invoices WHERE status_cd = ? ORDER BY issued_at, id)",
+      "routine": "pkg_dunning.sp_schedule_dunning",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:33:5",
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-37287a11b5",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "DUNNING_ATTEMPTS.INVOICE_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          43,
+          44
+        ]
+      },
+      "statement": "SELECT NVL(MAX(attempt_no), ?) + ? INTO v_attempt FROM dunning_attempts WHERE invoice_id = inv.id",
+      "routine": "pkg_dunning.sp_schedule_dunning",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:33:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 3,
+        "share": 0.0035671819262782403,
+        "digests": 2
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-68fdfcc880",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          53,
+          58
+        ]
+      },
+      "statement": "INSERT INTO dunning_attempts ( id, tenant_id, invoice_id, attempt_no, scheduled_for, status_cd ) VALUES ( pkg_ow_util.f_md5_uuid(inv.id || TO_CHAR(v_attempt)), inv.tenant_id, inv.id, v_attempt, v_next, ? )",
+      "routine": "pkg_dunning.sp_schedule_dunning",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:33:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-eb72a29af5",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ISSUED_AT",
+          "op": "range",
+          "wrapped": "TO_CHAR"
+        },
+        {
+          "col": "INVOICES.STATUS_CD",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          74,
+          77
+        ]
+      },
+      "statement": "SELECT DISTINCT i.tenant_id FROM invoices i WHERE i.status_cd = ? AND TO_CHAR(i.issued_at, ?) <= TO_CHAR(TRUNC(p_as_of) - ?, ?))",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "drives_loop": true,
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-c089416cd9",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        },
+        {
+          "col": "TENANTS.STATUS_CD",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          78,
+          79
+        ]
+      },
+      "statement": "SELECT COUNT(*) INTO v_active FROM tenants WHERE id = t.tenant_id AND status_cd = ?",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-8e4baaa9a0",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          81,
+          81
+        ]
+      },
+      "statement": "UPDATE tenants SET status_cd = ? WHERE id = t.tenant_id",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-d3754b6b8a",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "SUBSCRIPTIONS.STATUS_CD",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          82,
+          84
+        ]
+      },
+      "statement": "UPDATE subscriptions SET status_cd = ?, suspended_on = TRUNC(p_as_of) WHERE tenant_id = t.tenant_id AND status_cd = ?",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "cascades": [
+        "ap-bdfdef0db0"
+      ],
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-7692fe1e9a",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "NOTIFICATIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "NOTIFICATIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.KIND_CD",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.SENT_AT",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          86,
+          94
+        ]
+      },
+      "statement": "INSERT INTO notifications (id, tenant_id, kind_cd, sent_at) SELECT pkg_ow_util.f_md5_uuid(t.tenant_id || ? || TO_CHAR(TRUNC(p_as_of), ?)), t.tenant_id, ?, CAST(TRUNC(p_as_of) AS TIMESTAMP) FROM dual WHERE NOT EXISTS ( SELECT ? FROM notifications WHERE tenant_id = t.tenant_id AND kind_cd = ? AND sent",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-cd2440f5ed",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "NOTIFICATIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "NOTIFICATIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.KIND_CD",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.SENT_AT",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          87,
+          94
+        ]
+      },
+      "statement": "SELECT pkg_ow_util.f_md5_uuid(t.tenant_id || ? || TO_CHAR(TRUNC(p_as_of), ?)), t.tenant_id, ?, CAST(TRUNC(p_as_of) AS TIMESTAMP) FROM dual WHERE NOT EXISTS ( SELECT ? FROM notifications WHERE tenant_id = t.tenant_id AND kind_cd = ? AND sent_at = CAST(TRUNC(p_as_of) AS TIMESTAMP))",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "nested_in": "ap-7692fe1e9a",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-d0e6a55401",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "NOTIFICATIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "NOTIFICATIONS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.KIND_CD",
+          "op": "eq"
+        },
+        {
+          "col": "NOTIFICATIONS.SENT_AT",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql",
+        "lines": [
+          92,
+          94
+        ]
+      },
+      "statement": "SELECT ? FROM notifications WHERE tenant_id = t.tenant_id AND kind_cd = ? AND sent_at = CAST(TRUNC(p_as_of) AS TIMESTAMP))",
+      "routine": "pkg_dunning.sp_suspend_overdue",
+      "txn": "services/legacy-billing/db/oracle/packages/05_pkg_dunning.sql:71:5",
+      "in_loop": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 13
+        }
+      ],
+      "schedule_hint": "daily",
+      "depth": 0,
+      "nested_in": "ap-cd2440f5ed",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-f1cd68c5b3",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          17,
+          17
+        ]
+      },
+      "statement": "INSERT INTO codes VALUES (?, ?, ?)",
+      "deploy_script": true,
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-bdfdef0db0",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          213,
+          222
+        ]
+      },
+      "statement": "INSERT INTO subscriptions_hist ( hist_id, hist_dt, hist_op, id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on ) VALUES ( seq_subscriptions_hist.NEXTVAL, TO_CHAR(SYSDATE, ?), v_op, :OLD.id, :OLD.tenant_id, :OLD.plan_id, :OLD.starts_on, :OLD.ends_on, :OLD.status_cd, :OLD.suspended_on",
+      "routine": "trg_subscriptions_hist",
+      "trigger": {
+        "on": "SUBSCRIPTIONS",
+        "events": [
+          "update",
+          "delete"
+        ]
+      },
+      "depth": 0,
+      "workload": {
+        "calls": 6,
+        "share": 0.007134363852556481,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-fe087c4e0c",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CODES.CODE_TYPE",
+          "op": "eq"
+        },
+        {
+          "col": "CODES.CODE_VAL",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/01_tables.sql",
+        "lines": [
+          248,
+          249
+        ]
+      },
+      "statement": "SELECT COUNT(*) INTO v_cnt FROM codes WHERE code_type = ? AND code_val = :NEW.kind_cd",
+      "routine": "trg_usage_events_check",
+      "trigger": {
+        "on": "USAGE_EVENTS",
+        "events": [
+          "insert"
+        ]
+      },
+      "may_rollback": true,
+      "depth": 0,
+      "workload": {
+        "calls": 90,
+        "share": 0.1070154577883472,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-89ac1728cb",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "lines": [
+          9,
+          9
+        ]
+      },
+      "statement": "INSERT INTO codes VALUES (?, ?, ?)",
+      "deploy_script": true,
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-dbf1b410e9",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/02_horror.sql",
+        "lines": [
+          365,
+          372
+        ]
+      },
+      "statement": "INSERT INTO customer_master_hist ( hist_id, hist_dt, hist_op, cust_id, cust_seq_no, tenant_id, cust_no, cust_name, cust_name_upper, legal_name, dba_name, addr_line_1, addr_line_2, addr_line_3, addr_line_4, addr_line_5, addr_line_6, city, state_cd, zip, zip4, country_cd, mail_addr_line_1, mail_addr_l",
+      "routine": "trg_customer_master_hist",
+      "trigger": {
+        "on": "CUSTOMER_MASTER",
+        "events": [
+          "update",
+          "delete"
+        ]
+      },
+      "depth": 0,
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-872aee5734",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          9,
+          9
+        ]
+      },
+      "statement": "INSERT INTO tenants (id, name, tax_exempt_yn, status_cd) VALUES (?, ?, ?, ?)",
+      "workload": {
+        "calls": 6,
+        "share": 0.007134363852556481,
+        "digests": 2
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-1a85100836",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "PLANS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          20,
+          20
+        ]
+      },
+      "statement": "INSERT INTO plans (id, code, tier_cd, monthly_fee, included_units, overage_rate) VALUES (?, ?, ?, ?, ?, ?)",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-453b668254",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          24,
+          24
+        ]
+      },
+      "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (?, ?, ?, DATE ?, NULL, ?, NULL)",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 3
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-0f6d62e335",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          25,
+          25
+        ]
+      },
+      "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) VALUES (?, ?, ?, DATE ?, NULL, ?, DATE ?)",
+      "workload": {
+        "calls": 15,
+        "share": 0.0178359096313912,
+        "digests": 3
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-27ea66fd68",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          35,
+          35
+        ]
+      },
+      "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) VALUES (?, ?, TIMESTAMP ?, ?, ?)",
+      "cascades": [
+        "ap-fe087c4e0c"
+      ],
+      "workload": {
+        "calls": 90,
+        "share": 0.1070154577883472,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-7649d6dea9",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_PERIODS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          49,
+          49
+        ]
+      },
+      "statement": "INSERT INTO rating_periods (id, tenant_id, period_start, period_end) VALUES (?, ?, DATE ?, DATE ?)",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-0b78397fa9",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "RATING_RESULTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          53,
+          53
+        ]
+      },
+      "statement": "INSERT INTO rating_results (id, period_id, subscription_id, used_units, quota_units, rollover_units, billable_units, overage_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, TIMESTAMP ?)",
+      "workload": {
+        "calls": 10,
+        "share": 0.011890606420927468,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-844e62d756",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          57,
+          57
+        ]
+      },
+      "statement": "INSERT INTO invoices (id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd) VALUES (?, ?, ?, TIMESTAMP ?, ?, ?, ?, ?)",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-341289571e",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CREDIT_NOTES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          62,
+          62
+        ]
+      },
+      "statement": "INSERT INTO credit_notes (id, tenant_id, issued_on, amount, remaining_amount) VALUES (?, ?, DATE ?, ?, ?)",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-e803d14e41",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          68,
+          68
+        ]
+      },
+      "statement": "INSERT INTO dunning_attempts (id, tenant_id, invoice_id, attempt_no, scheduled_for, status_cd) VALUES (?, ?, ?, ?, DATE ?, ?)",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-088632b48d",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "NOTIFICATIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          70,
+          70
+        ]
+      },
+      "statement": "INSERT INTO notifications (id, tenant_id, kind_cd, sent_at) VALUES (?, ?, ?, TIMESTAMP ?)",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-184e8ac3a5",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          72,
+          72
+        ]
+      },
+      "statement": "INSERT INTO invoice_lines (id, invoice_id, line_no, line_type, description, amount) VALUES (?, ?, ?, ?, ?, ?)",
+      "workload": {
+        "calls": 25,
+        "share": 0.029726516052318668,
+        "digests": 1
+      },
+      "suggested_frequency": "hot"
+    },
+    {
+      "id": "ap-c103a40ece",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          77,
+          98
+        ]
+      },
+      "statement": "INSERT INTO customer_master ( cust_id, tenant_id, cust_no, cust_name, legal_name, addr_line_1, city, state_cd, zip, country_cd, phone1, phone1_type_cd, email_1, signup_dt, last_activity_dt, status_cd, sub_status_cd, cust_type_cd, segment_cd, region_cd, tax_exempt_yn, credit_hold_yn, dunning_exempt_y",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-35915eb1a1",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/03_seed_static.sql",
+        "lines": [
+          100,
+          104
+        ]
+      },
+      "statement": "INSERT INTO entity_attr_value (eav_id, entity_type, entity_id, attr_name, attr_value, attr_type, created_dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-d3eff9b330",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          20,
+          26
+        ]
+      },
+      "statement": "INSERT INTO tenants (id, name, tax_exempt_yn, status_cd) SELECT ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM tenants WHERE id = ? )",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "suggested_frequency": "cold"
+    },
+    {
+      "id": "ap-b677615447",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          21,
+          26
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM tenants WHERE id = ? )",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-b7ac51a068",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          24,
+          26
+        ]
+      },
+      "statement": "SELECT ? FROM tenants WHERE id = ? )",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-1bee089176",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          28,
+          38
+        ]
+      },
+      "statement": "INSERT INTO subscriptions (id, tenant_id, plan_id, starts_on, ends_on, status_cd, suspended_on) SELECT ?, ?, ?, DATE ?, NULL, ?, NULL FROM dual WHERE NOT EXISTS ( SELECT ? FROM subscriptions WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-a4daf98db8",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          30,
+          38
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, DATE ?, NULL, ?, NULL FROM dual WHERE NOT EXISTS ( SELECT ? FROM subscriptions WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-3a5adbe5c3",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          36,
+          38
+        ]
+      },
+      "statement": "SELECT ? FROM subscriptions WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-5fa2aaf612",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          40,
+          48
+        ]
+      },
+      "statement": "INSERT INTO usage_events (id, tenant_id, occurred_at, units, kind_cd) SELECT ?, ?, TIMESTAMP ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM usage_events WHERE id = ? )",
+      "cascades": [
+        "ap-fe087c4e0c"
+      ],
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-715ae84f5c",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          41,
+          48
+        ]
+      },
+      "statement": "SELECT ?, ?, TIMESTAMP ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM usage_events WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-d8883e3f4e",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          46,
+          48
+        ]
+      },
+      "statement": "SELECT ? FROM usage_events WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-221108f1cd",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          68,
+          78
+        ]
+      },
+      "statement": "INSERT INTO invoices (id, tenant_id, period_id, issued_at, subtotal, tax, total, status_cd) SELECT ?, ?, ?, TIMESTAMP ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoices WHERE id = ? )",
+      "workload": {
+        "calls": 5,
+        "share": 0.005945303210463734,
+        "digests": 1
+      },
+      "suggested_frequency": "warm"
+    },
+    {
+      "id": "ap-a9871b1c76",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          70,
+          78
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, TIMESTAMP ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoices WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-f90dc6039b",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          76,
+          78
+        ]
+      },
+      "statement": "SELECT ? FROM invoices WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-dc751cd646",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          80,
+          89
+        ]
+      },
+      "statement": "INSERT INTO invoice_lines (id, invoice_id, line_no, line_type, description, amount) SELECT ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoice_lines WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-7c75941f35",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          82,
+          89
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM invoice_lines WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-b5322959c5",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          87,
+          89
+        ]
+      },
+      "statement": "SELECT ? FROM invoice_lines WHERE id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-06d2eaab32",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.CUST_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          101,
+          127
+        ]
+      },
+      "statement": "INSERT INTO customer_master ( cust_id, tenant_id, cust_no, cust_name, legal_name, addr_line_1, city, state_cd, zip, country_cd, phone1, phone1_type_cd, email_1, signup_dt, last_activity_dt, status_cd, sub_status_cd, cust_type_cd, segment_cd, region_cd, tax_exempt_yn, credit_hold_yn, dunning_exempt_y",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-c319c7a52f",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.CUST_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          111,
+          127
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, DATE ?, ?, DATE ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM customer_master WHERE cust_id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-194d488a17",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.CUST_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          125,
+          127
+        ]
+      },
+      "statement": "SELECT ? FROM customer_master WHERE cust_id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-a82c763f48",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "ENTITY_ATTR_VALUE.EAV_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          129,
+          138
+        ]
+      },
+      "statement": "INSERT INTO entity_attr_value (eav_id, entity_type, entity_id, attr_name, attr_value, attr_type, created_dt) SELECT ?, ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-da65b8b5be",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "ENTITY_ATTR_VALUE.EAV_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          131,
+          138
+        ]
+      },
+      "statement": "SELECT ?, ?, ?, ?, ?, ?, ? FROM dual WHERE NOT EXISTS ( SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-371ccaac0d",
+      "kind": "sql",
+      "op": "read",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "ENTITY_ATTR_VALUE.EAV_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          136,
+          138
+        ]
+      },
+      "statement": "SELECT ? FROM entity_attr_value WHERE eav_id = ? )",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-f84584cd2a",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "FIXTURE_META"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "FIXTURE_META.MARKER",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_upgrade_static.sql",
+        "lines": [
+          170,
+          177
+        ]
+      },
+      "statement": "MERGE INTO fixture_meta target USING (SELECT ? AS marker, ? AS value FROM dual) source ON (target.marker = source.marker) WHEN MATCHED THEN UPDATE SET target.value = source.value WHEN NOT MATCHED THEN INSERT (marker, value, initialized_at) VALUES (source.marker, source.value, SYSTIMESTAMP)",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-e7b18e81b8",
+      "kind": "sql",
+      "op": "write",
+      "tables": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "BILLING_AUDIT_LOG.LOGGED_AT",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "source": {
+        "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+        "lines": [
+          24,
+          24
+        ]
+      },
+      "statement": "DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - ?",
+      "routine": "job:JOB_PURGE_AUDIT_LOG",
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/db/oracle/schema/04_jobs.sql",
+          "line": 24
+        }
+      ],
+      "schedule_hint": "daily",
+      "workload": {
+        "calls": 0,
+        "matched": false
+      }
+    },
+    {
+      "id": "ap-6fba516dec",
+      "op": "read",
+      "tables": [
+        "FIXTURE_META"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "hot",
+      "workload": {
+        "calls": 22,
+        "share": 0.026159334126040427,
+        "digests": 4
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 6
+      },
+      "statement": "SELECT ? || ? FROM fixture_meta"
+    },
+    {
+      "id": "ap-b6a960ff5d",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "warm",
+      "workload": {
+        "calls": 11,
+        "share": 0.013079667063020214,
+        "digests": 7
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 11
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN S.TENANT_ID=:B1 AND S.STARTS_ON<=:B2 AND (S.ENDS_ON IS NULL OR S.ENDS_ON>=:B3) THEN ? ELSE ? END AS C2 FROM OW_BILLING.SUBSCRIPTIONS S) SAMPLESUB"
+    },
+    {
+      "id": "ap-d78d08947f",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "warm",
+      "workload": {
+        "calls": 11,
+        "share": 0.013079667063020214,
+        "digests": 4
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 12
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?), COUNT(DISTINCT C3), COUNT(DISTINCT C4), NVL(SUM(CASE WHEN C4 IS NULL THEN ? ELSE ? END),?) FROM (SELECT ? AS C1, CASE WHEN SUBSTR(TENANTS.NAME,?,LENGTH(:B1))=:B2 THEN ? ELSE ? END AS C2, SUBSTR(TENANTS.NAME,?,LENGTH(:B1)) AS C3, TENANTS.ID AS C4 FROM OW_BILLING"
+    },
+    {
+      "id": "ap-09d4fcc987",
+      "op": "read",
+      "tables": [
+        "INVOICE_LINES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 4,
+        "share": 0.0047562425683709865,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 25
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.INVOICE_LINES INVOICE_LINES) SAMPLESUB"
+    },
+    {
+      "id": "ap-33ebedce92",
+      "op": "read",
+      "tables": [
+        "RATING_RESULTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 4,
+        "share": 0.0047562425683709865,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 26
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.RATING_RESULTS RATING_RESULTS) SAMPLESUB"
+    },
+    {
+      "id": "ap-95da801a23",
+      "op": "read",
+      "tables": [
+        "CREDIT_NOTES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 3,
+        "share": 0.0035671819262782403,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 27
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN CREDIT_NOTES.TENANT_ID=:B1 AND CREDIT_NOTES.REMAINING_AMOUNT>? THEN ? ELSE ? END AS C2 FROM OW_BILLING.CREDIT_NOTES CREDIT_NOTES) SAMPLESUB"
+    },
+    {
+      "id": "ap-8ecfc4a13f",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 3,
+        "share": 0.0035671819262782403,
+        "digests": 3
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 28
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.CUSTOMER_MASTER CUSTOMER_MASTER) SAMPLESUB"
+    },
+    {
+      "id": "ap-ae4813e1c9",
+      "op": "read",
+      "tables": [
+        "INVOICES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 3,
+        "share": 0.0035671819262782403,
+        "digests": 3
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 30
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN I.STATUS_CD=? AND TO_CHAR(I.ISSUED_AT,?)<=TO_CHAR(TRUNC(:B1)-?,?) THEN ? ELSE ? END AS C2 FROM OW_BILLING.INVOICES I) SAMPLESUB"
+    },
+    {
+      "id": "ap-7b7656e208",
+      "op": "read",
+      "tables": [
+        "PLANS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 3,
+        "share": 0.0035671819262782403,
+        "digests": 3
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 31
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.PLANS P) SAMPLESUB"
+    },
+    {
+      "id": "ap-56333838c9",
+      "op": "read",
+      "tables": [
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 32
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN CUSTOMER_MASTER_HIST.CONVERSION_BATCH_NO=:B1 THEN ? ELSE ? END AS C2 FROM OW_BILLING.CUSTOMER_MASTER_HIST CUSTOMER_MASTER_HIST) SAMPLESUB"
+    },
+    {
+      "id": "ap-8c031f982d",
+      "op": "read",
+      "tables": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 33
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN DUNNING_ATTEMPTS.INVOICE_ID=:B1 THEN ? ELSE ? END AS C2 FROM OW_BILLING.DUNNING_ATTEMPTS DUNNING_ATTEMPTS) SAMPLESUB"
+    },
+    {
+      "id": "ap-7984718496",
+      "op": "read",
+      "tables": [
+        "INVOICE_HEADER"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 34
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.INVOICE_HEADER INVOICE_HEADER) SAMPLESUB"
+    },
+    {
+      "id": "ap-a3db02d082",
+      "op": "read",
+      "tables": [
+        "INVOICE_LINE"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 35
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?) FROM (SELECT ? AS C1, CASE WHEN INVOICE_LINE.BATCH_NO=:B1 THEN ? ELSE ? END AS C2 FROM OW_BILLING.INVOICE_LINE INVOICE_LINE) SAMPLESUB"
+    },
+    {
+      "id": "ap-5ee122591e",
+      "op": "read",
+      "tables": [
+        "RATING_PERIODS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 36
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?), COUNT(DISTINCT C3), NVL(SUM(CASE WHEN C3 IS NULL THEN ? ELSE ? END),?) FROM (SELECT ? AS C1, CASE WHEN RP.TENANT_ID=:B1 AND RP.PERIOD_START<:B2 AND RP.PERIOD_START>=ADD_MONTHS(:B3,(-?)) THEN ? ELSE ? END AS C2, RP.ID AS C3 FROM OW_BILLING.RATING_PERIODS RP) SAM"
+    },
+    {
+      "id": "ap-fb8bd97663",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 37
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1), COUNT(DISTINCT C3), NVL(SUM(CASE WHEN C3 IS NULL THEN :SYS_B_2 ELSE :SYS_B_3 END),:SYS_B_4) FROM (SELECT :SYS_B_5 AS C1, :SYS_B_6 AS C2, SUBSCRIPTIONS_HIST.TENANT_ID AS C3 FROM OW_BILLING.SUBSCRIPTIONS_HIST SUBSCRIPTIONS_HIST) SAMPLESUB"
+    },
+    {
+      "id": "ap-3e1b1f69ce",
+      "op": "read",
+      "tables": [
+        "USAGE_EVENTS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 2,
+        "share": 0.0023781212841854932,
+        "digests": 2
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 39
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.USAGE_EVENTS USAGE_EVENTS) SAMPLESUB"
+    },
+    {
+      "id": "ap-2a6dff0fc5",
+      "op": "read",
+      "tables": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 41
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.BILLING_AUDIT_LOG BILLING_AUDIT_LOG) SAMPLESUB"
+    },
+    {
+      "id": "ap-e449ec9629",
+      "op": "read",
+      "tables": [
+        "SUBSCRIPTIONS_HIST",
+        "CUSTOMER_MASTER_HIST",
+        "BILLING_AUDIT_LOG",
+        "TENANTS",
+        "PLANS",
+        "SUBSCRIPTIONS",
+        "USAGE_EVENTS",
+        "RATING_PERIODS",
+        "RATING_RESULTS",
+        "INVOICES",
+        "INVOICE_LINES",
+        "CREDIT_NOTES",
+        "DUNNING_ATTEMPTS",
+        "NOTIFICATIONS",
+        "CODES",
+        "CUSTOMER_MASTER",
+        "ENTITY_ATTR_VALUE",
+        "INVOICE_HEADER",
+        "INVOICE_LINE",
+        "FIXTURE_META"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 42
+      },
+      "statement": "SELECT ? AS table_name, COUNT(*) AS cnt FROM subscriptions_hist UNION ALL SELECT ?, COUNT(*) FROM customer_master_hist UNION ALL SELECT ?, COUNT(*) FROM billing_audit_log UNION ALL SELECT ?, COUNT(*) FROM tenants UNION ALL SELECT ?, COUNT(*) FROM plans UNION ALL SELECT ?, COUNT(*) FROM subscriptions"
+    },
+    {
+      "id": "ap-f48678a88c",
+      "op": "read",
+      "tables": [
+        "CODES"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 43
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.CODES CODES) SAMPLESUB"
+    },
+    {
+      "id": "ap-80f5ac62aa",
+      "op": "read",
+      "tables": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 44
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.ENTITY_ATTR_VALUE ENTITY_ATTR_VALUE) SAMPLESUB"
+    },
+    {
+      "id": "ap-fe66ddc525",
+      "op": "read",
+      "tables": [
+        "NOTIFICATIONS"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 48
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1) FROM (SELECT :SYS_B_2 AS C1, :SYS_B_3 AS C2 FROM OW_BILLING.NOTIFICATIONS NOTIFICATIONS) SAMPLESUB"
+    },
+    {
+      "id": "ap-da2d715ac6",
+      "op": "read",
+      "tables": [
+        "RATING_PERIODS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "RATING_PERIODS.TENANT_ID",
+          "op": "eq"
+        },
+        {
+          "col": "RATING_PERIODS.PERIOD_START",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 49
+      },
+      "statement": "SELECT NVL(SUM(C1),?), NVL(SUM(C2),?), NVL(SUM(C3),?) FROM (SELECT ? AS C1, ? AS C2, ? AS C3 FROM OW_BILLING.RATING_PERIODS RP WHERE RP.TENANT_ID=:B1 AND RP.PERIOD_START<:B2 AND RP.PERIOD_START>=ADD_MONTHS(:B3,(-?)) AND ROWNUM <= ?) SAMPLESUB"
+    },
+    {
+      "id": "ap-6865d6d045",
+      "op": "read",
+      "tables": [
+        "TENANTS",
+        "SUBSCRIPTIONS"
+      ],
+      "join_edges": [
+        [
+          "TENANTS",
+          "SUBSCRIPTIONS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.ENDS_ON",
+          "op": "eq"
+        },
+        {
+          "col": "TENANTS.NAME",
+          "op": "range"
+        }
+      ],
+      "sort": [
+        "TENANTS.NAME"
+      ],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 50
+      },
+      "statement": "SELECT T.ID, T.NAME, S.PLAN_ID FROM TENANTS T JOIN SUBSCRIPTIONS S ON S.TENANT_ID = T.ID AND S.ENDS_ON IS NULL WHERE T.NAME LIKE ? ORDER BY T.NAME"
+    },
+    {
+      "id": "ap-624fa2c9cb",
+      "op": "read",
+      "tables": [
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "TENANTS.NAME",
+          "op": "range"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 51
+      },
+      "statement": "SELECT NVL(SUM(C1),:SYS_B_0), NVL(SUM(C2),:SYS_B_1), NVL(SUM(C3),:SYS_B_2) FROM (SELECT :SYS_B_3 AS C1, :SYS_B_4 AS C2, :SYS_B_5 AS C3 FROM OW_BILLING.TENANTS T WHERE T.NAME LIKE :SYS_B_6 AND ROWNUM <= :SYS_B_7) SAMPLESUB"
+    },
+    {
+      "id": "ap-74b645ecd8",
+      "op": "write",
+      "tables": [
+        "CREDIT_NOTES",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CREDIT_NOTES.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 52
+      },
+      "statement": "DELETE FROM credit_notes WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-326c2a569b",
+      "op": "write",
+      "tables": [
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER.CONVERSION_BATCH_NO",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 54
+      },
+      "statement": "DELETE FROM customer_master WHERE conversion_batch_no = :?"
+    },
+    {
+      "id": "ap-db3727f761",
+      "op": "write",
+      "tables": [
+        "ENTITY_ATTR_VALUE",
+        "CUSTOMER_MASTER"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "ENTITY_ATTR_VALUE.ENTITY_ID",
+          "op": "eq"
+        },
+        {
+          "col": "CUSTOMER_MASTER.CONVERSION_BATCH_NO",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 55
+      },
+      "statement": "DELETE FROM entity_attr_value WHERE entity_id IN (SELECT cust_id FROM customer_master WHERE conversion_batch_no = :?)"
+    },
+    {
+      "id": "ap-715cff5dd6",
+      "op": "write",
+      "tables": [
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "CUSTOMER_MASTER_HIST.CONVERSION_BATCH_NO",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 56
+      },
+      "statement": "DELETE FROM customer_master_hist WHERE conversion_batch_no = :?"
+    },
+    {
+      "id": "ap-13ec980b69",
+      "op": "write",
+      "tables": [
+        "DUNNING_ATTEMPTS",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "DUNNING_ATTEMPTS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 57
+      },
+      "statement": "DELETE FROM dunning_attempts WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-d69d6f2206",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINES",
+        "INVOICES",
+        "TENANTS"
+      ],
+      "join_edges": [
+        [
+          "TENANTS",
+          "INVOICES"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "INVOICE_LINES.INVOICE_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 59
+      },
+      "statement": "DELETE FROM invoice_lines WHERE invoice_id IN (SELECT i.id FROM invoices i, tenants t WHERE t.id = i.tenant_id AND SUBSTR(t.name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-8a7bad27ae",
+      "op": "write",
+      "tables": [
+        "INVOICES",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "INVOICES.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 60
+      },
+      "statement": "DELETE FROM invoices WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-00550f5e1f",
+      "op": "write",
+      "tables": [
+        "INVOICE_HEADER"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 61
+      },
+      "statement": "INSERT INTO invoice_header VALUES (:?,:?,:?,:?,:?,:?,:?,:?,:?)"
+    },
+    {
+      "id": "ap-7db7ac1ada",
+      "op": "write",
+      "tables": [
+        "INVOICE_LINE"
+      ],
+      "join_edges": [],
+      "filter": [],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 62
+      },
+      "statement": "INSERT INTO invoice_line ( line_id, invoice_no, invoice_id, cust_id, cust_no, cust_name, tenant_id, line_no, line_type_cd, item_desc, qty, unit_price, amount, tax_amt, invoice_dt, service_period, posted_yn, gl_acct_csv, batch_no, src_system ) VALUES (:?, :?, :?, :?, :?, :?, :?, :?, :?, :?, :?, :?, :"
+    },
+    {
+      "id": "ap-31eca50d52",
+      "op": "write",
+      "tables": [
+        "NOTIFICATIONS",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "NOTIFICATIONS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 64
+      },
+      "statement": "DELETE FROM notifications WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-53797f4f2b",
+      "op": "write",
+      "tables": [
+        "RATING_RESULTS",
+        "RATING_PERIODS",
+        "TENANTS"
+      ],
+      "join_edges": [
+        [
+          "TENANTS",
+          "RATING_PERIODS"
+        ]
+      ],
+      "filter": [
+        {
+          "col": "RATING_RESULTS.PERIOD_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 65
+      },
+      "statement": "DELETE FROM rating_results WHERE period_id IN (SELECT rp.id FROM rating_periods rp, tenants t WHERE t.id = rp.tenant_id AND SUBSTR(t.name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-5ac636fdfc",
+      "op": "write",
+      "tables": [
+        "RATING_PERIODS",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "RATING_PERIODS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 66
+      },
+      "statement": "DELETE FROM rating_periods WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-9c7be21025",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 68
+      },
+      "statement": "DELETE FROM subscriptions WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-5bbe2d09b8",
+      "op": "write",
+      "tables": [
+        "SUBSCRIPTIONS_HIST",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "SUBSCRIPTIONS_HIST.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 69
+      },
+      "statement": "DELETE FROM subscriptions_hist WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    },
+    {
+      "id": "ap-455b389d5a",
+      "op": "write",
+      "tables": [
+        "USAGE_EVENTS",
+        "TENANTS"
+      ],
+      "join_edges": [],
+      "filter": [
+        {
+          "col": "USAGE_EVENTS.TENANT_ID",
+          "op": "eq"
+        }
+      ],
+      "sort": [],
+      "frequency": null,
+      "confirmed": false,
+      "suggested_frequency": "cold",
+      "workload": {
+        "calls": 1,
+        "share": 0.0011890606420927466,
+        "digests": 1
+      },
+      "source": {
+        "workload": "workload.json",
+        "rank": 71
+      },
+      "statement": "DELETE FROM usage_events WHERE tenant_id IN (SELECT id FROM tenants WHERE SUBSTR(name, ?, LENGTH(:?)) = :?)"
+    }
+  ],
+  "findings": [
+    {
+      "kind": "call_dynamic",
+      "file": "services/legacy-billing/db/oracle/packages/04_pkg_invoicing.sql",
+      "line": 149,
+      "routine": "pkg_invoicing.sp_issue_invoice",
+      "call": "EXECUTE IMMEDIATE '...' USING v_invoice_id"
+    },
+    {
+      "kind": "call_dynamic",
+      "file": "services/legacy-billing/db/oracle/packages/01_pkg_util.sql",
+      "line": 41,
+      "routine": "pkg_ow_util.f_code_desc",
+      "call": "EXECUTE IMMEDIATE v_sql INTO v_desc USING p_type, p_val"
+    },
+    {
+      "kind": "call_dynamic",
+      "file": "services/legacy-billing/db/oracle/packages/02_pkg_plans.sql",
+      "line": 103,
+      "routine": "pkg_plans.sp_change_plan",
+      "call": "EXECUTE IMMEDIATE v_sql USING v_new_id, p_tenant_id, p_plan_id, p_effective_on"
+    }
+  ]
+}
