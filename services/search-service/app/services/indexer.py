@@ -7,20 +7,22 @@ from typing import Any
 import requests
 import structlog
 
+from app.config import ServicesConfig
 from app.services.meilisearch_client import MeiliSearchService
 
 logger = structlog.get_logger()
-
-DOCUMENT_SERVICE_URL = "http://document-service:8083"
-FILE_SERVICE_URL = "http://file-service:8082"
-FETCH_TIMEOUT = 30
 
 
 class Indexer:
     """Handles document and file indexing into MeiliSearch."""
 
-    def __init__(self, search_service: MeiliSearchService) -> None:
+    def __init__(
+        self,
+        search_service: MeiliSearchService,
+        services: ServicesConfig | None = None,
+    ) -> None:
         self.search = search_service
+        self.services = services or ServicesConfig()
 
     def index_document(self, payload: dict[str, Any]) -> dict[str, str]:
         """Validate and index a document.
@@ -102,17 +104,16 @@ class Indexer:
         )
         return result
 
-    @staticmethod
-    def _fetch_all_documents() -> list[dict[str, Any]]:
+    def _fetch_all_documents(self) -> list[dict[str, Any]]:
         """Paginate through the document-service to collect all documents."""
         docs: list[dict[str, Any]] = []
         page = 1
         while True:
             try:
                 resp = requests.get(
-                    f"{DOCUMENT_SERVICE_URL}/api/v1/documents/",
+                    f"{self.services.document_service_url}/api/v1/documents/",
                     params={"page": page, "page_size": 100},
-                    timeout=FETCH_TIMEOUT,
+                    timeout=self.services.fetch_timeout,
                 )
                 if resp.status_code != 200:
                     logger.warning("reindex_document_fetch_failed", status=resp.status_code)
@@ -138,17 +139,16 @@ class Indexer:
                 break
         return docs
 
-    @staticmethod
-    def _fetch_all_files() -> list[dict[str, Any]]:
+    def _fetch_all_files(self) -> list[dict[str, Any]]:
         """Paginate through the file-service to collect all file metadata."""
         files: list[dict[str, Any]] = []
         page = 1
         while True:
             try:
                 resp = requests.get(
-                    f"{FILE_SERVICE_URL}/api/v1/files",
+                    f"{self.services.file_service_url}/api/v1/files",
                     params={"page": page, "page_size": 100},
-                    timeout=FETCH_TIMEOUT,
+                    timeout=self.services.fetch_timeout,
                 )
                 if resp.status_code != 200:
                     logger.warning("reindex_file_fetch_failed", status=resp.status_code)

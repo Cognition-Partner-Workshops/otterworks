@@ -21,6 +21,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/lib/tenant-common.sh"
 # shellcheck source=lib/ingress-nginx.sh
 source "${SCRIPT_DIR}/lib/ingress-nginx.sh"
+# shellcheck source=lib/service-mesh.sh
+source "${SCRIPT_DIR}/lib/service-mesh.sh"
 
 INSTALL_INGRESS=true
 for arg in "$@"; do
@@ -37,6 +39,11 @@ aws eks update-kubeconfig --name "${EKS_CLUSTER}" --region "${AWS_REGION}" --ali
 if [ "${INSTALL_INGRESS}" = true ]; then
   ensure_ingress_nginx
 fi
+
+# ---------- 1b. Shared service mesh (ambient mTLS for every tenant) ----------
+# Tenant namespaces are enrolled by deploy-tenant.sh (istio.io/dataplane-mode
+# label); the mesh itself is platform-wide and lives here with the ingress.
+ensure_service_mesh
 
 # ---------- 2. Namespace TTL reaper (otterworks-system) ----------
 log "Deploying namespace TTL reaper CronJob into ${SYSTEM_NAMESPACE}..."

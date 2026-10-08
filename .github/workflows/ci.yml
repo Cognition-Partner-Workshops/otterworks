@@ -406,6 +406,8 @@ jobs:
       - run: ./demo-platform/reaper/test-idle-suspend.sh
       - run: ./demo-platform/reaper/test-infra-sweep.sh
       - run: ./demo-platform/reaper/test-orphan-sweep.sh
+      # The shared service mesh helper: what turns in-cluster http:// into mTLS.
+      - run: ./scripts/lib/test-service-mesh.sh
 
   # Terraform validation for the demo control plane's own stack
   demo-platform-terraform:

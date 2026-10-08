@@ -6,6 +6,7 @@ import structlog
 from flask import Blueprint, jsonify, request
 
 from app.api.health import INDEX_COUNT
+from app.config import AppConfig
 from app.services.indexer import Indexer
 from app.services.meilisearch_client import MeiliSearchService
 
@@ -19,7 +20,8 @@ def _get_indexer() -> Indexer:
     from flask import current_app
 
     search_service: MeiliSearchService = current_app.config["SEARCH_SERVICE"]
-    return Indexer(search_service)
+    app_config: AppConfig = current_app.config["APP_CONFIG"]
+    return Indexer(search_service, app_config.services)
 
 
 @index_bp.route("/index/document", methods=["POST"])

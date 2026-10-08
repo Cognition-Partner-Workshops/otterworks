@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.config import MeiliSearchConfig
+from app.config import MeiliSearchConfig, ServicesConfig
 from app.services.indexer import Indexer
 from app.services.meilisearch_client import MeiliSearchService
 
@@ -122,3 +122,46 @@ class TestIndexer:
     def test_process_event_unknown_action(self, indexer: Indexer):
         result = indexer.process_event({"action": "unknown", "data": {}})
         assert result is None
+
+
+class TestUpstreamServiceUrls:
+    """The reindex crawl targets come from configuration, not module constants."""
+
+    def test_defaults_to_cluster_service_dns(self, indexer: Indexer) -> None:
+        assert indexer.services.document_service_url == "http://document-service:8083"
+        assert indexer.services.file_service_url == "http://file-service:8082"
+
+    def test_urls_come_from_environment(
+        self, mock_ms_service: MeiliSearchService, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("DOCUMENT_SERVICE_URL", "http://docs.local:9001")
+        monkeypatch.setenv("FILE_SERVICE_URL", "http://files.local:9002")
+        monkeypatch.setenv("UPSTREAM_FETCH_TIMEOUT", "5")
+
+        configured = Indexer(mock_ms_service)
+
+        assert configured.services.document_service_url == "http://docs.local:9001"
+        assert configured.services.file_service_url == "http://files.local:9002"
+        assert configured.services.fetch_timeout == 5
+
+    def test_reindex_fetches_from_configured_urls(
+        self, mock_ms_service: MeiliSearchService
+    ) -> None:
+        services = ServicesConfig(
+            document_service_url="http://docs.override:9001",
+            file_service_url="http://files.override:9002",
+            fetch_timeout=7,
+        )
+        configured = Indexer(mock_ms_service, services)
+        empty = MagicMock(status_code=200)
+        empty.json.return_value = {"items": []}
+
+        with patch("app.services.indexer.requests.get", return_value=empty) as get:
+            configured.reindex()
+
+        urls = [call.args[0] for call in get.call_args_list]
+        assert urls == [
+            "http://docs.override:9001/api/v1/documents/",
+            "http://files.override:9002/api/v1/files",
+        ]
+        assert all(call.kwargs["timeout"] == 7 for call in get.call_args_list)

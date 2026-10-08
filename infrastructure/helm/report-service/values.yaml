@@ -59,6 +59,11 @@ env:
   DB_PORT: "5432"
   DB_NAME: otterworks_reports
   DB_USER: otterworks
+  # Service-to-service calls use plain http:// to the in-cluster Service DNS names.
+  # The transport is encrypted and peer-authenticated by the cluster's ambient
+  # mesh (Istio ztunnel, mesh-wide STRICT mTLS -- see scripts/lib/service-mesh.sh
+  # and infrastructure/helm/istio-ambient/); the namespace is enrolled by the
+  # deploy scripts, so these URLs are never plaintext on the wire.
   ANALYTICS_SERVICE_URL: http://analytics-service:8088
   AUDIT_SERVICE_URL: http://audit-service:8090
   AUTH_SERVICE_URL: http://auth-service:8081
