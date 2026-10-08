@@ -2,6 +2,14 @@ spring:
   jpa:
     show-sql: true
 
+auth:
+  dev-admin:
+    enabled: true
+    email: ${AUTH_DEV_ADMIN_EMAIL:admin@otterworks.dev}
+    display-name: Admin User
+    # Leave empty to have a random password generated and printed in the startup log.
+    password: ${AUTH_DEV_ADMIN_PASSWORD:}
+
 logging:
   level:
     com.otterworks: DEBUG
