@@ -1,0 +1,4556 @@
+{
+  "profile_version": 1,
+  "source_family": "oracle",
+  "census_sha256": "603f89c85ee497052ffdf6ae80b6201046a01f71dca7ca52dca8127101bff36f",
+  "as_of": "2026-10-08T12:19:45.394315+00:00",
+  "origin": "live",
+  "stats": [
+    {
+      "id": "fanout:RATING_PERIODS->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "RATING_PERIODS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "bb4d020dbf1adf91c52a1efb79a51577be4ba25f3f996c6b97825e92f2f96548",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 9,
+        "min": 0,
+        "p50": 0,
+        "p95": 3,
+        "p99": 3,
+        "max": 3
+      }
+    },
+    {
+      "id": "fk_integrity:RATING_PERIODS->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "RATING_PERIODS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "df094f6a074cffd5494b6dbdbc26d84a387db84e3cf8b6045c02ae61c49d4f57",
+      "status": "ok",
+      "values": {
+        "child_rows": 8,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:RATING_PERIODS->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "RATING_PERIODS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "6023dac9effd8090e028b47fdec2193bc83645eaa4934456ddf860ebbf8bc6e8",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 258,
+        "max": 258
+      }
+    },
+    {
+      "id": "row_bytes:TENANTS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "eb3620381df9472d408161da372c083b96da6b44ea6daccf9483de0b9f3b42bc",
+      "status": "ok",
+      "values": {
+        "rows_seen": 15,
+        "avg_bytes": 52.666666666666664,
+        "max_bytes": 57.0
+      }
+    },
+    {
+      "id": "row_bytes:RATING_PERIODS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "RATING_PERIODS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "9d37644e17b12e9f9d2d1cdff05a026248232145749ce66f74cd408b77940299",
+      "status": "ok",
+      "values": {
+        "rows_seen": 8,
+        "avg_bytes": 86.0,
+        "max_bytes": 86.0
+      }
+    },
+    {
+      "id": "fanout:INVOICES->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "INVOICES",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f6402b94ef9ab979d4f1888b3376a51a6e66ada0d2f508a5a2e1e36020484f68",
+      "status": "ok",
+      "values": {
+        "parents": 8,
+        "parents_zero": 1,
+        "min": 0,
+        "p50": 1,
+        "p95": 3,
+        "p99": 3,
+        "max": 3
+      }
+    },
+    {
+      "id": "fk_integrity:INVOICES->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "INVOICES",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "39ca7940302170824f734a9625a4cf96f38081e662023e8b3513e7979479b17c",
+      "status": "ok",
+      "values": {
+        "child_rows": 9,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:INVOICES->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "INVOICES",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "9f10d4973bbac7c483cb2de95f01adec0886cb082f3ef8721bf4872433154d84",
+      "status": "ok",
+      "values": {
+        "p50": 381,
+        "p99": 381,
+        "max": 381
+      }
+    },
+    {
+      "id": "row_bytes:INVOICES",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "INVOICES"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ca40f29648906c59747e497882f30a89e8253c59e521d7adb948d5a748252aa6",
+      "status": "ok",
+      "values": {
+        "rows_seen": 9,
+        "avg_bytes": 127.33333333333333,
+        "max_bytes": 128.0
+      }
+    },
+    {
+      "id": "fanout:INVOICES->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "INVOICES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ee339963cc0452367c8ff1d8c68afedcff0f5a97915f2a294b0dabd0bdedacdc",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 6,
+        "min": 0,
+        "p50": 1,
+        "p95": 1,
+        "p99": 1,
+        "max": 1
+      }
+    },
+    {
+      "id": "fk_integrity:INVOICES->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "INVOICES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "52da394049b09520860fd6c9c9f22543fd3104530aab9819f5d3e56595fdc734",
+      "status": "ok",
+      "values": {
+        "child_rows": 9,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:INVOICES->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "INVOICES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "08d1bf336ad667ec5a9ebd27f3b86b9767fc9b91b15b078948bf352fb3fb8002",
+      "status": "ok",
+      "values": {
+        "p50": 128,
+        "p99": 128,
+        "max": 128
+      }
+    },
+    {
+      "id": "fanout:CREDIT_NOTES->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "CREDIT_NOTES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a5b6c93ff0e413cea343293038ad48b297597bea011a02ff99d5cb227fb72fd1",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 12,
+        "min": 0,
+        "p50": 0,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      }
+    },
+    {
+      "id": "fk_integrity:CREDIT_NOTES->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "CREDIT_NOTES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "dcc21f6cc28a81131e0c8d868326e74a75171a831b68f06aabbc1fce3cfd3361",
+      "status": "ok",
+      "values": {
+        "child_rows": 5,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:CREDIT_NOTES->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "CREDIT_NOTES",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "adc0c1ac319c5ed8cedb65e062635abdeba679d535f121bff88fcd0d4390fd65",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 166,
+        "max": 166
+      }
+    },
+    {
+      "id": "row_bytes:CREDIT_NOTES",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "CREDIT_NOTES"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a45b31f914f4a0a20a832e0cfe62a355614e22fa49aabec63f43b55cee2273c6",
+      "status": "ok",
+      "values": {
+        "rows_seen": 5,
+        "avg_bytes": 83.0,
+        "max_bytes": 83.0
+      }
+    },
+    {
+      "id": "fanout:SUBSCRIPTIONS->PLANS(PLAN_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "PLANS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "PLAN_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "34136f8fb4c88d5fa1365e73654b89993421f35dfbbaba9e8abd924643333bdc",
+      "status": "ok",
+      "values": {
+        "parents": 3,
+        "parents_zero": 0,
+        "min": 3,
+        "p50": 8,
+        "p95": 9,
+        "p99": 9,
+        "max": 9
+      }
+    },
+    {
+      "id": "fk_integrity:SUBSCRIPTIONS->PLANS(PLAN_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "PLANS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "PLAN_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e52a7e94c4857457dc919a03f7f557664bd1b9e5c9691d05bcfeef1d931a8141",
+      "status": "ok",
+      "values": {
+        "child_rows": 20,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:SUBSCRIPTIONS->PLANS(PLAN_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "PLANS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "PLAN_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c5cb8bfabc387177afbfa6e08682070effb95770bd4204ed6c01d2b921ecc159",
+      "status": "ok",
+      "values": {
+        "p50": 1074,
+        "p99": 1074,
+        "max": 1074
+      }
+    },
+    {
+      "id": "row_bytes:PLANS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "PLANS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "bd6c7e4610715decbade656ceaf9cf1c6489e6058b4b2035c27cb3606d39416a",
+      "status": "ok",
+      "values": {
+        "rows_seen": 3,
+        "avg_bytes": 52.333333333333336,
+        "max_bytes": 53.0
+      }
+    },
+    {
+      "id": "row_bytes:SUBSCRIPTIONS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "SUBSCRIPTIONS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c3aa542f6d410d1daefec9fba4a02b63787c5bcb961fefa7ab81c56c07e2d648",
+      "status": "ok",
+      "values": {
+        "rows_seen": 20,
+        "avg_bytes": 119.45,
+        "max_bytes": 124.0
+      }
+    },
+    {
+      "id": "fanout:SUBSCRIPTIONS->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1ae8187fa7f500a4e7e8da971422798aa2b3841ea996322ac88c60eefa55eeba",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 0,
+        "min": 1,
+        "p50": 1,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      }
+    },
+    {
+      "id": "fk_integrity:SUBSCRIPTIONS->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "2f9d4468d2ccacb47d07197bae0cf6654579cf52f47e01f1e085097938043666",
+      "status": "ok",
+      "values": {
+        "child_rows": 20,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:SUBSCRIPTIONS->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "SUBSCRIPTIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "bb2393097d7a2c00eac98006df0e5d07840302cb04ff9603884d5ef4a67bb6af",
+      "status": "ok",
+      "values": {
+        "p50": 241,
+        "p99": 241,
+        "max": 241
+      }
+    },
+    {
+      "id": "fanout:USAGE_EVENTS->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "USAGE_EVENTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b940256d55d3e810a926d8780f311a43ce93e54f957b8a4f0afd3d45bbe0500a",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 0,
+        "min": 1,
+        "p50": 1,
+        "p95": 24,
+        "p99": 24,
+        "max": 24
+      }
+    },
+    {
+      "id": "fk_integrity:USAGE_EVENTS->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "USAGE_EVENTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "8123819854678985422cd08dab4a0ebc9ec502708570de30841a29c1d7f1f494",
+      "status": "ok",
+      "values": {
+        "child_rows": 103,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:USAGE_EVENTS->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "USAGE_EVENTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "787296d64a05d36b56c77176ce18d9482f32a89f8f09dbdbfef3a7c709d8996c",
+      "status": "ok",
+      "values": {
+        "p50": 2014,
+        "p99": 2014,
+        "max": 2014
+      }
+    },
+    {
+      "id": "row_bytes:USAGE_EVENTS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "USAGE_EVENTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e84596ff9566f56b12556a8187575f430a3009d276e70ea8b55c05cd6292f014",
+      "status": "ok",
+      "values": {
+        "rows_seen": 103,
+        "avg_bytes": 83.84466019417475,
+        "max_bytes": 84.0
+      }
+    },
+    {
+      "id": "fanout:DUNNING_ATTEMPTS->INVOICES(INVOICE_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "7de8a9c7f0b033a65f5955e90f52e1aa971a6acc641060d486899b0946cc0fcf",
+      "status": "ok",
+      "values": {
+        "parents": 9,
+        "parents_zero": 7,
+        "min": 0,
+        "p50": 0,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      }
+    },
+    {
+      "id": "fk_integrity:DUNNING_ATTEMPTS->INVOICES(INVOICE_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "82a0c99865583e5deacd504c37f5fa31f7892f9c942f9bced761b0f77d613888",
+      "status": "ok",
+      "values": {
+        "child_rows": 3,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:DUNNING_ATTEMPTS->INVOICES(INVOICE_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "84288b907c09d2a54c4f0cb44a90c763836779c4d5f27d5ba1c0b596bca4a983",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 238,
+        "max": 238
+      }
+    },
+    {
+      "id": "row_bytes:DUNNING_ATTEMPTS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "DUNNING_ATTEMPTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c32d62acd0844b6a636977978d257ff16e217508ad8e7ed7186d3ac7b4d1cbad",
+      "status": "ok",
+      "values": {
+        "rows_seen": 3,
+        "avg_bytes": 119.0,
+        "max_bytes": 119.0
+      }
+    },
+    {
+      "id": "fanout:DUNNING_ATTEMPTS->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b48819cfb58baa1207f286460c4393cda744e5f24f6cf180cfb96674c4ffcdd7",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 13,
+        "min": 0,
+        "p50": 0,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      }
+    },
+    {
+      "id": "fk_integrity:DUNNING_ATTEMPTS->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "4349c9427961a0fe37f9df75ddd32f82417de7be9b7d880a0b7c86b210c5e76c",
+      "status": "ok",
+      "values": {
+        "child_rows": 3,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:DUNNING_ATTEMPTS->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "DUNNING_ATTEMPTS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "5ef950cac6b23793842af4e67cd42465e1e202f6066d4cdf74bee3b6f9494cc6",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 238,
+        "max": 238
+      }
+    },
+    {
+      "id": "fanout:NOTIFICATIONS->TENANTS(TENANT_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "NOTIFICATIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "3aa523ce7c8ee2da2ea5bcb0ff2e90748f695b1735ed65d41df1908a90c39575",
+      "status": "ok",
+      "values": {
+        "parents": 15,
+        "parents_zero": 14,
+        "min": 0,
+        "p50": 0,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      }
+    },
+    {
+      "id": "fk_integrity:NOTIFICATIONS->TENANTS(TENANT_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "NOTIFICATIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "fd4adb21b0c2ac69200fb4e845fe5a95909e3fe0c171f5df3ca11919473fa6bf",
+      "status": "ok",
+      "values": {
+        "child_rows": 2,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:NOTIFICATIONS->TENANTS(TENANT_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "TENANTS",
+        "child": "NOTIFICATIONS",
+        "child_columns": [
+          "TENANT_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ce676b72e3a9eea75a0493b0929e239b6ace8c079cc50a1f060580ea4d17ac3d",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 162,
+        "max": 162
+      }
+    },
+    {
+      "id": "row_bytes:NOTIFICATIONS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "NOTIFICATIONS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "587f968db0264e0f0d328d5418c0604ee9af5b63d07a2615d90d7792c065c4d0",
+      "status": "ok",
+      "values": {
+        "rows_seen": 2,
+        "avg_bytes": 81.0,
+        "max_bytes": 81.0
+      }
+    },
+    {
+      "id": "fanout:INVOICE_LINES->INVOICES(INVOICE_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "INVOICE_LINES",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "937229f13d8d5527746d534e899e6817b88e2df41ff0838e4ea2ff71c5cc2245",
+      "status": "ok",
+      "values": {
+        "parents": 9,
+        "parents_zero": 2,
+        "min": 0,
+        "p50": 5,
+        "p95": 5,
+        "p99": 5,
+        "max": 5
+      }
+    },
+    {
+      "id": "fk_integrity:INVOICE_LINES->INVOICES(INVOICE_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "INVOICE_LINES",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1eb68399403e3672194eebf14398315e2b5bd5a6d036cc6ba56e634d9b932418",
+      "status": "ok",
+      "values": {
+        "child_rows": 29,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:INVOICE_LINES->INVOICES(INVOICE_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "INVOICES",
+        "child": "INVOICE_LINES",
+        "child_columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "089bb7e316b6f5d8b2d41e0cbcb7983460023629a42facdaee4fa6024664fe7c",
+      "status": "ok",
+      "values": {
+        "p50": 457,
+        "p99": 457,
+        "max": 457
+      }
+    },
+    {
+      "id": "row_bytes:INVOICE_LINES",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "INVOICE_LINES"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c4c7daa1c2c6b026f40f8c8f1f46e93cf687e2e30dea1b25012dfa37d1a9968a",
+      "status": "ok",
+      "values": {
+        "rows_seen": 29,
+        "avg_bytes": 91.3103448275862,
+        "max_bytes": 96.0
+      }
+    },
+    {
+      "id": "fanout:RATING_RESULTS->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "925aa3a3193db4eeac14142729aab23aca83d8dffc98bef54c7afb0f5eae68cc",
+      "status": "ok",
+      "values": {
+        "parents": 8,
+        "parents_zero": 0,
+        "min": 1,
+        "p50": 1,
+        "p95": 1,
+        "p99": 1,
+        "max": 1
+      }
+    },
+    {
+      "id": "fk_integrity:RATING_RESULTS->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "9285ed9289b4c2ab52f2ae3d7cc0661f7f72b5ede746e869c487125c1c805273",
+      "status": "ok",
+      "values": {
+        "child_rows": 8,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:RATING_RESULTS->RATING_PERIODS(PERIOD_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "RATING_PERIODS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "PERIOD_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "7210ea278055932e3c9c1360105a65f6b04d5cc16ad94e5cd2e81a382110c7f0",
+      "status": "ok",
+      "values": {
+        "p50": 128,
+        "p99": 128,
+        "max": 128
+      }
+    },
+    {
+      "id": "row_bytes:RATING_RESULTS",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "RATING_RESULTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "6db5034d260f53e6211708d9f034d88c3f1b43814ae6dd05ce34147843883049",
+      "status": "ok",
+      "values": {
+        "rows_seen": 8,
+        "avg_bytes": 125.5,
+        "max_bytes": 128.0
+      }
+    },
+    {
+      "id": "fanout:RATING_RESULTS->SUBSCRIPTIONS(SUBSCRIPTION_ID)",
+      "query_id": "fanout",
+      "subject": {
+        "parent": "SUBSCRIPTIONS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "SUBSCRIPTION_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "50ad13cc0085083165c5a88b47945c14b56e0d1d198726d16a4b1f9810e960c7",
+      "status": "ok",
+      "values": {
+        "parents": 20,
+        "parents_zero": 14,
+        "min": 0,
+        "p50": 0,
+        "p95": 1,
+        "p99": 3,
+        "max": 3
+      }
+    },
+    {
+      "id": "fk_integrity:RATING_RESULTS->SUBSCRIPTIONS(SUBSCRIPTION_ID)",
+      "query_id": "fk_integrity",
+      "subject": {
+        "parent": "SUBSCRIPTIONS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "SUBSCRIPTION_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a49b670870d33d410c14039b7136662c7e0055f1ee0df5ce6853d1097a58d8df",
+      "status": "ok",
+      "values": {
+        "child_rows": 8,
+        "null_fk": 0,
+        "orphans": 0
+      }
+    },
+    {
+      "id": "embed_bytes:RATING_RESULTS->SUBSCRIPTIONS(SUBSCRIPTION_ID)",
+      "query_id": "embed_bytes",
+      "subject": {
+        "parent": "SUBSCRIPTIONS",
+        "child": "RATING_RESULTS",
+        "child_columns": [
+          "SUBSCRIPTION_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "8b174cd20f9ce8a2f35412a6e6e9d8dccb1c5ea634f86f37585d872ac777e869",
+      "status": "ok",
+      "values": {
+        "p50": 0.0,
+        "p99": 366,
+        "max": 366
+      }
+    },
+    {
+      "id": "row_bytes:CUSTOMER_MASTER_HIST",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "14f2618b2bdb3d59a566982074440dd621e88bfbca9bb1b87f2a16187d3a6ae8",
+      "status": "ok",
+      "values": {
+        "rows_seen": 0,
+        "avg_bytes": null,
+        "max_bytes": null
+      }
+    },
+    {
+      "id": "row_bytes:CODES",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "CODES"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "5899c105da039b60d771e9a10d413810ae9134f08e58f88c881f16dd3af37b67",
+      "status": "ok",
+      "values": {
+        "rows_seen": 32,
+        "avg_bytes": 19.3125,
+        "max_bytes": 29.0
+      }
+    },
+    {
+      "id": "row_bytes:CUSTOMER_MASTER",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "CUSTOMER_MASTER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d28e70c134cd35bebfa15fc889de26714e48b194e7dc1116d4d83b2aba730f05",
+      "status": "ok",
+      "values": {
+        "rows_seen": 201,
+        "avg_bytes": 333.7910447761194,
+        "max_bytes": 373.0
+      }
+    },
+    {
+      "id": "row_bytes:ENTITY_ATTR_VALUE",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "ENTITY_ATTR_VALUE"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "dce5082aaca337afdd8dc555c3e8f10d26fb3c7caad82c094f570e1f89dfb914",
+      "status": "ok",
+      "values": {
+        "rows_seen": 70,
+        "avg_bytes": 76.07142857142857,
+        "max_bytes": 93.0
+      }
+    },
+    {
+      "id": "row_bytes:FIXTURE_META",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "FIXTURE_META"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "8d28755f3a45df56b17ce841e6fa206ce81425962d3494f160692a2d47a73c80",
+      "status": "ok",
+      "values": {
+        "rows_seen": 2,
+        "avg_bytes": 27.0,
+        "max_bytes": 31.0
+      }
+    },
+    {
+      "id": "row_bytes:INVOICE_HEADER",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "INVOICE_HEADER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c63485643ce4eaf66befb64ab62da7d941f1ac65fceee99f64c224bc10a1d0a5",
+      "status": "ok",
+      "values": {
+        "rows_seen": 1000,
+        "avg_bytes": 152.481,
+        "max_bytes": 153.0
+      }
+    },
+    {
+      "id": "row_bytes:INVOICE_LINE",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "INVOICE_LINE"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b1e0efe9356cbda4cbb63aec6647c94ff489fa0a2415cd484f38187eb0820990",
+      "status": "ok",
+      "values": {
+        "rows_seen": 1500,
+        "avg_bytes": 268.0586666666667,
+        "max_bytes": 291.0
+      }
+    },
+    {
+      "id": "row_bytes:BILLING_AUDIT_LOG",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "BILLING_AUDIT_LOG"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "eac848a3c3398ed71f8c4a7f17941ad6ae1a3eb8f67d17652762f7a4d6f8f643",
+      "status": "ok",
+      "values": {
+        "rows_seen": 37,
+        "avg_bytes": 86.64864864864865,
+        "max_bytes": 129.0
+      }
+    },
+    {
+      "id": "row_bytes:SUBSCRIPTIONS_HIST",
+      "query_id": "row_bytes",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d4caae95e5c6b674b115243053620aac34d5e22b6c9789910889df9c2e5e41b6",
+      "status": "ok",
+      "values": {
+        "rows_seen": 6,
+        "avg_bytes": 140.0,
+        "max_bytes": 140.0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.TAX_EXEMPT_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TAX_EXEMPT_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "2dda49421b4d8b52fb6266183abccbccfa71c83ed7717ba8c5812ee011ecf102",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.CREDIT_HOLD_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CREDIT_HOLD_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "69cedb5a5aa8583c2b0782e8e121ddbfa8c9987940a1fdacf7f8703371326282",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.DUNNING_EXEMPT_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "DUNNING_EXEMPT_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1c8cc3be4bb7fa2bfcdc2db8a87b76aeb1757b8f673731e0ad5ca4ece33d645c",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.VIP_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "VIP_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "6014b7b29ba171d6e0f02ba7893c98b066d99add8037bd7f8707230bdb5dde6e",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.PHONE1_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE1_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "7dec10342fc77287921eaf9bf79112ceb94ad6441e0a36121f9d33091452bf53",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.PHONE2_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE2_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "36248ec614563be3ad0ffb1d75900c3eb4b345eee80954fc3de0a54625389cad",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.PHONE3_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE3_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c4f78fa38248108a1dbe0bef7f34978b4c82d136c637ccad4ae6f43b1fb3a5c5",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.PHONE4_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE4_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "fa246afb213dde15d5bcc57a466200582f8f3d4116477368e6d2b474901ef841",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "05b6f956b49fd615940645ab900c6c008a6d8a63818dda72cec9d1738a68af5c",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.SUB_STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SUB_STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e4f302b056856ab40831dc7699a9dc94613e276dfbc722e55b47a40df7d02aca",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.CUST_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CUST_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ed6ae066dfc3ab76a3b50b51f5acf0f797326ba700e1a0d62e2ca7b0260d4562",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.SEGMENT_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SEGMENT_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "68d363ed7884a2787d6cb72f58f77b69d683c55ab9dd60f45cc0ff4063395582",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.REGION_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "REGION_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "370470c63e157df9a6722da114e125008155fb65e0a274a5c54aac47ba4c4c88",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.TERRITORY_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TERRITORY_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a447095271248b0f984a149c0329c40ab0539b18b6f6246ffb5e87e6852b446c",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.CHANNEL_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CHANNEL_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1fe97b8951fd6322f7422ed7fc7632b87dca33a343d88ae5e4bf88ef2c6ab22e",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER_HIST.RATE_CLASS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "RATE_CLASS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "74c5c3c17c8a4408a2461e721f367cbf6548deacddfd984eee205eb342a0dc46",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.PHONE1_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE1_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f983998541c210047a350d38470121e15b7cbf1f175283ee19fa0251229f57b8",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.PHONE2_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE2_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d3997045218b5e4c038f7d9eb5a3d2a74f9bb19560f37954c1b1a0ef4850589c",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.PHONE3_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE3_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "229c90c8644176725a87dacb6b44019b3cbf767ded22b6251257e77f0a341015",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.PHONE4_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PHONE4_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "3375584a5f156890467a167583c0800794cdcbc063c1144200dfb13ebef7ea02",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "51f2298f2131594783950a164c440f1ed178de4f7b51f607c866c963e44c901d",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.SUB_STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SUB_STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a70bf58616dde271222a0117b878d41dd394b870d953a9813da2596b78011763",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.CUST_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CUST_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f37534898748cc387ce08be0ded1822848160f36347c84100d4b95b0ae9f2a0f",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.SEGMENT_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SEGMENT_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b905f12f949258dee09d4a083766e56dfa377d3bf067eadd2472537185da615a",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.REGION_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "REGION_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "bc752a83d9202fccb1f5635cb39ffa3be33602799aeb5b88611ff58e08929d7b",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.TERRITORY_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TERRITORY_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b577b3d49b34816ad905003c11067d4eec1a4a5577db466fb6a531b0f8eae8d4",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.CHANNEL_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CHANNEL_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "83b353278c2c9758429335e12483149faf97cdf81015cf446c772b8c75a13eae",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER_HIST.RATE_CLASS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "RATE_CLASS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "79004d15bc903dd1898be17eb3c9eca696bcc7e3205b8fabf3d5fe1555b1f6bc",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER_HIST.RELATED_ACCT_IDS",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "RELATED_ACCT_IDS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "4cbdf9408fa4fa2345646ca3700ccbbf13bcf694563321670162926359dcf4c6",
+      "status": "ok",
+      "values": {
+        "max_elements": null,
+        "avg_elements": null
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER_HIST.CHILD_ACCT_IDS",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CHILD_ACCT_IDS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "63ba098689eb7e389680d7d19c209e22032f7786ec787be624ac64e652416cf2",
+      "status": "ok",
+      "values": {
+        "max_elements": null,
+        "avg_elements": null
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER_HIST.PROMO_CODES_CSV",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "PROMO_CODES_CSV"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c56502717a0183464311e214b7a23a68c5df83655c71d825ffbb9370dcbfbdb9",
+      "status": "ok",
+      "values": {
+        "max_elements": null,
+        "avg_elements": null
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.HIST_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "HIST_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a00e27dda5b0274d1a50909b6acc092db0750fa04790498e3f9dcc7a760591e4",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.SIGNUP_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "SIGNUP_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d0aec73942386655bfa554f797b8a600f762e0a68bc0e754844c12c5f0547e62",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_ACTIVITY_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "65116ff6384947b356da3e0b81a695c73a8126dcb2a737ff053fec2deb97dac7",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.LAST_INVOICE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_INVOICE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f10398d3be04b89543bba25edb298f14e7769a8f305dcac66f684e722d820e0f",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "LAST_PAYMENT_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "de4815086ea97a6acfe9cb71a7cc0c7f7db051625b150b71ae396b190f8f704b",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER_HIST.TERMINATE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TERMINATE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "13c37c1b3a75250b8c487332e8a386c8b2ebe920936a3ec7e735d86bf256d834",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "pointer_resolve:CUSTOMER_MASTER_HIST.CUST_ID->CUSTOMER_MASTER",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "CUST_ID",
+        "target": "CUSTOMER_MASTER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "76a21706ece408d004ff03b8a0c19cc72e1f5f6f5e01a32227c7df797c254b5c",
+      "status": "ok",
+      "values": {
+        "non_null": 0,
+        "unresolved": 0,
+        "resolve_rate": null
+      }
+    },
+    {
+      "id": "pointer_resolve:CUSTOMER_MASTER_HIST.TENANT_ID->TENANTS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER_HIST",
+        "column": "TENANT_ID",
+        "target": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "03f28956049f5df6ee5f04d8e5f6d6168a983de17f0fc10ee6f5518a46a9036b",
+      "status": "ok",
+      "values": {
+        "non_null": 0,
+        "unresolved": 0,
+        "resolve_rate": null
+      }
+    },
+    {
+      "id": "value_domain:INVOICES.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "INVOICES",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e4349bcdba99571d55f89fe550f510a1b841dec2c81f4989bf790f67722ab83c",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            20,
+            6
+          ],
+          [
+            40,
+            2
+          ],
+          [
+            30,
+            1
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:INVOICES.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "INVOICES",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f1033d92c75362a058d764880bf80ce065a72172a0516bfbc1db9c8a145f2d2b",
+      "status": "ok",
+      "values": {
+        "distinct_values": 3,
+        "candidates": [
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 3,
+            "rows": 9
+          },
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 2,
+            "rows": 7
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 2,
+            "rows": 7
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 1,
+            "rows": 6
+          }
+        ],
+        "full_cover": [
+          "INV_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:TENANTS.TAX_EXEMPT_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "TENANTS",
+        "column": "TAX_EXEMPT_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ba7afa39f3dd9ef2a7b8d0203d5f2ba9b8f43c94cf97272f0577d0417e19bd03",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "N",
+            14
+          ],
+          [
+            "Y",
+            1
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:TENANTS.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "TENANTS",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "3ce0c57f0b4bbb273ddfbc8a466ada700bbbe41eecba8678b59df45231467dbe",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            10,
+            13
+          ],
+          [
+            20,
+            2
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:TENANTS.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "TENANTS",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "da1a9ff36cd5bec1306c08169f2fcac2d5b1776ad54711eafec73a77c897c34f",
+      "status": "ok",
+      "values": {
+        "distinct_values": 2,
+        "candidates": [
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 2,
+            "rows": 15
+          },
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 2,
+            "rows": 15
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 2,
+            "rows": 15
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 2,
+            "rows": 15
+          }
+        ],
+        "full_cover": [
+          "DUN_STATUS",
+          "INV_STATUS",
+          "SUB_STATUS",
+          "TENANT_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:PLANS.ACTIVE_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "PLANS",
+        "column": "ACTIVE_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "080748db2efed6e2477cefa58af386ff86bc7047a7be9c745e84c1a3bf117f61",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "Y",
+            3
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:PLANS.TIER_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "PLANS",
+        "column": "TIER_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "487427b7b83581a1cebb2b5e4fe033ad98d383c01c8f431aa60031b814811bbd",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:PLANS.TIER_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "PLANS",
+        "column": "TIER_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a0ca35ab170a3772f0eb9eda4e9bbe7b26634feab7cd2744b7ba9c9e152367a5",
+      "status": "ok",
+      "values": {
+        "distinct_values": 3,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 3
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 3
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 3
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 3,
+            "rows": 3
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 3
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 3
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:SUBSCRIPTIONS.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "SUBSCRIPTIONS",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "cc152ab56b11309ef81c39d7d7d65f870994233199b1568cca7f0e9afe96407f",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            10,
+            18
+          ],
+          [
+            20,
+            2
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:SUBSCRIPTIONS.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "SUBSCRIPTIONS",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "0db4005328b0879fd9369f707ea191eef16d8ca769dd102f9fb4c46a330073ee",
+      "status": "ok",
+      "values": {
+        "distinct_values": 2,
+        "candidates": [
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 2,
+            "rows": 20
+          },
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 2,
+            "rows": 20
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 2,
+            "rows": 20
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 2,
+            "rows": 20
+          }
+        ],
+        "full_cover": [
+          "DUN_STATUS",
+          "INV_STATUS",
+          "SUB_STATUS",
+          "TENANT_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:USAGE_EVENTS.KIND_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "USAGE_EVENTS",
+        "column": "KIND_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "2cc6843251f0fb9a33532b4dd21b0cbbe13fcd9dfdbee7429d40371858b18616",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            70
+          ],
+          [
+            2,
+            21
+          ],
+          [
+            3,
+            12
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:USAGE_EVENTS.KIND_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "USAGE_EVENTS",
+        "column": "KIND_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "91e8bc6891d1694f9914986de6fe15469424589e9f5da8af58215ba3e3fe5a2d",
+      "status": "ok",
+      "values": {
+        "distinct_values": 3,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 103
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 103
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 103
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 3,
+            "rows": 103
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 103
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 103
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:DUNNING_ATTEMPTS.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "DUNNING_ATTEMPTS",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "99ab8d2ccfdaaeb9a418a44786dc48469ee801e103d3fe17b3cd3a3f5da41bfe",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            10,
+            2
+          ],
+          [
+            20,
+            1
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:DUNNING_ATTEMPTS.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "DUNNING_ATTEMPTS",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "bbc7025b38f47e30250bcbbcb019fa5f4bb68f198c9e927b9adba386e5bf722b",
+      "status": "ok",
+      "values": {
+        "distinct_values": 2,
+        "candidates": [
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 2,
+            "rows": 3
+          },
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 2,
+            "rows": 3
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 2,
+            "rows": 3
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 2,
+            "rows": 3
+          }
+        ],
+        "full_cover": [
+          "DUN_STATUS",
+          "INV_STATUS",
+          "SUB_STATUS",
+          "TENANT_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:NOTIFICATIONS.KIND_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "NOTIFICATIONS",
+        "column": "KIND_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "73798f726c4a808b5e1a10ac3fbffd1269aa967d79a32428da58c7b965690e33",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:NOTIFICATIONS.KIND_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "NOTIFICATIONS",
+        "column": "KIND_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "28737a6d39ebf87d7e633e10299fc2eb4f0336b63d53828d092eebebdbe15f6c",
+      "status": "ok",
+      "values": {
+        "distinct_values": 2,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 2,
+            "rows": 2
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 2,
+            "rows": 2
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 2,
+            "rows": 2
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 2,
+            "rows": 2
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 2,
+            "rows": 2
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 2,
+            "rows": 2
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.TAX_EXEMPT_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "TAX_EXEMPT_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f9f52ae186c629c524314e5d4b1a0960c269fe7a55be84a0d3c4ba1310e3bdce",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "N",
+            196
+          ],
+          [
+            "Y",
+            5
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.CREDIT_HOLD_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CREDIT_HOLD_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ca96f2d912a41b4fa5938804899f9ccc3ca131bb1234e55a34b66a1f252bddde",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "N",
+            195
+          ],
+          [
+            "Y",
+            6
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.DUNNING_EXEMPT_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "DUNNING_EXEMPT_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c63c5d21b3e824dc9b76bc5466d429bf7a41c4ed4b402ecf8f5764f3d9e2acee",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "N",
+            1
+          ]
+        ],
+        "null_count": 200
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.VIP_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "VIP_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "9d58fe9fa6341aceb8f8aff6483a91604357a71bb3c6fb1865afc669193e4f6c",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "N",
+            180
+          ],
+          [
+            "Y",
+            21
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.PHONE1_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE1_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "9a3348cc5451939e7f2b3c835f544eea35fc38a78765572108f17d5470f150d0",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            201
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.PHONE2_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE2_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "82a9340c78671b3c667aba8871042cc92cc3c507b9bd79ed4dff774c11caed6d",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            2,
+            200
+          ]
+        ],
+        "null_count": 1
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.PHONE3_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE3_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "190ad69ebae6fef4421109c19c5e84522f77c5814d654d828a6fa981d4bfcd11",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 201
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.PHONE4_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE4_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "65ee503748f28f7c6a90883d7a622f63c366a09af14272f8aefe8521c08eba2c",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 201
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "638368b3d376cf23c5fa2d1ad7b7d3457c5142d1d22fffb1c138093f15ac0a1c",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            168
+          ],
+          [
+            2,
+            22
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            99,
+            2
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.SUB_STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "SUB_STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d10b9dcbaf6544270f450262e7b08793da124dfa54f193ab8929c5a4b3a6408e",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            69
+          ],
+          [
+            2,
+            66
+          ]
+        ],
+        "null_count": 66
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.CUST_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CUST_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a0fdb49063cedb0d4f1c83f5f2c6ec976aee57e221b5d23f69f1645ba505f3d0",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            115
+          ],
+          [
+            2,
+            75
+          ],
+          [
+            3,
+            11
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.SEGMENT_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "SEGMENT_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "56267c04a26ca15c3846cd35147dad0520c64d03b773ad5e16eb69e706faf61b",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            8,
+            32
+          ],
+          [
+            2,
+            30
+          ],
+          [
+            4,
+            26
+          ],
+          [
+            3,
+            25
+          ],
+          [
+            6,
+            21
+          ],
+          [
+            7,
+            20
+          ],
+          [
+            1,
+            19
+          ],
+          [
+            5,
+            14
+          ],
+          [
+            9,
+            14
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.REGION_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "REGION_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "7ed1d98a77193bd205325277faab47ceed17582cf017a6a1ec5b843197426027",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            25
+          ],
+          [
+            11,
+            22
+          ],
+          [
+            4,
+            19
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            9,
+            17
+          ],
+          [
+            10,
+            17
+          ],
+          [
+            12,
+            17
+          ],
+          [
+            6,
+            16
+          ],
+          [
+            3,
+            15
+          ],
+          [
+            2,
+            14
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            7,
+            10
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.TERRITORY_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "TERRITORY_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "968901592506638ef7379912912ae3d23c92a97deb7c6a2c3e7110a3ad165368",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 201
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.CHANNEL_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CHANNEL_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "828a5734514a12e58202d307d136357df688bb6aabf373bacf13d0b9e4a67f72",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 201
+      }
+    },
+    {
+      "id": "value_domain:CUSTOMER_MASTER.RATE_CLASS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "RATE_CLASS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1ec9d13043ffcb76d392b57599a66609c41c2ab8b16235047b799414026f6a7e",
+      "status": "ok",
+      "values": {
+        "values": [],
+        "null_count": 201
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.PHONE1_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE1_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e0651f2695c18c9470f55ca8eb7cc51c81e31f3934bf6967ac4ad330e2e50187",
+      "status": "ok",
+      "values": {
+        "distinct_values": 1,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 1,
+            "rows": 201
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 1,
+            "rows": 201
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 1,
+            "rows": 201
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 1,
+            "rows": 201
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 1,
+            "rows": 201
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 1,
+            "rows": 201
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.PHONE2_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE2_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "5f9415bb5a88a0435b9136d09ed94f3caabbc605e109508e645a3a9b4ad9723b",
+      "status": "ok",
+      "values": {
+        "distinct_values": 1,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 1,
+            "rows": 200
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 1,
+            "rows": 200
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 1,
+            "rows": 200
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 1,
+            "rows": 200
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 1,
+            "rows": 200
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 1,
+            "rows": 200
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.PHONE3_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE3_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "dae6f39387e8f471a986aea8f360ede8f044d7033ffce47565dd499759e16ad0",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.PHONE4_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PHONE4_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "319b313725cf1edf5f808aa7dfd532112f764ad679fbaee3fa0ee25a6db59d47",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "6a385026b76b847ff40aae985d49065ed6e042c9c0194b8ef9d79e8aa8c8cf75",
+      "status": "ok",
+      "values": {
+        "distinct_values": 4,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 4,
+            "rows": 201
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 199
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 199
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 3,
+            "rows": 199
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 199
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 199
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.SUB_STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "SUB_STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "44f0e1d0454ca97375cd558bf25cf4b735b04c2c6413add71d6fea8cba7605b1",
+      "status": "ok",
+      "values": {
+        "distinct_values": 2,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 2,
+            "rows": 135
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 2,
+            "rows": 135
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 2,
+            "rows": 135
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 2,
+            "rows": 135
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 2,
+            "rows": 135
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 2,
+            "rows": 135
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.CUST_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CUST_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "0c37e2bb72c98bfe16ca3645cd346e34ba326153b8bd600ee23159d05e46fed6",
+      "status": "ok",
+      "values": {
+        "distinct_values": 3,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 201
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 201
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 201
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 3,
+            "rows": 201
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 201
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 201
+          }
+        ],
+        "full_cover": [
+          "CUST_STATUS",
+          "CUST_TYPE",
+          "NOTIF_KIND",
+          "PHONE_TYPE",
+          "PLAN_TIER",
+          "USAGE_KIND"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.SEGMENT_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "SEGMENT_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c7b7c8e0867eaa1f7e6e9ce95cbb7ff444046bcefbe3b9ca03265762491ffd42",
+      "status": "ok",
+      "values": {
+        "distinct_values": 9,
+        "candidates": [
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 4,
+            "rows": 100
+          },
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 74
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 74
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 74
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 74
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 74
+          }
+        ],
+        "full_cover": [],
+        "unresolved_distinct": 5,
+        "unresolved_rows": 101,
+        "unresolved_values": [
+          [
+            8,
+            32
+          ],
+          [
+            6,
+            21
+          ],
+          [
+            7,
+            20
+          ],
+          [
+            5,
+            14
+          ],
+          [
+            9,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.REGION_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "REGION_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "27cb977cef787b6fe8411c624bada3769d3d2b9d9f0a0256bc98abe0984562dc",
+      "status": "ok",
+      "values": {
+        "distinct_values": 12,
+        "candidates": [
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 4,
+            "rows": 73
+          },
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 54
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 54
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 54
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 54
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 54
+          },
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 1,
+            "rows": 17
+          },
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 1,
+            "rows": 17
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 1,
+            "rows": 17
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 1,
+            "rows": 17
+          }
+        ],
+        "full_cover": [],
+        "unresolved_distinct": 7,
+        "unresolved_rows": 111,
+        "unresolved_values": [
+          [
+            11,
+            22
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            12,
+            17
+          ],
+          [
+            9,
+            17
+          ],
+          [
+            6,
+            16
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            7,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.TERRITORY_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "TERRITORY_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "40bf2494f53a1d157f6a8bfd2a7927a347135627aba1cc6a3f0952d398ebcd8f",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.CHANNEL_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CHANNEL_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "ee43bd464ed240c8aa1e069642fd711c80791c499ecaf0e1781928b1e47f6d24",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "code_resolve:CUSTOMER_MASTER.RATE_CLASS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "RATE_CLASS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "185c54cda7c9eb454d8ba700e51be44b7181033ec8c9bf7d727cf6541ea32458",
+      "status": "ok",
+      "values": {
+        "distinct_values": 0,
+        "candidates": [],
+        "full_cover": [],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER.RELATED_ACCT_IDS",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "RELATED_ACCT_IDS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "32c9d768c24f5d88a1fc081f852890910f4ed89a9aee10549f4465f8545eaf7d",
+      "status": "ok",
+      "values": {
+        "max_elements": 4.0,
+        "avg_elements": 2.59375
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER.CHILD_ACCT_IDS",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "CHILD_ACCT_IDS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e635e7c6c97060afcf3befdd07e4cd514bcd9fa00a8662f08b69528e5c543d8d",
+      "status": "ok",
+      "values": {
+        "max_elements": null,
+        "avg_elements": null
+      }
+    },
+    {
+      "id": "csv_elements:CUSTOMER_MASTER.PROMO_CODES_CSV",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "PROMO_CODES_CSV"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b7bfa7776d6dcaff7ccc0e78f56291263ecbeb2cc5cf91f64af84f9a6c1ebe85",
+      "status": "ok",
+      "values": {
+        "max_elements": 2.0,
+        "avg_elements": 1.475177304964539
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER.SIGNUP_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "SIGNUP_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a4ddbbc1f0a0ee0bc5815635b1f996df95657785f61ae4b2710c0488f95a5b49",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-MAY-99",
+            22
+          ],
+          [
+            "99-FEB-99",
+            19
+          ],
+          [
+            "99-DEC-99",
+            17
+          ],
+          [
+            "99-SEP-99",
+            16
+          ],
+          [
+            "99-JAN-99",
+            16
+          ],
+          [
+            "99-MAR-99",
+            14
+          ],
+          [
+            "99-JUN-99",
+            13
+          ],
+          [
+            "99-OCT-99",
+            12
+          ],
+          [
+            "99-NOV-99",
+            11
+          ],
+          [
+            "99-AUG-99",
+            10
+          ],
+          [
+            "99-JUL-99",
+            10
+          ],
+          [
+            "99-APR-99",
+            10
+          ],
+          [
+            "99-XXX-99",
+            7
+          ],
+          [
+            "N/A",
+            6
+          ],
+          [
+            "  -   -  ",
+            6
+          ],
+          [
+            "99-99-999",
+            6
+          ],
+          [
+            "9/9/9999",
+            4
+          ],
+          [
+            "99-999-99",
+            2
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 0.845771,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER.LAST_ACTIVITY_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "LAST_ACTIVITY_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f889bd0f78a5aa4e5c44b132cddfce74abfe48af4fa4f30ebea8f348943f4da1",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-SEP-99",
+            24
+          ],
+          [
+            "99-DEC-99",
+            21
+          ],
+          [
+            "99-JUN-99",
+            20
+          ],
+          [
+            "99-AUG-99",
+            18
+          ],
+          [
+            "99-OCT-99",
+            18
+          ],
+          [
+            "99-NOV-99",
+            17
+          ],
+          [
+            "99-JUL-99",
+            17
+          ],
+          [
+            "99-JAN-99",
+            16
+          ],
+          [
+            "99-FEB-99",
+            14
+          ],
+          [
+            "99-MAR-99",
+            13
+          ],
+          [
+            "99-MAY-99",
+            12
+          ],
+          [
+            "99-APR-99",
+            11
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 1.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER.LAST_INVOICE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "LAST_INVOICE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "f41c1f6d1438315dcf0f7dced450001a8321caaab5fb9ff209fa5373521ba6e6",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER.LAST_PAYMENT_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "LAST_PAYMENT_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a7535e4790d42ccdbac3d0b66c20489160667c696a66c1cee01e1783bbed1911",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "text_shapes:CUSTOMER_MASTER.TERMINATE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "TERMINATE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "2dd8e3ad4323e1bdd9b113eedbec1d26e813d77cceba7facb1b0399989b927d3",
+      "status": "ok",
+      "values": {
+        "shapes": [],
+        "conformance": {}
+      }
+    },
+    {
+      "id": "pointer_resolve:CUSTOMER_MASTER.TENANT_ID->TENANTS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "CUSTOMER_MASTER",
+        "column": "TENANT_ID",
+        "target": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "2bd137b871fdb96075f742f153bf4a2cabf7fb3b9dca6eed817117b9a18ee50e",
+      "status": "ok",
+      "values": {
+        "non_null": 201,
+        "unresolved": 200,
+        "resolve_rate": 0.004975124378109453
+      }
+    },
+    {
+      "id": "text_shapes:ENTITY_ATTR_VALUE.CREATED_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "ENTITY_ATTR_VALUE",
+        "column": "CREATED_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a8edd9a80b3c5bceda7a55dc1ab5d4fcec2956da59278ed35f9b488b047fb3ae",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-APR-99",
+            10
+          ],
+          [
+            "99-DEC-99",
+            9
+          ],
+          [
+            "99-FEB-99",
+            8
+          ],
+          [
+            "99-OCT-99",
+            8
+          ],
+          [
+            "99-SEP-99",
+            7
+          ],
+          [
+            "99-MAR-99",
+            7
+          ],
+          [
+            "99-NOV-99",
+            5
+          ],
+          [
+            "99-JUN-99",
+            4
+          ],
+          [
+            "99-AUG-99",
+            4
+          ],
+          [
+            "99-JAN-99",
+            3
+          ],
+          [
+            "99-MAY-99",
+            3
+          ],
+          [
+            "99-JUL-99",
+            2
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 1.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "value_domain:ENTITY_ATTR_VALUE.ENTITY_TYPE",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "ENTITY_ATTR_VALUE",
+        "column": "ENTITY_TYPE"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "7a60b581bda2a9b546a9dd35efa82ecbb561a1a6c5d01655b7cc9553bbcf6952",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "CUSTOMER",
+            70
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "eav:ENTITY_ATTR_VALUE",
+      "query_id": "eav_shape",
+      "subject": {
+        "table": "ENTITY_ATTR_VALUE",
+        "attr_col": "ATTR_NAME",
+        "entity_cols": [
+          "EAV_ID"
+        ]
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "dfe094c0ecc76248cf1d845b6b17f4bf378b9529f6c12bc9a6137ca4b47eeeff",
+      "status": "ok",
+      "values": {
+        "distinct_attrs": 8,
+        "p99_attrs_per_entity": 1,
+        "max_attrs_per_entity": 1,
+        "entities": 70
+      }
+    },
+    {
+      "id": "value_domain:INVOICE_HEADER.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "e1275183919471174d4054f34d271f7ea7d608c34bc3ce04f5ec59ee67f9b84f",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            30,
+            541
+          ],
+          [
+            20,
+            309
+          ],
+          [
+            40,
+            150
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:INVOICE_HEADER.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "dea41b798978754630566ece6ef274aa61df4ae960a6b61475cea9e7aea9b14d",
+      "status": "ok",
+      "values": {
+        "distinct_values": 3,
+        "candidates": [
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 3,
+            "rows": 1000
+          },
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 2,
+            "rows": 850
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 2,
+            "rows": 850
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 1,
+            "rows": 309
+          }
+        ],
+        "full_cover": [
+          "INV_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "text_shapes:INVOICE_HEADER.INVOICE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "INVOICE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "90cc6ab949560e04c09e3f8572850cc812db19b6c5dbd4b9781075736ca8f988",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-MAR-99",
+            92
+          ],
+          [
+            "99-JUN-99",
+            90
+          ],
+          [
+            "99-APR-99",
+            87
+          ],
+          [
+            "99-AUG-99",
+            87
+          ],
+          [
+            "99-SEP-99",
+            85
+          ],
+          [
+            "99-NOV-99",
+            85
+          ],
+          [
+            "99-DEC-99",
+            84
+          ],
+          [
+            "99-JAN-99",
+            83
+          ],
+          [
+            "99-JUL-99",
+            79
+          ],
+          [
+            "99-OCT-99",
+            77
+          ],
+          [
+            "99-FEB-99",
+            76
+          ],
+          [
+            "99-MAY-99",
+            75
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 1.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "text_shapes:INVOICE_HEADER.DUE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "DUE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a1bb70d33dfe6dca594ea4ff3a4ffddfc160a3ad03232606d756e40c9422d1bd",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-AUG-99",
+            107
+          ],
+          [
+            "99-MAY-99",
+            98
+          ],
+          [
+            "99-JUN-99",
+            94
+          ],
+          [
+            "99-OCT-99",
+            91
+          ],
+          [
+            "99-MAR-99",
+            84
+          ],
+          [
+            "99-JAN-99",
+            84
+          ],
+          [
+            "99-APR-99",
+            79
+          ],
+          [
+            "99-SEP-99",
+            76
+          ],
+          [
+            "99-JUL-99",
+            73
+          ],
+          [
+            "99-DEC-99",
+            73
+          ],
+          [
+            "99-FEB-99",
+            71
+          ],
+          [
+            "99-NOV-99",
+            70
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 1.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "pointer_resolve:INVOICE_HEADER.CUST_ID->CUSTOMER_MASTER",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "CUST_ID",
+        "target": "CUSTOMER_MASTER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "6f82e72453f651a67c91cde0eff92edad1e11e420cd46cde9bfcd775f4d0d635",
+      "status": "ok",
+      "values": {
+        "non_null": 1000,
+        "unresolved": 0,
+        "resolve_rate": 1.0
+      }
+    },
+    {
+      "id": "pointer_resolve:INVOICE_HEADER.TENANT_ID->TENANTS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "INVOICE_HEADER",
+        "column": "TENANT_ID",
+        "target": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "0899de34665421f44d1f26e93e4c0a6425ff0270155bcb42dc1dc4ee47ae910e",
+      "status": "ok",
+      "values": {
+        "non_null": 1000,
+        "unresolved": 1000,
+        "resolve_rate": 0.0
+      }
+    },
+    {
+      "id": "value_domain:INVOICE_LINE.POSTED_YN",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "POSTED_YN"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "abffe9114deb40a0740f0777cae968d4e43af61e6008f9e353d63dd2665fe8b3",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            "Y",
+            884
+          ],
+          [
+            "N",
+            303
+          ]
+        ],
+        "null_count": 313
+      }
+    },
+    {
+      "id": "value_domain:INVOICE_LINE.LINE_TYPE_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "LINE_TYPE_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "a4ccd036ee02a6060d452620ae354ec91809472f760edd19b0ac3151e49c962d",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            1,
+            737
+          ],
+          [
+            2,
+            267
+          ],
+          [
+            9,
+            256
+          ],
+          [
+            3,
+            240
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:INVOICE_LINE.LINE_TYPE_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "LINE_TYPE_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "01a9c7839fb926a1bc5cf9741e608cc552bae5614b5ff26aea24bb73c1e9ceb4",
+      "status": "ok",
+      "values": {
+        "distinct_values": 4,
+        "candidates": [
+          {
+            "code_type": "CUST_STATUS",
+            "distinct_values": 3,
+            "rows": 1244
+          },
+          {
+            "code_type": "CUST_TYPE",
+            "distinct_values": 3,
+            "rows": 1244
+          },
+          {
+            "code_type": "NOTIF_KIND",
+            "distinct_values": 3,
+            "rows": 1244
+          },
+          {
+            "code_type": "PHONE_TYPE",
+            "distinct_values": 3,
+            "rows": 1244
+          },
+          {
+            "code_type": "PLAN_TIER",
+            "distinct_values": 3,
+            "rows": 1244
+          },
+          {
+            "code_type": "USAGE_KIND",
+            "distinct_values": 3,
+            "rows": 1244
+          }
+        ],
+        "full_cover": [],
+        "unresolved_distinct": 1,
+        "unresolved_rows": 256,
+        "unresolved_values": [
+          [
+            9,
+            256
+          ]
+        ]
+      }
+    },
+    {
+      "id": "csv_elements:INVOICE_LINE.GL_ACCT_CSV",
+      "query_id": "csv_elements",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "GL_ACCT_CSV"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "20d9be7ae7c16eebddb15c5dfe9ebe6fc8f05c443e4a38003c5541d044c8b1f9",
+      "status": "ok",
+      "values": {
+        "max_elements": 3.0,
+        "avg_elements": 2.042
+      }
+    },
+    {
+      "id": "text_shapes:INVOICE_LINE.INVOICE_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "INVOICE_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "11e7aba21cdef27bcb5f662597c411e7974101be6241e6e12abf5b5a0c7ec045",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-SEP-99",
+            142
+          ],
+          [
+            "99-NOV-99",
+            135
+          ],
+          [
+            "99-MAR-99",
+            134
+          ],
+          [
+            "99-JUL-99",
+            130
+          ],
+          [
+            "99-APR-99",
+            130
+          ],
+          [
+            "99-MAY-99",
+            128
+          ],
+          [
+            "99-JAN-99",
+            127
+          ],
+          [
+            "99-JUN-99",
+            122
+          ],
+          [
+            "99-DEC-99",
+            117
+          ],
+          [
+            "99-OCT-99",
+            114
+          ],
+          [
+            "99-AUG-99",
+            111
+          ],
+          [
+            "99-FEB-99",
+            110
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 1.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "pointer_resolve:INVOICE_LINE.INVOICE_ID->INVOICE_HEADER",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "INVOICE_ID",
+        "target": "INVOICE_HEADER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "b3eef66f50ebbae576433af3495872fa0b97b91aef1686a9ecdefa99878f4808",
+      "status": "ok",
+      "values": {
+        "non_null": 1500,
+        "unresolved": 37,
+        "resolve_rate": 0.9753333333333334
+      }
+    },
+    {
+      "id": "pointer_resolve:INVOICE_LINE.CUST_ID->CUSTOMER_MASTER",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "CUST_ID",
+        "target": "CUSTOMER_MASTER"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "c3225bf4cd2b377c932a08d0f897a35bc8c187d656fc598e1c3cfb907ae83cda",
+      "status": "ok",
+      "values": {
+        "non_null": 1500,
+        "unresolved": 0,
+        "resolve_rate": 1.0
+      }
+    },
+    {
+      "id": "pointer_resolve:INVOICE_LINE.TENANT_ID->TENANTS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "INVOICE_LINE",
+        "column": "TENANT_ID",
+        "target": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "673f9e9f38397ea98a1b19a16ded6e051e39491bca33cba7138be1732eaa3728",
+      "status": "ok",
+      "values": {
+        "non_null": 1500,
+        "unresolved": 1500,
+        "resolve_rate": 0.0
+      }
+    },
+    {
+      "id": "value_domain:SUBSCRIPTIONS_HIST.STATUS_CD",
+      "query_id": "value_domain",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "STATUS_CD"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "1934db6589e77b10fd794c6ab32d6a026082bbfb7cba25a8f5af2791591e5660",
+      "status": "ok",
+      "values": {
+        "values": [
+          [
+            10,
+            6
+          ]
+        ],
+        "null_count": 0
+      }
+    },
+    {
+      "id": "code_resolve:SUBSCRIPTIONS_HIST.STATUS_CD",
+      "query_id": "code_resolve",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "STATUS_CD",
+        "codes_table": "CODES",
+        "type_col": "CODE_TYPE",
+        "value_col": "CODE_VAL"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "d912f3f73d72cf95382cb2bf972b6e9bfc110b2eea0ff4b9500bd6179f7dd49b",
+      "status": "ok",
+      "values": {
+        "distinct_values": 1,
+        "candidates": [
+          {
+            "code_type": "DUN_STATUS",
+            "distinct_values": 1,
+            "rows": 6
+          },
+          {
+            "code_type": "INV_STATUS",
+            "distinct_values": 1,
+            "rows": 6
+          },
+          {
+            "code_type": "SUB_STATUS",
+            "distinct_values": 1,
+            "rows": 6
+          },
+          {
+            "code_type": "TENANT_STATUS",
+            "distinct_values": 1,
+            "rows": 6
+          }
+        ],
+        "full_cover": [
+          "DUN_STATUS",
+          "INV_STATUS",
+          "SUB_STATUS",
+          "TENANT_STATUS"
+        ],
+        "unresolved_distinct": 0,
+        "unresolved_rows": 0,
+        "unresolved_values": []
+      }
+    },
+    {
+      "id": "text_shapes:SUBSCRIPTIONS_HIST.HIST_DT",
+      "query_id": "text_shapes",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "HIST_DT"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "db1552e3183e60e32cb310839cfdbf2d8e85b0b73dbe7821576e977f2de0200c",
+      "status": "ok",
+      "values": {
+        "shapes": [
+          [
+            "99-OCT-99 99:99:99",
+            6
+          ]
+        ],
+        "conformance": {
+          "%Y%m%d": 0.0,
+          "%Y-%m-%d": 0.0,
+          "%d-%b-%y": 0.0,
+          "%d-%b-%Y": 0.0,
+          "%m/%d/%Y": 0.0,
+          "%d/%m/%Y": 0.0,
+          "%Y-%m-%d %H:%M:%S": 0.0,
+          "%Y%m%d%H%M%S": 0.0
+        }
+      }
+    },
+    {
+      "id": "pointer_resolve:SUBSCRIPTIONS_HIST.TENANT_ID->TENANTS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "TENANT_ID",
+        "target": "TENANTS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "45d228b5723f99355a6271f1ae5dc786d80ebcd22c80f33063d5b2c86ecc3f8c",
+      "status": "ok",
+      "values": {
+        "non_null": 6,
+        "unresolved": 0,
+        "resolve_rate": 1.0
+      }
+    },
+    {
+      "id": "pointer_resolve:SUBSCRIPTIONS_HIST.PLAN_ID->PLANS",
+      "query_id": "pointer_resolve",
+      "subject": {
+        "table": "SUBSCRIPTIONS_HIST",
+        "column": "PLAN_ID",
+        "target": "PLANS"
+      },
+      "sampled": false,
+      "sample_pct": null,
+      "sha256": "43e7442d5a3cfe42ea198b93c920560ae6c58d2e3b0779997251bc877cb92ad4",
+      "status": "ok",
+      "values": {
+        "non_null": 6,
+        "unresolved": 0,
+        "resolve_rate": 1.0
+      }
+    }
+  ]
+}
