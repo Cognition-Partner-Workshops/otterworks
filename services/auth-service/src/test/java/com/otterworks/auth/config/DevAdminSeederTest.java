@@ -49,16 +49,14 @@ class DevAdminSeederTest {
   }
 
   @Test
-  void run_shouldGenerateRandomPasswordWhenNoneConfigured() {
+  void run_shouldSkipWhenNoPasswordConfigured() {
     when(userRepository.existsByEmail(ADMIN_EMAIL)).thenReturn(false);
     DevAdminSeeder seeder =
         new DevAdminSeeder(userRepository, passwordEncoder, ADMIN_EMAIL, "Admin User", "");
 
     seeder.run(null);
 
-    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(captor.capture());
-    assertThat(passwordEncoder.matches("Admin123!", captor.getValue().getPasswordHash())).isFalse();
+    verify(userRepository, never()).save(any(User.class));
   }
 
   @Test
@@ -70,14 +68,5 @@ class DevAdminSeederTest {
     seeder.run(null);
 
     verify(userRepository, never()).save(any(User.class));
-  }
-
-  @Test
-  void generatePassword_shouldBeUniqueAndLongEnough() {
-    String first = DevAdminSeeder.generatePassword();
-    String second = DevAdminSeeder.generatePassword();
-
-    assertThat(first).hasSizeGreaterThanOrEqualTo(24);
-    assertThat(first).isNotEqualTo(second);
   }
 }
