@@ -1,0 +1,335 @@
+[
+  {
+    "unit_id": "reference-data",
+    "collections": [
+      "codes",
+      "plans",
+      "tenants"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.codes",
+      "mmp_rt_b5_oracle.plans",
+      "mmp_rt_b5_oracle.tenants"
+    ],
+    "source_tables": {
+      "roots": [
+        "CODES",
+        "PLANS",
+        "TENANTS"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "CODES": 32,
+      "PLANS": 3,
+      "TENANTS": 15
+    },
+    "depth": 0,
+    "batch": "w1-b01"
+  },
+  {
+    "unit_id": "customer-master",
+    "collections": [
+      "customerMaster",
+      "customerMasterHist"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.customerMaster",
+      "mmp_rt_b5_oracle.customerMasterHist"
+    ],
+    "source_tables": {
+      "roots": [
+        "CUSTOMER_MASTER",
+        "CUSTOMER_MASTER_HIST"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "CUSTOMER_MASTER": 201,
+      "CUSTOMER_MASTER_HIST": 0
+    },
+    "depth": 0,
+    "batch": "w1-b01"
+  },
+  {
+    "unit_id": "entity-attr-value",
+    "collections": [
+      "entityAttrValue"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.entityAttrValue"
+    ],
+    "source_tables": {
+      "roots": [
+        "ENTITY_ATTR_VALUE"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "ENTITY_ATTR_VALUE": 70
+    },
+    "depth": 0,
+    "batch": "w1-b01"
+  },
+  {
+    "unit_id": "invoice-header",
+    "collections": [
+      "invoiceHeader"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.invoiceHeader"
+    ],
+    "source_tables": {
+      "roots": [
+        "INVOICE_HEADER"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "INVOICE_HEADER": 1000
+    },
+    "depth": 0,
+    "batch": "w1-b01"
+  },
+  {
+    "unit_id": "invoice-line",
+    "collections": [
+      "invoiceLine"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.invoiceLine"
+    ],
+    "source_tables": {
+      "roots": [
+        "INVOICE_LINE"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "INVOICE_LINE": 1500
+    },
+    "depth": 0,
+    "batch": "w1-b01"
+  },
+  {
+    "unit_id": "billing-audit-log",
+    "collections": [
+      "billingAuditLog"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.billingAuditLog"
+    ],
+    "source_tables": {
+      "roots": [
+        "BILLING_AUDIT_LOG"
+      ],
+      "embedded": [],
+      "referenced": []
+    },
+    "expected_rows": {
+      "BILLING_AUDIT_LOG": 37
+    },
+    "depth": 0,
+    "batch": "w1-b02"
+  },
+  {
+    "unit_id": "rating-periods",
+    "collections": [
+      "ratingPeriods"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.ratingPeriods"
+    ],
+    "source_tables": {
+      "roots": [
+        "RATING_PERIODS"
+      ],
+      "embedded": [],
+      "referenced": [
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "RATING_PERIODS": 8
+    },
+    "depth": 1,
+    "batch": "w1-b03"
+  },
+  {
+    "unit_id": "credit-notes",
+    "collections": [
+      "creditNotes"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.creditNotes"
+    ],
+    "source_tables": {
+      "roots": [
+        "CREDIT_NOTES"
+      ],
+      "embedded": [],
+      "referenced": [
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "CREDIT_NOTES": 5
+    },
+    "depth": 1,
+    "batch": "w1-b03"
+  },
+  {
+    "unit_id": "subscriptions",
+    "collections": [
+      "subscriptions",
+      "subscriptionsHist"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.subscriptions",
+      "mmp_rt_b5_oracle.subscriptionsHist"
+    ],
+    "source_tables": {
+      "roots": [
+        "SUBSCRIPTIONS",
+        "SUBSCRIPTIONS_HIST"
+      ],
+      "embedded": [],
+      "referenced": [
+        "PLANS",
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "SUBSCRIPTIONS": 20,
+      "SUBSCRIPTIONS_HIST": 6
+    },
+    "depth": 1,
+    "batch": "w1-b03"
+  },
+  {
+    "unit_id": "usage-events",
+    "collections": [
+      "usageEvents"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.usageEvents"
+    ],
+    "source_tables": {
+      "roots": [
+        "USAGE_EVENTS"
+      ],
+      "embedded": [],
+      "referenced": [
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "USAGE_EVENTS": 103
+    },
+    "depth": 1,
+    "batch": "w1-b03"
+  },
+  {
+    "unit_id": "notifications",
+    "collections": [
+      "notifications"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.notifications"
+    ],
+    "source_tables": {
+      "roots": [
+        "NOTIFICATIONS"
+      ],
+      "embedded": [],
+      "referenced": [
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "NOTIFICATIONS": 2
+    },
+    "depth": 1,
+    "batch": "w1-b03"
+  },
+  {
+    "unit_id": "invoices",
+    "collections": [
+      "invoices"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.invoices"
+    ],
+    "source_tables": {
+      "roots": [
+        "INVOICES"
+      ],
+      "embedded": [
+        "INVOICE_LINES"
+      ],
+      "referenced": [
+        "RATING_PERIODS",
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "INVOICES": 9,
+      "INVOICE_LINES": 29
+    },
+    "depth": 2,
+    "batch": "w1-b04"
+  },
+  {
+    "unit_id": "rating-results",
+    "collections": [
+      "ratingResults"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.ratingResults"
+    ],
+    "source_tables": {
+      "roots": [
+        "RATING_RESULTS"
+      ],
+      "embedded": [],
+      "referenced": [
+        "RATING_PERIODS",
+        "SUBSCRIPTIONS"
+      ]
+    },
+    "expected_rows": {
+      "RATING_RESULTS": 8
+    },
+    "depth": 2,
+    "batch": "w1-b04"
+  },
+  {
+    "unit_id": "dunning-attempts",
+    "collections": [
+      "dunningAttempts"
+    ],
+    "write_targets": [
+      "mmp_rt_b5_oracle.dunningAttempts"
+    ],
+    "source_tables": {
+      "roots": [
+        "DUNNING_ATTEMPTS"
+      ],
+      "embedded": [],
+      "referenced": [
+        "INVOICES",
+        "TENANTS"
+      ]
+    },
+    "expected_rows": {
+      "DUNNING_ATTEMPTS": 3
+    },
+    "depth": 3,
+    "batch": "w1-b05"
+  }
+]
