@@ -1,0 +1,35 @@
+# Build-context exclusions for the admin-service image (SonarCloud docker:S6470).
+# Only app/, bin/, config/, db/ and the root Gemfile/Rakefile/config.ru are
+# needed at runtime; everything below must never end up in the shipped image.
+
+# VCS / editor
+.git
+.gitignore
+.rubocop.yml
+.rspec
+.idea
+.vscode
+*.swp
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Tests and coverage
+spec/
+coverage/
+
+# Runtime output and local state
+log/
+tmp/
+*.log
+*.pid
+.byebug_history
+
+# Secrets: dev/test placeholders live in the repo; production reads
+# SECRET_KEY_BASE / JWT_SECRET from the environment.
+config/secrets.yml
+config/master.key
+config/credentials/*.key
+.env
+.env.*
