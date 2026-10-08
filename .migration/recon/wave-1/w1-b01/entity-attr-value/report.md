@@ -3,11 +3,11 @@
 - **Verdict: PASS** (values redacted)
 - Mode: `live`
 - Merge eligible: yes (fixture/continuous evidence never merges)
-- Mapping version: `map-v1` (sha256 `a0e184e2ade2`)
+- Mapping version: `map-v2` (sha256 `ccd1078bedc9`)
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `entityAttrValue`
 - Seed: `0`
-- Generated: 2026-10-08T12:51:04.269738+00:00
+- Generated: 2026-10-08T12:58:26.555836+00:00
 - 6 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 5 string fields: min/max/distinct deferred to Tier 3
 

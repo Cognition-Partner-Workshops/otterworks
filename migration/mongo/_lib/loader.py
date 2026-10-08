@@ -66,7 +66,10 @@ def convert(value, field: dict, rule_params: dict):
             try:
                 value = dt.datetime.strptime(value.strip(), params.get("format", "%d-%b-%y"))
             except ValueError:
-                pass  # unparseable text stays a string so recon surfaces it
+                # spec `unparseable`: "null" quarantines the parsed field (raw text lives in
+                # the spec's `raw_field` copy); default "keep" leaves the string for recon to show
+                if params.get("unparseable", "keep") == "null":
+                    return None
         elif impl == "yn_to_bool" and isinstance(value, str):
             tok = value.strip().upper()
             value = True if tok in YN_TRUE else False if tok in YN_FALSE else value

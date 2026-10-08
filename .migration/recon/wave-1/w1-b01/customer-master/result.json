@@ -2,8 +2,8 @@
   "unit": "customer-master",
   "mode": "live",
   "target_class": "migration_cluster",
-  "mapping_version": "map-v1",
-  "mapping_sha256": "a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752",
+  "mapping_version": "map-v2",
+  "mapping_sha256": "ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c",
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
@@ -13,7 +13,7 @@
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T12:51:01.878238+00:00",
+  "generated_at": "2026-10-08T12:58:24.036757+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -34,7 +34,7 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 30,
+      "checks_run": 32,
       "stats": {
         "deferred_to_tier3": [
           "customerMasterHist.histDt",
@@ -194,6 +194,7 @@
           "customerMasterHist.updatedBy",
           "customerMasterHist.updatedDt",
           "customerMasterHist.rowVersionNo",
+          "customerMasterHist.signupDtRaw",
           "customerMaster.custSeqNo",
           "customerMaster.tenantId",
           "customerMaster.custNo",
@@ -347,7 +348,8 @@
           "customerMaster.createdDt",
           "customerMaster.updatedBy",
           "customerMaster.updatedDt",
-          "customerMaster.rowVersionNo"
+          "customerMaster.rowVersionNo",
+          "customerMaster.signupDtRaw"
         ],
         "string_aggregates_deferred_to_tier3": [
           {
@@ -1239,6 +1241,14 @@
             ]
           },
           {
+            "field": "customerMasterHist.signupDtRaw",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
             "field": "customerMaster.tenantId",
             "stats": [
               "min",
@@ -2109,6 +2119,14 @@
               "max",
               "distinct_count"
             ]
+          },
+          {
+            "field": "customerMaster.signupDtRaw",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
           }
         ],
         "fields_fully_deferred": 281
@@ -2118,7 +2136,7 @@
     {
       "tier": 3,
       "name": "keyed_diffs",
-      "passed": false,
+      "passed": true,
       "checks_run": 201,
       "stats": {
         "customerMasterHist": {
@@ -2132,586 +2150,13 @@
           "duplicate_source_key_count": 0
         }
       },
-      "findings": [
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:5612bc348b8f",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:fc0a77a9f9da",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:bb6e05db9415",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:ce269a7125e3",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:ec75aafa8388",
-          "source_value": "str:dc4e267ca091",
-          "target_value": "str:dc4e267ca091",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:ab1f2458d24c",
-          "source_value": "str:adbdd7a248ba",
-          "target_value": "str:adbdd7a248ba",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:9e13379d4507",
-          "source_value": "str:dc4e267ca091",
-          "target_value": "str:dc4e267ca091",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:4e5b23fdb60c",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:65e0b7f32f51",
-          "source_value": "str:adbdd7a248ba",
-          "target_value": "str:adbdd7a248ba",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:ea83bf4fabf7",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:960949a07b47",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:095433de06c7",
-          "source_value": "str:dc4e267ca091",
-          "target_value": "str:dc4e267ca091",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:1ef260ec4bb1",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:3db9a3b1714c",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:2c2a98ab18dd",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:db509400dbe6",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:e397c4df7f67",
-          "source_value": "str:adbdd7a248ba",
-          "target_value": "str:adbdd7a248ba",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:07201ef90684",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:89fc811bc282",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:5bfa946df91a",
-          "source_value": "str:dc4e267ca091",
-          "target_value": "str:dc4e267ca091",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:fc1a07169a62",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:c9296e9efeb4",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:d8d8686e630b",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:3d6583e76fac",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:03dba354a3dc",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:22fafb2fdac1",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:9a6fb2e69342",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:abf493b0a4f1",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:a3d65cd3254c",
-          "source_value": "str:7cd8821d8d3d",
-          "target_value": "str:7cd8821d8d3d",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:c91c4390fba6",
-          "source_value": "str:adbdd7a248ba",
-          "target_value": "str:adbdd7a248ba",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:ec589941c948",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:49d2e9dc6f42",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:8250d5354b90",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:81a35680a87d",
-          "source_value": "str:ee9886933675",
-          "target_value": "str:ee9886933675",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:3cdfc4308d68",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:dc73be211111",
-          "source_value": "str:f9f018ac29e0",
-          "target_value": "str:f9f018ac29e0",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:17e949419fca",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:379a0a4436c1",
-          "source_value": "str:f6ee158f3e4f",
-          "target_value": "str:f6ee158f3e4f",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:3e5773f0dd55",
-          "source_value": "str:90fecf3946e8",
-          "target_value": "str:90fecf3946e8",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:5715f0508235",
-          "source_value": "str:7cd8821d8d3d",
-          "target_value": "str:7cd8821d8d3d",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        },
-        {
-          "collection": "customerMaster",
-          "check": "field_diff",
-          "detail": "field SIGNUP_DT->signupDt key=tuple:c42ea95b82ce",
-          "source_value": "str:7a064df7c74e",
-          "target_value": "str:7a064df7c74e",
-          "rules_applied": [
-            "date_string_to_date:dby-b3d57e!unconverted"
-          ],
-          "rules_configured": [
-            "date_string_to_date:dby-b3d57e",
-            "null_missing_equiv"
-          ]
-        }
-      ]
+      "findings": []
     }
   ],
-  "warnings": [],
-  "verdict": "FAIL",
+  "warnings": [
+    "UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised"
+  ],
+  "verdict": "PASS",
   "merge_eligible": false,
   "error": null
 }

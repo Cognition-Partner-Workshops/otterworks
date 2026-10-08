@@ -1,21 +1,22 @@
 # Recon report: unit `customer-master`
 
-- **Verdict: FAIL** (values redacted)
+- **Verdict: PASS** (values redacted)
 - Mode: `live`
 - Merge eligible: no (fixture/continuous evidence never merges)
-- Mapping version: `map-v1` (sha256 `a0e184e2ade2`)
+- Mapping version: `map-v2` (sha256 `ccd1078bedc9`)
 - Tolerance version: `tol-1` (sha256 `a23d517a8e6d`)
 - Collections: `customerMasterHist`, `customerMaster`
 - Seed: `0`
-- Generated: 2026-10-08T12:51:01.878238+00:00
-- 311 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
-- 220 string fields: min/max/distinct deferred to Tier 3
+- Generated: 2026-10-08T12:58:24.036757+00:00
+- **WARNING: UNVERIFIED collection customerMasterHist: 0 source rows, key/shape/field rules unexercised**
+- 313 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
+- 222 string fields: min/max/distinct deferred to Tier 3
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
 | 1 | counts_through_mapping | 2 | PASS |
-| 2 | per_field_aggregates | 30 | PASS |
-| 3 | keyed_diffs | 201 | FAIL (41 findings) |
+| 2 | per_field_aggregates | 32 | PASS |
+| 3 | keyed_diffs | 201 | PASS |
 
 ## Tier 1 coverage
 ```json
@@ -188,6 +189,7 @@
     "customerMasterHist.updatedBy",
     "customerMasterHist.updatedDt",
     "customerMasterHist.rowVersionNo",
+    "customerMasterHist.signupDtRaw",
     "customerMaster.custSeqNo",
     "customerMaster.tenantId",
     "customerMaster.custNo",
@@ -341,7 +343,8 @@
     "customerMaster.createdDt",
     "customerMaster.updatedBy",
     "customerMaster.updatedDt",
-    "customerMaster.rowVersionNo"
+    "customerMaster.rowVersionNo",
+    "customerMaster.signupDtRaw"
   ],
   "string_aggregates_deferred_to_tier3": [
     {
@@ -1233,6 +1236,14 @@
       ]
     },
     {
+      "field": "customerMasterHist.signupDtRaw",
+      "stats": [
+        "min",
+        "max",
+        "distinct_count"
+      ]
+    },
+    {
       "field": "customerMaster.tenantId",
       "stats": [
         "min",
@@ -2103,6 +2114,14 @@
         "max",
         "distinct_count"
       ]
+    },
+    {
+      "field": "customerMaster.signupDtRaw",
+      "stats": [
+        "min",
+        "max",
+        "distinct_count"
+      ]
     }
   ],
   "fields_fully_deferred": 281
@@ -2124,46 +2143,3 @@
   }
 }
 ```
-
-## Tier 3 findings (41)
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:5612bc348b8f | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:fc0a77a9f9da | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:bb6e05db9415 | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ce269a7125e3 | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ec75aafa8388 | source=str:dc4e267ca091 target=str:dc4e267ca091 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ab1f2458d24c | source=str:adbdd7a248ba target=str:adbdd7a248ba | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:9e13379d4507 | source=str:dc4e267ca091 target=str:dc4e267ca091 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:4e5b23fdb60c | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:65e0b7f32f51 | source=str:adbdd7a248ba target=str:adbdd7a248ba | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ea83bf4fabf7 | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:960949a07b47 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:095433de06c7 | source=str:dc4e267ca091 target=str:dc4e267ca091 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:1ef260ec4bb1 | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3db9a3b1714c | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:2c2a98ab18dd | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:db509400dbe6 | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:e397c4df7f67 | source=str:adbdd7a248ba target=str:adbdd7a248ba | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:07201ef90684 | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:89fc811bc282 | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:5bfa946df91a | source=str:dc4e267ca091 target=str:dc4e267ca091 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:fc1a07169a62 | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:c9296e9efeb4 | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:d8d8686e630b | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3d6583e76fac | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:03dba354a3dc | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:22fafb2fdac1 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:9a6fb2e69342 | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:abf493b0a4f1 | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:a3d65cd3254c | source=str:7cd8821d8d3d target=str:7cd8821d8d3d | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:c91c4390fba6 | source=str:adbdd7a248ba target=str:adbdd7a248ba | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:ec589941c948 | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:49d2e9dc6f42 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:8250d5354b90 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:81a35680a87d | source=str:ee9886933675 target=str:ee9886933675 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3cdfc4308d68 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:dc73be211111 | source=str:f9f018ac29e0 target=str:f9f018ac29e0 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:17e949419fca | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:379a0a4436c1 | source=str:f6ee158f3e4f target=str:f6ee158f3e4f | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:3e5773f0dd55 | source=str:90fecf3946e8 target=str:90fecf3946e8 | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:5715f0508235 | source=str:7cd8821d8d3d target=str:7cd8821d8d3d | rules=['date_string_to_date:dby-b3d57e!unconverted']
-- `customerMaster` field_diff: field SIGNUP_DT->signupDt key=tuple:c42ea95b82ce | source=str:7a064df7c74e target=str:7a064df7c74e | rules=['date_string_to_date:dby-b3d57e!unconverted']

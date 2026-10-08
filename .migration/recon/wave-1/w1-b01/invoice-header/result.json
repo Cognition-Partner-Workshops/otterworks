@@ -2,8 +2,8 @@
   "unit": "invoice-header",
   "mode": "live",
   "target_class": "migration_cluster",
-  "mapping_version": "map-v1",
-  "mapping_sha256": "a0e184e2ade23705188ea91766e2b1095091c94b938e45cdc9543fdd6ea20752",
+  "mapping_version": "map-v2",
+  "mapping_sha256": "ccd1078bedc904709411112483a873f04287748711713a1c3af03ddd0231512c",
   "tolerance_version": "tol-1",
   "tolerance_sha256": "a23d517a8e6d00c84f668c0016ef0e42b16625d45ab7e4166e3838abf241e3da",
   "collections": [
@@ -12,7 +12,7 @@
   "seed": 0,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-08T12:51:07.544380+00:00",
+  "generated_at": "2026-10-08T12:58:29.676065+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
