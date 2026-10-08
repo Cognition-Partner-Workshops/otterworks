@@ -1,0 +1,49 @@
+{
+  "source": "oracle",
+  "method": "synthetic",
+  "masked_columns": [],
+  "produced_at": "2026-10-08T12:14:23Z",
+  "produced_by": "testdata/legacy/mmp_rt_mini_seed.py (blob 34a1ccf2) over testdata/legacy/oracle_billing_seed.py (blob 9bcb225b, last commit ecf8cc83) + testdata/legacy/mmp_rt_exercise.sql (blob feb1da3e); run branch c81110dd, plugin 349cb2d17dccb246409e7750657e25843bf53be8",
+  "producers": {
+    "wrapper": "testdata/legacy/mmp_rt_mini_seed.py",
+    "wrapper_blob_sha": "34a1ccf2774ad5cf4fede3a2e2624db3b126281a",
+    "seeder": "testdata/legacy/oracle_billing_seed.py",
+    "seeder_blob_sha": "9bcb225b878d0e4bcaf6fc110efb10528a0d2273",
+    "seeder_last_commit": "ecf8cc83431c2e3900ccb889231a6ab1e597b1b9",
+    "exercise": "testdata/legacy/mmp_rt_exercise.sql",
+    "exercise_blob_sha": "feb1da3e888e8a729b8282a1eb77997d6768ed8e",
+    "run_branch_head": "c81110dd",
+    "plugin_head": "349cb2d17dccb246409e7750657e25843bf53be8"
+  },
+  "namespace": "mmprt",
+  "scale": {
+    "name": "mini",
+    "customers": 200,
+    "invoice_lines": 1500,
+    "core_tenants": 5
+  },
+  "seed_manifest": "testdata/legacy/manifests/mmprt.json",
+  "schema": "OW_BILLING",
+  "row_counts": {
+    "BILLING_AUDIT_LOG": 37,
+    "CODES": 32,
+    "CREDIT_NOTES": 5,
+    "CUSTOMER_MASTER": 201,
+    "CUSTOMER_MASTER_HIST": 0,
+    "DUNNING_ATTEMPTS": 3,
+    "ENTITY_ATTR_VALUE": 70,
+    "FIXTURE_META": 2,
+    "INVOICES": 9,
+    "INVOICE_HEADER": 1000,
+    "INVOICE_LINE": 1500,
+    "INVOICE_LINES": 29,
+    "NOTIFICATIONS": 2,
+    "PLANS": 3,
+    "RATING_PERIODS": 8,
+    "RATING_RESULTS": 8,
+    "SUBSCRIPTIONS": 20,
+    "SUBSCRIPTIONS_HIST": 6,
+    "TENANTS": 15,
+    "USAGE_EVENTS": 103
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "policy": "online",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "source": {
+    "access": "live",
+    "reason": "privilege_excess",
+    "blocked": true,
+    "detail": "over-scoped principal: CREATE JOB, CREATE TYPE, CREATE TRIGGER, CREATE PROCEDURE, CREATE SEQUENCE, CREATE VIEW, CREATE TABLE"
+  },
+  "target": {
+    "access": "migration_cluster",
+    "reason": "privilege_excess",
+    "blocked": true,
+    "detail": "over-scoped principal: readWriteAnyDatabase@admin, dbAdminAnyDatabase@admin"
+  },
+  "blocked": true,
+  "probed_at": "2026-10-08T12:13:03.591608+00:00"
+}
