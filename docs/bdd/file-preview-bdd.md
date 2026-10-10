@@ -91,12 +91,13 @@
 ## BDD-10: Render CSV and TSV as tables
 **Traces to:** AC-10   **Category:** FUNC
 
-**Given** a `.csv`/`.tsv` or CSV/TSV MIME file **When** the preview opens **Then** a table uses the first row as header and the delimiter is auto-detected; the 500 KB cap applies and a partial final row is dropped.
+**Given** a `.csv`/`.tsv` or CSV/TSV MIME file **When** the preview opens **Then** a table uses the first row as header, auto-detects the delimiter, and renders at most 1,000 data rows with `Showing first 1,000 of N rows` when more rows were parsed; the 500 KB cap applies and a partial final row is dropped.
 
 ### Testing Flow
 1. Upload `preview.csv` and verify the first row is table headers.
 2. Upload `preview.tsv` and verify tab-separated columns are recognized.
-3. For a truncated CSV, verify `Showing first 500 KB` and no incomplete final row.
+3. Upload a CSV with 1,500 data rows; verify 1,000 body rows and `Showing first 1,000 of 1,500 rows`.
+4. For a truncated CSV, verify `Showing first 500 KB` and no incomplete final row; if both limits apply, verify both notices.
 
 ## BDD-11: Preview audio with native controls
 **Traces to:** AC-11   **Category:** FUNC
@@ -335,15 +336,16 @@
 2. Open an image preview and verify heavy renderer chunks are not requested.
 3. Open each heavy file type and verify its corresponding lazy chunk is requested.
 
-## BDD-35: Bound text and ZIP byte transfer
+## BDD-35: Bound preview transfer and render time
 **Traces to:** AC-35   **Category:** PERF
 
-**Given** a 680 KB log and a large ZIP **When** they are previewed **Then** text/Markdown/CSV fetch at most 500,000 bytes and ZIP listing reads only the central directory via Range, not the full file.
+**Given** a 680–690 KB log, an approximately 650 KB CSV, and a large ZIP **When** they are previewed **Then** the log and CSV show visible content in under 3 seconds, text/Markdown/CSV fetch at most 500,000 bytes, and ZIP listing reads only the central directory via Range, not the full file.
 
 ### Testing Flow
-1. Open a 680 KB log and verify a 206 Range response for `bytes=0-499999`.
-2. Open a large ZIP and inspect requests for Range GETs to the archive end.
-3. Verify response sizes are far below the full archive size and no HEAD request is sent.
+1. Navigate to the 680–690 KB log and measure until its line-numbered content is visible; assert under 3 seconds and a 206 Range response for `bytes=0-499999`.
+2. Navigate to an approximately 650 KB CSV and measure until the table content is visible; assert under 3 seconds and at most 1,000 rendered data rows.
+3. Open a large ZIP and inspect requests for Range GETs to the archive end.
+4. Verify response sizes are far below the full archive size and no HEAD request is sent.
 
 ## AC → BDD Traceability Matrix
 

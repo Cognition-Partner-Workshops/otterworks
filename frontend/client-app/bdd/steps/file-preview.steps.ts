@@ -140,8 +140,15 @@ Then("the PDF frame and safe new-tab link are shown", async function (this: Otte
   await expect(this.page.getByRole("link", { name: "Open in new tab" })).toHaveAttribute("rel", "noopener noreferrer");
 });
 
-Then("the first CSV row is shown as headers", async function (this: OtterWorld) {
+Then("the first CSV row is shown as headers within a 1,000 data-row limit", async function (this: OtterWorld) {
   await expect(this.page.getByRole("columnheader", { name: "File" })).toBeVisible();
+  const rowCount = await this.page.getByRole("table").getByRole("row").count();
+  expect(rowCount).toBeLessThanOrEqual(1_001);
+  const rowCapNotice = this.page.getByText(/^Showing first 1,000 of [\d,]+ rows$/);
+  if (await rowCapNotice.count()) {
+    await expect(rowCapNotice).toBeVisible();
+    expect(rowCount).toBe(1_001);
+  }
 });
 
 Then("the image is shown inline after a URL refresh", async function (this: OtterWorld) {

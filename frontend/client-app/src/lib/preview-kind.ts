@@ -14,7 +14,7 @@ export type PreviewKind =
 export const PREVIEW_AUTOLOAD_LIMIT = 104_857_600;
 export const TEXT_PREVIEW_BYTES = 500_000;
 export const MAX_ARCHIVE_ENTRIES = 1000;
-export const MAX_SHEET_ROWS = 1000;
+export const MAX_TABLE_ROWS = 1000;
 
 const textMimeTypes = new Set([
   "application/json",

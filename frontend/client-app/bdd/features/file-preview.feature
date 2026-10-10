@@ -28,7 +28,7 @@ Feature: Inline file preview
     Then the PDF frame and safe new-tab link are shown
     Given I have uploaded a preview CSV file
     When I open its detail route
-    Then the first CSV row is shown as headers
+    Then the first CSV row is shown as headers within a 1,000 data-row limit
 
   @AC-04 @AC-05 @AC-06 @AC-07 @AC-09 @AC-10 @AC-11 @AC-12
   Scenario: Render common previewable file types

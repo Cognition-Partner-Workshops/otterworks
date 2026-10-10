@@ -85,7 +85,7 @@ test.describe("Inline file preview", () => {
 
     await openPreview(page, "preview.py", "text/x-python");
     await expect(page.locator("[data-testid='line-numbered-text']")).toContainText("def preview");
-    await expect(page.locator("[data-testid='line-number']")).toHaveCount(2);
+    await expect(page.getByTestId("line-number-gutter")).toContainText("1\n2");
     await openPreview(page, "preview.html", "text/html");
     await expect(page.locator("[data-testid='line-numbered-text']")).toContainText("<script>alert(1)</script>");
     await expect(page.locator("[data-testid='line-numbered-text'] script")).toHaveCount(0);
@@ -109,7 +109,7 @@ test.describe("Inline file preview", () => {
     await expect(page.getByRole("columnheader", { name: "Key" })).toBeVisible();
   });
 
-  test("AC-08, AC-35: truncates large text with a 206 response capped at 500,000 bytes", async ({ page }) => {
+  test("AC-08, AC-35: truncates large text and renders log and CSV within the performance budget", async ({ page }) => {
     const token = await (async () => {
       await page.goto("/register");
       await page.getByLabel("Full name").fill("Preview Account");
@@ -145,11 +145,47 @@ test.describe("Inline file preview", () => {
         });
       }
     });
+    const logStartedAt = Date.now();
     await page.goto(`/files/${file.id}`);
     await expect(page.getByText("Showing first 500 KB")).toBeVisible();
+    await expect(page.getByTestId("line-number-content")).toContainText("Line for range preview");
+    const logRenderMs = Date.now() - logStartedAt;
+    console.log(`[AC-35] 690 KB log visible in ${logRenderMs} ms`);
+    expect(logRenderMs, "690 KB log preview should render in under 3 seconds").toBeLessThan(3_000);
     await expect.poll(() => rangeResponses.length).toBeGreaterThan(0);
     expect(rangeResponses.every(({ status, range, bytes }) =>
       status === 206 && range === "bytes 0-499999/690000" && bytes <= 500_000
+    )).toBe(true);
+
+    const csvRows = [
+      "id,value",
+      ...Array.from({ length: 34_210 }, (_, index) => `${String(index).padStart(5, "0")},${"x".repeat(12)}`),
+    ];
+    const csvBuffer = Buffer.from(`${csvRows.join("\n")}\n`);
+    expect(csvBuffer.length).toBe(649_999);
+    const csvUpload = await page.request.post(`${gateway}/files/upload`, {
+      headers: { Authorization: `Bearer ${token}` },
+      multipart: {
+        file: {
+          name: "large-preview.csv",
+          mimeType: "text/csv",
+          buffer: csvBuffer,
+        },
+      },
+    });
+    expect(csvUpload.status(), await csvUpload.text()).toBe(201);
+    const { file: csvFile } = await csvUpload.json();
+    const csvStartedAt = Date.now();
+    await page.goto(`/files/${csvFile.id}`);
+    await expect(page.getByRole("columnheader", { name: "id" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "00000" })).toBeVisible();
+    await expect(page.getByText(/^Showing first 1,000 of [\d,]+ rows$/)).toBeVisible();
+    const csvRenderMs = Date.now() - csvStartedAt;
+    console.log(`[AC-35] 650 KB CSV visible in ${csvRenderMs} ms`);
+    expect(csvRenderMs, "650 KB CSV preview should render in under 3 seconds").toBeLessThan(3_000);
+    expect(await page.getByRole("row").count()).toBe(1_001);
+    expect(rangeResponses.some(({ status, range, bytes }) =>
+      status === 206 && range === "bytes 0-499999/649999" && bytes <= 500_000
     )).toBe(true);
   });
 

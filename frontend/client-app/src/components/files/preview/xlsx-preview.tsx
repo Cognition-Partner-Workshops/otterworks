@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MAX_SHEET_ROWS } from "@/lib/preview-kind";
+import { MAX_TABLE_ROWS } from "@/lib/preview-kind";
 import type { PreviewRendererProps } from "./preview-types";
 import { usePreviewRetry } from "./use-preview-retry";
 import { PreviewLoading } from "./preview-loading";
@@ -23,9 +23,9 @@ export function XlsxPreview({ url, retryWithFreshUrl, onError }: PreviewRenderer
   const totalRows = fullRange ? XLSX.utils.decode_range(fullRange).e.r + 1 : 0;
   const rows = worksheet
     ? XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1, blankrows: false, defval: "" })
-      .slice(0, MAX_SHEET_ROWS)
+      .slice(0, MAX_TABLE_ROWS)
     : [];
-  const isTruncated = totalRows > MAX_SHEET_ROWS;
+  const isTruncated = totalRows > MAX_TABLE_ROWS;
 
   const selectSheet = (sheet: string) => {
     const next = new URLSearchParams(searchParams);
@@ -83,7 +83,7 @@ function useXlsxWorkbook(url: string, retryVersion: number, retry: () => Promise
         if (!response.ok) throw new Error(`XLSX preview failed with status ${response.status}`);
         return response.arrayBuffer();
       })
-      .then((buffer) => XLSX.read(buffer, { type: "array", sheetRows: MAX_SHEET_ROWS + 1 }))
+      .then((buffer) => XLSX.read(buffer, { type: "array", sheetRows: MAX_TABLE_ROWS + 1 }))
       .then((workbook) => {
         if (!controller.signal.aborted) setState({ isLoading: false, workbook });
       })

@@ -1,5 +1,6 @@
 import Papa from "papaparse";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { MAX_TABLE_ROWS } from "@/lib/preview-kind";
 import { fetchPreviewText } from "./fetch-preview-text";
 import type { PreviewRendererProps } from "./preview-types";
 import { PreviewLoading } from "./preview-loading";
@@ -44,12 +45,21 @@ export function CsvPreview({
     return () => controller.abort();
   }, [previewUrl, retryVersion, retry, name]);
 
+  const headers = rows[0] ?? [];
+  const dataRowCount = Math.max(0, rows.length - 1);
+  const dataRows = useMemo(() => rows.slice(1, MAX_TABLE_ROWS + 1), [rows]);
+  const rowsTruncated = dataRowCount > MAX_TABLE_ROWS;
+
   if (isLoading) return <PreviewLoading />;
-  const [headers = [], ...dataRows] = rows;
 
   return (
     <div className="w-full min-w-0">
       {truncated && <p className="mb-2 text-xs text-amber-700">Showing first 500 KB</p>}
+      {rowsTruncated && (
+        <p className="mb-2 text-xs text-amber-700">
+          Showing first 1,000 of {dataRowCount.toLocaleString("en-US")} rows
+        </p>
+      )}
       <div className="max-h-[70vh] max-w-full overflow-auto rounded border border-gray-200">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead className="sticky top-0 bg-gray-100">

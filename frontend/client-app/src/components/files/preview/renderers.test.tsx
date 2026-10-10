@@ -20,7 +20,7 @@ describe("preview renderers", () => {
     render(<MemoryRouter><MarkdownPreview url="http://storage/file" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
     expect(await screen.findByRole("heading", { name: "Preview heading" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Source" }));
-    expect(await screen.findByText("# Preview heading")).toBeInTheDocument();
+    expect(await screen.findByTestId("line-number-content")).toHaveTextContent("# Preview heading");
     expect(screen.getByRole("button", { name: "Rendered" })).toBeInTheDocument();
   });
 
@@ -53,6 +53,33 @@ describe("preview renderers", () => {
     expect(await screen.findByRole("columnheader", { name: "Count" })).toBeInTheDocument();
   });
 
+  it("renders at most 1,000 CSV data rows and announces the total (AC-10, BDD-10)", async () => {
+    const csv = ["Name", ...Array.from({ length: 1_500 }, (_, index) => `row-${index + 1}`)].join("\n");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(csv)));
+    render(<MemoryRouter><CsvPreview url="http://storage/file.csv" name="file.csv" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
+
+    expect(await screen.findByRole("columnheader", { name: "Name" })).toBeInTheDocument();
+    expect(screen.getAllByRole("cell")).toHaveLength(1_000);
+    expect(screen.getByText("Showing first 1,000 of 1,500 rows")).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: "row-1500" })).not.toBeInTheDocument();
+  });
+
+  it("shows both byte and row notices when a large CSV exceeds both limits (AC-10, AC-35)", async () => {
+    const csv = ["Name,Value", ...Array.from(
+      { length: 1_500 },
+      (_, index) => `row-${index + 1},${"x".repeat(400)}`,
+    )].join("\n");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(csv, {
+      status: 206,
+      headers: { "Content-Range": `bytes 0-499999/${csv.length}` },
+    })));
+    render(<MemoryRouter><CsvPreview url="http://storage/file.csv" name="file.csv" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
+
+    expect(await screen.findByRole("columnheader", { name: "Name" })).toBeInTheDocument();
+    expect(screen.getByText("Showing first 500 KB")).toBeInTheDocument();
+    expect(screen.getByText(/^Showing first 1,000 of [\d,]+ rows$/)).toBeInTheDocument();
+  });
+
   it("drops the partial last CSV row when the byte cap truncates input (AC-10, AC-35)", async () => {
     const body = `Header\n${"complete\n".repeat(20)}partial`;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, {
@@ -80,7 +107,7 @@ describe("preview renderers", () => {
     }));
     vi.stubGlobal("fetch", fetchMock);
     render(<MemoryRouter><TextPreview url="http://storage/file.log" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
-    expect(await screen.findByText("line one")).toBeInTheDocument();
+    expect(await screen.findByTestId("line-number-content")).toHaveTextContent("line one");
     expect(screen.getByText("Showing first 500 KB")).toBeInTheDocument();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       "http://storage/file.log",
