@@ -57,7 +57,7 @@ test.describe("Inline file preview", () => {
     const card = page.getByText("preview.txt", { exact: true }).first();
     await expect(card).toBeVisible();
     await card.click();
-    await expect(page).toHaveURL(new RegExp(`/files/${uploaded.id}$`));
+    await expect(page).toHaveURL((url) => url.pathname === `/files/${uploaded.id}`);
     await expect(page.getByText("Showing first 500 KB")).not.toBeVisible();
     await expect(page.locator("[data-testid='line-numbered-text']")).toContainText("Inline preview fixture");
     expect(downloads).toEqual([]);
@@ -65,7 +65,7 @@ test.describe("Inline file preview", () => {
     const fileCard = page.locator("button:has(svg.lucide-ellipsis-vertical)").first();
     await fileCard.click();
     await page.getByRole("button", { name: "Preview" }).click();
-    await expect(page).toHaveURL(new RegExp(`/files/${uploaded.id}$`));
+    await expect(page).toHaveURL((url) => url.pathname === `/files/${uploaded.id}`);
   });
 
   test("AC-04, AC-05: renders raster and SVG files as img elements only", async ({ page }) => {
