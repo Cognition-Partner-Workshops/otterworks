@@ -1,0 +1,2 @@
+Inline preview fixture
+Second line
