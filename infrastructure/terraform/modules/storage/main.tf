@@ -30,6 +30,18 @@ resource "aws_s3_bucket_public_access_block" "files" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_cors_configuration" "files" {
+  bucket = aws_s3_bucket.files.id
+
+  cors_rule {
+    allowed_origins = var.files_cors_allowed_origins
+    allowed_methods = ["GET", "HEAD"]
+    allowed_headers = ["Range"]
+    expose_headers  = ["Content-Range", "Content-Length", "Content-Type", "Accept-Ranges", "ETag"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_s3_bucket_versioning" "files" {
   bucket = aws_s3_bucket.files.id
   versioning_configuration {
