@@ -297,12 +297,12 @@
 ## BDD-31: Keep active content inert
 **Traces to:** AC-31   **Category:** ERR
 
-**Given** HTML, SVG, Markdown containing raw HTML/scripts/images, or DOCX active content **When** previewed **Then** HTML is source text, SVG uses only `<img>`, Markdown raw HTML and images do not render (alt text is shown), DOCX HTML is sanitized, and no script runs.
+**Given** HTML, SVG, Markdown containing raw HTML/scripts/images, or DOCX active content **When** previewed **Then** HTML is source text, SVG uses only `<img>`, Markdown raw HTML is dropped and Markdown image syntax displays alt text without an `<img>`, DOCX HTML is sanitized, and no script runs.
 
 ### Testing Flow
 1. Open HTML and verify markup appears as source.
 2. Open SVG and verify no inline SVG or iframe.
-3. Open Markdown containing `<script>` and an image; verify no script element/image request and alt text is visible.
+3. Open Markdown containing raw `<script>`/`<img>` and Markdown image syntax; verify no script or image element is created and only the Markdown image's alt text is visible.
 4. Open an active-content DOCX and verify sanitized markup and no dialog.
 
 ## BDD-32: Redirect unauthenticated users to login

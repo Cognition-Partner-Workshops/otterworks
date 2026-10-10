@@ -57,6 +57,7 @@ export function MarkdownPreview({ url, retryWithFreshUrl, onError }: PreviewRend
       ) : (
         <article className="max-h-[70vh] min-w-0 overflow-auto rounded border border-gray-200 bg-white p-5 prose prose-sm">
           <ReactMarkdown
+            skipHtml
             components={{
               img: ({ alt }) => <span>{alt}</span>,
               a: ({ href, children }) => (
@@ -64,17 +65,10 @@ export function MarkdownPreview({ url, retryWithFreshUrl, onError }: PreviewRend
               ),
             }}
           >
-            {markdownWithoutHtml(text)}
+            {text}
           </ReactMarkdown>
         </article>
       )}
     </div>
   );
-}
-
-function markdownWithoutHtml(markdown: string) {
-  return markdown
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "")
-    .replace(/<img\b[^>]*>/gi, (tag) => tag.match(/\balt\s*=\s*(["'])(.*?)\1/i)?.[2] ?? "")
-    .replace(/<\/?[a-z][^>]*>/gi, "");
 }

@@ -287,7 +287,9 @@ test.describe("Inline file preview", () => {
     const uploaded = await openPreview(page, "unsafe.md", "text/markdown");
     expect(uploaded.id).toBeTruthy();
     await expect(page.locator("article.prose script")).toHaveCount(0);
-    await expect(page.locator("article.prose img[src*='invalid.test']")).toHaveCount(0);
+    await expect(page.locator("article.prose img")).toHaveCount(0);
+    await expect(page.getByText("diagram", { exact: true })).toBeVisible();
+    await expect(page.getByText("raw image alt", { exact: true })).toHaveCount(0);
     expect(dialogOpened).toBe(false);
   });
 

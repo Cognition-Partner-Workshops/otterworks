@@ -1,5 +1,5 @@
 # Safe preview
 
-<script>alert(1)</script><img src="https://invalid.test/pixel" alt="blocked image">
+<script>alert(1)</script><img src="https://invalid.test/pixel" alt="raw image alt" onerror="alert(1)">
 
-![Markdown image alt](https://invalid.test/markdown-image.png)
+![diagram](http://x/y.png)

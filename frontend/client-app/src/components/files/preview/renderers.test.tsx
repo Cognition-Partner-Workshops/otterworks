@@ -24,13 +24,22 @@ describe("preview renderers", () => {
     expect(screen.getByRole("button", { name: "Rendered" })).toBeInTheDocument();
   });
 
-  it("does not render raw HTML, scripts, or remote images; image alt text remains (AC-31)", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("# Safe\n\n<script>alert(1)</script><img src='https://invalid.test/pixel' alt='image alt'>")));
+  it("skips raw HTML and renders Markdown image alt text without an img (AC-31)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
+      "# Safe\n\n<script>alert(1)</script>\n\n<img src='https://invalid.test/pixel' alt='raw image alt' onerror='alert(1)'>\n\n![diagram](http://x/y.png)",
+    )));
     render(<MemoryRouter><MarkdownPreview url="http://storage/file" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
     await screen.findByRole("heading", { name: "Safe" });
     expect(document.querySelector("script")).not.toBeInTheDocument();
-    expect(document.querySelector("img[src='https://invalid.test/pixel']")).not.toBeInTheDocument();
-    expect(screen.getByText("image alt")).toBeInTheDocument();
+    expect(document.querySelector("img")).not.toBeInTheDocument();
+    expect(screen.getByText("diagram")).toBeInTheDocument();
+    expect(screen.queryByText("raw image alt")).not.toBeInTheDocument();
+  });
+
+  it("preserves angle brackets in fenced code blocks (AC-31)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("```java\nList<String> x;\n```")));
+    render(<MemoryRouter><MarkdownPreview url="http://storage/file" retryWithFreshUrl={retryWithFreshUrl} /></MemoryRouter>);
+    expect(await screen.findByText("List<String> x;")).toBeInTheDocument();
   });
 
   it("parses comma-delimited CSV with the first row as headers and parses TSV (AC-10)", async () => {
