@@ -49,6 +49,12 @@ models:
         tests: [not_null]
       - name: tenant_id
         tests: [not_null]
+      - name: sample_count
+        tests: [not_null]
+      - name: peak_storage_mb
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
   - name: rollup_usage_events
     tests:
       - unique_combination_of_columns:
@@ -59,6 +65,14 @@ models:
         tests: [not_null]
       - name: event_id
         tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: event_kind
+        tests: [not_null]
+      - name: units
+        tests: [not_null]
+      - name: event_ts_utc
+        tests: [not_null]
   - name: rollup_seats
     tests:
       - unique_combination_of_columns:
@@ -68,6 +82,8 @@ models:
       - name: business_date
         tests: [not_null]
       - name: tenant_id
+        tests: [not_null]
+      - name: seat_count
         tests: [not_null]
   - name: rollup_collab_daily
     tests:
@@ -81,6 +97,12 @@ models:
         tests: [not_null]
       - name: document_id
         tests: [not_null]
+      - name: comment_count
+        tests: [not_null]
+      - name: session_count
+        tests: [not_null]
+      - name: collaborator_count
+        tests: [not_null]
   - name: rollup_audit
     tests:
       - unique_combination_of_columns:
@@ -90,6 +112,16 @@ models:
       - name: business_date
         tests: [not_null]
       - name: audit_id
+        tests: [not_null]
+      - name: user_id
+        tests: [not_null]
+      - name: action
+        tests: [not_null]
+      - name: resource_type
+        tests: [not_null]
+      - name: resource_id
+        tests: [not_null]
+      - name: event_ts_utc
         tests: [not_null]
   - name: rollup_document_status
     tests:
@@ -103,6 +135,10 @@ models:
         tests: [not_null]
       - name: status_label
         tests: [not_null]
+      - name: document_count
+        tests: [not_null]
+      - name: word_count
+        tests: [not_null]
   - name: rollup_retention
     tests:
       - unique_combination_of_columns:
@@ -115,6 +151,10 @@ models:
         tests: [not_null]
       - name: resource_id
         tests: [not_null]
+      - name: retention_action
+        tests: [not_null]
+      - name: days_since_update
+        tests: [not_null]
   - name: build_invoice_lines
     tests:
       - unique_combination_of_columns:
@@ -126,6 +166,20 @@ models:
       - name: invoice_id
         tests: [not_null]
       - name: line_no
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: period_start
+        tests: [not_null]
+      - name: period_end
+        tests: [not_null]
+      - name: line_type
+        tests: [not_null]
+      - name: description
+        tests: [not_null]
+      - name: amount_cents
+        tests: [not_null]
+      - name: invoice_status
         tests: [not_null]
   - name: rate_overage
     tests:
@@ -162,4 +216,106 @@ models:
       - name: peak_storage_mb
         tests: [not_null]
       - name: bytes_used
+        tests: [not_null]
+  - name: build_mart_tenant_usage
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: tenant_name
+        tests: [not_null]
+      - name: api_units
+        tests: [not_null]
+      - name: compute_units
+        tests: [not_null]
+      - name: storage_peak_mb
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
+      - name: active_users
+        tests: [not_null]
+      - name: document_count
+        tests: [not_null]
+      - name: file_count
+        tests: [not_null]
+  - name: build_mart_plan_seat_summary
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, plan_tier]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: plan_tier
+        tests: [not_null]
+      - name: tenant_count
+        tests: [not_null]
+      - name: seat_count
+        tests: [not_null]
+      - name: seat_limit_total
+        tests: [not_null]
+      - name: tenants_over_limit
+        tests: [not_null]
+      - name: avg_seats_per_tenant
+        tests: [not_null]
+  - name: build_mart_overage
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: tenant_name
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
+      - name: included_bytes
+        tests: [not_null]
+      - name: overage_gb
+        tests: [not_null]
+      - name: overage_cents_per_gb
+        tests: [not_null]
+      - name: overage_cents
+        tests: [not_null]
+  - name: build_mart_retention
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id, resource_type, retention_action]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: resource_type
+        tests: [not_null]
+      - name: retention_action
+        tests: [not_null]
+      - name: item_count
+        tests: [not_null]
+  - name: build_mart_audit
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id, action, resource_type]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: action
+        tests: [not_null]
+      - name: resource_type
+        tests: [not_null]
+      - name: event_count
+        tests: [not_null]
+      - name: distinct_users
+        tests: [not_null]
+      - name: first_event_utc
+        tests: [not_null]
+      - name: last_event_utc
         tests: [not_null]
