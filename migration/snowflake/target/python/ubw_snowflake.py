@@ -34,7 +34,9 @@ def normalise_pem(pem: str) -> bytes:
 
 def dbt_connection(run: str) -> snowflake.connector.SnowflakeConnection:
     prefix = object_prefix(run)
-    private_pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY", "")
+    private_pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY") or os.environ.get(
+        "UBW_DBT_PRIVATE_KEY", ""
+    )
     if not private_pem:
         raise RuntimeError("SNOWFLAKE_PRIVATE_KEY is not set")
     key = serialization.load_pem_private_key(normalise_pem(private_pem), password=None)

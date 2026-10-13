@@ -38,7 +38,8 @@ Every Snowflake object for a run carries the token in its name and in two tags,
 - Builder: `SNOWFLAKE_PAT` with `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER` and optionally
   `SNOWFLAKE_HOST`. Only `bootstrap.py` uses it, for `up`, `teardown` and `verify-clean`.
 - Everything else (loader, dbt, tasks, gate) logs in as `<PREFIX>_DBT` with the key pair in
-  `SNOWFLAKE_PRIVATE_KEY`. Bootstrap puts the matching public key on that user.
+  `SNOWFLAKE_PRIVATE_KEY`, or `UBW_DBT_PRIVATE_KEY` where the organization stores it under
+  that name. Bootstrap puts the matching public key on that user.
 - SQL Server: `UBW_SQL_HOST`, `UBW_SQL_PORT`, `UBW_SQL_USER`, `UBW_SQL_PASSWORD`.
 - Snowsight login for recordings: `<PREFIX>_VIEWER`, role READER. Bootstrap takes the password
   from `UBW_VIEWER_PASSWORD`; without it the user gets a random password nobody keeps.

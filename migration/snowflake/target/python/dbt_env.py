@@ -22,7 +22,9 @@ def main() -> int:
     except ValueError as error:
         print(str(error), file=sys.stderr)
         return 2
-    private_pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY", "")
+    private_pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY") or os.environ.get(
+        "UBW_DBT_PRIVATE_KEY", ""
+    )
     if not private_pem:
         print("SNOWFLAKE_PRIVATE_KEY is not set", file=sys.stderr)
         return 2
