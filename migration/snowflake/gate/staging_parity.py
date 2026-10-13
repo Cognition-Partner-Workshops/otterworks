@@ -18,8 +18,8 @@ its own sqlserver_table, snowflake_model, keys, columns, rename and excluded; ea
 It writes `gate/out/staging/<package>.json` and `.md`, appends the row to
 `OPS.PARITY_LEDGER` with the unit `ssis:<package>`, and prints
 `Staging parity <package> <STATUS> <source rows> / <target rows>`. A DIVERGE needs an
-`Explanation:` line in the markdown, which carries forward like the manifest ledger, and a
-`### Business decisions` section at the end of the markdown is kept across runs.
+`Explanation:` line in the markdown, which carries forward like the manifest ledger, and the
+`### Notes` and `### Business decisions` sections at the end of the markdown are kept across runs.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ SPEC_DIR = HERE / "staging"
 OUT_DIR = HERE / "out" / "staging"
 SPEC_KEYS = {"package", "sqlserver_table", "snowflake_model", "keys", "columns"}
 DESTINATION_KEYS = SPEC_KEYS - {"package"}
-DECISIONS_HEADING = "### Business decisions"
+KEPT_HEADINGS = ("### Notes", "### Business decisions")
 
 
 def _destination(entry: dict[str, Any], label: str) -> dict[str, Any]:
@@ -91,7 +91,9 @@ def fetch_source(connection: Any, spec: dict[str, Any]) -> pd.DataFrame:
     columns = [*spec["keys"], *spec["columns"]]
     select_list = ", ".join(f"[{column}]" for column in columns)
     with connection.cursor(as_dict=False) as cursor:
-        cursor.execute(f"SELECT {select_list} FROM [{schema}].[{table}]")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            f"SELECT {select_list} FROM [{schema}].[{table}]"
+        )
         rows = cursor.fetchall()
     return pd.DataFrame(rows, columns=columns)
 
@@ -100,7 +102,9 @@ def fetch_target(cursor: Any, database: str, spec: dict[str, Any]) -> pd.DataFra
     schema, relation = parity.relation_parts(spec["snowflake_model"])
     columns = [*spec["keys"], *spec["columns"]]
     select_list = ", ".join(f'"{target_name(spec, column).upper()}"' for column in columns)
-    cursor.execute(f'SELECT {select_list} FROM "{database}"."{schema}"."{relation}"')  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+    cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+        f'SELECT {select_list} FROM "{database}"."{schema}"."{relation}"'
+    )
     return pd.DataFrame(cursor.fetchall(), columns=columns)
 
 
@@ -109,7 +113,7 @@ def _decisions_section(markdown_path: Path) -> list[str]:
         return []
     lines = markdown_path.read_text(encoding="utf-8").splitlines()
     for index, line in enumerate(lines):
-        if line.strip() == DECISIONS_HEADING:
+        if line.strip() in KEPT_HEADINGS:
             return lines[index:]
     return []
 
@@ -230,15 +234,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--run", required=True)
     parser.add_argument("--package", required=True)
-    parser.add_argument("--date", default="2026-09-30",
-                        help="business date the package was replayed for")
+    parser.add_argument(
+        "--date", default="2026-09-30", help="business date the package was replayed for"
+    )
     parser.add_argument("--out", type=Path, default=OUT_DIR)
-    parser.add_argument("--no-record", action="store_true",
-                        help="do not append the row to OPS.PARITY_LEDGER")
+    parser.add_argument(
+        "--no-record", action="store_true", help="do not append the row to OPS.PARITY_LEDGER"
+    )
     args = parser.parse_args()
     try:
-        return run_staging_gate(args.run, args.package, args.date, args.out,
-                                record=not args.no_record)
+        return run_staging_gate(
+            args.run, args.package, args.date, args.out, record=not args.no_record
+        )
     except (FileNotFoundError, KeyError, RuntimeError, ValueError) as error:
         print(str(error), file=sys.stderr)
         return 2
