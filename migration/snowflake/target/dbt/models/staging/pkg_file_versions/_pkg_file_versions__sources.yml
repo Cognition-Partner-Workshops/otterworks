@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: pkg_file_versions
+    schema: RAW
+    description: file_versions.csv as pkg_file_versions reads it, every column VARCHAR.
+    tables:
+      - name: EXT_FILE_VERSIONS
+        columns:
+          - name: file_id
+          - name: version
+          - name: size_bytes
+          - name: created_by
+          - name: created_at
