@@ -39,3 +39,91 @@ models:
     columns:
       - name: file_id
         tests: [unique, not_null]
+  - name: rollup_storage_daily
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+  - name: rollup_usage_events
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, event_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: event_id
+        tests: [not_null]
+  - name: rollup_seats
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+  - name: rollup_collab_daily
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id, document_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: document_id
+        tests: [not_null]
+  - name: rollup_audit
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, audit_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: audit_id
+        tests: [not_null]
+  - name: rollup_document_status
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id, workspace_id, status_label]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: workspace_id
+        tests: [not_null]
+      - name: status_label
+        tests: [not_null]
+  - name: rollup_retention
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, resource_type, resource_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: resource_type
+        tests: [not_null]
+      - name: resource_id
+        tests: [not_null]
+  - name: build_invoice_lines
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, invoice_id, line_no]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: invoice_id
+        tests: [not_null]
+      - name: line_no
+        tests: [not_null]
