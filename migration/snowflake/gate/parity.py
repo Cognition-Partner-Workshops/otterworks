@@ -176,14 +176,20 @@ def target_exists(cursor: Any, database: str, schema: str, relation: str) -> boo
 
 
 def fetch_source_frame(connection: Any, unit: dict[str, Any], business_date: date) -> pd.DataFrame:
-    schema, table = source_parts(unit["owned_table"])
     columns = [*unit["keys"], *unit["columns"]]
-    select_list = ", ".join(f"[{column}]" for column in columns)
-    query = f"SELECT {select_list} FROM [{schema}].[{table}]"
-    parameters: tuple[Any, ...] = ()
-    if unit.get("business_date_column"):
-        query += f" WHERE [{unit['business_date_column']}] = %s"
-        parameters = (business_date,)
+    if source_sql := unit.get("source_sql"):
+        query = source_sql
+        parameters: Any = (
+            {"business_date": business_date} if "%(business_date)s" in source_sql else ()
+        )
+    else:
+        schema, table = source_parts(unit["owned_table"])
+        select_list = ", ".join(f"[{column}]" for column in columns)
+        query = f"SELECT {select_list} FROM [{schema}].[{table}]"
+        parameters = ()
+        if unit.get("business_date_column"):
+            query += f" WHERE [{unit['business_date_column']}] = %s"
+            parameters = (business_date,)
     with connection.cursor(as_dict=False) as cursor:
         cursor.execute(query, parameters)
         rows = cursor.fetchall()
@@ -318,18 +324,23 @@ def run_gate(run: str, business_date_text: str, manifest_path: Path, output_dir:
             target_columns = relation_columns(target_cursor, prefix, schema, relation)
             compared_columns = [*unit["keys"], *unit["columns"]]
             require_columns(unit["unit"], compared_columns, target_columns, "Snowflake")
-            source_schema, source_table = source_parts(unit["owned_table"])
             if source_connection is None:
                 source_connection = connect_source_database()
-            with source_connection.cursor(as_dict=False) as source_cursor:
-                source_cursor.execute(
-                    """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-                    WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s""",
-                    (source_schema, source_table),
-                )
-                source_columns = {str(row[0]).lower() for row in source_cursor.fetchall()}
+            if unit.get("source_sql"):
+                source_frame = fetch_source_frame(source_connection, unit, business_date)
+                source_columns = {str(column).lower() for column in source_frame.columns}
+            else:
+                source_schema, source_table = source_parts(unit["owned_table"])
+                with source_connection.cursor(as_dict=False) as source_cursor:
+                    source_cursor.execute(
+                        """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s""",
+                        (source_schema, source_table),
+                    )
+                    source_columns = {str(row[0]).lower() for row in source_cursor.fetchall()}
             require_columns(unit["unit"], compared_columns, source_columns, "SQL Server")
-            source_frame = fetch_source_frame(source_connection, unit, business_date)
+            if not unit.get("source_sql"):
+                source_frame = fetch_source_frame(source_connection, unit, business_date)
             target_frame = fetch_target_frame(
                 target_cursor, prefix, schema, relation, unit, business_date
             )

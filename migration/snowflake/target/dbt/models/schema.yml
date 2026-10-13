@@ -319,3 +319,29 @@ models:
         tests: [not_null]
       - name: last_event_utc
         tests: [not_null]
+  - name: log_run
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, object_name]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: object_name
+        tests: [not_null]
+      - name: object_type
+        tests: [not_null]
+      - name: status
+        tests: [not_null]
+  - name: purge_expired
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [object_name]
+    columns:
+      - name: object_name
+        tests: [not_null]
+      - name: retention_cutoff
+        tests: [not_null]
+      - name: rows_older_than_cutoff
+        tests: [not_null]

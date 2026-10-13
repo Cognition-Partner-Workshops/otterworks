@@ -168,10 +168,55 @@ units:
     keys: [business_date, object_name]
     columns: [object_type, status, rows_written]
     business_date_column: business_date
+    source_sql: |
+      WITH latest_runs AS (
+          SELECT business_date, object_name, object_type, status, rows_written,
+                 ROW_NUMBER() OVER (
+                     PARTITION BY business_date, object_name ORDER BY run_id DESC
+                 ) AS row_number
+          FROM ops.etl_run_log
+          WHERE business_date = %(business_date)s
+            AND object_type = 'procedure'
+            AND status = 'succeeded'
+      )
+      SELECT business_date, object_name, object_type, status, rows_written
+      FROM latest_runs
+      WHERE row_number = 1
   - unit: purge_expired
     source_procedure: dbo.usp_purge_expired
     owned_table: ops.etl_run_log
     target_model: OPS.PURGE_EXPIRED
     keys: [object_name]
-    columns: [status]
+    columns: [retention_cutoff, rows_older_than_cutoff]
     business_date_column: null
+    source_sql: |
+      WITH cutoff AS (
+          SELECT CAST(DATEADD(day, -400, GETDATE()) AS date) AS retention_cutoff
+      )
+      SELECT 'ops.etl_run_log' AS object_name, cutoff.retention_cutoff,
+             COUNT_BIG(log.run_id) AS rows_older_than_cutoff
+      FROM cutoff
+      LEFT JOIN ops.etl_run_log AS log
+        ON log.started_at < cutoff.retention_cutoff
+      GROUP BY cutoff.retention_cutoff
+      UNION ALL
+      SELECT 'ops.agent_job_history', cutoff.retention_cutoff,
+             COUNT_BIG(history.instance_id)
+      FROM cutoff
+      LEFT JOIN ops.agent_job_history AS history
+        ON history.run_date < CONVERT(int, CONVERT(char(8), cutoff.retention_cutoff, 112))
+      GROUP BY cutoff.retention_cutoff
+      UNION ALL
+      SELECT 'fact.fact_usage_events', cutoff.retention_cutoff,
+             COUNT_BIG(events.event_id)
+      FROM cutoff
+      LEFT JOIN fact.fact_usage_events AS events
+        ON events.business_date < cutoff.retention_cutoff
+      GROUP BY cutoff.retention_cutoff
+      UNION ALL
+      SELECT 'fact.fact_audit_events', cutoff.retention_cutoff,
+             COUNT_BIG(events.audit_id)
+      FROM cutoff
+      LEFT JOIN fact.fact_audit_events AS events
+        ON events.business_date < cutoff.retention_cutoff
+      GROUP BY cutoff.retention_cutoff
