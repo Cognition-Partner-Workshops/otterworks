@@ -5,7 +5,6 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
-
 from migration.snowflake.gate.compare import UnitResult, compare_frames
 
 

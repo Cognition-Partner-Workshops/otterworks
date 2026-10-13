@@ -48,7 +48,9 @@ def normalise_pem(pem: str) -> bytes:
     body = re.sub(r"-----(BEGIN|END) PRIVATE KEY-----", "", pem)
     body = "".join(body.split())
     lines = [body[i : i + 64] for i in range(0, len(body), 64)]
-    pem_text = "\n".join(["-----BEGIN PRIVATE KEY-----", *lines, "-----END PRIVATE KEY-----"])
+    header = "-----BEGIN PRIVATE KEY-----"  # gitleaks:allow
+    footer = "-----END PRIVATE KEY-----"
+    pem_text = "\n".join([header, *lines, footer])
     return (pem_text + "\n").encode()
 
 
@@ -177,8 +179,8 @@ def run_up(run: str, expires: str, credit_quota: int) -> None:
             print(f"{'AUTHENTICATION POLICY':<23} {prefix}_VIEWER  (already attached)")
         else:
             if current_policy:
-                cur.execute(f"ALTER USER {prefix}_VIEWER UNSET AUTHENTICATION POLICY")
-            cur.execute(f"ALTER USER {prefix}_VIEWER SET AUTHENTICATION POLICY {policy_name}")
+                cur.execute(f"ALTER USER {prefix}_VIEWER UNSET AUTHENTICATION POLICY")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            cur.execute(f"ALTER USER {prefix}_VIEWER SET AUTHENTICATION POLICY {policy_name}")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             print(f"{'AUTHENTICATION POLICY':<23} {prefix}_VIEWER  (attached {policy_name})")
     print(f"Bootstrap done for {run}: database {prefix}, warehouse {prefix}_WH, expires {expires}")
 

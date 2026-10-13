@@ -4,3 +4,7 @@
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:60
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:143
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:171
+
+# Local-only SQL Server sa password for the Snowflake migration fixture's Compose stack
+# (migration/snowflake/compose.yaml binds to 127.0.0.1; overridable with UBW_SQL_PASSWORD).
+dcb39262e5deeb7343e99abf974e79f09978fdb4:migration/snowflake/Makefile:generic-api-key:6

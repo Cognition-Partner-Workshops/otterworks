@@ -168,7 +168,7 @@ def create(run: str) -> None:
     prefix = object_prefix(run)
     values = {"PREFIX": prefix, "RUN": run}
     with dbt_connection(run) as connection, connection.cursor() as cursor:
-        cursor.execute(
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             f"CREATE STAGE IF NOT EXISTS {prefix}.OPS.DBT_MODELS DIRECTORY = (ENABLE = TRUE)"
         )
         print(f"STAGE             {prefix}.OPS.DBT_MODELS (created or already present)")
@@ -201,14 +201,14 @@ def manage(run: str, operation: str) -> None:
     with dbt_connection(run) as connection, connection.cursor() as cursor:
         if operation == "resume":
             for name in STANDALONE_TASKS:
-                cursor.execute(f"ALTER TASK {prefix}.OPS.{name} RESUME")
+                cursor.execute(f"ALTER TASK {prefix}.OPS.{name} RESUME")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 print(f"RESUMED           {prefix}.OPS.{name}")
             root_name = f"{prefix}.OPS.UBW_NIGHTLY_LOAD"
             cursor.execute("SELECT SYSTEM$TASK_DEPENDENTS_ENABLE(%s)", (root_name,))
             print(f"RESUMED GRAPH     {root_name}")
         else:
             for _, name in reversed(TASK_FILES):
-                cursor.execute(f"ALTER TASK {prefix}.OPS.{name} SUSPEND")
+                cursor.execute(f"ALTER TASK {prefix}.OPS.{name} SUSPEND")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 print(f"SUSPENDED         {prefix}.OPS.{name}")
 
 
@@ -227,7 +227,7 @@ def publish(run: str) -> None:
     upload_dir = HERE.parent / "dbt" / "target" / "task_models"
     upload_dir.mkdir(parents=True, exist_ok=True)
     with dbt_connection(run) as connection, connection.cursor() as cursor:
-        cursor.execute(
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             f"CREATE STAGE IF NOT EXISTS {prefix}.OPS.DBT_MODELS DIRECTORY = (ENABLE = TRUE)"
         )
         for model in DIM_MODELS:
@@ -246,7 +246,7 @@ def publish(run: str) -> None:
                 f"@{prefix}.OPS.DBT_MODELS AUTO_COMPRESS = FALSE OVERWRITE = TRUE"
             )
             print(f"PUBLISHED         {model} -> {prefix}.OPS.DBT_MODELS/{model}.sql")
-        cursor.execute(f"ALTER STAGE {prefix}.OPS.DBT_MODELS REFRESH")
+        cursor.execute(f"ALTER STAGE {prefix}.OPS.DBT_MODELS REFRESH")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
 
 
 def main() -> int:

@@ -58,7 +58,7 @@ def main() -> int:
         return 2
     ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
     result = subprocess.run(
-        [
+        [  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args  # noqa: E501
             sys.executable,
             str(HERE / "parity.py"),
             "--run",

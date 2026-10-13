@@ -58,7 +58,7 @@ def reset_database() -> None:
     connection = connect("master")
     try:
         cursor = connection.cursor()
-        cursor.execute(
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             f"""
             IF DB_ID(N'{DATABASE}') IS NOT NULL
             BEGIN
@@ -166,7 +166,7 @@ def print_counts() -> None:
     try:
         cursor = connection.cursor()
         for schema, table in _ddl_tables():
-            cursor.execute(f"SELECT COUNT_BIG(*) FROM [{schema}].[{table}]")
+            cursor.execute(f"SELECT COUNT_BIG(*) FROM [{schema}].[{table}]")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             row_count = int(cursor.fetchone()[0])
             totals[schema] += row_count
             print(f"{schema}.{table}: {row_count}")

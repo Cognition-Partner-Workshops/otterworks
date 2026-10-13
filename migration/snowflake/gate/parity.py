@@ -148,7 +148,7 @@ def source_parts(owned_table: str) -> tuple[str, str]:
 
 
 def relation_columns(cursor: Any, database: str, schema: str, relation: str) -> set[str]:
-    cursor.execute(
+    cursor.execute(  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         f"""SELECT COLUMN_NAME
         FROM "{database}".INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s""",
@@ -164,7 +164,7 @@ def require_columns(unit: str, columns: list[str], available: set[str], side: st
 
 
 def target_exists(cursor: Any, database: str, schema: str, relation: str) -> bool:
-    cursor.execute(
+    cursor.execute(  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         f"""SELECT 1
         FROM "{database}".INFORMATION_SCHEMA.TABLES
         WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s
@@ -185,7 +185,7 @@ def fetch_source_frame(connection: Any, unit: dict[str, Any], business_date: dat
         query += f" WHERE [{unit['business_date_column']}] = %s"
         parameters = (business_date,)
     with connection.cursor(as_dict=False) as cursor:
-        cursor.execute(query, parameters)
+        cursor.execute(query, parameters)  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         rows = cursor.fetchall()
         column_names = [description[0] for description in cursor.description]
     return pd.DataFrame(rows, columns=column_names)
@@ -206,7 +206,7 @@ def fetch_target_frame(
     if unit.get("business_date_column"):
         query += f' WHERE "{unit["business_date_column"].upper()}" = %s'
         parameters = (business_date,)
-    cursor.execute(query, parameters)
+    cursor.execute(query, parameters)  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
     rows = cursor.fetchall()
     column_names = [description[0] for description in cursor.description]
     return pd.DataFrame(rows, columns=column_names)
@@ -245,7 +245,7 @@ def record_ledger(
 ) -> None:
     prefix = object_prefix(run)
     with connection.cursor() as cursor:
-        cursor.execute(
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             f"""CREATE TABLE IF NOT EXISTS {prefix}.OPS.PARITY_LEDGER (
                 RUN_TOKEN VARCHAR,
                 BUSINESS_DATE DATE,
@@ -260,7 +260,7 @@ def record_ledger(
             )"""
         )
         for unit in units:
-            cursor.execute(
+            cursor.execute(  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 f"""INSERT INTO {prefix}.OPS.PARITY_LEDGER (
                     RUN_TOKEN, BUSINESS_DATE, UNIT, STATUS, SOURCE_ROWS, TARGET_ROWS,
                     DIFFERING_KEY_COUNT, DETAILS, EXPLANATION

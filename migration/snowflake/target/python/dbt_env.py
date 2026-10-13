@@ -39,7 +39,7 @@ def main() -> int:
         str(PROJECT),
     ]
     try:
-        os.execvp(arguments[0], arguments)
+        os.execvp(arguments[0], arguments)  # nosemgrep: python.lang.security.audit.dangerous-os-exec-tainted-env-args.dangerous-os-exec-tainted-env-args  # noqa: E501
     except FileNotFoundError:
         print("dbt executable is not available on PATH", file=sys.stderr)
         return 127

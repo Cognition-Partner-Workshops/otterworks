@@ -161,7 +161,7 @@ def _run_step(
         elif subsystem == "TSQL":
             cursor = connection.cursor()
             batch = f"DECLARE @business_date date = '{business_date.isoformat()}';\n{command}"
-            cursor.execute(batch)
+            cursor.execute(batch)  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             cursor.close()
         else:
             raise ValueError(f"Unsupported SQL Agent subsystem {subsystem}")

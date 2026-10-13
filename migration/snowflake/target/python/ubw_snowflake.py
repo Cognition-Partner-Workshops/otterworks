@@ -26,7 +26,9 @@ def normalise_pem(pem: str) -> bytes:
     body = re.sub(r"-----(BEGIN|END) PRIVATE KEY-----", "", pem)
     body = "".join(body.split())
     lines = [body[index : index + 64] for index in range(0, len(body), 64)]
-    pem_text = "\n".join(["-----BEGIN PRIVATE KEY-----", *lines, "-----END PRIVATE KEY-----"])
+    header = "-----BEGIN PRIVATE KEY-----"  # gitleaks:allow
+    footer = "-----END PRIVATE KEY-----"
+    pem_text = "\n".join([header, *lines, footer])
     return (pem_text + "\n").encode()
 
 

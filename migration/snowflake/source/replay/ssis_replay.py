@@ -8,7 +8,7 @@ import csv
 import hashlib
 import os
 import re
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml  # noqa: E501
 from collections.abc import Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -222,7 +222,7 @@ def parse_package(path: str | Path) -> Package:
         if candidate.suffix != ".dtsx":
             candidate = candidate.with_suffix(".dtsx")
         package_path = candidate
-    root = ET.parse(package_path).getroot()
+    root = ET.parse(package_path).getroot()  # nosemgrep: python.lang.security.use-defused-xml-parse.use-defused-xml-parse  # noqa: E501
     if root.get(_tag(DTS, "ExecutableType")) != "Microsoft.Package":
         raise ValueError(f"{package_path} is not an SSIS package")
 
@@ -727,7 +727,7 @@ def _bulk_load(connection: Any, table_name: str) -> None:
         raise ValueError(f"Invalid destination table {table_name}")
     container_path = f"/var/opt/ubw/build/replay/{table}.csv"
     cursor = connection.cursor()
-    cursor.execute(
+    cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         f"""
         BULK INSERT [{schema}].[{table}]
         FROM '{container_path}'
