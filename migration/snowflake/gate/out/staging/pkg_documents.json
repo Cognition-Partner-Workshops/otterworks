@@ -1,0 +1,42 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T02:54:09.402097+00:00",
+  "spec": {
+    "package": "pkg_documents",
+    "sqlserver_table": "stg.stg_documents",
+    "snowflake_model": "STAGING.STG_DOCUMENTS",
+    "keys": [
+      "id"
+    ],
+    "columns": [
+      "title",
+      "content_type",
+      "owner_id",
+      "folder_id",
+      "workspace_id",
+      "is_deleted",
+      "is_template",
+      "archived",
+      "word_count",
+      "version",
+      "created_at",
+      "updated_at",
+      "tenant_id",
+      "source_system"
+    ],
+    "excluded": {
+      "extracted_at": "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run"
+    },
+    "rename": {}
+  },
+  "unit": {
+    "unit": "ssis:pkg_documents",
+    "status": "PASS",
+    "source_rows": 40000,
+    "target_rows": 40000,
+    "differing_key_count": 0,
+    "differences": [],
+    "explanation": ""
+  }
+}

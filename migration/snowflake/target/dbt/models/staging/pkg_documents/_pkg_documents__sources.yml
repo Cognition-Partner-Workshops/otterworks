@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: pkg_documents
+    schema: RAW
+    description: documents.csv as landed by sfm-load-extracts, every column VARCHAR, empty fields as ''.
+    tables:
+      - name: EXT_DOCUMENTS
+        columns:
+          - name: ID
+          - name: TITLE
+          - name: CONTENT_TYPE
+          - name: OWNER_ID
+          - name: FOLDER_ID
+          - name: WORKSPACE_ID
+          - name: IS_DELETED
+          - name: IS_TEMPLATE
+          - name: ARCHIVED
+          - name: WORD_COUNT
+          - name: VERSION
+          - name: CREATED_AT
+          - name: UPDATED_AT
