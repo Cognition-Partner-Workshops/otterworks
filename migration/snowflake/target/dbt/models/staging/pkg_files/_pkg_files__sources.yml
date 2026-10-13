@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: pkg_files
+    description: Flat file read by SSIS package pkg_files (files.csv), landed verbatim as VARCHAR.
+    schema: RAW
+    tables:
+      - name: EXT_FILES
+        description: files.csv from the file-service extract, every column VARCHAR, empty fields as ''.
+        columns:
+          - name: ID
+          - name: NAME
+          - name: MIME_TYPE
+          - name: SIZE_BYTES
+          - name: FOLDER_ID
+          - name: OWNER_ID
+          - name: WORKSPACE_ID
+          - name: VERSION
+          - name: IS_TRASHED
+          - name: ARCHIVED
+          - name: CREATED_AT
+          - name: UPDATED_AT
