@@ -1,7 +1,6 @@
 Staging parity pkg_collaboration PASS 50000 / 50000 differing_keys=0
 
-SQL Server `stg.stg_collab_events` vs Snowflake `STAGING.STG_COLLAB_EVENTS`, keys id, 7 compared columns.
-
+`ssis:pkg_collaboration`: SQL Server `stg.stg_collab_events` vs Snowflake `STAGING.STG_COLLAB_EVENTS`, keys id, 7 compared columns.
 Not compared:
 - `extracted_at`: run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run
 

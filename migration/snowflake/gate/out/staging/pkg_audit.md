@@ -1,7 +1,6 @@
 Staging parity pkg_audit PASS 160000 / 160000 differing_keys=0
 
-SQL Server `stg.stg_audit_events` vs Snowflake `STAGING.STG_AUDIT_EVENTS`, keys id, 10 compared columns.
-
+`ssis:pkg_audit`: SQL Server `stg.stg_audit_events` vs Snowflake `STAGING.STG_AUDIT_EVENTS`, keys id, 10 compared columns.
 Not compared:
 - `extracted_at`: run timestamp: @[System::StartTime] of the SSIS run vs dbt run_started_at
 
