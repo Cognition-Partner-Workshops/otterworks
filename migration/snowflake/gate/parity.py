@@ -264,7 +264,7 @@ def record_ledger(
                 f"""INSERT INTO {prefix}.OPS.PARITY_LEDGER (
                     RUN_TOKEN, BUSINESS_DATE, UNIT, STATUS, SOURCE_ROWS, TARGET_ROWS,
                     DIFFERING_KEY_COUNT, DETAILS, EXPLANATION
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, PARSE_JSON(%s), %s)""",
+                ) SELECT %s, %s, %s, %s, %s, %s, %s, PARSE_JSON(%s), %s""",
                 (
                     run,
                     business_date,

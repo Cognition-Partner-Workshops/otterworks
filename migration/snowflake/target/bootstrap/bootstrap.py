@@ -25,7 +25,7 @@ RUN_PATTERN = re.compile(r"^sfm-(\d{8})-[a-z0-9]{2,8}$")
 DEFAULT_TTL_DAYS = 14
 CREATE_PATTERN = re.compile(
     r"^CREATE\s+(?:OR\s+REPLACE\s+)?"
-    r"(DATABASE|SCHEMA|WAREHOUSE|RESOURCE\s+MONITOR|ROLE|USER|TAG)\s+"
+    r"(DATABASE|SCHEMA|WAREHOUSE|RESOURCE\s+MONITOR|AUTHENTICATION\s+POLICY|ROLE|USER|TAG)\s+"
     r"(?:IF\s+NOT\s+EXISTS\s+)?([\w.$]+)",
     re.IGNORECASE,
 )
@@ -100,8 +100,37 @@ def token_values(run: str, expires: str) -> dict[str, str]:
     return {"RUN": run, "PREFIX": object_prefix(run), "EXPIRES": expires}
 
 
+def is_unchanged_password_error(error: snowflake.connector.errors.ProgrammingError) -> bool:
+    return error.errno == 3002 and "same password" in str(error).lower()
+
+
+def current_authentication_policy(
+    cur: snowflake.connector.cursor.SnowflakeCursor, user: str
+) -> str:
+    cur.execute(
+        "SELECT POLICY_DB, POLICY_SCHEMA, POLICY_NAME, REF_ENTITY_NAME, "
+        "REF_ENTITY_DOMAIN, POLICY_STATUS "
+        "FROM TABLE(OW_UBW.INFORMATION_SCHEMA.POLICY_REFERENCES("
+        "REF_ENTITY_NAME => %s, REF_ENTITY_DOMAIN => 'USER'))",
+        (user,),
+    )
+    columns = [column[0].lower() for column in cur.description or []]
+    for row in cur.fetchall():
+        reference = dict(zip(columns, row, strict=True))
+        if (
+            str(reference.get("ref_entity_name", "")).upper() == user.upper()
+            and str(reference.get("ref_entity_domain", "")).upper() == "USER"
+            and str(reference.get("policy_status", "")).upper() == "ACTIVE"
+        ):
+            return ".".join(
+                str(reference[column]) for column in ("policy_db", "policy_schema", "policy_name")
+            )
+    return ""
+
+
 def run_up(run: str, expires: str, credit_quota: int) -> None:
-    viewer_password = os.environ.get("UBW_VIEWER_PASSWORD") or random_password()
+    requested_viewer_password = os.environ.get("UBW_VIEWER_PASSWORD")
+    viewer_password = requested_viewer_password or random_password()
     values = token_values(run, expires) | {
         "CREDIT_QUOTA": str(credit_quota),
         "DBT_PUBLIC_KEY": public_key_body(require_env("SNOWFLAKE_PRIVATE_KEY")),
@@ -109,18 +138,48 @@ def run_up(run: str, expires: str, credit_quota: int) -> None:
     }
     prefix = values["PREFIX"]
     with admin_connection() as conn, conn.cursor() as cur:
+        viewer_created = False
         for statement in render("account.sql", values):
             cur.execute(statement)
             match = CREATE_PATTERN.match(statement)
             if match:
                 kind = " ".join(match.group(1).upper().split())
-                print(f"{kind:<17} {match.group(2)}  ({cur.fetchone()[0]})")
-        if os.environ.get("UBW_VIEWER_PASSWORD"):
-            cur.execute(
-                f"ALTER USER {prefix}_VIEWER SET PASSWORD = %s MUST_CHANGE_PASSWORD = FALSE",
-                (viewer_password,),
-            )
-            print(f"{'PASSWORD':<17} {prefix}_VIEWER  (set from UBW_VIEWER_PASSWORD)")
+                result = cur.fetchone()
+                status = str(result[0]) if result else "created"
+                print(f"{kind:<23} {match.group(2)}  ({status})")
+                if (
+                    kind == "USER"
+                    and match.group(2).upper() == f"{prefix}_VIEWER"
+                    and "created" in status.lower()
+                    and "already exists" not in status.lower()
+                ):
+                    viewer_created = True
+        if requested_viewer_password:
+            if viewer_created:
+                print(f"{'PASSWORD':<23} {prefix}_VIEWER  (set during CREATE)")
+            else:
+                try:
+                    cur.execute(
+                        f"ALTER USER {prefix}_VIEWER SET PASSWORD = %s "
+                        "MUST_CHANGE_PASSWORD = FALSE",
+                        (viewer_password,),
+                    )
+                except snowflake.connector.errors.ProgrammingError as error:
+                    if not is_unchanged_password_error(error):
+                        raise
+                    print(f"{'PASSWORD':<23} {prefix}_VIEWER  (already set)")
+                else:
+                    print(f"{'PASSWORD':<23} {prefix}_VIEWER  (set from UBW_VIEWER_PASSWORD)")
+
+        policy_name = "OW_UBW.TAGS.OW_UBW_VIEWER_AUTH"
+        current_policy = current_authentication_policy(cur, f"{prefix}_VIEWER")
+        if current_policy.upper() == policy_name:
+            print(f"{'AUTHENTICATION POLICY':<23} {prefix}_VIEWER  (already attached)")
+        else:
+            if current_policy:
+                cur.execute(f"ALTER USER {prefix}_VIEWER UNSET AUTHENTICATION POLICY")
+            cur.execute(f"ALTER USER {prefix}_VIEWER SET AUTHENTICATION POLICY {policy_name}")
+            print(f"{'AUTHENTICATION POLICY':<23} {prefix}_VIEWER  (attached {policy_name})")
     print(f"Bootstrap done for {run}: database {prefix}, warehouse {prefix}_WH, expires {expires}")
 
 

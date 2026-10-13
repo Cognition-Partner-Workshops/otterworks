@@ -1,5 +1,5 @@
 -- Drops every Snowflake object a run created. Safe to re-run; run it as ACCOUNTADMIN.
--- The shared OW_UBW tag database stays, since other runs still use its tags.
+-- The shared OW_UBW database stays, since its tags and authentication policy are shared.
 ALTER TASK IF EXISTS ${PREFIX}.OPS.UBW_NIGHTLY_LOAD SUSPEND;
 DROP DATABASE IF EXISTS ${PREFIX};
 DROP WAREHOUSE IF EXISTS ${PREFIX}_WH;

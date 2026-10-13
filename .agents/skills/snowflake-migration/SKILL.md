@@ -47,14 +47,15 @@ Never print, commit or paste any of these values.
 
 ## Commands
 
-All targets take `RUN=<token>`; the gate and dual run also take `DATE=<yyyy-mm-dd>`.
+All targets take `RUN=<token>`. `sfm-dbt` accepts an optional `DATE=<yyyy-mm-dd>`; the gate and
+dual run require it.
 
 | Target | What it does |
 |---|---|
 | `make sfm-up` / `make sfm-down` | SQL Server side up and down (owned by `source/`) |
 | `make sfm-bootstrap RUN=` | create the run's Snowflake objects |
-| `make sfm-load-raw RUN=` | PUT and COPY the stg extracts into `RAW` |
-| `make sfm-dbt RUN=` | `dbt build` against the run's database |
+| `make sfm-load-raw RUN=` | export the source staging tables and load them into `RAW` |
+| `make sfm-dbt RUN= [DATE=]` | `dbt build` against the run's database |
 | `make sfm-tasks RUN=` | create the task graph, suspended |
 | `make sfm-gate RUN= DATE=` | run parity and write the ledger |
 | `make sfm-gate-test` | unit tests for the comparison logic, no connections |

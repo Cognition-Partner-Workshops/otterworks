@@ -11,11 +11,11 @@ sfm-require-run:
 sfm-bootstrap: sfm-require-run ## Bootstrap the Snowflake objects for RUN
 	$(PY) $(SFM_ROOT)/target/bootstrap/bootstrap.py up --run "$(RUN)" $(if $(EXPIRES),--expires "$(EXPIRES)",)
 
-sfm-load-raw: sfm-require-run ## Load the generated CSV extracts into RAW
+sfm-load-raw: sfm-require-run ## Export the source staging tables and load them into RAW
 	$(PY) $(SFM_ROOT)/target/python/load_raw.py --run "$(RUN)"
 
 sfm-dbt: sfm-require-run ## Build the dbt project in Snowflake
-	UBW_RUN="$(RUN)" $(PY) $(SFM_ROOT)/target/python/dbt_env.py -- build
+	UBW_RUN="$(RUN)" $(PY) $(SFM_ROOT)/target/python/dbt_env.py -- build $(if $(DATE),--vars '{business_date: $(DATE)}',)
 
 sfm-gate: sfm-require-run ## Compare SQL Server and Snowflake for DATE
 	$(SFM_DATE_REQUIRED)
