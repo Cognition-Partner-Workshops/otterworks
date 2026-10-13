@@ -2,6 +2,9 @@ version: 2
 
 models:
   - name: stg_billing_usage_events
+    description: >
+      Port of SSIS package pkg_billing_usage. Incremental append from RAW.EXT_BILLING_USAGE_EVENTS
+      past the saved watermark (MAX(occurred_at) already loaded), as the package does.
     columns:
       - name: event_id
         tests: [unique, not_null]
@@ -9,8 +12,17 @@ models:
         tests: [not_null]
       - name: event_ts_utc
         tests: [not_null]
+      - name: occurred_at
+        tests: [not_null]
+      - name: units
+        tests: [not_null]
       - name: event_kind
         tests:
           - accepted_values:
               arguments:
                 values: ["api", "storage", "compute"]
+      - name: source_system
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["legacy-billing"]
