@@ -1,0 +1,21 @@
+package: pkg_billing_invoices
+sqlserver_table: stg.stg_billing_invoices
+snowflake_model: STAGING.STG_BILLING_INVOICES
+# One row per invoice line; line_id cannot be the key because the package lands it blank.
+keys: [invoice_id, line_no]
+columns:
+  - tenant_id
+  - period_start
+  - period_end
+  - issued_at
+  - subtotal
+  - tax
+  - total
+  - status
+  - line_id
+  - line_type
+  - description
+  - amount
+  - source_system
+excluded:
+  extracted_at: "run timestamp: @[System::StartTime] (SQL Server GETDATE() at package start) on SQL Server, query time on Snowflake"
