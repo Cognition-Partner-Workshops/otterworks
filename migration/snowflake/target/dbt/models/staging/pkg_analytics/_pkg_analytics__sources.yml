@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: pkg_analytics
+    schema: RAW
+    description: Flat file read by SSIS pkg_analytics, loaded verbatim (all VARCHAR).
+    tables:
+      - name: EXT_ANALYTICS_EVENTS
+        description: analytics_events.csv
+        columns:
+          - name: EVENT_ID
+          - name: EVENT_TYPE
+          - name: USER_ID
+          - name: RESOURCE_ID
+          - name: RESOURCE_TYPE
+          - name: METADATA
+          - name: OCCURRED_AT
