@@ -11,6 +11,7 @@ import com.otterworks.analytics.config.AppConfig
 import com.otterworks.analytics.db.AnalyticsDb
 import com.otterworks.analytics.repository.{InMemoryMetricsRepository, MarketRepository, MetricsRepository, PostgresMetricsRepository}
 import com.otterworks.analytics.service.{AnalyticsService, EventProcessor, MarginService}
+import com.otterworks.analytics.ubw.{UbwConnections, UbwRoutes}
 
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
@@ -77,9 +78,13 @@ object Main:
     val analyticsRoutes = AnalyticsRoutes(analyticsService)
     val eventRoutes = EventRoutes(analyticsService)
 
+    // Usage & Billing Warehouse usage reads; UBW_BACKEND selects SQL Server or Snowflake.
+    val ubwRoutes = UbwRoutes(UbwConnections())
+
     val routes: Route = concat(
       healthRoutes.routes,
       eventRoutes.routes,
+      ubwRoutes.routes,
       analyticsRoutes.routes,
       marketRoutes,
     )

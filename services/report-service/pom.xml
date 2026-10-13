@@ -94,6 +94,13 @@
             <version>12.6.1.jre8</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- Usage & Billing Warehouse reports on Snowflake (UBW_BACKEND=snowflake), Java 8 compatible -->
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+            <version>3.16.1</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- LEGACY: SpringFox Swagger 2 (dead project, last release 2020) -->
         <dependency>

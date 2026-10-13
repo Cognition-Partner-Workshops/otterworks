@@ -1,6 +1,8 @@
 CREATE OR REPLACE TASK ${PREFIX}.OPS.UBW_BUILD_MARTS
     WAREHOUSE = ${PREFIX}_WH
-    AFTER ${PREFIX}.OPS.UBW_BUILD_FACTS
+    TIMEZONE = 'America/New_York'
+    COMMENT = 'Also carries the steps of SQL Agent job UBW Hourly Audit (build_mart_audit): audit data only changes with the nightly RAW load'
+    AFTER ${PREFIX}.OPS.UBW_BUILD_FACTS, ${PREFIX}.OPS.UBW_ROLLUP_STORAGE_DAILY
 AS
     CALL ${PREFIX}.OPS.UBW_RUN_MODELS(ARRAY_CONSTRUCT(
         'rate_overage',

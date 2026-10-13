@@ -1,0 +1,42 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T03:11:36.245844+00:00",
+  "spec": {
+    "package": "pkg_collaboration",
+    "destinations": [
+      {
+        "columns": [
+          "event_type",
+          "document_id",
+          "user_id",
+          "session_id",
+          "created_at",
+          "tenant_id",
+          "source_system"
+        ],
+        "keys": [
+          "id"
+        ],
+        "snowflake_model": "STAGING.STG_COLLAB_EVENTS",
+        "sqlserver_table": "stg.stg_collab_events",
+        "rename": {},
+        "excluded": {
+          "extracted_at": "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run"
+        },
+        "unit": "ssis:pkg_collaboration"
+      }
+    ]
+  },
+  "units": [
+    {
+      "unit": "ssis:pkg_collaboration",
+      "status": "PASS",
+      "source_rows": 50000,
+      "target_rows": 50000,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
+}

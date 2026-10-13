@@ -1,0 +1,16 @@
+package: pkg_auth_users
+sqlserver_table: stg.stg_auth_users
+snowflake_model: STAGING.STG_AUTH_USERS
+keys: [id]
+columns:
+  - email
+  - display_name
+  - email_verified
+  - mfa_enabled
+  - created_at
+  - updated_at
+  - last_login_at
+  - email_domain
+  - source_system
+excluded:
+  extracted_at: "@[System::StartTime] of the package run (SQL Server GETDATE() at replay); run-dependent load timestamp, Snowflake stamps current_timestamp() at query time"

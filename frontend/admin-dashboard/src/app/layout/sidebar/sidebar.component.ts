@@ -169,6 +169,7 @@ export class SidebarComponent {
     { label: 'Announcements', icon: 'campaign', route: '/announcements' },
     { label: 'Storage Quotas', icon: 'storage', route: '/quotas' },
     { label: 'Incidents', icon: 'report_problem', route: '/incidents' },
+    { label: 'Tenant Usage', icon: 'insights', route: '/usage' },
     { label: 'Analytics', icon: 'bar_chart', route: '/analytics' },
     { label: 'Migration', icon: 'swap_horiz', route: '/migration' },
   ];

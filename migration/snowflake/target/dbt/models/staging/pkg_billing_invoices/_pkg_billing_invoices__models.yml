@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: stg_billing_invoices
+    description: >
+      One row per invoice line from billing_invoice_lines.csv, denormalised with its invoice
+      header and rating period, as pkg_billing_invoices lands it in stg.stg_billing_invoices.
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [invoice_id, line_no]
+    columns:
+      - name: invoice_id
+        tests: [not_null]
+      - name: line_no
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: period_start
+        tests: [not_null]
+      - name: period_end
+        tests: [not_null]
+      - name: issued_at
+        tests: [not_null]
+      - name: subtotal
+        tests: [not_null]
+      - name: tax
+        tests: [not_null]
+      - name: total
+        tests: [not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["draft", "issued", "paid", "overdue"]
+      - name: line_id
+        tests: [not_null]
+      - name: line_type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["plan", "usage", "tax", "credit"]
+      - name: description
+        tests: [not_null]
+      - name: amount
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests: [not_null]

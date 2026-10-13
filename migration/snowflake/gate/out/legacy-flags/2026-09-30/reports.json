@@ -1,0 +1,307 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T03:34:01.170566+00:00",
+  "reports": [
+    {
+      "unit": "rpt_archived_content",
+      "status": "PASS",
+      "source_rows": 0,
+      "target_rows": 0,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_rollup",
+      "status": "PASS",
+      "source_rows": 1909,
+      "target_rows": 1909,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_sensitive_actions",
+      "status": "PASS",
+      "source_rows": 0,
+      "target_rows": 0,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_user_activity",
+      "status": "PASS",
+      "source_rows": 5024,
+      "target_rows": 5024,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_capacity_forecast",
+      "status": "PASS",
+      "source_rows": 1680,
+      "target_rows": 1680,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_document_status",
+      "status": "PASS",
+      "source_rows": 360,
+      "target_rows": 360,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_invoice_lines",
+      "status": "PASS",
+      "source_rows": 376,
+      "target_rows": 376,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_invoice_totals_by_tenant",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_monthly_billing_summary",
+      "status": "PASS",
+      "source_rows": 16,
+      "target_rows": 16,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_overage_by_tier",
+      "status": "PASS",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_overage_charges",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_plan_mix",
+      "status": "PASS",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_plan_tier_summary",
+      "status": "PASS",
+      "source_rows": 1,
+      "target_rows": 1,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30, @PlanTier=Growth",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_retention_candidates",
+      "status": "PASS",
+      "source_rows": 8448,
+      "target_rows": 8448,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_retention_summary",
+      "status": "PASS",
+      "source_rows": 240,
+      "target_rows": 240,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_seat_count_by_tenant",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_seat_limit_headroom",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_seat_utilization",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_seats_over_limit",
+      "status": "PASS",
+      "source_rows": 30,
+      "target_rows": 30,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_storage_growth_trend",
+      "status": "PASS",
+      "source_rows": 1680,
+      "target_rows": 1680,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_storage_vs_included",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_active_users",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_api_units",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_compute_units",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_content_counts",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_storage_peak",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_usage_by_region",
+      "status": "PASS",
+      "source_rows": 5,
+      "target_rows": 5,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_usage_daily",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_usage_top20",
+      "status": "PASS",
+      "source_rows": 20,
+      "target_rows": 20,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_trash_purge_candidates",
+      "status": "PASS",
+      "source_rows": 2664,
+      "target_rows": 2664,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    }
+  ]
+}

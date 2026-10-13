@@ -119,7 +119,7 @@ Objects carry the run token in their names and in the tag `OW_UBW.TAGS.RUN`, wit
 | Roles | `OW_UBW_SFM_20261012_BD_ENGINEER` (create and run in the database), `OW_UBW_SFM_20261012_BD_READER` (select and monitor only) |
 | Service user | `OW_UBW_SFM_20261012_BD_DBT` (key pair, default role ENGINEER) |
 | Snowsight login | `OW_UBW_SFM_20261012_BD_VIEWER` (password, default role READER, for screen recordings) |
-| Resource monitor | `OW_UBW_SFM_20261012_BD_RM` (credit quota set at bootstrap, suspend at 100 percent) |
+| Resource monitor | `OW_UBW_SFM_20261012_BD_RM` (credit quota set at bootstrap, default 5 credits a month, notify at 75 percent, suspend at 100 percent) |
 
 `RAW` receives the stg extracts (the harness loads the same CSVs the SSIS replay loaded, through PUT and COPY INTO). `STAGING` and `MARTS` are dbt-owned. `OPS` holds `ETL_RUN_LOG`, `PARITY_LEDGER` and the task history view.
 

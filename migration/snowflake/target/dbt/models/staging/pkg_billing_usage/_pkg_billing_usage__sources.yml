@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: pkg_billing_usage
+    description: Flat file read by SSIS package pkg_billing_usage, landed verbatim (all VARCHAR).
+    schema: RAW
+    tables:
+      - name: EXT_BILLING_USAGE_EVENTS
+        description: billing_usage_events.csv (FlatFile_billing_usage_events).
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: occurred_at
+          - name: units
+          - name: kind

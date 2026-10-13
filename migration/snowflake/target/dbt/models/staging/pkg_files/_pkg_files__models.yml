@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: stg_files
+    description: >
+      Port of SSIS package pkg_files: files.csv with flags cast, timestamps normalised, tenant
+      looked up from the workspace and size_mb from the Script Task. Row for row equal to
+      stg.stg_files on SQL Server (gate/staging/pkg_files.yaml).
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: name
+        tests: [not_null]
+      - name: mime_type
+        tests: [not_null]
+      - name: size_bytes
+        tests: [not_null]
+      - name: owner_id
+        tests: [not_null]
+      - name: workspace_id
+        tests: [not_null]
+      - name: version
+        tests: [not_null]
+      - name: is_trashed
+        tests: [not_null]
+      - name: created_at
+        tests: [not_null]
+      - name: updated_at
+        tests: [not_null]
+      - name: size_mb
+        tests: [not_null]
+      - name: tenant_id
+        description: NULL when the workspace has no member row (the Lookup's no-match output).
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["file-service"]
