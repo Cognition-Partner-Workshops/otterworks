@@ -225,7 +225,7 @@ def main() -> int:
     parser.add_argument("action", choices=["up", "teardown", "verify-clean"])
     parser.add_argument("--run", required=True, help="run token, e.g. sfm-20261012-bd")
     parser.add_argument("--expires", help="yyyy-mm-dd; defaults to 14 days after the token date")
-    parser.add_argument("--credit-quota", type=int, default=5)
+    parser.add_argument("--credit-quota", type=int, default=3)
     args = parser.parse_args()
     expires = args.expires or default_expiry(args.run)
     if args.action == "up":

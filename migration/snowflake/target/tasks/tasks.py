@@ -63,19 +63,20 @@ TASK_FILES = (
     ("build_facts.sql", "UBW_BUILD_FACTS"),
     ("build_marts.sql", "UBW_BUILD_MARTS"),
     ("log_run.sql", "UBW_LOG_RUN"),
-    ("hourly_audit.sql", "UBW_HOURLY_AUDIT"),
     ("weekly_retention.sql", "UBW_WEEKLY_RETENTION"),
     ("monthly_overage.sql", "UBW_MONTHLY_OVERAGE"),
     ("weekly_capacity_forecast.sql", "UBW_WEEKLY_CAPACITY_FORECAST"),
 )
 STANDALONE_TASKS = (
-    "UBW_HOURLY_AUDIT",
     "UBW_WEEKLY_RETENTION",
     "UBW_MONTHLY_OVERAGE",
     "UBW_WEEKLY_CAPACITY_FORECAST",
 )
+# UBW Hourly Audit re-ran rollup_audit and build_mart_audit 24 times a day, but RAW (and so
+# stg_audit_events) only changes when UBW_LOAD_RAW runs nightly, and UBW_BUILD_FACTS and
+# UBW_BUILD_MARTS already run both models right after that load. The standalone task is dropped.
+RETIRED_TASKS = ("UBW_HOURLY_AUDIT",)
 STANDALONE_SCHEDULES = {
-    "UBW_HOURLY_AUDIT": "USING CRON 5 * * * * America/New_York",
     "UBW_WEEKLY_RETENTION": "USING CRON 0 3 * * SUN America/New_York",
     "UBW_MONTHLY_OVERAGE": "USING CRON 0 4 1 * * America/New_York",
     "UBW_WEEKLY_CAPACITY_FORECAST": "USING CRON 15 6 * * MON America/New_York",
@@ -199,6 +200,11 @@ def create(run: str) -> None:
             print(f"VIEW              {prefix}.OPS.TASK_HISTORY")
         except Exception as error:
             print(f"TASK_HISTORY view was not created: {error}", file=sys.stderr)
+        for name in RETIRED_TASKS:
+            cursor.execute(
+                f"DROP TASK IF EXISTS {prefix}.OPS.{name}"
+            )  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            print(f"DROPPED           {prefix}.OPS.{name} (retired)")
         for filename, name in TASK_FILES:
             task_values = values.copy()
             if name == "UBW_NIGHTLY_LOAD":
