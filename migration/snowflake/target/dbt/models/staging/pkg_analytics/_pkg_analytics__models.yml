@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_analytics_events
+    description: SSIS pkg_analytics landing table (stg.stg_analytics_events), rebuilt from RAW.EXT_ANALYTICS_EVENTS.
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: event_type
+        tests: [not_null]
+      - name: user_id
+        tests: [not_null]
+      - name: occurred_at
+        tests: [not_null]
+      - name: event_ts_utc
+        tests: [not_null]
+      - name: row_checksum
+        tests: [not_null]
+      - name: tenant_id
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: source_system
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["analytics-service"]
