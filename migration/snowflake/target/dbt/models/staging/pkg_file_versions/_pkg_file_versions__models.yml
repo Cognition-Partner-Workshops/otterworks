@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_file_versions
+    description: dbt replacement for pkg_file_versions (stg.stg_file_versions), one row per file version.
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [file_id, version]
+    columns:
+      - name: file_id
+        tests: [not_null]
+      - name: version
+        tests: [not_null]
+      - name: size_bytes
+        tests: [not_null]
+      - name: created_by
+        tests: [not_null]
+      - name: created_at
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [file-service]
