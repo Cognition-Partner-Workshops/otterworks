@@ -1,20 +1,16 @@
-# pkg_billing_core lands three stg tables. staging_parity.py takes one table per spec, so the
-# top-level spec is stg_billing_plans (the table carrying the package's business decisions) and
-# the other two destinations are listed under `additional_destinations` in the same format; they
-# are gated by materialising each entry as a spec with package: pkg_billing_core (see the md).
+# pkg_billing_core lands three stg tables; each destination is its own gate unit.
 package: pkg_billing_core
-sqlserver_table: stg.stg_billing_plans
-snowflake_model: STAGING.STG_BILLING_PLANS
-keys: [id]
-columns: [code, tier, monthly_fee, included_units, overage_rate, active, included_bytes, overage_cents_per_gb, source_system]
-excluded:
-  extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"
-
-additional_destinations:
+destinations:
   - sqlserver_table: stg.stg_billing_tenants
     snowflake_model: STAGING.STG_BILLING_TENANTS
     keys: [id]
     columns: [name, tax_exempt, status, region_code, source_system]
+    excluded:
+      extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"
+  - sqlserver_table: stg.stg_billing_plans
+    snowflake_model: STAGING.STG_BILLING_PLANS
+    keys: [id]
+    columns: [code, tier, monthly_fee, included_units, overage_rate, active, included_bytes, overage_cents_per_gb, source_system]
     excluded:
       extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"
   - sqlserver_table: stg.stg_billing_subscriptions
