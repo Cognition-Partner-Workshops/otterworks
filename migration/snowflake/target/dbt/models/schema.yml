@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: dim_date
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+  - name: dim_tenant
+    columns:
+      - name: tenant_id
+        tests: [unique, not_null]
+      - name: plan_code
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["starter", "growth", "scale"]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["active", "inactive", "suspended"]
+  - name: dim_plan
+    columns:
+      - name: plan_code
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["starter", "growth", "scale"]
+      - name: tier
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["starter", "growth", "scale"]
+  - name: dim_user
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["active", "inactive", "suspended"]
+  - name: dim_workspace
+    columns:
+      - name: workspace_id
+        tests: [unique, not_null]
+  - name: dim_document
+    columns:
+      - name: document_id
+        tests: [unique, not_null]
+  - name: dim_file
+    columns:
+      - name: file_id
+        tests: [unique, not_null]

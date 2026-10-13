@@ -110,7 +110,7 @@ The fixture adds the forecasting job as `etl/scripts/capacity_forecast_weekly.py
 
 ## Snowflake side
 
-Objects carry the run token in their names and in the tag `OW_UBW.RUN`, with `EXPIRES` as a second tag value. For token `sfm-20261012-bd` the names are:
+Objects carry the run token in their names and in the tag `OW_UBW.TAGS.RUN`, with `OW_UBW.TAGS.EXPIRES` as a second tag. Snowflake tags need a database and schema, so both live in a small shared `OW_UBW` database with a `TAGS` schema that teardown leaves in place. For token `sfm-20261012-bd` the names are:
 
 | Object | Name |
 |---|---|

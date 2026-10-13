@@ -1,0 +1,5 @@
+pandas==2.3.3
+pymssql==2.3.8
+pytest==8.4.2
+PyYAML==6.0.3
+snowflake-connector-python==4.8.0

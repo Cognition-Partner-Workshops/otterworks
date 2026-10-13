@@ -1,0 +1,6 @@
+/target/dbt/target/
+/target/dbt/logs/
+/target/dbt/dbt_packages/
+/target/dbt/.user.yml
+/gate/out/
+/.backend.env

@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: RAW
+    tables:
+      - name: STG_BILLING_TENANTS
+      - name: STG_BILLING_PLANS
+      - name: STG_BILLING_SUBSCRIPTIONS
+      - name: STG_BILLING_USAGE_EVENTS
+      - name: STG_BILLING_INVOICES
+      - name: STG_AUTH_USERS
+      - name: STG_AUTH_WORKSPACE_MEMBERS
+      - name: STG_DOCUMENTS
+      - name: STG_DOCUMENT_VERSIONS
+      - name: STG_FILES
+      - name: STG_FILE_VERSIONS
+      - name: STG_COLLAB_EVENTS
+      - name: STG_AUDIT_EVENTS
+      - name: STG_ANALYTICS_EVENTS
