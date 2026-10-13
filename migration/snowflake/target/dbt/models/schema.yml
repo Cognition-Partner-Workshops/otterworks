@@ -127,3 +127,39 @@ models:
         tests: [not_null]
       - name: line_no
         tests: [not_null]
+  - name: rate_overage
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+  - name: apply_plan_limits
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+  - name: build_capacity_forecast_input
+    tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [business_date, tenant_id, observation_date]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: observation_date
+        tests: [not_null]
+      - name: peak_storage_mb
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
