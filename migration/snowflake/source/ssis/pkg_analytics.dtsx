@@ -1,0 +1,277 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:ScriptTask="www.microsoft.com/sqlserver/dts/tasks/scripttask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_analytics"
+  DTS:DTSID="{abfaa036-3e9e-4d39-b84b-5b180820d2de}"
+  DTS:VersionGUID="{ae7ba7d3-fc20-426e-b90f-1d4f71f48727}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6206"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{2614eac6-9eeb-436f-b6d6-065387ff1a8f}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{04d159f8-95e1-42b4-94b7-0896aadd14e4}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{a5e7b266-4a6f-41d0-a29a-ce4c9eadaf70}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_analytics_events"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{8fed76e3-ab1c-4d89-a966-9599f8bcf437}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\analytics_events.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\analytics_events.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="event_id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="event_type"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="user_id"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="resource_id"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="resource_type"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="metadata"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="occurred_at"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SCR Row checksum"
+      DTS:ExecutableType="Microsoft.ScriptTask"
+      DTS:DTSID="{e7581f82-8942-49f7-b404-729269c719cc}"
+      DTS:Disabled="False">
+      <DTS:Connections>
+        <DTS:Connection DTS:ConnectionManagerID="{a5e7b266-4a6f-41d0-a29a-ce4c9eadaf70}"
+          DTS:ConnectionManagerRefId="Package.ConnectionManagers[UBW_Staging]"
+          DTS:LogicalName="UBW_Staging" />
+      </DTS:Connections>
+      <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
+        <ScriptTask:ScriptProject>
+          <ScriptTask:ScriptMain.cs>// M. Kowalski wrote this so event checksums are added after the staging load.
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.SqlServer.Dts.Runtime;
+
+namespace ST_12ab470c976556f1b4eb0a568dc9f197
+{
+    [Microsoft.SqlServer.Dts.Tasks.ScriptTask.SSISScriptTaskEntryPointAttribute]
+    public partial class ScriptMain : Microsoft.SqlServer.Dts.Tasks.ScriptTask.VSTARTScriptObjectModelBase
+    {
+        private enum ScriptResults
+        {
+            Success = 0,
+            Failure = 1
+        }
+
+        public void Main()
+        {
+            try
+            {
+                using (SqlConnection connection = OpenStagingConnection())
+                {
+                    using (SqlCommand create = connection.CreateCommand())
+                    {
+                        create.CommandText = "CREATE TABLE #analytics_checksum (event_id varchar(64) NOT NULL PRIMARY KEY, row_checksum varchar(64) NOT NULL);";
+                        create.ExecuteNonQuery();
+                    }
+
+                    DataTable checksums = new DataTable();
+                    checksums.Columns.Add("event_id", typeof(String));
+                    checksums.Columns.Add("row_checksum", typeof(String));
+
+                    using (SqlCommand read = connection.CreateCommand())
+                    using (SHA256 sha = SHA256.Create())
+                    {
+                        read.CommandTimeout = 0;
+                        read.CommandText = "SELECT event_id, event_type, user_id, resource_id, occurred_at FROM stg.stg_analytics_events";
+                        using (SqlDataReader reader = read.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string eventId = Convert.ToString(reader["event_id"], CultureInfo.InvariantCulture);
+                                string eventType = Convert.ToString(reader["event_type"], CultureInfo.InvariantCulture);
+                                string userId = Convert.ToString(reader["user_id"], CultureInfo.InvariantCulture);
+                                string resourceId = Convert.ToString(reader["resource_id"], CultureInfo.InvariantCulture);
+                                string occurredAt = Convert.ToString(reader["occurred_at"], CultureInfo.InvariantCulture);
+                                string payload = String.Join("|", new[] { eventId, eventType, userId, resourceId, occurredAt });
+                                checksums.Rows.Add(eventId, ToUpperHex(sha.ComputeHash(Encoding.UTF8.GetBytes(payload))));
+                            }
+                        }
+                    }
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.BatchSize = 5000;
+                        bulkCopy.BulkCopyTimeout = 0;
+                        bulkCopy.DestinationTableName = "#analytics_checksum";
+                        bulkCopy.ColumnMappings.Add("event_id", "event_id");
+                        bulkCopy.ColumnMappings.Add("row_checksum", "row_checksum");
+                        bulkCopy.WriteToServer(checksums);
+                    }
+
+                    using (SqlCommand update = connection.CreateCommand())
+                    {
+                        update.CommandTimeout = 0;
+                        update.CommandText = @"UPDATE target
+SET row_checksum = source.row_checksum
+FROM stg.stg_analytics_events AS target
+INNER JOIN #analytics_checksum AS source ON source.event_id = target.event_id;";
+                        update.ExecuteNonQuery();
+                    }
+                }
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+            }
+            catch (Exception ex)
+            {
+                Dts.Events.FireError(0, "Checksum analytics events", ex.Message, String.Empty, 0);
+                Dts.TaskResult = (int)ScriptResults.Failure;
+            }
+        }
+
+        private SqlConnection OpenStagingConnection()
+        {
+            string connectionString = Dts.Connections["UBW_Staging"].ConnectionString;
+            connectionString = connectionString.Replace("Provider=SQLNCLI11.1;", String.Empty);
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
+
+        private static string ToUpperHex(byte[] bytes)
+        {
+            StringBuilder result = new StringBuilder(bytes.Length * 2);
+            foreach (byte value in bytes)
+            {
+                result.Append(value.ToString("X2", CultureInfo.InvariantCulture));
+            }
+            return result.ToString();
+        }
+    }
+}
+</ScriptTask:ScriptMain.cs>
+        </ScriptTask:ScriptProject>
+      </ScriptTask:ScriptTaskData>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SCR Row checksum">
+          <DTS:Text>The package stamps each row with a checksum of the source fields.
+Replay intent: checksum(fields=event_id|event_type|user_id|resource_id|occurred_at)</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_analytics_events"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{c17bb5e0-074f-43bb-9623-0098c3c93e38}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_analytics_events;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_analytics_events">
+          <DTS:Text>Executes sql truncate stg_analytics_events before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_analytics_events"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{dd2bbec9-e9a2-42ee-b066-b8151999f867}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_analytics_events">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC analytics_events.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{b388d7ee-7427-41e4-b0c2-a9594dfca851}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_analytics_events">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="LKP Tenant from user" pipeline:ComponentType="Lookup" pipeline:ID="{1e593614-0cf1-4d30-9d8f-24fe6189bf75}" pipeline:Version="1">
+            <pipeline:Property pipeline:name="JoinInput">user_id</pipeline:Property>
+            <pipeline:Property pipeline:name="JoinReference">user_id</pipeline:Property>
+            <pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceFile" />
+            <pipeline:Property pipeline:name="ReferenceQuery">SELECT user_id, MIN(tenant_id) AS tenant_id FROM stg.stg_auth_workspace_members GROUP BY user_id</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{75e740e4-c06f-4491-a6ba-8e4d0b089b2a}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="event_ts_utc" pipeline:expression="DATEADD(&quot;ss&quot;,(DT_I4)(occurred_at / 1000000000),(DT_DBTIMESTAMP2,7)&quot;1970-01-01 00:00:00&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;analytics-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_analytics_events" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{5a8039f2-d955-4a68-a93f-fbb07e542e77}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_analytics_events]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="event_id" pipeline:destination="event_id" />
+              <pipeline:Mapping pipeline:input="event_type" pipeline:destination="event_type" />
+              <pipeline:Mapping pipeline:input="user_id" pipeline:destination="user_id" />
+              <pipeline:Mapping pipeline:input="resource_id" pipeline:destination="resource_id" />
+              <pipeline:Mapping pipeline:input="resource_type" pipeline:destination="resource_type" />
+              <pipeline:Mapping pipeline:input="metadata" pipeline:destination="metadata" />
+              <pipeline:Mapping pipeline:input="occurred_at" pipeline:destination="occurred_at" />
+              <pipeline:Mapping pipeline:input="event_ts_utc" pipeline:destination="event_ts_utc" />
+              <pipeline:Mapping pipeline:input="row_checksum" pipeline:destination="row_checksum" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from user" />
+          <pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_analytics_events" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_analytics_events">
+          <DTS:Text>Loads stg_analytics_events from analytics_events.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{c17bb5e0-074f-43bb-9623-0098c3c93e38}"
+        DTS:To="{dd2bbec9-e9a2-42ee-b066-b8151999f867}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{dd2bbec9-e9a2-42ee-b066-b8151999f867}"
+        DTS:To="{e7581f82-8942-49f7-b404-729269c719cc}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

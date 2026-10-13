@@ -95,7 +95,7 @@ Thirty `.rdl` files under `source/reports/`, each with a DataSet query against `
 
 ### Scheduling
 
-`source/agent/jobs.yaml` holds four SQL Agent jobs: `UBW Nightly Load` (packages then procedures in order), `UBW Hourly Audit`, `UBW Weekly Retention`, `UBW Monthly Overage`. `source/agent/crontab.legacy` lists the cron entries that touch the warehouse, including the weekly `capacity_forecast.py` job that reads `mart_capacity_forecast_input` and writes `mart_capacity_forecast_input` back with a forecast column.
+`source/agent/jobs.yaml` holds four SQL Agent jobs: `UBW Nightly Load` (packages then procedures in order), `UBW Hourly Audit`, `UBW Weekly Retention`, `UBW Monthly Overage`. `source/agent/crontab.legacy` lists the cron entries that touch the warehouse, including the weekly `etl/scripts/capacity_forecast_weekly.py` job that reads `mart_capacity_forecast_input` and writes `mart_capacity_forecast_input` back with a forecast column.
 
 ## Consumers
 
