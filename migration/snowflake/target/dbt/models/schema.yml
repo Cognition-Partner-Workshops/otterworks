@@ -9,26 +9,16 @@ models:
     columns:
       - name: tenant_id
         tests: [unique, not_null]
-      - name: plan_code
+      - name: plan_tier
         tests:
           - accepted_values:
               arguments:
                 values: ["starter", "growth", "scale"]
-      - name: status
-        tests:
-          - accepted_values:
-              arguments:
-                values: ["active", "inactive", "suspended"]
   - name: dim_plan
     columns:
-      - name: plan_code
-        tests:
-          - unique
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ["starter", "growth", "scale"]
-      - name: tier
+      - name: plan_id
+        tests: [unique, not_null]
+      - name: plan_tier
         tests:
           - accepted_values:
               arguments:
@@ -37,11 +27,6 @@ models:
     columns:
       - name: user_id
         tests: [unique, not_null]
-      - name: status
-        tests:
-          - accepted_values:
-              arguments:
-                values: ["active", "inactive", "suspended"]
   - name: dim_workspace
     columns:
       - name: workspace_id

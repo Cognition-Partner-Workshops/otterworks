@@ -1,7 +1,8 @@
-with source_data as (
-    select workspace_id, tenant_id, workspace_name, created_at
-    from {{ source('raw', 'STG_AUTH_WORKSPACE_MEMBERS') }}
-)
-
-select distinct workspace_id, tenant_id, workspace_name, created_at
-from source_data
+select
+    "workspace_id" as workspace_id,
+    max("workspace_name") as workspace_name,
+    max("tenant_id") as tenant_id,
+    count(*) as member_count
+from {{ source('raw', 'STG_AUTH_WORKSPACE_MEMBERS') }}
+where "joined_at" < dateadd(day, 1, {{ business_date() }})
+group by "workspace_id"

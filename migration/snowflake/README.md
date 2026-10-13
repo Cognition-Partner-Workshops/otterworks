@@ -107,13 +107,14 @@ Re-running bootstrap is safe and re-applies the settings.
 
 ### Loading and dbt
 
-`make sfm-load-raw RUN=<token>` puts the same stg CSVs the SSIS replay loaded into an internal
-stage and copies them into `RAW`, one table per stg table. `make sfm-dbt RUN=<token>` runs
+`make sfm-load-raw RUN=<token>` exports the source staging tables to temporary CSVs, then
+puts them into an internal stage and copies them into `RAW`, one table per stg table.
+`make sfm-dbt RUN=<token> [DATE=<yyyy-mm-dd>]` runs
 `dbt build` in `target/dbt/` as the DBT user. The profile reads `UBW_RUN` and the key from
 the environment, so there's nothing to edit per run. The project has one model per procedure
-with the `usp_` prefix dropped; so far only the seven dimension models exist. Business date
-handling lives in `target/dbt/macros/business_date.sql`, and models take the date as the
-`business_date` var.
+with the `usp_` prefix dropped; so far only the seven dimension models exist. When `DATE` is
+set, dbt uses it as the business date; otherwise the macro defaults to yesterday. Timestamp
+handling lives in `target/dbt/macros/business_date.sql` and does not shift time zones.
 
 ### Tasks
 
