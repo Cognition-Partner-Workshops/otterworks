@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: pkg_collaboration
+    schema: RAW
+    description: collab_events.csv as landed by sfm-load-extracts, every column VARCHAR, empty fields as ''.
+    tables:
+      - name: EXT_COLLAB_EVENTS
+        columns:
+          - name: ID
+          - name: EVENT_TYPE
+          - name: DOCUMENT_ID
+          - name: USER_ID
+          - name: SESSION_ID
+          - name: CREATED_AT
