@@ -107,12 +107,24 @@ def is_unchanged_password_error(error: snowflake.connector.errors.ProgrammingErr
 def current_authentication_policy(
     cur: snowflake.connector.cursor.SnowflakeCursor, user: str
 ) -> str:
-    cur.execute(f"SHOW PARAMETERS LIKE 'AUTHENTICATION_POLICY' IN USER {user}")
+    cur.execute(
+        "SELECT POLICY_DB, POLICY_SCHEMA, POLICY_NAME, REF_ENTITY_NAME, "
+        "REF_ENTITY_DOMAIN, POLICY_STATUS "
+        "FROM TABLE(OW_UBW.INFORMATION_SCHEMA.POLICY_REFERENCES("
+        "REF_ENTITY_NAME => %s, REF_ENTITY_DOMAIN => 'USER'))",
+        (user,),
+    )
     columns = [column[0].lower() for column in cur.description or []]
     for row in cur.fetchall():
-        parameter = dict(zip(columns, row, strict=True))
-        if str(parameter.get("key", "")).upper() == "AUTHENTICATION_POLICY":
-            return str(parameter.get("value") or "")
+        reference = dict(zip(columns, row, strict=True))
+        if (
+            str(reference.get("ref_entity_name", "")).upper() == user.upper()
+            and str(reference.get("ref_entity_domain", "")).upper() == "USER"
+            and str(reference.get("policy_status", "")).upper() == "ACTIVE"
+        ):
+            return ".".join(
+                str(reference[column]) for column in ("policy_db", "policy_schema", "policy_name")
+            )
     return ""
 
 
