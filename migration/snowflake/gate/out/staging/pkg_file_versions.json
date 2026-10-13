@@ -1,0 +1,33 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T02:57:23.650892+00:00",
+  "spec": {
+    "package": "pkg_file_versions",
+    "sqlserver_table": "stg.stg_file_versions",
+    "snowflake_model": "STAGING.STG_FILE_VERSIONS",
+    "keys": [
+      "file_id",
+      "version"
+    ],
+    "columns": [
+      "size_bytes",
+      "created_by",
+      "created_at",
+      "source_system"
+    ],
+    "excluded": {
+      "extracted_at": "@[System::StartTime] of the package run; differs on every run on both sides"
+    },
+    "rename": {}
+  },
+  "unit": {
+    "unit": "ssis:pkg_file_versions",
+    "status": "PASS",
+    "source_rows": 49999,
+    "target_rows": 49999,
+    "differing_key_count": 0,
+    "differences": [],
+    "explanation": ""
+  }
+}
