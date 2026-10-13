@@ -1,7 +1,6 @@
 Staging parity pkg_analytics PASS 120000 / 120000 differing_keys=0
 
-SQL Server `stg.stg_analytics_events` vs Snowflake `STAGING.STG_ANALYTICS_EVENTS`, keys event_id, 10 compared columns.
-
+`ssis:pkg_analytics`: SQL Server `stg.stg_analytics_events` vs Snowflake `STAGING.STG_ANALYTICS_EVENTS`, keys event_id, 10 compared columns.
 Not compared:
 - `extracted_at`: run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake)
 
