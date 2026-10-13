@@ -39,3 +39,97 @@ models:
     columns:
       - name: file_id
         tests: [unique, not_null]
+  - name: stg_billing_usage_events
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: event_ts_utc
+        tests: [not_null]
+      - name: event_kind
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["api", "storage", "compute"]
+  - name: stg_audit_events
+    columns:
+      - name: audit_id
+        tests: [unique, not_null]
+      - name: event_ts_utc
+        tests: [not_null]
+  - name: rollup_usage_events
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [business_date, event_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: event_id
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: units
+        tests: [not_null]
+  - name: rollup_audit
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [business_date, audit_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: audit_id
+        tests: [not_null]
+  - name: rollup_storage_daily
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_tenant')
+                field: tenant_id
+      - name: plan_id
+        tests: [not_null]
+      - name: sample_count
+        tests: [not_null]
+      - name: peak_storage_mb
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
+      - name: included_bytes
+        tests: [not_null]
+  - name: build_mart_tenant_usage
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [business_date, tenant_id]
+    columns:
+      - name: business_date
+        tests: [not_null]
+      - name: tenant_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_tenant')
+                field: tenant_id
+      - name: tenant_name
+        tests: [not_null]
+      - name: plan_tier
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["starter", "growth", "scale"]
+      - name: storage_peak_mb
+        tests: [not_null]
+      - name: bytes_used
+        tests: [not_null]
