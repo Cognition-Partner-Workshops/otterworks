@@ -1,0 +1,17 @@
+package: pkg_analytics
+sqlserver_table: stg.stg_analytics_events
+snowflake_model: STAGING.STG_ANALYTICS_EVENTS
+keys: [event_id]
+columns:
+  - event_type
+  - user_id
+  - resource_id
+  - resource_type
+  - metadata
+  - occurred_at
+  - event_ts_utc
+  - row_checksum
+  - tenant_id
+  - source_system
+excluded:
+  extracted_at: "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake)"

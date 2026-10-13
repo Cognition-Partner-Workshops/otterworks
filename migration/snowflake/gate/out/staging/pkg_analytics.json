@@ -1,0 +1,38 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T03:02:51.688402+00:00",
+  "spec": {
+    "package": "pkg_analytics",
+    "sqlserver_table": "stg.stg_analytics_events",
+    "snowflake_model": "STAGING.STG_ANALYTICS_EVENTS",
+    "keys": [
+      "event_id"
+    ],
+    "columns": [
+      "event_type",
+      "user_id",
+      "resource_id",
+      "resource_type",
+      "metadata",
+      "occurred_at",
+      "event_ts_utc",
+      "row_checksum",
+      "tenant_id",
+      "source_system"
+    ],
+    "excluded": {
+      "extracted_at": "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake)"
+    },
+    "rename": {}
+  },
+  "unit": {
+    "unit": "ssis:pkg_analytics",
+    "status": "PASS",
+    "source_rows": 120000,
+    "target_rows": 120000,
+    "differing_key_count": 0,
+    "differences": [],
+    "explanation": ""
+  }
+}
