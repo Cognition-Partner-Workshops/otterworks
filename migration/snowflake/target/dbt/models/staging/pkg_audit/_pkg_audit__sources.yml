@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: pkg_audit
+    schema: RAW
+    description: pkg_audit flat file landed verbatim (every column VARCHAR, empty fields stay '').
+    tables:
+      - name: EXT_AUDIT_EVENTS
+        description: audit_events.csv, the FF_SRC of DFT Load stg_audit_events.
+        columns:
+          - name: ID
+          - name: USER_ID
+          - name: ACTION
+          - name: RESOURCE_TYPE
+          - name: RESOURCE_ID
+          - name: DETAILS
+          - name: IP_ADDRESS
+          - name: USER_AGENT
+          - name: TIMESTAMP
+            description: ISO-8601 UTC with 7 fractional digits and a trailing Z.

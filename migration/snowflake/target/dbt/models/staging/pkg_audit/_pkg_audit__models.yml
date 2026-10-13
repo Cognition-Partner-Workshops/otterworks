@@ -2,8 +2,33 @@ version: 2
 
 models:
   - name: stg_audit_events
+    description: >
+      Replaces SSIS pkg_audit (stg.stg_audit_events) from RAW.EXT_AUDIT_EVENTS. id is
+      renamed audit_id and [timestamp] event_ts_utc; wave-one rollup_audit reads these names.
     columns:
       - name: audit_id
         tests: [unique, not_null]
+      - name: tenant_id
+        description: LKP Tenant from user, MIN(tenant_id) per user from stg_auth_workspace_members; NULL on no match.
+      - name: user_id
+        tests: [not_null]
+      - name: action
+        tests: [not_null]
+      - name: resource_type
+        tests: [not_null]
+      - name: resource_id
+        tests: [not_null]
+      - name: details
+      - name: ip_address
+      - name: user_agent
       - name: event_ts_utc
         tests: [not_null]
+      - name: extracted_at
+        description: dbt run start (the package uses @[System::StartTime]).
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['audit-service']
