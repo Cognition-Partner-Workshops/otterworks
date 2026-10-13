@@ -1,2 +1,126 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_file_versions" DTS:DTSID="{84c8945d-8b34-4d0e-a0bd-a7751213dff3}" DTS:VersionGUID="{daa51b45-a175-42d2-865b-8b24be955ba6}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="6638"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{445b923d-e015-479d-bc59-c10ad3ae9549}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{249499ea-ba46-46de-a520-d827ea57901c}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{4e4a824b-7bc8-4524-9e1d-bf8808d57e4d}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_file_versions" DTS:CreationName="FLATFILE" DTS:DTSID="{3448c241-a69f-46dc-bf1c-d63b4ca375ca}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\file_versions.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\file_versions.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="file_id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="version" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="size_bytes" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="created_by" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="created_at" DTS:DataType="129" DTS:Ordinal="4" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SQL Truncate stg_file_versions" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{7bc01e6c-8e68-4763-bca5-089a3555e25d}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_file_versions;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_file_versions"><DTS:Text>Executes sql truncate stg_file_versions before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_file_versions" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{666452dc-2684-4d14-99fa-2f1aa6a32365}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC file_versions.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{82452d09-9613-4158-b7f6-d16cc1898be3}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_file_versions"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{a7f25f1a-47b0-4713-853f-d78c21ed9ec4}" pipeline:Version="1"><pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(created_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;file-service&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_file_versions" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{f2e273b2-0e2b-4267-978f-aa950d8e5878}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_file_versions]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="file_id" pipeline:destination="file_id" /><pipeline:Mapping pipeline:input="version" pipeline:destination="version" /><pipeline:Mapping pipeline:input="size_bytes" pipeline:destination="size_bytes" /><pipeline:Mapping pipeline:input="created_by" pipeline:destination="created_by" /><pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_file_versions" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_file_versions"><DTS:Text>Loads stg_file_versions from file_versions.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{7bc01e6c-8e68-4763-bca5-089a3555e25d}" DTS:To="{666452dc-2684-4d14-99fa-2f1aa6a32365}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_file_versions"
+  DTS:DTSID="{84c8945d-8b34-4d0e-a0bd-a7751213dff3}"
+  DTS:VersionGUID="{daa51b45-a175-42d2-865b-8b24be955ba6}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6638"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{445b923d-e015-479d-bc59-c10ad3ae9549}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{249499ea-ba46-46de-a520-d827ea57901c}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{4e4a824b-7bc8-4524-9e1d-bf8808d57e4d}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_file_versions"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{3448c241-a69f-46dc-bf1c-d63b4ca375ca}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\file_versions.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\file_versions.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="file_id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="version"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="size_bytes"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="created_by"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="created_at"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_file_versions"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{7bc01e6c-8e68-4763-bca5-089a3555e25d}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_file_versions;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_file_versions">
+          <DTS:Text>Executes sql truncate stg_file_versions before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_file_versions"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{666452dc-2684-4d14-99fa-2f1aa6a32365}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_file_versions">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC file_versions.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{82452d09-9613-4158-b7f6-d16cc1898be3}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_file_versions">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{a7f25f1a-47b0-4713-853f-d78c21ed9ec4}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(created_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;file-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_file_versions" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{f2e273b2-0e2b-4267-978f-aa950d8e5878}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_file_versions]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="file_id" pipeline:destination="file_id" />
+              <pipeline:Mapping pipeline:input="version" pipeline:destination="version" />
+              <pipeline:Mapping pipeline:input="size_bytes" pipeline:destination="size_bytes" />
+              <pipeline:Mapping pipeline:input="created_by" pipeline:destination="created_by" />
+              <pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_file_versions" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_file_versions">
+          <DTS:Text>Loads stg_file_versions from file_versions.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{7bc01e6c-8e68-4763-bca5-089a3555e25d}"
+        DTS:To="{666452dc-2684-4d14-99fa-2f1aa6a32365}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

@@ -1,5 +1,98 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:ScriptTask="www.microsoft.com/sqlserver/dts/tasks/scripttask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_files" DTS:DTSID="{a9e0f024-9033-41c2-856a-10a80dcf5737}" DTS:VersionGUID="{c895c970-64a2-4a39-8f26-94909e5dd785}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="5769"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{23a02008-50ac-4fea-a884-3aeb87fb6426}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{817f47bc-a4a7-484e-abbd-3aa552892b19}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{b1d7b407-e704-4015-80c2-dc9a4604c241}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_files" DTS:CreationName="FLATFILE" DTS:DTSID="{2938561b-4c45-47b2-9f3c-4068629a1229}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\files.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\files.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="name" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="mime_type" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="size_bytes" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="folder_id" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="owner_id" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="workspace_id" DTS:DataType="129" DTS:Ordinal="6" /><DTS:FlatFileColumn DTS:ObjectName="version" DTS:DataType="129" DTS:Ordinal="7" /><DTS:FlatFileColumn DTS:ObjectName="is_trashed" DTS:DataType="129" DTS:Ordinal="8" /><DTS:FlatFileColumn DTS:ObjectName="archived" DTS:DataType="129" DTS:Ordinal="9" /><DTS:FlatFileColumn DTS:ObjectName="created_at" DTS:DataType="129" DTS:Ordinal="10" /><DTS:FlatFileColumn DTS:ObjectName="updated_at" DTS:DataType="129" DTS:Ordinal="11" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SCR Convert sizes to MB" DTS:ExecutableType="Microsoft.ScriptTask" DTS:DTSID="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}" DTS:Disabled="False"><ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp"><ScriptTask:ScriptProject><ScriptTask:ScriptMain.cs>using System;
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:ScriptTask="www.microsoft.com/sqlserver/dts/tasks/scripttask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_files"
+  DTS:DTSID="{a9e0f024-9033-41c2-856a-10a80dcf5737}"
+  DTS:VersionGUID="{c895c970-64a2-4a39-8f26-94909e5dd785}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="5769"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{23a02008-50ac-4fea-a884-3aeb87fb6426}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{817f47bc-a4a7-484e-abbd-3aa552892b19}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{b1d7b407-e704-4015-80c2-dc9a4604c241}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_files"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{2938561b-4c45-47b2-9f3c-4068629a1229}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\files.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\files.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="name"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="mime_type"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="size_bytes"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="folder_id"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="owner_id"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="workspace_id"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+        <DTS:FlatFileColumn DTS:ObjectName="version"
+          DTS:DataType="129"
+          DTS:Ordinal="7" />
+        <DTS:FlatFileColumn DTS:ObjectName="is_trashed"
+          DTS:DataType="129"
+          DTS:Ordinal="8" />
+        <DTS:FlatFileColumn DTS:ObjectName="archived"
+          DTS:DataType="129"
+          DTS:Ordinal="9" />
+        <DTS:FlatFileColumn DTS:ObjectName="created_at"
+          DTS:DataType="129"
+          DTS:Ordinal="10" />
+        <DTS:FlatFileColumn DTS:ObjectName="updated_at"
+          DTS:DataType="129"
+          DTS:Ordinal="11" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SCR Convert sizes to MB"
+      DTS:ExecutableType="Microsoft.ScriptTask"
+      DTS:DTSID="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}"
+      DTS:Disabled="False">
+      <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
+        <ScriptTask:ScriptProject>
+          <ScriptTask:ScriptMain.cs>using System;
 using Microsoft.SqlServer.Dts.Runtime;
 public class ScriptMain
 {
@@ -10,5 +103,97 @@ Dts.Variables["User::SizeOutput"].Value = "size_mb";
         Dts.TaskResult = (int)ScriptResults.Success;
     }
 }
-</ScriptTask:ScriptMain.cs></ScriptTask:ScriptProject></ScriptTask:ScriptTaskData><DTS:Annotations><DTS:Annotation DTS:Name="SCR Convert sizes to MB"><DTS:Text>The derived column overflowed DT_I4 on files over 2 GB, so the team moved this conversion to the script task.
-Replay intent: unit_conversion(column=size_bytes,output=size_mb)</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="SQL Truncate stg_files" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{7071a54b-8d94-4f53-9b96-b593cf5f2344}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_files;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_files"><DTS:Text>Executes sql truncate stg_files before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_files" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{6d4ada8c-1b89-456a-96ef-a69d34da0874}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC files.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{e2ba3e9d-0b78-4fa4-9714-7004ecb9986b}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_files"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="LKP Tenant from workspace" pipeline:ComponentType="Lookup" pipeline:ID="{63b4e41b-9581-4398-943d-3a748b533b4c}" pipeline:Version="1"><pipeline:Property pipeline:name="JoinInput">workspace_id</pipeline:Property><pipeline:Property pipeline:name="JoinReference">workspace_id</pipeline:Property><pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property><pipeline:Property pipeline:name="ReferenceFile" /><pipeline:Property pipeline:name="ReferenceQuery">SELECT DISTINCT workspace_id, tenant_id FROM stg.stg_auth_workspace_members</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{792d8751-f73d-47e1-9d82-15d53916422c}" pipeline:Version="1"><pipeline:Expression pipeline:output="is_trashed" pipeline:expression="(DT_BOOL)(is_trashed == &quot;true&quot;)" /><pipeline:Expression pipeline:output="archived" pipeline:expression="ISNULL(archived) ? NULL(DT_BOOL) : (DT_BOOL)(archived == &quot;true&quot;)" /><pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(created_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(updated_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;file-service&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_files" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{660ee51d-ccb9-4a42-a00e-e8cd4d6127fb}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_files]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="name" pipeline:destination="name" /><pipeline:Mapping pipeline:input="mime_type" pipeline:destination="mime_type" /><pipeline:Mapping pipeline:input="size_bytes" pipeline:destination="size_bytes" /><pipeline:Mapping pipeline:input="folder_id" pipeline:destination="folder_id" /><pipeline:Mapping pipeline:input="owner_id" pipeline:destination="owner_id" /><pipeline:Mapping pipeline:input="workspace_id" pipeline:destination="workspace_id" /><pipeline:Mapping pipeline:input="version" pipeline:destination="version" /><pipeline:Mapping pipeline:input="is_trashed" pipeline:destination="is_trashed" /><pipeline:Mapping pipeline:input="archived" pipeline:destination="archived" /><pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" /><pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" /><pipeline:Mapping pipeline:input="size_mb" pipeline:destination="size_mb" /><pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from workspace" /><pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_files" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_files"><DTS:Text>Loads stg_files from files.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}" DTS:To="{7071a54b-8d94-4f53-9b96-b593cf5f2344}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{7071a54b-8d94-4f53-9b96-b593cf5f2344}" DTS:To="{6d4ada8c-1b89-456a-96ef-a69d34da0874}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+</ScriptTask:ScriptMain.cs>
+        </ScriptTask:ScriptProject>
+      </ScriptTask:ScriptTaskData>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SCR Convert sizes to MB">
+          <DTS:Text>The derived column overflowed DT_I4 on files over 2 GB, so the team moved this conversion to the script task.
+Replay intent: unit_conversion(column=size_bytes,output=size_mb)</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_files"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{7071a54b-8d94-4f53-9b96-b593cf5f2344}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_files;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_files">
+          <DTS:Text>Executes sql truncate stg_files before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_files"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{6d4ada8c-1b89-456a-96ef-a69d34da0874}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_files">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC files.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{e2ba3e9d-0b78-4fa4-9714-7004ecb9986b}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_files">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="LKP Tenant from workspace" pipeline:ComponentType="Lookup" pipeline:ID="{63b4e41b-9581-4398-943d-3a748b533b4c}" pipeline:Version="1">
+            <pipeline:Property pipeline:name="JoinInput">workspace_id</pipeline:Property>
+            <pipeline:Property pipeline:name="JoinReference">workspace_id</pipeline:Property>
+            <pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceFile" />
+            <pipeline:Property pipeline:name="ReferenceQuery">SELECT DISTINCT workspace_id, tenant_id FROM stg.stg_auth_workspace_members</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{792d8751-f73d-47e1-9d82-15d53916422c}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="is_trashed" pipeline:expression="(DT_BOOL)(is_trashed == &quot;true&quot;)" />
+            <pipeline:Expression pipeline:output="archived" pipeline:expression="ISNULL(archived) ? NULL(DT_BOOL) : (DT_BOOL)(archived == &quot;true&quot;)" />
+            <pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(created_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(REPLACE(updated_at,&quot;T&quot;,&quot; &quot;),&quot;Z&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;file-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_files" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{660ee51d-ccb9-4a42-a00e-e8cd4d6127fb}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_files]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="name" pipeline:destination="name" />
+              <pipeline:Mapping pipeline:input="mime_type" pipeline:destination="mime_type" />
+              <pipeline:Mapping pipeline:input="size_bytes" pipeline:destination="size_bytes" />
+              <pipeline:Mapping pipeline:input="folder_id" pipeline:destination="folder_id" />
+              <pipeline:Mapping pipeline:input="owner_id" pipeline:destination="owner_id" />
+              <pipeline:Mapping pipeline:input="workspace_id" pipeline:destination="workspace_id" />
+              <pipeline:Mapping pipeline:input="version" pipeline:destination="version" />
+              <pipeline:Mapping pipeline:input="is_trashed" pipeline:destination="is_trashed" />
+              <pipeline:Mapping pipeline:input="archived" pipeline:destination="archived" />
+              <pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" />
+              <pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" />
+              <pipeline:Mapping pipeline:input="size_mb" pipeline:destination="size_mb" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from workspace" />
+          <pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_files" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_files">
+          <DTS:Text>Loads stg_files from files.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}"
+        DTS:To="{7071a54b-8d94-4f53-9b96-b593cf5f2344}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{7071a54b-8d94-4f53-9b96-b593cf5f2344}"
+        DTS:To="{6d4ada8c-1b89-456a-96ef-a69d34da0874}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

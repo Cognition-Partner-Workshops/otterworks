@@ -1,2 +1,547 @@
-<?xml version='1.0' encoding='utf-8'?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" rd:ReportID="2e7953df-ec35-4398-bc94-c9f42c8f8f18"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="UBW"><ConnectionProperties><DataProvider>SQL</DataProvider><ConnectString>Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW</ConnectString></ConnectionProperties></DataSource></DataSources><DataSets><DataSet Name="DataSet1"><Query><DataSourceName>UBW</DataSourceName><CommandText>SELECT business_date, invoice_id, line_no, tenant_id, period_start, period_end, line_type, description, amount_cents, invoice_status FROM fact.fact_invoice_lines WHERE business_date = @BusinessDate ORDER BY invoice_id, line_no</CommandText><QueryParameters><QueryParameter Name="@BusinessDate"><Value>=Parameters!BusinessDate.Value</Value></QueryParameter></QueryParameters></Query><Fields><Field Name="business_date"><DataField>business_date</DataField></Field><Field Name="invoice_id"><DataField>invoice_id</DataField></Field><Field Name="line_no"><DataField>line_no</DataField></Field><Field Name="tenant_id"><DataField>tenant_id</DataField></Field><Field Name="period_start"><DataField>period_start</DataField></Field><Field Name="period_end"><DataField>period_end</DataField></Field><Field Name="line_type"><DataField>line_type</DataField></Field><Field Name="description"><DataField>description</DataField></Field><Field Name="amount_cents"><DataField>amount_cents</DataField></Field><Field Name="invoice_status"><DataField>invoice_status</DataField></Field></Fields></DataSet></DataSets><ReportParameters><ReportParameter Name="BusinessDate"><DataType>DateTime</DataType><DefaultValue><Values><Value>2026-09-30</Value></Values></DefaultValue></ReportParameter></ReportParameters><Body><ReportItems><Tablix Name="Tablix1"><TablixBody><TablixColumns><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn><TablixColumn><Width>1.2in</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.25in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox0_0"><Paragraphs><Paragraph><TextRuns><TextRun><Value>business_date</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_1"><Paragraphs><Paragraph><TextRuns><TextRun><Value>invoice_id</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_2"><Paragraphs><Paragraph><TextRuns><TextRun><Value>line_no</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_3"><Paragraphs><Paragraph><TextRuns><TextRun><Value>tenant_id</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_4"><Paragraphs><Paragraph><TextRuns><TextRun><Value>period_start</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_5"><Paragraphs><Paragraph><TextRuns><TextRun><Value>period_end</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_6"><Paragraphs><Paragraph><TextRuns><TextRun><Value>line_type</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_7"><Paragraphs><Paragraph><TextRuns><TextRun><Value>description</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_8"><Paragraphs><Paragraph><TextRuns><TextRun><Value>amount_cents</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox0_9"><Paragraphs><Paragraph><TextRuns><TextRun><Value>invoice_status</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.25in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox1_0"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!business_date.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_1"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!invoice_id.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_2"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!line_no.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_3"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!tenant_id.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_4"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!period_start.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_5"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!period_end.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_6"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!line_type.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_7"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!description.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_8"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!amount_cents.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox1_9"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!invoice_status.Value</Value><Style><FontFamily>Arial</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style /></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember><Group Name="Details" /></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>DataSet1</DataSetName></Tablix></ReportItems><Height>1in</Height><Style /></Body><Width>12in</Width><Page /><Language>en-US</Language></Report>
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" rd:ReportID="2e7953df-ec35-4398-bc94-c9f42c8f8f18">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="UBW">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW</ConnectString>
+      </ConnectionProperties>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>UBW</DataSourceName>
+        <CommandText>SELECT business_date, invoice_id, line_no, tenant_id, period_start, period_end, line_type, description, amount_cents, invoice_status FROM fact.fact_invoice_lines WHERE business_date = @BusinessDate ORDER BY invoice_id, line_no</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@BusinessDate">
+            <Value>=Parameters!BusinessDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+      </Query>
+      <Fields>
+        <Field Name="business_date">
+          <DataField>business_date</DataField>
+        </Field>
+        <Field Name="invoice_id">
+          <DataField>invoice_id</DataField>
+        </Field>
+        <Field Name="line_no">
+          <DataField>line_no</DataField>
+        </Field>
+        <Field Name="tenant_id">
+          <DataField>tenant_id</DataField>
+        </Field>
+        <Field Name="period_start">
+          <DataField>period_start</DataField>
+        </Field>
+        <Field Name="period_end">
+          <DataField>period_end</DataField>
+        </Field>
+        <Field Name="line_type">
+          <DataField>line_type</DataField>
+        </Field>
+        <Field Name="description">
+          <DataField>description</DataField>
+        </Field>
+        <Field Name="amount_cents">
+          <DataField>amount_cents</DataField>
+        </Field>
+        <Field Name="invoice_status">
+          <DataField>invoice_status</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportParameters>
+    <ReportParameter Name="BusinessDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>2026-09-30</Value>
+        </Values>
+      </DefaultValue>
+    </ReportParameter>
+  </ReportParameters>
+  <Body>
+    <ReportItems>
+      <Tablix Name="Tablix1">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.2in</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.25in</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_0">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>business_date</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_1">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>invoice_id</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_2">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>line_no</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_3">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>tenant_id</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_4">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>period_start</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_5">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>period_end</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_6">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>line_type</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_7">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>description</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_8">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>amount_cents</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox0_9">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>invoice_status</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+            <TablixRow>
+              <Height>0.25in</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_0">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!business_date.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_1">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!invoice_id.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_2">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!line_no.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_3">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!tenant_id.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_4">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!period_start.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_5">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!period_end.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_6">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!line_type.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_7">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!description.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_8">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!amount_cents.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox1_9">
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!invoice_status.Value</Value>
+                              <Style>
+                                <FontFamily>Arial</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                        </Paragraph>
+                      </Paragraphs>
+                      <Style />
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember>
+              <Group Name="Details" />
+            </TablixMember>
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>DataSet1</DataSetName>
+      </Tablix>
+    </ReportItems>
+    <Height>1in</Height>
+    <Style />
+  </Body>
+  <Width>12in</Width>
+  <Page />
+  <Language>en-US</Language>
+</Report>

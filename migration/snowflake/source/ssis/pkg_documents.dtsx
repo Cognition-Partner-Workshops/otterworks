@@ -1,2 +1,171 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_documents" DTS:DTSID="{24622a0f-58fd-4ad9-bfde-121b90186f70}" DTS:VersionGUID="{204a5719-3c4e-47d0-a267-661007f970d0}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="6216"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{091ebeea-632b-456f-9d1a-8f2198eb5821}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{28b9d367-40a0-445a-b14c-790cef5b38aa}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{e5dce530-bff8-4de5-a74f-eb8fddb8b2d9}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_documents" DTS:CreationName="FLATFILE" DTS:DTSID="{8a83b9b3-2e28-4f67-b353-07fb2b5abecc}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\documents.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\documents.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="title" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="content_type" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="owner_id" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="folder_id" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="workspace_id" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="is_deleted" DTS:DataType="129" DTS:Ordinal="6" /><DTS:FlatFileColumn DTS:ObjectName="is_template" DTS:DataType="129" DTS:Ordinal="7" /><DTS:FlatFileColumn DTS:ObjectName="archived" DTS:DataType="129" DTS:Ordinal="8" /><DTS:FlatFileColumn DTS:ObjectName="word_count" DTS:DataType="129" DTS:Ordinal="9" /><DTS:FlatFileColumn DTS:ObjectName="version" DTS:DataType="129" DTS:Ordinal="10" /><DTS:FlatFileColumn DTS:ObjectName="created_at" DTS:DataType="129" DTS:Ordinal="11" /><DTS:FlatFileColumn DTS:ObjectName="updated_at" DTS:DataType="129" DTS:Ordinal="12" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SQL Truncate stg_documents" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{2c27ce6c-4c04-440d-a855-37dd2de1804c}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_documents;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_documents"><DTS:Text>Executes sql truncate stg_documents before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_documents" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{b7c9aea6-adaa-4714-b8a9-f7b043b215ff}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC documents.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{2fdd8428-3d42-4ed9-b649-5cd81f24329d}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_documents"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="LKP Tenant from workspace" pipeline:ComponentType="Lookup" pipeline:ID="{f09501ce-0d06-4aaf-a45b-583439cbaaf4}" pipeline:Version="1"><pipeline:Property pipeline:name="JoinInput">workspace_id</pipeline:Property><pipeline:Property pipeline:name="JoinReference">workspace_id</pipeline:Property><pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property><pipeline:Property pipeline:name="ReferenceFile" /><pipeline:Property pipeline:name="ReferenceQuery">SELECT DISTINCT workspace_id, tenant_id FROM stg.stg_auth_workspace_members</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{c525ba97-dc50-44fc-a832-608f3468e1e8}" pipeline:Version="1"><pipeline:Expression pipeline:output="is_deleted" pipeline:expression="(DT_BOOL)(is_deleted == &quot;t&quot;)" /><pipeline:Expression pipeline:output="is_template" pipeline:expression="(DT_BOOL)(is_template == &quot;t&quot;)" /><pipeline:Expression pipeline:output="archived" pipeline:expression="ISNULL(archived) ? NULL(DT_BOOL) : (DT_BOOL)(archived == &quot;t&quot;)" /><pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(created_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(updated_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;document-service&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_documents" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{8cc58126-0ed3-45bb-9b4c-a524ddb055b4}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_documents]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="title" pipeline:destination="title" /><pipeline:Mapping pipeline:input="content_type" pipeline:destination="content_type" /><pipeline:Mapping pipeline:input="owner_id" pipeline:destination="owner_id" /><pipeline:Mapping pipeline:input="folder_id" pipeline:destination="folder_id" /><pipeline:Mapping pipeline:input="workspace_id" pipeline:destination="workspace_id" /><pipeline:Mapping pipeline:input="is_deleted" pipeline:destination="is_deleted" /><pipeline:Mapping pipeline:input="is_template" pipeline:destination="is_template" /><pipeline:Mapping pipeline:input="archived" pipeline:destination="archived" /><pipeline:Mapping pipeline:input="word_count" pipeline:destination="word_count" /><pipeline:Mapping pipeline:input="version" pipeline:destination="version" /><pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" /><pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" /><pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from workspace" /><pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_documents" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_documents"><DTS:Text>Loads stg_documents from documents.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{2c27ce6c-4c04-440d-a855-37dd2de1804c}" DTS:To="{b7c9aea6-adaa-4714-b8a9-f7b043b215ff}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_documents"
+  DTS:DTSID="{24622a0f-58fd-4ad9-bfde-121b90186f70}"
+  DTS:VersionGUID="{204a5719-3c4e-47d0-a267-661007f970d0}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6216"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{091ebeea-632b-456f-9d1a-8f2198eb5821}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{28b9d367-40a0-445a-b14c-790cef5b38aa}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{e5dce530-bff8-4de5-a74f-eb8fddb8b2d9}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_documents"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{8a83b9b3-2e28-4f67-b353-07fb2b5abecc}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\documents.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\documents.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="title"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="content_type"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="owner_id"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="folder_id"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="workspace_id"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="is_deleted"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+        <DTS:FlatFileColumn DTS:ObjectName="is_template"
+          DTS:DataType="129"
+          DTS:Ordinal="7" />
+        <DTS:FlatFileColumn DTS:ObjectName="archived"
+          DTS:DataType="129"
+          DTS:Ordinal="8" />
+        <DTS:FlatFileColumn DTS:ObjectName="word_count"
+          DTS:DataType="129"
+          DTS:Ordinal="9" />
+        <DTS:FlatFileColumn DTS:ObjectName="version"
+          DTS:DataType="129"
+          DTS:Ordinal="10" />
+        <DTS:FlatFileColumn DTS:ObjectName="created_at"
+          DTS:DataType="129"
+          DTS:Ordinal="11" />
+        <DTS:FlatFileColumn DTS:ObjectName="updated_at"
+          DTS:DataType="129"
+          DTS:Ordinal="12" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_documents"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{2c27ce6c-4c04-440d-a855-37dd2de1804c}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_documents;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_documents">
+          <DTS:Text>Executes sql truncate stg_documents before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_documents"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{b7c9aea6-adaa-4714-b8a9-f7b043b215ff}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_documents">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC documents.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{2fdd8428-3d42-4ed9-b649-5cd81f24329d}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_documents">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="LKP Tenant from workspace" pipeline:ComponentType="Lookup" pipeline:ID="{f09501ce-0d06-4aaf-a45b-583439cbaaf4}" pipeline:Version="1">
+            <pipeline:Property pipeline:name="JoinInput">workspace_id</pipeline:Property>
+            <pipeline:Property pipeline:name="JoinReference">workspace_id</pipeline:Property>
+            <pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceFile" />
+            <pipeline:Property pipeline:name="ReferenceQuery">SELECT DISTINCT workspace_id, tenant_id FROM stg.stg_auth_workspace_members</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{c525ba97-dc50-44fc-a832-608f3468e1e8}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="is_deleted" pipeline:expression="(DT_BOOL)(is_deleted == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="is_template" pipeline:expression="(DT_BOOL)(is_template == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="archived" pipeline:expression="ISNULL(archived) ? NULL(DT_BOOL) : (DT_BOOL)(archived == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(created_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(updated_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;document-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_documents" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{8cc58126-0ed3-45bb-9b4c-a524ddb055b4}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_documents]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="title" pipeline:destination="title" />
+              <pipeline:Mapping pipeline:input="content_type" pipeline:destination="content_type" />
+              <pipeline:Mapping pipeline:input="owner_id" pipeline:destination="owner_id" />
+              <pipeline:Mapping pipeline:input="folder_id" pipeline:destination="folder_id" />
+              <pipeline:Mapping pipeline:input="workspace_id" pipeline:destination="workspace_id" />
+              <pipeline:Mapping pipeline:input="is_deleted" pipeline:destination="is_deleted" />
+              <pipeline:Mapping pipeline:input="is_template" pipeline:destination="is_template" />
+              <pipeline:Mapping pipeline:input="archived" pipeline:destination="archived" />
+              <pipeline:Mapping pipeline:input="word_count" pipeline:destination="word_count" />
+              <pipeline:Mapping pipeline:input="version" pipeline:destination="version" />
+              <pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" />
+              <pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from workspace" />
+          <pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_documents" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_documents">
+          <DTS:Text>Loads stg_documents from documents.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{2c27ce6c-4c04-440d-a855-37dd2de1804c}"
+        DTS:To="{b7c9aea6-adaa-4714-b8a9-f7b043b215ff}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

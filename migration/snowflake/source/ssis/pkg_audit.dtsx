@@ -1,2 +1,151 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_audit" DTS:DTSID="{ad21cc9f-4d77-4921-8e8c-dbee6f5cf5dc}" DTS:VersionGUID="{8e897411-5e46-4004-834f-9be32a036e13}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="5773"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{c1dafee2-e72f-4963-97cb-1a9f43457001}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{5cb93a00-7ccb-4169-9f0b-b562eb7d362e}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{4418224a-7f17-48e8-87b3-0c7f5f0bd934}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_audit_events" DTS:CreationName="FLATFILE" DTS:DTSID="{f68b1928-7d07-4b6d-bb3a-2b1679f27360}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\audit_events.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\audit_events.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="user_id" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="action" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="resource_type" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="resource_id" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="details" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="ip_address" DTS:DataType="129" DTS:Ordinal="6" /><DTS:FlatFileColumn DTS:ObjectName="user_agent" DTS:DataType="129" DTS:Ordinal="7" /><DTS:FlatFileColumn DTS:ObjectName="timestamp" DTS:DataType="129" DTS:Ordinal="8" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SQL Truncate stg_audit_events" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{79a1391e-4aac-42ab-b63a-24209dbcd004}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_audit_events;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_audit_events"><DTS:Text>Executes sql truncate stg_audit_events before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_audit_events" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{6724359e-15cd-405f-a3de-5f02c6b5a0a1}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC audit_events.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{b15b0f86-c34d-4e2a-acca-276c4517e1c6}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_audit_events"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="LKP Tenant from user" pipeline:ComponentType="Lookup" pipeline:ID="{76d6326e-5b3a-46ca-8d21-f43d6257550a}" pipeline:Version="1"><pipeline:Property pipeline:name="JoinInput">user_id</pipeline:Property><pipeline:Property pipeline:name="JoinReference">user_id</pipeline:Property><pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property><pipeline:Property pipeline:name="ReferenceFile" /><pipeline:Property pipeline:name="ReferenceQuery">SELECT user_id, MIN(tenant_id) AS tenant_id FROM stg.stg_auth_workspace_members GROUP BY user_id</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{1ef988d4-eff4-490b-bca6-1f809cd1fb9a}" pipeline:Version="1"><pipeline:Expression pipeline:output="timestamp" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(timestamp,&quot;Z&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;audit-service&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_audit_events" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{059f0043-3ed1-4f13-96d5-d948eb129ed2}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_audit_events]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="user_id" pipeline:destination="user_id" /><pipeline:Mapping pipeline:input="action" pipeline:destination="action" /><pipeline:Mapping pipeline:input="resource_type" pipeline:destination="resource_type" /><pipeline:Mapping pipeline:input="resource_id" pipeline:destination="resource_id" /><pipeline:Mapping pipeline:input="details" pipeline:destination="details" /><pipeline:Mapping pipeline:input="ip_address" pipeline:destination="ip_address" /><pipeline:Mapping pipeline:input="user_agent" pipeline:destination="user_agent" /><pipeline:Mapping pipeline:input="timestamp" pipeline:destination="timestamp" /><pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from user" /><pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_audit_events" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_audit_events"><DTS:Text>Loads stg_audit_events from audit_events.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{79a1391e-4aac-42ab-b63a-24209dbcd004}" DTS:To="{6724359e-15cd-405f-a3de-5f02c6b5a0a1}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_audit"
+  DTS:DTSID="{ad21cc9f-4d77-4921-8e8c-dbee6f5cf5dc}"
+  DTS:VersionGUID="{8e897411-5e46-4004-834f-9be32a036e13}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="5773"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{c1dafee2-e72f-4963-97cb-1a9f43457001}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{5cb93a00-7ccb-4169-9f0b-b562eb7d362e}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{4418224a-7f17-48e8-87b3-0c7f5f0bd934}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_audit_events"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{f68b1928-7d07-4b6d-bb3a-2b1679f27360}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\audit_events.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\audit_events.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="user_id"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="action"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="resource_type"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="resource_id"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="details"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="ip_address"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+        <DTS:FlatFileColumn DTS:ObjectName="user_agent"
+          DTS:DataType="129"
+          DTS:Ordinal="7" />
+        <DTS:FlatFileColumn DTS:ObjectName="timestamp"
+          DTS:DataType="129"
+          DTS:Ordinal="8" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_audit_events"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{79a1391e-4aac-42ab-b63a-24209dbcd004}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_audit_events;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_audit_events">
+          <DTS:Text>Executes sql truncate stg_audit_events before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_audit_events"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{6724359e-15cd-405f-a3de-5f02c6b5a0a1}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_audit_events">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC audit_events.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{b15b0f86-c34d-4e2a-acca-276c4517e1c6}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_audit_events">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="LKP Tenant from user" pipeline:ComponentType="Lookup" pipeline:ID="{76d6326e-5b3a-46ca-8d21-f43d6257550a}" pipeline:Version="1">
+            <pipeline:Property pipeline:name="JoinInput">user_id</pipeline:Property>
+            <pipeline:Property pipeline:name="JoinReference">user_id</pipeline:Property>
+            <pipeline:Property pipeline:name="Outputs">tenant_id=tenant_id</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceFile" />
+            <pipeline:Property pipeline:name="ReferenceQuery">SELECT user_id, MIN(tenant_id) AS tenant_id FROM stg.stg_auth_workspace_members GROUP BY user_id</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{1ef988d4-eff4-490b-bca6-1f809cd1fb9a}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="timestamp" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(timestamp,&quot;Z&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;audit-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_audit_events" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{059f0043-3ed1-4f13-96d5-d948eb129ed2}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_audit_events]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="user_id" pipeline:destination="user_id" />
+              <pipeline:Mapping pipeline:input="action" pipeline:destination="action" />
+              <pipeline:Mapping pipeline:input="resource_type" pipeline:destination="resource_type" />
+              <pipeline:Mapping pipeline:input="resource_id" pipeline:destination="resource_id" />
+              <pipeline:Mapping pipeline:input="details" pipeline:destination="details" />
+              <pipeline:Mapping pipeline:input="ip_address" pipeline:destination="ip_address" />
+              <pipeline:Mapping pipeline:input="user_agent" pipeline:destination="user_agent" />
+              <pipeline:Mapping pipeline:input="timestamp" pipeline:destination="timestamp" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant from user" />
+          <pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_audit_events" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_audit_events">
+          <DTS:Text>Loads stg_audit_events from audit_events.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{79a1391e-4aac-42ab-b63a-24209dbcd004}"
+        DTS:To="{6724359e-15cd-405f-a3de-5f02c6b5a0a1}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

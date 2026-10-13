@@ -1,2 +1,351 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_billing_core" DTS:DTSID="{e3abecb1-6333-4e0e-bee5-cceaf562354d}" DTS:VersionGUID="{a5b82c29-d713-4df5-a455-94411fa74e18}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="6495"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{8450145b-d668-4af3-aacc-4fb94e7e8e56}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{efe0302f-a75e-4060-a6d4-360018652583}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{58cd5025-bc7e-4b97-9b97-d6d3687373f6}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_plans" DTS:CreationName="FLATFILE" DTS:DTSID="{522a08d7-7f19-49cf-a3b0-fbb2f9f670a6}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_plans.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_plans.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="code" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="tier" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="monthly_fee" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="included_units" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="overage_rate" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="active" DTS:DataType="129" DTS:Ordinal="6" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_subscriptions" DTS:CreationName="FLATFILE" DTS:DTSID="{8de1b390-e497-4e41-b246-4fbf4d754bf0}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_subscriptions.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_subscriptions.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="tenant_id" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="plan_id" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="starts_on" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="ends_on" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="status" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="suspended_on" DTS:DataType="129" DTS:Ordinal="6" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_tenant_regions" DTS:CreationName="FLATFILE" DTS:DTSID="{26a897d2-94ae-4303-8fd9-928e16d8d5b4}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_tenant_regions.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_tenant_regions.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="tenant_id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="region_code" DTS:DataType="129" DTS:Ordinal="1" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_tenants" DTS:CreationName="FLATFILE" DTS:DTSID="{3420b0ac-4851-4720-b67b-5aeec84290cc}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_tenants.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_tenants.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="name" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="tax_exempt" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="status" DTS:DataType="129" DTS:Ordinal="3" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_tenants" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{a17679e4-26f0-4b09-a61f-61ad9d5ea6b3}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_tenants;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_billing_tenants"><DTS:Text>Executes sql truncate stg_billing_tenants before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_billing_tenants" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{cce38531-4825-4106-a6e9-d82c8b3211eb}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC billing_tenants.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{20a1537d-42db-4d8f-95a0-68f15bdc153d}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_tenants"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="LKP Tenant region" pipeline:ComponentType="Lookup" pipeline:ID="{6f2ef5e5-79f0-4066-ab55-6ee4dc9efbef}" pipeline:Version="1"><pipeline:Property pipeline:name="JoinInput">id</pipeline:Property><pipeline:Property pipeline:name="JoinReference">tenant_id</pipeline:Property><pipeline:Property pipeline:name="Outputs">region_code=region_code</pipeline:Property><pipeline:Property pipeline:name="ReferenceFile">billing_tenant_regions.csv</pipeline:Property><pipeline:Property pipeline:name="ReferenceQuery" /></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{f5dd47a5-407b-41e3-ae30-deee1c4180ca}" pipeline:Version="1"><pipeline:Expression pipeline:output="tax_exempt" pipeline:expression="(DT_BOOL)(tax_exempt == &quot;t&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_billing_tenants" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{a7a24d0b-9c24-4835-b46d-413e5e38eac3}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_billing_tenants]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="name" pipeline:destination="name" /><pipeline:Mapping pipeline:input="tax_exempt" pipeline:destination="tax_exempt" /><pipeline:Mapping pipeline:input="status" pipeline:destination="status" /><pipeline:Mapping pipeline:input="region_code" pipeline:destination="region_code" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant region" /><pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_billing_tenants" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_billing_tenants"><DTS:Text>Loads stg_billing_tenants from billing_tenants.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_plans" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{fe488412-24a7-4cb5-9e12-8b7962aae84c}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_plans;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_billing_plans"><DTS:Text>Executes sql truncate stg_billing_plans before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_billing_plans" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{44bd0990-a657-4542-9cf8-a7fd7a15c048}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC billing_plans.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{5c9b76a3-0d01-4514-80c8-0802202b0618}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_plans"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{a643193c-485e-43c2-8e97-f7b20769d0b5}" pipeline:Version="1"><pipeline:Expression pipeline:output="active" pipeline:expression="(DT_BOOL)(LOWER(active) == &quot;true&quot;)" /><pipeline:Expression pipeline:output="included_bytes" pipeline:expression="(DT_I8)included_units * 1073741824" /><pipeline:Expression pipeline:output="overage_cents_per_gb" pipeline:expression="(DT_I4)ROUND(overage_rate * 100, 0)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_billing_plans" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{eda9c855-8af7-45b4-af88-e41071f383e9}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_billing_plans]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="code" pipeline:destination="code" /><pipeline:Mapping pipeline:input="tier" pipeline:destination="tier" /><pipeline:Mapping pipeline:input="monthly_fee" pipeline:destination="monthly_fee" /><pipeline:Mapping pipeline:input="included_units" pipeline:destination="included_units" /><pipeline:Mapping pipeline:input="overage_rate" pipeline:destination="overage_rate" /><pipeline:Mapping pipeline:input="active" pipeline:destination="active" /><pipeline:Mapping pipeline:input="included_bytes" pipeline:destination="included_bytes" /><pipeline:Mapping pipeline:input="overage_cents_per_gb" pipeline:destination="overage_cents_per_gb" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_plans" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_billing_plans"><DTS:Text>Loads stg_billing_plans from billing_plans.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_subscriptions" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{9ec123dc-d62a-4af9-b164-279d1a7ce615}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_subscriptions;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_billing_subscriptions"><DTS:Text>Executes sql truncate stg_billing_subscriptions before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_billing_subscriptions" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{6ee78f2d-b72a-44c2-bb8e-76c130c7b1bd}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC billing_subscriptions.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{91176aa9-5142-4193-832b-90854d4a16bf}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_subscriptions"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{751682bb-a127-4de3-9e10-5efc611c942e}" pipeline:Version="1"><pipeline:Expression pipeline:output="starts_on" pipeline:expression="(DT_DBTIMESTAMP2,7)starts_on" /><pipeline:Expression pipeline:output="ends_on" pipeline:expression="(DT_DBTIMESTAMP2,7)ends_on" /><pipeline:Expression pipeline:output="suspended_on" pipeline:expression="(DT_DBTIMESTAMP2,7)suspended_on" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_billing_subscriptions" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{152d2980-1296-4c86-82aa-f863661fda42}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_billing_subscriptions]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" /><pipeline:Mapping pipeline:input="plan_id" pipeline:destination="plan_id" /><pipeline:Mapping pipeline:input="starts_on" pipeline:destination="starts_on" /><pipeline:Mapping pipeline:input="ends_on" pipeline:destination="ends_on" /><pipeline:Mapping pipeline:input="status" pipeline:destination="status" /><pipeline:Mapping pipeline:input="suspended_on" pipeline:destination="suspended_on" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_subscriptions" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_billing_subscriptions"><DTS:Text>Loads stg_billing_subscriptions from billing_subscriptions.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{a17679e4-26f0-4b09-a61f-61ad9d5ea6b3}" DTS:To="{cce38531-4825-4106-a6e9-d82c8b3211eb}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{cce38531-4825-4106-a6e9-d82c8b3211eb}" DTS:To="{fe488412-24a7-4cb5-9e12-8b7962aae84c}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{fe488412-24a7-4cb5-9e12-8b7962aae84c}" DTS:To="{44bd0990-a657-4542-9cf8-a7fd7a15c048}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{44bd0990-a657-4542-9cf8-a7fd7a15c048}" DTS:To="{9ec123dc-d62a-4af9-b164-279d1a7ce615}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{9ec123dc-d62a-4af9-b164-279d1a7ce615}" DTS:To="{6ee78f2d-b72a-44c2-bb8e-76c130c7b1bd}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_billing_core"
+  DTS:DTSID="{e3abecb1-6333-4e0e-bee5-cceaf562354d}"
+  DTS:VersionGUID="{a5b82c29-d713-4df5-a455-94411fa74e18}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6495"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{8450145b-d668-4af3-aacc-4fb94e7e8e56}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{efe0302f-a75e-4060-a6d4-360018652583}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{58cd5025-bc7e-4b97-9b97-d6d3687373f6}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_plans"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{522a08d7-7f19-49cf-a3b0-fbb2f9f670a6}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_plans.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_plans.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="code"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="tier"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="monthly_fee"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="included_units"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="overage_rate"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="active"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_subscriptions"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{8de1b390-e497-4e41-b246-4fbf4d754bf0}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_subscriptions.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_subscriptions.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="tenant_id"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="plan_id"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="starts_on"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="ends_on"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="status"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="suspended_on"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_tenant_regions"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{26a897d2-94ae-4303-8fd9-928e16d8d5b4}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_tenant_regions.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_tenant_regions.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="tenant_id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="region_code"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_tenants"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{3420b0ac-4851-4720-b67b-5aeec84290cc}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_tenants.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_tenants.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="name"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="tax_exempt"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="status"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_tenants"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{a17679e4-26f0-4b09-a61f-61ad9d5ea6b3}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_tenants;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_billing_tenants">
+          <DTS:Text>Executes sql truncate stg_billing_tenants before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_billing_tenants"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{cce38531-4825-4106-a6e9-d82c8b3211eb}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_billing_tenants">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC billing_tenants.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{20a1537d-42db-4d8f-95a0-68f15bdc153d}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_tenants">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="LKP Tenant region" pipeline:ComponentType="Lookup" pipeline:ID="{6f2ef5e5-79f0-4066-ab55-6ee4dc9efbef}" pipeline:Version="1">
+            <pipeline:Property pipeline:name="JoinInput">id</pipeline:Property>
+            <pipeline:Property pipeline:name="JoinReference">tenant_id</pipeline:Property>
+            <pipeline:Property pipeline:name="Outputs">region_code=region_code</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceFile">billing_tenant_regions.csv</pipeline:Property>
+            <pipeline:Property pipeline:name="ReferenceQuery" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{f5dd47a5-407b-41e3-ae30-deee1c4180ca}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="tax_exempt" pipeline:expression="(DT_BOOL)(tax_exempt == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_billing_tenants" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{a7a24d0b-9c24-4835-b46d-413e5e38eac3}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_billing_tenants]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="name" pipeline:destination="name" />
+              <pipeline:Mapping pipeline:input="tax_exempt" pipeline:destination="tax_exempt" />
+              <pipeline:Mapping pipeline:input="status" pipeline:destination="status" />
+              <pipeline:Mapping pipeline:input="region_code" pipeline:destination="region_code" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="LKP Tenant region" />
+          <pipeline:path pipeline:start="2" pipeline:end="3" pipeline:name="OLE_DST stg_billing_tenants" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_billing_tenants">
+          <DTS:Text>Loads stg_billing_tenants from billing_tenants.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_plans"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{fe488412-24a7-4cb5-9e12-8b7962aae84c}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_plans;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_billing_plans">
+          <DTS:Text>Executes sql truncate stg_billing_plans before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_billing_plans"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{44bd0990-a657-4542-9cf8-a7fd7a15c048}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_billing_plans">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC billing_plans.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{5c9b76a3-0d01-4514-80c8-0802202b0618}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_plans">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{a643193c-485e-43c2-8e97-f7b20769d0b5}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="active" pipeline:expression="(DT_BOOL)(LOWER(active) == &quot;true&quot;)" />
+            <pipeline:Expression pipeline:output="included_bytes" pipeline:expression="(DT_I8)included_units * 1073741824" />
+            <pipeline:Expression pipeline:output="overage_cents_per_gb" pipeline:expression="(DT_I4)ROUND(overage_rate * 100, 0)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_billing_plans" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{eda9c855-8af7-45b4-af88-e41071f383e9}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_billing_plans]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="code" pipeline:destination="code" />
+              <pipeline:Mapping pipeline:input="tier" pipeline:destination="tier" />
+              <pipeline:Mapping pipeline:input="monthly_fee" pipeline:destination="monthly_fee" />
+              <pipeline:Mapping pipeline:input="included_units" pipeline:destination="included_units" />
+              <pipeline:Mapping pipeline:input="overage_rate" pipeline:destination="overage_rate" />
+              <pipeline:Mapping pipeline:input="active" pipeline:destination="active" />
+              <pipeline:Mapping pipeline:input="included_bytes" pipeline:destination="included_bytes" />
+              <pipeline:Mapping pipeline:input="overage_cents_per_gb" pipeline:destination="overage_cents_per_gb" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_plans" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_billing_plans">
+          <DTS:Text>Loads stg_billing_plans from billing_plans.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_billing_subscriptions"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{9ec123dc-d62a-4af9-b164-279d1a7ce615}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_billing_subscriptions;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_billing_subscriptions">
+          <DTS:Text>Executes sql truncate stg_billing_subscriptions before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_billing_subscriptions"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{6ee78f2d-b72a-44c2-bb8e-76c130c7b1bd}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_billing_subscriptions">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC billing_subscriptions.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{91176aa9-5142-4193-832b-90854d4a16bf}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_subscriptions">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{751682bb-a127-4de3-9e10-5efc611c942e}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="starts_on" pipeline:expression="(DT_DBTIMESTAMP2,7)starts_on" />
+            <pipeline:Expression pipeline:output="ends_on" pipeline:expression="(DT_DBTIMESTAMP2,7)ends_on" />
+            <pipeline:Expression pipeline:output="suspended_on" pipeline:expression="(DT_DBTIMESTAMP2,7)suspended_on" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_billing_subscriptions" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{152d2980-1296-4c86-82aa-f863661fda42}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_billing_subscriptions]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="plan_id" pipeline:destination="plan_id" />
+              <pipeline:Mapping pipeline:input="starts_on" pipeline:destination="starts_on" />
+              <pipeline:Mapping pipeline:input="ends_on" pipeline:destination="ends_on" />
+              <pipeline:Mapping pipeline:input="status" pipeline:destination="status" />
+              <pipeline:Mapping pipeline:input="suspended_on" pipeline:destination="suspended_on" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_subscriptions" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_billing_subscriptions">
+          <DTS:Text>Loads stg_billing_subscriptions from billing_subscriptions.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{a17679e4-26f0-4b09-a61f-61ad9d5ea6b3}"
+        DTS:To="{cce38531-4825-4106-a6e9-d82c8b3211eb}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{cce38531-4825-4106-a6e9-d82c8b3211eb}"
+        DTS:To="{fe488412-24a7-4cb5-9e12-8b7962aae84c}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{fe488412-24a7-4cb5-9e12-8b7962aae84c}"
+        DTS:To="{44bd0990-a657-4542-9cf8-a7fd7a15c048}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{44bd0990-a657-4542-9cf8-a7fd7a15c048}"
+        DTS:To="{9ec123dc-d62a-4af9-b164-279d1a7ce615}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{9ec123dc-d62a-4af9-b164-279d1a7ce615}"
+        DTS:To="{6ee78f2d-b72a-44c2-bb8e-76c130c7b1bd}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

@@ -1,2 +1,144 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_auth_users" DTS:DTSID="{e4bd8f81-91bf-4ba0-8e8d-dadaabbd75a9}" DTS:VersionGUID="{87301b9c-66a4-4648-9aaa-64d060d9f0cc}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="6329"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{32c3ddef-26df-41eb-a264-38ed4f028674}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{efe742ba-a71e-4b9d-8a30-1dbf54e475eb}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables /><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{c2dc9809-56c4-468f-ba7c-53d20846b613}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_auth_users" DTS:CreationName="FLATFILE" DTS:DTSID="{b67a7d4f-97dc-4fb0-8f70-638f5589d0eb}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\auth_users.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\auth_users.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="email" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="display_name" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="email_verified" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="mfa_enabled" DTS:DataType="129" DTS:Ordinal="4" /><DTS:FlatFileColumn DTS:ObjectName="created_at" DTS:DataType="129" DTS:Ordinal="5" /><DTS:FlatFileColumn DTS:ObjectName="updated_at" DTS:DataType="129" DTS:Ordinal="6" /><DTS:FlatFileColumn DTS:ObjectName="last_login_at" DTS:DataType="129" DTS:Ordinal="7" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SQL Truncate stg_auth_users" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{c31658c0-eae5-4c11-8cde-06d6ae2985af}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_auth_users;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Truncate stg_auth_users"><DTS:Text>Executes sql truncate stg_auth_users before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_auth_users" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{6c6e01a3-bc3a-4faf-9589-ef9640cef3e1}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC auth_users.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{f733cb5c-5498-4822-ab63-4be0371980e5}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_auth_users"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{d4a799cf-3d1a-4cf9-a42c-50fd5f927056}" pipeline:Version="1"><pipeline:Expression pipeline:output="email_verified" pipeline:expression="(DT_BOOL)(email_verified == &quot;t&quot;)" /><pipeline:Expression pipeline:output="mfa_enabled" pipeline:expression="(DT_BOOL)(mfa_enabled == &quot;t&quot;)" /><pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(created_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(updated_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="last_login_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(last_login_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="email_domain" pipeline:expression="LOWER(SUBSTRING(email, FINDSTRING(email,&quot;@&quot;,1)+1, 255))" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;auth-service&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_auth_users" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{8b7c8d0b-199f-4b5b-be4b-799eb5ae44cd}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_auth_users]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="email" pipeline:destination="email" /><pipeline:Mapping pipeline:input="display_name" pipeline:destination="display_name" /><pipeline:Mapping pipeline:input="email_verified" pipeline:destination="email_verified" /><pipeline:Mapping pipeline:input="mfa_enabled" pipeline:destination="mfa_enabled" /><pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" /><pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" /><pipeline:Mapping pipeline:input="last_login_at" pipeline:destination="last_login_at" /><pipeline:Mapping pipeline:input="email_domain" pipeline:destination="email_domain" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_auth_users" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_auth_users"><DTS:Text>Loads stg_auth_users from auth_users.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{c31658c0-eae5-4c11-8cde-06d6ae2985af}" DTS:To="{6c6e01a3-bc3a-4faf-9589-ef9640cef3e1}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_auth_users"
+  DTS:DTSID="{e4bd8f81-91bf-4ba0-8e8d-dadaabbd75a9}"
+  DTS:VersionGUID="{87301b9c-66a4-4648-9aaa-64d060d9f0cc}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6329"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{32c3ddef-26df-41eb-a264-38ed4f028674}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{efe742ba-a71e-4b9d-8a30-1dbf54e475eb}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables />
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{c2dc9809-56c4-468f-ba7c-53d20846b613}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_auth_users"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{b67a7d4f-97dc-4fb0-8f70-638f5589d0eb}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\auth_users.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\auth_users.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="email"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="display_name"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="email_verified"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="mfa_enabled"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+        <DTS:FlatFileColumn DTS:ObjectName="created_at"
+          DTS:DataType="129"
+          DTS:Ordinal="5" />
+        <DTS:FlatFileColumn DTS:ObjectName="updated_at"
+          DTS:DataType="129"
+          DTS:Ordinal="6" />
+        <DTS:FlatFileColumn DTS:ObjectName="last_login_at"
+          DTS:DataType="129"
+          DTS:Ordinal="7" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SQL Truncate stg_auth_users"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{c31658c0-eae5-4c11-8cde-06d6ae2985af}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="TRUNCATE TABLE stg.stg_auth_users;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Truncate stg_auth_users">
+          <DTS:Text>Executes sql truncate stg_auth_users before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_auth_users"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{6c6e01a3-bc3a-4faf-9589-ef9640cef3e1}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_auth_users">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC auth_users.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{f733cb5c-5498-4822-ab63-4be0371980e5}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_auth_users">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{d4a799cf-3d1a-4cf9-a42c-50fd5f927056}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="email_verified" pipeline:expression="(DT_BOOL)(email_verified == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="mfa_enabled" pipeline:expression="(DT_BOOL)(mfa_enabled == &quot;t&quot;)" />
+            <pipeline:Expression pipeline:output="created_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(created_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="updated_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(updated_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="last_login_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(last_login_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="email_domain" pipeline:expression="LOWER(SUBSTRING(email, FINDSTRING(email,&quot;@&quot;,1)+1, 255))" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;auth-service&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_auth_users" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{8b7c8d0b-199f-4b5b-be4b-799eb5ae44cd}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_auth_users]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="email" pipeline:destination="email" />
+              <pipeline:Mapping pipeline:input="display_name" pipeline:destination="display_name" />
+              <pipeline:Mapping pipeline:input="email_verified" pipeline:destination="email_verified" />
+              <pipeline:Mapping pipeline:input="mfa_enabled" pipeline:destination="mfa_enabled" />
+              <pipeline:Mapping pipeline:input="created_at" pipeline:destination="created_at" />
+              <pipeline:Mapping pipeline:input="updated_at" pipeline:destination="updated_at" />
+              <pipeline:Mapping pipeline:input="last_login_at" pipeline:destination="last_login_at" />
+              <pipeline:Mapping pipeline:input="email_domain" pipeline:destination="email_domain" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_auth_users" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_auth_users">
+          <DTS:Text>Loads stg_auth_users from auth_users.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{c31658c0-eae5-4c11-8cde-06d6ae2985af}"
+        DTS:To="{6c6e01a3-bc3a-4faf-9589-ef9640cef3e1}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>

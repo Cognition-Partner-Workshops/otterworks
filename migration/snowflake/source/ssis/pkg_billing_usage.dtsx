@@ -1,5 +1,84 @@
-<?xml version='1.0' encoding='utf-8'?>
-<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" xmlns:ScriptTask="www.microsoft.com/sqlserver/dts/tasks/scripttask" xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline" DTS:ExecutableType="Microsoft.Package" DTS:ObjectName="pkg_billing_usage" DTS:DTSID="{13b4c5ee-9db6-4e0b-96a3-1f2df7298e54}" DTS:VersionGUID="{a2e6e548-1205-42c0-b842-cc84643c1865}" DTS:PackageFormatVersion="8" DTS:CreationDate="2018-04-13T14:20:00+00:00" DTS:CreatorName="OTTERWORKS\mkowalski" DTS:CreatorComputerName="OW-ETL-DEV02" DTS:LastModifiedProductVersion="14.0.3002.68" DTS:VersionBuild="6603"><DTS:PackageParameters><DTS:PackageParameter DTS:ObjectName="ExtractRoot" DTS:DataType="8" DTS:DTSID="{bb00c893-5db7-45d4-9414-8b434bd33776}"><DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property></DTS:PackageParameter><DTS:PackageParameter DTS:ObjectName="BusinessDate" DTS:DataType="133" DTS:DTSID="{0cabc5ef-95e4-4b0b-9ab9-980a6bb8e753}"><DTS:Property DTS:Name="Value">2026-09-30</DTS:Property></DTS:PackageParameter></DTS:PackageParameters><DTS:Variables><DTS:Variable DTS:ObjectName="WatermarkFrom" DTS:Namespace="User" DTS:DataType="8" DTS:DTSID="{db8a3512-d80d-4199-b81f-7d9b49c5c4f5}"><DTS:Property DTS:Name="Value" /></DTS:Variable></DTS:Variables><DTS:ConnectionManagers><DTS:ConnectionManager DTS:ObjectName="UBW_Staging" DTS:CreationName="OLEDB" DTS:DTSID="{82c3019e-a022-455b-b677-b17ee2300356}"><DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property></DTS:ConnectionManager><DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_usage_events" DTS:CreationName="FLATFILE" DTS:DTSID="{1e327c9b-6f23-4a8f-b89a-20ccb7812555}"><DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_usage_events.csv</DTS:Property><DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_usage_events.csv"</DTS:PropertyExpression><DTS:FlatFileColumns><DTS:FlatFileColumn DTS:ObjectName="id" DTS:DataType="129" DTS:Ordinal="0" /><DTS:FlatFileColumn DTS:ObjectName="tenant_id" DTS:DataType="129" DTS:Ordinal="1" /><DTS:FlatFileColumn DTS:ObjectName="occurred_at" DTS:DataType="129" DTS:Ordinal="2" /><DTS:FlatFileColumn DTS:ObjectName="units" DTS:DataType="129" DTS:Ordinal="3" /><DTS:FlatFileColumn DTS:ObjectName="kind" DTS:DataType="129" DTS:Ordinal="4" /></DTS:FlatFileColumns><DTS:ObjectData><DTS:FlatFileConnectionManager DTS:Format="Delimited" DTS:ColumnNamesInFirstDataRow="True" DTS:RowDelimiter="_x000A_" DTS:TextQualifier="&quot;" /></DTS:ObjectData></DTS:ConnectionManager></DTS:ConnectionManagers><DTS:Executables><DTS:Executable DTS:ObjectName="SCR Read usage watermark" DTS:ExecutableType="Microsoft.ScriptTask" DTS:DTSID="{1f53aab3-b0f2-4f32-aee1-09758ed5d964}" DTS:Disabled="False"><ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp"><ScriptTask:ScriptProject><ScriptTask:ScriptMain.cs>using System;
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  xmlns:ScriptTask="www.microsoft.com/sqlserver/dts/tasks/scripttask"
+  xmlns:pipeline="http://schemas.microsoft.com/sqlserver/dts/pipeline"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:ObjectName="pkg_billing_usage"
+  DTS:DTSID="{13b4c5ee-9db6-4e0b-96a3-1f2df7298e54}"
+  DTS:VersionGUID="{a2e6e548-1205-42c0-b842-cc84643c1865}"
+  DTS:PackageFormatVersion="8"
+  DTS:CreationDate="2018-04-13T14:20:00+00:00"
+  DTS:CreatorName="OTTERWORKS\mkowalski"
+  DTS:CreatorComputerName="OW-ETL-DEV02"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:VersionBuild="6603"
+  DTS:refId="Package">
+  <DTS:PackageParameters>
+    <DTS:PackageParameter DTS:ObjectName="ExtractRoot"
+      DTS:DataType="8"
+      DTS:DTSID="{bb00c893-5db7-45d4-9414-8b434bd33776}">
+      <DTS:Property DTS:Name="Value">\\ubw-etl01\extracts</DTS:Property>
+    </DTS:PackageParameter>
+    <DTS:PackageParameter DTS:ObjectName="BusinessDate"
+      DTS:DataType="133"
+      DTS:DTSID="{0cabc5ef-95e4-4b0b-9ab9-980a6bb8e753}">
+      <DTS:Property DTS:Name="Value">2026-09-30</DTS:Property>
+    </DTS:PackageParameter>
+  </DTS:PackageParameters>
+  <DTS:Variables>
+    <DTS:Variable DTS:ObjectName="WatermarkFrom"
+      DTS:Namespace="User"
+      DTS:DataType="8"
+      DTS:DTSID="{db8a3512-d80d-4199-b81f-7d9b49c5c4f5}">
+      <DTS:Property DTS:Name="Value" />
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:ObjectName="UBW_Staging"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{82c3019e-a022-455b-b677-b17ee2300356}"
+      DTS:refId="Package.ConnectionManagers[UBW_Staging]">
+      <DTS:Property DTS:Name="ConnectionString">Data Source=UBW-SQL01;Initial Catalog=OtterWorksUBW;Provider=SQLNCLI11.1;Integrated Security=SSPI;</DTS:Property>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:ObjectName="FlatFile_billing_usage_events"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{1e327c9b-6f23-4a8f-b89a-20ccb7812555}">
+      <DTS:Property DTS:Name="ConnectionString">\\ubw-etl01\extracts\billing_usage_events.csv</DTS:Property>
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ExtractRoot] + "\\billing_usage_events.csv"</DTS:PropertyExpression>
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn DTS:ObjectName="id"
+          DTS:DataType="129"
+          DTS:Ordinal="0" />
+        <DTS:FlatFileColumn DTS:ObjectName="tenant_id"
+          DTS:DataType="129"
+          DTS:Ordinal="1" />
+        <DTS:FlatFileColumn DTS:ObjectName="occurred_at"
+          DTS:DataType="129"
+          DTS:Ordinal="2" />
+        <DTS:FlatFileColumn DTS:ObjectName="units"
+          DTS:DataType="129"
+          DTS:Ordinal="3" />
+        <DTS:FlatFileColumn DTS:ObjectName="kind"
+          DTS:DataType="129"
+          DTS:Ordinal="4" />
+      </DTS:FlatFileColumns>
+      <DTS:ObjectData>
+        <DTS:FlatFileConnectionManager DTS:Format="Delimited"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter="_x000A_"
+          DTS:TextQualifier="&quot;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="SCR Read usage watermark"
+      DTS:ExecutableType="Microsoft.ScriptTask"
+      DTS:DTSID="{1f53aab3-b0f2-4f32-aee1-09758ed5d964}"
+      DTS:Disabled="False">
+      <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
+        <ScriptTask:ScriptProject>
+          <ScriptTask:ScriptMain.cs>using System;
 using Microsoft.SqlServer.Dts.Runtime;
 public class ScriptMain
 {
@@ -9,5 +88,79 @@ public class ScriptMain
         Dts.TaskResult = (int)ScriptResults.Success;
     }
 }
-</ScriptTask:ScriptMain.cs></ScriptTask:ScriptProject></ScriptTask:ScriptTaskData><DTS:Annotations><DTS:Annotation DTS:Name="SCR Read usage watermark"><DTS:Text>The package reads the saved point before loading newer usage events.
-Replay intent: watermark_read(object_name=pkg_billing_usage)</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="DFT Load stg_billing_usage_events" DTS:ExecutableType="Microsoft.Pipeline" DTS:DTSID="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}" DTS:Disabled="False"><DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property><pipeline:Pipeline><pipeline:components><pipeline:component pipeline:Name="FF_SRC billing_usage_events.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{cdb85009-02c7-4e33-85f6-d8594cd0e482}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_usage_events"><pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property><pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property></pipeline:component><pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{e6ce69eb-e0ef-4865-826a-1886447d4dc2}" pipeline:Version="1"><pipeline:Expression pipeline:output="occurred_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(occurred_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="event_ts_utc" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(occurred_at,&quot;+00&quot;,&quot;&quot;)" /><pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" /><pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" /></pipeline:component><pipeline:component pipeline:Name="OLE_DST stg_billing_usage_events" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{06218db2-22d6-4d5f-b8eb-e3d3e7cb10f1}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging"><pipeline:Property pipeline:name="TableName">[stg].[stg_billing_usage_events]</pipeline:Property><pipeline:Mappings><pipeline:Mapping pipeline:input="id" pipeline:destination="id" /><pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" /><pipeline:Mapping pipeline:input="occurred_at" pipeline:destination="occurred_at" /><pipeline:Mapping pipeline:input="units" pipeline:destination="units" /><pipeline:Mapping pipeline:input="kind" pipeline:destination="kind" /><pipeline:Mapping pipeline:input="event_ts_utc" pipeline:destination="event_ts_utc" /><pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" /><pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" /></pipeline:Mappings></pipeline:component></pipeline:components><pipeline:paths><pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" /><pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_usage_events" /></pipeline:paths></pipeline:Pipeline><DTS:Annotations><DTS:Annotation DTS:Name="DFT Load stg_billing_usage_events"><DTS:Text>Loads stg_billing_usage_events from billing_usage_events.csv.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:Executable DTS:ObjectName="SQL Update usage watermark" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:DTSID="{7144b4c8-c505-456f-ba42-bb56d1f8bab2}" DTS:Disabled="False"><SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="&#10;DECLARE @watermark nvarchar(64) =&#10;    (SELECT CONVERT(nvarchar(64), MAX(occurred_at), 126) FROM stg.stg_billing_usage_events);&#10;IF @watermark IS NOT NULL&#10;BEGIN&#10;    IF EXISTS (SELECT 1 FROM ops.parity_watermarks WHERE object_name = 'pkg_billing_usage')&#10;        UPDATE ops.parity_watermarks&#10;        SET watermark_value = @watermark,&#10;            business_date = CAST(@[$Package::BusinessDate] AS date),&#10;            updated_at = GETDATE()&#10;        WHERE object_name = 'pkg_billing_usage';&#10;    ELSE&#10;        INSERT INTO ops.parity_watermarks&#10;            (object_name, watermark_column, watermark_value, business_date, updated_at)&#10;        VALUES&#10;            ('pkg_billing_usage', 'occurred_at', @watermark,&#10;             CAST(@[$Package::BusinessDate] AS date), GETDATE());&#10;END;&#10;" SQLTask:ResultType="ResultSetType_None" /><DTS:Annotations><DTS:Annotation DTS:Name="SQL Update usage watermark"><DTS:Text>Executes sql update usage watermark before the data flow.</DTS:Text></DTS:Annotation></DTS:Annotations></DTS:Executable><DTS:PrecedenceConstraints><DTS:PrecedenceConstraint DTS:From="{1f53aab3-b0f2-4f32-aee1-09758ed5d964}" DTS:To="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}" DTS:Value="Success" DTS:LogicalAnd="True" /><DTS:PrecedenceConstraint DTS:From="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}" DTS:To="{7144b4c8-c505-456f-ba42-bb56d1f8bab2}" DTS:Value="Success" DTS:LogicalAnd="True" /></DTS:PrecedenceConstraints></DTS:Executables></DTS:Executable>
+</ScriptTask:ScriptMain.cs>
+        </ScriptTask:ScriptProject>
+      </ScriptTask:ScriptTaskData>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SCR Read usage watermark">
+          <DTS:Text>The package reads the saved point before loading newer usage events.
+Replay intent: watermark_read(object_name=pkg_billing_usage)</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="DFT Load stg_billing_usage_events"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:DTSID="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}"
+      DTS:Disabled="False"
+      DTS:refId="Package\DFT Load stg_billing_usage_events">
+      <DTS:Property DTS:Name="DesignTimeProperties">&lt;DesignTimeProperties /&gt;</DTS:Property>
+      <pipeline:Pipeline>
+        <pipeline:components>
+          <pipeline:component pipeline:Name="FF_SRC billing_usage_events.csv" pipeline:ComponentType="FlatFileSource" pipeline:ID="{cdb85009-02c7-4e33-85f6-d8594cd0e482}" pipeline:Version="1" pipeline:ConnectionManager="FlatFile_billing_usage_events">
+            <pipeline:Property pipeline:name="HeaderRowDelimiter">_x000A_</pipeline:Property>
+            <pipeline:Property pipeline:name="DataRowsToSkip">0</pipeline:Property>
+          </pipeline:component>
+          <pipeline:component pipeline:Name="DER Normalise timestamps" pipeline:ComponentType="DerivedColumn" pipeline:ID="{e6ce69eb-e0ef-4865-826a-1886447d4dc2}" pipeline:Version="1">
+            <pipeline:Expression pipeline:output="occurred_at" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(occurred_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="event_ts_utc" pipeline:expression="(DT_DBTIMESTAMP2,7)REPLACE(occurred_at,&quot;+00&quot;,&quot;&quot;)" />
+            <pipeline:Expression pipeline:output="extracted_at" pipeline:expression="@[System::StartTime]" />
+            <pipeline:Expression pipeline:output="source_system" pipeline:expression="&quot;legacy-billing&quot;" />
+          </pipeline:component>
+          <pipeline:component pipeline:Name="OLE_DST stg_billing_usage_events" pipeline:ComponentType="OLEDBDestination" pipeline:ID="{06218db2-22d6-4d5f-b8eb-e3d3e7cb10f1}" pipeline:Version="1" pipeline:ConnectionManager="UBW_Staging">
+            <pipeline:Property pipeline:name="TableName">[stg].[stg_billing_usage_events]</pipeline:Property>
+            <pipeline:Mappings>
+              <pipeline:Mapping pipeline:input="id" pipeline:destination="id" />
+              <pipeline:Mapping pipeline:input="tenant_id" pipeline:destination="tenant_id" />
+              <pipeline:Mapping pipeline:input="occurred_at" pipeline:destination="occurred_at" />
+              <pipeline:Mapping pipeline:input="units" pipeline:destination="units" />
+              <pipeline:Mapping pipeline:input="kind" pipeline:destination="kind" />
+              <pipeline:Mapping pipeline:input="event_ts_utc" pipeline:destination="event_ts_utc" />
+              <pipeline:Mapping pipeline:input="extracted_at" pipeline:destination="extracted_at" />
+              <pipeline:Mapping pipeline:input="source_system" pipeline:destination="source_system" />
+            </pipeline:Mappings>
+          </pipeline:component>
+        </pipeline:components>
+        <pipeline:paths>
+          <pipeline:path pipeline:start="0" pipeline:end="1" pipeline:name="DER Normalise timestamps" />
+          <pipeline:path pipeline:start="1" pipeline:end="2" pipeline:name="OLE_DST stg_billing_usage_events" />
+        </pipeline:paths>
+      </pipeline:Pipeline>
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="DFT Load stg_billing_usage_events">
+          <DTS:Text>Loads stg_billing_usage_events from billing_usage_events.csv.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:Executable DTS:ObjectName="SQL Update usage watermark"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{7144b4c8-c505-456f-ba42-bb56d1f8bab2}"
+      DTS:Disabled="False">
+      <SQLTask:SqlTaskData SQLTask:Connection="UBW_Staging" SQLTask:SqlStatementSource="&#10;DECLARE @watermark nvarchar(64) =&#10;    (SELECT CONVERT(nvarchar(64), MAX(occurred_at), 126) FROM stg.stg_billing_usage_events);&#10;IF @watermark IS NOT NULL&#10;BEGIN&#10;    IF EXISTS (SELECT 1 FROM ops.parity_watermarks WHERE object_name = 'pkg_billing_usage')&#10;        UPDATE ops.parity_watermarks&#10;        SET watermark_value = @watermark,&#10;            business_date = CAST(@[$Package::BusinessDate] AS date),&#10;            updated_at = GETDATE()&#10;        WHERE object_name = 'pkg_billing_usage';&#10;    ELSE&#10;        INSERT INTO ops.parity_watermarks&#10;            (object_name, watermark_column, watermark_value, business_date, updated_at)&#10;        VALUES&#10;            ('pkg_billing_usage', 'occurred_at', @watermark,&#10;             CAST(@[$Package::BusinessDate] AS date), GETDATE());&#10;END;&#10;" SQLTask:ResultType="ResultSetType_None" />
+      <DTS:Annotations>
+        <DTS:Annotation DTS:Name="SQL Update usage watermark">
+          <DTS:Text>Executes sql update usage watermark before the data flow.</DTS:Text>
+        </DTS:Annotation>
+      </DTS:Annotations>
+    </DTS:Executable>
+    <DTS:PrecedenceConstraints>
+      <DTS:PrecedenceConstraint DTS:From="{1f53aab3-b0f2-4f32-aee1-09758ed5d964}"
+        DTS:To="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{cbf47ee6-5cc1-481e-9328-2987e70adbb0}"
+        DTS:To="{7144b4c8-c505-456f-ba42-bb56d1f8bab2}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+    </DTS:PrecedenceConstraints>
+  </DTS:Executables>
+</DTS:Executable>
