@@ -1,0 +1,7 @@
+package: pkg_document_versions
+sqlserver_table: stg.stg_document_versions
+snowflake_model: STAGING.STG_DOCUMENT_VERSIONS
+keys: [id]
+columns: [document_id, version_number, title, created_by, created_at, content_length, source_system]
+excluded:
+  extracted_at: "@[System::StartTime] of the package run (server clock at load time); differs on every run on both sides"
