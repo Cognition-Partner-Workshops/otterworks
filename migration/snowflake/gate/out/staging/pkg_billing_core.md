@@ -1,21 +1,22 @@
-Staging parity pkg_billing_core PASS 7 / 7 differing_keys=0
+Staging parity pkg_billing_core:stg_billing_tenants PASS 60 / 60 differing_keys=0
+Staging parity pkg_billing_core:stg_billing_plans PASS 7 / 7 differing_keys=0
+Staging parity pkg_billing_core:stg_billing_subscriptions PASS 72 / 72 differing_keys=0
 
-SQL Server `stg.stg_billing_plans` vs Snowflake `STAGING.STG_BILLING_PLANS`, keys id, 9 compared columns.
-
+`ssis:pkg_billing_core:stg_billing_tenants`: SQL Server `stg.stg_billing_tenants` vs Snowflake `STAGING.STG_BILLING_TENANTS`, keys id, 5 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime], the server clock when the package ran; differs on every run
 
-### Other destinations
+`ssis:pkg_billing_core:stg_billing_plans`: SQL Server `stg.stg_billing_plans` vs Snowflake `STAGING.STG_BILLING_PLANS`, keys id, 9 compared columns.
+Not compared:
+- `extracted_at`: @[System::StartTime], the server clock when the package ran; differs on every run
 
-pkg_billing_core lands three tables; the gate takes one table per spec, so the other two
-entries under `additional_destinations` in `gate/staging/pkg_billing_core.yaml` were gated with
-the same `run_staging_gate` (scratch output, not recorded in `OPS.PARITY_LEDGER`), for both
-2026-09-15 and 2026-09-30:
+`ssis:pkg_billing_core:stg_billing_subscriptions`: SQL Server `stg.stg_billing_subscriptions` vs Snowflake `STAGING.STG_BILLING_SUBSCRIPTIONS`, keys id, 7 compared columns.
+Not compared:
+- `extracted_at`: @[System::StartTime], the server clock when the package ran; differs on every run
 
-- `Staging parity pkg_billing_core PASS 60 / 60 differing_keys=0` (stg.stg_billing_tenants vs STAGING.STG_BILLING_TENANTS, 5 compared columns)
-- `Staging parity pkg_billing_core PASS 72 / 72 differing_keys=0` (stg.stg_billing_subscriptions vs STAGING.STG_BILLING_SUBSCRIPTIONS, 7 compared columns)
+### Notes
 
-The package does not read the business date or a watermark, so the stg tables are identical for both dates.
+All three destinations were also gated after a 2026-09-15 replay and build with the same result; the package reads neither the business date nor a watermark, so the stg tables are identical for both dates.
 
 ### Business decisions
 

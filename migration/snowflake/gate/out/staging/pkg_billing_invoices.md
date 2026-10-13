@@ -1,9 +1,10 @@
 Staging parity pkg_billing_invoices PASS 376 / 376 differing_keys=0
 
-SQL Server `stg.stg_billing_invoices` vs Snowflake `STAGING.STG_BILLING_INVOICES`, keys invoice_id, line_no, 13 compared columns.
-
+`ssis:pkg_billing_invoices`: SQL Server `stg.stg_billing_invoices` vs Snowflake `STAGING.STG_BILLING_INVOICES`, keys invoice_id, line_no, 13 compared columns.
 Not compared:
 - `extracted_at`: run timestamp: @[System::StartTime] (SQL Server GETDATE() at package start) on SQL Server, query time on Snowflake
+
+### Notes
 
 The package does not read `BusinessDate` or a watermark (no Script Task, no date filter), so only the 2026-09-30 replay is gated.
 

@@ -1,9 +1,10 @@
 Staging parity pkg_billing_usage PASS 240752 / 240752 differing_keys=0
 
-SQL Server `stg.stg_billing_usage_events` vs Snowflake `STAGING.STG_BILLING_USAGE_EVENTS`, keys id, 6 compared columns.
-
+`ssis:pkg_billing_usage`: SQL Server `stg.stg_billing_usage_events` vs Snowflake `STAGING.STG_BILLING_USAGE_EVENTS`, keys id, 6 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime] of the load run (server clock); differs on every run by design
+
+### Notes
 
 Also gated for 2026-09-15 (replay, build and gate with that date): `Staging parity pkg_billing_usage PASS 240752 / 240752 differing_keys=0`.
 
