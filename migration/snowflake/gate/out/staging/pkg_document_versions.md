@@ -1,7 +1,6 @@
 Staging parity pkg_document_versions PASS 100000 / 100000 differing_keys=0
 
-SQL Server `stg.stg_document_versions` vs Snowflake `STAGING.STG_DOCUMENT_VERSIONS`, keys id, 7 compared columns.
-
+`ssis:pkg_document_versions`: SQL Server `stg.stg_document_versions` vs Snowflake `STAGING.STG_DOCUMENT_VERSIONS`, keys id, 7 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime] of the package run (server clock at load time); differs on every run on both sides
 

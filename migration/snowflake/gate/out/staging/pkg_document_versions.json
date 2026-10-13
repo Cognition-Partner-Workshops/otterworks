@@ -1,35 +1,42 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:53:33.536240+00:00",
+  "generated_at": "2026-10-13T03:11:18.175783+00:00",
   "spec": {
     "package": "pkg_document_versions",
-    "sqlserver_table": "stg.stg_document_versions",
-    "snowflake_model": "STAGING.STG_DOCUMENT_VERSIONS",
-    "keys": [
-      "id"
-    ],
-    "columns": [
-      "document_id",
-      "version_number",
-      "title",
-      "created_by",
-      "created_at",
-      "content_length",
-      "source_system"
-    ],
-    "excluded": {
-      "extracted_at": "@[System::StartTime] of the package run (server clock at load time); differs on every run on both sides"
-    },
-    "rename": {}
+    "destinations": [
+      {
+        "columns": [
+          "document_id",
+          "version_number",
+          "title",
+          "created_by",
+          "created_at",
+          "content_length",
+          "source_system"
+        ],
+        "snowflake_model": "STAGING.STG_DOCUMENT_VERSIONS",
+        "sqlserver_table": "stg.stg_document_versions",
+        "keys": [
+          "id"
+        ],
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime] of the package run (server clock at load time); differs on every run on both sides"
+        },
+        "unit": "ssis:pkg_document_versions"
+      }
+    ]
   },
-  "unit": {
-    "unit": "ssis:pkg_document_versions",
-    "status": "PASS",
-    "source_rows": 100000,
-    "target_rows": 100000,
-    "differing_key_count": 0,
-    "differences": [],
-    "explanation": ""
-  }
+  "units": [
+    {
+      "unit": "ssis:pkg_document_versions",
+      "status": "PASS",
+      "source_rows": 100000,
+      "target_rows": 100000,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
 }

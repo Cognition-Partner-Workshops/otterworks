@@ -1,7 +1,6 @@
 Staging parity pkg_files PASS 25000 / 25000 differing_keys=0
 
-SQL Server `stg.stg_files` vs Snowflake `STAGING.STG_FILES`, keys id, 14 compared columns.
-
+`ssis:pkg_files`: SQL Server `stg.stg_files` vs Snowflake `STAGING.STG_FILES`, keys id, 14 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime], the moment the package (or the dbt view query) ran; differs on every run by design
 

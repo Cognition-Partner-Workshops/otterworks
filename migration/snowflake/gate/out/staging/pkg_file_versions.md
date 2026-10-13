@@ -1,7 +1,6 @@
 Staging parity pkg_file_versions PASS 49999 / 49999 differing_keys=0
 
-SQL Server `stg.stg_file_versions` vs Snowflake `STAGING.STG_FILE_VERSIONS`, keys file_id, version, 4 compared columns.
-
+`ssis:pkg_file_versions`: SQL Server `stg.stg_file_versions` vs Snowflake `STAGING.STG_FILE_VERSIONS`, keys file_id, version, 4 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime] of the package run; differs on every run on both sides
 

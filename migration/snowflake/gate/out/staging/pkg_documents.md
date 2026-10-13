@@ -1,7 +1,6 @@
 Staging parity pkg_documents PASS 40000 / 40000 differing_keys=0
 
-SQL Server `stg.stg_documents` vs Snowflake `STAGING.STG_DOCUMENTS`, keys id, 14 compared columns.
-
+`ssis:pkg_documents`: SQL Server `stg.stg_documents` vs Snowflake `STAGING.STG_DOCUMENTS`, keys id, 14 compared columns.
 Not compared:
 - `extracted_at`: run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run
 

@@ -1,42 +1,49 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:56:17.141255+00:00",
+  "generated_at": "2026-10-13T03:11:24.196635+00:00",
   "spec": {
     "package": "pkg_files",
-    "sqlserver_table": "stg.stg_files",
-    "snowflake_model": "STAGING.STG_FILES",
-    "keys": [
-      "id"
-    ],
-    "columns": [
-      "name",
-      "mime_type",
-      "size_bytes",
-      "folder_id",
-      "owner_id",
-      "workspace_id",
-      "version",
-      "is_trashed",
-      "archived",
-      "created_at",
-      "updated_at",
-      "size_mb",
-      "tenant_id",
-      "source_system"
-    ],
-    "excluded": {
-      "extracted_at": "@[System::StartTime], the moment the package (or the dbt view query) ran; differs on every run by design"
-    },
-    "rename": {}
+    "destinations": [
+      {
+        "keys": [
+          "id"
+        ],
+        "snowflake_model": "STAGING.STG_FILES",
+        "columns": [
+          "name",
+          "mime_type",
+          "size_bytes",
+          "folder_id",
+          "owner_id",
+          "workspace_id",
+          "version",
+          "is_trashed",
+          "archived",
+          "created_at",
+          "updated_at",
+          "size_mb",
+          "tenant_id",
+          "source_system"
+        ],
+        "sqlserver_table": "stg.stg_files",
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime], the moment the package (or the dbt view query) ran; differs on every run by design"
+        },
+        "unit": "ssis:pkg_files"
+      }
+    ]
   },
-  "unit": {
-    "unit": "ssis:pkg_files",
-    "status": "PASS",
-    "source_rows": 25000,
-    "target_rows": 25000,
-    "differing_key_count": 0,
-    "differences": [],
-    "explanation": ""
-  }
+  "units": [
+    {
+      "unit": "ssis:pkg_files",
+      "status": "PASS",
+      "source_rows": 25000,
+      "target_rows": 25000,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
 }
