@@ -1,34 +1,41 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:51:09.757404+00:00",
+  "generated_at": "2026-10-13T03:11:03.276001+00:00",
   "spec": {
     "package": "pkg_auth_memberships",
-    "sqlserver_table": "stg.stg_auth_workspace_members",
-    "snowflake_model": "STAGING.STG_AUTH_WORKSPACE_MEMBERS",
-    "keys": [
-      "user_id",
-      "workspace_id"
-    ],
-    "columns": [
-      "workspace_name",
-      "tenant_id",
-      "role",
-      "joined_at",
-      "source_system"
-    ],
-    "excluded": {
-      "extracted_at": "@[System::StartTime] of the package run (SQL Server server clock); differs on every run on both sides"
-    },
-    "rename": {}
+    "destinations": [
+      {
+        "columns": [
+          "workspace_name",
+          "tenant_id",
+          "role",
+          "joined_at",
+          "source_system"
+        ],
+        "sqlserver_table": "stg.stg_auth_workspace_members",
+        "keys": [
+          "user_id",
+          "workspace_id"
+        ],
+        "snowflake_model": "STAGING.STG_AUTH_WORKSPACE_MEMBERS",
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime] of the package run (SQL Server server clock); differs on every run on both sides"
+        },
+        "unit": "ssis:pkg_auth_memberships"
+      }
+    ]
   },
-  "unit": {
-    "unit": "ssis:pkg_auth_memberships",
-    "status": "PASS",
-    "source_rows": 2650,
-    "target_rows": 2650,
-    "differing_key_count": 0,
-    "differences": [],
-    "explanation": ""
-  }
+  "units": [
+    {
+      "unit": "ssis:pkg_auth_memberships",
+      "status": "PASS",
+      "source_rows": 2650,
+      "target_rows": 2650,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
 }

@@ -1,9 +1,10 @@
 Staging parity pkg_auth_users PASS 2400 / 2400 differing_keys=0
 
-SQL Server `stg.stg_auth_users` vs Snowflake `STAGING.STG_AUTH_USERS`, keys id, 9 compared columns.
-
+`ssis:pkg_auth_users`: SQL Server `stg.stg_auth_users` vs Snowflake `STAGING.STG_AUTH_USERS`, keys id, 9 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime] of the package run (SQL Server GETDATE() at replay); run-dependent load timestamp, Snowflake stamps current_timestamp() at query time
+
+### Notes
 
 Transforms: `SQL Truncate stg_auth_users` then one data flow `auth_users.csv` -> `DER Normalise timestamps` -> `[stg].[stg_auth_users]`; no Lookup, no Conditional Split, no Script Task, no business-date or watermark dependency (full truncate and reload). Model `STAGING.STG_AUTH_USERS` (`target/dbt/models/staging/pkg_auth_users/stg_auth_users.sql`) reads `RAW.EXT_AUTH_USERS`.
 

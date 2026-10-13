@@ -1,7 +1,6 @@
 Staging parity pkg_auth_memberships PASS 2650 / 2650 differing_keys=0
 
-SQL Server `stg.stg_auth_workspace_members` vs Snowflake `STAGING.STG_AUTH_WORKSPACE_MEMBERS`, keys user_id, workspace_id, 5 compared columns.
-
+`ssis:pkg_auth_memberships`: SQL Server `stg.stg_auth_workspace_members` vs Snowflake `STAGING.STG_AUTH_WORKSPACE_MEMBERS`, keys user_id, workspace_id, 5 compared columns.
 Not compared:
 - `extracted_at`: @[System::StartTime] of the package run (SQL Server server clock); differs on every run on both sides
 
