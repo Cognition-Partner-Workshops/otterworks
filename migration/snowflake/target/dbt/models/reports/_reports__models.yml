@@ -1,0 +1,334 @@
+version: 2
+models:
+- name: rpt_archived_content
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - resource_type
+        - retention_action
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_audit_rollup
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - action
+        - resource_type
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_audit_sensitive_actions
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_audit_user_activity
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_capacity_forecast
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - observation_date
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_document_status
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - workspace_id
+        - status_label
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_invoice_lines
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - invoice_id
+        - line_no
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_invoice_totals_by_tenant
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_monthly_billing_summary
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - line_type
+        - invoice_status
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_overage_by_tier
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - plan_tier
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_overage_charges
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_plan_mix
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - plan_tier
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_plan_tier_summary
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - plan_tier
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_retention_candidates
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - resource_type
+        - resource_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_retention_summary
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - resource_type
+        - retention_action
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_seat_count_by_tenant
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_seat_limit_headroom
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_seat_utilization
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_seats_over_limit
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_storage_growth_trend
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+        - observation_date
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_storage_vs_included
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_active_users
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_api_units
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_compute_units
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_content_counts
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_storage_peak
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_usage_by_region
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - region_code
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_usage_daily
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_tenant_usage_top20
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - tenant_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+- name: rpt_trash_purge_candidates
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - resource_type
+        - resource_id
+  columns:
+  - name: business_date
+    tests:
+    - not_null

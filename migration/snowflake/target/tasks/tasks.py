@@ -75,10 +75,10 @@ STANDALONE_TASKS = (
     "UBW_WEEKLY_CAPACITY_FORECAST",
 )
 STANDALONE_SCHEDULES = {
-    "UBW_HOURLY_AUDIT": "USING CRON 0 * * * * America/New_York",
+    "UBW_HOURLY_AUDIT": "USING CRON 5 * * * * America/New_York",
     "UBW_WEEKLY_RETENTION": "USING CRON 0 3 * * SUN America/New_York",
     "UBW_MONTHLY_OVERAGE": "USING CRON 0 4 1 * * America/New_York",
-    "UBW_WEEKLY_CAPACITY_FORECAST": "USING CRON 0 5 * * SUN America/New_York",
+    "UBW_WEEKLY_CAPACITY_FORECAST": "USING CRON 15 6 * * MON America/New_York",
 }
 
 

@@ -3,7 +3,7 @@ SFM_ROOT = migration/snowflake
 SFM_RUN_REQUIRED = @test -n "$(RUN)" || (echo "RUN is required, e.g. make sfm-bootstrap RUN=sfm-20261012-bd" >&2; exit 2)
 SFM_DATE_REQUIRED = @test -n "$(DATE)" || (echo "DATE is required, e.g. make sfm-gate RUN=sfm-20261012-bd DATE=2026-09-15" >&2; exit 2)
 
-.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test sfm-load-extracts sfm-ssis-replay sfm-staging-gate sfm-procs
+.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test sfm-report-gate sfm-load-extracts sfm-ssis-replay sfm-staging-gate sfm-procs
 
 sfm-require-run:
 	$(SFM_RUN_REQUIRED)
@@ -34,6 +34,10 @@ sfm-dbt: sfm-require-run ## Build the dbt project in Snowflake
 sfm-gate: sfm-require-run ## Compare SQL Server and Snowflake for DATE
 	$(SFM_DATE_REQUIRED)
 	$(PY) $(SFM_ROOT)/gate/parity.py --run "$(RUN)" --date "$(DATE)"
+
+sfm-report-gate: sfm-require-run ## Compare the thirty report datasets with the REPORTS views for DATE
+	$(SFM_DATE_REQUIRED)
+	$(PY) $(SFM_ROOT)/gate/report_parity.py --run "$(RUN)" --date "$(DATE)"
 
 sfm-dual-run: sfm-require-run ## Replay, build, and compare for DATE
 	$(SFM_DATE_REQUIRED)

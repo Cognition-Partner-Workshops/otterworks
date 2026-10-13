@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:33:23.601880+00:00",
+  "generated_at": "2026-10-13T03:44:40.851661+00:00",
   "units": [
     {
       "unit": "load_dim_date",
@@ -164,7 +164,7 @@
           "snowflake": "25"
         }
       ],
-      "explanation": "Snowflake is right; the legacy number is wrong and it is the one finance has been looking at. dbo.usp_rollup_storage_daily buckets samples with CAST(DATEADD(hour, -4, event_ts_utc) AS date), a fixed US Eastern daylight offset, while every other fact (usage events, audit, invoices, dims) uses the UTC day the timestamps arrive in. The legacy 2026-09-30 row therefore takes the four hours 2026-10-01 00:00-03:59 UTC (October samples) and drops 2026-09-30 00:00-03:59 UTC; e.g. tenant 06164f4b: legacy peak 636141 MB is a sample at 2026-10-01 01:05 UTC, the UTC-day peak is 629150 MB. The offset is also an hour wrong every day US Eastern is on standard time. Size: sum of tenant peaks is 57,611,251 MB legacy vs 57,357,765 MB UTC on 2026-09-15 (legacy +0.44%) and 62,608,914 vs 62,419,115 MB on 2026-09-30 (+0.30%); 58 of 60 tenants differ in sample_count and/or peak_storage_mb, plan_id and included_bytes match. Because usp_rate_overage prices overage from this fact, legacy overage invoices have been computed from the shifted peak. The model defaults to the UTC day; dbt var legacy_storage_day_eastern_fixed_offset=true reproduces the legacy rows exactly (gate PASS on both dates with it on). Data owners (Finance + Billing) decide whether invoices switch to the UTC day at cutover."
+      "explanation": "Snowflake is right; the legacy number is wrong and it is the one finance has been looking at. dbo.usp_rollup_storage_daily buckets storage samples with CAST(DATEADD(hour, -4, event_ts_utc) AS date), a fixed US Eastern daylight offset, while every other fact uses the UTC day; the legacy row for a date takes 00:00-03:59 UTC of the next day and drops the same hours of its own day (e.g. 2026-09-30 tenant 06164f4b: legacy peak 636141 MB is a 2026-10-01 01:05 UTC sample, the UTC-day peak is 629150 MB), and the offset is an hour wrong whenever Eastern is on standard time. Sum of tenant peaks is +0.44% legacy on 2026-09-15 and +0.30% on 2026-09-30; plan_id and included_bytes match. Overage invoices are priced from this fact. Kept behind dbt var legacy_storage_day_eastern_fixed_offset=true, which reproduces the legacy rows exactly (gate PASS on both dates, gate/out/legacy-flags/). Data owners (Finance + Billing) decide at cutover."
     },
     {
       "unit": "rollup_usage_events",
@@ -177,18 +177,109 @@
     },
     {
       "unit": "rollup_seats",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 50,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        }
+      ],
+      "explanation": "Source bug the reports have always reproduced; data owners decide whether it survives. dbo.usp_rollup_seats joins dim_user to every stg_auth_workspace_members row and COUNT(*)s, so the 250 users who belong to two workspaces of their tenant are counted twice (2650 membership rows for 2400 users). Seats: SQL Server 2608 / 2649, Snowflake 2363 / 2399 on 2026-09-15 / 2026-09-30; e.g. tenant 0052b048 45 vs 40. tenants over limit is unchanged (30, all starter tenants, either way). Snowflake counts each user once per tenant; dbt var legacy_seats_count_workspace_memberships=true reproduces the legacy count exactly (PASS, gate/out/legacy-flags/)."
     },
     {
       "unit": "rollup_collab_daily",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 1635,
+      "target_rows": 1635,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
@@ -204,57 +295,360 @@
     },
     {
       "unit": "rollup_document_status",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 360,
+      "target_rows": 540,
+      "differing_key_count": 360,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "35edecc5-0a4d-423c-b77b-6c9c0faa7b4f",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "199",
+          "snowflake": "193"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "35edecc5-0a4d-423c-b77b-6c9c0faa7b4f",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "57ccf8c7-5d5c-42f8-89fb-66aaa9aeba73",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "170",
+          "snowflake": "163"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "57ccf8c7-5d5c-42f8-89fb-66aaa9aeba73",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "05c8bd1f-f285-47da-bacb-7723a2cdb84e",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "185",
+          "snowflake": "176"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "05c8bd1f-f285-47da-bacb-7723a2cdb84e",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "3e50283f-c8d1-49ab-a0e3-907e7626c3b9",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "174",
+          "snowflake": "169"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "3e50283f-c8d1-49ab-a0e3-907e7626c3b9",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "bdc1f5f3-e7ab-4ee3-9364-a079dd5762d8",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "182",
+          "snowflake": "176"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "bdc1f5f3-e7ab-4ee3-9364-a079dd5762d8",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        }
+      ],
+      "explanation": "Legacy defect, not invoiced. dbo.usp_rollup_document_status uses CASE WHEN archived = 1 THEN 'archived' ELSE 'active', so the 1152 live documents whose archived flag is NULL (document-service never set it) are counted as active. Snowflake reports them under status_label 'unknown': active 33910 -> 32758 (2026-09-15) and 34066 -> 32914 (2026-09-30), archived identical, 180 extra 'unknown' rows. Snowflake is right; dbt var legacy_null_archived_counted_active=true reproduces the legacy split exactly (PASS). No invoice is computed from this table, so the corrected split is the default; rpt_document_status changes the same way."
     },
     {
       "unit": "rollup_retention",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 8448,
+      "target_rows": 8448,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
     },
     {
       "unit": "build_invoice_lines",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 376,
+      "target_rows": 376,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
     },
     {
       "unit": "rate_overage",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 51,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "overage_gb",
+          "sqlserver": "104",
+          "snowflake": "103.877"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "overage_gb",
+          "sqlserver": "12",
+          "snowflake": "12.846"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "overage_gb",
+          "sqlserver": "50",
+          "snowflake": "50.223"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "overage_gb",
+          "sqlserver": "121",
+          "snowflake": "114.404"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "overage_gb",
+          "sqlserver": "22",
+          "snowflake": "21.577"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "overage_gb",
+          "sqlserver": "19",
+          "snowflake": "19.364"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "overage_gb",
+          "sqlserver": "2",
+          "snowflake": "1.890"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "overage_gb",
+          "sqlserver": "8",
+          "snowflake": "7.801"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "overage_gb",
+          "sqlserver": "29",
+          "snowflake": "28.314"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "overage_gb",
+          "sqlserver": "17",
+          "snowflake": "17.151"
+        }
+      ],
+      "explanation": "Snowflake is right; the legacy number is wrong and customers have been invoiced on it. dbo.usp_rate_overage computes overage_gb = (bytes_used - included_bytes) / 1073741824 in bigint arithmetic, dropping every partial GB before pricing (tenant 01721f9d: 12.846 GB over billed as 12 GB). The difference also carries the storage-day shift from rollup_storage_daily. Overage: SQL Server 2029 GB / 31,423 cents (2026-09-15) and 5002 GB / 76,616 cents (2026-09-30); Snowflake prorated to the byte 1899.857 GB / 29,787 cents and 4903.461 GB / 75,243 cents (51 tenants with a charge vs 50). Kept behind dbt var legacy_overage_whole_gb_truncation=true (with legacy_storage_day_eastern_fixed_offset=true the unit PASSes on both dates). Finance decides at cutover; until then do not invoice from the default numbers without that decision."
     },
     {
       "unit": "apply_plan_limits",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
     },
     {
       "unit": "build_capacity_forecast_input",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 1680,
+      "target_rows": 1680,
+      "differing_key_count": 1632,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-03"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-04"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "505723",
+          "snowflake": "501432"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-05"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "510081",
+          "snowflake": "509417"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-06"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "514319",
+          "snowflake": "513574"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-07"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-08"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "523039",
+          "snowflake": "522404"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-09"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-10"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "531364",
+          "snowflake": "530887"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-11"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "536015",
+          "snowflake": "531987"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-12"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "540486",
+          "snowflake": "536339"
+        }
+      ],
+      "explanation": "Inherited, two causes: observation days use the same fixed -4h Eastern bucketing as rollup_storage_daily (peak_storage_mb/bytes_used per day differ; on 2026-09-15 the 28-day window also holds 926 vs 960 tenant-days because the legacy window reaches into 2026-08-18 Eastern), and seat_count follows rollup_seats. PASS with legacy_storage_day_eastern_fixed_offset=true and legacy_seats_count_workspace_memberships=true. Same data-owner decisions."
     },
     {
       "unit": "build_mart_tenant_usage",
@@ -354,61 +748,352 @@
           "snowflake": "68763"
         }
       ],
-      "explanation": "Inherited from rollup_storage_daily, not a separate defect: only storage_peak_mb and bytes_used differ, and they are copied from fact_storage_usage_daily by dbo.usp_build_mart_tenant_usage. All other columns (tenant, tier, region, api/compute units, active users, document and file counts) match for all 60 tenants. Snowflake (UTC day) is right; the usage pages, the eight rpt_tenant_* reports, admin-dashboard and analytics-service have shown the legacy Eastern-offset peak. With legacy_storage_day_eastern_fixed_offset=true this unit passes too. Same data-owner decision as rollup_storage_daily."
+      "explanation": "Inherited from rollup_storage_daily, not a separate defect: only storage_peak_mb and bytes_used differ, copied from fact_storage_usage_daily by dbo.usp_build_mart_tenant_usage; every other column matches for all 60 tenants. Snowflake (UTC day) is right; the usage pages, the eight rpt_tenant_* reports, admin-dashboard and analytics-service have shown the legacy Eastern-offset peak. PASS with legacy_storage_day_eastern_fixed_offset=true. Same data-owner decision as rollup_storage_daily."
     },
     {
       "unit": "build_mart_plan_seat_summary",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 3,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "growth"
+          },
+          "column": "seat_count",
+          "sqlserver": "875",
+          "snowflake": "800"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "scale"
+          },
+          "column": "seat_count",
+          "sqlserver": "445",
+          "snowflake": "400"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "starter"
+          },
+          "column": "seat_count",
+          "sqlserver": "1329",
+          "snowflake": "1199"
+        }
+      ],
+      "explanation": "Inherited from rollup_seats: seat_count and avg_seats_per_tenant per tier are lower by the double-counted memberships (growth 863->789, 875->800 seats; avg 43.15->39.45, 43.75->40.00); tenant_count, seat_limit_total and tenants_over_limit match. PASS with legacy_seats_count_workspace_memberships=true. Same data-owner decision as rollup_seats."
     },
     {
       "unit": "build_mart_overage",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 58,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "bytes_used",
+          "sqlserver": "648854634496",
+          "snowflake": "648407941120"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "overage_gb",
+          "sqlserver": "12",
+          "snowflake": "12.846"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "bytes_used",
+          "sqlserver": "591485992960",
+          "snowflake": "590797078528"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "bytes_used",
+          "sqlserver": "667042185216",
+          "snowflake": "659711590400"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "bytes_used",
+          "sqlserver": "77593575424",
+          "snowflake": "76855377920"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "bytes_used",
+          "sqlserver": "75139907584",
+          "snowflake": "74479304704"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "bytes_used",
+          "sqlserver": "55986618368",
+          "snowflake": "55716085760"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "bytes_used",
+          "sqlserver": "62520295424",
+          "snowflake": "62063116288"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "bytes_used",
+          "sqlserver": "4661160443904",
+          "snowflake": "4649719431168"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "bytes_used",
+          "sqlserver": "85251325952",
+          "snowflake": "84089503744"
+        }
+      ],
+      "explanation": "Inherited from rate_overage and rollup_storage_daily: bytes_used (storage day), overage_gb and overage_cents (whole-GB truncation) differ; tenant, tier, included_bytes and rate match. This is the table export_overage.sh and the three overage reports read. PASS with both legacy flags. Finance decides."
     },
     {
       "unit": "build_mart_retention",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 240,
+      "target_rows": 240,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
     },
     {
       "unit": "build_mart_audit",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
+      "status": "PASS",
+      "source_rows": 1909,
+      "target_rows": 1909,
       "differing_key_count": 0,
       "differences": [],
       "explanation": ""
     },
     {
       "unit": "log_run",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 47,
+      "target_rows": 35,
+      "differing_key_count": 13,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_analytics"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_audit"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_auth_memberships"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_auth_users"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_billing_core"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_billing_invoices"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_billing_usage"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_collaboration"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_document_versions"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "object_name": "pkg_documents"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "2 rows",
+          "snowflake": "1 rows"
+        }
+      ],
+      "explanation": "Operational log, not a business number. On 2026-09-30 the legacy ops.etl_run_log holds two rows per package for the same business date (sfm-up's initial package replay and the nightly job both log 2026-09-30), so the key (business_date, object_name) is not unique on the SQL Server side and the gate reports those 12 packages as duplicate keys; on 2026-09-15 (one nightly run) only usp_build_capacity_forecast_input and usp_rollup_document_status differ, which are the row counts of the two models that diverge by design above. Every other object's rows_written matches. Accepted: Snowflake logs each step once per business date (OPS.LOG_RUN), the task graph's own step log is OPS.ETL_RUN_LOG."
     },
     {
       "unit": "purge_expired",
-      "status": "PENDING",
-      "source_rows": 0,
-      "target_rows": 0,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
+      "status": "DIVERGE",
+      "source_rows": 82,
+      "target_rows": 35,
+      "differing_key_count": 35,
+      "differences": [
+        {
+          "key": {
+            "object_name": "pkg_analytics"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_audit"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_auth_memberships"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_auth_users"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_core"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_invoices"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_usage"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_collaboration"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_document_versions"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_documents"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        }
+      ],
+      "explanation": "Accepted; cannot match by construction. The manifest compares the whole ops.etl_run_log by object_name only (no business date), and the legacy log has one row per object per run (82 rows for 35 objects), so every key is a duplicate on the SQL Server side. OPS.PURGE_EXPIRED is the latest status per object inside the 400-day window; the deletes themselves run in task UBW_WEEKLY_RETENTION. All 35 objects are present on both sides with status succeeded."
     }
   ]
 }

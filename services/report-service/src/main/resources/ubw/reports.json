@@ -1,0 +1,953 @@
+{
+  "reports": [
+    {
+      "name": "rpt_archived_content",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "resource_type",
+        "retention_action",
+        "item_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_retention_summary",
+        "query": "SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM mart.mart_retention_summary WHERE business_date = ? AND retention_action = 'archive' ORDER BY tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_ARCHIVED_CONTENT",
+        "query": "SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM REPORTS.RPT_ARCHIVED_CONTENT WHERE business_date = ? ORDER BY tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_audit_rollup",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "action",
+        "resource_type",
+        "event_count",
+        "distinct_users",
+        "first_event_utc",
+        "last_event_utc"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_audit_rollup",
+        "query": "SELECT business_date, tenant_id, action, resource_type, event_count, distinct_users, first_event_utc, last_event_utc FROM mart.mart_audit_rollup WHERE business_date = ? ORDER BY tenant_id, action",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_AUDIT_ROLLUP",
+        "query": "SELECT business_date, tenant_id, action, resource_type, event_count, distinct_users, first_event_utc, last_event_utc FROM REPORTS.RPT_AUDIT_ROLLUP WHERE business_date = ? ORDER BY tenant_id, action",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_audit_sensitive_actions",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "user_id",
+        "action",
+        "resource_type",
+        "resource_id",
+        "event_ts_utc"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_audit_events",
+        "query": "SELECT business_date, tenant_id, user_id, action, resource_type, resource_id, event_ts_utc FROM fact.fact_audit_events WHERE business_date = ? AND action IN ('user.delete', 'billing.change', 'role.update') ORDER BY event_ts_utc DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_AUDIT_SENSITIVE_ACTIONS",
+        "query": "SELECT business_date, tenant_id, user_id, action, resource_type, resource_id, event_ts_utc FROM REPORTS.RPT_AUDIT_SENSITIVE_ACTIONS WHERE business_date = ? ORDER BY event_ts_utc DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_audit_user_activity",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "user_id",
+        "action",
+        "resource_type",
+        "resource_id",
+        "event_ts_utc"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_audit_events",
+        "query": "SELECT business_date, tenant_id, user_id, action, resource_type, resource_id, event_ts_utc FROM fact.fact_audit_events WHERE business_date = ? ORDER BY event_ts_utc DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_AUDIT_USER_ACTIVITY",
+        "query": "SELECT business_date, tenant_id, user_id, action, resource_type, resource_id, event_ts_utc FROM REPORTS.RPT_AUDIT_USER_ACTIVITY WHERE business_date = ? ORDER BY event_ts_utc DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_capacity_forecast",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "observation_date",
+        "plan_tier",
+        "peak_storage_mb",
+        "bytes_used",
+        "seat_count",
+        "forecast_bytes_30d",
+        "forecast_generated_at"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_capacity_forecast_input",
+        "query": "SELECT business_date, tenant_id, observation_date, plan_tier, peak_storage_mb, bytes_used, seat_count, forecast_bytes_30d, forecast_generated_at FROM mart.mart_capacity_forecast_input WHERE business_date = ? ORDER BY tenant_id, observation_date",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_CAPACITY_FORECAST",
+        "query": "SELECT business_date, tenant_id, observation_date, plan_tier, peak_storage_mb, bytes_used, seat_count, forecast_bytes_30d, forecast_generated_at FROM REPORTS.RPT_CAPACITY_FORECAST WHERE business_date = ? ORDER BY tenant_id, observation_date",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_document_status",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "workspace_id",
+        "status_label",
+        "document_count",
+        "word_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_document_status_daily",
+        "query": "SELECT business_date, tenant_id, workspace_id, status_label, document_count, word_count FROM fact.fact_document_status_daily WHERE business_date = ? ORDER BY tenant_id, workspace_id, status_label",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_DOCUMENT_STATUS",
+        "query": "SELECT business_date, tenant_id, workspace_id, status_label, document_count, word_count FROM REPORTS.RPT_DOCUMENT_STATUS WHERE business_date = ? ORDER BY tenant_id, workspace_id, status_label",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_invoice_lines",
+      "fields": [
+        "business_date",
+        "invoice_id",
+        "line_no",
+        "tenant_id",
+        "period_start",
+        "period_end",
+        "line_type",
+        "description",
+        "amount_cents",
+        "invoice_status"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_invoice_lines",
+        "query": "SELECT business_date, invoice_id, line_no, tenant_id, period_start, period_end, line_type, description, amount_cents, invoice_status FROM fact.fact_invoice_lines WHERE business_date = ? ORDER BY invoice_id, line_no",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_INVOICE_LINES",
+        "query": "SELECT business_date, invoice_id, line_no, tenant_id, period_start, period_end, line_type, description, amount_cents, invoice_status FROM REPORTS.RPT_INVOICE_LINES WHERE business_date = ? ORDER BY invoice_id, line_no",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_invoice_totals_by_tenant",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "amount_cents",
+        "invoice_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_invoice_lines",
+        "query": "SELECT business_date, tenant_id, SUM(amount_cents) AS amount_cents, COUNT(DISTINCT invoice_id) AS invoice_count FROM fact.fact_invoice_lines WHERE business_date = ? GROUP BY business_date, tenant_id ORDER BY amount_cents DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_INVOICE_TOTALS_BY_TENANT",
+        "query": "SELECT business_date, tenant_id, amount_cents, invoice_count FROM REPORTS.RPT_INVOICE_TOTALS_BY_TENANT WHERE business_date = ? ORDER BY amount_cents DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_monthly_billing_summary",
+      "fields": [
+        "business_date",
+        "line_type",
+        "invoice_status",
+        "line_count",
+        "amount_cents"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_invoice_lines",
+        "query": "SELECT business_date, line_type, invoice_status, COUNT_BIG(*) AS line_count, SUM(amount_cents) AS amount_cents FROM fact.fact_invoice_lines WHERE business_date = ? GROUP BY business_date, line_type, invoice_status ORDER BY line_type, invoice_status",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_MONTHLY_BILLING_SUMMARY",
+        "query": "SELECT business_date, line_type, invoice_status, line_count, amount_cents FROM REPORTS.RPT_MONTHLY_BILLING_SUMMARY WHERE business_date = ? ORDER BY line_type, invoice_status",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_overage_by_tier",
+      "fields": [
+        "business_date",
+        "plan_tier",
+        "tenant_count",
+        "overage_gb",
+        "overage_cents"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_overage_charges",
+        "query": "SELECT business_date, plan_tier, COUNT_BIG(*) AS tenant_count, SUM(overage_gb) AS overage_gb, SUM(overage_cents) AS overage_cents FROM mart.mart_overage_charges WHERE business_date = ? GROUP BY business_date, plan_tier ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_OVERAGE_BY_TIER",
+        "query": "SELECT business_date, plan_tier, tenant_count, overage_gb, overage_cents FROM REPORTS.RPT_OVERAGE_BY_TIER WHERE business_date = ? ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_overage_charges",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "bytes_used",
+        "included_bytes",
+        "overage_gb",
+        "overage_cents_per_gb",
+        "overage_cents"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_overage_charges",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb, overage_cents_per_gb, overage_cents FROM mart.mart_overage_charges WHERE business_date = ? ORDER BY overage_cents DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_OVERAGE_CHARGES",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb, overage_cents_per_gb, overage_cents FROM REPORTS.RPT_OVERAGE_CHARGES WHERE business_date = ? ORDER BY overage_cents DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_plan_mix",
+      "fields": [
+        "business_date",
+        "plan_tier",
+        "tenant_count",
+        "seat_count",
+        "seat_limit_total"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_plan_seat_summary",
+        "query": "SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total FROM mart.mart_plan_seat_summary WHERE business_date = ? ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_PLAN_MIX",
+        "query": "SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total FROM REPORTS.RPT_PLAN_MIX WHERE business_date = ? ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_plan_tier_summary",
+      "fields": [
+        "business_date",
+        "plan_tier",
+        "tenant_count",
+        "seat_count",
+        "seat_limit_total",
+        "tenants_over_limit",
+        "avg_seats_per_tenant"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        },
+        {
+          "name": "PlanTier",
+          "default": "Growth"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_plan_seat_summary",
+        "query": "SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total, tenants_over_limit, avg_seats_per_tenant FROM mart.mart_plan_seat_summary WHERE business_date = ? AND plan_tier = ? ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate",
+          "PlanTier"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_PLAN_TIER_SUMMARY",
+        "query": "SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total, tenants_over_limit, avg_seats_per_tenant FROM REPORTS.RPT_PLAN_TIER_SUMMARY WHERE business_date = ? AND plan_tier = ? ORDER BY plan_tier",
+        "parameters": [
+          "BusinessDate",
+          "PlanTier"
+        ]
+      }
+    },
+    {
+      "name": "rpt_retention_candidates",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "resource_type",
+        "resource_id",
+        "retention_action",
+        "days_since_update"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_retention_actions",
+        "query": "SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM fact.fact_retention_actions WHERE business_date = ? ORDER BY days_since_update DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_RETENTION_CANDIDATES",
+        "query": "SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM REPORTS.RPT_RETENTION_CANDIDATES WHERE business_date = ? ORDER BY days_since_update DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_retention_summary",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "resource_type",
+        "retention_action",
+        "item_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_retention_summary",
+        "query": "SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM mart.mart_retention_summary WHERE business_date = ? ORDER BY tenant_id, resource_type",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_RETENTION_SUMMARY",
+        "query": "SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM REPORTS.RPT_RETENTION_SUMMARY WHERE business_date = ? ORDER BY tenant_id, resource_type",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_seat_count_by_tenant",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "plan_tier",
+        "seat_count",
+        "seat_limit"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_seat_assignments",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit FROM fact.fact_seat_assignments WHERE business_date = ? ORDER BY tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_SEAT_COUNT_BY_TENANT",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit FROM REPORTS.RPT_SEAT_COUNT_BY_TENANT WHERE business_date = ? ORDER BY tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_seat_limit_headroom",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "plan_tier",
+        "seat_count",
+        "seat_limit",
+        "seat_headroom"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_seat_assignments",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, seat_limit - seat_count AS seat_headroom FROM fact.fact_seat_assignments WHERE business_date = ? ORDER BY seat_headroom",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_SEAT_LIMIT_HEADROOM",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, seat_headroom FROM REPORTS.RPT_SEAT_LIMIT_HEADROOM WHERE business_date = ? ORDER BY seat_headroom",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_seat_utilization",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "plan_tier",
+        "seat_count",
+        "seat_limit",
+        "utilization"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_seat_assignments",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, CAST(seat_count AS decimal(18,4)) / NULLIF(seat_limit, 0) AS utilization FROM fact.fact_seat_assignments WHERE business_date = ? ORDER BY utilization DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_SEAT_UTILIZATION",
+        "query": "SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, utilization FROM REPORTS.RPT_SEAT_UTILIZATION WHERE business_date = ? ORDER BY utilization DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_seats_over_limit",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "plan_id",
+        "plan_tier",
+        "seat_count",
+        "seat_limit",
+        "over_limit"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_seat_assignments",
+        "query": "SELECT business_date, tenant_id, plan_id, plan_tier, seat_count, seat_limit, over_limit FROM fact.fact_seat_assignments WHERE business_date = ? AND over_limit = 1 ORDER BY plan_tier, tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_SEATS_OVER_LIMIT",
+        "query": "SELECT business_date, tenant_id, plan_id, plan_tier, seat_count, seat_limit, over_limit FROM REPORTS.RPT_SEATS_OVER_LIMIT WHERE business_date = ? ORDER BY plan_tier, tenant_id",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_storage_growth_trend",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "observation_date",
+        "plan_tier",
+        "peak_storage_mb",
+        "bytes_used"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_capacity_forecast_input",
+        "query": "SELECT business_date, tenant_id, observation_date, plan_tier, peak_storage_mb, bytes_used FROM mart.mart_capacity_forecast_input WHERE business_date = ? ORDER BY tenant_id, observation_date",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_STORAGE_GROWTH_TREND",
+        "query": "SELECT business_date, tenant_id, observation_date, plan_tier, peak_storage_mb, bytes_used FROM REPORTS.RPT_STORAGE_GROWTH_TREND WHERE business_date = ? ORDER BY tenant_id, observation_date",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_storage_vs_included",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "bytes_used",
+        "included_bytes",
+        "overage_gb"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_overage_charges",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb FROM mart.mart_overage_charges WHERE business_date = ? ORDER BY plan_tier, tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_STORAGE_VS_INCLUDED",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb FROM REPORTS.RPT_STORAGE_VS_INCLUDED WHERE business_date = ? ORDER BY plan_tier, tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_active_users",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "active_users"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, active_users FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY active_users DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_ACTIVE_USERS",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, active_users FROM REPORTS.RPT_TENANT_ACTIVE_USERS WHERE business_date = ? ORDER BY active_users DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_api_units",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "api_units"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, api_units FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY api_units DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_API_UNITS",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, api_units FROM REPORTS.RPT_TENANT_API_UNITS WHERE business_date = ? ORDER BY api_units DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_compute_units",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "compute_units"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, compute_units FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY compute_units DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_COMPUTE_UNITS",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, compute_units FROM REPORTS.RPT_TENANT_COMPUTE_UNITS WHERE business_date = ? ORDER BY compute_units DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_content_counts",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "document_count",
+        "file_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, document_count, file_count FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_CONTENT_COUNTS",
+        "query": "SELECT business_date, tenant_id, tenant_name, document_count, file_count FROM REPORTS.RPT_TENANT_CONTENT_COUNTS WHERE business_date = ? ORDER BY tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_storage_peak",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "storage_peak_mb",
+        "bytes_used"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, storage_peak_mb, bytes_used FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY storage_peak_mb DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_STORAGE_PEAK",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, storage_peak_mb, bytes_used FROM REPORTS.RPT_TENANT_STORAGE_PEAK WHERE business_date = ? ORDER BY storage_peak_mb DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_usage_by_region",
+      "fields": [
+        "business_date",
+        "region_code",
+        "tenant_count",
+        "api_units",
+        "compute_units",
+        "bytes_used"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, region_code, COUNT_BIG(*) AS tenant_count, SUM(api_units) AS api_units, SUM(compute_units) AS compute_units, SUM(bytes_used) AS bytes_used FROM mart.mart_tenant_usage_daily WHERE business_date = ? GROUP BY business_date, region_code ORDER BY region_code",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_USAGE_BY_REGION",
+        "query": "SELECT business_date, region_code, tenant_count, api_units, compute_units, bytes_used FROM REPORTS.RPT_TENANT_USAGE_BY_REGION WHERE business_date = ? ORDER BY region_code",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_usage_daily",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "region_code",
+        "api_units",
+        "compute_units",
+        "storage_peak_mb",
+        "bytes_used",
+        "active_users",
+        "document_count",
+        "file_count"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, region_code, api_units, compute_units, storage_peak_mb, bytes_used, active_users, document_count, file_count FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_USAGE_DAILY",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, region_code, api_units, compute_units, storage_peak_mb, bytes_used, active_users, document_count, file_count FROM REPORTS.RPT_TENANT_USAGE_DAILY WHERE business_date = ? ORDER BY tenant_name",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_tenant_usage_top20",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "tenant_name",
+        "plan_tier",
+        "api_units",
+        "compute_units",
+        "storage_peak_mb",
+        "bytes_used"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "mart.mart_tenant_usage_daily",
+        "query": "SELECT TOP (20) business_date, tenant_id, tenant_name, plan_tier, api_units, compute_units, storage_peak_mb, bytes_used FROM mart.mart_tenant_usage_daily WHERE business_date = ? ORDER BY bytes_used DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TENANT_USAGE_TOP20",
+        "query": "SELECT business_date, tenant_id, tenant_name, plan_tier, api_units, compute_units, storage_peak_mb, bytes_used FROM REPORTS.RPT_TENANT_USAGE_TOP20 WHERE business_date = ? ORDER BY bytes_used DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    },
+    {
+      "name": "rpt_trash_purge_candidates",
+      "fields": [
+        "business_date",
+        "tenant_id",
+        "resource_type",
+        "resource_id",
+        "retention_action",
+        "days_since_update"
+      ],
+      "parameters": [
+        {
+          "name": "BusinessDate",
+          "default": "2026-09-30"
+        }
+      ],
+      "sqlserver": {
+        "source": "fact.fact_retention_actions",
+        "query": "SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM fact.fact_retention_actions WHERE business_date = ? AND retention_action = 'purge' ORDER BY days_since_update DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      },
+      "snowflake": {
+        "source": "REPORTS.RPT_TRASH_PURGE_CANDIDATES",
+        "query": "SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM REPORTS.RPT_TRASH_PURGE_CANDIDATES WHERE business_date = ? ORDER BY days_since_update DESC",
+        "parameters": [
+          "BusinessDate"
+        ]
+      }
+    }
+  ]
+}

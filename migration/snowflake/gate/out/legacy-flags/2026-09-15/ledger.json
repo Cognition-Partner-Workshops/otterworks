@@ -1,0 +1,313 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-15",
+  "generated_at": "2026-10-13T03:31:12.184010+00:00",
+  "units": [
+    {
+      "unit": "load_dim_date",
+      "status": "PASS",
+      "source_rows": 3926,
+      "target_rows": 3926,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_tenant",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_plan",
+      "status": "PASS",
+      "source_rows": 7,
+      "target_rows": 7,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_user",
+      "status": "PASS",
+      "source_rows": 2399,
+      "target_rows": 2399,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_workspace",
+      "status": "PASS",
+      "source_rows": 180,
+      "target_rows": 180,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_document",
+      "status": "PASS",
+      "source_rows": 39982,
+      "target_rows": 39982,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "load_dim_file",
+      "status": "PASS",
+      "source_rows": 24993,
+      "target_rows": 24993,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_storage_daily",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_usage_events",
+      "status": "PASS",
+      "source_rows": 7789,
+      "target_rows": 7789,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_seats",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_collab_daily",
+      "status": "PASS",
+      "source_rows": 1529,
+      "target_rows": 1529,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_audit",
+      "status": "PASS",
+      "source_rows": 5187,
+      "target_rows": 5187,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_document_status",
+      "status": "PASS",
+      "source_rows": 360,
+      "target_rows": 360,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rollup_retention",
+      "status": "PASS",
+      "source_rows": 8388,
+      "target_rows": 8388,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_invoice_lines",
+      "status": "PASS",
+      "source_rows": 184,
+      "target_rows": 184,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "rate_overage",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "apply_plan_limits",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_capacity_forecast_input",
+      "status": "PASS",
+      "source_rows": 960,
+      "target_rows": 960,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_mart_tenant_usage",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_mart_plan_seat_summary",
+      "status": "PASS",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_mart_overage",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_mart_retention",
+      "status": "PASS",
+      "source_rows": 240,
+      "target_rows": 240,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "build_mart_audit",
+      "status": "PASS",
+      "source_rows": 1928,
+      "target_rows": 1928,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "log_run",
+      "status": "PASS",
+      "source_rows": 35,
+      "target_rows": 35,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "purge_expired",
+      "status": "DIVERGE",
+      "source_rows": 82,
+      "target_rows": 35,
+      "differing_key_count": 35,
+      "differences": [
+        {
+          "key": {
+            "object_name": "pkg_analytics"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_audit"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_auth_memberships"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_auth_users"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_core"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_invoices"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_billing_usage"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_collaboration"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_document_versions"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        },
+        {
+          "key": {
+            "object_name": "pkg_documents"
+          },
+          "column": "<duplicate key>",
+          "sqlserver": "3 rows",
+          "snowflake": "1 rows"
+        }
+      ],
+      "explanation": ""
+    }
+  ]
+}

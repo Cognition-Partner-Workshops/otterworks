@@ -5,6 +5,10 @@
 /gate/out/*
 !/gate/out/ledger.*
 !/gate/out/staging/
+!/gate/out/reports.*
+!/gate/out/2026-09-15/
+!/gate/out/legacy-flags/
+!/gate/out/dbt/
 /.backend.env
 ||||||| f77dad4aa
 .venv/

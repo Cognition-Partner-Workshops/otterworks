@@ -1,0 +1,43 @@
+version: 2
+models:
+- name: log_run
+  tests:
+  - unique_key_combination:
+      arguments:
+        columns:
+        - business_date
+        - object_name
+  columns:
+  - name: business_date
+    tests:
+    - not_null
+  - name: object_name
+    tests:
+    - not_null
+  - name: rows_written
+    tests:
+    - not_null
+  - name: object_type
+    tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values:
+          - package
+          - procedure
+  - name: status
+    tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values:
+          - succeeded
+- name: purge_expired
+  columns:
+  - name: object_name
+    tests:
+    - unique
+    - not_null
+  - name: status
+    tests:
+    - not_null

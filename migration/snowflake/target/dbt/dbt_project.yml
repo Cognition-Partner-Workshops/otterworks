@@ -16,3 +16,13 @@ models:
     staging:
       +materialized: view
       +schema: STAGING
+    ops:
+      +schema: OPS
+    reports:
+      +materialized: view
+      +schema: REPORTS
+      +grants:
+        select: ["{{ target.database ~ '_READER' }}"]
+
+on-run-end:
+  - "{{ grant_reports_schema_to_reader() }}"
