@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -52,6 +53,18 @@ MODEL_NAMES = (
     "build_mart_audit",
     "log_run",
     "purge_expired",
+)
+CAPACITY_INPUT_COLUMNS = (
+    "BUSINESS_DATE",
+    "TENANT_ID",
+    "OBSERVATION_DATE",
+    "PLAN_TIER",
+    "PEAK_STORAGE_MB",
+    "BYTES_USED",
+    "SEAT_COUNT",
+    "FORECAST_BYTES_30D",
+    "FORECAST_GENERATED_AT",
+    "LOADED_AT",
 )
 TASK_FILES = (
     ("nightly.sql", "UBW_NIGHTLY_LOAD"),
@@ -226,6 +239,28 @@ def publish(run: str) -> None:
     compiled_dir = HERE.parent / "dbt" / "target" / "compiled" / "ubw" / "models" / "marts"
     upload_dir = HERE.parent / "dbt" / "target" / "task_models"
     upload_dir.mkdir(parents=True, exist_ok=True)
+    capacity_input = compiled_dir / "build_capacity_forecast_input.sql"
+    if not capacity_input.is_file():
+        raise FileNotFoundError("dbt did not compile model build_capacity_forecast_input")
+    capacity_sql = capacity_input.read_text(encoding="utf-8").rstrip().removesuffix(";")
+    capacity_destination = upload_dir / "build_capacity_forecast_input.sql"
+    capacity_relation = f"{prefix}.MARTS.BUILD_CAPACITY_FORECAST_INPUT"
+    capacity_columns = ", ".join(CAPACITY_INPUT_COLUMNS)
+    capacity_destination.write_text(
+        f"""CREATE TABLE IF NOT EXISTS {capacity_relation} AS
+SELECT * FROM (
+{capacity_sql}
+) AS forecast_input WHERE 1 = 0;
+DELETE FROM {capacity_relation}
+WHERE BUSINESS_DATE = DATEADD(day, -1, CURRENT_DATE());
+INSERT INTO {capacity_relation} ({capacity_columns})
+{capacity_sql};
+""",
+        encoding="utf-8",
+    )
+    forecast_source = HERE.parent / "python" / "capacity_forecast.py"
+    forecast_destination = upload_dir / "capacity_forecast.py"
+    shutil.copyfile(forecast_source, forecast_destination)
     with dbt_connection(run) as connection, connection.cursor() as cursor:
         cursor.execute(
             f"CREATE STAGE IF NOT EXISTS {prefix}.OPS.DBT_MODELS DIRECTORY = (ENABLE = TRUE)"
@@ -246,7 +281,48 @@ def publish(run: str) -> None:
                 f"@{prefix}.OPS.DBT_MODELS AUTO_COMPRESS = FALSE OVERWRITE = TRUE"
             )
             print(f"PUBLISHED         {model} -> {prefix}.OPS.DBT_MODELS/{model}.sql")
+        for destination, name in (
+            (capacity_destination, "build_capacity_forecast_input"),
+            (forecast_destination, "capacity_forecast"),
+        ):
+            cursor.execute(
+                f"PUT file://{destination.resolve().as_posix()} "
+                f"@{prefix}.OPS.DBT_MODELS AUTO_COMPRESS = FALSE OVERWRITE = TRUE"
+            )
+            print(f"PUBLISHED         {name} -> {prefix}.OPS.DBT_MODELS/{destination.name}")
         cursor.execute(f"ALTER STAGE {prefix}.OPS.DBT_MODELS REFRESH")
+        cursor.execute(
+            f"""CREATE OR REPLACE PROCEDURE {prefix}.OPS.CAPACITY_FORECAST(
+                BUSINESS_DATE DATE
+            )
+            RETURNS VARCHAR
+            LANGUAGE PYTHON
+            RUNTIME_VERSION = '3.12'
+            PACKAGES = ('snowflake-snowpark-python==1.55.1')
+            IMPORTS = ('@{prefix}.OPS.DBT_MODELS/capacity_forecast.py')
+            HANDLER = 'capacity_forecast.run'
+            EXECUTE AS OWNER"""
+        )
+        print(f"PROCEDURE         {prefix}.OPS.CAPACITY_FORECAST")
+        cursor.execute(
+            f"""CREATE OR REPLACE PROCEDURE {prefix}.OPS.RUN_WEEKLY_CAPACITY_FORECAST(
+                BUSINESS_DATE DATE
+            )
+            RETURNS VARCHAR
+            LANGUAGE SQL
+            EXECUTE AS OWNER
+            AS
+            $$
+            BEGIN
+                CALL {prefix}.OPS.UBW_RUN_MODELS(
+                    ARRAY_CONSTRUCT('build_capacity_forecast_input')
+                );
+                CALL {prefix}.OPS.CAPACITY_FORECAST(BUSINESS_DATE);
+                RETURN 'Weekly capacity forecast complete';
+            END;
+            $$"""
+        )
+        print(f"PROCEDURE         {prefix}.OPS.RUN_WEEKLY_CAPACITY_FORECAST")
 
 
 def main() -> int:

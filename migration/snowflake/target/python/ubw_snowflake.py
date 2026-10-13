@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import Any
 
 import snowflake.connector
 from cryptography.hazmat.primitives import serialization
@@ -31,6 +32,10 @@ def normalise_pem(pem: str) -> bytes:
 
 
 def dbt_connection(run: str) -> snowflake.connector.SnowflakeConnection:
+    return snowflake.connector.connect(**dbt_connection_parameters(run))
+
+
+def dbt_connection_parameters(run: str) -> dict[str, object]:
     prefix = object_prefix(run)
     private_pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY", "")
     if not private_pem:
@@ -54,4 +59,10 @@ def dbt_connection(run: str) -> snowflake.connector.SnowflakeConnection:
         raise RuntimeError("SNOWFLAKE_ACCOUNT is not set")
     if os.environ.get("SNOWFLAKE_HOST"):
         params["host"] = os.environ["SNOWFLAKE_HOST"]
-    return snowflake.connector.connect(**params)
+    return params
+
+
+def dbt_snowpark_session(run: str) -> Any:
+    from snowflake.snowpark import Session
+
+    return Session.builder.configs(dbt_connection_parameters(run)).create()

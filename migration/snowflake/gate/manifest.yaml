@@ -124,7 +124,7 @@ units:
     owned_table: mart.mart_capacity_forecast_input
     target_model: MARTS.BUILD_CAPACITY_FORECAST_INPUT
     keys: [business_date, tenant_id, observation_date]
-    columns: [plan_tier, peak_storage_mb, bytes_used, seat_count]
+    columns: [plan_tier, peak_storage_mb, bytes_used, seat_count, forecast_bytes_30d]
     business_date_column: business_date
   - unit: build_mart_tenant_usage
     source_procedure: dbo.usp_build_mart_tenant_usage
