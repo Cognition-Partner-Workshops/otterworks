@@ -1,0 +1,295 @@
+jobs:
+  - name: UBW Nightly Load
+    owner: OTTERWORKS\svc_ubw_agent
+    schedule:
+      name: Daily at 02:30
+      freq: daily
+      detail: Every day
+      active_start_time: 23000
+    step_prelude: DECLARE @business_date date = CAST(DATEADD(day, -1, GETDATE()) AS date);
+    steps:
+      - id: 1
+        name: pkg_billing_core
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_billing_core.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 2
+        name: pkg_billing_usage
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_billing_usage.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 3
+        name: pkg_billing_invoices
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_billing_invoices.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 4
+        name: pkg_auth_users
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_auth_users.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 5
+        name: pkg_auth_memberships
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_auth_memberships.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 6
+        name: pkg_documents
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_documents.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 7
+        name: pkg_document_versions
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_document_versions.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 8
+        name: pkg_files
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_files.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 9
+        name: pkg_file_versions
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_file_versions.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 10
+        name: pkg_collaboration
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_collaboration.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 11
+        name: pkg_audit
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_audit.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 12
+        name: pkg_analytics
+        subsystem: SSIS
+        command: '/ISSERVER "\"\SSISDB\UBW\UBW_ETL\pkg_analytics.dtsx\"" /SERVER UBW-SQL01 /Par "\"$Project::BusinessDate\"";'
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 13
+        name: usp_load_dim_date
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_date @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 14
+        name: usp_load_dim_plan
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_plan @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 15
+        name: usp_load_dim_tenant
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_tenant @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 16
+        name: usp_load_dim_workspace
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_workspace @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 17
+        name: usp_load_dim_user
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_user @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 18
+        name: usp_load_dim_document
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_document @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 19
+        name: usp_load_dim_file
+        subsystem: TSQL
+        command: EXEC dbo.usp_load_dim_file @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 20
+        name: usp_rollup_usage_events
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_usage_events @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 21
+        name: usp_rollup_storage_daily
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_storage_daily @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 22
+        name: usp_rollup_seats
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_seats @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 23
+        name: usp_rollup_collab_daily
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_collab_daily @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 24
+        name: usp_rollup_audit
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_audit @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 25
+        name: usp_rollup_document_status
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_document_status @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 26
+        name: usp_rollup_retention
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_retention @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 27
+        name: usp_build_invoice_lines
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_invoice_lines @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 28
+        name: usp_rate_overage
+        subsystem: TSQL
+        command: EXEC dbo.usp_rate_overage @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 29
+        name: usp_apply_plan_limits
+        subsystem: TSQL
+        command: EXEC dbo.usp_apply_plan_limits @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 30
+        name: usp_build_capacity_forecast_input
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_capacity_forecast_input @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 31
+        name: usp_build_mart_tenant_usage
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_tenant_usage @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 32
+        name: usp_build_mart_plan_seat_summary
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_plan_seat_summary @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 33
+        name: usp_build_mart_overage
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_overage @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 34
+        name: usp_build_mart_retention
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_retention @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 35
+        name: usp_build_mart_audit
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_audit @business_date = @business_date;
+        on_success: quit_success
+        on_fail: quit_failure
+  - name: UBW Hourly Audit
+    owner: OTTERWORKS\svc_ubw_agent
+    schedule:
+      name: Hourly at minute 05
+      freq: hourly
+      detail: Every hour at minute 05
+      active_start_time: 500
+    step_prelude: DECLARE @business_date date = CAST(GETDATE() AS date);
+    steps:
+      - id: 1
+        name: usp_rollup_audit
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_audit @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 2
+        name: usp_build_mart_audit
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_audit @business_date = @business_date;
+        on_success: quit_success
+        on_fail: quit_failure
+  - name: UBW Weekly Retention
+    owner: OTTERWORKS\svc_ubw_agent
+    schedule:
+      name: Sunday at 03:00
+      freq: weekly
+      detail: Sunday
+      active_start_time: 30000
+    step_prelude: DECLARE @business_date date = CAST(DATEADD(day, -1, GETDATE()) AS date);
+    steps:
+      - id: 1
+        name: usp_rollup_retention
+        subsystem: TSQL
+        command: EXEC dbo.usp_rollup_retention @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 2
+        name: usp_build_mart_retention
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_retention @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 3
+        name: usp_purge_expired
+        subsystem: TSQL
+        command: EXEC dbo.usp_purge_expired @retention_days = 400;
+        on_success: quit_success
+        on_fail: quit_failure
+  - name: UBW Monthly Overage
+    owner: OTTERWORKS\svc_ubw_agent
+    schedule:
+      name: First day of month at 04:00
+      freq: monthly
+      detail: Day 1
+      active_start_time: 40000
+    step_prelude: DECLARE @business_date date = EOMONTH(GETDATE(), -1);
+    steps:
+      - id: 1
+        name: usp_rate_overage
+        subsystem: TSQL
+        command: EXEC dbo.usp_rate_overage @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 2
+        name: usp_build_mart_overage
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_mart_overage @business_date = @business_date;
+        on_success: next_step
+        on_fail: quit_failure
+      - id: 3
+        name: usp_build_invoice_lines
+        subsystem: TSQL
+        command: EXEC dbo.usp_build_invoice_lines @business_date = @business_date;
+        on_success: quit_success
+        on_fail: quit_failure

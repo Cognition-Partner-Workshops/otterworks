@@ -622,3 +622,6 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+sfm-%: ## Snowflake migration fixture targets (see migration/snowflake/README.md)
+	$(MAKE) -C migration/snowflake $@
