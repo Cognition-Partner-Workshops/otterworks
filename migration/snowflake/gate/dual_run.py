@@ -44,7 +44,17 @@ def main() -> int:
     environment = os.environ.copy()
     environment["UBW_RUN"] = args.run
     commands = (
-        ("replay", [sys.executable, str(replay), "--date", args.date]),
+        (
+            "replay",
+            [
+                sys.executable,
+                str(replay),
+                "--job",
+                "UBW Nightly Load",
+                "--business-date",
+                args.date,
+            ],
+        ),
         (
             "dbt-build",
             [
