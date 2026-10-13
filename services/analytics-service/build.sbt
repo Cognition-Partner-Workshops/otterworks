@@ -28,6 +28,10 @@ lazy val root = project
       "com.typesafe.slick" %% "slick-hikaricp" % "3.5.2" cross CrossVersion.for3Use2_13,
       "org.postgresql" % "postgresql" % "42.7.3",
 
+      // Usage & Billing Warehouse reads (UBW_BACKEND=sqlserver|snowflake)
+      "com.microsoft.sqlserver" % "mssql-jdbc" % "12.6.1.jre11",
+      "net.snowflake" % "snowflake-jdbc" % "3.16.1",
+
       // Schema migrations (Flyway bundles PostgreSQL support in the 9.x line)
       "org.flywaydb" % "flyway-core" % "9.22.3",
 

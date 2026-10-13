@@ -1,0 +1,10 @@
+package: pkg_billing_usage
+sqlserver_table: stg.stg_billing_usage_events
+snowflake_model: STAGING.STG_BILLING_USAGE_EVENTS
+keys: [id]
+columns: [tenant_id, occurred_at, units, kind, event_ts_utc, source_system]
+rename:
+  id: event_id
+  kind: event_kind
+excluded:
+  extracted_at: "@[System::StartTime] of the load run (server clock); differs on every run by design"

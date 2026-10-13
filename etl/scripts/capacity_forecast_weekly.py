@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-"""Write a 30-day storage forecast back to the warehouse input rows."""
+"""Write a 30-day storage forecast back to the warehouse input rows.
+
+UBW_BACKEND selects the warehouse: `sqlserver` (default) runs the forecast here against
+mart.mart_capacity_forecast_input; `snowflake` calls the Snowpark port
+OPS.UBW_CAPACITY_FORECAST_WEEKLY in the run's database (UBW_RUN), which does the same arithmetic
+on MARTS.BUILD_CAPACITY_FORECAST_INPUT. The Snowflake login is the run's DBT user with its key
+pair (SNOWFLAKE_PRIVATE_KEY or UBW_DBT_PRIVATE_KEY), SNOWFLAKE_ACCOUNT and optional SNOWFLAKE_HOST.
+"""
 
 from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from collections import defaultdict
 from datetime import date
@@ -57,6 +65,60 @@ def _load_rows(cursor: Any, business_date: date | None) -> tuple[date, list[tupl
     return business_date, list(cursor.fetchall())
 
 
+RUN_PATTERN = re.compile(r"^sfm-\d{8}-[a-z0-9]{2,8}$")
+
+
+def _snowflake_prefix(run: str) -> str:
+    if not RUN_PATTERN.fullmatch(run):
+        raise RuntimeError(f"UBW_RUN {run!r} does not look like sfm-<yyyymmdd>-<suffix>")
+    return "OW_UBW_" + run.upper().replace("-", "_")
+
+
+def _snowflake_private_key() -> bytes:
+    from cryptography.hazmat.primitives import serialization
+
+    pem = os.environ.get("SNOWFLAKE_PRIVATE_KEY") or os.environ.get("UBW_DBT_PRIVATE_KEY", "")
+    if not pem:
+        raise RuntimeError("SNOWFLAKE_PRIVATE_KEY (or UBW_DBT_PRIVATE_KEY) is not set")
+    body = "".join(re.sub(r"-----(BEGIN|END) PRIVATE KEY-----", "", pem).split())
+    lines = [body[index : index + 64] for index in range(0, len(body), 64)]
+    header = "-----BEGIN PRIVATE KEY-----"  # gitleaks:allow
+    pem_text = "\n".join([header, *lines, "-----END PRIVATE KEY-----", ""])
+    key = serialization.load_pem_private_key(pem_text.encode(), password=None)
+    return key.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+
+
+def run_snowflake_forecast(business_date: date | None) -> int:
+    import snowflake.connector
+
+    prefix = _snowflake_prefix(os.environ.get("UBW_RUN", ""))
+    params: dict[str, Any] = {
+        "account": os.environ.get("SNOWFLAKE_ACCOUNT", ""),
+        "user": os.environ.get("UBW_DBT_USER", f"{prefix}_DBT"),
+        "private_key": _snowflake_private_key(),
+        "role": f"{prefix}_ENGINEER",
+        "warehouse": f"{prefix}_WH",
+        "database": prefix,
+        "schema": "OPS",
+    }
+    if not params["account"]:
+        raise RuntimeError("SNOWFLAKE_ACCOUNT is not set")
+    if os.environ.get("SNOWFLAKE_HOST"):
+        params["host"] = os.environ["SNOWFLAKE_HOST"]
+    with snowflake.connector.connect(**params) as connection, connection.cursor() as cursor:
+        cursor.execute(
+            f"CALL {prefix}.OPS.UBW_CAPACITY_FORECAST_WEEKLY(%s::DATE)",  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            (business_date.isoformat() if business_date else None,),
+        )
+        result = cursor.fetchone()
+    print(result[0] if result else "UBW_CAPACITY_FORECAST_WEEKLY returned nothing")
+    return 0
+
+
 def run_forecast(business_date: date | None) -> int:
     connection = _connect()
     try:
@@ -98,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     backend = os.environ.get("UBW_BACKEND", "sqlserver").lower()
     if backend == "snowflake":
-        raise NotImplementedError("UBW_BACKEND=snowflake is not implemented in the legacy job yet")
+        return run_snowflake_forecast(args.business_date)
     if backend != "sqlserver":
         print(f"Unknown UBW_BACKEND: {backend}", file=sys.stderr)
         return 2

@@ -1,0 +1,2 @@
+Parity PASS=15 DIVERGE=10 PENDING=0
+exit=0

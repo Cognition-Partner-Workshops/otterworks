@@ -1,0 +1,14 @@
+package: pkg_collaboration
+sqlserver_table: stg.stg_collab_events
+snowflake_model: STAGING.STG_COLLAB_EVENTS
+keys: [id]
+columns:
+  - event_type
+  - document_id
+  - user_id
+  - session_id
+  - created_at
+  - tenant_id
+  - source_system
+excluded:
+  extracted_at: "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run"

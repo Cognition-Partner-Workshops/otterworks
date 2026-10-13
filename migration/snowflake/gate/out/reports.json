@@ -1,0 +1,1551 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T03:46:31.600195+00:00",
+  "reports": [
+    {
+      "unit": "rpt_archived_content",
+      "status": "PASS",
+      "source_rows": 0,
+      "target_rows": 0,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_rollup",
+      "status": "PASS",
+      "source_rows": 1909,
+      "target_rows": 1909,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_sensitive_actions",
+      "status": "PASS",
+      "source_rows": 0,
+      "target_rows": 0,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_audit_user_activity",
+      "status": "PASS",
+      "source_rows": 5024,
+      "target_rows": 5024,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_capacity_forecast",
+      "status": "DIVERGE",
+      "source_rows": 1680,
+      "target_rows": 1680,
+      "differing_key_count": 1634,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-03"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-04"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "505723",
+          "snowflake": "501432"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-05"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "510081",
+          "snowflake": "509417"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-06"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "514319",
+          "snowflake": "513574"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-07"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-08"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "523039",
+          "snowflake": "522404"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-09"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-10"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "531364",
+          "snowflake": "530887"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-11"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "536015",
+          "snowflake": "531987"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-12"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "540486",
+          "snowflake": "536339"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from build_capacity_forecast_input (storage-day bucketing and seat_count). forecast_bytes_30d is computed by the Snowpark port with the legacy job's arithmetic and matches exactly when the inputs match (PASS with the legacy flags); forecast_generated_at is wall-clock and not compared. Data owners decide."
+    },
+    {
+      "unit": "rpt_document_status",
+      "status": "DIVERGE",
+      "source_rows": 360,
+      "target_rows": 540,
+      "differing_key_count": 360,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "35edecc5-0a4d-423c-b77b-6c9c0faa7b4f",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "199",
+          "snowflake": "193"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "35edecc5-0a4d-423c-b77b-6c9c0faa7b4f",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "57ccf8c7-5d5c-42f8-89fb-66aaa9aeba73",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "170",
+          "snowflake": "163"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "workspace_id": "57ccf8c7-5d5c-42f8-89fb-66aaa9aeba73",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "05c8bd1f-f285-47da-bacb-7723a2cdb84e",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "185",
+          "snowflake": "176"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "05c8bd1f-f285-47da-bacb-7723a2cdb84e",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "3e50283f-c8d1-49ab-a0e3-907e7626c3b9",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "174",
+          "snowflake": "169"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "3e50283f-c8d1-49ab-a0e3-907e7626c3b9",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "bdc1f5f3-e7ab-4ee3-9364-a079dd5762d8",
+            "status_label": "active"
+          },
+          "column": "document_count",
+          "sqlserver": "182",
+          "snowflake": "176"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c",
+            "workspace_id": "bdc1f5f3-e7ab-4ee3-9364-a079dd5762d8",
+            "status_label": "unknown"
+          },
+          "column": "<missing in sqlserver>",
+          "sqlserver": "row missing",
+          "snowflake": "row present"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_document_status: documents with a NULL archived flag are 'unknown' in Snowflake instead of 'active' (1152 documents). Snowflake is right; PASS with legacy_null_archived_counted_active=true. Not invoiced."
+    },
+    {
+      "unit": "rpt_invoice_lines",
+      "status": "PASS",
+      "source_rows": 376,
+      "target_rows": 376,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_invoice_totals_by_tenant",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_monthly_billing_summary",
+      "status": "PASS",
+      "source_rows": 16,
+      "target_rows": 16,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_overage_by_tier",
+      "status": "DIVERGE",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 3,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "growth"
+          },
+          "column": "overage_gb",
+          "sqlserver": "2237",
+          "snowflake": "2192.982"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "scale"
+          },
+          "column": "overage_gb",
+          "sqlserver": "2185",
+          "snowflake": "2132.984"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "starter"
+          },
+          "column": "overage_gb",
+          "sqlserver": "580",
+          "snowflake": "577.495"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rate_overage (whole-GB integer truncation, invoiced) and rollup_storage_daily (storage day): bytes_used, overage_gb and overage_cents differ, see the rate_overage ledger entry for totals. PASS with legacy_overage_whole_gb_truncation=true and legacy_storage_day_eastern_fixed_offset=true. Finance decides at cutover."
+    },
+    {
+      "unit": "rpt_overage_charges",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 58,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "bytes_used",
+          "sqlserver": "648854634496",
+          "snowflake": "648407941120"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "overage_gb",
+          "sqlserver": "12",
+          "snowflake": "12.846"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "bytes_used",
+          "sqlserver": "591485992960",
+          "snowflake": "590797078528"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "bytes_used",
+          "sqlserver": "667042185216",
+          "snowflake": "659711590400"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "bytes_used",
+          "sqlserver": "77593575424",
+          "snowflake": "76855377920"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "bytes_used",
+          "sqlserver": "75139907584",
+          "snowflake": "74479304704"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "bytes_used",
+          "sqlserver": "55986618368",
+          "snowflake": "55716085760"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "bytes_used",
+          "sqlserver": "62520295424",
+          "snowflake": "62063116288"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "bytes_used",
+          "sqlserver": "4661160443904",
+          "snowflake": "4649719431168"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "bytes_used",
+          "sqlserver": "85251325952",
+          "snowflake": "84089503744"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rate_overage (whole-GB integer truncation, invoiced) and rollup_storage_daily (storage day): bytes_used, overage_gb and overage_cents differ, see the rate_overage ledger entry for totals. PASS with legacy_overage_whole_gb_truncation=true and legacy_storage_day_eastern_fixed_offset=true. Finance decides at cutover."
+    },
+    {
+      "unit": "rpt_plan_mix",
+      "status": "DIVERGE",
+      "source_rows": 3,
+      "target_rows": 3,
+      "differing_key_count": 3,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "growth"
+          },
+          "column": "seat_count",
+          "sqlserver": "875",
+          "snowflake": "800"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "scale"
+          },
+          "column": "seat_count",
+          "sqlserver": "445",
+          "snowflake": "400"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "starter"
+          },
+          "column": "seat_count",
+          "sqlserver": "1329",
+          "snowflake": "1199"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide."
+    },
+    {
+      "unit": "rpt_plan_tier_summary",
+      "status": "DIVERGE",
+      "source_rows": 1,
+      "target_rows": 1,
+      "differing_key_count": 1,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "plan_tier": "growth"
+          },
+          "column": "seat_count",
+          "sqlserver": "875",
+          "snowflake": "800"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30, @PlanTier=Growth",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide. The RDL passes @PlanTier='Growth' (title case) against lower-case data and relies on SQL Server's case-insensitive collation; the view's en-ci collation on plan_tier returns the same row in Snowflake (a case-sensitive comparison would return no rows)."
+    },
+    {
+      "unit": "rpt_retention_candidates",
+      "status": "PASS",
+      "source_rows": 8448,
+      "target_rows": 8448,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_retention_summary",
+      "status": "PASS",
+      "source_rows": 240,
+      "target_rows": 240,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_seat_count_by_tenant",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 50,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide."
+    },
+    {
+      "unit": "rpt_seat_limit_headroom",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 50,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide."
+    },
+    {
+      "unit": "rpt_seat_utilization",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 50,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide."
+    },
+    {
+      "unit": "rpt_seats_over_limit",
+      "status": "DIVERGE",
+      "source_rows": 30,
+      "target_rows": 30,
+      "differing_key_count": 26,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1b3e1a63-0f8f-4b5a-8a27-61ded31636fe"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1d573d09-6ffc-401a-90d6-c424a7e95989"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "27557aaa-8749-43a8-91bc-1acd523bc5e0"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "2b217fd0-6983-42aa-a5a9-14dbde5391fb"
+          },
+          "column": "seat_count",
+          "sqlserver": "45",
+          "snowflake": "40"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide."
+    },
+    {
+      "unit": "rpt_storage_growth_trend",
+      "status": "DIVERGE",
+      "source_rows": 1680,
+      "target_rows": 1680,
+      "differing_key_count": 1439,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-04"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "505723",
+          "snowflake": "501432"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-05"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "510081",
+          "snowflake": "509417"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-06"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "514319",
+          "snowflake": "513574"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-08"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "523039",
+          "snowflake": "522404"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-10"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "531364",
+          "snowflake": "530887"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-11"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "536015",
+          "snowflake": "531987"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-12"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "540486",
+          "snowflake": "536339"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-14"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "548453",
+          "snowflake": "545038"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-15"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "553614",
+          "snowflake": "549154"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed",
+            "observation_date": "2026-09-16"
+          },
+          "column": "peak_storage_mb",
+          "sqlserver": "557548",
+          "snowflake": "556811"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from build_capacity_forecast_input (storage-day bucketing, 28-day window). Inherited from rollup_storage_daily (UTC day vs the legacy fixed -4h Eastern bucketing): only storage_peak_mb / bytes_used differ (and sums built from them). Snowflake is right; PASS with legacy_storage_day_eastern_fixed_offset=true (gate/out/legacy-flags/). Data owners decide."
+    },
+    {
+      "unit": "rpt_storage_vs_included",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 58,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "bytes_used",
+          "sqlserver": "648854634496",
+          "snowflake": "648407941120"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "01721f9d-08ad-4285-9cd3-ef8c4adde52c"
+          },
+          "column": "overage_gb",
+          "sqlserver": "12",
+          "snowflake": "12.846"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "bytes_used",
+          "sqlserver": "591485992960",
+          "snowflake": "590797078528"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "bytes_used",
+          "sqlserver": "667042185216",
+          "snowflake": "659711590400"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "bytes_used",
+          "sqlserver": "77593575424",
+          "snowflake": "76855377920"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "bytes_used",
+          "sqlserver": "75139907584",
+          "snowflake": "74479304704"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "bytes_used",
+          "sqlserver": "55986618368",
+          "snowflake": "55716085760"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "bytes_used",
+          "sqlserver": "62520295424",
+          "snowflake": "62063116288"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "bytes_used",
+          "sqlserver": "4661160443904",
+          "snowflake": "4649719431168"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "bytes_used",
+          "sqlserver": "85251325952",
+          "snowflake": "84089503744"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rate_overage (whole-GB integer truncation, invoiced) and rollup_storage_daily (storage day): bytes_used, overage_gb and overage_cents differ, see the rate_overage ledger entry for totals. PASS with legacy_overage_whole_gb_truncation=true and legacy_storage_day_eastern_fixed_offset=true. Finance decides at cutover."
+    },
+    {
+      "unit": "rpt_tenant_active_users",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_api_units",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_compute_units",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_content_counts",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    },
+    {
+      "unit": "rpt_tenant_storage_peak",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 53,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "618796",
+          "snowflake": "618370"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "564085",
+          "snowflake": "563428"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "636141",
+          "snowflake": "629150"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "73999",
+          "snowflake": "73295"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "71659",
+          "snowflake": "71029"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "53393",
+          "snowflake": "53135"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "59624",
+          "snowflake": "59188"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "4445229",
+          "snowflake": "4434318"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "81302",
+          "snowflake": "80194"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "69274",
+          "snowflake": "68763"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_storage_daily (UTC day vs the legacy fixed -4h Eastern bucketing): only storage_peak_mb / bytes_used differ (and sums built from them). Snowflake is right; PASS with legacy_storage_day_eastern_fixed_offset=true (gate/out/legacy-flags/). Data owners decide."
+    },
+    {
+      "unit": "rpt_tenant_usage_by_region",
+      "status": "DIVERGE",
+      "source_rows": 5,
+      "target_rows": 5,
+      "differing_key_count": 5,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "region_code": "ap-southeast-2"
+          },
+          "column": "bytes_used",
+          "sqlserver": "12088144560128",
+          "snowflake": "12029756702720"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "region_code": "eu-central-1"
+          },
+          "column": "bytes_used",
+          "sqlserver": "13085358161920",
+          "snowflake": "13057964113920"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "region_code": "eu-west-1"
+          },
+          "column": "bytes_used",
+          "sqlserver": "13688831475712",
+          "snowflake": "13640857026560"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "region_code": "us-east-1"
+          },
+          "column": "bytes_used",
+          "sqlserver": "13544126939136",
+          "snowflake": "13528903712768"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "region_code": "us-west-2"
+          },
+          "column": "bytes_used",
+          "sqlserver": "13243743469568",
+          "snowflake": "13193704374272"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_storage_daily (UTC day vs the legacy fixed -4h Eastern bucketing): only storage_peak_mb / bytes_used differ (and sums built from them). Snowflake is right; PASS with legacy_storage_day_eastern_fixed_offset=true (gate/out/legacy-flags/). Data owners decide."
+    },
+    {
+      "unit": "rpt_tenant_usage_daily",
+      "status": "DIVERGE",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 53,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0052b048-57ff-4286-8f9c-181bfa4df6ed"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "618796",
+          "snowflake": "618370"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "040ef62f-cab7-4279-b317-8dbd18e12867"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "564085",
+          "snowflake": "563428"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "636141",
+          "snowflake": "629150"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0a7303a8-878d-4e1c-ae6f-1dcd5cc242c6"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "73999",
+          "snowflake": "73295"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "0ce98e8d-ca00-4ab0-8205-cd156818f096"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "71659",
+          "snowflake": "71029"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "12618590-5636-48ad-b3ad-1856de3130af"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "53393",
+          "snowflake": "53135"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "154b7a42-20b5-4d23-8a24-54dfbc579609"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "59624",
+          "snowflake": "59188"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "4445229",
+          "snowflake": "4434318"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "81302",
+          "snowflake": "80194"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "69274",
+          "snowflake": "68763"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_storage_daily (UTC day vs the legacy fixed -4h Eastern bucketing): only storage_peak_mb / bytes_used differ (and sums built from them). Snowflake is right; PASS with legacy_storage_day_eastern_fixed_offset=true (gate/out/legacy-flags/). Data owners decide."
+    },
+    {
+      "unit": "rpt_tenant_usage_top20",
+      "status": "DIVERGE",
+      "source_rows": 20,
+      "target_rows": 20,
+      "differing_key_count": 17,
+      "differences": [
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "06164f4b-4188-45e5-b423-c8487896a014"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "636141",
+          "snowflake": "629150"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "4445229",
+          "snowflake": "4434318"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "212c0db7-dc12-4bb6-97fe-50a5096e8609"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "4475142",
+          "snowflake": "4435892"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "25fea9ca-72dc-42d8-b6fb-3e7be292a1a0"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "694411",
+          "snowflake": "685988"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "2a1db1ee-db91-47c2-9233-55190701e838"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "648504",
+          "snowflake": "646185"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "32ee9387-ea76-4ab8-821c-a6097f34fb88"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "628817",
+          "snowflake": "628333"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "38e979c2-2709-43ef-bf24-b824f410b873"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "658725",
+          "snowflake": "654270"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "43cbcefc-2429-402a-bb14-9b50fb30468f"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "664271",
+          "snowflake": "663661"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "4f7a5149-97af-4b8f-8cca-49809ddaf212"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "668730",
+          "snowflake": "665067"
+        },
+        {
+          "key": {
+            "business_date": "2026-09-30",
+            "tenant_id": "6ec1190c-e799-4d58-9942-ccb5ad8f805a"
+          },
+          "column": "storage_peak_mb",
+          "sqlserver": "4095736",
+          "snowflake": "4095641"
+        }
+      ],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": "Inherited from rollup_storage_daily (UTC day vs the legacy fixed -4h Eastern bucketing): only storage_peak_mb / bytes_used differ (and sums built from them). Snowflake is right; PASS with legacy_storage_day_eastern_fixed_offset=true (gate/out/legacy-flags/). Data owners decide. The top-20 set and order follow bytes_used."
+    },
+    {
+      "unit": "rpt_trash_purge_candidates",
+      "status": "PASS",
+      "source_rows": 2664,
+      "target_rows": 2664,
+      "differing_key_count": 0,
+      "differences": [],
+      "parameters": "@BusinessDate=2026-09-30",
+      "explanation": ""
+    }
+  ]
+}

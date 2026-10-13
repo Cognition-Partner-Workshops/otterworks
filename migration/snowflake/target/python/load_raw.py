@@ -32,6 +32,72 @@ STG_TABLES = (
 )
 HERE = Path(__file__).resolve().parent
 DEFAULT_EXTRACTS = HERE.parents[1] / "source" / "out" / "extracts"
+DEFAULT_PACKAGE_EXTRACTS = HERE.parents[1] / "source" / "build" / "extracts"
+
+
+def extract_table(csv_path: Path) -> str:
+    return f"EXT_{csv_path.stem.upper()}"
+
+
+def load_package_extracts(run: str, extracts: Path) -> None:
+    """Load the flat files the SSIS packages read into RAW.EXT_<file>, every column VARCHAR.
+
+    Nothing is cast, trimmed or nulled here: empty fields stay empty strings, so the dbt
+    staging model that replaces a package owns every conversion the package's Derived Column
+    and Script Task steps made.
+    """
+    validate_run(run)
+    files = sorted(extracts.glob("*.csv"))
+    if not files:
+        raise FileNotFoundError(f"no package extracts in {extracts}; run make sfm-up first")
+    prefix = object_prefix(run)
+    qualified_stage = f"{prefix}.RAW.PACKAGE_EXTRACTS"
+    qualified_format = f"{prefix}.RAW.PACKAGE_EXTRACT_CSV"
+    log_table = f"{prefix}.OPS.ETL_RUN_LOG"
+    with dbt_connection(run) as connection, connection.cursor() as cursor:
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            f"CREATE STAGE IF NOT EXISTS {qualified_stage}"
+        )
+        cursor.execute(
+            f"CREATE OR REPLACE FILE FORMAT {qualified_format} "
+            "TYPE = CSV SKIP_HEADER = 1 FIELD_OPTIONALLY_ENCLOSED_BY = '\"' "
+            "EMPTY_FIELD_AS_NULL = FALSE NULL_IF = () SKIP_BLANK_LINES = TRUE"
+        )
+        for csv_path in files:
+            table = extract_table(csv_path)
+            with csv_path.open(encoding="utf-8", newline="") as handle:
+                headers = next(csv.reader(handle))
+            started = datetime.now(UTC).replace(tzinfo=None)
+            column_list = ", ".join(f'"{header.upper()}" VARCHAR' for header in headers)
+            cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                f"CREATE OR REPLACE TABLE {prefix}.RAW.{table} ({column_list})"
+            )
+            cursor.execute(
+                f"PUT file://{csv_path.resolve().as_posix()} "
+                f"@{qualified_stage}/{csv_path.stem} AUTO_COMPRESS = TRUE OVERWRITE = TRUE"
+            )
+            cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                f"COPY INTO {prefix}.RAW.{table} FROM @{qualified_stage}/{csv_path.stem} "
+                f"FILE_FORMAT = (FORMAT_NAME = '{qualified_format}') FORCE = TRUE"
+            )
+            row_count = sum(int(row[3]) for row in cursor.fetchall() if len(row) > 3)
+            cursor.execute(  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                f"""INSERT INTO {log_table} (
+                    RUN_TOKEN, BUSINESS_DATE, JOB_NAME, STEP_NAME, STATUS,
+                    ROW_COUNT, MESSAGE, STARTED_AT, COMPLETED_AT
+                ) VALUES (%s, NULL, %s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    run,
+                    "UBW_LOAD_PACKAGE_EXTRACTS",
+                    table,
+                    "SUCCESS",
+                    row_count,
+                    "",
+                    started,
+                    datetime.now(UTC).replace(tzinfo=None),
+                ),
+            )
+            print(f"{table}: {row_count} rows loaded")
 
 
 def load(run: str, extracts: Path) -> None:
@@ -47,7 +113,9 @@ def load(run: str, extracts: Path) -> None:
     qualified_format = f"{prefix}.RAW.EXTRACT_CSV"
     log_table = f"{prefix}.OPS.ETL_RUN_LOG"
     with dbt_connection(run) as connection, connection.cursor() as cursor:
-        cursor.execute(f"CREATE STAGE IF NOT EXISTS {qualified_stage} DIRECTORY = (ENABLE = TRUE)")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            f"CREATE STAGE IF NOT EXISTS {qualified_stage} DIRECTORY = (ENABLE = TRUE)"
+        )
         cursor.execute(
             f"CREATE OR REPLACE FILE FORMAT {qualified_format} "
             "TYPE = CSV PARSE_HEADER = TRUE "
@@ -119,7 +187,9 @@ def load(run: str, extracts: Path) -> None:
                         completed,
                     ),
                 )
-        cursor.execute(f"ALTER STAGE {qualified_stage} REFRESH")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+        cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            f"ALTER STAGE {qualified_stage} REFRESH"
+        )
 
 
 def export_source_tables(extracts: Path) -> None:
@@ -136,7 +206,9 @@ def export_source_tables(extracts: Path) -> None:
         for table in STG_TABLES:
             cursor = connection.cursor()
             try:
-                cursor.execute(f"SELECT * FROM stg.{table.lower()}")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                    f"SELECT * FROM stg.{table.lower()}"
+                )
                 headers = [str(column[0]) for column in cursor.description or []]
                 if not headers:
                     raise RuntimeError(f"source table stg.{table.lower()} has no columns")
@@ -160,9 +232,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", required=True)
     parser.add_argument("--extracts", type=Path)
+    parser.add_argument(
+        "--package-extracts",
+        action="store_true",
+        help="load the SSIS packages' flat files into RAW.EXT_* instead of the stg tables",
+    )
     args = parser.parse_args()
     try:
         validate_run(args.run)
+        if args.package_extracts:
+            load_package_extracts(args.run, args.extracts or DEFAULT_PACKAGE_EXTRACTS)
+            return 0
         extracts = args.extracts or Path(os.environ.get("UBW_EXTRACTS_DIR", str(DEFAULT_EXTRACTS)))
         missing = [
             table for table in STG_TABLES if not (extracts / f"{table.lower()}.csv").is_file()

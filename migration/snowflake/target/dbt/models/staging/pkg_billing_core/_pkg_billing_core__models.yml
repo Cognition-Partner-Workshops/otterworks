@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: stg_billing_tenants
+    description: pkg_billing_core replacement for stg.stg_billing_tenants.
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: name
+        tests: [not_null]
+      - name: tax_exempt
+        tests: [not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["active", "suspended", "cancelled"]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests: [not_null]
+
+  - name: stg_billing_plans
+    description: pkg_billing_core replacement for stg.stg_billing_plans.
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: code
+        tests: [unique, not_null]
+      - name: tier
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["starter", "growth", "scale"]
+      - name: monthly_fee
+        tests: [not_null]
+      - name: included_units
+        tests: [not_null]
+      - name: overage_rate
+        tests: [not_null]
+      - name: active
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests: [not_null]
+
+  - name: stg_billing_subscriptions
+    description: pkg_billing_core replacement for stg.stg_billing_subscriptions.
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: tenant_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_billing_tenants')
+                field: id
+      - name: plan_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_billing_plans')
+                field: id
+      - name: starts_on
+        tests: [not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["active", "cancelled", "suspended"]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests: [not_null]

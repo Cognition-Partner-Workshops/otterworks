@@ -1,0 +1,43 @@
+# Report parity: one entry per source/reports/<report>.rdl. The SQL Server side runs the report's
+# own DataSet query (CommandText) with its parameters; the Snowflake side selects the report's
+# fields from REPORTS.<report> with the same parameter values. Parameter values come from the
+# report's <DefaultValue> unless `parameters` overrides them.
+#
+# keys: the columns that identify a row of the dataset. Reports without a natural key (the audit
+# trail reports select no audit_id) are compared as multisets of whole rows (keys: null).
+# exclude: fields that are not compared, with the reason.
+# filters: report parameter -> view column for parameters other than @BusinessDate.
+reports:
+  rpt_tenant_usage_daily: {keys: [business_date, tenant_id]}
+  rpt_tenant_storage_peak: {keys: [business_date, tenant_id]}
+  rpt_tenant_usage_top20: {keys: [business_date, tenant_id]}
+  rpt_tenant_usage_by_region: {keys: [business_date, region_code]}
+  rpt_tenant_api_units: {keys: [business_date, tenant_id]}
+  rpt_tenant_compute_units: {keys: [business_date, tenant_id]}
+  rpt_tenant_active_users: {keys: [business_date, tenant_id]}
+  rpt_tenant_content_counts: {keys: [business_date, tenant_id]}
+  rpt_plan_tier_summary: {keys: [business_date, plan_tier], filters: {PlanTier: plan_tier}}
+  rpt_plan_mix: {keys: [business_date, plan_tier]}
+  rpt_seat_count_by_tenant: {keys: [business_date, tenant_id]}
+  rpt_seat_utilization: {keys: [business_date, tenant_id]}
+  rpt_seat_limit_headroom: {keys: [business_date, tenant_id]}
+  rpt_seats_over_limit: {keys: [business_date, tenant_id]}
+  rpt_overage_charges: {keys: [business_date, tenant_id]}
+  rpt_overage_by_tier: {keys: [business_date, plan_tier]}
+  rpt_storage_vs_included: {keys: [business_date, tenant_id]}
+  rpt_invoice_lines: {keys: [business_date, invoice_id, line_no]}
+  rpt_invoice_totals_by_tenant: {keys: [business_date, tenant_id]}
+  rpt_monthly_billing_summary: {keys: [business_date, line_type, invoice_status]}
+  rpt_retention_summary: {keys: [business_date, tenant_id, resource_type, retention_action]}
+  rpt_retention_candidates: {keys: [business_date, resource_type, resource_id]}
+  rpt_document_status: {keys: [business_date, tenant_id, workspace_id, status_label]}
+  rpt_archived_content: {keys: [business_date, tenant_id, resource_type, retention_action]}
+  rpt_trash_purge_candidates: {keys: [business_date, resource_type, resource_id]}
+  rpt_audit_rollup: {keys: [business_date, tenant_id, action, resource_type]}
+  rpt_audit_user_activity: {keys: null}
+  rpt_audit_sensitive_actions: {keys: null}
+  rpt_capacity_forecast:
+    keys: [business_date, tenant_id, observation_date]
+    exclude:
+      forecast_generated_at: wall-clock time the forecast job ran (SYSUTCDATETIME / SYSDATE)
+  rpt_storage_growth_trend: {keys: [business_date, tenant_id, observation_date]}
