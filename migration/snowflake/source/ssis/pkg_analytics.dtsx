@@ -75,20 +75,117 @@
       DTS:ExecutableType="Microsoft.ScriptTask"
       DTS:DTSID="{e7581f82-8942-49f7-b404-729269c719cc}"
       DTS:Disabled="False">
+      <DTS:Connections>
+        <DTS:Connection DTS:ConnectionManagerID="{a5e7b266-4a6f-41d0-a29a-ce4c9eadaf70}"
+          DTS:ConnectionManagerRefId="Package.ConnectionManagers[UBW_Staging]"
+          DTS:LogicalName="UBW_Staging" />
+      </DTS:Connections>
       <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
         <ScriptTask:ScriptProject>
-          <ScriptTask:ScriptMain.cs>using System;
+          <ScriptTask:ScriptMain.cs>// M. Kowalski wrote this so event checksums are added after the staging load.
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.SqlServer.Dts.Runtime;
-public class ScriptMain
+
+namespace ST_12ab470c976556f1b4eb0a568dc9f197
 {
-    public void Main()
+    [Microsoft.SqlServer.Dts.Tasks.ScriptTask.SSISScriptTaskEntryPointAttribute]
+    public partial class ScriptMain : Microsoft.SqlServer.Dts.Tasks.ScriptTask.VSTARTScriptObjectModelBase
     {
-        using (var sha = System.Security.Cryptography.SHA256.Create())
-{
-    var bytes = System.Text.Encoding.UTF8.GetBytes(row);
-    return System.BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "");
-}
-        Dts.TaskResult = (int)ScriptResults.Success;
+        private enum ScriptResults
+        {
+            Success = 0,
+            Failure = 1
+        }
+
+        public void Main()
+        {
+            try
+            {
+                using (SqlConnection connection = OpenStagingConnection())
+                {
+                    using (SqlCommand create = connection.CreateCommand())
+                    {
+                        create.CommandText = "CREATE TABLE #analytics_checksum (event_id varchar(64) NOT NULL PRIMARY KEY, row_checksum varchar(64) NOT NULL);";
+                        create.ExecuteNonQuery();
+                    }
+
+                    DataTable checksums = new DataTable();
+                    checksums.Columns.Add("event_id", typeof(String));
+                    checksums.Columns.Add("row_checksum", typeof(String));
+
+                    using (SqlCommand read = connection.CreateCommand())
+                    using (SHA256 sha = SHA256.Create())
+                    {
+                        read.CommandTimeout = 0;
+                        read.CommandText = "SELECT event_id, event_type, user_id, resource_id, occurred_at FROM stg.stg_analytics_events";
+                        using (SqlDataReader reader = read.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string eventId = Convert.ToString(reader["event_id"], CultureInfo.InvariantCulture);
+                                string eventType = Convert.ToString(reader["event_type"], CultureInfo.InvariantCulture);
+                                string userId = Convert.ToString(reader["user_id"], CultureInfo.InvariantCulture);
+                                string resourceId = Convert.ToString(reader["resource_id"], CultureInfo.InvariantCulture);
+                                string occurredAt = Convert.ToString(reader["occurred_at"], CultureInfo.InvariantCulture);
+                                string payload = String.Join("|", new[] { eventId, eventType, userId, resourceId, occurredAt });
+                                checksums.Rows.Add(eventId, ToUpperHex(sha.ComputeHash(Encoding.UTF8.GetBytes(payload))));
+                            }
+                        }
+                    }
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.BatchSize = 5000;
+                        bulkCopy.BulkCopyTimeout = 0;
+                        bulkCopy.DestinationTableName = "#analytics_checksum";
+                        bulkCopy.ColumnMappings.Add("event_id", "event_id");
+                        bulkCopy.ColumnMappings.Add("row_checksum", "row_checksum");
+                        bulkCopy.WriteToServer(checksums);
+                    }
+
+                    using (SqlCommand update = connection.CreateCommand())
+                    {
+                        update.CommandTimeout = 0;
+                        update.CommandText = @"UPDATE target
+SET row_checksum = source.row_checksum
+FROM stg.stg_analytics_events AS target
+INNER JOIN #analytics_checksum AS source ON source.event_id = target.event_id;";
+                        update.ExecuteNonQuery();
+                    }
+                }
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+            }
+            catch (Exception ex)
+            {
+                Dts.Events.FireError(0, "Checksum analytics events", ex.Message, String.Empty, 0);
+                Dts.TaskResult = (int)ScriptResults.Failure;
+            }
+        }
+
+        private SqlConnection OpenStagingConnection()
+        {
+            string connectionString = Dts.Connections["UBW_Staging"].ConnectionString;
+            connectionString = connectionString.Replace("Provider=SQLNCLI11.1;", String.Empty);
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
+
+        private static string ToUpperHex(byte[] bytes)
+        {
+            StringBuilder result = new StringBuilder(bytes.Length * 2);
+            foreach (byte value in bytes)
+            {
+                result.Append(value.ToString("X2", CultureInfo.InvariantCulture));
+            }
+            return result.ToString();
+        }
     }
 }
 </ScriptTask:ScriptMain.cs>
@@ -167,12 +264,12 @@ Replay intent: checksum(fields=event_id|event_type|user_id|resource_id|occurred_
       </DTS:Annotations>
     </DTS:Executable>
     <DTS:PrecedenceConstraints>
-      <DTS:PrecedenceConstraint DTS:From="{e7581f82-8942-49f7-b404-729269c719cc}"
-        DTS:To="{c17bb5e0-074f-43bb-9623-0098c3c93e38}"
-        DTS:Value="Success"
-        DTS:LogicalAnd="True" />
       <DTS:PrecedenceConstraint DTS:From="{c17bb5e0-074f-43bb-9623-0098c3c93e38}"
         DTS:To="{dd2bbec9-e9a2-42ee-b066-b8151999f867}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{dd2bbec9-e9a2-42ee-b066-b8151999f867}"
+        DTS:To="{e7581f82-8942-49f7-b404-729269c719cc}"
         DTS:Value="Success"
         DTS:LogicalAnd="True" />
     </DTS:PrecedenceConstraints>

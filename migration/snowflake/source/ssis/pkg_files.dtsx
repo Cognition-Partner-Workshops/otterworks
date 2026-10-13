@@ -90,17 +90,67 @@
       DTS:ExecutableType="Microsoft.ScriptTask"
       DTS:DTSID="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}"
       DTS:Disabled="False">
+      <DTS:Connections>
+        <DTS:Connection DTS:ConnectionManagerID="{b1d7b407-e704-4015-80c2-dc9a4604c241}"
+          DTS:ConnectionManagerRefId="Package.ConnectionManagers[UBW_Staging]"
+          DTS:LogicalName="UBW_Staging" />
+      </DTS:Connections>
       <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
         <ScriptTask:ScriptProject>
-          <ScriptTask:ScriptMain.cs>using System;
+          <ScriptTask:ScriptMain.cs>// M. Kowalski wrote this because the Derived Column overflowed DT_I4 on files over 2 GB.
+using System;
+using System.Data.SqlClient;
 using Microsoft.SqlServer.Dts.Runtime;
-public class ScriptMain
+
+namespace ST_bf3b4a4bf2d854edaa7b3ecd81c02a40
 {
-    public void Main()
+    [Microsoft.SqlServer.Dts.Tasks.ScriptTask.SSISScriptTaskEntryPointAttribute]
+    public partial class ScriptMain : Microsoft.SqlServer.Dts.Tasks.ScriptTask.VSTARTScriptObjectModelBase
     {
-        Dts.Variables["User::SizeColumn"].Value = "size_bytes";
-Dts.Variables["User::SizeOutput"].Value = "size_mb";
-        Dts.TaskResult = (int)ScriptResults.Success;
+        private enum ScriptResults
+        {
+            Success = 0,
+            Failure = 1
+        }
+
+        public void Main()
+        {
+            try
+            {
+                using (SqlConnection connection = OpenStagingConnection())
+                using (SqlCommand command = connection.CreateCommand())
+                {
+                    command.CommandTimeout = 0;
+                    command.CommandText = @"DECLARE @rows int = 1;
+WHILE @rows &gt; 0
+BEGIN
+    UPDATE TOP (5000) stg.stg_files
+    SET size_mb = ROUND(size_bytes / 1048576.0, 3)
+    WHERE (size_mb IS NULL AND size_bytes IS NOT NULL)
+       OR (size_mb IS NOT NULL AND
+           (size_bytes IS NULL OR size_mb &lt;&gt; ROUND(size_bytes / 1048576.0, 3)));
+    SET @rows = @@ROWCOUNT;
+END;";
+                    command.ExecuteNonQuery();
+                }
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+            }
+            catch (Exception ex)
+            {
+                Dts.Events.FireError(0, "Convert file sizes", ex.Message, String.Empty, 0);
+                Dts.TaskResult = (int)ScriptResults.Failure;
+            }
+        }
+
+        private SqlConnection OpenStagingConnection()
+        {
+            string connectionString = Dts.Connections["UBW_Staging"].ConnectionString;
+            connectionString = connectionString.Replace("Provider=SQLNCLI11.1;", String.Empty);
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
     }
 }
 </ScriptTask:ScriptMain.cs>
@@ -186,12 +236,12 @@ Replay intent: unit_conversion(column=size_bytes,output=size_mb)</DTS:Text>
       </DTS:Annotations>
     </DTS:Executable>
     <DTS:PrecedenceConstraints>
-      <DTS:PrecedenceConstraint DTS:From="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}"
-        DTS:To="{7071a54b-8d94-4f53-9b96-b593cf5f2344}"
-        DTS:Value="Success"
-        DTS:LogicalAnd="True" />
       <DTS:PrecedenceConstraint DTS:From="{7071a54b-8d94-4f53-9b96-b593cf5f2344}"
         DTS:To="{6d4ada8c-1b89-456a-96ef-a69d34da0874}"
+        DTS:Value="Success"
+        DTS:LogicalAnd="True" />
+      <DTS:PrecedenceConstraint DTS:From="{6d4ada8c-1b89-456a-96ef-a69d34da0874}"
+        DTS:To="{1d1f17c6-542d-4d14-8df6-16d271f87ed9}"
         DTS:Value="Success"
         DTS:LogicalAnd="True" />
     </DTS:PrecedenceConstraints>

@@ -76,16 +76,61 @@
       DTS:ExecutableType="Microsoft.ScriptTask"
       DTS:DTSID="{1f53aab3-b0f2-4f32-aee1-09758ed5d964}"
       DTS:Disabled="False">
-      <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp">
+      <DTS:Connections>
+        <DTS:Connection DTS:ConnectionManagerID="{82c3019e-a022-455b-b677-b17ee2300356}"
+          DTS:ConnectionManagerRefId="Package.ConnectionManagers[UBW_Staging]"
+          DTS:LogicalName="UBW_Staging" />
+      </DTS:Connections>
+      <ScriptTask:ScriptTaskData ScriptTask:ScriptLanguage="CSharp" ScriptTask:ReadWriteVariables="User::WatermarkFrom">
         <ScriptTask:ScriptProject>
-          <ScriptTask:ScriptMain.cs>using System;
+          <ScriptTask:ScriptMain.cs>// M. Kowalski wrote this because the incremental load needs the saved watermark.
+using System;
+using System.Data.SqlClient;
 using Microsoft.SqlServer.Dts.Runtime;
-public class ScriptMain
+
+namespace ST_6ac98036e40956eab2a69bb679713a1f
 {
-    public void Main()
+    [Microsoft.SqlServer.Dts.Tasks.ScriptTask.SSISScriptTaskEntryPointAttribute]
+    public partial class ScriptMain : Microsoft.SqlServer.Dts.Tasks.ScriptTask.VSTARTScriptObjectModelBase
     {
-        Dts.Variables["User::WatermarkFrom"].Value = Dts.Variables["$Package::BusinessDate"].Value;
-        Dts.TaskResult = (int)ScriptResults.Success;
+        private enum ScriptResults
+        {
+            Success = 0,
+            Failure = 1
+        }
+
+        public void Main()
+        {
+            try
+            {
+                using (SqlConnection connection = OpenStagingConnection())
+                using (SqlCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT watermark_value FROM ops.parity_watermarks WHERE object_name = 'pkg_billing_usage'";
+                    object watermark = command.ExecuteScalar();
+                    Dts.Variables["User::WatermarkFrom"].Value =
+                        watermark == null || watermark == DBNull.Value
+                            ? new DateTime(1900, 1, 1)
+                            : Convert.ToDateTime(watermark);
+                }
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+            }
+            catch (Exception ex)
+            {
+                Dts.Events.FireError(0, "Read usage watermark", ex.Message, String.Empty, 0);
+                Dts.TaskResult = (int)ScriptResults.Failure;
+            }
+        }
+
+        private SqlConnection OpenStagingConnection()
+        {
+            string connectionString = Dts.Connections["UBW_Staging"].ConnectionString;
+            connectionString = connectionString.Replace("Provider=SQLNCLI11.1;", String.Empty);
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
     }
 }
 </ScriptTask:ScriptMain.cs>
