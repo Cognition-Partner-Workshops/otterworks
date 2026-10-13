@@ -1,0 +1,7 @@
+package: pkg_auth_memberships
+sqlserver_table: stg.stg_auth_workspace_members
+snowflake_model: STAGING.STG_AUTH_WORKSPACE_MEMBERS
+keys: [user_id, workspace_id]
+columns: [workspace_name, tenant_id, role, joined_at, source_system]
+excluded:
+  extracted_at: "@[System::StartTime] of the package run (SQL Server server clock); differs on every run on both sides"
