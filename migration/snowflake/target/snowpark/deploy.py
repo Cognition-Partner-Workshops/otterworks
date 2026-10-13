@@ -52,7 +52,9 @@ def deploy(run: str, only: str | None = None) -> None:
         raise RuntimeError(f"no procedure named {only} in {PROCS}")
     with dbt_connection(run) as connection, connection.cursor() as cursor:
         for module in modules:
-            cursor.execute(render(module, database))  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+            cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
+                render(module, database)
+            )
             print(f"PROCEDURE         {database}.OPS.{module.PROCEDURE}")
 
 

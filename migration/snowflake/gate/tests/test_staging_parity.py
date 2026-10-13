@@ -67,10 +67,14 @@ def test_committed_specs_load(spec_path: Path) -> None:
 
 def test_write_result_carries_explanation_forward(tmp_path: Path) -> None:
     spec = staging_parity.load_spec("pkg_demo", write(tmp_path, SPEC))
-    unit = {"unit": "ssis:pkg_demo", "status": "DIVERGE", "source_rows": 1, "target_rows": 1,
-            "differing_key_count": 1,
-            "differences": [{"key": {"id": 1}, "column": "name", "sqlserver": "a",
-                             "snowflake": "b"}]}
+    unit = {
+        "unit": "ssis:pkg_demo",
+        "status": "DIVERGE",
+        "source_rows": 1,
+        "target_rows": 1,
+        "differing_key_count": 1,
+        "differences": [{"key": {"id": 1}, "column": "name", "sqlserver": "a", "snowflake": "b"}],
+    }
     out = tmp_path / "out"
     staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, [dict(unit)])
     markdown = out / "pkg_demo.md"
