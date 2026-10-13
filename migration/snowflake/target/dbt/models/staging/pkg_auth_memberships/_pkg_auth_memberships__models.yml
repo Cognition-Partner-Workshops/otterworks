@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_auth_workspace_members
+    description: >
+      Snowflake replacement for SSIS pkg_auth_memberships (stg.stg_auth_workspace_members).
+      One row per workspace membership; a user can belong to several workspaces.
+    tests:
+      - unique_key_combination:
+          arguments:
+            columns: [user_id, workspace_id]
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: workspace_id
+        tests: [not_null]
+      - name: workspace_name
+        tests: [not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: role
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [OWNER, ADMIN, EDITOR, USER]
+      - name: joined_at
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - accepted_values:
+              arguments:
+                values: [auth-service]
