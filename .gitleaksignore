@@ -8,3 +8,9 @@
 # Local-only SQL Server sa password for the Snowflake migration fixture's Compose stack
 # (migration/snowflake/compose.yaml binds to 127.0.0.1; overridable with UBW_SQL_PASSWORD).
 dcb39262e5deeb7343e99abf974e79f09978fdb4:migration/snowflake/Makefile:generic-api-key:6
+
+# The key normaliser rebuilds a PKCS#8 PEM from the SNOWFLAKE_PRIVATE_KEY secret, so the
+# BEGIN/END header strings appear in code (no key material). Current heads carry gitleaks:allow;
+# these fingerprints cover the earlier commits on the fixture branch.
+db9d69f9f5bf277a3a47217cd8111e5de3d7a764:migration/snowflake/target/python/ubw_snowflake.py:private-key:29
+1478b05c6b433e3df80d11260faa32a6b96edd7b:migration/snowflake/target/bootstrap/bootstrap.py:private-key:51
