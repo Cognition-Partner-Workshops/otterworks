@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: stg_audit_events
+    columns:
+      - name: audit_id
+        tests: [unique, not_null]
+      - name: event_ts_utc
+        tests: [not_null]

@@ -39,25 +39,6 @@ models:
     columns:
       - name: file_id
         tests: [unique, not_null]
-  - name: stg_billing_usage_events
-    columns:
-      - name: event_id
-        tests: [unique, not_null]
-      - name: tenant_id
-        tests: [not_null]
-      - name: event_ts_utc
-        tests: [not_null]
-      - name: event_kind
-        tests:
-          - accepted_values:
-              arguments:
-                values: ["api", "storage", "compute"]
-  - name: stg_audit_events
-    columns:
-      - name: audit_id
-        tests: [unique, not_null]
-      - name: event_ts_utc
-        tests: [not_null]
   - name: rollup_usage_events
     tests:
       - unique_key_combination:
