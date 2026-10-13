@@ -25,9 +25,24 @@ def write(tmp_path: Path, text: str) -> Path:
 
 def test_load_spec_defaults_and_rename(tmp_path: Path) -> None:
     spec = staging_parity.load_spec("pkg_demo", write(tmp_path, SPEC))
-    assert spec["excluded"] == {}
-    assert staging_parity.target_name(spec, "id") == "demo_id"
-    assert staging_parity.target_name(spec, "name") == "name"
+    (destination,) = spec["destinations"]
+    assert destination["unit"] == "ssis:pkg_demo"
+    assert destination["excluded"] == {}
+    assert staging_parity.target_name(destination, "id") == "demo_id"
+    assert staging_parity.target_name(destination, "name") == "name"
+
+
+def test_load_spec_multiple_destinations(tmp_path: Path) -> None:
+    text = """package: pkg_demo
+destinations:
+  - {sqlserver_table: stg.stg_a, snowflake_model: STAGING.STG_A, keys: [id], columns: [x]}
+  - {sqlserver_table: stg.stg_b, snowflake_model: STAGING.STG_B, keys: [id], columns: [y]}
+"""
+    spec = staging_parity.load_spec("pkg_demo", write(tmp_path, text))
+    assert [d["unit"] for d in spec["destinations"]] == [
+        "ssis:pkg_demo:stg_a",
+        "ssis:pkg_demo:stg_b",
+    ]
 
 
 def test_load_spec_rejects_missing_keys(tmp_path: Path) -> None:
@@ -45,8 +60,9 @@ def test_load_spec_rejects_key_listed_as_column(tmp_path: Path) -> None:
 @pytest.mark.parametrize("spec_path", sorted(staging_parity.SPEC_DIR.glob("*.yaml")))
 def test_committed_specs_load(spec_path: Path) -> None:
     spec = staging_parity.load_spec(spec_path.stem)
-    assert spec["sqlserver_table"].startswith("stg.")
-    assert spec["snowflake_model"].startswith("STAGING.")
+    for destination in spec["destinations"]:
+        assert destination["sqlserver_table"].startswith("stg.")
+        assert destination["snowflake_model"].startswith("STAGING.")
 
 
 def test_write_result_carries_explanation_forward(tmp_path: Path) -> None:
@@ -56,9 +72,13 @@ def test_write_result_carries_explanation_forward(tmp_path: Path) -> None:
             "differences": [{"key": {"id": 1}, "column": "name", "sqlserver": "a",
                              "snowflake": "b"}]}
     out = tmp_path / "out"
-    staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, dict(unit))
+    staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, [dict(unit)])
     markdown = out / "pkg_demo.md"
-    markdown.write_text(markdown.read_text().replace("Explanation: ", "Explanation: kept legacy"))
-    staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, dict(unit))
+    text = markdown.read_text().replace("Explanation: ", "Explanation: kept legacy")
+    markdown.write_text(text + "\n### Business decisions\n\nExplanation: blank flag stays NULL\n")
+    staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, [dict(unit)])
     assert "Explanation: kept legacy" in markdown.read_text()
     assert markdown.read_text().startswith("Staging parity pkg_demo DIVERGE 1 / 1")
+    passed = {**unit, "status": "PASS", "differing_key_count": 0, "differences": []}
+    staging_parity.write_result(out, "sfm-20261012-bd", "2026-09-30", spec, [passed])
+    assert "Explanation: blank flag stays NULL" in markdown.read_text()

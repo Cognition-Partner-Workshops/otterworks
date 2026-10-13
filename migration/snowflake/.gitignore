@@ -2,7 +2,9 @@
 /target/dbt/logs/
 /target/dbt/dbt_packages/
 /target/dbt/.user.yml
-/gate/out/
+/gate/out/*
+!/gate/out/ledger.*
+!/gate/out/staging/
 /.backend.env
 ||||||| f77dad4aa
 .venv/
