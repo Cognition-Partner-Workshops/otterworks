@@ -9,28 +9,29 @@ Read as `OW_UBW_SFM_20261013_LV_VIEWER` (role READER) on 2026-10-13, from
 The run's objects were created 2026-10-12 17:46 PDT, so the run is one day old. Its first day was migration
 work: dbt builds, gate runs, raw loads and one manual task-graph run. All tasks were suspended and none fired on its
 schedule. These are the warehouse's billed credits from
-`INFORMATION_SCHEMA.WAREHOUSE_METERING_HISTORY`, read as READER after the platform team granted
-`MONITOR USAGE` and imported privileges on `SNOWFLAKE`:
+`SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY`, on clock hours, read as READER after the platform team granted
+`MONITOR USAGE` and imported privileges on `SNOWFLAKE`. They were re-read once ACCOUNT_USAGE had caught up through 22:00 PDT:
 
 | Hour (PDT, 2026-10-12) | Compute | Cloud services | Total |
 |---|---:|---:|---:|
-| 17:27-18:27 | 0.000 | 0.002 | 0.002 |
-| 18:27-19:27 | 0.225 | 0.056 | 0.281 |
-| 19:27-20:27 | 1.166 | 0.192 | 1.358 |
-| 20:27-21:27 | 0.766 | 0.135 | 0.901 |
-| **First day** | **2.157** | **0.385** | **2.542** |
+| 17:00 | 0.000 | 0.002 | 0.002 |
+| 19:00 | 0.913 | 0.100 | 1.013 |
+| 20:00 | 0.941 | 0.255 | 1.196 |
+| 21:00 (end of migration builds, this review's `tasks.py create`, the one verification gate, READER Snowsight) | 0.471 | 0.045 | 0.516 |
+| **First day** | **2.325** | **0.402** | **2.727** |
 
-`ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY`, on clock hours and still catching up, shows 2.495 credits so far.
-Cloud services are billed only for the part above 10% of the account's daily compute. `QUERY_ATTRIBUTION_HISTORY`
-has no rows for the run yet, because it lags by hours, so the split by category and model below is a proportional attribution.
+`INFORMATION_SCHEMA.WAREHOUSE_METERING_HISTORY` agrees to within its sliding-window rounding at 2.750. Snowsight Cost
+Management showed 2.4 during the recording because ACCOUNT_USAGE had not yet caught up. Cloud services are billed only for the
+part above 10% of the account's daily compute. `QUERY_ATTRIBUTION_HISTORY` has no rows for the run yet, because it lags by hours, so the
+split by category and model below is a proportional attribution.
 
 The warehouse is `STANDARD_GEN_2`. Query timings put it up for about 5,449 s over 24 resumes, counting each
-resume until 60 s after its last query with a 60 s minimum. That makes the billed 2.157 compute credits an effective
+resume until 60 s after its last query with a 60 s minimum. Against the 2.157 compute credits billed for that same window, that is an effective
 **1.43 credits per running hour**. The projections below use that measured rate, not the 1 credit/hour list rate for X-Small.
 
 ## First day by category (billed compute, attributed by query time)
 
-The total is billed. The split shares it out by each category's share of the estimated warehouse time.
+The 2.157 compute credits billed up to 21:27 PDT are split by each category's share of the estimated warehouse time.
 
 | Category | Queries | Execution s | Attributed credits |
 |---|---:|---:|---:|
@@ -76,7 +77,7 @@ each plus about 60 s idle before suspend.
 
 | Day | Before | After | Change |
 |---|---:|---:|---:|
-| First day 2026-10-12, billed (migration build, no scheduled tasks) | 2.54 | n/a | n/a |
+| First day 2026-10-12, billed (migration build, no scheduled tasks) | 2.73 | n/a | n/a |
 | Projected weekday (nightly graph + 24 hourly audits) | 0.69 | 0.040 | -94% |
 | Projected Sunday / Monday / 1st of month (adds one weekly or monthly task) | 0.71 | 0.068 | -90% |
 | Projected 30-day month | ~20.8 | ~1.5 | -93% |
@@ -117,9 +118,9 @@ ENGINEER has `OPERATE`/`MONITOR` on the warehouse but not `MODIFY`.
 
 ## Resource monitor
 
-The projected steady state is about 1.5 credits a month. The one real day billed 2.54 credits, and
+The projected steady state is about 1.5 credits a month. The one real day billed 2.73 credits, and
 it was a full migration rebuild. The quota stays at **5 credits a month**: one steady-state month (1.5),
-plus one more rebuild day like the first (2.5), plus about 20% headroom. Notify at 75% (3.75 credits) is new, so a
+plus one more rebuild day like the first (2.7), plus about 15% headroom. Notify at 75% (3.75 credits) is new, so a
 rebuild day raises a notice before anything is suspended, and suspend stays at 100%. `SHOW RESOURCE MONITORS` returns no rows to
 READER even with the new grants, so the live monitor's current quota could not be read. Applying this
 means re-running `bootstrap.py up` (default `--credit-quota 5`) through `account.sql` with the builder
