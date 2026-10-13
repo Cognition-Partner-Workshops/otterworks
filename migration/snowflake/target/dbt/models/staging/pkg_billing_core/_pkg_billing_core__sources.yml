@@ -1,0 +1,36 @@
+version: 2
+
+sources:
+  - name: pkg_billing_core
+    description: Flat files pkg_billing_core reads, landed verbatim (all VARCHAR, empty fields are '').
+    schema: RAW
+    tables:
+      - name: EXT_BILLING_TENANTS
+        columns:
+          - name: id
+          - name: name
+          - name: tax_exempt
+          - name: status
+      - name: EXT_BILLING_TENANT_REGIONS
+        description: Reference file for the "LKP Tenant region" Lookup.
+        columns:
+          - name: tenant_id
+          - name: region_code
+      - name: EXT_BILLING_PLANS
+        columns:
+          - name: id
+          - name: code
+          - name: tier
+          - name: monthly_fee
+          - name: included_units
+          - name: overage_rate
+          - name: active
+      - name: EXT_BILLING_SUBSCRIPTIONS
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: plan_id
+          - name: starts_on
+          - name: ends_on
+          - name: status
+          - name: suspended_on
