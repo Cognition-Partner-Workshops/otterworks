@@ -33,9 +33,12 @@ const CLASSIFICATIONS: Record<ClassificationLabel, Omit<Classification, "label">
   },
 };
 
+// Whole-word match so short keywords like "sar" don't fire inside "Saratoga".
+const matchesKeyword = (fileName: string, keyword: string) =>
+  new RegExp(`\\b${keyword.replace(/ /g, "\\s+")}\\b`, "i").test(fileName);
+
 export function classifyFile(fileName: string): Classification {
-  const haystack = fileName.toLowerCase();
-  const rule = RULES.find((r) => r.keywords.some((k) => haystack.includes(k)));
+  const rule = RULES.find((r) => r.keywords.some((k) => matchesKeyword(fileName, k)));
   const label: ClassificationLabel = rule?.label ?? "Internal";
   return { label, ...CLASSIFICATIONS[label] };
 }

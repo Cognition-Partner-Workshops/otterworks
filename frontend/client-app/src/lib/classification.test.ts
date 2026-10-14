@@ -33,6 +33,12 @@ describe("classifyFile", () => {
     }
   });
 
+  it("matches keywords as whole words, not inside other words", () => {
+    expect(classifyFile("SAR Case Index.csv").label).toBe("Restricted");
+    expect(classifyFile("Saratoga Account Statement.pdf").label).toBe("Confidential");
+    expect(classifyFile("Harborview-KYC-Checklist.docx").label).toBe("Restricted");
+  });
+
   it("returns the handling guidance for each label", () => {
     expect(classifyFile("KYC.pdf").guidance).toBe("Do not share outside the deal team. Downloads are logged.");
     expect(classifyFile("Statement.pdf").guidance).toBe("Share only with named colleagues who need it.");
