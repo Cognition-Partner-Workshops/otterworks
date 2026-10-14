@@ -26,7 +26,16 @@ and the datasource. That is exactly what makes this a good decomposition candida
 | Feedback | `com.otterworks.legacyportal.feedback` | `feedback` | `POST /api/feedback`, `GET /api/feedback?userId=`, `GET /api/feedback/average-rating` |
 
 Shared, non-domain plumbing lives in `com.otterworks.legacyportal.common` (health endpoint,
-exception handling).
+exception handling, caller identity).
+
+### Caller identity
+
+The user-keyed routes (`/api/preferences/{userId}`, `/api/feedback`) require the OtterWorks
+access token issued by auth-service as `Authorization: Bearer <jwt>`. `PortalAuthenticator`
+verifies it with the shared `JWT_SECRET` (property `portal.auth.jwt-secret`) and controllers
+receive the caller as a `PortalPrincipal`. Feedback is always attributed to the caller;
+reading another user's feedback or preferences requires the `ADMIN` role. Missing/invalid
+tokens get `401`, a valid token for a different user gets `403`.
 
 ### Why it's an obvious decomposition candidate
 

@@ -1,5 +1,6 @@
 package com.otterworks.legacyportal.feedback;
 
+import com.otterworks.legacyportal.common.PortalPrincipal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,14 +30,22 @@ public class FeedbackController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public FeedbackResponse submit(@Valid @RequestBody SubmitFeedbackRequest request) {
+    public FeedbackResponse submit(
+            PortalPrincipal principal, @Valid @RequestBody SubmitFeedbackRequest request) {
         return FeedbackResponse.from(
-                service.submit(request.getUserId(), request.getRating(), request.getMessage()));
+                service.submit(principal.getUserId(), request.getRating(), request.getMessage()));
     }
 
+    /**
+     * Lists the caller's own feedback. {@code userId} is optional and may only name another user
+     * when the caller is an admin.
+     */
     @GetMapping
-    public List<FeedbackResponse> listForUser(@RequestParam String userId) {
-        return service.listForUser(userId).stream()
+    public List<FeedbackResponse> listForUser(
+            PortalPrincipal principal, @RequestParam(required = false) String userId) {
+        String target = userId == null ? principal.getUserId() : userId;
+        principal.requireCanActFor(target);
+        return service.listForUser(target).stream()
                 .map(FeedbackResponse::from)
                 .collect(Collectors.toList());
     }
@@ -48,10 +57,6 @@ public class FeedbackController {
 
     public static class SubmitFeedbackRequest {
 
-        @NotBlank
-        @Size(max = 100)
-        private String userId;
-
         @Min(1)
         @Max(5)
         private int rating;
@@ -59,14 +64,6 @@ public class FeedbackController {
         @NotBlank
         @Size(max = 2000)
         private String message;
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
 
         public int getRating() {
             return rating;
