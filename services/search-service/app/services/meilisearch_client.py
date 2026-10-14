@@ -247,13 +247,30 @@ class MeiliSearchService:
             query=search_term or "*",
         )
 
-    def suggest(self, prefix: str, size: int = 10, owner_id: str | None = None) -> list[str]:
+    def suggest(
+        self, prefix: str, size: int = 10, owner_id: str | None = None, rank_by_score: bool = False
+    ) -> list[str]:
         """Autocomplete suggestions using MeiliSearch prefix matching, scoped to owner_id."""
         suggestions: list[str] = []
         seen: set[str] = set()
         params: dict = {"limit": size, "attributesToRetrieve": ["title", "name"]}
         if owner_id:
             params["filter"] = f'owner_id = "{self._escape(owner_id)}"'
+
+        if rank_by_score:
+            params["showRankingScore"] = True
+            scored: list[tuple[float, str]] = []
+            for index_name in [self.documents_index_name, self.files_index_name]:
+                for hit in self.client.index(index_name).search(prefix, params)["hits"]:
+                    text = hit.get("title") or hit.get("name", "")
+                    if text:
+                        scored.append((hit.get("_rankingScore", 0.0), text))
+            scored.sort(key=lambda pair: pair[0], reverse=True)
+            for _score, text in scored:
+                if text not in seen:
+                    suggestions.append(text)
+                    seen.add(text)
+            return suggestions[:size]
 
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
