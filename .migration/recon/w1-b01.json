@@ -1,0 +1,10 @@
+{
+  "batch": "w1-b01",
+  "status": "PASS",
+  "recon_results": [".migration/recon/plans/result.json"],
+  "write_targets": ["billing_migration.plans", "billing_migration.tenants", "billing_migration.subscriptions"],
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2036",
+  "branch": "devin/1792017734-w1-b01-plans",
+  "failure_class": "",
+  "one_line_summary": "plans: live PASS, 0 findings; merge_eligible false from 7 text-as-LOB harness warnings; recon ran on mongo-migration-plugin PR #70 (fe8cb5af)"
+}
