@@ -11,13 +11,18 @@ RSpec.describe JwtAuthenticator do
   end
 
   it 'accepts HS512 access tokens issued by auth-service' do
-    status, _, body = call_with({ sub: 'u1', email: 'a@b.c', type: 'access' }, 'HS512')
+    status, _, body = call_with({ sub: 'u1', email: 'a@b.c', roles: %w[ADMIN USER], type: 'access' }, 'HS512')
     expect(status).to eq(200)
     expect(body.first).to eq('a@b.c')
   end
 
+  it 'forbids access tokens without the ADMIN role' do
+    status, = call_with({ sub: 'u1', email: 'a@b.c', roles: %w[USER], type: 'access' }, 'HS512')
+    expect(status).to eq(403)
+  end
+
   it 'rejects refresh tokens' do
-    status, = call_with({ sub: 'u1', email: 'a@b.c', type: 'refresh' }, 'HS512')
+    status, = call_with({ sub: 'u1', email: 'a@b.c', roles: %w[ADMIN USER], type: 'refresh' }, 'HS512')
     expect(status).to eq(401)
   end
 end

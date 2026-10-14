@@ -15,6 +15,7 @@ class JwtAuthenticator
 
     payload = decode_token(token)
     return unauthorized_response('Invalid or expired token') if payload.nil?
+    return forbidden_response unless Array(payload['roles']).include?('ADMIN')
 
     env['jwt.payload'] = payload
     env['jwt.user_id'] = payload['sub']
@@ -44,6 +45,10 @@ class JwtAuthenticator
   rescue JWT::DecodeError, JWT::ExpiredSignature, JWT::VerificationError => e
     Rails.logger.warn("JWT authentication failed: #{e.message}")
     nil
+  end
+
+  def forbidden_response
+    [403, { 'Content-Type' => 'application/json' }, [{ error: 'Admin role required' }.to_json]]
   end
 
   def unauthorized_response(message)
