@@ -129,7 +129,7 @@ function RecordFields({ record }: { record: WorkRecord }) {
           <dl className="mt-3 space-y-2 text-sm">
             <div><dt className="text-slate-500">Type</dt><dd className="font-medium">{record.type}</dd></div>
             <div><dt className="text-slate-500">Risk</dt><dd className="font-medium">{record.risk}</dd></div>
-            <div><dt className="text-slate-500">Planned window</dt><dd className="font-medium">{formatUtc(record.plannedStart)} – {formatUtc(record.plannedEnd)}</dd></div>
+            <div><dt className="text-slate-500">Planned window</dt><dd className="font-medium">{formatUtc(record.plannedStart)} to {formatUtc(record.plannedEnd)}</dd></div>
           </dl>
           <h3 className="mb-2 mt-4 text-sm font-semibold text-otter-900">Implementation plan</h3>
           <div className="text-sm leading-6"><MarkdownText text={record.implementationPlan} /></div>

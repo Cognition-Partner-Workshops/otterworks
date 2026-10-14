@@ -83,12 +83,12 @@ function ChatLayout({ children, title, topic, channelId, replyToId, onSend }: { 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-[1500px] overflow-hidden bg-white shadow-sm">
       <aside className="hidden w-64 shrink-0 border-r border-otter-200 bg-otter-900 p-4 text-white md:block">
-        <Link to="/chat" className="block border-b border-white/15 pb-4 text-lg font-semibold">OtterWorks</Link>
+        <Link to="/chat" className="block border-b border-white/15 pb-4 text-lg font-semibold text-white hover:text-white">OtterWorks</Link>
         <h2 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-otter-200">Channels</h2>
         <nav aria-label="Chat channels" className="space-y-1">
           {channels.map((channel) => (
-            <Link key={channel.id} to={`/chat/${channel.id}`} className={`block rounded px-3 py-2 text-sm hover:bg-white/10 ${channel.id === channelId ? "bg-white/15 font-semibold" : "text-otter-100"}`}>
-              <span className="mr-1 text-otter-300">#</span>{channel.id}
+            <Link key={channel.id} to={`/chat/${channel.id}`} className={`block rounded px-3 py-2 text-sm ${channel.id === channelId ? "bg-white/15 font-semibold text-white" : "text-otter-100 hover:bg-white/10 hover:text-white"}`}>
+              <span className="mr-1">#</span>{channel.id}
             </Link>
           ))}
         </nav>
