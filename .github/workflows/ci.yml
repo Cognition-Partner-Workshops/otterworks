@@ -34,6 +34,7 @@ jobs:
       audit-service: ${{ steps.changes.outputs.audit-service }}
       web-app: ${{ steps.changes.outputs.web-app }}
       admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
+      workbench: ${{ steps.changes.outputs.workbench }}
       demo-platform: ${{ steps.changes.outputs.demo-platform }}
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
@@ -69,6 +70,8 @@ jobs:
               - 'frontend/client-app/**'
             admin-dashboard:
               - 'frontend/admin-dashboard/**'
+            workbench:
+              - 'frontend/workbench/**'
             demo-platform:
               - 'demo-platform/**'
               - 'scripts/**'
@@ -303,6 +306,25 @@ jobs:
           node-version: '20'
       - run: npm ci
       - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # React - Workbench
+  workbench:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workbench == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/workbench
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
       - run: npm test
       - run: npm run build
 
