@@ -1,0 +1,19 @@
+# Helm values overlay for tenant `bofa` (branch demo-bofa, namespace
+# otterworks-bofa), applied by scripts/deploy-tenant.sh. Turns on the incident
+# PrometheusRule, the Grafana dashboard and OTLP tracing so the Document Vault
+# pages Devin (docs/demos/bofa-oncall.md). The branch label comes from
+# deploy-tenant.sh --branch; there is no fix_branch, so the fix PR targets
+# demo-bofa and stays unmerged between runs to keep the page re-armable.
+monitoring:
+  enabled: true
+  rules:
+    enabled: true
+  dashboard:
+    enabled: true
+tracing:
+  enabled: true
+strategy:
+  type: Recreate
+resources:
+  limits:
+    memory: 512Mi
