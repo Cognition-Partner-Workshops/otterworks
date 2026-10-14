@@ -9,6 +9,8 @@ namespace OtterWorks.Desktop.ViewModels
     /// </summary>
     public class MainViewModel : ObservableObject
     {
+        public const string SessionExpiredMessage = "Your session has expired. Please sign in again.";
+
         private readonly OtterWorksApiClient _api;
         private readonly SessionState _session;
         private ObservableObject _currentViewModel;
@@ -53,6 +55,18 @@ namespace OtterWorks.Desktop.ViewModels
         public void ShowDocuments()
         {
             CurrentViewModel = new DocumentsViewModel(_api, this);
+            RaiseSessionChanged();
+        }
+
+        public void ShowSessionExpired()
+        {
+            string email = _session.User?.Email;
+            _session.Clear();
+            CurrentViewModel = new LoginViewModel(_api, _session, this)
+            {
+                Email = email,
+                ErrorMessage = SessionExpiredMessage,
+            };
             RaiseSessionChanged();
         }
 

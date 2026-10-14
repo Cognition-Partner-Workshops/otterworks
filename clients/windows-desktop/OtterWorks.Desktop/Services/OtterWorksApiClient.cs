@@ -21,6 +21,11 @@ namespace OtterWorks.Desktop.Services
         private readonly string _baseUrl;
 
         public OtterWorksApiClient(AppSettings settings, SessionState session)
+            : this(settings, session, new HttpClientHandler())
+        {
+        }
+
+        internal OtterWorksApiClient(AppSettings settings, SessionState session, HttpMessageHandler handler)
         {
             if (settings == null)
             {
@@ -30,7 +35,7 @@ namespace OtterWorks.Desktop.Services
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _baseUrl = settings.ApiBaseUrl.TrimEnd('/');
 
-            _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            _http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
         }
 
         public async Task<AuthResponse> RegisterAsync(string displayName, string email, string password)
