@@ -1,44 +1,37 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:10:59.472335+00:00",
+  "generated_at": "2026-10-14T06:12:27.695119+00:00",
   "spec": {
     "package": "pkg_auth_users",
-    "destinations": [
-      {
-        "sqlserver_table": "stg.stg_auth_users",
-        "columns": [
-          "email",
-          "display_name",
-          "email_verified",
-          "mfa_enabled",
-          "created_at",
-          "updated_at",
-          "last_login_at",
-          "email_domain",
-          "source_system"
-        ],
-        "snowflake_model": "STAGING.STG_AUTH_USERS",
-        "keys": [
-          "id"
-        ],
-        "rename": {},
-        "excluded": {
-          "extracted_at": "@[System::StartTime] of the package run (SQL Server GETDATE() at replay); run-dependent load timestamp, Snowflake stamps current_timestamp() at query time"
-        },
-        "unit": "ssis:pkg_auth_users"
-      }
-    ]
+    "sqlserver_table": "stg.stg_auth_users",
+    "snowflake_model": "STAGING.STG_AUTH_USERS",
+    "keys": [
+      "id"
+    ],
+    "columns": [
+      "email",
+      "display_name",
+      "email_verified",
+      "mfa_enabled",
+      "created_at",
+      "updated_at",
+      "last_login_at",
+      "email_domain",
+      "source_system"
+    ],
+    "excluded": {
+      "extracted_at": "@[System::StartTime] of the package run (SQL Server GETDATE() at replay); run-dependent load timestamp, Snowflake stamps current_timestamp() at query time"
+    },
+    "rename": {}
   },
-  "units": [
-    {
-      "unit": "ssis:pkg_auth_users",
-      "status": "PASS",
-      "source_rows": 2400,
-      "target_rows": 2400,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
-    }
-  ]
+  "unit": {
+    "unit": "ssis:pkg_auth_users",
+    "status": "PASS",
+    "source_rows": 2400,
+    "target_rows": 2400,
+    "differing_key_count": 0,
+    "differences": [],
+    "explanation": ""
+  }
 }
