@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <header className="border-b border-[#ddd] bg-white">
         <div className="mx-auto flex min-h-16 max-w-4xl items-center px-4 py-3">
           <Link to="/" aria-label="Bank of America Document Center home">
-            <BrandLockup logoSize={32} />
+            <BrandLockup />
           </Link>
         </div>
       </header>

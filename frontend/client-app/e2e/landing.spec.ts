@@ -11,7 +11,7 @@ test.describe("Landing Page", () => {
     await expect(
       page.getByRole("heading", { name: "Document Center", exact: true })
     ).toBeVisible();
-    await expect(page.getByAltText("Document Center logo").first()).toBeVisible();
+    await expect(page.getByAltText("Bank of America").first()).toBeVisible();
     await expect(
       page.getByText("Enterprise Document Center").first()
     ).toBeVisible();

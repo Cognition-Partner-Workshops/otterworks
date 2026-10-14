@@ -13,8 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <mat-toolbar class="app-toolbar">
       <div class="toolbar-brand">
-        <img src="assets/bank-mark.svg" alt="Document Center logo" width="28" height="28" />
-        <span class="brand-name">BANK OF AMERICA</span>
+        <img class="brand-logo" src="assets/bofa-logo.svg" alt="Bank of America" width="231" height="24" />
         <span aria-hidden="true" class="brand-divider"></span>
         <span class="product-name">Operations Console</span>
       </div>
@@ -50,15 +49,10 @@ import { AuthService } from '../../core/services/auth.service';
       white-space: nowrap;
     }
 
-    .toolbar-brand img {
+    .brand-logo {
       flex: 0 0 auto;
-    }
-
-    .brand-name {
-      color: #012169;
-      font-size: 0.9rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
+      width: auto;
+      height: 24px;
     }
 
     .brand-divider {
@@ -87,6 +81,12 @@ import { AuthService } from '../../core/services/auth.service';
 
     .user-name {
       font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .brand-logo {
+        height: 18px;
+      }
     }
   `],
 })

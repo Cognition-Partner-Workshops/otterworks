@@ -41,7 +41,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Menu size={18} />
               </button>
               <div className="hidden shrink-0 lg:flex">
-                <BrandLockup logoSize={28} />
+                <BrandLockup />
               </div>
               <div className="w-full min-w-0 max-w-xl">
                 <SearchBar />

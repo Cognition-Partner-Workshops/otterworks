@@ -1,4 +1,4 @@
-import bankMark from "@/assets/bank-mark.svg";
+import bofaFlag from "@/assets/bofa-flag.svg";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -9,11 +9,10 @@ interface LogoProps {
 export function Logo({ size = 32, className }: LogoProps) {
   return (
     <img
-      src={bankMark}
-      alt="Document Center logo"
+      src={bofaFlag}
+      alt="Bank of America"
       width={size}
-      height={size}
-      className={cn("shrink-0 select-none", className)}
+      className={cn("h-auto shrink-0 select-none", className)}
       draggable={false}
     />
   );

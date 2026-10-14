@@ -19,11 +19,11 @@ interface NavItem {
     <div class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
-          <img class="logo-icon" src="assets/bank-mark.svg" alt="Document Center logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/bofa-flag.svg" alt="Bank of America" width="32" />
           <span class="logo-text">Operations Console</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
-          <img class="logo-icon" src="assets/bank-mark.svg" alt="Document Center logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/bofa-flag.svg" alt="Bank of America" width="32" />
         </div>
         <button class="toggle-btn" (click)="toggleCollapsed()" [matTooltip]="collapsed ? 'Expand' : 'Collapse'">
           <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -81,8 +81,8 @@ interface NavItem {
     }
 
     .logo-icon {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: auto;
       background: #ffffff;
       border-radius: 2px;
     }

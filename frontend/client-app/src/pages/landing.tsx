@@ -30,7 +30,7 @@ export default function Home() {
         </nav>
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link to="/" aria-label="Bank of America Document Center home">
-            <BrandLockup logoSize={32} />
+            <BrandLockup />
           </Link>
           <nav className="flex w-full items-center justify-end gap-2 sm:w-auto">
             <a

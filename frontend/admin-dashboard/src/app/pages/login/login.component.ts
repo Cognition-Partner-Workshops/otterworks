@@ -22,8 +22,11 @@ import { AuthService } from '../../core/services/auth.service';
       <mat-card class="login-card">
         <mat-card-header>
           <div class="login-header">
-            <img class="login-logo" src="assets/bank-mark.svg" alt="Document Center logo" width="64" height="64" />
-            <h1>Bank of America — Operations Console</h1>
+            <div class="login-brand">
+              <img class="login-logo" src="assets/bofa-logo.svg" alt="Bank of America" width="231" height="24" />
+              <span aria-hidden="true" class="brand-divider"></span>
+              <h1 class="product-name">Operations Console</h1>
+            </div>
             <p>Sign in to the admin dashboard</p>
           </div>
         </mat-card-header>
@@ -80,17 +83,32 @@ import { AuthService } from '../../core/services/auth.service';
       margin-bottom: 24px;
     }
 
-    .login-logo {
-      width: 64px;
-      height: 64px;
+    .login-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 16px;
     }
 
-    .login-header h1 {
+    .login-logo {
+      width: auto;
+      height: 24px;
+      flex: 0 0 auto;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 20px;
+      background: #dddddd;
+    }
+
+    .product-name {
       margin: 0;
-      font-size: 1.4rem;
-      font-weight: 500;
-      color: #012169;
+      color: #666666;
+      font-size: 0.9rem;
+      font-weight: 400;
+      white-space: nowrap;
     }
 
     .login-header p {
@@ -127,6 +145,16 @@ import { AuthService } from '../../core/services/auth.service';
       color: #f44336;
       font-size: 0.85rem;
       margin-bottom: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .login-logo {
+        height: 18px;
+      }
+
+      .login-brand {
+        gap: 8px;
+      }
     }
   `],
 })

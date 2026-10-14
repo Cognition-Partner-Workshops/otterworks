@@ -50,7 +50,7 @@ describe('LoginComponent', () => {
 
   it('should display app title', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Bank of America — Operations Console');
+    expect(compiled.textContent).toContain('Operations Console');
   });
 
   it('should use the Document Center email placeholder', () => {
