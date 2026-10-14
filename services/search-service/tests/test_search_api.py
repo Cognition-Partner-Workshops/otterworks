@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,20 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_returns_200_when_ranking_flag_active(self, client, mock_meilisearch_client):
+        """Suggest stays 200 with the matched titles while chaos:search-service:suggest_500 is set."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Quarterly report"}, {"title": "Quarterly plan"}],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly report", "Quarterly plan"]
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
