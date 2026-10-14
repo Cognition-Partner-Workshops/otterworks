@@ -48,8 +48,9 @@ interface NavItem {
     .sidebar {
       width: 260px;
       min-height: 100vh;
-      background: #012169;
-      color: #ffffff;
+      background: #ffffff;
+      border-right: 1px solid #dddddd;
+      color: #012169;
       display: flex;
       flex-direction: column;
       transition: width 0.3s ease;
@@ -65,7 +66,7 @@ interface NavItem {
       align-items: center;
       justify-content: space-between;
       padding: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid #dddddd;
       min-height: 64px;
     }
 
@@ -95,7 +96,7 @@ interface NavItem {
     .toggle-btn {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.7);
+      color: #012169;
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
@@ -104,8 +105,8 @@ interface NavItem {
     }
 
     .toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
+      background: #f5f5f5;
+      color: #012169;
     }
 
     .sidebar.collapsed .toggle-btn {
@@ -117,43 +118,44 @@ interface NavItem {
     }
 
     :host ::ng-deep .mat-mdc-list-item {
-      color: rgba(255, 255, 255, 0.75) !important;
+      color: #012169 !important;
       margin: 2px 8px;
-      border-radius: 2px;
+      border-radius: 0;
     }
 
     :host ::ng-deep .mat-mdc-list-item .mdc-list-item__primary-text,
     :host ::ng-deep .mat-mdc-list-item .mat-mdc-list-item-title {
-      color: rgba(255, 255, 255, 0.75) !important;
+      color: #012169 !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item:hover {
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
+      background: #f5f5f5 !important;
+      color: #012169 !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item:hover .mdc-list-item__primary-text,
     :host ::ng-deep .mat-mdc-list-item:hover .mat-mdc-list-item-title {
-      color: #ffffff !important;
+      color: #012169 !important;
     }
 
     :host ::ng-deep .active-link {
-      background: rgba(220, 20, 49, 0.32) !important;
-      color: #ffffff !important;
-      border-left: 3px solid #dc1431 !important;
+      background: #f5f5f5 !important;
+      color: #012169 !important;
+      border-left: 3px solid #e31837 !important;
+      font-weight: 600 !important;
     }
 
     :host ::ng-deep .active-link .mdc-list-item__primary-text,
     :host ::ng-deep .active-link .mat-mdc-list-item-title {
-      color: #ffffff !important;
+      color: #012169 !important;
     }
 
     :host ::ng-deep .active-link .mat-icon {
-      color: #ffffff !important;
+      color: #012169 !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item .mat-icon {
-      color: rgba(255, 255, 255, 0.75);
+      color: #012169;
     }
   `],
 })

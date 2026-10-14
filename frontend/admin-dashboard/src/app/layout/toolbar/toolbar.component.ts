@@ -12,7 +12,12 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule],
   template: `
     <mat-toolbar class="app-toolbar">
-      <span class="toolbar-title">Admin Dashboard</span>
+      <div class="toolbar-brand">
+        <img src="assets/bank-mark.svg" alt="Document Center logo" width="28" height="28" />
+        <span class="brand-name">BANK OF AMERICA</span>
+        <span aria-hidden="true" class="brand-divider"></span>
+        <span class="product-name">Document Center</span>
+      </div>
       <span class="spacer"></span>
       <span class="user-info" *ngIf="authService.currentUser as user">
         <mat-icon>account_circle</mat-icon>
@@ -32,15 +37,40 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [`
     .app-toolbar {
       background: #ffffff;
-      color: #333;
-      border-bottom: 1px solid #e0e0e0;
+      color: #012169;
+      border-bottom: 1px solid #dddddd;
       height: 64px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: none;
     }
 
-    .toolbar-title {
-      font-size: 1.1rem;
-      font-weight: 500;
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .toolbar-brand img {
+      flex: 0 0 auto;
+    }
+
+    .brand-name {
+      color: #012169;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 20px;
+      background: #dddddd;
+    }
+
+    .product-name {
+      color: #666666;
+      font-size: 0.9rem;
+      font-weight: 400;
     }
 
     .spacer {
@@ -52,7 +82,7 @@ import { AuthService } from '../../core/services/auth.service';
       align-items: center;
       gap: 8px;
       margin-right: 8px;
-      color: #666;
+      color: #666666;
     }
 
     .user-name {

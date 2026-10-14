@@ -63,12 +63,15 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: #012169;
+      padding: 32px 16px;
+      background: linear-gradient(135deg, #c41230 0%, #7a0a26 100%);
     }
 
     .login-card {
-      width: 420px;
-      padding: 40px;
+      width: min(420px, 100%);
+      padding: 32px;
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     }
 
     .login-header {
@@ -85,8 +88,9 @@ import { AuthService } from '../../core/services/auth.service';
 
     .login-header h1 {
       margin: 0;
-      font-size: 1.5rem;
-      color: #333;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: #012169;
     }
 
     .login-header p {

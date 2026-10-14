@@ -3,6 +3,7 @@ import { Sidebar } from "./sidebar";
 import { Footer } from "./footer";
 import { ConceptBanner } from "./concept-banner";
 import { SearchBar } from "@/components/ui/search-bar";
+import { BrandLockup } from "@/components/ui/brand-lockup";
 import { NotificationBell } from "@/components/ui/notification-bell";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores/auth-store";
@@ -18,7 +19,7 @@ export function AppShell({ children }: AppShellProps) {
   const { user } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-otter-50">
+    <div className="min-h-screen bg-[#f5f5f5]">
       <Sidebar />
 
       <div
@@ -29,9 +30,9 @@ export function AppShell({ children }: AppShellProps) {
       >
         <ConceptBanner />
         {/* Top utility bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-300 h-12">
+        <header className="sticky top-0 z-30 h-12 border-b border-[#ddd] bg-white">
           <div className="flex items-center justify-between h-full px-3 lg:px-4">
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <button
                 onClick={toggleSidebar}
                 className="p-2 rounded hover:bg-gray-100 text-gray-500 lg:hidden"
@@ -39,10 +40,10 @@ export function AppShell({ children }: AppShellProps) {
               >
                 <Menu size={18} />
               </button>
-              <span className="hidden lg:block text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">
-                Bank of America · Document Center
-              </span>
-              <div className="w-full max-w-xl">
+              <div className="hidden shrink-0 lg:flex">
+                <BrandLockup logoSize={28} />
+              </div>
+              <div className="w-full min-w-0 max-w-xl">
                 <SearchBar />
               </div>
             </div>

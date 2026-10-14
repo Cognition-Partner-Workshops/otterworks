@@ -56,9 +56,11 @@ import { AuthService } from './core/services/auth.service';
       align-items: center;
       justify-content: center;
       padding: 2px 8px;
-      background: #00123b;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 11px;
+      border-bottom: 1px solid #dddddd;
+      background: #f5f5f5;
+      color: #333333;
+      font-size: 12px;
+      font-style: italic;
       line-height: 1.3;
       text-align: center;
     }

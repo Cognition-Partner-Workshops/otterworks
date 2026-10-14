@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// Bank of America concept demo theme: navy primary, red accent, Helvetica-style sans.
+// Bank of America concept demo theme: navy, red accents, and the supplied font stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -21,25 +21,26 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f3f5f9",
-          100: "#e3e8f2",
-          200: "#c3cde2",
-          300: "#95a6c8",
-          400: "#5b74a6",
-          500: "#2a4a85",
-          600: "#0b2f6b",
-          700: "#012169",
-          800: "#011a52",
-          900: "#00123b",
+          50: "#f5f5f5",
+          100: "#e9edf5",
+          200: "#d2dbea",
+          300: "#b1c1dc",
+          400: "#819bc5",
+          500: "#5276ae",
+          600: "#2c5597",
+          700: "#123b7d",
+          800: "#012169",
+          900: "#012169",
         },
         accent: {
-          400: "#e8434f",
-          500: "#dc1431",
-          600: "#b30f28",
+          400: "#ed536c",
+          500: "#e31837",
+          600: "#c41230",
         },
+        link: "#0052c2",
       },
       fontFamily: {
-        sans: ['"Helvetica Neue"', "Helvetica", "Arial", "sans-serif"],
+        sans: ["Roboto", "Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
       },
     },
   },

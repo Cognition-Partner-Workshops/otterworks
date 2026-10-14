@@ -1,18 +1,17 @@
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/layout/footer";
-import { Logo } from "@/components/ui/logo";
+import { BrandLockup } from "@/components/ui/brand-lockup";
 import { COMPANY } from "@/lib/corporate";
 import { ConceptBanner } from "@/components/layout/concept-banner";
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-otter-50 flex flex-col">
+    <main className="flex min-h-screen flex-col bg-[#f5f5f5]">
       <ConceptBanner />
-      <header className="bg-white border-b border-gray-300">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo size={28} />
-            <span className="font-semibold text-gray-900">Bank of America</span>
+      <header className="border-b border-[#ddd] bg-white">
+        <div className="mx-auto flex min-h-16 max-w-4xl items-center px-4 py-3">
+          <Link to="/" aria-label="Bank of America Document Center home">
+            <BrandLockup logoSize={32} />
           </Link>
         </div>
       </header>
