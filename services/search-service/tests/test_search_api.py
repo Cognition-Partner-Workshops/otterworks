@@ -104,6 +104,28 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
 
+    def test_suggest_ranked_path_orders_by_ranking_score(self, client, mock_meilisearch_client, monkeypatch):
+        """With the ranking flag on, suggest asks MeiliSearch for _rankingScore and never 500s."""
+        monkeypatch.setattr("app.api.search._chaos_active", lambda key: True)
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": [
+                {"title": "Quality Review", "_rankingScore": 0.4},
+                {"title": "Quarterly Report", "_rankingScore": 0.9},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly Report", "Quality Review"]
+        assert mock_index.search.call_args.args[1]["showRankingScore"] is True
+
+        mock_index.search.return_value = {"hits": []}
+        response = client.get("/api/v1/search/suggest?q=zz", headers={"X-User-ID": "user-1"})
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
         response = client.get("/api/v1/search/suggest?q=")
