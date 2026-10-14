@@ -21,7 +21,8 @@
           21
         ]
       },
-      "statement": "SELECT id, code, tier, monthly_fee, included_units, overage_rate, active FROM billing_svc.plans"
+      "statement": "SELECT id, code, tier, monthly_fee, included_units, overage_rate, active FROM billing_svc.plans",
+      "note": "R4: statement addresses schema billing_svc (the already-extracted Plans module in services/billing-service), not legacy schema billing; scanner dropped the qualifier. Not legacy access evidence; excluded from the proposal."
     },
     {
       "id": "ap-a755f4d576",
@@ -58,7 +59,8 @@
           46
         ]
       },
-      "statement": "SELECT t.id AS tenant_id, p.code AS plan_code, p.tier, p.monthly_fee, p.included_units, s.status, s.starts_on, s.ends_on FROM billing_svc.tenants t JOIN billing_svc.subscriptions s ON s.tenant_id = t.id JOIN billing_svc.plans p ON p.id = s.plan_id WHERE t.id = %s"
+      "statement": "SELECT t.id AS tenant_id, p.code AS plan_code, p.tier, p.monthly_fee, p.included_units, s.status, s.starts_on, s.ends_on FROM billing_svc.tenants t JOIN billing_svc.subscriptions s ON s.tenant_id = t.id JOIN billing_svc.plans p ON p.id = s.plan_id WHERE t.id = %s",
+      "note": "R4: statement addresses schema billing_svc (the already-extracted Plans module in services/billing-service), not legacy schema billing; scanner dropped the qualifier. Not legacy access evidence; excluded from the proposal."
     },
     {
       "id": "ap-1dee2cca5e",
@@ -84,7 +86,8 @@
           69
         ]
       },
-      "statement": "SELECT id, tenant_id, plan_id, starts_on, ends_on, status, suspended_on FROM billing_svc.subscriptions WHERE tenant_id = %s"
+      "statement": "SELECT id, tenant_id, plan_id, starts_on, ends_on, status, suspended_on FROM billing_svc.subscriptions WHERE tenant_id = %s",
+      "note": "R4: statement addresses schema billing_svc (the already-extracted Plans module in services/billing-service), not legacy schema billing; scanner dropped the qualifier. Not legacy access evidence; excluded from the proposal."
     },
     {
       "id": "ap-478ab45b44",
@@ -110,7 +113,8 @@
           91
         ]
       },
-      "statement": "UPDATE billing_svc.subscriptions SET ends_on = %s, status = %s WHERE id = %s"
+      "statement": "UPDATE billing_svc.subscriptions SET ends_on = %s, status = %s WHERE id = %s",
+      "note": "R4: statement addresses schema billing_svc (the already-extracted Plans module in services/billing-service), not legacy schema billing; scanner dropped the qualifier. Not legacy access evidence; excluded from the proposal."
     },
     {
       "id": "ap-5bd787cc9a",
@@ -131,7 +135,8 @@
           108
         ]
       },
-      "statement": "INSERT INTO billing_svc.subscriptions (id, tenant_id, plan_id, starts_on, status) VALUES (%s, %s, %s, %s, %s)"
+      "statement": "INSERT INTO billing_svc.subscriptions (id, tenant_id, plan_id, starts_on, status) VALUES (%s, %s, %s, %s, %s)",
+      "note": "R4: statement addresses schema billing_svc (the already-extracted Plans module in services/billing-service), not legacy schema billing; scanner dropped the qualifier. Not legacy access evidence; excluded from the proposal."
     },
     {
       "id": "ap-98ad2f741d",
@@ -223,8 +228,8 @@
         "invoices.issued_at",
         "invoices.id"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -233,24 +238,28 @@
         ]
       },
       "statement": "SELECT i.tenant_id, i.id, i.total, (p_as_of - i.issued_at::date)::integer, t.status FROM billing.invoices i JOIN billing.tenants t ON t.id = i.tenant_id WHERE i.status = ? AND i.issued_at::date < p_as_of ORDER BY i.issued_at, i.id $$",
-      "routine": "billing.fn_overdue_accounts"
+      "routine": "billing.fn_overdue_accounts",
+      "note": "cold: period-close batch read; callers app.py:133 GET /api/dunning/overdue; scenarios naming fn_overdue_accounts: 1 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 133,
+          "route": "GET /api/dunning/overdue"
+        }
+      ]
     },
     {
       "id": "ap-fd06cf2927",
       "kind": "sql",
       "op": "read",
       "tables": [
-        "invoices",
-        "dunning_attempts"
+        "invoices"
       ],
       "join_edges": [],
       "filter": [
         {
           "col": "invoices.status",
-          "op": "eq"
-        },
-        {
-          "col": "dunning_attempts.invoice_id",
           "op": "eq"
         }
       ],
@@ -258,8 +267,8 @@
         "invoices.issued_at",
         "invoices.id"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -268,7 +277,17 @@
         ]
       },
       "statement": "SELECT i.* FROM billing.invoices i WHERE i.status = ? ORDER BY i.issued_at, i.id LOOP SELECT COALESCE(max(attempt_no), ?) + ? INTO v_attempt FROM billing.dunning_attempts WHERE invoice_id = v_invoice.id",
-      "routine": "billing.fn_overdue_accounts"
+      "routine": "billing.sp_schedule_dunning",
+      "note": "cold: period-close batch; callers app.py:140 POST /api/dunning/schedule; scenarios naming sp_schedule_dunning: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). cursor `SELECT i.* FROM invoices WHERE status=overdue ORDER BY issued_at,id` (dunning.sql:29-32); scanner merged the loop body (dunning_attempts read = ap-4d3a3fc913) into it",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 140,
+          "route": "POST /api/dunning/schedule"
+        }
+      ],
+      "drives_loop": true
     },
     {
       "id": "ap-4d3a3fc913",
@@ -285,8 +304,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -295,9 +314,18 @@
         ]
       },
       "statement": "SELECT COALESCE(max(attempt_no), ?) + ? INTO v_attempt FROM billing.dunning_attempts WHERE invoice_id = v_invoice.id",
-      "routine": "billing.fn_overdue_accounts",
+      "routine": "billing.sp_schedule_dunning",
       "in_loop": true,
-      "nested_in": "ap-fd06cf2927"
+      "nested_in": "ap-fd06cf2927",
+      "note": "cold: period-close batch; callers app.py:140 POST /api/dunning/schedule; scenarios naming sp_schedule_dunning: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 140,
+          "route": "POST /api/dunning/schedule"
+        }
+      ]
     },
     {
       "id": "ap-f625f7e0e2",
@@ -309,8 +337,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -319,27 +347,39 @@
         ]
       },
       "statement": "INSERT INTO billing.dunning_attempts ( id, tenant_id, invoice_id, attempt_no, scheduled_for, status ) VALUES ( md5(v_invoice.id::text || v_attempt::text)::uuid, v_invoice.tenant_id, v_invoice.id, v_attempt, v_next, ? ) ON CONFLICT (invoice_id, attempt_no) DO NOTHING",
-      "routine": "billing.fn_overdue_accounts",
-      "in_loop": true
+      "routine": "billing.sp_schedule_dunning",
+      "in_loop": true,
+      "note": "cold: period-close batch; callers app.py:140 POST /api/dunning/schedule; scenarios naming sp_schedule_dunning: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 140,
+          "route": "POST /api/dunning/schedule"
+        }
+      ]
     },
     {
       "id": "ap-bd84c606b3",
       "kind": "sql",
       "op": "read",
       "tables": [
-        "invoices",
-        "tenants"
+        "invoices"
       ],
       "join_edges": [],
       "filter": [
         {
           "col": "invoices.status",
           "op": "eq"
+        },
+        {
+          "col": "invoices.issued_at",
+          "op": "range"
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -348,7 +388,17 @@
         ]
       },
       "statement": "SELECT DISTINCT i.tenant_id FROM billing.invoices i WHERE i.status = ? AND i.issued_at::date <= p_as_of - ? LOOP IF EXISTS ( SELECT ? FROM billing.tenants WHERE id = v_tenant.tenant_id AND status = ? ) THEN UPDATE billing.tenants SET status = ? WHERE id = v_tenant.tenant_id",
-      "routine": "billing.fn_overdue_accounts"
+      "routine": "billing.sp_suspend_overdue",
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). cursor `SELECT DISTINCT tenant_id FROM invoices WHERE status=overdue AND issued_at <= as_of-14` (dunning.sql:60-64); scanner merged the loop body (tenants probe = ap-ce1fc356fb) into it",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ],
+      "drives_loop": true
     },
     {
       "id": "ap-ce1fc356fb",
@@ -369,8 +419,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -379,9 +429,18 @@
         ]
       },
       "statement": "SELECT ? FROM billing.tenants WHERE id = v_tenant.tenant_id AND status = ? )",
-      "routine": "billing.fn_overdue_accounts",
+      "routine": "billing.sp_suspend_overdue",
       "in_loop": true,
-      "nested_in": "ap-bd84c606b3"
+      "nested_in": "ap-bd84c606b3",
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ]
     },
     {
       "id": "ap-6e9b774d94",
@@ -398,8 +457,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -408,9 +467,18 @@
         ]
       },
       "statement": "UPDATE billing.tenants SET status = ? WHERE id = v_tenant.tenant_id",
-      "routine": "billing.fn_overdue_accounts",
+      "routine": "billing.sp_suspend_overdue",
       "in_loop": true,
-      "nested_in": "ap-bd84c606b3"
+      "nested_in": "ap-bd84c606b3",
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ]
     },
     {
       "id": "ap-f72f75ca73",
@@ -431,8 +499,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -441,8 +509,17 @@
         ]
       },
       "statement": "UPDATE billing.subscriptions SET status = ?, suspended_on = p_as_of WHERE tenant_id = v_tenant.tenant_id AND status = ?",
-      "routine": "billing.fn_overdue_accounts",
-      "in_loop": true
+      "routine": "billing.sp_suspend_overdue",
+      "in_loop": true,
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ]
     },
     {
       "id": "ap-47701613f1",
@@ -467,8 +544,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -477,8 +554,17 @@
         ]
       },
       "statement": "INSERT INTO billing.notifications (id, tenant_id, kind, sent_at) SELECT md5(v_tenant.tenant_id::text || ? || p_as_of::text)::uuid, v_tenant.tenant_id, ?, p_as_of::timestamptz WHERE NOT EXISTS ( SELECT ? FROM billing.notifications WHERE tenant_id = v_tenant.tenant_id AND kind = ? AND sent_at = p_as_o",
-      "routine": "billing.fn_overdue_accounts",
-      "in_loop": true
+      "routine": "billing.sp_suspend_overdue",
+      "in_loop": true,
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ]
     },
     {
       "id": "ap-a52b28618b",
@@ -513,9 +599,11 @@
         ]
       },
       "statement": "SELECT md5(v_tenant.tenant_id::text || ? || p_as_of::text)::uuid, v_tenant.tenant_id, ?, p_as_of::timestamptz WHERE NOT EXISTS ( SELECT ? FROM billing.notifications WHERE tenant_id = v_tenant.tenant_id AND kind = ? AND sent_at = p_as_of::timestamptz )",
-      "routine": "billing.fn_overdue_accounts",
+      "routine": "billing.sp_suspend_overdue",
       "in_loop": true,
-      "nested_in": "ap-47701613f1"
+      "nested_in": "ap-47701613f1",
+      "note": "parser artifact: the SELECT clause of `INSERT INTO notifications ... SELECT ... WHERE NOT EXISTS` reads no table; the NOT EXISTS probe is ap-eedb2e08a2 and the insert is ap-47701613f1",
+      "pinned": true
     },
     {
       "id": "ap-eedb2e08a2",
@@ -540,8 +628,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/dunning.sql",
         "lines": [
@@ -550,9 +638,18 @@
         ]
       },
       "statement": "SELECT ? FROM billing.notifications WHERE tenant_id = v_tenant.tenant_id AND kind = ? AND sent_at = p_as_of::timestamptz )",
-      "routine": "billing.fn_overdue_accounts",
+      "routine": "billing.sp_suspend_overdue",
       "in_loop": true,
-      "nested_in": "ap-a52b28618b"
+      "nested_in": "ap-a52b28618b",
+      "note": "cold: period-close batch; callers app.py:146 POST /api/dunning/suspend; scenarios naming sp_suspend_overdue: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 146,
+          "route": "POST /api/dunning/suspend"
+        }
+      ]
     },
     {
       "id": "ap-64301fefb7",
@@ -589,8 +686,8 @@
       "sort": [
         "subscriptions.starts_on"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -599,7 +696,21 @@
         ]
       },
       "statement": "SELECT p.* INTO v_plan FROM billing.subscriptions s JOIN billing.plans p ON p.id = s.plan_id WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC LIMIT ?",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.fn_invoice_preview",
+      "note": "warm: on-demand preview compute; also nested in sp_issue_invoice (invoicing.sql:105); callers app.py:103 GET /api/invoices/<tenant_id>/preview; scenarios naming fn_invoice_preview: 2 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 103,
+          "route": "GET /api/invoices/<tenant_id>/preview"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 105
+        }
+      ]
     },
     {
       "id": "ap-dfb5a1e7b8",
@@ -620,8 +731,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -630,7 +741,21 @@
         ]
       },
       "statement": "SELECT COALESCE(sum(remaining_amount), ?) INTO v_credit FROM billing.credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ?",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.fn_invoice_preview",
+      "note": "warm: on-demand preview compute; also nested in sp_issue_invoice (invoicing.sql:105); callers app.py:103 GET /api/invoices/<tenant_id>/preview; scenarios naming fn_invoice_preview: 2 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 103,
+          "route": "GET /api/invoices/<tenant_id>/preview"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 105
+        }
+      ]
     },
     {
       "id": "ap-0f4eabe333",
@@ -647,8 +772,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -657,7 +782,21 @@
         ]
       },
       "statement": "SELECT tax_exempt FROM billing.tenants WHERE id = p_tenant_id)",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.fn_invoice_preview",
+      "note": "warm: on-demand preview compute; also nested in sp_issue_invoice (invoicing.sql:105); callers app.py:103 GET /api/invoices/<tenant_id>/preview; scenarios naming fn_invoice_preview: 2 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 103,
+          "route": "GET /api/invoices/<tenant_id>/preview"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 105
+        }
+      ]
     },
     {
       "id": "ap-1a8c2fdba7",
@@ -676,8 +815,8 @@
       "sort": [
         "invoice_lines.line_no"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -686,7 +825,16 @@
         ]
       },
       "statement": "SELECT line_no, line_type, description, amount FROM billing.invoice_lines WHERE invoice_id = p_invoice_id ORDER BY line_no $$",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.fn_invoice_lines",
+      "note": "hot: per-request UI read; callers app.py:127 GET /api/invoices/<invoice_id>/lines; scenarios naming fn_invoice_lines: 1 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 127,
+          "route": "GET /api/invoices/<invoice_id>/lines"
+        }
+      ]
     },
     {
       "id": "ap-74635fe95f",
@@ -698,8 +846,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -708,7 +856,16 @@
         ]
       },
       "statement": "INSERT INTO billing.invoices ( id, tenant_id, period_id, issued_at, subtotal, tax, total, status ) VALUES ( v_invoice_id, p_tenant_id, v_period_id, p_period_end::timestamptz, ?, ?, ?, ? ) ON CONFLICT (id) DO UPDATE SET status = ?",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.sp_issue_invoice",
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-849777f660",
@@ -725,8 +882,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -735,7 +892,16 @@
         ]
       },
       "statement": "DELETE FROM billing.invoice_lines WHERE invoice_id = v_invoice_id",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.sp_issue_invoice",
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-6b99e84427",
@@ -757,7 +923,9 @@
         ]
       },
       "statement": "SELECT * FROM billing.fn_invoice_preview(p_tenant_id, p_period_start, p_period_end) LOOP INSERT INTO billing.invoice_lines ( id, invoice_id, line_no, line_type, description, amount ) VALUES ( md5(v_invoice_id::text || v_line.line_no::text)::uuid, v_invoice_id, v_line.line_no, v_line.line_type, v_lin",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.sp_issue_invoice",
+      "note": "parser artifact: the cursor `SELECT * FROM billing.fn_invoice_preview(...)` (a routine call, no direct table read) was merged with the loop-body INSERT; the INSERT is ap-97f9bea953, the call is recorded as invoked_by on the fn_invoice_preview patterns",
+      "pinned": true
     },
     {
       "id": "ap-97f9bea953",
@@ -769,8 +937,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -779,9 +947,18 @@
         ]
       },
       "statement": "INSERT INTO billing.invoice_lines ( id, invoice_id, line_no, line_type, description, amount ) VALUES ( md5(v_invoice_id::text || v_line.line_no::text)::uuid, v_invoice_id, v_line.line_no, v_line.line_type, v_line.description, CASE WHEN v_line.line_type = ? THEN v_line.total ELSE v_line.amount END )",
-      "routine": "billing.fn_invoice_preview",
+      "routine": "billing.sp_issue_invoice",
       "in_loop": true,
-      "nested_in": "ap-6b99e84427"
+      "nested_in": "ap-6b99e84427",
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-7cd84fbad7",
@@ -798,8 +975,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -808,7 +985,16 @@
         ]
       },
       "statement": "UPDATE billing.invoices SET subtotal = round(v_subtotal, ?), tax = round(v_tax, ?), total = v_total WHERE id = v_invoice_id",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.sp_issue_invoice",
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-fd8da9c0eb",
@@ -832,8 +1018,8 @@
         "credit_notes.issued_on",
         "credit_notes.id"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -842,7 +1028,16 @@
         ]
       },
       "statement": "SELECT id, remaining_amount FROM billing.credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > ? ORDER BY issued_on, id LOOP EXIT WHEN v_credit <= ?",
-      "routine": "billing.fn_invoice_preview"
+      "routine": "billing.sp_issue_invoice",
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-9992f40c8a",
@@ -859,8 +1054,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/invoicing.sql",
         "lines": [
@@ -869,8 +1064,17 @@
         ]
       },
       "statement": "UPDATE billing.credit_notes SET remaining_amount = GREATEST(remaining_amount - v_credit, ?) WHERE id = v_line.id",
-      "routine": "billing.fn_invoice_preview",
-      "in_loop": true
+      "routine": "billing.sp_issue_invoice",
+      "in_loop": true,
+      "note": "warm: transactional write; callers app.py:115 POST /api/invoices/<tenant_id>/issue; scenarios naming sp_issue_invoice: 3 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 115,
+          "route": "POST /api/invoices/<tenant_id>/issue"
+        }
+      ]
     },
     {
       "id": "ap-2fad319cbe",
@@ -885,8 +1089,8 @@
         "plans.monthly_fee",
         "plans.code"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/plans.sql",
         "lines": [
@@ -895,7 +1099,21 @@
         ]
       },
       "statement": "SELECT id, code, tier, monthly_fee, included_units, overage_rate FROM billing.plans WHERE active ORDER BY monthly_fee, code $$",
-      "routine": "billing.fn_list_plans"
+      "routine": "billing.fn_list_plans",
+      "note": "hot: per-request UI read; callers app.py:56 GET /, app.py:61 GET /plans; scenarios naming fn_list_plans: 1 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 56,
+          "route": "GET /"
+        },
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 61,
+          "route": "GET /plans"
+        }
+      ]
     },
     {
       "id": "ap-ff88e55f57",
@@ -937,8 +1155,8 @@
       "sort": [
         "subscriptions.starts_on"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "hot",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/plans.sql",
         "lines": [
@@ -947,7 +1165,16 @@
         ]
       },
       "statement": "SELECT t.id, p.code, p.tier, p.monthly_fee, p.included_units, s.status, GREATEST(s.starts_on, p_on) FROM billing.tenants t JOIN billing.subscriptions s ON s.tenant_id = t.id JOIN billing.plans p ON p.id = s.plan_id WHERE t.id = p_tenant_id AND s.starts_on <= p_on AND (s.ends_on IS NULL OR s.ends_on ",
-      "routine": "billing.fn_list_plans"
+      "routine": "billing.fn_entitlement",
+      "note": "hot: per-request UI read; callers app.py:67 GET /plans/<tenant_id>/entitlement; scenarios naming fn_entitlement: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 67,
+          "route": "GET /plans/<tenant_id>/entitlement"
+        }
+      ]
     },
     {
       "id": "ap-80c82f3704",
@@ -972,8 +1199,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/plans.sql",
         "lines": [
@@ -982,7 +1209,16 @@
         ]
       },
       "statement": "UPDATE billing.subscriptions SET ends_on = p_effective_on - ?, status = CASE WHEN status = ? THEN status ELSE ? END WHERE tenant_id = p_tenant_id AND ends_on IS NULL AND starts_on < p_effective_on",
-      "routine": "billing.fn_list_plans"
+      "routine": "billing.sp_change_plan",
+      "note": "warm: transactional write; callers app.py:75 POST /plans/<tenant_id>/change; scenarios naming sp_change_plan: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 75,
+          "route": "POST /plans/<tenant_id>/change"
+        }
+      ]
     },
     {
       "id": "ap-0b82c075b7",
@@ -994,8 +1230,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/plans.sql",
         "lines": [
@@ -1004,7 +1240,16 @@
         ]
       },
       "statement": "INSERT INTO billing.subscriptions ( id, tenant_id, plan_id, starts_on, status ) VALUES ( md5(p_tenant_id::text || p_plan_id::text || p_effective_on::text)::uuid, p_tenant_id, p_plan_id, p_effective_on, ? )",
-      "routine": "billing.fn_list_plans"
+      "routine": "billing.sp_change_plan",
+      "note": "warm: transactional write; callers app.py:75 POST /plans/<tenant_id>/change; scenarios naming sp_change_plan: 2 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 75,
+          "route": "POST /plans/<tenant_id>/change"
+        }
+      ]
     },
     {
       "id": "ap-3174fb6852",
@@ -1035,8 +1280,8 @@
       "sort": [
         "subscriptions.starts_on"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1045,7 +1290,26 @@
         ]
       },
       "statement": "SELECT s.* INTO v_sub FROM billing.subscriptions s WHERE s.tenant_id = p_tenant_id AND s.starts_on <= p_period_end AND (s.ends_on IS NULL OR s.ends_on >= p_period_start) ORDER BY s.starts_on DESC LIMIT ?",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.fn_usage_rating",
+      "note": "warm: on-demand rating compute; also nested in sp_finalize_rating (rating.sql:121) and fn_invoice_preview (invoicing.sql:32); callers app.py:85 POST /api/rating/preview; scenarios naming fn_usage_rating: 6 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 85,
+          "route": "POST /api/rating/preview"
+        },
+        {
+          "routine": "billing.sp_finalize_rating",
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "line": 121
+        },
+        {
+          "routine": "billing.fn_invoice_preview",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 32
+        }
+      ]
     },
     {
       "id": "ap-0cc1302b81",
@@ -1062,8 +1326,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1072,7 +1336,26 @@
         ]
       },
       "statement": "SELECT p.* INTO v_plan FROM billing.plans p WHERE p.id = v_sub.plan_id",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.fn_usage_rating",
+      "note": "warm: on-demand rating compute; also nested in sp_finalize_rating (rating.sql:121) and fn_invoice_preview (invoicing.sql:32); callers app.py:85 POST /api/rating/preview; scenarios naming fn_usage_rating: 6 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 85,
+          "route": "POST /api/rating/preview"
+        },
+        {
+          "routine": "billing.sp_finalize_rating",
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "line": 121
+        },
+        {
+          "routine": "billing.fn_invoice_preview",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 32
+        }
+      ]
     },
     {
       "id": "ap-25c80e4647",
@@ -1089,8 +1372,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1099,7 +1382,26 @@
         ]
       },
       "statement": "SELECT COALESCE(sum(u.units), ?)::integer INTO v_used FROM billing.usage_events u WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.fn_usage_rating",
+      "note": "warm: on-demand rating compute; also nested in sp_finalize_rating (rating.sql:121) and fn_invoice_preview (invoicing.sql:32); callers app.py:85 POST /api/rating/preview; scenarios naming fn_usage_rating: 6 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 85,
+          "route": "POST /api/rating/preview"
+        },
+        {
+          "routine": "billing.sp_finalize_rating",
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "line": 121
+        },
+        {
+          "routine": "billing.fn_invoice_preview",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 32
+        }
+      ]
     },
     {
       "id": "ap-69f19c59f2",
@@ -1126,8 +1428,8 @@
         }
       ],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "warm",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1136,7 +1438,26 @@
         ]
       },
       "statement": "SELECT LEAST(? * v_plan.included_units, COALESCE(sum(rr.rollover_units), ?))::integer INTO v_prior FROM billing.rating_results rr JOIN billing.rating_periods rp ON rp.id = rr.period_id WHERE rp.tenant_id = p_tenant_id AND rp.period_start < p_period_start AND rp.period_start >= p_period_start - inter",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.fn_usage_rating",
+      "note": "warm: on-demand rating compute; also nested in sp_finalize_rating (rating.sql:121) and fn_invoice_preview (invoicing.sql:32); callers app.py:85 POST /api/rating/preview; scenarios naming fn_usage_rating: 6 (procs/scenarios). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 85,
+          "route": "POST /api/rating/preview"
+        },
+        {
+          "routine": "billing.sp_finalize_rating",
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "line": 121
+        },
+        {
+          "routine": "billing.fn_invoice_preview",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 32
+        }
+      ]
     },
     {
       "id": "ap-b0d666eafd",
@@ -1155,8 +1476,8 @@
       "sort": [
         "usage_events.kind"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1165,7 +1486,9 @@
         ]
       },
       "statement": "SELECT u.kind, count(*), COALESCE(sum(u.units), ?) FROM billing.usage_events u WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end GROUP BY u.kind ORDER BY u.kind $$",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.fn_usage_summary",
+      "note": "cold: no Flask route calls it; parity scenario only; callers no Flask caller; scenarios naming fn_usage_summary: 1 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true
     },
     {
       "id": "ap-6218c38681",
@@ -1196,8 +1519,8 @@
       "sort": [
         "subscriptions.starts_on"
       ],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1206,7 +1529,21 @@
         ]
       },
       "statement": "SELECT id INTO v_subscription_id FROM billing.subscriptions WHERE tenant_id = p_tenant_id AND starts_on <= p_period_end AND (ends_on IS NULL OR ends_on >= p_period_start) ORDER BY starts_on DESC LIMIT ?",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.sp_finalize_rating",
+      "note": "cold: period-close batch; also nested in sp_issue_invoice (invoicing.sql:93); callers app.py:94 POST /api/rating/finalize; scenarios naming sp_finalize_rating: 1 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 94,
+          "route": "POST /api/rating/finalize"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 93
+        }
+      ]
     },
     {
       "id": "ap-b02e91b60c",
@@ -1218,8 +1555,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1228,7 +1565,21 @@
         ]
       },
       "statement": "INSERT INTO billing.rating_periods (id, tenant_id, period_start, period_end) VALUES (v_period_id, p_tenant_id, p_period_start, p_period_end) ON CONFLICT (tenant_id, period_start) DO UPDATE SET period_end = EXCLUDED.period_end",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.sp_finalize_rating",
+      "note": "cold: period-close batch; also nested in sp_issue_invoice (invoicing.sql:93); callers app.py:94 POST /api/rating/finalize; scenarios naming sp_finalize_rating: 1 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 94,
+          "route": "POST /api/rating/finalize"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 93
+        }
+      ]
     },
     {
       "id": "ap-96e3fc65ee",
@@ -1240,8 +1591,8 @@
       "join_edges": [],
       "filter": [],
       "sort": [],
-      "frequency": null,
-      "confirmed": false,
+      "frequency": "cold",
+      "confirmed": true,
       "source": {
         "file": "services/legacy-billing/db/procs/rating.sql",
         "lines": [
@@ -1250,7 +1601,21 @@
         ]
       },
       "statement": "INSERT INTO billing.rating_results ( id, period_id, subscription_id, used_units, quota_units, rollover_units, billable_units, overage_amount, created_at ) VALUES ( md5(v_period_id::text)::uuid, v_period_id, v_subscription_id, v_rating.used_units, v_rating.quota_units, GREATEST(v_rating.quota_units -",
-      "routine": "billing.fn_usage_rating"
+      "routine": "billing.sp_finalize_rating",
+      "note": "cold: period-close batch; also nested in sp_issue_invoice (invoicing.sql:93); callers app.py:94 POST /api/rating/finalize; scenarios naming sp_finalize_rating: 1 (procs/scenarios). Routine corrected from scanner attribution (R3). ",
+      "pinned": true,
+      "invoked_by": [
+        {
+          "file": "services/legacy-billing/app/app.py",
+          "line": 94,
+          "route": "POST /api/rating/finalize"
+        },
+        {
+          "routine": "billing.sp_issue_invoice",
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "line": 93
+        }
+      ]
     },
     {
       "id": "ap-1d56106209",
