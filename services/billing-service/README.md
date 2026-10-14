@@ -1,8 +1,9 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans module. It owns a
-separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and places
-plans behavior in a plain-Python domain layer.
+This FastAPI service is the extraction target for the plans module. It persists
+to the MongoDB `billing_migration` database (collections `plans`, `tenants` with
+embedded `creditNotes`, and `subscriptions`, per mapping spec v2), keeps the HTTP
+layer thin, and places plans behavior in a plain-Python domain layer.
 
 ## Development
 
@@ -10,19 +11,24 @@ plans behavior in a plain-Python domain layer.
 uv sync
 uv run uvicorn app.main:app --reload --port 8097
 uv run pytest
-uv run ruff check app scripts tests
+uv run ruff check app tests
 ```
 
-The deterministic target seed is generated from
-`services/legacy-billing/db/seed.sql`:
+`BILLING_SVC_MONGODB_URI` names the cluster and `BILLING_SVC_MONGODB_DATABASE`
+the database (default `billing_migration`). Plan changes run in a multi-document
+transaction, so the deployment must be a replica set (Atlas, or the single-node
+`billing-service-mongo` set in `docker-compose.procs.yml`).
+
+`app/load.py` loads the three collections from the legacy PostgreSQL, creating
+the spec's indexes and validators. Secrets are passed by environment variable
+name only:
 
 ```bash
-python scripts/generate_seed.py
+uv run python -m app.load --source-dsn-secret POSTGRESQL_RO_DSN --target-uri-secret MONGODB_ATLAS_URI
 ```
 
-The generated-seed test prevents the target fixture from drifting from the
-legacy before-state. `POST /internal/reset` applies the migration, truncates
-the `billing_svc` schema, and reseeds it so the parity harness can isolate
+`POST /internal/reset` runs the same load from `BILLING_SVC_SOURCE_DSN` (the
+disposable Compose stack's legacy database) so the parity harness can isolate
 every scenario.
 
 The reset endpoint is disabled by default. Disposable local/CI Compose stacks
