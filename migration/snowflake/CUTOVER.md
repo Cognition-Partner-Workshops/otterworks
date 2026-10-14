@@ -122,7 +122,12 @@ UBW_LOG_RUN. Screenshots are attached to the PR.
 
 ## Open items for the data owners
 
-1. **Task graph:** cutover left every `OPS` task suspended. The decision is that cutover leaves the schedule running, so `make sfm-cutover` now resumes the graph after its gate reread passes (`tasks.py resume`, which skips retired tasks). For this run, the graph is resumed only once the run's resource monitor `OW_UBW_SFM_20261013_LV_RM` (5 credits, notify at 75%, suspend at 100%) is confirmed on its warehouse. Bootstrap now creates and re-applies the 75% notify trigger.
+1. **Task graph: resumed.** Cutover left every `OPS` task suspended. The decision is that cutover leaves the schedule running, so `make sfm-cutover` now resumes the graph after its gate reread passes (`tasks.py resume`, which skips retired tasks). For this run, the graph was resumed as ENGINEER on 2026-10-14 at 06:36 UTC with `tasks.py --run sfm-20261013-lv resume`:
+   - `UBW_HOURLY_AUDIT` was reported `ABSENT`;
+   - the three standalone tasks and the `UBW_NIGHTLY_LOAD` graph were resumed;
+   - `SHOW TASKS` then gave `started` for all 10 tasks, confirmed in Snowsight as the viewer.
+
+   The builder checked the resource monitor as ACCOUNTADMIN just before the resume: `OW_UBW_SFM_20261013_LV_RM` is attached to `OW_UBW_SFM_20261013_LV_WH` (level WAREHOUSE), credit quota 5.00, 2.90 used, notify at 75%, suspend at 100%. ENGINEER and READER can't see resource monitors, so this check needs the builder. Bootstrap now creates and re-applies the 75% notify trigger.
 2. **`UBW_HOURLY_AUDIT`:** PR #1979 retires it and lands right after #1978 in the merge order, so the two land together. The live `OPS` schema already matches #1979: 10 tasks, no hourly audit.
 3. **dbt build logs are not in the repo.** PR #1978 cites `gate/out/dbt/` (`PASS=440 WARN=0 ERROR=0` on each date), but the root `.gitignore` has `*.log`, so the fixture never committed them. They live in the Act 3 session that authored #1978: https://partner-workshops.devinenterprise.com/sessions/860860b4cf89499ca62c760f696cbe52
 4. **Merge leftovers.** Stray diff3 markers (`||||||| f77dad4aa`) from #1978's merge were removed from `migration/snowflake/.gitignore` and `README.md`.
