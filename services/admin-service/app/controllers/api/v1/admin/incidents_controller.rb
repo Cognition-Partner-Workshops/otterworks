@@ -2,6 +2,8 @@ module Api
   module V1
     module Admin
       class IncidentsController < ApplicationController
+        SESSION_ID_FORMAT = /\A[A-Za-z0-9_-]{1,100}\z/
+
         before_action :set_incident, only: %i[show update destroy trigger_session link_session]
 
         # GET /api/v1/admin/incidents
@@ -156,15 +158,23 @@ module Api
         def link_session
           attrs = params.require(:devin_session).permit(:session_id, :url)
           uri = URI.parse(attrs[:url].to_s)
-          unless attrs[:session_id].present? && uri.is_a?(URI::HTTPS) && uri.host.present?
-            return render json: { error: 'session_id and an https url are required' }, status: :unprocessable_entity
-          end
-          if @incident.devin_session_id.present?
-            return render json: { error: 'Incident already has a Devin session' }, status: :unprocessable_entity
+          unless attrs[:session_id].to_s.match?(SESSION_ID_FORMAT) && uri.is_a?(URI::HTTPS) && uri.host.present?
+            return render json: { error: 'a session_id and an https url are required' }, status: :unprocessable_entity
           end
 
-          @incident.investigate! if @incident.status == 'open'
-          @incident.update!(devin_session_id: attrs[:session_id], devin_session_url: uri.to_s, devin_session_status: 'running')
+          conflict = nil
+          @incident.with_lock do
+            if !@incident.active?
+              conflict = 'Incident is no longer active'
+            elsif @incident.devin_session_id.present?
+              conflict = 'Incident already has a Devin session'
+            else
+              @incident.investigate! if @incident.status == 'open'
+              @incident.update!(devin_session_id: attrs[:session_id], devin_session_url: uri.to_s,
+                                devin_session_status: 'running')
+            end
+          end
+          return render json: { error: conflict }, status: :conflict if conflict
 
           AuditLogger.log(
             action: 'incident.devin_session_linked',
@@ -175,8 +185,10 @@ module Api
           )
 
           render json: @incident, serializer: IncidentSerializer
+        rescue ActiveRecord::RecordNotUnique
+          render json: { error: 'Session is already linked to another incident' }, status: :conflict
         rescue URI::InvalidURIError
-          render json: { error: 'session_id and an https url are required' }, status: :unprocessable_entity
+          render json: { error: 'a session_id and an https url are required' }, status: :unprocessable_entity
         end
 
         private
