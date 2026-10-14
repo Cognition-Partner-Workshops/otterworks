@@ -27,7 +27,23 @@ export class PresenceHandler {
   }
 
   getActiveDocuments(): Array<{ documentId: string; userCount: number }> {
-    const documentIds = this.awareness.getActiveDocumentIds();
+    return this.toDocumentSummaries(this.awareness.getActiveDocumentIds());
+  }
+
+  /** Active documents the given user is currently a participant of. */
+  getActiveDocumentsForUser(
+    userId: string,
+  ): Array<{ documentId: string; userCount: number }> {
+    return this.toDocumentSummaries(this.awareness.getUserDocumentIds(userId));
+  }
+
+  canUserAccessDocument(documentId: string, userId: string): boolean {
+    return this.awareness.isUserInDocument(documentId, userId);
+  }
+
+  private toDocumentSummaries(
+    documentIds: string[],
+  ): Array<{ documentId: string; userCount: number }> {
     return documentIds.map((documentId) => ({
       documentId,
       userCount: this.awareness.getDocumentUserCount(documentId),

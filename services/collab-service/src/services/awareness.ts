@@ -189,6 +189,23 @@ export class AwarenessService {
     return Array.from(this.states.keys());
   }
 
+  isUserInDocument(documentId: string, userId: string): boolean {
+    const state = this.states.get(documentId);
+    if (!state) return false;
+    for (const user of state.users.values()) {
+      if (user.userId === userId) return true;
+    }
+    return false;
+  }
+
+  getUserDocumentIds(userId: string): string[] {
+    const documentIds = new Set<string>();
+    for (const mapping of this.socketToDocument.values()) {
+      if (mapping.userId === userId) documentIds.add(mapping.documentId);
+    }
+    return Array.from(documentIds);
+  }
+
   refreshActivity(socketId: string): boolean {
     const mapping = this.socketToDocument.get(socketId);
     if (!mapping) return false;
