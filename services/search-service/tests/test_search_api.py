@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -97,6 +99,42 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_ranked_by_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by MeiliSearch ranking score."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.2},
+                {"title": "High", "_rankingScore": 0.9},
+                {"title": "No Score"},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["suggestions"] == ["High", "Low", "No Score"]
+
+    def test_suggest_ranked_across_indexes(self, client, mock_meilisearch_client):
+        """File suggestions outrank document suggestions when scored higher."""
+        docs_index = MagicMock()
+        docs_index.search.return_value = {
+            "estimatedTotalHits": 1,
+            "hits": [{"title": "Doc Result", "_rankingScore": 0.5}],
+        }
+        files_index = MagicMock()
+        files_index.search.return_value = {
+            "estimatedTotalHits": 1,
+            "hits": [{"name": "File Result", "_rankingScore": 0.8}],
+        }
+        mock_meilisearch_client.index.side_effect = [docs_index, files_index]
+
+        response = client.get("/api/v1/search/suggest?q=re")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["suggestions"] == ["File Result", "Doc Result"]
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
