@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from migration.snowflake.gate import cutover
 from migration.snowflake.target.tasks import tasks as task_manager
 
@@ -76,8 +77,9 @@ def test_cutover_returns_nonzero_when_resume_fails(
 class FakeCursor:
     description = (("created_on",), ("name",))
 
-    def __init__(self) -> None:
+    def __init__(self, list_rows: list[tuple[object, ...]] | None = None) -> None:
         self.executed: list[tuple[str, tuple[str, ...] | None]] = []
+        self.list_rows = list_rows or []
 
     def __enter__(self) -> FakeCursor:
         return self
@@ -88,7 +90,9 @@ class FakeCursor:
     def execute(self, statement: str, parameters: tuple[str, ...] | None = None) -> None:
         self.executed.append((statement, parameters))
 
-    def fetchall(self) -> list[tuple[None, str]]:
+    def fetchall(self) -> list[tuple[object, ...]]:
+        if self.executed[-1][0].startswith("LIST "):
+            return self.list_rows
         return [
             (None, "UBW_WEEKLY_RETENTION"),
             (None, "UBW_MONTHLY_OVERAGE"),
@@ -113,13 +117,12 @@ def test_resume_skips_absent_standalone_tasks_and_enables_root(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     cursor = FakeCursor()
-    monkeypatch.setattr(
-        task_manager, "dbt_connection", lambda run: FakeConnection(cursor)
-    )
+    monkeypatch.setattr(task_manager, "dbt_connection", lambda run: FakeConnection(cursor))
 
     task_manager.manage(RUN, "resume")
 
     assert cursor.executed == [
+        (f"LIST @{PREFIX}.OPS.DBT_MODELS PATTERN = '.*PINNED_BUSINESS_DATE.*'", None),
         (f"SHOW TASKS IN SCHEMA {PREFIX}.OPS", None),
         (f"ALTER TASK {PREFIX}.OPS.UBW_WEEKLY_RETENTION RESUME", None),
         (f"ALTER TASK {PREFIX}.OPS.UBW_MONTHLY_OVERAGE RESUME", None),
@@ -131,3 +134,50 @@ def test_resume_skips_absent_standalone_tasks_and_enables_root(
     output = capsys.readouterr().out
     assert f"ABSENT            {PREFIX}.OPS.UBW_HOURLY_AUDIT" in output
     assert f"ABSENT            {PREFIX}.OPS.UBW_WEEKLY_CAPACITY_FORECAST" in output
+
+
+def test_resume_refuses_pinned_models_before_resuming_tasks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cursor = FakeCursor(list_rows=[("PINNED_BUSINESS_DATE",)])
+    monkeypatch.setattr(task_manager, "dbt_connection", lambda run: FakeConnection(cursor))
+
+    with pytest.raises(
+        RuntimeError,
+        match=(
+            "models are pinned to a business date; "
+            "run publish without --business-date before resume"
+        ),
+    ):
+        task_manager.manage(RUN, "resume")
+
+    assert cursor.executed == [
+        (f"LIST @{PREFIX}.OPS.DBT_MODELS PATTERN = '.*PINNED_BUSINESS_DATE.*'", None)
+    ]
+
+
+def test_incremental_model_statement_replaces_the_business_date() -> None:
+    compiled = "select 1"
+    unpinned = task_manager.model_statement(
+        PREFIX, "rollup_usage_events", compiled, "incremental", task_manager.business_date_sql(None)
+    )
+    pinned = task_manager.model_statement(
+        PREFIX,
+        "rollup_usage_events",
+        compiled,
+        "incremental",
+        task_manager.business_date_sql("2026-09-30"),
+    )
+    non_incremental = task_manager.model_statement(
+        PREFIX, "dim_tenant", compiled, "table", task_manager.business_date_sql(None)
+    )
+
+    assert (
+        f"DELETE FROM {PREFIX}.MARTS.ROLLUP_USAGE_EVENTS WHERE business_date = "
+        "dateadd(day, -1, current_date()) OR business_date IN"
+    ) in unpinned
+    assert (
+        f"DELETE FROM {PREFIX}.MARTS.ROLLUP_USAGE_EVENTS WHERE business_date = "
+        "'2026-09-30'::date OR business_date IN"
+    ) in pinned
+    assert non_incremental == f"CREATE OR REPLACE TABLE {PREFIX}.MARTS.DIM_TENANT AS\n{compiled}\n"

@@ -214,14 +214,18 @@ def manage(run: str, operation: str) -> None:
     prefix = object_prefix(run)
     with dbt_connection(run) as connection, connection.cursor() as cursor:
         if operation == "resume":
+            cursor.execute(f"LIST @{prefix}.OPS.DBT_MODELS PATTERN = '.*PINNED_BUSINESS_DATE.*'")
+            if cursor.fetchall():
+                raise RuntimeError(
+                    "models are pinned to a business date; "
+                    "run publish without --business-date before resume"
+                )
             cursor.execute(f"SHOW TASKS IN SCHEMA {prefix}.OPS")
             task_columns = {
                 (column.name if hasattr(column, "name") else column[0]).lower(): index
                 for index, column in enumerate(cursor.description)
             }
-            task_names = {
-                str(row[task_columns["name"]]).upper() for row in cursor.fetchall()
-            }
+            task_names = {str(row[task_columns["name"]]).upper() for row in cursor.fetchall()}
             for name in STANDALONE_TASKS:
                 if name not in task_names:
                     print(f"ABSENT            {prefix}.OPS.{name}")
@@ -252,7 +256,9 @@ def model_materializations(manifest_path: Path) -> dict[str, str]:
     }
 
 
-def model_statement(prefix: str, model: str, compiled: str, materialized: str) -> str:
+def model_statement(
+    prefix: str, model: str, compiled: str, materialized: str, business_date_sql: str
+) -> str:
     """Build the SQL a task executes for one model.
 
     Incremental models replace only the business dates the compiled query produces, the way the
@@ -264,9 +270,17 @@ def model_statement(prefix: str, model: str, compiled: str, materialized: str) -
     batch = f"{prefix}.MARTS.{model.upper()}__TASK_BATCH"
     return (
         f"CREATE OR REPLACE TEMPORARY TABLE {batch} AS\n{compiled};\n"
-        f"DELETE FROM {target} WHERE business_date IN (SELECT business_date FROM {batch});\n"
+        f"DELETE FROM {target} WHERE business_date = {business_date_sql} "
+        f"OR business_date IN (SELECT business_date FROM {batch});\n"
         f"INSERT INTO {target} SELECT * FROM {batch};\n"
     )
+
+
+def business_date_sql(business_date: str | None) -> str:
+    # Mirrors target/dbt/macros/business_date.sql.
+    if business_date:
+        return f"'{date.fromisoformat(business_date).isoformat()}'::date"
+    return "dateadd(day, -1, current_date())"
 
 
 def business_date_vars(business_date: str | None) -> list[str]:
@@ -304,7 +318,13 @@ def publish(run: str, business_date: str | None = None) -> None:
             compiled = (compiled_dir / f"{model}.sql").read_text(encoding="utf-8").rstrip()
             destination = upload_dir / f"{model}.sql"
             destination.write_text(
-                model_statement(prefix, model, compiled, materializations.get(model, "table")),
+                model_statement(
+                    prefix,
+                    model,
+                    compiled,
+                    materializations.get(model, "table"),
+                    business_date_sql(business_date),
+                ),
                 encoding="utf-8",
             )
             cursor.execute(
@@ -312,6 +332,19 @@ def publish(run: str, business_date: str | None = None) -> None:
                 f"@{prefix}.OPS.DBT_MODELS AUTO_COMPRESS = FALSE OVERWRITE = TRUE"
             )
             print(f"PUBLISHED         {model} -> {prefix}.OPS.DBT_MODELS/{model}.sql")
+        if business_date:
+            marker_path = upload_dir / "PINNED_BUSINESS_DATE"
+            marker_path.write_text(business_date, encoding="utf-8")
+            cursor.execute(
+                f"PUT file://{marker_path.resolve().as_posix()} "
+                f"@{prefix}.OPS.DBT_MODELS AUTO_COMPRESS = FALSE OVERWRITE = TRUE"
+            )
+            print(
+                "WARNING           Models are pinned to a business date; republish without "
+                "--business-date before resuming"
+            )
+        else:
+            cursor.execute(f"REMOVE @{prefix}.OPS.DBT_MODELS/PINNED_BUSINESS_DATE")
         cursor.execute(
             f"ALTER STAGE {prefix}.OPS.DBT_MODELS REFRESH"
         )  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
