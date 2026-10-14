@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using OtterWorks.Desktop.Models;
@@ -17,20 +18,25 @@ namespace OtterWorks.Desktop.ViewModels
         private string _statusMessage;
         private bool _isBusy;
         private bool _hasLoaded;
+        private bool _hasLoadedFiles;
+        private bool _isShowingFiles;
 
         public DocumentsViewModel(OtterWorksApiClient api, MainViewModel main)
         {
             _api = api;
             _main = main;
 
-            RefreshCommand = new AsyncRelayCommand(LoadDocumentsAsync, () => !IsBusy);
+            RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
             CreateCommand = new AsyncRelayCommand(CreateDocumentAsync, CanCreate);
             LoadFilesCommand = new AsyncRelayCommand(LoadFilesAsync, () => !IsBusy);
+            ShowDocumentsCommand = new AsyncRelayCommand(ShowDocumentsAsync, () => !IsBusy);
             LogoutCommand = new RelayCommand(() => _main.Logout());
 
-            // Fire-and-forget initial load; UI shows a busy indicator meanwhile.
-            _ = LoadDocumentsAsync();
+            // Initial load; UI shows a busy indicator meanwhile.
+            InitialLoad = LoadDocumentsAsync();
         }
+
+        internal Task InitialLoad { get; }
 
         public ObservableCollection<Document> Documents { get; } = new ObservableCollection<Document>();
 
@@ -38,7 +44,28 @@ namespace OtterWorks.Desktop.ViewModels
 
         public string UserName => _main.CurrentUserName;
 
-        public bool IsEmpty => _hasLoaded && Documents.Count == 0 && !IsBusy;
+        public bool IsEmpty => _hasLoaded && !IsShowingFiles && Documents.Count == 0 && !IsBusy;
+
+        public bool IsFilesEmpty => _hasLoadedFiles && IsShowingFiles && Files.Count == 0 && !IsBusy;
+
+        public bool IsShowingFiles
+        {
+            get => _isShowingFiles;
+            private set
+            {
+                if (SetProperty(ref _isShowingFiles, value))
+                {
+                    OnPropertyChanged(nameof(IsShowingDocuments));
+                    OnPropertyChanged(nameof(Heading));
+                    OnPropertyChanged(nameof(IsEmpty));
+                    OnPropertyChanged(nameof(IsFilesEmpty));
+                }
+            }
+        }
+
+        public bool IsShowingDocuments => !IsShowingFiles;
+
+        public string Heading => IsShowingFiles ? "Files" : "Documents";
 
         public string NewTitle
         {
@@ -66,6 +93,7 @@ namespace OtterWorks.Desktop.ViewModels
                 if (SetProperty(ref _isBusy, value))
                 {
                     OnPropertyChanged(nameof(IsEmpty));
+                    OnPropertyChanged(nameof(IsFilesEmpty));
                 }
             }
         }
@@ -76,9 +104,34 @@ namespace OtterWorks.Desktop.ViewModels
 
         public ICommand LoadFilesCommand { get; }
 
+        public ICommand ShowDocumentsCommand { get; }
+
         public ICommand LogoutCommand { get; }
 
         private bool CanCreate() => !IsBusy && !string.IsNullOrWhiteSpace(NewTitle);
+
+        private Task RefreshAsync() => IsShowingFiles ? LoadFilesAsync() : LoadDocumentsAsync();
+
+        internal async Task ShowDocumentsAsync()
+        {
+            IsShowingFiles = false;
+            await LoadDocumentsAsync().ConfigureAwait(true);
+        }
+
+        private void HandleApiError(ApiException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                if (ReferenceEquals(_main.CurrentViewModel, this))
+                {
+                    _main.ShowSessionExpired();
+                }
+
+                return;
+            }
+
+            ErrorMessage = ex.Message;
+        }
 
         private async Task LoadDocumentsAsync()
         {
@@ -100,7 +153,7 @@ namespace OtterWorks.Desktop.ViewModels
             }
             catch (ApiException ex)
             {
-                ErrorMessage = ex.Message;
+                HandleApiError(ex);
             }
             finally
             {
@@ -127,7 +180,7 @@ namespace OtterWorks.Desktop.ViewModels
             }
             catch (ApiException ex)
             {
-                ErrorMessage = ex.Message;
+                HandleApiError(ex);
             }
             finally
             {
@@ -135,7 +188,7 @@ namespace OtterWorks.Desktop.ViewModels
             }
         }
 
-        private async Task LoadFilesAsync()
+        internal async Task LoadFilesAsync()
         {
             ErrorMessage = null;
             IsBusy = true;
@@ -151,15 +204,18 @@ namespace OtterWorks.Desktop.ViewModels
                     }
                 }
 
+                _hasLoadedFiles = true;
+                IsShowingFiles = true;
                 StatusMessage = $"{Files.Count} file(s).";
             }
             catch (ApiException ex)
             {
-                ErrorMessage = ex.Message;
+                HandleApiError(ex);
             }
             finally
             {
                 IsBusy = false;
+                OnPropertyChanged(nameof(IsFilesEmpty));
             }
         }
     }
