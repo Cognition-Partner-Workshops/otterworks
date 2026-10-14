@@ -1,0 +1,70 @@
+{
+  "fixture_id": "legacy_billing_seed",
+  "step": "s2.4-fixture",
+  "source": "services/legacy-billing/db/seed.sql (schema services/legacy-billing/db/schema.sql) loaded into PostgreSQL 16 database billing_<NS>, schema billing, by .migration/fixtures/legacy_billing_source.sh (docker-compose.procs.yml service legacy-billing-db). This is the live source of record for the run (d-source-mode=live), not a copy or export of it.",
+  "method": "synthetic",
+  "masked_columns": [],
+  "masking_note": "not applicable: the seed is synthetic demo data (tenants 'Tenant One'..'Tenant Nine', fixed UUIDs); no real PII exists to mask.",
+  "produced_at": "2026-10-14T21:17:24+00:00",
+  "produced_by": "s2.4-fixture worker, https://partner-workshops.devinenterprise.com/sessions/a191ace3759a4298a6d0f71a1df9b01a",
+  "start": "NS=mig PROCS_DB_PORT=55433 .migration/fixtures/legacy_billing_source.sh",
+  "connection": {
+    "dsn_secret": "OW_BILLING_PG_RO_DSN",
+    "exported_as": "POSTGRESQL_RO_DSN",
+    "role": "billing_ro (SELECT only, no EXECUTE)",
+    "schema": "billing"
+  },
+  "fingerprints": {
+    "FIXTURE_SHA": "53b308f59df78d844cc95bb8d9071fdd8eb03bbae52c708dd67820d099f406da",
+    "SOURCE_SHA": "2b98f8dc350f9c70906398cf1ee3bae173239b53237b89b2ade4a51d43821929",
+    "fingerprint_basis": "procs/transcripts/FIXTURE_SHA and SOURCE_SHA as computed by procs/harness/fingerprints.py (FIXTURE_SHA = schema.sql + seed.sql; SOURCE_SHA = services/legacy-billing/db/procs/*.sql); recomputed and equal at produced_at",
+    "seed_sql_sha256": "2d329ef7ca9a1ce523ace34c5c94cfb7f8f74279f18bd220ce20cd425bb28afa",
+    "schema_sql_sha256": "da3af66ac1ec63b69eb26e863258962a70c6172061fd7682d79127f2363874ee",
+    "census_sha256": "23240ac185b28ac48b43502c23bb4a470a4f556d6bdd48c6bc28009c843decf4",
+    "data_profile_as_of": "2026-10-14T20:06:21.677285+00:00"
+  },
+  "row_counts": {
+    "credit_notes": 5,
+    "dunning_attempts": 1,
+    "invoice_lines": 2,
+    "invoices": 3,
+    "notifications": 1,
+    "plans": 3,
+    "rating_periods": 3,
+    "rating_results": 3,
+    "subscriptions": 9,
+    "tenants": 9,
+    "usage_events": 10
+  },
+  "row_counts_basis": ".migration/data_profile.json row_bytes.rows_seen per table (origin live, sampled false), equal to the INSERT rows in seed.sql; total 49 rows across 11 tables. Answers the census finding row_estimate_missing (never-analyzed catalog).",
+  "fan_out": {
+    "tenants->subscriptions": {
+      "source": "data_profile.json fanout:subscriptions->tenants(tenant_id)",
+      "parents": 9, "parents_zero": 0, "p50": 1, "p99": 1, "max": 1,
+      "outlier_parent": null,
+      "note": "every tenant has exactly one subscription"
+    },
+    "rating_periods->usage_events": {
+      "source": "derived from seed.sql; not in data_profile.json because usage_events has no FK to rating_periods (only tenant_id). The legacy join is tenant_id + occurred_at::date BETWEEN period_start AND period_end (services/legacy-billing/db/procs/rating.sql, fn_entitlement / fn_usage_breakdown).",
+      "parents": 3, "parents_zero": 3, "p50": 0, "p99": 0, "max": 0,
+      "outlier_parent": null,
+      "note": "all three rating periods belong to tenant 00000000-0000-0000-0000-000000000001 (2025-11, 2025-12, 2026-01); that tenant's only usage event is dated 2026-02-10, outside every period, so no period contains a usage event"
+    },
+    "invoices->invoice_lines": {
+      "source": "data_profile.json fanout:invoice_lines->invoices(invoice_id)",
+      "parents": 3, "parents_zero": 2, "p50": 0, "p99": 2, "max": 2,
+      "outlier_parent": "invoices 60000000-0000-0000-0000-000000000001 (tenant Two, status overdue) holds both invoice_lines; the other two invoices have none"
+    },
+    "plans->subscriptions": {
+      "source": "data_profile.json fanout:subscriptions->plans(plan_id)",
+      "parents": 3, "parents_zero": 0, "p50": 2, "p99": 6, "max": 6,
+      "outlier_parent": "plans 10000000-0000-0000-0000-000000000001 (STARTER) holds 6 of 9 subscriptions; the largest fan-out anywhere in the fixture"
+    }
+  },
+  "coverage_gaps_for_s3.1": [
+    "Scale: 49 rows total, largest fan-out 6 (plans->subscriptions), largest embed_bytes 354 B (data_profile embed_bytes plans->subscriptions). No parent approaches any embed/fan-out threshold (e.g. no tenant above 1000 usage_events), so threshold behaviour and 16 MB document-size handling are not exercised by this fixture. Known gap; the seed is not enlarged because that changes FIXTURE_SHA and invalidates procs/transcripts.",
+    "rating_periods->usage_events is empty (see fan_out): rating over real usage is not exercised by the data at rest; rely on the procs parity scenarios for that path.",
+    "Only tenant One has rating_periods; the three invoices (tenants Two, Five, Six) reference tenant One's rating_periods via period_id, so invoice.period_id crosses tenants. A model that embeds invoices under rating_periods or under tenants must handle this shape.",
+    "Three tables hold a single row (dunning_attempts, notifications) or two (invoice_lines); recon on them proves correctness, not volume."
+  ]
+}
