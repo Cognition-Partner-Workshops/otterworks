@@ -624,6 +624,184 @@ else
   warn "Run scripts/tenant-platform-baseline.sh once to install it. Frontends are ClusterIP-only for now."
 fi
 
+# ---------- Optional drive content seed ----------
+seed_drive() {
+  local seed_config="${REPO_ROOT}/testdata/generated/retail-drive/tenant-seed.conf"
+  local seed_branch="" seed_profile="" drive_email="" drive_password="" seed_scale=""
+  local branch="${TENANT_BRANCH_ARG:-}" src_archive
+  local key value
+  [ -f "${seed_config}" ] || return 0
+
+  while IFS='=' read -r key value; do
+    case "${key}" in
+      SEED_BRANCH)  seed_branch="${value}" ;;
+      SEED_PROFILE)  seed_profile="${value}" ;;
+      DRIVE_EMAIL)   drive_email="${value}" ;;
+      DRIVE_PASSWORD) drive_password="${value}" ;;
+      SEED_SCALE)    seed_scale="${value}" ;;
+    esac
+  done < "${seed_config}"
+
+  if [ -z "${seed_branch}" ] || [ -z "${seed_profile}" ] || [ -z "${drive_email}" ] ||
+     [ -z "${drive_password}" ] || [ -z "${seed_scale}" ]; then
+    warn "Drive seed config is incomplete; skipping drive seed."
+    return 0
+  fi
+  if [ "${seed_profile}" != "bank" ] && [ "${seed_profile}" != "retail" ]; then
+    warn "Drive seed config has an unsupported profile; skipping drive seed."
+    return 0
+  fi
+  if ! [[ "${seed_scale}" =~ ^[0-9]+([.][0-9]+)?$ ]] ||
+     [ "${#drive_password}" -lt 8 ] || [ "${#drive_password}" -gt 128 ]; then
+    warn "Drive seed config has invalid scale or password length; skipping drive seed."
+    return 0
+  fi
+  if [ -z "${branch}" ]; then
+    branch="$(git -C "${REPO_ROOT}" symbolic-ref --short -q HEAD 2>/dev/null || true)"
+  fi
+  if [ "${branch}" != "${seed_branch}" ]; then
+    log "drive seed is configured for ${seed_branch}; this deploy is ${branch:-a detached checkout}; skipping."
+    return 0
+  fi
+
+  if ! src_archive="$(mktemp)"; then
+    warn "Could not create a temporary drive-seed source archive; continuing deploy."
+    return 0
+  fi
+  if ! (cd "${REPO_ROOT}" && tar czf - testdata/generated/retail-drive/*.py \
+    testdata/generated/retail-drive/requirements.txt \
+    testdata/generated/retail-drive/assets testdata/market-series) > "${src_archive}"; then
+    warn "Could not package the drive-seed source; continuing deploy."
+    rm -f "${src_archive}"
+    return 0
+  fi
+  if ! kubectl -n "${NS}" create configmap drive-seed-src \
+    --from-file="src.tgz=${src_archive}" --dry-run=client -o yaml |
+    kubectl -n "${NS}" apply -f -; then
+    warn "Could not update the drive-seed source ConfigMap; continuing deploy."
+    rm -f "${src_archive}"
+    return 0
+  fi
+  rm -f "${src_archive}"
+
+  kubectl -n "${NS}" delete job drive-seed --ignore-not-found ||
+    warn "Could not remove the previous drive-seed job."
+  log "seeding drive (profile ${seed_profile}) — follow: kubectl -n ${NS} logs -f job/drive-seed"
+  if ! kubectl -n "${NS}" apply -f - <<YAML
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: drive-seed
+  labels:
+    app.kubernetes.io/name: drive-seed
+    app.kubernetes.io/part-of: otterworks
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: drive-seed
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: src
+          configMap:
+            name: drive-seed-src
+        - name: work
+          emptyDir: {}
+      containers:
+        - name: loader
+          image: python:3.11-slim
+          workingDir: /work
+          env:
+            - name: HOME
+              value: "/work"
+            - name: GATEWAY_URL
+              value: "http://api-gateway.${NS}.svc.cluster.local:8080"
+            - name: SEED_PROFILE
+              value: "${seed_profile}"
+            - name: SEED_SCALE
+              value: "${seed_scale}"
+            - name: DRIVE_EMAIL
+              value: "${drive_email}"
+            - name: DRIVE_PASSWORD
+              value: "${drive_password}"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              mkdir -p /work/src &&
+              tar xzf /seed-src/src.tgz -C /work/src &&
+              cd /work/src/testdata/generated/retail-drive
+              python - <<'PY'
+              import os
+              import sys
+              import time
+              import urllib.error
+              import urllib.request
+
+              url = os.environ["GATEWAY_URL"].rstrip("/") + "/api/v1/auth/login"
+              deadline = time.monotonic() + 600
+              while True:
+                  request = urllib.request.Request(
+                      url, data=b"{}", headers={"Content-Type": "application/json"},
+                      method="POST")
+                  try:
+                      with urllib.request.urlopen(request, timeout=10) as response:
+                          status = response.status
+                  except urllib.error.HTTPError as error:
+                      status = error.code
+                  except OSError:
+                      status = None
+                  if status is not None and status < 500:
+                      print(f"gateway login endpoint ready (HTTP {status})")
+                      break
+                  if time.monotonic() >= deadline:
+                      print("gateway login endpoint was not ready within 10 minutes",
+                            file=sys.stderr)
+                      sys.exit(1)
+                  time.sleep(5)
+              PY
+              python -m venv /work/venv
+              /work/venv/bin/pip install --no-cache-dir -q -r requirements.txt
+              /work/venv/bin/python generate_drive.py \
+                --gateway "\$GATEWAY_URL" \
+                --email "\$DRIVE_EMAIL" --password "\$DRIVE_PASSWORD" \
+                --profile "\$SEED_PROFILE" --scale "\$SEED_SCALE" \
+                --departments all --workers 4 --register
+          volumeMounts:
+            - name: src
+              mountPath: /seed-src
+              readOnly: true
+            - name: work
+              mountPath: /work
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+YAML
+  then
+    warn "Could not create the drive-seed job; continuing deploy."
+  fi
+}
+seed_drive
+
 # ---------- Summary ----------
 echo ""
 log "Tenant ${ATTENDEE_ID} deployed to namespace ${NS}."
