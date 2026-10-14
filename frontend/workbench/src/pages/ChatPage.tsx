@@ -8,7 +8,11 @@ import { Avatar, Panel, ResetDemoButton, formatUtc, personFor } from "@/componen
 import { loadChatMessages, sendChatMessage } from "@/stores/chatStore";
 
 const reactionGlyphs: Record<string, string> = {
+  "+1": "👍",
   eyes: "👀",
+  pray: "🙏",
+  raised_hands: "🙌",
+  rotating_light: "🚨",
   white_check_mark: "✅",
   tada: "🎉",
   warning: "⚠️",
@@ -37,7 +41,8 @@ function MessageContent({ authorId, at, text, reactions }: { authorId: string; a
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="font-semibold text-otter-900">{person.name}</span>
-          {person.kind && <span className="rounded bg-otter-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-otter-700">{person.kind === "devin" ? "Devin" : "Bot"}</span>}
+          {person.kind === "devin" && <span className="rounded bg-otter-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-otter-700">Devin</span>}
+          {person.kind === "bot" && <span className="rounded bg-otter-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-otter-700">Bot</span>}
           <time className="text-xs text-slate-500">{formatUtc(at)}</time>
         </div>
         <div className="mt-1 leading-6 text-slate-700"><MarkdownText text={text} /></div>

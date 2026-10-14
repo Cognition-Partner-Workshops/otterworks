@@ -1,6 +1,8 @@
 # OtterWorks Workbench
 
-Run the app in Docker with `make workbench-up`, then open http://localhost:3002/. Stop it with `make workbench-down`. For hot reload, run `npm ci` and `npm run dev` from `frontend/workbench`.
+Run the app in Docker with `make workbench-up`, then open http://localhost:3002/. Run `make workbench-down` to stop it. For hot reload, run `npm ci` and `npm run dev` from `frontend/workbench`.
+
+The root Compose file references services from `docker-compose.infra.yml`. A bare `docker compose up workbench` command needs both `-f docker-compose.infra.yml -f docker-compose.yml` options, as in `docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build --no-deps workbench`.
 
 The fixture data lives in `src/fixtures/fixtures.ts`, where you can update the local demo records. Board changes and chat messages stay in browser localStorage. Select Reset demo data to restore the fixture state.
 

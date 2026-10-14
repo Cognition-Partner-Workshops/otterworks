@@ -29,7 +29,7 @@ export function personFor(people: Person[], id?: string): Person {
   return people.find((person) => person.id === id) ?? {
     id: id ?? "unknown",
     name: "Unassigned",
-    initials: "—",
+    initials: "?",
     title: "",
   };
 }

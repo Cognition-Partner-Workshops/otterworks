@@ -91,6 +91,27 @@ describe("Workbench routes", () => {
 });
 
 describe("Workbench persistence", () => {
+  it("moves an issue between columns with drag and drop", () => {
+    const issue = fixtures.issues.find((item) => item.key === "OW-42")!;
+    const values = new Map<string, string>();
+    const dataTransfer = {
+      setData: (format: string, value: string) => values.set(format, value),
+      getData: (format: string) => values.get(format) ?? "",
+      effectAllowed: "none",
+      dropEffect: "none",
+    } as unknown as DataTransfer;
+    renderAt(`/boards/${issue.projectKey}`);
+    const card = screen.getByRole("link", { name: issue.key }).closest("article")!;
+    const doneColumn = screen.getByRole("region", { name: "Done column" });
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.dragOver(doneColumn, { dataTransfer });
+    fireEvent.drop(doneColumn, { dataTransfer });
+
+    expect(within(doneColumn).getByText(issue.title)).toBeInTheDocument();
+    expect(loadBoardState(fixtures).issues[issue.key].status).toBe("done");
+  });
+
   it("moves an issue and keeps its column after remount", () => {
     const issue = fixtures.issues.find((item) => item.key === "OW-42")!;
     const detail = renderAt(`/boards/${issue.projectKey}/${issue.key}`);
