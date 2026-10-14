@@ -10,10 +10,10 @@
   },
   "target": {
     "access": "migration_cluster",
-    "reason": "probe_ok",
+    "reason": "privilege_excess_accepted",
     "blocked": false,
-    "detail": ""
+    "detail": "over-scoped principal accepted, mongo_guard is the only write fence: readWriteAnyDatabase@admin, dbAdminAnyDatabase@admin"
   },
   "blocked": false,
-  "probed_at": "2026-10-14T18:49:21.576668+00:00"
+  "probed_at": "2026-10-14T19:03:04.780002+00:00"
 }
