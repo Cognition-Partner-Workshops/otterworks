@@ -89,13 +89,9 @@ def get_entitlement(
 def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) -> dict:
     repository = MongoPlansRepository(database())
     try:
-        with repository.transaction():
-            subscriptions, created = change_plan(
-                repository,
-                tenant_id,
-                request.plan_id,
-                request.effective_on,
-            )
+        subscriptions, created = repository.run_in_transaction(
+            lambda: change_plan(repository, tenant_id, request.plan_id, request.effective_on)
+        )
     except MissingReferenceError as error:
         raise HTTPException(status_code=400, detail="invalid plan change") from error
     except DuplicateKeyError as error:

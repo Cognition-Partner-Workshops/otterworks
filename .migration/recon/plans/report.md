@@ -7,7 +7,7 @@
 - Tolerance version: `tol-v1` (sha256 `829cbb4d2de0`)
 - Collections: `plans`, `subscriptions`, `tenants`
 - Seed: `1`
-- Generated: 2026-10-14T22:40:12.590203+00:00
+- Generated: 2026-10-14T22:50:08.999839+00:00
 - **WARNING: LOB field plans.code: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only**
 - **WARNING: LOB field plans.tier: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only**
 - **WARNING: LOB field subscriptions.tenantId: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only**

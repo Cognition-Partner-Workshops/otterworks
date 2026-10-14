@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from datetime import date
 from uuid import UUID
 
@@ -27,9 +26,8 @@ class FakeRepository:
     def __init__(self, _database: object) -> None:
         return None
 
-    @contextmanager
-    def transaction(self):
-        yield
+    def run_in_transaction(self, operation):
+        return operation()
 
 
 def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:

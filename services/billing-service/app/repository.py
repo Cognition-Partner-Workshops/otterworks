@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
-from contextlib import contextmanager
+from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, TypeVar
 from uuid import UUID
 
 from pymongo.client_session import ClientSession
@@ -12,6 +11,8 @@ from pymongo.database import Database
 
 from app.documents import bson_date
 from app.domain import EntitlementRow, PlanRow, SubscriptionRow
+
+T = TypeVar("T")
 
 
 class MissingReferenceError(LookupError):
@@ -51,14 +52,19 @@ class MongoPlansRepository:
         self.database = database
         self.session: ClientSession | None = None
 
-    @contextmanager
-    def transaction(self) -> Iterator[None]:
-        with self.database.client.start_session() as session, session.start_transaction():
+    def run_in_transaction(self, operation: Callable[[], T]) -> T:
+        """Run `operation` in one multi-document transaction. The driver retries transient
+        write conflicts and unknown commit outcomes, re-running `operation` from scratch."""
+
+        def callback(session: ClientSession) -> T:
             self.session = session
             try:
-                yield
+                return operation()
             finally:
                 self.session = None
+
+        with self.database.client.start_session() as session:
+            return session.with_transaction(callback)
 
     def list_plans(self) -> list[PlanRow]:
         return [_plan_row(doc) for doc in self.database.plans.find(session=self.session)]

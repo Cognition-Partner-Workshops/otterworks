@@ -26,10 +26,12 @@ from app.documents import (
 )
 
 SOURCE_TABLES = ("plans", "tenants", "credit_notes", "subscriptions")
+STAGING_SUFFIX = "__staging"
 
 
 def read_source(dsn_json: str) -> dict[str, list[dict[str, Any]]]:
     import psycopg
+    from psycopg import sql
     from psycopg.rows import dict_row
 
     params = json.loads(dsn_json)
@@ -37,11 +39,10 @@ def read_source(dsn_json: str) -> dict[str, list[dict[str, Any]]]:
     params["dbname"] = params.pop("database")
     tables: dict[str, list[dict[str, Any]]] = {}
     with psycopg.connect(**params, row_factory=dict_row) as connection:
-        connection.execute("SET TRANSACTION READ ONLY")
+        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         for table in SOURCE_TABLES:
-            tables[table] = connection.execute(
-                f'SELECT * FROM "{schema}"."{table}" ORDER BY id'
-            ).fetchall()
+            query = sql.SQL("SELECT * FROM {} ORDER BY id").format(sql.Identifier(schema, table))
+            tables[table] = connection.execute(query).fetchall()
     return tables
 
 
@@ -57,16 +58,24 @@ def build_documents(tables: dict[str, list[dict[str, Any]]]) -> dict[str, list[d
 
 
 def load(dsn_json: str, database: Database) -> dict[str, int]:
+    """Build every collection in a staging namespace, then swap each into place.
+
+    A failure while staging leaves the live collections untouched; the swap itself is
+    one atomic rename per collection.
+    """
     documents = build_documents(read_source(dsn_json))
-    counts: dict[str, int] = {}
+    staged: list[str] = []
     for name in COLLECTIONS:
-        database.drop_collection(name)
-        collection = database.create_collection(name, validator=VALIDATORS[name])
+        staging = f"{name}{STAGING_SUFFIX}"
+        database.drop_collection(staging)
+        collection = database.create_collection(staging, validator=VALIDATORS[name])
         collection.create_indexes(INDEXES[name])
         if documents[name]:
             collection.insert_many(documents[name], ordered=True)
-        counts[name] = collection.count_documents({})
-    return counts
+        staged.append(staging)
+    for name, staging in zip(COLLECTIONS, staged, strict=True):
+        database[staging].rename(name, dropTarget=True)
+    return {name: database[name].count_documents({}) for name in COLLECTIONS}
 
 
 def main(argv: list[str] | None = None) -> int:
