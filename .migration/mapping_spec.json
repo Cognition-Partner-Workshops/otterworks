@@ -1,0 +1,2142 @@
+{
+  "version": "v1",
+  "source_family": "postgresql",
+  "collections": [
+    {
+      "collection": "creditNotes",
+      "root_table": "credit_notes",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "issued_on",
+          "target": "issuedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "amount",
+          "target": "amount",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "remaining_amount",
+          "target": "remainingAmount",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "credit_notes",
+            "tables": [
+              "credit_notes"
+            ],
+            "index_candidates": [
+              {
+                "table": "credit_notes",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "dunningAttempts",
+      "root_table": "dunning_attempts",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "invoice_id",
+          "target": "invoiceId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "attempt_no",
+          "target": "attemptNo",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "scheduled_for",
+          "target": "scheduledFor",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "status",
+          "target": "status",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [
+          {
+            "name": "dunning_attempts_invoice_id_attempt_no_key",
+            "columns": [
+              "invoice_id",
+              "attempt_no"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "invoice_id"
+            ],
+            "to": "invoices",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "dunning_attempts",
+            "tables": [
+              "dunning_attempts"
+            ],
+            "index_candidates": [
+              {
+                "table": "dunning_attempts",
+                "column": "invoice_id",
+                "kind": "foreign_key"
+              },
+              {
+                "table": "dunning_attempts",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "dunning_attempts",
+            "columns": [
+              "status"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:dunning_attempts.status"
+              }
+            ],
+            "proposal": "LOB column(s) status measured max 5 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "status": {
+                "avg_bytes": 5.0,
+                "max_bytes": 5.0
+              }
+            }
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": [
+        {
+          "keys": [
+            [
+              "invoiceId",
+              1
+            ],
+            [
+              "attemptNo",
+              1
+            ]
+          ],
+          "unique": true,
+          "origin": "natural_key",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "collection": "invoices",
+      "root_table": "invoices",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "period_id",
+          "target": "periodId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "issued_at",
+          "target": "issuedAt",
+          "source_type": "TIMESTAMP WITH TIME ZONE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "subtotal",
+          "target": "subtotal",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "tax",
+          "target": "tax",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "total",
+          "target": "total",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "status",
+          "target": "status",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "embeds": [
+        {
+          "array_path": "invoiceLines",
+          "shape": "array",
+          "child_table": "invoice_lines",
+          "child_key": [
+            "id"
+          ],
+          "child_fields": [
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "line_no",
+              "target": "lineNo",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "line_type",
+              "target": "lineType",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "description",
+              "target": "description",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "amount",
+              "target": "amount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            }
+          ],
+          "parent_key_fields": [
+            {
+              "source": "invoice_id",
+              "target": "invoiceId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key": [
+            "invoice_id"
+          ],
+          "parent_ref": [
+            "id"
+          ],
+          "key": {
+            "source": [
+              "line_no"
+            ],
+            "target": "lineNo"
+          },
+          "fields": [
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "line_type",
+              "target": "lineType",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "description",
+              "target": "description",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "amount",
+              "target": "amount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            }
+          ],
+          "cardinality": "1:N",
+          "cardinality_basis": "derived",
+          "evidence": "FK invoice_lines_invoice_id_fkey ON DELETE CASCADE; unique invoice_lines_invoice_id_line_no_key led by parent key",
+          "basis_sources": [
+            "ddl",
+            "data"
+          ],
+          "evidence_refs": [
+            {
+              "kind": "data_profile",
+              "ref": "fanout:invoice_lines->invoices(invoice_id)"
+            },
+            {
+              "kind": "data_profile",
+              "ref": "embed_bytes:invoice_lines->invoices(invoice_id)"
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "period_id"
+            ],
+            "to": "ratingPeriods",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "invoices",
+            "tables": [
+              "invoice_lines",
+              "invoices"
+            ],
+            "index_candidates": [
+              {
+                "table": "invoice_lines",
+                "column": "invoice_id",
+                "kind": "foreign_key"
+              },
+              {
+                "table": "invoices",
+                "column": "period_id",
+                "kind": "foreign_key"
+              },
+              {
+                "table": "invoices",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "invoices",
+            "columns": [
+              "status"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:invoices.status"
+              }
+            ],
+            "proposal": "LOB column(s) status measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "status": {
+                "avg_bytes": 7.666666666666667,
+                "max_bytes": 8.0
+              }
+            }
+          },
+          {
+            "kind": "lob",
+            "table": "invoice_lines",
+            "columns": [
+              "line_type",
+              "description"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:invoice_lines.line_type"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:invoice_lines.description"
+              }
+            ],
+            "proposal": "LOB column(s) line_type, description measured max 14 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "line_type": {
+                "avg_bytes": 5.5,
+                "max_bytes": 6.0
+              },
+              "description": {
+                "avg_bytes": 10.5,
+                "max_bytes": 14.0
+              }
+            }
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "notifications",
+      "root_table": "notifications",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "kind",
+          "target": "kind",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "sent_at",
+          "target": "sentAt",
+          "source_type": "TIMESTAMP WITH TIME ZONE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "notifications",
+            "tables": [
+              "notifications"
+            ],
+            "index_candidates": [
+              {
+                "table": "notifications",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "notifications",
+            "columns": [
+              "kind"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:notifications.kind"
+              }
+            ],
+            "proposal": "LOB column(s) kind measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "kind": {
+                "avg_bytes": 8.0,
+                "max_bytes": 8.0
+              }
+            }
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "plans",
+      "root_table": "plans",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "code",
+          "target": "code",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "tier",
+          "target": "tier",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "monthly_fee",
+          "target": "monthlyFee",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "included_units",
+          "target": "includedUnits",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "overage_rate",
+          "target": "overageRate",
+          "source_type": "NUMERIC(12,6)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "active",
+          "target": "active",
+          "source_type": "BOOLEAN",
+          "bson_type": "bool",
+          "rules": [
+            "int_to_bool"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "plans",
+            "tables": [
+              "plans"
+            ],
+            "index_candidates": [],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "plans",
+            "columns": [
+              "code",
+              "tier"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:plans.code"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:plans.tier"
+              }
+            ],
+            "proposal": "LOB column(s) code, tier measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "code": {
+                "avg_bytes": 7.0,
+                "max_bytes": 8.0
+              },
+              "tier": {
+                "avg_bytes": 7.0,
+                "max_bytes": 8.0
+              }
+            }
+          },
+          {
+            "kind": "flag_domain_violation",
+            "table": "plans",
+            "column": "active",
+            "values": [
+              [
+                true,
+                3
+              ]
+            ],
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "value_domain:plans.active"
+            },
+            "proposal": "values outside the flag domain; extend the canon rule or fix data"
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "ratingPeriods",
+      "root_table": "rating_periods",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "period_start",
+          "target": "periodStart",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "period_end",
+          "target": "periodEnd",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [
+          {
+            "name": "rating_periods_tenant_id_period_start_key",
+            "columns": [
+              "tenant_id",
+              "period_start"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "rating_periods",
+            "tables": [
+              "rating_periods"
+            ],
+            "index_candidates": [
+              {
+                "table": "rating_periods",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": [
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ],
+            [
+              "periodStart",
+              1
+            ]
+          ],
+          "unique": true,
+          "origin": "natural_key",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "collection": "ratingResults",
+      "root_table": "rating_results",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "period_id",
+          "target": "periodId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "subscription_id",
+          "target": "subscriptionId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "used_units",
+          "target": "usedUnits",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "quota_units",
+          "target": "quotaUnits",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "rollover_units",
+          "target": "rolloverUnits",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "billable_units",
+          "target": "billableUnits",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "overage_amount",
+          "target": "overageAmount",
+          "source_type": "NUMERIC(12,2)",
+          "bson_type": "decimal",
+          "rules": []
+        },
+        {
+          "source": "created_at",
+          "target": "createdAt",
+          "source_type": "TIMESTAMP WITH TIME ZONE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "period_id"
+            ],
+            "to": "ratingPeriods",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          },
+          {
+            "column": [
+              "subscription_id"
+            ],
+            "to": "subscriptions",
+            "to_columns": [
+              "id"
+            ],
+            "why": "child owns its own lifecycle"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "rating_results",
+            "tables": [
+              "rating_results"
+            ],
+            "index_candidates": [
+              {
+                "table": "rating_results",
+                "column": "period_id",
+                "kind": "foreign_key"
+              },
+              {
+                "table": "rating_results",
+                "column": "subscription_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "subscriptions",
+      "root_table": "subscriptions",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "plan_id",
+          "target": "planId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "starts_on",
+          "target": "startsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "ends_on",
+          "target": "endsOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        },
+        {
+          "source": "status",
+          "target": "status",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "suspended_on",
+          "target": "suspendedOn",
+          "source_type": "DATE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms",
+            "null_missing_equiv"
+          ]
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "plan_id"
+            ],
+            "to": "plans",
+            "to_columns": [
+              "id"
+            ],
+            "why": "child owns its own lifecycle"
+          },
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "subscriptions",
+            "tables": [
+              "subscriptions"
+            ],
+            "index_candidates": [
+              {
+                "table": "subscriptions",
+                "column": "plan_id",
+                "kind": "foreign_key"
+              },
+              {
+                "table": "subscriptions",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "subscriptions",
+            "columns": [
+              "status"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:subscriptions.status"
+              }
+            ],
+            "proposal": "LOB column(s) status measured max 10 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "status": {
+                "avg_bytes": 7.333333333333333,
+                "max_bytes": 10.0
+              }
+            }
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "tenants",
+      "root_table": "tenants",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "name",
+          "target": "name",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "tax_exempt",
+          "target": "taxExempt",
+          "source_type": "BOOLEAN",
+          "bson_type": "bool",
+          "rules": [
+            "int_to_bool"
+          ]
+        },
+        {
+          "source": "status",
+          "target": "status",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "tenants",
+            "tables": [
+              "tenants"
+            ],
+            "index_candidates": [],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "tenants",
+            "columns": [
+              "name",
+              "status"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:tenants.name"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:tenants.status"
+              }
+            ],
+            "proposal": "LOB column(s) name, status measured max 13 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "name": {
+                "avg_bytes": 12.0,
+                "max_bytes": 13.0
+              },
+              "status": {
+                "avg_bytes": 7.333333333333333,
+                "max_bytes": 10.0
+              }
+            }
+          },
+          {
+            "kind": "flag_domain_violation",
+            "table": "tenants",
+            "column": "tax_exempt",
+            "values": [
+              [
+                false,
+                8
+              ],
+              [
+                true,
+                1
+              ]
+            ],
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "value_domain:tenants.tax_exempt"
+            },
+            "proposal": "values outside the flag domain; extend the canon rule or fix data"
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    },
+    {
+      "collection": "usageEvents",
+      "root_table": "usage_events",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        },
+        {
+          "source": "occurred_at",
+          "target": "occurredAt",
+          "source_type": "TIMESTAMP WITH TIME ZONE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "units",
+          "target": "units",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "kind",
+          "target": "kind",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "natural_keys": [],
+        "references": [
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "to_columns": [
+              "id"
+            ],
+            "why": "parent is shared by several tables"
+          }
+        ],
+        "open_questions": [
+          {
+            "kind": "no_access_evidence",
+            "table": "usage_events",
+            "tables": [
+              "usage_events"
+            ],
+            "index_candidates": [
+              {
+                "table": "usage_events",
+                "column": "tenant_id",
+                "kind": "foreign_key"
+              }
+            ],
+            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+          },
+          {
+            "kind": "lob",
+            "table": "usage_events",
+            "columns": [
+              "kind"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:usage_events.kind"
+              }
+            ],
+            "proposal": "LOB column(s) kind measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "kind": {
+                "avg_bytes": 4.8,
+                "max_bytes": 8.0
+              }
+            }
+          }
+        ],
+        "access_basis": "ddl_only"
+      },
+      "indexes": []
+    }
+  ],
+  "canonicalization": {
+    "version": "v1-canon",
+    "rules": [
+      {
+        "rule": "decimal_round",
+        "applies_to": "decimal",
+        "params": {}
+      },
+      {
+        "rule": "datetime_utc_truncate_ms",
+        "applies_to": "date",
+        "params": {}
+      },
+      {
+        "rule": "rstrip_spaces",
+        "applies_to": "string",
+        "params": {}
+      },
+      {
+        "rule": "null_missing_equiv",
+        "applies_to": "*",
+        "params": {}
+      },
+      {
+        "rule": "yn_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "int_to_bool",
+        "applies_to": "bool",
+        "params": {}
+      },
+      {
+        "rule": "csv_to_array",
+        "applies_to": "array",
+        "params": {}
+      },
+      {
+        "rule": "date_string_to_date",
+        "applies_to": "date",
+        "params": {
+          "format": "%Y-%m-%d"
+        }
+      }
+    ]
+  },
+  "modeling": {
+    "mode": "live_catalog",
+    "cardinality_default": "assumed",
+    "census_inputs": [
+      {
+        "query_id": "tables",
+        "sha256": "9c0d0030210e532d5183e31572ffb28750168af555ef3132c375e59171c75f7d",
+        "rows": 11,
+        "origin": "live"
+      },
+      {
+        "query_id": "columns",
+        "sha256": "01da24139084de1f307d68233aa2d35d97087c606595ecfda0b5bf0f66acfbfa",
+        "rows": 65,
+        "origin": "live"
+      },
+      {
+        "query_id": "constraints",
+        "sha256": "414107d4829a719331dafcfff4b0f93d437a78a03a67790c50b2ee956d96442e",
+        "rows": 35,
+        "origin": "live"
+      },
+      {
+        "query_id": "indexes",
+        "sha256": "fcfb88834bad8cc598817b82df9bbc6ae9158f28972f54bf1fd06a67a1f6d0c0",
+        "rows": 22,
+        "origin": "live"
+      },
+      {
+        "query_id": "enums",
+        "sha256": "37fc368b8fa75188cb142057d9626ae683a575edb9b579d24c133bffed447fb8",
+        "rows": 0,
+        "origin": "live"
+      },
+      {
+        "query_id": "routines",
+        "sha256": "98de811c9bc780cf9b8eea0972883b5db9a111b10a25debf4d5dc872a01f9069",
+        "rows": 12,
+        "origin": "live"
+      },
+      {
+        "query_id": "triggers",
+        "sha256": "fa7d3598d7735f0723c01fc294214cc74bbe1e9387c2d03088beaa7fcb511fc6",
+        "rows": 0,
+        "origin": "live"
+      },
+      {
+        "query_id": "views",
+        "sha256": "ced17d64646f8ed658fc280f9fb992f70da3d06f9102f80a7f20396aefa3327f",
+        "rows": 0,
+        "origin": "live"
+      }
+    ],
+    "excluded_tables": [],
+    "not_known_from_ddl": [
+      "semantics of triggers, packages, and scheduler jobs (names and targets only)",
+      "whether unenforced *_ID pointers actually resolve"
+    ],
+    "unresolved": [
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_entitlement"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_invoice_lines"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_invoice_preview"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_list_plans"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_overdue_accounts"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_usage_rating"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_usage_summary"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_change_plan"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_finalize_rating"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_issue_invoice"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_schedule_dunning"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_suspend_overdue"
+      }
+    ],
+    "rationale": [
+      {
+        "parent": "tenants",
+        "child": "credit_notes",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "default",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:credit_notes->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 6,
+            "min": 0,
+            "p50": 0,
+            "p95": 2,
+            "p99": 2,
+            "max": 2
+          },
+          "fk_integrity:credit_notes->tenants(tenant_id)": {
+            "child_rows": 5,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:credit_notes->tenants(tenant_id)": {
+            "p50": 0.0,
+            "p99": 92,
+            "max": 92
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      },
+      {
+        "parent": "invoices",
+        "child": "dunning_attempts",
+        "child_columns": [
+          "invoice_id"
+        ],
+        "rule": "default",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:dunning_attempts->invoices(invoice_id)": {
+            "parents": 3,
+            "parents_zero": 2,
+            "min": 0,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:dunning_attempts->invoices(invoice_id)": {
+            "child_rows": 1,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:dunning_attempts->invoices(invoice_id)": {
+            "p50": 0.0,
+            "p99": 61,
+            "max": 61
+          },
+          "row_bytes:invoices": {
+            "rows_seen": 3,
+            "avg_bytes": 82.66666666666667,
+            "max_bytes": 83.0
+          }
+        },
+        "lookups": [
+          {
+            "parent": "tenants",
+            "child_columns": [
+              "tenant_id"
+            ]
+          }
+        ]
+      },
+      {
+        "parent": "tenants",
+        "child": "dunning_attempts",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "lookup_reference",
+        "decision": "reference",
+        "basis": "derived",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:dunning_attempts->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 8,
+            "min": 0,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:dunning_attempts->tenants(tenant_id)": {
+            "child_rows": 1,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:dunning_attempts->tenants(tenant_id)": {
+            "p50": 0.0,
+            "p99": 61,
+            "max": 61
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        },
+        "owner": "invoices"
+      },
+      {
+        "parent": "invoices",
+        "child": "invoice_lines",
+        "child_columns": [
+          "invoice_id"
+        ],
+        "rule": "ownership",
+        "decision": "embed",
+        "basis": "derived",
+        "basis_sources": [
+          "ddl",
+          "data"
+        ],
+        "evidence": [
+          {
+            "kind": "data_profile",
+            "ref": "embed_bytes:invoice_lines->invoices(invoice_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "fanout:invoice_lines->invoices(invoice_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "fk_integrity:invoice_lines->invoices(invoice_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "row_bytes:invoices"
+          }
+        ],
+        "measurements": {
+          "fanout:invoice_lines->invoices(invoice_id)": {
+            "parents": 3,
+            "parents_zero": 2,
+            "min": 0,
+            "p50": 0,
+            "p95": 2,
+            "p99": 2,
+            "max": 2
+          },
+          "fk_integrity:invoice_lines->invoices(invoice_id)": {
+            "child_rows": 2,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:invoice_lines->invoices(invoice_id)": {
+            "p50": 0.0,
+            "p99": 116,
+            "max": 116
+          },
+          "row_bytes:invoices": {
+            "rows_seen": 3,
+            "avg_bytes": 82.66666666666667,
+            "max_bytes": 83.0
+          }
+        },
+        "shape": "array"
+      },
+      {
+        "parent": "rating_periods",
+        "child": "invoices",
+        "child_columns": [
+          "period_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:invoices->rating_periods(period_id)": {
+            "parents": 3,
+            "parents_zero": 1,
+            "min": 0,
+            "p50": 1,
+            "p95": 2,
+            "p99": 2,
+            "max": 2
+          },
+          "fk_integrity:invoices->rating_periods(period_id)": {
+            "child_rows": 3,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:invoices->rating_periods(period_id)": {
+            "p50": 166,
+            "p99": 166,
+            "max": 166
+          },
+          "row_bytes:rating_periods": {
+            "rows_seen": 3,
+            "avg_bytes": 40.0,
+            "max_bytes": 40.0
+          }
+        }
+      },
+      {
+        "parent": "tenants",
+        "child": "invoices",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:invoices->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 6,
+            "min": 0,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:invoices->tenants(tenant_id)": {
+            "child_rows": 3,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:invoices->tenants(tenant_id)": {
+            "p50": 0.0,
+            "p99": 83,
+            "max": 83
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      },
+      {
+        "parent": "tenants",
+        "child": "notifications",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "default",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:notifications->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 8,
+            "min": 0,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:notifications->tenants(tenant_id)": {
+            "child_rows": 1,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:notifications->tenants(tenant_id)": {
+            "p50": 0.0,
+            "p99": 48,
+            "max": 48
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      },
+      {
+        "parent": "tenants",
+        "child": "rating_periods",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:rating_periods->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 8,
+            "min": 0,
+            "p50": 0,
+            "p95": 3,
+            "p99": 3,
+            "max": 3
+          },
+          "fk_integrity:rating_periods->tenants(tenant_id)": {
+            "child_rows": 3,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:rating_periods->tenants(tenant_id)": {
+            "p50": 0.0,
+            "p99": 120,
+            "max": 120
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      },
+      {
+        "parent": "rating_periods",
+        "child": "rating_results",
+        "child_columns": [
+          "period_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:rating_results->rating_periods(period_id)": {
+            "parents": 3,
+            "parents_zero": 0,
+            "min": 1,
+            "p50": 1,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:rating_results->rating_periods(period_id)": {
+            "child_rows": 3,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:rating_results->rating_periods(period_id)": {
+            "p50": 75,
+            "p99": 75,
+            "max": 75
+          },
+          "row_bytes:rating_periods": {
+            "rows_seen": 3,
+            "avg_bytes": 40.0,
+            "max_bytes": 40.0
+          }
+        }
+      },
+      {
+        "parent": "subscriptions",
+        "child": "rating_results",
+        "child_columns": [
+          "subscription_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:rating_results->subscriptions(subscription_id)": {
+            "parents": 9,
+            "parents_zero": 8,
+            "min": 0,
+            "p50": 0,
+            "p95": 3,
+            "p99": 3,
+            "max": 3
+          },
+          "fk_integrity:rating_results->subscriptions(subscription_id)": {
+            "child_rows": 3,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:rating_results->subscriptions(subscription_id)": {
+            "p50": 0.0,
+            "p99": 225,
+            "max": 225
+          },
+          "row_bytes:subscriptions": {
+            "rows_seen": 9,
+            "avg_bytes": 59.77777777777778,
+            "max_bytes": 66.0
+          }
+        }
+      },
+      {
+        "parent": "plans",
+        "child": "subscriptions",
+        "child_columns": [
+          "plan_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:subscriptions->plans(plan_id)": {
+            "parents": 3,
+            "parents_zero": 0,
+            "min": 1,
+            "p50": 2,
+            "p95": 6,
+            "p99": 6,
+            "max": 6
+          },
+          "fk_integrity:subscriptions->plans(plan_id)": {
+            "child_rows": 9,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:subscriptions->plans(plan_id)": {
+            "p50": 354,
+            "p99": 354,
+            "max": 354
+          },
+          "row_bytes:plans": {
+            "rows_seen": 3,
+            "avg_bytes": 45.0,
+            "max_bytes": 47.0
+          }
+        }
+      },
+      {
+        "parent": "tenants",
+        "child": "subscriptions",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "shared_child",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:subscriptions->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 0,
+            "min": 1,
+            "p50": 1,
+            "p95": 1,
+            "p99": 1,
+            "max": 1
+          },
+          "fk_integrity:subscriptions->tenants(tenant_id)": {
+            "child_rows": 9,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:subscriptions->tenants(tenant_id)": {
+            "p50": 66,
+            "p99": 66,
+            "max": 66
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      },
+      {
+        "parent": "tenants",
+        "child": "usage_events",
+        "child_columns": [
+          "tenant_id"
+        ],
+        "rule": "default",
+        "decision": "reference",
+        "basis": "assumed",
+        "basis_sources": [
+          "ddl"
+        ],
+        "evidence": [],
+        "measurements": {
+          "fanout:usage_events->tenants(tenant_id)": {
+            "parents": 9,
+            "parents_zero": 0,
+            "min": 1,
+            "p50": 1,
+            "p95": 2,
+            "p99": 2,
+            "max": 2
+          },
+          "fk_integrity:usage_events->tenants(tenant_id)": {
+            "child_rows": 10,
+            "null_fk": 0,
+            "orphans": 0
+          },
+          "embed_bytes:usage_events->tenants(tenant_id)": {
+            "p50": 100,
+            "p99": 100,
+            "max": 100
+          },
+          "row_bytes:tenants": {
+            "rows_seen": 9,
+            "avg_bytes": 36.333333333333336,
+            "max_bytes": 38.0
+          }
+        }
+      }
+    ],
+    "policy": {
+      "max_doc_bytes": 2097152,
+      "max_embed_fanout": 1000
+    },
+    "data_profile": {
+      "path": ".migration/data_profile.json",
+      "sha256": "1d118073f163b1b69e1e7ea4c0042d4e2332b0bfaf4f26725431dbebb80fffe5",
+      "as_of": "2026-10-14T20:06:21.677285+00:00"
+    },
+    "access_patterns": {
+      "path": ".migration/access_patterns.json",
+      "sha256": "df3c7f72fe4f08aed612c0039ec484312fb1a0389856cfa4a86dfcdfbf81f425"
+    },
+    "application_evidence": {
+      "confirmed_patterns": 0,
+      "files": []
+    },
+    "dropped_indexes": []
+  }
+}

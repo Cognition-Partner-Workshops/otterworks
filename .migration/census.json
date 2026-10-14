@@ -1,0 +1,1591 @@
+{
+  "census_version": 2,
+  "source_family": "postgresql",
+  "identifier_case": "default",
+  "mode": "live_catalog",
+  "inputs": [
+    {
+      "query_id": "tables",
+      "sha256": "9c0d0030210e532d5183e31572ffb28750168af555ef3132c375e59171c75f7d",
+      "rows": 11,
+      "origin": "live"
+    },
+    {
+      "query_id": "columns",
+      "sha256": "01da24139084de1f307d68233aa2d35d97087c606595ecfda0b5bf0f66acfbfa",
+      "rows": 65,
+      "origin": "live"
+    },
+    {
+      "query_id": "constraints",
+      "sha256": "414107d4829a719331dafcfff4b0f93d437a78a03a67790c50b2ee956d96442e",
+      "rows": 35,
+      "origin": "live"
+    },
+    {
+      "query_id": "indexes",
+      "sha256": "fcfb88834bad8cc598817b82df9bbc6ae9158f28972f54bf1fd06a67a1f6d0c0",
+      "rows": 22,
+      "origin": "live"
+    },
+    {
+      "query_id": "enums",
+      "sha256": "37fc368b8fa75188cb142057d9626ae683a575edb9b579d24c133bffed447fb8",
+      "rows": 0,
+      "origin": "live"
+    },
+    {
+      "query_id": "routines",
+      "sha256": "98de811c9bc780cf9b8eea0972883b5db9a111b10a25debf4d5dc872a01f9069",
+      "rows": 12,
+      "origin": "live"
+    },
+    {
+      "query_id": "triggers",
+      "sha256": "fa7d3598d7735f0723c01fc294214cc74bbe1e9387c2d03088beaa7fcb511fc6",
+      "rows": 0,
+      "origin": "live"
+    },
+    {
+      "query_id": "views",
+      "sha256": "ced17d64646f8ed658fc280f9fb992f70da3d06f9102f80a7f20396aefa3327f",
+      "rows": 0,
+      "origin": "live"
+    }
+  ],
+  "tables": {
+    "credit_notes": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "issued_on",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "amount",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "remaining_amount",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [],
+      "foreign_keys": [
+        {
+          "name": "credit_notes_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "credit_notes_pkey"
+    },
+    "dunning_attempts": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "invoice_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "attempt_no",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "scheduled_for",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "dunning_attempts_invoice_id_attempt_no_key",
+          "columns": [
+            "invoice_id",
+            "attempt_no"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "dunning_attempts_invoice_id_fkey",
+          "columns": [
+            "invoice_id"
+          ],
+          "ref_table": "invoices",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        },
+        {
+          "name": "dunning_attempts_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "dunning_attempts_pkey"
+    },
+    "invoice_lines": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "invoice_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "line_no",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "line_type",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "amount",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "invoice_lines_invoice_id_line_no_key",
+          "columns": [
+            "invoice_id",
+            "line_no"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "invoice_lines_invoice_id_fkey",
+          "columns": [
+            "invoice_id"
+          ],
+          "ref_table": "invoices",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": "CASCADE",
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "invoice_lines_pkey"
+    },
+    "invoices": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "period_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "issued_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "length": null,
+          "precision": null,
+          "scale": 6,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "subtotal",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tax",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "total",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [],
+      "foreign_keys": [
+        {
+          "name": "invoices_period_id_fkey",
+          "columns": [
+            "period_id"
+          ],
+          "ref_table": "rating_periods",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        },
+        {
+          "name": "invoices_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "invoices_pkey"
+    },
+    "notifications": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "sent_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "length": null,
+          "precision": null,
+          "scale": 6,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "notifications_tenant_id_kind_sent_at_key",
+          "columns": [
+            "tenant_id",
+            "kind",
+            "sent_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "notifications_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "notifications_pkey"
+    },
+    "plans": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "code",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tier",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "monthly_fee",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "included_units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "overage_rate",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 6,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": "true",
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "plans_code_key",
+          "columns": [
+            "code"
+          ]
+        }
+      ],
+      "foreign_keys": [],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "plans_pkey"
+    },
+    "rating_periods": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "period_start",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "period_end",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "rating_periods_tenant_id_period_start_key",
+          "columns": [
+            "tenant_id",
+            "period_start"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "rating_periods_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "rating_periods_pkey"
+    },
+    "rating_results": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "period_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "subscription_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "used_units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "quota_units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "rollover_units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "billable_units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "overage_amount",
+          "type": "NUMERIC",
+          "length": null,
+          "precision": 12,
+          "scale": 2,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "length": null,
+          "precision": null,
+          "scale": 6,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [],
+      "foreign_keys": [
+        {
+          "name": "rating_results_period_id_fkey",
+          "columns": [
+            "period_id"
+          ],
+          "ref_table": "rating_periods",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        },
+        {
+          "name": "rating_results_subscription_id_fkey",
+          "columns": [
+            "subscription_id"
+          ],
+          "ref_table": "subscriptions",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "rating_results_pkey"
+    },
+    "subscriptions": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "plan_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "starts_on",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "ends_on",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": true,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "suspended_on",
+          "type": "DATE",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": true,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [],
+      "foreign_keys": [
+        {
+          "name": "subscriptions_plan_id_fkey",
+          "columns": [
+            "plan_id"
+          ],
+          "ref_table": "plans",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        },
+        {
+          "name": "subscriptions_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "subscriptions_pkey"
+    },
+    "tenants": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tax_exempt",
+          "type": "BOOLEAN",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": "false",
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        {
+          "name": "tenants_name_key",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "foreign_keys": [],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "tenants_pkey"
+    },
+    "usage_events": {
+      "schema": "billing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "tenant_id",
+          "type": "UUID",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "occurred_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "length": null,
+          "precision": null,
+          "scale": 6,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "units",
+          "type": "INTEGER",
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "nullable": false,
+          "default": null,
+          "comment": null,
+          "collation": null
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique": [],
+      "foreign_keys": [
+        {
+          "name": "usage_events_tenant_id_fkey",
+          "columns": [
+            "tenant_id"
+          ],
+          "ref_table": "tenants",
+          "ref_columns": [
+            "id"
+          ],
+          "on_delete": null,
+          "validated": true
+        }
+      ],
+      "checks": [],
+      "comment": null,
+      "partitioned": false,
+      "row_estimate": null,
+      "file": "live_catalog",
+      "line": 0,
+      "primary_key_name": "usage_events_pkey"
+    }
+  },
+  "indexes": [],
+  "sequences": [],
+  "triggers": [],
+  "views": [],
+  "materialized_views": [],
+  "plsql_units": [
+    {
+      "kind": "FUNCTION",
+      "name": "fn_entitlement"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_invoice_lines"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_invoice_preview"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_list_plans"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_overdue_accounts"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_usage_rating"
+    },
+    {
+      "kind": "FUNCTION",
+      "name": "fn_usage_summary"
+    },
+    {
+      "kind": "PROCEDURE",
+      "name": "sp_change_plan"
+    },
+    {
+      "kind": "PROCEDURE",
+      "name": "sp_finalize_rating"
+    },
+    {
+      "kind": "PROCEDURE",
+      "name": "sp_issue_invoice"
+    },
+    {
+      "kind": "PROCEDURE",
+      "name": "sp_schedule_dunning"
+    },
+    {
+      "kind": "PROCEDURE",
+      "name": "sp_suspend_overdue"
+    }
+  ],
+  "scheduler_jobs": [],
+  "seed_rows": {},
+  "relationships": [
+    {
+      "parent": "tenants",
+      "child": "credit_notes",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK credit_notes_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "invoices",
+      "child": "dunning_attempts",
+      "child_columns": [
+        "invoice_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK dunning_attempts_invoice_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "dunning_attempts",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK dunning_attempts_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "invoices",
+      "child": "invoice_lines",
+      "child_columns": [
+        "invoice_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": "CASCADE",
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK invoice_lines_invoice_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "rating_periods",
+      "child": "invoices",
+      "child_columns": [
+        "period_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK invoices_period_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "invoices",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK invoices_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "notifications",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK notifications_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "rating_periods",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK rating_periods_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "rating_periods",
+      "child": "rating_results",
+      "child_columns": [
+        "period_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK rating_results_period_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "subscriptions",
+      "child": "rating_results",
+      "child_columns": [
+        "subscription_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK rating_results_subscription_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "plans",
+      "child": "subscriptions",
+      "child_columns": [
+        "plan_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK subscriptions_plan_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "subscriptions",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK subscriptions_tenant_id_fkey",
+      "parent_known": true
+    },
+    {
+      "parent": "tenants",
+      "child": "usage_events",
+      "child_columns": [
+        "tenant_id"
+      ],
+      "parent_columns": [
+        "id"
+      ],
+      "on_delete": null,
+      "cardinality": "1:N",
+      "cardinality_basis": "assumed",
+      "evidence": "FK usage_events_tenant_id_fkey",
+      "parent_known": true
+    }
+  ],
+  "traps": [
+    {
+      "table": "dunning_attempts",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "status"
+      ]
+    },
+    {
+      "table": "invoice_lines",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "line_type",
+        "description"
+      ]
+    },
+    {
+      "table": "invoices",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "status"
+      ]
+    },
+    {
+      "table": "notifications",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "kind"
+      ]
+    },
+    {
+      "table": "plans",
+      "kind": "int_flag",
+      "evidence": "TINYINT(1)/BIT(1) 0/1 columns",
+      "columns": [
+        "active"
+      ]
+    },
+    {
+      "table": "plans",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "code",
+        "tier"
+      ]
+    },
+    {
+      "table": "subscriptions",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "status"
+      ]
+    },
+    {
+      "table": "tenants",
+      "kind": "int_flag",
+      "evidence": "TINYINT(1)/BIT(1) 0/1 columns",
+      "columns": [
+        "tax_exempt"
+      ]
+    },
+    {
+      "table": "tenants",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "name",
+        "status"
+      ]
+    },
+    {
+      "table": "usage_events",
+      "kind": "lob",
+      "evidence": "LOB columns; check document size",
+      "columns": [
+        "kind"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "kind": "row_estimate_missing",
+      "tables": [
+        "credit_notes",
+        "dunning_attempts",
+        "invoice_lines",
+        "invoices",
+        "notifications",
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "tenants",
+        "usage_events"
+      ],
+      "note": "catalog statistics are NULL for these tables (never analyzed); the proposer cannot size embeds from them. Re-run with --count-rows for a read-only COUNT(*) per table, or record counts from the fixture manifest"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_entitlement"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_invoice_lines"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_invoice_preview"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_list_plans"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_overdue_accounts"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_usage_rating"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "FUNCTION",
+      "name": "fn_usage_summary"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "PROCEDURE",
+      "name": "sp_change_plan"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "PROCEDURE",
+      "name": "sp_finalize_rating"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "PROCEDURE",
+      "name": "sp_issue_invoice"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "PROCEDURE",
+      "name": "sp_schedule_dunning"
+    },
+    {
+      "kind": "plsql_unit_needs_manual_review",
+      "unit_kind": "PROCEDURE",
+      "name": "sp_suspend_overdue"
+    }
+  ],
+  "unparsed": []
+}
