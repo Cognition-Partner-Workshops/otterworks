@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: pkg_billing_invoices
+    schema: RAW
+    description: Flat files read by pkg_billing_invoices, loaded verbatim (every column VARCHAR).
+    tables:
+      - name: EXT_BILLING_INVOICE_LINES
+        description: billing_invoice_lines.csv, the data flow's flat-file source.
+        columns:
+          - name: id
+          - name: invoice_id
+          - name: line_no
+          - name: line_type
+          - name: description
+          - name: amount
+      - name: EXT_BILLING_INVOICES
+        description: billing_invoices.csv, reference file of the "LKP Invoice header" Lookup.
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: period_id
+          - name: issued_at
+          - name: subtotal
+          - name: tax
+          - name: total
+          - name: status
+      - name: EXT_BILLING_RATING_PERIODS
+        description: billing_rating_periods.csv, reference file of the "LKP Rating period" Lookup.
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: period_start
+          - name: period_end

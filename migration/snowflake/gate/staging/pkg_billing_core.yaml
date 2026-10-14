@@ -1,0 +1,22 @@
+# pkg_billing_core: three Data Flows, each TRUNCATE + reload of one stg table from one flat file.
+# The package declares BusinessDate but never reads it, so the stg rows are the same for every date.
+package: pkg_billing_core
+destinations:
+  - sqlserver_table: stg.stg_billing_tenants
+    snowflake_model: STAGING.STG_BILLING_TENANTS
+    keys: [id]
+    columns: [name, tax_exempt, status, region_code, source_system]
+    excluded:
+      extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"
+  - sqlserver_table: stg.stg_billing_plans
+    snowflake_model: STAGING.STG_BILLING_PLANS
+    keys: [id]
+    columns: [code, tier, monthly_fee, included_units, overage_rate, active, included_bytes, overage_cents_per_gb, source_system]
+    excluded:
+      extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"
+  - sqlserver_table: stg.stg_billing_subscriptions
+    snowflake_model: STAGING.STG_BILLING_SUBSCRIPTIONS
+    keys: [id]
+    columns: [tenant_id, plan_id, starts_on, ends_on, status, suspended_on, source_system]
+    excluded:
+      extracted_at: "@[System::StartTime], the server clock when the package ran; differs on every run"

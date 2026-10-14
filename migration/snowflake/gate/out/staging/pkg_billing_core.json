@@ -1,0 +1,102 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-14T06:53:44.274435+00:00",
+  "spec": {
+    "package": "pkg_billing_core",
+    "destinations": [
+      {
+        "sqlserver_table": "stg.stg_billing_tenants",
+        "snowflake_model": "STAGING.STG_BILLING_TENANTS",
+        "keys": [
+          "id"
+        ],
+        "columns": [
+          "name",
+          "tax_exempt",
+          "status",
+          "region_code",
+          "source_system"
+        ],
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
+        },
+        "unit": "ssis:pkg_billing_core:stg_billing_tenants"
+      },
+      {
+        "sqlserver_table": "stg.stg_billing_plans",
+        "snowflake_model": "STAGING.STG_BILLING_PLANS",
+        "keys": [
+          "id"
+        ],
+        "columns": [
+          "code",
+          "tier",
+          "monthly_fee",
+          "included_units",
+          "overage_rate",
+          "active",
+          "included_bytes",
+          "overage_cents_per_gb",
+          "source_system"
+        ],
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
+        },
+        "unit": "ssis:pkg_billing_core:stg_billing_plans"
+      },
+      {
+        "sqlserver_table": "stg.stg_billing_subscriptions",
+        "snowflake_model": "STAGING.STG_BILLING_SUBSCRIPTIONS",
+        "keys": [
+          "id"
+        ],
+        "columns": [
+          "tenant_id",
+          "plan_id",
+          "starts_on",
+          "ends_on",
+          "status",
+          "suspended_on",
+          "source_system"
+        ],
+        "rename": {},
+        "excluded": {
+          "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
+        },
+        "unit": "ssis:pkg_billing_core:stg_billing_subscriptions"
+      }
+    ]
+  },
+  "units": [
+    {
+      "unit": "ssis:pkg_billing_core:stg_billing_tenants",
+      "status": "PASS",
+      "source_rows": 60,
+      "target_rows": 60,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "ssis:pkg_billing_core:stg_billing_plans",
+      "status": "PASS",
+      "source_rows": 7,
+      "target_rows": 7,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    },
+    {
+      "unit": "ssis:pkg_billing_core:stg_billing_subscriptions",
+      "status": "PASS",
+      "source_rows": 72,
+      "target_rows": 72,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
+}
