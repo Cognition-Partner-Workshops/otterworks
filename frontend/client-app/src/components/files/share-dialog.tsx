@@ -12,7 +12,7 @@ interface ShareDialogProps {
   ownerName?: string;
   ownerEmail?: string;
   sharedWith: SharedUser[];
-  resolvedUsers?: Record<string, { name: string; email: string }>;
+  resolvedUsers?: Record<string, { name: string; email?: string }>;
   onShare: (email: string, permission: "view" | "edit") => Promise<void>;
   onClose: () => void;
   onPermissionChange?: (userId: string, permission: "view" | "edit") => Promise<void>;
