@@ -1,0 +1,23 @@
+Staging parity pkg_auth_users PASS 2400 / 2400 differing_keys=0
+
+`ssis:pkg_auth_users`: SQL Server `stg.stg_auth_users` vs Snowflake `STAGING.STG_AUTH_USERS`, keys id, 9 compared columns.
+Not compared:
+- `extracted_at`: @[System::StartTime] of the package run (SQL Server GETDATE() at replay); run-dependent load timestamp, Snowflake stamps current_timestamp() at query time
+
+### Notes
+
+Transforms: `SQL Truncate stg_auth_users` then one data flow `auth_users.csv` -> `DER Normalise timestamps` -> `[stg].[stg_auth_users]`; no Lookup, no Conditional Split, no Script Task, no business-date or watermark dependency (full truncate and reload). Model `STAGING.STG_AUTH_USERS` (`target/dbt/models/staging/pkg_auth_users/stg_auth_users.sql`) reads `RAW.EXT_AUTH_USERS`.
+
+### Business decisions
+
+Explanation: Boolean flags default to false. `(DT_BOOL)(email_verified == "t")` and the same for `mfa_enabled` turn anything that is not exactly lowercase `t` (including `true`, `T`, `1`, or an empty field) into `0`. In the 2026-09-30 extract the field is always `t` or `f`: email_verified 2,057 true / 343 false, mfa_enabled 800 true / 1,600 false, so no row is currently defaulted. The model keeps `= 't'` (empty string -> false). A correct version would accept the usual true spellings and reject (or flag) unrecognised or missing values instead of silently reporting the user as unverified / without MFA.
+
+Explanation: The UTC offset is stripped, not converted. `REPLACE(x, "+00", "")` then `(DT_DBTIMESTAMP2,7)` stores `created_at`, `updated_at` and `last_login_at` as zone-less `datetime2` that are implicitly UTC. All 2,400 created_at / updated_at values and 2,080 non-empty last_login_at values carry `+00`, so the stored instants are right today; 320 empty last_login_at become NULL. Any other offset (e.g. `+02`, `-05:00`) would either fail the cast or be stored as wall-clock time without shifting. The model reproduces it with `to_timestamp_ntz(replace(..., '+00', ''))`. A correct Snowflake version would parse the offset and store `TIMESTAMP_TZ` (or convert to UTC explicitly).
+
+Explanation: `email_domain` falls back to the whole address. `LOWER(SUBSTRING(email, FINDSTRING(email,"@",1)+1, 255))` takes everything after the first `@`, lowercased and cut at 255 characters; when there is no `@`, FINDSTRING returns 0 and the "domain" is the entire lowercased email. 0 of 2,400 rows lack an `@` or have more than one, and none are mixed case, so no row is affected today. The model mirrors it with `lower(substr(email, position('@', email) + 1, 255))`. A correct version would return NULL for an address without `@` (the column is nullable) and split on the last `@`.
+
+Not a decision: `extracted_at` is `@[System::StartTime]`, the legacy server's local (Eastern) clock; the model stamps `convert_timezone('America/New_York', current_timestamp())` and the column is excluded from comparison as run-dependent.
+
+Explanation: The procedure that reads this table, `dbo.usp_load_dim_user`, only keeps users created up to the business date: `WHERE u.created_at < DATEADD(day, 1, @business_date)`. The package itself loads every user (2,400 rows in `stg.stg_auth_users` on both dates), but the filter leaves 12 users out of `dim.dim_user` on 2026-09-15 (2,388 loaded) and 1 user on 2026-09-30 (2,399 loaded; `339efaca-716f-4c41-9018-685b54f12ea7`, created 2026-10-01 18:07 UTC). `created_at` is the stripped-UTC value while `@business_date` is the Eastern business day, so the cut falls at midnight UTC (8 pm Eastern) instead of midnight Eastern: a user created in the last four Eastern hours of the day is counted on the next day. 0 rows fall in that window on either date. The same procedure takes `MIN(tenant_id)` over the user's workspace memberships and leaves `tenant_id` NULL when there are none; 0 users have more than one tenant and 0 have none. The staging model does not filter, because the package does not; the wave-one `MARTS.DIM_USER` model keeps the same `created_at < dateadd(day, 1, business_date)` cut. A corrected version would compare in Eastern time (`convert_timezone('UTC', 'America/New_York', created_at)`) and pick the user's tenant by an explicit rule rather than the lowest id.
+
+Not a decision: the extract is a current snapshot, so a replay for an earlier business date still carries later activity. Of the users `usp_load_dim_user` keeps, 55 on 2026-09-15 and 2 on 2026-09-30 have a `last_login_at` after the business date, and 219 / 214 have a later `updated_at`. The staging rows are identical for both dates.
