@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,10 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
   private final RefreshTokenRepository refreshTokenRepository;
+
+  // demo-bofa: the shared demo login doubles as the Operations Console admin.
+  @Value("${otterworks.admin-emails:}")
+  private Set<String> adminEmails = Set.of();
 
   public AuthService(
       UserRepository userRepository,
@@ -50,7 +55,10 @@ public class AuthService {
     user.setEmail(request.getEmail());
     user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
     user.setDisplayName(request.getDisplayName());
-    user.setRoles(Set.of(User.Role.USER));
+    user.setRoles(
+        adminEmails.contains(request.getEmail())
+            ? Set.of(User.Role.USER, User.Role.ADMIN)
+            : Set.of(User.Role.USER));
     user = userRepository.save(user);
 
     log.info("User registered: email={}", user.getEmail());

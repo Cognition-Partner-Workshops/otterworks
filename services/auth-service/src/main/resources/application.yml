@@ -52,3 +52,6 @@ logging:
   level:
     com.otterworks: INFO
     org.springframework.security: WARN
+
+otterworks:
+  admin-emails: ${ADMIN_EMAILS:}

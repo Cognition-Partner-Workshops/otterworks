@@ -314,6 +314,10 @@ build_helm_args() {
       # session port; the application's own queries stay on the transaction one.
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${DB_USER}")
+      # The seeded demo login doubles as the Operations Console admin on this branch.
+      local seed_admin
+      seed_admin="$(sed -n 's/^DRIVE_EMAIL=//p' "${REPO_ROOT}/testdata/generated/retail-drive/tenant-seed.conf" 2>/dev/null || true)"
+      if [ -n "${seed_admin}" ]; then EXTRA_ARGS+=(--set-string "config.ADMIN_EMAILS=${seed_admin}"); fi
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
       add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
     file-service)
