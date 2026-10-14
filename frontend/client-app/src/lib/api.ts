@@ -330,9 +330,19 @@ export const filesApi = {
 export const documentsApi = {
   list: async (page = 1, pageSize = 50): Promise<PaginatedResponse<Document>> => {
     const { data } = await apiClient.get<PaginatedResponse<Document>>("/documents", {
-      params: { page, pageSize },
+      params: { page, size: pageSize },
     });
     return data;
+  },
+  listAll: async (pageSize = 500): Promise<Document[]> => {
+    type Page = { items?: Document[]; data?: Document[]; pages?: number };
+    const first = (await documentsApi.list(1, pageSize)) as unknown as Page;
+    const rest = await Promise.all(
+      Array.from({ length: Math.max((first.pages ?? 1) - 1, 0) }, (_, i) =>
+        documentsApi.list(i + 2, pageSize)
+      )
+    );
+    return [first, ...(rest as unknown as Page[])].flatMap((p) => p.items ?? p.data ?? []);
   },
   get: async (id: string): Promise<Document> => {
     const { data } = await apiClient.get<Document>(`/documents/${id}`);

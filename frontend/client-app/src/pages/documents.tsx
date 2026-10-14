@@ -16,7 +16,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
-import type { Document, PaginatedResponse, ViewMode } from "@/types";
+import type { Document, ViewMode } from "@/types";
 
 export default function DocumentsPage() {
   return (
@@ -36,7 +36,7 @@ function DocumentsContent() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["documents", "list"],
-    queryFn: () => documentsApi.list(),
+    queryFn: () => documentsApi.listAll(),
   });
 
   const createMutation = useMutation({
@@ -56,8 +56,7 @@ function DocumentsContent() {
     },
   });
 
-  const raw = data as PaginatedResponse<Document> & { items?: Document[] } | undefined;
-  const documents = raw?.items ?? raw?.data ?? [];
+  const documents = data ?? [];
   const filtered = searchQuery
     ? documents.filter((doc) =>
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
