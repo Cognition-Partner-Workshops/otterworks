@@ -237,3 +237,43 @@ async def test_paginate_helper():
     assert DocumentService.paginate(11, 1, 5) == 3
     assert DocumentService.paginate(0, 1, 5) == 1
     assert DocumentService.paginate(10, 1, 0) == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_query_count_does_not_grow_with_page_size(
+    client, owner_id: uuid.UUID
+):
+    async def create_docs(start: int, stop: int) -> None:
+        for i in range(start, stop):
+            await client.post(
+                "/api/v1/documents/",
+                json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
+            )
+
+    async def list_queries() -> int:
+        resp = await client.get(
+            "/api/v1/documents/", params={"owner_id": str(owner_id), "size": 100}
+        )
+        assert resp.status_code == 200
+        return int(resp.headers["X-DB-Queries"])
+
+    await create_docs(0, 2)
+    two_rows = await list_queries()
+    await create_docs(2, 30)
+    assert await list_queries() == two_rows <= 5
+
+
+@pytest.mark.asyncio
+async def test_list_documents_attaches_five_most_recent_versions(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    doc = await service.create(DocumentCreate(title="v1", content="", owner_id=owner_id))
+    for n in range(2, 8):
+        await service.update(doc.id, DocumentUpdate(title=f"v{n}", content=str(n)))
+    other = await service.create(DocumentCreate(title="solo", content="", owner_id=owner_id))
+
+    items, _ = await service.list_documents(owner_id=owner_id)
+    by_id = {d.id: d for d in items}
+    assert [v.version_number for v in by_id[doc.id].recent_versions] == [7, 6, 5, 4, 3]
+    assert [v.version_number for v in by_id[other.id].recent_versions] == [1]
