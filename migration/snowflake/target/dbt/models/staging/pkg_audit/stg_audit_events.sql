@@ -1,4 +1,5 @@
 -- pkg_audit: audit_events.csv -> stg.stg_audit_events (truncate and full reload every run).
+-- BusinessDate is a package parameter but nothing in the data flow reads it.
 with extract as (
     select * from {{ source('pkg_audit', 'EXT_AUDIT_EVENTS') }}
 ),
@@ -12,7 +13,8 @@ tenant_by_user as (
 ),
 
 -- DER Normalise timestamps: REPLACE(timestamp, "Z", "") cast to DT_DBTIMESTAMP2. The replay
--- lands microsecond precision, so the seventh fractional digit is truncated.
+-- lands microsecond precision, so the seventh fractional digit is truncated unless
+-- pkg_audit_timestamp_full_precision keeps it.
 typed as (
     select
         extract.*,
@@ -27,12 +29,17 @@ select
     typed.action::varchar(30) as action,
     typed.resource_type::varchar(30) as resource_type,
     typed.resource_id::varchar(64) as resource_id,
-    typed.details::varchar(2000) as details,
-    typed.ip_address::varchar(45) as ip_address,
-    typed.user_agent::varchar(400) as user_agent,
+    -- FF_SRC reads an empty field as NULL; RAW keeps it as ''.
+    nullif(typed.details, '')::varchar(2000) as details,
+    nullif(typed.ip_address, '')::varchar(45) as ip_address,
+    nullif(typed.user_agent, '')::varchar(400) as user_agent,
+{%- if var('pkg_audit_timestamp_full_precision', false) %}
+    typed.event_ts_raw as event_ts_utc,
+{%- else %}
     dateadd(
         nanosecond, -mod(date_part(nanosecond, typed.event_ts_raw), 1000), typed.event_ts_raw
     )::timestamp_ntz as event_ts_utc,
+{%- endif %}
     '{{ run_started_at.strftime("%Y-%m-%d %H:%M:%S.%f") }}'::timestamp_ntz as extracted_at,
     'audit-service'::varchar(40) as source_system
 from typed

@@ -13,9 +13,17 @@ models:
       - name: user_id
         tests: [not_null]
       - name: action
-        tests: [not_null]
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [create, read, update, delete, share, login, logout]
       - name: resource_type
-        tests: [not_null]
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [document, file, folder, permission, user]
       - name: resource_id
         tests: [not_null]
       - name: details
