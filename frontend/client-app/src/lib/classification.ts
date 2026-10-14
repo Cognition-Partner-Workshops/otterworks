@@ -33,9 +33,13 @@ const CLASSIFICATIONS: Record<ClassificationLabel, Omit<Classification, "label">
   },
 };
 
-// Whole-word match so short keywords like "sar" don't fire inside "Saratoga".
+// Filename separators (space, _, -, ., etc.) become spaces so multiword phrases match however
+// they are joined; keywords then have to start and end on a letter boundary so short ones
+// like "sar" don't fire inside "Saratoga".
+const normalize = (fileName: string) => fileName.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+
 const matchesKeyword = (fileName: string, keyword: string) =>
-  new RegExp(`\\b${keyword.replace(/ /g, "\\s+")}\\b`, "i").test(fileName);
+  new RegExp(`(?<![a-z])${keyword}(?![a-z])`).test(normalize(fileName));
 
 export function classifyFile(fileName: string): Classification {
   const rule = RULES.find((r) => r.keywords.some((k) => matchesKeyword(fileName, k)));

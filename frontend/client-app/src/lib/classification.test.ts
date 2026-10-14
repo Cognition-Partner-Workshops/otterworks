@@ -39,6 +39,13 @@ describe("classifyFile", () => {
     expect(classifyFile("Harborview-KYC-Checklist.docx").label).toBe("Restricted");
   });
 
+  it("treats underscores and other separators as word boundaries", () => {
+    expect(classifyFile("KYC_2026.pdf").label).toBe("Restricted");
+    expect(classifyFile("Beneficial_Ownership_Form.pdf").label).toBe("Restricted");
+    expect(classifyFile("credit-memo_v2.docx").label).toBe("Restricted");
+    expect(classifyFile("payment.history.xlsx").label).toBe("Confidential");
+  });
+
   it("returns the handling guidance for each label", () => {
     expect(classifyFile("KYC.pdf").guidance).toBe("Do not share outside the deal team. Downloads are logged.");
     expect(classifyFile("Statement.pdf").guidance).toBe("Share only with named colleagues who need it.");
