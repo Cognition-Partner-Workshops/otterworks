@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
+import pytest
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +107,17 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    @pytest.mark.parametrize("hits", [[], [{"title": "Test Doc 1"}, {"name": "test.pdf"}]])
+    def test_suggest_never_5xx_with_chaos_flag_set(self, client, mock_meilisearch_client, hits):
+        """A leftover chaos:search-service:suggest_500 flag must not turn suggest into a 500."""
+        mock_meilisearch_client.index.return_value.search.return_value = {"hits": hits}
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert all(isinstance(s, str) for s in response.get_json()["suggestions"])
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
