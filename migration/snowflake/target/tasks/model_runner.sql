@@ -7,11 +7,8 @@ $$$$
 DECLARE
     model_name VARCHAR;
 BEGIN
-    FOR model_record IN (
-        SELECT VALUE::STRING AS MODEL_NAME
-        FROM TABLE(FLATTEN(INPUT => MODEL_NAMES))
-    ) DO
-        model_name := model_record.MODEL_NAME;
+    FOR model_index IN 0 TO ARRAY_SIZE(MODEL_NAMES) - 1 DO
+        model_name := GET(MODEL_NAMES, model_index)::STRING;
         CASE (model_name)
 ${MODEL_BRANCHES}
             ELSE
@@ -20,7 +17,7 @@ ${MODEL_BRANCHES}
                     ROW_COUNT, MESSAGE, STARTED_AT, COMPLETED_AT
                 )
                 VALUES (
-                    '${RUN}', CURRENT_DATE(), 'UBW_TASK', model_name, 'SKIPPED',
+                    '${RUN}', CURRENT_DATE(), 'UBW_TASK', :model_name, 'SKIPPED',
                     0, 'No published SQL file is available', CURRENT_TIMESTAMP(),
                     CURRENT_TIMESTAMP()
                 );

@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: pkg_document_versions
+    schema: RAW
+    description: document_versions.csv as read by the SSIS package pkg_document_versions, every column VARCHAR.
+    tables:
+      - name: EXT_DOCUMENT_VERSIONS
+        columns:
+          - name: ID
+          - name: DOCUMENT_ID
+          - name: VERSION_NUMBER
+          - name: TITLE
+          - name: CREATED_BY
+          - name: CREATED_AT
+          - name: CONTENT_LENGTH

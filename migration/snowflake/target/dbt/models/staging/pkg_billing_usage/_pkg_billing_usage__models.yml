@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_billing_usage_events
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: tenant_id
+        tests: [not_null]
+      - name: event_ts_utc
+        tests: [not_null]
+      - name: event_kind
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["api", "storage", "compute"]

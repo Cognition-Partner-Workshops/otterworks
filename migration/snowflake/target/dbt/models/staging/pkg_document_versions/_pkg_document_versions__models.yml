@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_document_versions
+    description: Replaces SSIS pkg_document_versions; row for row the same as SQL Server stg.stg_document_versions.
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: document_id
+        tests: [not_null]
+      - name: version_number
+        tests: [not_null]
+      - name: title
+        tests: [not_null]
+      - name: created_by
+        tests: [not_null]
+      - name: created_at
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["document-service"]
