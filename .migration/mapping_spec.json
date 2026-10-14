@@ -2442,8 +2442,8 @@
     },
     "data_profile": {
       "path": ".migration/data_profile.json",
-      "sha256": "c27b381ac17f36fc8a8005bfb80962a0fa2756f93d9b6fa52d33258bcc60614f",
-      "as_of": "2026-10-14T21:20:32.397758+00:00"
+      "sha256": "22fb56f6ed0fc73f9c2e4e26cf59613bc4d484346cc6e50458a8fd205b1ca3d1",
+      "as_of": "2026-10-14T21:26:19.995925+00:00"
     },
     "access_patterns": {
       "path": ".migration/access_patterns.json",
