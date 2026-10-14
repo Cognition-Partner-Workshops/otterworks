@@ -139,7 +139,17 @@ def load_scale() -> float:
 
 
 def jwt_secret() -> str:
-    return os.environ.get("JWT_SECRET", "otterworks-local-dev-jwt-secret-change-me-in-production")
+    secret = os.environ.get("JWT_SECRET", "")
+    if not secret:
+        dotenv = REPO / ".env"
+        if dotenv.is_file():
+            for line in dotenv.read_text().splitlines():
+                key, sep, value = line.partition("=")
+                if sep and key.strip() == "JWT_SECRET":
+                    secret = value.strip().strip("'\"")
+    if not secret:
+        die("JWT_SECRET is not set: export the target's secret, or `make env` for the local stack")
+    return secret
 
 
 def bearer(user_id: str) -> dict[str, str]:
