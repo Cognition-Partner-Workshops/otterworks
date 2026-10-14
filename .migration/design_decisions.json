@@ -284,7 +284,7 @@
       "kind": "flag_domain_violation",
       "column": "active"
     },
-    "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+    "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). The field keeps the proposer's int_to_bool canon rule only because model_patch has no op that drops a field rule; it is a pass-through on true/false (mongo-recon-harness canon.py _int_to_bool returns bool values unchanged), so loaders and recon treat the column as a plain boolean. Plugin gap: the postgresql family raises the int_flag trap on native booleans.",
     "evidence": {
       "kind": "data_profile",
       "ref": "value_domain:plans.active",
@@ -298,7 +298,7 @@
       "kind": "flag_domain_violation",
       "column": "tax_exempt"
     },
-    "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+    "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). The field keeps the proposer's int_to_bool canon rule only because model_patch has no op that drops a field rule; it is a pass-through on true/false (mongo-recon-harness canon.py _int_to_bool returns bool values unchanged), so loaders and recon treat the column as a plain boolean. Plugin gap: the postgresql family raises the int_flag trap on native booleans.",
     "evidence": {
       "kind": "data_profile",
       "ref": "value_domain:tenants.tax_exempt",
@@ -565,7 +565,7 @@
   {
     "op": "note",
     "subject": "known_incompatibilities: ON CONFLICT upserts",
-    "decision": "four sites become idempotent updateOne(upsert): rating_periods ON CONFLICT (tenant_id, period_start) DO UPDATE period_end (rating.sql:117) -> updateOne ratingPeriods {tenantId, periodStart} upsert; rating_results ON CONFLICT (id) DO UPDATE (133) -> same updateOne sets rating.*; invoices ON CONFLICT (id) DO UPDATE status (invoicing.sql:100) -> updateOne invoices {_id} upsert; dunning_attempts ON CONFLICT DO NOTHING (dunning.sql:48) -> updateOne invoices {_id, 'dunningAttempts.attemptNo': {$ne}} $push; notifications WHERE NOT EXISTS (dunning.sql:79-84) -> updateOne {tenantId, kind, sentAt} upsert $setOnInsert.",
+    "decision": "four sites become idempotent updateOne(upsert): rating_periods ON CONFLICT (tenant_id, period_start) DO UPDATE period_end (rating.sql:117) -> updateOne ratingPeriods {tenantId, periodStart} upsert; rating_results ON CONFLICT (id) DO UPDATE (133) -> same updateOne, $set only used/rollover/billable/overage, $setOnInsert the rest; invoices ON CONFLICT (id) DO UPDATE status (invoicing.sql:100) -> updateOne invoices {_id} upsert with $setOnInsert tenantId/periodId/issuedAt and $set status; dunning_attempts ON CONFLICT DO NOTHING (dunning.sql:48) -> updateOne invoices {_id, 'dunningAttempts.attemptNo': {$ne}} $push; notifications WHERE NOT EXISTS (dunning.sql:79-84) -> updateOne {tenantId, kind, sentAt} upsert $setOnInsert.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/rating.sql",
       "lines": "117",
@@ -623,7 +623,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "fn_invoice_preview"
     },
-    "resolution": "migrate (NOTES.md s2.3): read + compute: subscription->plan as fn_entitlement, fn_usage_rating, sum of tenants.creditNotes[].remainingAmount > 0, tenants.taxExempt; builds the 5 preview lines in Decimal (tax 8.25% split in two, credit = min(credit, total)). Pure read.",
+    "resolution": "migrate (NOTES.md s2.3): read + compute: plan of the subscription overlapping the period (same overlap predicate as fn_usage_rating, invoicing.sql:23-29), fn_usage_rating, sum of tenants.creditNotes[].remainingAmount > 0, tenants.taxExempt; builds the 5 preview lines in Decimal (tax 8.25% split in two, credit = min(credit, total)). Pure read.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/invoicing.sql",
       "lines": "23-58",
@@ -649,7 +649,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "fn_overdue_accounts"
     },
-    "resolution": "migrate (NOTES.md s2.3): read: invoices.find({status: 'overdue', issuedAt < asOf}).sort({issuedAt, _id}) then tenants status by _id (or $lookup); daysOverdue computed app-side from issuedAt in UTC.",
+    "resolution": "migrate (NOTES.md s2.3): read: invoices.find({status: 'overdue', issuedAt < asOf 00:00Z}).sort({issuedAt, _id}) (issued_at::date < p_as_of is exactly issuedAt < start of asOf in UTC) then tenants status by _id (or $lookup); daysOverdue = asOf - date(issuedAt UTC) computed app-side.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/dunning.sql",
       "lines": "11-17",
@@ -662,7 +662,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "fn_usage_rating"
     },
-    "resolution": "migrate (NOTES.md s2.3): compute: subscription (as fn_entitlement), plan by _id, usageEvents aggregate sum(units) over tenantId + occurredAt in [periodStart, periodEnd+1d), ratingPeriods.find({tenantId, periodStart in [start-3 months, start)}) summing rating.rolloverUnits capped at 2*includedUnits; then the tier arithmetic (101-unit first tier, 1.5x second tier) and the suspension proration in Decimal with PostgreSQL round() semantics. Pure read.",
+    "resolution": "migrate (NOTES.md s2.3): compute: subscription = subscriptions.find({tenantId, startsOn <= periodEnd, endsOn null-or >= periodStart}).sort(startsOn desc).limit(1) \u2014 the overlap predicate of rating.sql:31-37, not fn_entitlement's single-date predicate (a subscription that ended mid-period still rates); plan by _id, usageEvents aggregate sum(units) over tenantId + occurredAt in [periodStart, periodEnd+1d), ratingPeriods.find({tenantId, periodStart in [start-3 months, start)}) summing rating.rolloverUnits capped at 2*includedUnits; then the tier arithmetic (101-unit first tier, 1.5x second tier) and the suspension proration in Decimal with PostgreSQL round() semantics. Pure read.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/rating.sql",
       "lines": "31-75",
@@ -701,7 +701,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "sp_finalize_rating"
     },
-    "resolution": "migrate (NOTES.md s2.3): write: fn_usage_rating then a single updateOne(upsert) on ratingPeriods {tenantId, periodStart} setting periodEnd, _id = md5(tenant||period_start) on insert, and rating {id: md5(period_id), subscriptionId, usedUnits, quotaUnits, rolloverUnits = max(quota-used,0), billableUnits, overageAmount, createdAt = periodEnd 00:00Z}; replaces the two ON CONFLICT statements.",
+    "resolution": "migrate (NOTES.md s2.3): write: fn_usage_rating then a single updateOne(upsert) on ratingPeriods {tenantId, periodStart}: $set periodEnd (ON CONFLICT (tenant_id, period_start) DO UPDATE period_end), $setOnInsert _id = md5(tenant||period_start), rating.id = md5(period_id), rating.subscriptionId, rating.quotaUnits, rating.createdAt = periodEnd 00:00Z (the rating_results INSERT columns the ON CONFLICT (id) clause does not touch), $set rating.usedUnits, rating.rolloverUnits = max(quota-used,0), rating.billableUnits, rating.overageAmount (the four columns rating.sql:133-137 updates). Re-finalizing a period therefore keeps the original subscription, quota and createdAt exactly as the source does.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/rating.sql",
       "lines": "107-137",
@@ -714,7 +714,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "sp_issue_invoice"
     },
-    "resolution": "migrate (NOTES.md s2.3): write: sp_finalize_rating; updateOne(upsert) invoices {_id: md5(period_id||'invoice')} set status issued, tenantId, periodId, issuedAt; invoiceLines replaced wholesale from fn_invoice_preview (DELETE+INSERT -> $set array), totals rounded to 2 places; then FIFO credit application as updateOne on tenants with arrayFilters per creditNotes.id ordered by issuedOn, id. Touches ratingPeriods, invoices, tenants -> one multi-document transaction.",
+    "resolution": "migrate (NOTES.md s2.3): write: sp_finalize_rating; updateOne(upsert) invoices {_id: md5(period_id||'invoice')}: $setOnInsert tenantId, periodId, issuedAt = periodEnd 00:00Z (INSERT columns), $set status = 'issued' only (invoicing.sql:100 ON CONFLICT (id) DO UPDATE SET status), so a reissue keeps the original issuedAt; invoiceLines replaced wholesale from fn_invoice_preview (DELETE+INSERT -> $set array), totals rounded to 2 places; then FIFO credit application as updateOne on tenants with arrayFilters per creditNotes.id ordered by issuedOn, id. Touches ratingPeriods, invoices, tenants -> one multi-document transaction.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/invoicing.sql",
       "lines": "93-138",
@@ -740,7 +740,7 @@
       "kind": "plsql_unit_needs_manual_review",
       "name": "sp_suspend_overdue"
     },
-    "resolution": "migrate (NOTES.md s2.3): write: for each distinct tenantId of invoices {status overdue, issuedAt <= asOf-14d} whose tenant is active: tenants.updateOne status suspended; subscriptions.updateMany({tenantId, status active}, set status suspended, suspendedOn asOf); notifications.updateOne({tenantId, kind suspension, sentAt asOf 00:00Z}, $setOnInsert {_id: md5(tenant||'suspension'||as_of)}, upsert). Three collections -> one multi-document transaction.",
+    "resolution": "migrate (NOTES.md s2.3): write: for each distinct tenantId of invoices {status overdue, issuedAt < (asOf - 13d) 00:00Z} (issued_at::date <= p_as_of - 14 as an exclusive start-of-next-day bound, so an invoice issued at 09:00 on the cutoff day still qualifies) whose tenant is active: tenants.updateOne status suspended; subscriptions.updateMany({tenantId, status active}, set status suspended, suspendedOn asOf); notifications.updateOne({tenantId, kind suspension, sentAt asOf 00:00Z}, $setOnInsert {_id: md5(tenant||'suspension'||as_of)}, upsert). Three collections -> one multi-document transaction.",
     "evidence": {
       "file": "services/legacy-billing/db/procs/dunning.sql",
       "lines": "59-85",
