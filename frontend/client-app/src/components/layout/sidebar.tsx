@@ -84,16 +84,30 @@ export function Sidebar() {
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-12 px-3 border-b border-otter-600">
-          {sidebarOpen && (
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">Document Center</span>
-            </Link>
+        <div
+          className={cn(
+            "flex border-b border-otter-600",
+            sidebarOpen
+              ? "h-12 items-center justify-between px-3"
+              : "h-20 flex-col items-center justify-center gap-1 py-1"
           )}
+        >
+          <Link
+            to="/dashboard"
+            aria-label="Document Center"
+            className={cn("flex items-center", sidebarOpen ? "gap-2" : "justify-center")}
+          >
+            <Logo size={28} className="rounded-sm bg-white" />
+            {sidebarOpen && (
+              <span className="font-semibold text-white text-sm">Document Center</span>
+            )}
+          </Link>
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded hover:bg-otter-600 text-otter-200"
+            className={cn(
+              "rounded hover:bg-otter-600 text-otter-200",
+              sidebarOpen ? "p-2" : "p-1"
+            )}
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}

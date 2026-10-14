@@ -52,4 +52,10 @@ describe('LoginComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Bank of America — Operations Console');
   });
+
+  it('should use the Document Center email placeholder', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const emailInput = compiled.querySelector('input[type="email"]');
+    expect(emailInput?.getAttribute('placeholder')).toBe('admin@documentcenter.example');
+  });
 });
