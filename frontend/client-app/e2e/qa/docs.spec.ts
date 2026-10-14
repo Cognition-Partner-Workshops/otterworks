@@ -58,6 +58,8 @@ test.describe("QA docs", () => {
     await editor.click();
     await page.keyboard.type("plain ", { delay: 30 });
     await page.getByTitle("Bold").click();
+    await expect(editor).toBeFocused();
+    await page.waitForTimeout(250);
     await page.keyboard.type("bold words", { delay: 30 });
 
     await expect(editor.locator("strong")).toHaveText("bold words");
