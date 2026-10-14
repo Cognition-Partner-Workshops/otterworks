@@ -25,4 +25,9 @@ RSpec.describe JwtAuthenticator do
     status, = call_with({ sub: 'u1', email: 'a@b.c', roles: %w[ADMIN USER], type: 'refresh' }, 'HS512')
     expect(status).to eq(401)
   end
+
+  it 'requires a token for the chaos controls' do
+    status, = middleware.call(Rack::MockRequest.env_for('/api/v1/admin/chaos', method: 'POST'))
+    expect(status).to eq(401)
+  end
 end
