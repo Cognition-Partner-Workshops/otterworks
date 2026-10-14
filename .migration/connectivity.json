@@ -1,0 +1,19 @@
+{
+  "policy": "auto",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "source": {
+    "access": "live",
+    "reason": "probe_ok",
+    "blocked": false,
+    "detail": ""
+  },
+  "target": {
+    "access": "migration_cluster",
+    "reason": "probe_ok",
+    "blocked": false,
+    "detail": ""
+  },
+  "blocked": false,
+  "probed_at": "2026-10-14T18:49:21.576668+00:00"
+}
