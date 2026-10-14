@@ -10,6 +10,9 @@ monitoring:
     enabled: true
   dashboard:
     enabled: true
+  links:
+    grafana: https://grafana.otterworks.app
+    jaeger: https://jaeger.otterworks.app
 tracing:
   enabled: true
 strategy:

@@ -29,7 +29,7 @@ demo is new except the tenant's values overlay
    `kubectl -n otterworks-bofa get prometheusrule -o yaml | grep 'branch: demo-bofa'`.
    No label means the tenant was not deployed through the runner, and the
    responder stops instead of guessing; redeploy with
-   `scripts/deploy-tenant.sh bofa --branch demo-bofa`.
+   `scripts/deploy-tenant.sh bofa --branch demo-bofa --host-suffix demo.otterworks.app`.
 2. Record one full run: `incident/tenant.sh arm bofa`, wait for the session,
    let it finish, `incident/tenant.sh disarm bofa`. Keep the session URL, the PR
    and its recording. Close the PR or leave it open; do not merge.
