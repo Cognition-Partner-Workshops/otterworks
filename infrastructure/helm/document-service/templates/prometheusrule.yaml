@@ -8,7 +8,9 @@
 {{- $rules := list -}}
 {{- range $rule := $group.rules -}}
 {{- $r := deepCopy $rule -}}
-{{- $_ := set $r "expr" (include "document-service.scopeExpr" (dict "expr" $rule.expr "namespace" $ns)) -}}
+{{- $o := index ($.Values.monitoring.rules.overrides | default dict) ($rule.alert | default "") | default dict -}}
+{{- $_ := set $r "expr" (include "document-service.scopeExpr" (dict "expr" ($o.expr | default $rule.expr) "namespace" $ns "listHandler" $.Values.monitoring.listHandlerMatcher)) -}}
+{{- with $o.for }}{{- $_ := set $r "for" . -}}{{- end }}
 {{- $labels := mergeOverwrite (deepCopy ($rule.labels | default dict)) ($.Values.monitoring.rules.extraLabels | default dict) (dict "namespace" $ns) -}}
 {{- $_ := set $r "labels" $labels -}}
 {{- $ann := deepCopy ($rule.annotations | default dict) -}}

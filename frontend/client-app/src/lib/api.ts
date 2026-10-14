@@ -334,7 +334,7 @@ export const documentsApi = {
     });
     return data;
   },
-  listAll: async (pageSize = 500): Promise<Document[]> => {
+  listAll: async (pageSize = 1000): Promise<Document[]> => {
     type Page = { items?: Document[]; data?: Document[]; pages?: number };
     const first = (await documentsApi.list(1, pageSize)) as unknown as Page;
     const rest = await Promise.all(
