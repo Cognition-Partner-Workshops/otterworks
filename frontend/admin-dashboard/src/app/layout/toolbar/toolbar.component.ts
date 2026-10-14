@@ -16,7 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
         <img src="assets/bank-mark.svg" alt="Document Center logo" width="28" height="28" />
         <span class="brand-name">BANK OF AMERICA</span>
         <span aria-hidden="true" class="brand-divider"></span>
-        <span class="product-name">Document Center</span>
+        <span class="product-name">Operations Console</span>
       </div>
       <span class="spacer"></span>
       <span class="user-info" *ngIf="authService.currentUser as user">

@@ -239,10 +239,10 @@ function StatCard({
   color: "blue" | "purple" | "green" | "orange";
 }>) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600",
-    purple: "bg-purple-50 text-purple-600",
-    green: "bg-green-50 text-green-600",
-    orange: "bg-orange-50 text-orange-600",
+    blue: "bg-[#e8ecf5] text-[#012169]",
+    purple: "bg-[#fce8eb] text-[#e31837]",
+    green: "bg-[#e8ecf5] text-[#012169]",
+    orange: "bg-[#fce8eb] text-[#e31837]",
   };
 
   return (
