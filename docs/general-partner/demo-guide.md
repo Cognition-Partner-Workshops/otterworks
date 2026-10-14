@@ -27,10 +27,10 @@ The on-demand worker shape runs through the whole portfolio. Something happens (
 | Application development | A feature from a one-paragraph spec to a reviewed pull request | Make a copy of a document |
 | Application maintenance | A CVE across several build files, a bug report nobody can reproduce | Text4Shell across the JVM modules as a workflow, the iOS base URL |
 | Quality engineering | Untested modules, a red job everyone ignores, accessibility nobody measured | File-service coverage, the document-service test health, the public pages under axe |
-| Digital engineering | A defect a user sees on screen, a native app in the simulator | Trash and Download on screen, the iOS safe area |
-| Security vulnerability triage | Which findings are real | Eight findings in, three fixed with runtime proof |
+| Digital engineering | A defect a user sees on screen, a native app in the simulator, a desktop client on Windows | The Windows client walked through on a Windows machine, the iOS safe area |
+| Security vulnerability triage | Which findings are real, and what to do with the scanner export that lands every quarter | Eight findings in, three fixed with runtime proof; the quarterly export ingested into a scan profile with a push-triggered rescan |
 | Code scans | Devin's own scan of the repository and a fix for what it found | The security scan, the search scoping fix |
-| On-call | The page at three in the morning | The tester and the automation's responder |
+| On-call | The page at three in the morning, and the Monday check nobody remembers to run | The tester and the automation's responder; the scheduled health report that found `main` red on its first run |
 
 ## The sessions in presenting order
 
@@ -124,15 +124,15 @@ Tests: 1, 3, 5 (zero critical and serious violations across all twenty combinati
 
 What to open: the before table (contrast on the landing and privacy pages, unnamed password-toggle buttons on login and register, missing main landmark and heading), the after table at zero, the raw axe JSON before and after, the screenshots of the visible fixes, and the new Playwright accessibility spec that runs against the built pages in CI.
 
-### 5. Trash and Download, fixed on screen
+### 5. The Windows client, walked through on a Windows machine
 
-Session: https://partner-workshops.devinenterprise.com/sessions/094c5cd92dda490b8a348df573ea08c5. PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/1844.
+Session (Windows): https://partner-workshops.devinenterprise.com/sessions/7d0f23d83ba8412d89777fd3abe0c378. PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2018.
 
-Say first: "Two defects a user sees: delete in Trash asks nothing, and Download gives no feedback. Devin opened the app on its own desktop and showed us both before it changed a line."
+Say first: "The WPF desktop client has no owner and no test plan. We asked Devin to build it from `main` on a Windows machine, click through every screen against a stubbed gateway, and fix the two worst defects it found."
 
-Tests: 3, 5 (the defect has to be visible before and gone after).
+Tests: 3, 5 (each defect has to be on screen before and gone after), 6 (nobody on the team has a Windows box set up for this client).
 
-What to open: the organization skill `otterworks-local-browser` that the persona approved from this session (Customize, then Skills; it holds the local browser-check notes a future session follows), the before pass on `main` (Download flashes a spinner and a toast, then the tab leaves the app for the raw storage URL and nothing is saved; Trash already confirms, so Devin said so instead of claiming a fix), the one question it asked (how to get a real download when storage sends no CORS headers; the persona chose the file-service `?disposition=attachment` URL), the after pass with the file saved byte for byte and the app still on the page, the failed state with a retry when storage is blocked, the keyboard-safe delete dialog that names the file, the ten before and after screenshots in the PR body, `npm test` 25 of 25, and `docker compose down -v` at the end.
+What to open: the Windows session itself (the platform picker offered it, no VM was provisioned by anyone), the local gateway stub it wrote so the client had something to talk to, the before screenshots per screen, the two fixes (the Files button loaded the list and kept showing documents; an expired session left the user on a dead screen instead of returning to sign-in), the after screenshots, and the CI on the PR. The Trash and Download act that used to sit here was archived: `main` already confirmed Delete and Empty Trash when that session ran, so only the Download half was real; its PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/1844 stays open.
 
 ### 5b. The iOS safe area
 
@@ -174,16 +174,53 @@ Tests: 2, 4 (Prometheus, Jaeger, the Alertmanager payload and the source in one 
 
 What to open: in the tester, the arm of the n-plus-one scenario, the alert firing 95 seconds later, the Alertmanager `Notify success` line and the responder appearing ten minutes later with no human prompt. In the responder, the plain-language instructions on the automation page and the `!incident_responder` playbook behind them, the trace with 111 spans of which 100 are the same query, the batched query in the PR, and the honest after gate. Then back in the tester: statements per request from 98 to 5, and p95 still around 1.4 seconds against the 0.5 second bar, so the tester calls the gate red. Say that out loud; an on-call worker that reports a red gate is the point. The automation paged twice when the alert re-fired, so a second responder opened https://github.com/Cognition-Partner-Workshops/otterworks/pull/1834 with the same change; leave it closed in the demo.
 
+### 9. The quarterly scanner export, ingested and rescanned on every push
+
+Session: https://partner-workshops.devinenterprise.com/sessions/f1838ca8cf3249258f26f79f75449ae0. Scan: https://partner-workshops.devinenterprise.com/code-scan/c46b335ecc6542afbc9c438c312645e1 (profile `Quarterly scanner export`, ingest mode). Automation: https://partner-workshops.devinenterprise.com/automations/782b5bc443e34afb8b361c8963a3351b (runs "scan new commits" on every push to `main`). PRs: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2010 (the export, committed byte for byte), https://github.com/Cognition-Partner-Workshops/otterworks/pull/2014 (S-105, the committed `JWT_SECRET` default), https://github.com/Cognition-Partner-Workshops/otterworks/pull/2016 (D-201, baseline security headers at the gateway).
+
+Say first: "Act 6 was a one-off triage. This is the same export treated as a feed: it goes into a scan profile, every row gets a verdict, an owner and evidence on the Security page, Devin fixes the reachable rows from there, and from now on every push to `main` rescans."
+
+Tests: 1, 2 (the export comes back every quarter), 4 (ten scanner rows against the source, the running gateway and the earlier PRs).
+
+What to open: the Security page with ten rows and a verdict each, the rows already covered by PRs #1830 and #1827 (no duplicate fixes), S-107 marked unreproducible because the file and route it cites do not exist, S-108 with its path corrected, S-106 excluded by policy because `AGENTS.md` keeps the Java 8 report-service as a lab exercise (the persona made that call in the timeline), the two remediation PRs opened from the scan page, and the automation page. The scanner's own product names stay in the export because it is the scanner's output; nothing Devin wrote repeats them.
+
+### 10. Monday health report: `main` red on the first run
+
+Session: https://partner-workshops.devinenterprise.com/sessions/8a70cba9e0b54f7f9ea2a1d57b9555fe. Automation: https://partner-workshops.devinenterprise.com/automations/bfcb6e3048a14e4795325867cb7a3340 (weekly, Monday 06:00 UTC, runs as the organization, one run at a time). First scheduled-style run: https://partner-workshops.devinenterprise.com/sessions/831d4bff7f184bfb99b2d78f330ea95d. PR: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2011.
+
+Say first: "We asked for a Monday morning check of `main`: toolchain, dependency gate, the document-service job, pin drift. Devin ran it once by hand to prove the instructions, and `main` came out red."
+
+Tests: 2, 5 (the dependency gate and the 27-case behaviour check say done), 6 (06:00 on a Monday).
+
+What to open: the hand run with the gate failing on Commons Text 1.9 in report-service, legacy-portal and notification-service, the branch where the gate passes across all seven modules and the behaviour check passes 27 of 27 without re-recording expected output, the automation page with the plain-language instructions, and the on-demand run that found PR #2011 already open and commented on it instead of opening a second one. The persona approved the automation in its own timeline; that card is the only human step in the loop.
+
+## The pitch, one session per sentence
+
+Use this when you have ten minutes and one story to tell. Each line is a beat of the pitch and the one stop that proves it; everything is finished evidence, nothing has to be running.
+
+| Beat | Open |
+|---|---|
+| Work arrives without a prompt, the instant a trigger fires | Act 8 automation and its responder https://partner-workshops.devinenterprise.com/sessions/5c1861f7088e44559198df7e5208fa0f; act 10 for the scheduled shape |
+| The same fix at scale, delegated to child agents | Act 3, the Text4Shell workflow https://partner-workshops.devinenterprise.com/sessions/d99e7d2407814d14bf664f12a7368228 |
+| Persists across a time lapse, picks up where it stopped | The 03:55 UTC pause and resume visible in act 3's timeline |
+| Preconfigured with the team's approach and skills | Act 1b playbook children https://partner-workshops.devinenterprise.com/sessions/d545c14d3b0248bb90b26dbe94355015 and https://partner-workshops.devinenterprise.com/sessions/bf51e4619882435abb653a541fccb712; Customize, Skills, `otterworks-local-browser` |
+| Scopes a migration before anyone funds it | Act 1c Migrations board https://partner-workshops.devinenterprise.com/org/partner-demo-viewonly/migrations and its parent https://partner-workshops.devinenterprise.com/sessions/f7c1e01a55ce4717bf6aa80f32c38021 |
+| High-volume, repeatable security work | Act 6 https://partner-workshops.devinenterprise.com/sessions/f202c81fe00e44138928e2386d17fd93 and act 9 for the recurring version |
+| Its own machine in every OS, worked with like a peer | Act 5b on macOS https://partner-workshops.devinenterprise.com/sessions/127cc31e664c477e893e7374212b8341 and act 5 on Windows |
+| A governed sandbox: autonomy inside controls | The sidebar itself: one read-only organization, no cloud account, every PR open for human review |
+
+Session titles in this sidebar state the takeaway (what was proven, what stayed red, which PR) instead of the assignment, so the audience reads the result before the prompt. Four sessions rewrote the title they were offered because it overstated the evidence, and set an accurate one.
+
 ## Before you present
 
 1. Sign in through Field Kit with area `Product, leadership and partner` and identity `Pre-Sales Solution Architect`.
-2. The sidebar shows only sessions that persona owns. If a session is missing, you are signed in as the wrong persona. The two automation responders are owned by the organization, so open them from the links above.
+2. The sidebar shows only sessions that persona owns. If a session is missing, you are signed in as the wrong persona. The automation responders (act 8 and act 10) are owned by the organization, so open them from the links above. Sessions that were duplicates, stale or superseded were archived; the links in this guide are the kept set.
 3. The recordings and screenshots are attachments on each session or images in the pull request body.
 4. Nothing in the portfolio merges to `main`. The pull requests are the artifact.
 
 ## Cleanup
 
-Nothing in this portfolio lives in a cloud account. Every session ran its stack on its own machine with Docker Compose and shut it down before it finished; the sessions say so in their last message and the audit checked `docker ps` where the session left output. The organization keeps three durable pieces on purpose: the automation `otterworks-incident-responder (Alertmanager page)`, which runs as the organization with a limit of 30 ACU per run and three runs an hour, the playbook `Answer a production alert as the first responder` (`!incident_responder`), and the playbook `Extract one legacy billing module into billing-service with parity`. Disable the automation if you do not want a stray Alertmanager to start a session. The webhook secret was rotated after the run and the old one returns 403. The branches behind PRs #1830 to #1841 and the guide PR stay until the PRs are closed.
+Nothing in this portfolio lives in a cloud account. Every session ran its stack on its own machine with Docker Compose and shut it down before it finished; the sessions say so in their last message and the audit checked `docker ps` where the session left output. The organization keeps these durable pieces on purpose: the automation `otterworks-incident-responder (Alertmanager page)`, which runs as the organization with a limit of 30 ACU per run and three runs an hour; the automation `otterworks: rescan quarterly scanner export on push to main`; the automation `Monday main health report`; the scan profile `Quarterly scanner export`; the playbook `Answer a production alert as the first responder` (`!incident_responder`); and the playbook `Extract one legacy billing module into billing-service with parity`. Disable the automation if you do not want a stray Alertmanager to start a session. The webhook secret was rotated after the run and the old one returns 403. The branches behind PRs #1830 to #1841 and the guide PR stay until the PRs are closed.
 
 ## Known limits
 
@@ -191,6 +228,8 @@ Nothing in this portfolio lives in a cloud account. Every session ran its stack 
 - The organization owns the two automation responders, because the automation API accepts only organization, creator or service-user identities. The persona owns the playbook and the tester.
 - The `document-service` CI job is red on PRs #1830, #1832, #1834 and #1839 for the nine pre-existing test failures that PR #1835 fixes.
 - `CodeQL` is red on the three billing PRs (#1831, #1842, #1843). It flags the MD5 helper that rebuilds the legacy row ids; parity depends on it and nobody on the persona's side can dismiss the alert, so each PR body records it as a known legacy-compatibility exception. Every other check on those PRs is green.
-- On the Trash and Download act, `main` already confirms Delete and Empty Trash (the QA report predates commit a324a50d). Devin said so instead of claiming a fix, and tightened the dialog. The Download done state reads "Download started" because the app never sees when the browser finishes a cross-origin download.
+- The Trash and Download session is archived (see act 5); PR #1844 stays open with the Download fix and the tightened dialog.
+- Act 9 leaves S-106 unfixed on purpose: the Java 8 report-service is a lab exercise under `AGENTS.md`. Act 10's PR #2011 moves Commons Text in the modules that may change.
+- Act 5's PR drew two CodeQL alerts on an email regex in the local gateway stub. The persona asked for a plain check in its place; the PR's checks page shows the current state.
 - The migration PR (#1845) went green on its second CI run. The `dependency-scan` job had flagged two starlette advisories on the first, so the PR worker moved starlette to 1.3.1 and FastAPI to 0.135.4 and re-ran the transcript replay and the smoke test; that upgrade is beyond the translation itself and the parent says so. The last ticket stays In review until a human reviews the PR. It is a 40-file PR: open the body and the Accepted differences list, and leave the diff closed.
 - The persona hit the enterprise default of 100 ACU per user per cycle at 03:55 UTC on 2026-10-07 and every running session paused. The persona was moved to the uncapped `FieldKit` tier and the sessions resumed with one line each. The pause is visible in the timelines.
