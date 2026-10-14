@@ -5,13 +5,15 @@
 #
 #   NS=mig PROCS_DB_PORT=55433 .migration/fixtures/legacy_billing_source.sh
 #
-# Afterwards store POSTGRESQL_RO_DSN (JSON, see profiles/postgresql.md) as:
-#   {"user":"billing_ro","password":"<BILLING_RO_PASSWORD>","host":"127.0.0.1","port":<PROCS_DB_PORT>,"database":"billing_<NS>","schema":"billing"}
+# The role password comes from BILLING_RO_PASSWORD, or from the "password" field of the
+# OW_BILLING_PG_RO_DSN secret (JSON, see profiles/postgresql.md):
+#   {"user":"billing_ro","password":"<secret>","host":"127.0.0.1","port":<PROCS_DB_PORT>,"database":"billing_<NS>","schema":"billing"}
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 : "${NS:=mig}"
 : "${PROCS_DB_PORT:=55433}"
-: "${BILLING_RO_PASSWORD:?set BILLING_RO_PASSWORD (the value goes into the POSTGRESQL_RO_DSN secret, never into git)}"
+: "${BILLING_RO_PASSWORD:=$(printf '%s' "${OW_BILLING_PG_RO_DSN:-}" | sed -n 's/.*"password":"\([^"]*\)".*/\1/p')}"
+: "${BILLING_RO_PASSWORD:?set BILLING_RO_PASSWORD or OW_BILLING_PG_RO_DSN (never commit the value)}"
 export NS PROCS_DB_PORT
 docker compose -p "otterworks-procs-${NS}" -f docker-compose.procs.yml up -d --wait legacy-billing-db
 docker compose -p "otterworks-procs-${NS}" -f docker-compose.procs.yml exec -T \
