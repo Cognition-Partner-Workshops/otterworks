@@ -18,7 +18,7 @@
     "unit": "one unit per legacy procedure module (services/legacy-billing/db/procs/<module>.sql): its routines, the collections it owns, the target module that replaces it. Every routine and every collection of mapping_spec v2 appears in exactly one unit.",
     "ownership": "a collection is owned (loaded, declared as write target) by the earliest wave that writes it or embeds its table; later units read it but never load it. A routine that writes another unit's collection does so through the owner's repository API (writes_via_owner), so each billing_migration.<collection> is a write target of exactly one batch and wave-preflight's collision check passes.",
     "depth": "0 = no other unit referenced; otherwise 1 + max depth of the units it reads from or writes through.",
-    "wave": "PRD waves kept: 1 plans, 2 rating, 3 invoicing + dunning (two batches, d-wave-width 2). depth 2 and 3 share wave 3 because the dunning batch's write target (notifications) is disjoint from invoicing's and its recon compares notifications against its own source table; its parity scenarios read invoices from the reset-seeded fixture target."
+    "wave": "PRD waves kept: 1 plans, 2 rating, 3 invoicing + dunning (two batches, d-wave-width 2). Write targets are unique per batch in every wave. The one deviation to decide on this step: w3-b02 (dunning) is dispatched after w3-b01 (invoicing) has merged, because dunning's code reads invoices and appends through the invoicing repository; alternative is a wave 4 for dunning with its own preflight/verify. Recon scope follows ownership: invoicing reconciles invoices with both embedded arrays, dunning reconciles notifications."
   },
   "cross_unit_writes": [
     {
@@ -40,7 +40,7 @@
       "unit": "dunning",
       "touches": "invoices.dunningAttempts",
       "owner": "invoicing",
-      "resolution": "API through owner (append_dunning_attempt); dunning_attempts rows loaded through the same API"
+      "resolution": "runtime API through owner (append_dunning_attempt); the seeded dunning_attempts rows are loaded by the invoicing batch, not by dunning"
     },
     {
       "routine": "billing.sp_suspend_overdue",
@@ -101,9 +101,11 @@
           ],
           "write_targets": [
             "billing_migration.notifications"
-          ]
+          ],
+          "dispatch_after": "w3-b01"
         }
-      ]
+      ],
+      "note": "write targets are disjoint (invoices vs notifications) but w3-b02 depends on w3-b01's code; dispatch w3-b02 after w3-b01 merges"
     }
   ],
   "totals": {
@@ -173,7 +175,8 @@
           "writes": [
             "subscriptions"
           ],
-          "pattern": "multi-document transaction (close open subscription + insert new)"
+          "pattern": "multi-document transaction (close open subscription + insert new)",
+          "identity": "md5(p_tenant_id::text || p_plan_id::text || p_effective_on::text)::uuid (plans.sql:60)"
         }
       ],
       "collections": [
@@ -271,7 +274,7 @@
           "services/billing-service/tests/test_domain.py",
           "services/billing-service/tests/test_plans_api.py"
         ],
-        "work": "swap PostgresPlansRepository (schema billing_svc) for a billing_migration-backed repository behind the existing PlansRepository protocol; load plans, tenants(+creditNotes), subscriptions; recon; no domain-logic rewrite"
+        "work": "swap PostgresPlansRepository (schema billing_svc) for a billing_migration-backed repository behind the existing PlansRepository protocol; load plans, tenants(+creditNotes), subscriptions; recon. One targeted domain change: change_plan computes the new subscription id as md5(tenant_id||plan_id||effective_on)::uuid like sp_change_plan (plans.sql:60) instead of uuid5 (domain.py:100), per identity_rule; no other logic rewrite"
       },
       "documents": {
         "plans": 3,
@@ -346,7 +349,8 @@
           "calls": [
             "billing.fn_usage_rating"
           ],
-          "pattern": "single-document upsert (ratingPeriods with rating subdocument)"
+          "pattern": "single-document upsert (ratingPeriods with rating subdocument)",
+          "identity": "period md5(tenant_id||period_start), result md5(period_id) (rating.sql:103,127)"
         }
       ],
       "collections": [
@@ -506,7 +510,8 @@
             "billing.sp_finalize_rating",
             "billing.fn_invoice_preview"
           ],
-          "pattern": "multi-document transaction (invoices upsert + lines replace + credit-note drawdown via plans)"
+          "pattern": "multi-document transaction (invoices upsert + lines replace + credit-note drawdown via plans)",
+          "identity": "invoice md5(period_id||'invoice'), line md5(invoice_id||line_no) (invoicing.sql:85-86,109)"
         }
       ],
       "collections": [
@@ -514,7 +519,8 @@
       ],
       "source_tables": [
         "invoices",
-        "invoice_lines"
+        "invoice_lines",
+        "dunning_attempts"
       ],
       "embeds": [
         {
@@ -526,7 +532,7 @@
           "collection": "invoices",
           "array_path": "dunningAttempts",
           "child_table": "dunning_attempts",
-          "loaded_by": "dunning (element writer); invoicing loads the parent documents and the invoiceLines array only"
+          "loaded_by": "invoicing: the whole invoices document (invoiceLines[] and dunningAttempts[]) is loaded and reconciled by this batch; dunning only appends elements at runtime through append_dunning_attempt"
         }
       ],
       "write_targets": [
@@ -587,7 +593,8 @@
               43,
               48
             ]
-          }
+          },
+          "when": "runtime only (sp_schedule_dunning replacement), never during a load"
         }
       ],
       "scenarios": [
@@ -625,7 +632,7 @@
       "documents": {
         "invoices": 3,
         "embedded_invoice_lines": 2,
-        "embedded_dunning_attempts_loaded_by_dunning": 1
+        "embedded_dunning_attempts": 1
       }
     },
     {
@@ -673,7 +680,8 @@
           "writes": [
             "dunning_attempts"
           ],
-          "pattern": "per-invoice array append, idempotent on (invoiceId, attemptNo)"
+          "pattern": "per-invoice array append, idempotent on (invoiceId, attemptNo)",
+          "identity": "md5(invoice_id||attempt_no) (dunning.sql:46)"
         },
         {
           "name": "billing.sp_suspend_overdue",
@@ -694,15 +702,15 @@
             "subscriptions",
             "notifications"
           ],
-          "pattern": "multi-document transaction (tenant + subscriptions via plans, notifications upsert)"
+          "pattern": "multi-document transaction (tenant + subscriptions via plans, notifications upsert)",
+          "identity": "md5(tenant_id||'suspension'||as_of) (dunning.sql:77)"
         }
       ],
       "collections": [
         "notifications"
       ],
       "source_tables": [
-        "notifications",
-        "dunning_attempts"
+        "notifications"
       ],
       "embeds": [],
       "write_targets": [
@@ -727,7 +735,7 @@
         {
           "owner": "invoicing",
           "target": "billing_migration.invoices (dunningAttempts[] append)",
-          "how": "invoicing repository append_dunning_attempt(invoiceId, attempt) with upsert semantics on (invoiceId, attemptNo); the dunning_attempts source rows are loaded through this API, never by a direct write to invoices",
+          "how": "runtime only: the sp_schedule_dunning replacement calls the invoicing repository append_dunning_attempt(invoiceId, attempt), upsert on (invoiceId, attemptNo). The dunning batch loads nothing into invoices: the seeded dunning_attempts rows are loaded and reconciled by the invoicing batch as part of the invoices document.",
           "source": {
             "file": "services/legacy-billing/db/procs/dunning.sql",
             "lines": [
@@ -794,9 +802,14 @@
         "work": "dunning domain + repository over notifications; reads invoices/tenants; all cross-unit writes go through the plans and invoicing repositories"
       },
       "documents": {
-        "notifications": 1,
-        "dunning_attempts_appended_into_invoices": 1
-      }
+        "notifications": 1
+      },
+      "dispatch_after": "w3-b01",
+      "dispatch_note": "code dependency, not a write-target collision: the dunning module reads invoices documents and calls the invoicing repository's append_dunning_attempt, so its batch can only be built once w3-b01 has merged on the run branch (a worker must never build a bootstrap substitute for an unlanded sibling). Same wave, same verify ticket; width 2 is a cap, not a requirement."
     }
-  ]
+  ],
+  "identity_rule": {
+    "decision": "design_decisions.json: known_incompatibilities identity / serial sequences",
+    "rule": "until cutover every procedure-created identifier is the legacy md5(...)::uuid (plans.sql:60, rating.sql:103,127, invoicing.sql:85-86,109, dunning.sql:46,77) so strict tol-v1 recon and cross-collection references line up; the existing plans change_plan uses uuid5 (services/billing-service/app/domain.py:100) and must be changed to the md5 form as part of w1-b01"
+  }
 }
