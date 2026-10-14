@@ -18,7 +18,6 @@ Usage: python stub_gateway.py [--port 8080]
 import argparse
 import json
 import math
-import re
 import secrets
 import uuid
 from datetime import datetime, timezone
@@ -26,9 +25,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 PREFIX = "/api/v1"
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 state = {"users": {}, "tokens": {}, "documents": [], "files": [], "expired_tokens": set()}
+
+
+def is_well_formed_email(email):
+    if email.count("@") != 1 or any(c.isspace() for c in email):
+        return False
+    local, domain = email.split("@")
+    return bool(local) and "." in domain[1:-1]
 
 
 def now_iso():
@@ -63,7 +68,7 @@ def register(body):
     display = (body.get("displayName") or "").strip()
     if not email:
         errors.append("email: must not be blank")
-    elif not EMAIL_RE.match(email):
+    elif not is_well_formed_email(email):
         errors.append("email: must be a well-formed email address")
     if not password:
         errors.append("password: must not be blank")
@@ -85,7 +90,7 @@ def register(body):
 def login(body):
     email = (body.get("email") or "").strip()
     password = body.get("password") or ""
-    if not email or not EMAIL_RE.match(email) or not password:
+    if not email or not is_well_formed_email(email) or not password:
         return auth_error(400, "Bad Request", "email: must be a well-formed email address")
     user = state["users"].get(email.lower())
     if not user or user["password"] != password:
