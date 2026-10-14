@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:47:34.505205+00:00",
+  "generated_at": "2026-10-14T06:12:27.695119+00:00",
   "spec": {
     "package": "pkg_auth_users",
     "sqlserver_table": "stg.stg_auth_users",
