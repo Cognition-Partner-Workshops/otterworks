@@ -23,6 +23,9 @@ import { AuthService } from './core/services/auth.service';
       </div>
     </div>
     <ng-template #loginView>
+      <div class="concept-banner login-banner">
+        Concept demo. Not affiliated with, endorsed by, or produced by Bank of America. All people, figures and events shown are fictional.
+      </div>
       <router-outlet></router-outlet>
     </ng-template>
   `,
@@ -37,6 +40,14 @@ import { AuthService } from './core/services/auth.service';
       display: flex;
       flex-direction: column;
       min-width: 0;
+    }
+
+    .login-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
     }
 
     .concept-banner {
