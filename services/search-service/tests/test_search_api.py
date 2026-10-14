@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,22 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_never_5xx_with_suggest_500_flag_set(self, client, mock_meilisearch_client):
+        """The suggest_500 chaos flag must not turn real suggestions into a 500."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Quarterly report"}, {"title": "Quarterly plan"}],
+        }
+        flagged_redis = MagicMock()
+        flagged_redis.exists.return_value = 1
+
+        with patch("app.api.search._get_redis", return_value=flagged_redis):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly report", "Quarterly plan"]
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
