@@ -54,4 +54,4 @@ logging:
     org.springframework.security: WARN
 
 otterworks:
-  admin-emails: ${ADMIN_EMAILS:demo@documentcenter.example}
+  admin-emails: ${ADMIN_EMAILS:}
