@@ -1,41 +1,48 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-14T06:14:21.625476+00:00",
+  "generated_at": "2026-10-14T06:56:26.168401+00:00",
   "spec": {
     "package": "pkg_audit",
-    "sqlserver_table": "stg.stg_audit_events",
-    "snowflake_model": "STAGING.STG_AUDIT_EVENTS",
-    "keys": [
-      "id"
-    ],
-    "columns": [
-      "user_id",
-      "action",
-      "resource_type",
-      "resource_id",
-      "details",
-      "ip_address",
-      "user_agent",
-      "timestamp",
-      "tenant_id",
-      "source_system"
-    ],
-    "rename": {
-      "id": "audit_id",
-      "timestamp": "event_ts_utc"
-    },
-    "excluded": {
-      "extracted_at": "run timestamp: @[System::StartTime] of the SSIS run vs dbt run_started_at"
-    }
+    "destinations": [
+      {
+        "columns": [
+          "user_id",
+          "action",
+          "resource_type",
+          "resource_id",
+          "details",
+          "ip_address",
+          "user_agent",
+          "timestamp",
+          "tenant_id",
+          "source_system"
+        ],
+        "sqlserver_table": "stg.stg_audit_events",
+        "snowflake_model": "STAGING.STG_AUDIT_EVENTS",
+        "keys": [
+          "id"
+        ],
+        "rename": {
+          "id": "audit_id",
+          "timestamp": "event_ts_utc"
+        },
+        "excluded": {
+          "extracted_at": "run timestamp: @[System::StartTime] of the SSIS run vs dbt run_started_at"
+        },
+        "unit": "ssis:pkg_audit"
+      }
+    ]
   },
-  "unit": {
-    "unit": "ssis:pkg_audit",
-    "status": "PASS",
-    "source_rows": 160000,
-    "target_rows": 160000,
-    "differing_key_count": 0,
-    "differences": [],
-    "explanation": ""
-  }
+  "units": [
+    {
+      "unit": "ssis:pkg_audit",
+      "status": "PASS",
+      "source_rows": 160000,
+      "target_rows": 160000,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
 }

@@ -1,11 +1,14 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:11:36.245844+00:00",
+  "generated_at": "2026-10-14T06:56:13.016775+00:00",
   "spec": {
     "package": "pkg_collaboration",
     "destinations": [
       {
+        "keys": [
+          "id"
+        ],
         "columns": [
           "event_type",
           "document_id",
@@ -14,9 +17,6 @@
           "created_at",
           "tenant_id",
           "source_system"
-        ],
-        "keys": [
-          "id"
         ],
         "snowflake_model": "STAGING.STG_COLLAB_EVENTS",
         "sqlserver_table": "stg.stg_collab_events",

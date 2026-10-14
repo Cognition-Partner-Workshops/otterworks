@@ -4,6 +4,8 @@ Staging parity pkg_audit PASS 160000 / 160000 differing_keys=0
 Not compared:
 - `extracted_at`: run timestamp: @[System::StartTime] of the SSIS run vs dbt run_started_at
 
+### Notes
+
 Compared: the SQL Server side is the replay of `pkg_audit.dtsx` by `source/replay/ssis_replay.py`, which interprets the package XML in Python; it does not execute SSIS. The package has no Script Task. `BusinessDate` is a package parameter that the data flow never reads, so 2026-09-15 and 2026-09-30 load the same 160,000 rows; both dates were replayed, built and gated (PASS 160000 / 160000 on each).
 
 ### Business decisions
