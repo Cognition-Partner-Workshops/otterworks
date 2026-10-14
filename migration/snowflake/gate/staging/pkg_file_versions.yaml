@@ -4,4 +4,4 @@ snowflake_model: STAGING.STG_FILE_VERSIONS
 keys: [file_id, version]
 columns: [size_bytes, created_by, created_at, source_system]
 excluded:
-  extracted_at: "@[System::StartTime] of the package run; differs on every run on both sides"
+  extracted_at: "@[System::StartTime] (GETDATE() of the package run, America/New_York); differs on every run on both sides"
