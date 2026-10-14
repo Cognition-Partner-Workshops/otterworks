@@ -2,7 +2,7 @@ module Api
   module V1
     module Admin
       class IncidentsController < ApplicationController
-        before_action :set_incident, only: %i[show update destroy trigger_session]
+        before_action :set_incident, only: %i[show update destroy trigger_session link_session]
 
         # GET /api/v1/admin/incidents
         def index
@@ -149,6 +149,34 @@ module Api
           else
             render json: { error: 'Failed to create Devin session' }, status: :service_unavailable
           end
+        end
+
+        # PATCH /api/v1/admin/incidents/:id/devin_session
+        # Lets a session started outside the Console (e.g. the Alertmanager automation) attach itself.
+        def link_session
+          attrs = params.require(:devin_session).permit(:session_id, :url)
+          uri = URI.parse(attrs[:url].to_s)
+          unless attrs[:session_id].present? && uri.is_a?(URI::HTTPS) && uri.host.present?
+            return render json: { error: 'session_id and an https url are required' }, status: :unprocessable_entity
+          end
+          if @incident.devin_session_id.present?
+            return render json: { error: 'Incident already has a Devin session' }, status: :unprocessable_entity
+          end
+
+          @incident.investigate! if @incident.status == 'open'
+          @incident.update!(devin_session_id: attrs[:session_id], devin_session_url: uri.to_s, devin_session_status: 'running')
+
+          AuditLogger.log(
+            action: 'incident.devin_session_linked',
+            resource_type: 'Incident',
+            resource_id: @incident.id,
+            request: request,
+            changes_made: { devin_session_id: attrs[:session_id] }
+          )
+
+          render json: @incident, serializer: IncidentSerializer
+        rescue URI::InvalidURIError
+          render json: { error: 'session_id and an https url are required' }, status: :unprocessable_entity
         end
 
         private

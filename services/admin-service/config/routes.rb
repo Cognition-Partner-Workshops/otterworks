@@ -41,6 +41,7 @@ Rails.application.routes.draw do
         resources :incidents, only: %i[index show create update destroy] do
           member do
             post :trigger_session
+            patch :devin_session, action: :link_session
           end
         end
 
