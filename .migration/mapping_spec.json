@@ -1,144 +1,7 @@
 {
-  "version": "v1",
+  "version": "v2",
   "source_family": "postgresql",
   "collections": [
-    {
-      "collection": "dunningAttempts",
-      "root_table": "dunning_attempts",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "_id"
-      },
-      "fields": [
-        {
-          "source": "tenant_id",
-          "target": "tenantId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "invoice_id",
-          "target": "invoiceId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "attempt_no",
-          "target": "attemptNo",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "scheduled_for",
-          "target": "scheduledFor",
-          "source_type": "DATE",
-          "bson_type": "date",
-          "rules": [
-            "datetime_utc_truncate_ms"
-          ]
-        },
-        {
-          "source": "status",
-          "target": "status",
-          "source_type": "TEXT",
-          "bson_type": "string",
-          "rules": []
-        }
-      ],
-      "embeds": [],
-      "decision": {
-        "shape": "collection",
-        "key_strategy": "natural primary key",
-        "key_fields": [
-          {
-            "source": "id",
-            "target": "id",
-            "source_type": "UUID",
-            "bson_type": "binData",
-            "rules": []
-          }
-        ],
-        "natural_keys": [
-          {
-            "name": "dunning_attempts_invoice_id_attempt_no_key",
-            "columns": [
-              "invoice_id",
-              "attempt_no"
-            ]
-          }
-        ],
-        "references": [
-          {
-            "column": [
-              "invoice_id"
-            ],
-            "to": "invoices",
-            "to_columns": [
-              "id"
-            ],
-            "why": "parent is shared by several tables"
-          },
-          {
-            "column": [
-              "tenant_id"
-            ],
-            "to": "tenants",
-            "to_columns": [
-              "id"
-            ],
-            "why": "parent is shared by several tables"
-          }
-        ],
-        "open_questions": [
-          {
-            "kind": "lob",
-            "table": "dunning_attempts",
-            "columns": [
-              "status"
-            ],
-            "evidence": [
-              {
-                "kind": "ddl",
-                "ref": "LOB columns; check document size"
-              },
-              {
-                "kind": "data_profile",
-                "ref": "lob_bytes:dunning_attempts.status"
-              }
-            ],
-            "proposal": "LOB column(s) status measured max 5 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
-            "measured": {
-              "status": {
-                "avg_bytes": 5.0,
-                "max_bytes": 5.0
-              }
-            }
-          }
-        ]
-      },
-      "indexes": [
-        {
-          "keys": [
-            [
-              "invoiceId",
-              1
-            ],
-            [
-              "attemptNo",
-              1
-            ]
-          ],
-          "unique": true,
-          "origin": "natural_key",
-          "evidence": []
-        }
-      ]
-    },
     {
       "collection": "invoices",
       "root_table": "invoices",
@@ -319,6 +182,171 @@
               "ref": "ap-1a8c2fdba7"
             }
           ]
+        },
+        {
+          "array_path": "dunningAttempts",
+          "child_table": "dunning_attempts",
+          "child_key": [
+            "id"
+          ],
+          "child_fields": [
+            {
+              "source": "tenant_id",
+              "target": "tenantId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "attempt_no",
+              "target": "attemptNo",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "scheduled_for",
+              "target": "scheduledFor",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "status",
+              "target": "status",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            },
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key_fields": [
+            {
+              "source": "invoice_id",
+              "target": "invoiceId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key": [
+            "invoice_id"
+          ],
+          "key": {
+            "source": [
+              "id"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "tenant_id",
+              "target": "tenantId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "attempt_no",
+              "target": "attemptNo",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "scheduled_for",
+              "target": "scheduledFor",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "status",
+              "target": "status",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            }
+          ],
+          "cardinality": "1:few",
+          "cardinality_basis": "derived",
+          "basis_sources": [
+            "ddl"
+          ],
+          "evidence": "FK ['invoice_id']; services/legacy-billing/db/procs/dunning.sql: d-dunning-attempts = embed in invoices (recommended; the PRD's seven collections omit the table). Every read and write is keyed by invoice_id: sp_schedule_dunning reads max(attempt_no) per invoice (dunning.sql:34-36) and appends one attempt per overdue invoice per run, idempotent on (invoice_id, attempt_no). An invoice stops accruing attempts when it leaves status 'overdue', so the array is bounded by the dunning cycle; profile: fanout max 1, 61 B per element, 1 row. The redundant tenant_id column stays on the element as a reference to tenants.",
+          "shape": "array",
+          "parent_ref": [
+            "id"
+          ],
+          "child_references": [
+            {
+              "column": [
+                "tenant_id"
+              ],
+              "to": "tenants",
+              "to_columns": [
+                "id"
+              ],
+              "why": "parent is shared by several tables"
+            }
+          ],
+          "child_reference_positions": [
+            1
+          ],
+          "child_parent_references": [
+            {
+              "position": 0,
+              "reference": {
+                "column": [
+                  "invoice_id"
+                ],
+                "to": "invoices",
+                "to_columns": [
+                  "id"
+                ],
+                "why": "parent is shared by several tables"
+              }
+            }
+          ],
+          "child_open_questions": [],
+          "resolved_questions": [
+            {
+              "kind": "lob",
+              "table": "dunning_attempts",
+              "columns": [
+                "status"
+              ],
+              "evidence": [
+                {
+                  "kind": "ddl",
+                  "ref": "LOB columns; check document size"
+                },
+                {
+                  "kind": "data_profile",
+                  "ref": "lob_bytes:dunning_attempts.status"
+                }
+              ],
+              "proposal": "LOB column(s) status measured max 5 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+              "measured": {
+                "status": {
+                  "avg_bytes": 5.0,
+                  "max_bytes": 5.0
+                }
+              },
+              "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+              "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('scheduled', 'sent', 'skipped'))"
+            }
+          ]
         }
       ],
       "decision": {
@@ -356,7 +384,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "lob",
             "table": "invoices",
@@ -379,7 +408,9 @@
                 "avg_bytes": 7.666666666666667,
                 "max_bytes": 8.0
               }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('draft', 'issued', 'paid', 'overdue'))"
           },
           {
             "kind": "lob",
@@ -412,7 +443,9 @@
                 "avg_bytes": 10.5,
                 "max_bytes": 14.0
               }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: line_type text NOT NULL CHECK (line_type IN ('plan', 'usage', 'tax', 'credit')), description text NOT NULL"
           }
         ]
       },
@@ -429,6 +462,25 @@
             {
               "kind": "access_pattern",
               "ref": "ap-1a8c2fdba7"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "status",
+              1
+            ],
+            [
+              "issuedAt",
+              1
+            ]
+          ],
+          "origin": "decision",
+          "evidence": [
+            {
+              "kind": "decision",
+              "ref": "access_pattern ap-bd84c606b3: sp_suspend_overdue, sp_schedule_dunning and fn_overdue_accounts all select invoices by status = 'overdue' (and issued_at range / order); the only non-key access path on invoices"
             }
           ]
         }
@@ -494,7 +546,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "lob",
             "table": "notifications",
@@ -517,11 +570,38 @@
                 "avg_bytes": 8.0,
                 "max_bytes": 8.0
               }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: kind text NOT NULL CHECK (kind IN ('invoice', 'dunning', 'suspension'))"
           }
         ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ],
+            [
+              "kind",
+              1
+            ],
+            [
+              "sentAt",
+              1
+            ]
+          ],
+          "origin": "decision",
+          "evidence": [
+            {
+              "kind": "decision",
+              "ref": "services/legacy-billing/db/schema.sql: natural key of notifications; sp_suspend_overdue's WHERE NOT EXISTS insert becomes updateOne(upsert) on this key (R2, PR #2019)"
+            }
+          ],
+          "unique": true
+        }
+      ]
     },
     {
       "collection": "plans",
@@ -593,7 +673,18 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "patterns": [
+          {
+            "pattern": "reference_data",
+            "detail": "3 rows, seeded only, no runtime writer; read whole by fn_list_plans and by _id elsewhere",
+            "evidence": "services/legacy-billing/db/procs/plans.sql: FROM billing.plans WHERE active ORDER BY monthly_fee, code"
+          }
+        ],
+        "pattern": "reference_data",
+        "proposal": "3 rows, seeded only, no runtime writer; read whole by fn_list_plans and by _id elsewhere",
+        "pattern_evidence": "services/legacy-billing/db/procs/plans.sql: FROM billing.plans WHERE active ORDER BY monthly_fee, code",
+        "resolved_questions": [
           {
             "kind": "lob",
             "table": "plans",
@@ -625,7 +716,9 @@
                 "avg_bytes": 7.0,
                 "max_bytes": 8.0
               }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: code text NOT NULL UNIQUE, tier text NOT NULL CHECK (tier IN ('starter', 'growth', 'scale'))"
           },
           {
             "kind": "flag_domain_violation",
@@ -641,7 +734,9 @@
               "kind": "data_profile",
               "ref": "value_domain:plans.active"
             },
-            "proposal": "values outside the flag domain; extend the canon rule or fix data"
+            "proposal": "values outside the flag domain; extend the canon rule or fix data",
+            "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+            "cited": "data_profile value_domain:plans.active: measured values of plans.active are only true/false"
           }
         ]
       },
@@ -664,6 +759,22 @@
               "ref": "ap-2fad319cbe"
             }
           ]
+        },
+        {
+          "keys": [
+            [
+              "code",
+              1
+            ]
+          ],
+          "origin": "decision",
+          "evidence": [
+            {
+              "kind": "decision",
+              "ref": "services/legacy-billing/db/schema.sql: natural key of plans (R2, PR #2019)"
+            }
+          ],
+          "unique": true
         }
       ]
     },
@@ -703,7 +814,200 @@
           ]
         }
       ],
-      "embeds": [],
+      "embeds": [
+        {
+          "array_path": "rating",
+          "child_table": "rating_results",
+          "child_key": [
+            "id"
+          ],
+          "child_fields": [
+            {
+              "source": "subscription_id",
+              "target": "subscriptionId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "used_units",
+              "target": "usedUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "quota_units",
+              "target": "quotaUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "rollover_units",
+              "target": "rolloverUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "billable_units",
+              "target": "billableUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "overage_amount",
+              "target": "overageAmount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            },
+            {
+              "source": "created_at",
+              "target": "createdAt",
+              "source_type": "TIMESTAMP WITH TIME ZONE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key_fields": [
+            {
+              "source": "period_id",
+              "target": "periodId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key": [
+            "period_id"
+          ],
+          "key": {
+            "source": [
+              "id"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "subscription_id",
+              "target": "subscriptionId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "used_units",
+              "target": "usedUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "quota_units",
+              "target": "quotaUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "rollover_units",
+              "target": "rolloverUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "billable_units",
+              "target": "billableUnits",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "overage_amount",
+              "target": "overageAmount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            },
+            {
+              "source": "created_at",
+              "target": "createdAt",
+              "source_type": "TIMESTAMP WITH TIME ZONE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            }
+          ],
+          "cardinality": "1:1",
+          "cardinality_basis": "derived",
+          "basis_sources": [
+            "ddl"
+          ],
+          "evidence": "FK ['period_id']; services/legacy-billing/db/procs/rating.sql: d-embed-vs-reference-rating-results = embed (recommended). sp_finalize_rating writes the period and its result in one procedure body, and the result id is md5(period_id), so a period has at most one result by construction (PK on id); the profile measures fanout rating_results->rating_periods min 1 / max 1 over 3 periods and 75 B per embed. fn_usage_rating reads them joined (rating.sql:48-54). The subscription_id pointer stays a reference to subscriptions on the subdocument.; 1:1 subdocument keyed by the child key",
+          "shape": "subdocument",
+          "parent_ref": [
+            "id"
+          ],
+          "child_references": [
+            {
+              "column": [
+                "subscription_id"
+              ],
+              "to": "subscriptions",
+              "to_columns": [
+                "id"
+              ],
+              "why": "child owns its own lifecycle"
+            }
+          ],
+          "child_reference_positions": [
+            1
+          ],
+          "child_parent_references": [
+            {
+              "position": 0,
+              "reference": {
+                "column": [
+                  "period_id"
+                ],
+                "to": "ratingPeriods",
+                "to_columns": [
+                  "id"
+                ],
+                "why": "parent is shared by several tables"
+              }
+            }
+          ],
+          "child_open_questions": [],
+          "resolved_questions": [
+            {
+              "kind": "extended_reference_candidate",
+              "parent": "rating_periods",
+              "child": "rating_results",
+              "pattern_ids": [
+                "ap-69f19c59f2"
+              ],
+              "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+              "resolution": "superseded: rating_results becomes the `rating` subdocument of ratingPeriods, so the rollover read (rr JOIN rp, rating.sql:48-54) is one document and nothing has to be copied",
+              "cited": "services/legacy-billing/db/procs/rating.sql: JOIN billing.rating_periods rp ON rp.id = rr.period_id"
+            }
+          ]
+        }
+      ],
       "decision": {
         "shape": "collection",
         "key_strategy": "natural primary key",
@@ -759,141 +1063,6 @@
             }
           ],
           "unique": true
-        }
-      ]
-    },
-    {
-      "collection": "ratingResults",
-      "root_table": "rating_results",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "_id"
-      },
-      "fields": [
-        {
-          "source": "period_id",
-          "target": "periodId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "subscription_id",
-          "target": "subscriptionId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "used_units",
-          "target": "usedUnits",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "quota_units",
-          "target": "quotaUnits",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "rollover_units",
-          "target": "rolloverUnits",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "billable_units",
-          "target": "billableUnits",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "overage_amount",
-          "target": "overageAmount",
-          "source_type": "NUMERIC(12,2)",
-          "bson_type": "decimal",
-          "rules": []
-        },
-        {
-          "source": "created_at",
-          "target": "createdAt",
-          "source_type": "TIMESTAMP WITH TIME ZONE",
-          "bson_type": "date",
-          "rules": [
-            "datetime_utc_truncate_ms"
-          ]
-        }
-      ],
-      "embeds": [],
-      "decision": {
-        "shape": "collection",
-        "key_strategy": "natural primary key",
-        "key_fields": [
-          {
-            "source": "id",
-            "target": "id",
-            "source_type": "UUID",
-            "bson_type": "binData",
-            "rules": []
-          }
-        ],
-        "natural_keys": [],
-        "references": [
-          {
-            "column": [
-              "period_id"
-            ],
-            "to": "ratingPeriods",
-            "to_columns": [
-              "id"
-            ],
-            "why": "parent is shared by several tables"
-          },
-          {
-            "column": [
-              "subscription_id"
-            ],
-            "to": "subscriptions",
-            "to_columns": [
-              "id"
-            ],
-            "why": "child owns its own lifecycle"
-          }
-        ],
-        "open_questions": [
-          {
-            "kind": "extended_reference_candidate",
-            "parent": "rating_periods",
-            "child": "rating_results",
-            "pattern_ids": [
-              "ap-69f19c59f2"
-            ],
-            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
-          }
-        ]
-      },
-      "indexes": [
-        {
-          "keys": [
-            [
-              "periodId",
-              1
-            ]
-          ],
-          "origin": "reference_fk",
-          "evidence": [
-            {
-              "kind": "access_pattern",
-              "ref": "ap-69f19c59f2"
-            }
-          ]
         }
       ]
     },
@@ -994,7 +1163,8 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "extended_reference_candidate",
             "parent": "plans",
@@ -1003,7 +1173,9 @@
               "ap-64301fefb7",
               "ap-ff88e55f57"
             ],
-            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+            "resolution": "keep the reference, no copied fields: plans is 3-row reference data with no runtime writer (NOTES.md s2.3 write map), so fn_entitlement / fn_invoice_preview / fn_usage_rating read the plan by _id after the subscription (one point read on a cacheable collection). An extended reference can be added after cutover without touching the parity transcripts.",
+            "cited": "services/legacy-billing/db/procs/plans.sql: JOIN billing.plans p ON p.id = s.plan_id"
           },
           {
             "kind": "extended_reference_candidate",
@@ -1012,7 +1184,9 @@
             "pattern_ids": [
               "ap-ff88e55f57"
             ],
-            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer",
+            "resolution": "nothing to copy: fn_entitlement reads only t.id from tenants, which is already subscriptions.tenantId",
+            "cited": "services/legacy-billing/db/procs/plans.sql: SELECT t.id, p.code, p.tier, p.monthly_fee, p.included_units"
           },
           {
             "kind": "lob",
@@ -1036,7 +1210,9 @@
                 "avg_bytes": 7.333333333333333,
                 "max_bytes": 10.0
               }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('active', 'suspended', 'cancelled'))"
           }
         ]
       },
@@ -1257,118 +1433,6 @@
               "ref": "ap-dfb5a1e7b8"
             }
           ]
-        },
-        {
-          "array_path": "usageEvents",
-          "shape": "array",
-          "child_table": "usage_events",
-          "child_key": [
-            "id"
-          ],
-          "child_fields": [
-            {
-              "source": "id",
-              "target": "id",
-              "source_type": "UUID",
-              "bson_type": "binData",
-              "rules": []
-            },
-            {
-              "source": "occurred_at",
-              "target": "occurredAt",
-              "source_type": "TIMESTAMP WITH TIME ZONE",
-              "bson_type": "date",
-              "rules": [
-                "datetime_utc_truncate_ms"
-              ]
-            },
-            {
-              "source": "units",
-              "target": "units",
-              "source_type": "INTEGER(32,0)",
-              "bson_type": "int",
-              "rules": []
-            },
-            {
-              "source": "kind",
-              "target": "kind",
-              "source_type": "TEXT",
-              "bson_type": "string",
-              "rules": []
-            }
-          ],
-          "parent_key_fields": [
-            {
-              "source": "tenant_id",
-              "target": "tenantId",
-              "source_type": "UUID",
-              "bson_type": "binData",
-              "rules": []
-            }
-          ],
-          "parent_key": [
-            "tenant_id"
-          ],
-          "parent_ref": [
-            "id"
-          ],
-          "key": {
-            "source": [
-              "id"
-            ],
-            "target": "id"
-          },
-          "fields": [
-            {
-              "source": "occurred_at",
-              "target": "occurredAt",
-              "source_type": "TIMESTAMP WITH TIME ZONE",
-              "bson_type": "date",
-              "rules": [
-                "datetime_utc_truncate_ms"
-              ]
-            },
-            {
-              "source": "units",
-              "target": "units",
-              "source_type": "INTEGER(32,0)",
-              "bson_type": "int",
-              "rules": []
-            },
-            {
-              "source": "kind",
-              "target": "kind",
-              "source_type": "TEXT",
-              "bson_type": "string",
-              "rules": []
-            }
-          ],
-          "cardinality": "1:N",
-          "cardinality_basis": "derived",
-          "evidence": "read_by_parent_key: ap-25c80e4647,ap-b0d666eafd",
-          "basis_sources": [
-            "ddl",
-            "access",
-            "data"
-          ],
-          "evidence_refs": [
-            {
-              "kind": "data_profile",
-              "ref": "fanout:usage_events->tenants(tenant_id)"
-            },
-            {
-              "kind": "data_profile",
-              "ref": "embed_bytes:usage_events->tenants(tenant_id)"
-            },
-            {
-              "kind": "access_pattern",
-              "ref": "ap-25c80e4647"
-            },
-            {
-              "kind": "access_pattern",
-              "ref": "ap-b0d666eafd"
-            }
-          ]
         }
       ],
       "decision": {
@@ -1385,7 +1449,8 @@
         ],
         "natural_keys": [],
         "references": [],
-        "open_questions": [
+        "open_questions": [],
+        "resolved_questions": [
           {
             "kind": "unrated_access_basis",
             "table": "usage_events",
@@ -1393,7 +1458,35 @@
               "ap-25c80e4647",
               "ap-b0d666eafd"
             ],
-            "proposal": "decision rests on cold/unrated reads: confirm call rate before load"
+            "proposal": "decision rests on cold/unrated reads: confirm call rate before load",
+            "resolution": "moot: usage_events is its own collection (d-embed-usage-events); the warm fn_usage_rating read and the cold fn_usage_summary read both hit usageEvents by tenantId + occurredAt and no longer drive an embed decision",
+            "cited": "services/legacy-billing/db/procs/rating.sql: WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end"
+          },
+          {
+            "kind": "lob",
+            "table": "usage_events",
+            "columns": [
+              "kind"
+            ],
+            "evidence": [
+              {
+                "kind": "ddl",
+                "ref": "LOB columns; check document size"
+              },
+              {
+                "kind": "data_profile",
+                "ref": "lob_bytes:usage_events.kind"
+              }
+            ],
+            "proposal": "LOB column(s) kind measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
+            "measured": {
+              "kind": {
+                "avg_bytes": 4.8,
+                "max_bytes": 8.0
+              }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: kind text NOT NULL CHECK (kind IN ('api', 'storage', 'compute'))"
           },
           {
             "kind": "lob",
@@ -1426,31 +1519,9 @@
                 "avg_bytes": 7.333333333333333,
                 "max_bytes": 10.0
               }
-            }
-          },
-          {
-            "kind": "lob",
-            "table": "usage_events",
-            "columns": [
-              "kind"
-            ],
-            "evidence": [
-              {
-                "kind": "ddl",
-                "ref": "LOB columns; check document size"
-              },
-              {
-                "kind": "data_profile",
-                "ref": "lob_bytes:usage_events.kind"
-              }
-            ],
-            "proposal": "LOB column(s) kind measured max 8 bytes on this data: size allows embedding, but confirm the bound on the real estate (profile is a sample)",
-            "measured": {
-              "kind": {
-                "avg_bytes": 4.8,
-                "max_bytes": 8.0
-              }
-            }
+            },
+            "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+            "cited": "services/legacy-billing/db/schema.sql: name text NOT NULL UNIQUE, tax_exempt boolean NOT NULL DEFAULT false, status text NOT NULL CHECK (status IN ('active', 'suspended'))"
           },
           {
             "kind": "flag_domain_violation",
@@ -1470,7 +1541,9 @@
               "kind": "data_profile",
               "ref": "value_domain:tenants.tax_exempt"
             },
-            "proposal": "values outside the flag domain; extend the canon rule or fix data"
+            "proposal": "values outside the flag domain; extend the canon rule or fix data",
+            "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+            "cited": "data_profile value_domain:tenants.tax_exempt: measured values of tenants.tax_exempt are only true/false"
           }
         ]
       },
@@ -1512,12 +1585,116 @@
               "ref": "ap-fd8da9c0eb"
             }
           ]
+        },
+        {
+          "keys": [
+            [
+              "name",
+              1
+            ]
+          ],
+          "origin": "decision",
+          "evidence": [
+            {
+              "kind": "decision",
+              "ref": "services/legacy-billing/db/schema.sql: natural key of tenants (R2, PR #2019)"
+            }
+          ],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "collection": "usageEvents",
+      "root_table": "usage_events",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "_id"
+      },
+      "fields": [
+        {
+          "source": "occurred_at",
+          "target": "occurredAt",
+          "source_type": "TIMESTAMP WITH TIME ZONE",
+          "bson_type": "date",
+          "rules": [
+            "datetime_utc_truncate_ms"
+          ]
+        },
+        {
+          "source": "units",
+          "target": "units",
+          "source_type": "INTEGER(32,0)",
+          "bson_type": "int",
+          "rules": []
+        },
+        {
+          "source": "kind",
+          "target": "kind",
+          "source_type": "TEXT",
+          "bson_type": "string",
+          "rules": []
+        },
+        {
+          "source": "tenant_id",
+          "target": "tenantId",
+          "source_type": "UUID",
+          "bson_type": "binData",
+          "rules": []
+        }
+      ],
+      "embeds": [],
+      "decision": {
+        "shape": "collection",
+        "key_strategy": "natural primary key",
+        "key_fields": [
+          {
+            "source": "id",
+            "target": "id",
+            "source_type": "UUID",
+            "bson_type": "binData",
+            "rules": []
+          }
+        ],
+        "references": [
+          {
+            "column": [
+              "tenant_id"
+            ],
+            "to": "tenants",
+            "why": "services/legacy-billing/db/procs/rating.sql: d-embed-usage-events = separate-collection (selected in the Plan view). usage_events is append-only metering input with no bound per tenant (seeded only in the estate, NOTES.md s2.3 write map); every read is an aggregate over tenant_id + occurred_at range, never the whole tenant. Embedding in tenants would grow the tenant document without limit (16 MB) and make every entitlement read carry the metering history."
+          }
+        ],
+        "open_questions": [],
+        "resolved_questions": []
+      },
+      "indexes": [
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ],
+            [
+              "occurredAt",
+              1
+            ]
+          ],
+          "origin": "decision",
+          "evidence": [
+            {
+              "kind": "decision",
+              "ref": "access_pattern ap-25c80e4647: fn_usage_rating sums units by tenant_id + occurred_at::date range (rating.sql:43-46); fn_usage_summary (ap-b0d666eafd) groups the same range by kind"
+            }
+          ]
         }
       ]
     }
   ],
   "canonicalization": {
-    "version": "v1-canon",
+    "version": "v2-canon",
     "rules": [
       {
         "rule": "decimal_round",
@@ -1621,68 +1798,7 @@
       "semantics of triggers, packages, and scheduler jobs (names and targets only)",
       "whether unenforced *_ID pointers actually resolve"
     ],
-    "unresolved": [
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_entitlement"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_invoice_lines"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_invoice_preview"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_list_plans"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_overdue_accounts"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_usage_rating"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "FUNCTION",
-        "name": "fn_usage_summary"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PROCEDURE",
-        "name": "sp_change_plan"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PROCEDURE",
-        "name": "sp_finalize_rating"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PROCEDURE",
-        "name": "sp_issue_invoice"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PROCEDURE",
-        "name": "sp_schedule_dunning"
-      },
-      {
-        "kind": "plsql_unit_needs_manual_review",
-        "unit_kind": "PROCEDURE",
-        "name": "sp_suspend_overdue"
-      }
-    ],
+    "unresolved": [],
     "rationale": [
       {
         "parent": "tenants",
@@ -1754,8 +1870,8 @@
           "invoice_id"
         ],
         "rule": "default",
-        "decision": "reference",
-        "basis": "assumed",
+        "decision": "embed",
+        "basis": "derived",
         "basis_sources": [
           "ddl"
         ],
@@ -1763,6 +1879,10 @@
           {
             "kind": "access_pattern",
             "ref": "ap-f625f7e0e2"
+          },
+          {
+            "kind": "decision",
+            "ref": "services/legacy-billing/db/procs/dunning.sql: d-dunning-attempts = embed in invoices (recommended; the PRD's seven collections omit the table). Every read and write is keyed by invoice_id: sp_schedule_dunning reads max(attempt_no) per invoice (dunning.sql:34-36) and appends one attempt per overdue invoice per run, idempotent on (invoice_id, attempt_no). An invoice stops accruing attempts when it leaves status 'overdue', so the array is bounded by the dunning cycle; profile: fanout max 1, 61 B per element, 1 row. The redundant tenant_id column stays on the element as a reference to tenants."
           }
         ],
         "measurements": {
@@ -2140,8 +2260,8 @@
           "period_id"
         ],
         "rule": "shared_child",
-        "decision": "reference",
-        "basis": "assumed",
+        "decision": "embed",
+        "basis": "derived",
         "basis_sources": [
           "ddl"
         ],
@@ -2149,6 +2269,10 @@
           {
             "kind": "access_pattern",
             "ref": "ap-96e3fc65ee"
+          },
+          {
+            "kind": "decision",
+            "ref": "services/legacy-billing/db/procs/rating.sql: d-embed-vs-reference-rating-results = embed (recommended). sp_finalize_rating writes the period and its result in one procedure body, and the result id is md5(period_id), so a period has at most one result by construction (PK on id); the profile measures fanout rating_results->rating_periods min 1 / max 1 over 3 periods and 75 B per embed. fn_usage_rating reads them joined (rating.sql:48-54). The subscription_id pointer stays a reference to subscriptions on the subdocument."
           }
         ],
         "measurements": {
@@ -2370,7 +2494,7 @@
           "tenant_id"
         ],
         "rule": "read_by_parent_key",
-        "decision": "embed",
+        "decision": "reference",
         "basis": "derived",
         "basis_sources": [
           "ddl",
@@ -2401,6 +2525,10 @@
           {
             "kind": "access_pattern",
             "ref": "ap-b0d666eafd"
+          },
+          {
+            "kind": "decision",
+            "ref": "services/legacy-billing/db/procs/rating.sql: d-embed-usage-events = separate-collection (selected in the Plan view). usage_events is append-only metering input with no bound per tenant (seeded only in the estate, NOTES.md s2.3 write map); every read is an aggregate over tenant_id + occurred_at range, never the whole tenant. Embedding in tenants would grow the tenant document without limit (16 MB) and make every entitlement read carry the metering history."
           }
         ],
         "measurements": {
@@ -2472,6 +2600,962 @@
           "tenant_id"
         ],
         "reason": "left prefix of planned index"
+      }
+    ],
+    "decisions": [
+      {
+        "op": "reference",
+        "child_table": "usage_events",
+        "from": "tenants",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "43-46",
+          "quote": "FROM billing.usage_events u WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end",
+          "note": "d-embed-usage-events = separate-collection (selected in the Plan view). usage_events is append-only metering input with no bound per tenant (seeded only in the estate, NOTES.md s2.3 write map); every read is an aggregate over tenant_id + occurred_at range, never the whole tenant. Embedding in tenants would grow the tenant document without limit (16 MB) and make every entitlement read carry the metering history."
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: d-embed-usage-events = separate-collection (selected in the Plan view). usage_events is append-only metering input with no bound per tenant (seeded only in the estate, NOTES.md s2.3 write map); every read is an aggregate over tenant_id + occurred_at range, never the whole tenant. Embedding in tenants would grow the tenant document without limit (16 MB) and make every entitlement read carry the metering history.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "index",
+        "collection": "usageEvents",
+        "keys": [
+          [
+            "tenantId",
+            1
+          ],
+          [
+            "occurredAt",
+            1
+          ]
+        ],
+        "evidence": {
+          "kind": "access_pattern",
+          "ref": "ap-25c80e4647",
+          "note": "fn_usage_rating sums units by tenant_id + occurred_at::date range (rating.sql:43-46); fn_usage_summary (ap-b0d666eafd) groups the same range by kind"
+        },
+        "cited": "access_pattern ap-25c80e4647: fn_usage_rating sums units by tenant_id + occurred_at::date range (rating.sql:43-46); fn_usage_summary (ap-b0d666eafd) groups the same range by kind",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "tenants",
+        "match": {
+          "kind": "unrated_access_basis",
+          "table": "usage_events"
+        },
+        "resolution": "moot: usage_events is its own collection (d-embed-usage-events); the warm fn_usage_rating read and the cold fn_usage_summary read both hit usageEvents by tenantId + occurredAt and no longer drive an embed decision",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "87-90",
+          "quote": "WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: WHERE u.tenant_id = p_tenant_id AND u.occurred_at::date BETWEEN p_period_start AND p_period_end",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "tenants",
+        "match": {
+          "kind": "lob",
+          "table": "usage_events"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "37",
+          "quote": "kind text NOT NULL CHECK (kind IN ('api', 'storage', 'compute'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: kind text NOT NULL CHECK (kind IN ('api', 'storage', 'compute'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "ratingResults",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "rating_periods"
+        },
+        "resolution": "superseded: rating_results becomes the `rating` subdocument of ratingPeriods, so the rollover read (rr JOIN rp, rating.sql:48-54) is one document and nothing has to be copied",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "48-54",
+          "quote": "JOIN billing.rating_periods rp ON rp.id = rr.period_id"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: JOIN billing.rating_periods rp ON rp.id = rr.period_id",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "rating_results",
+        "into": "ratingPeriods",
+        "array_path": "rating",
+        "cardinality": "1:1",
+        "shape": "subdocument",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "115-137",
+          "quote": "md5(v_period_id::text)::uuid, v_period_id, v_subscription_id",
+          "note": "d-embed-vs-reference-rating-results = embed (recommended). sp_finalize_rating writes the period and its result in one procedure body, and the result id is md5(period_id), so a period has at most one result by construction (PK on id); the profile measures fanout rating_results->rating_periods min 1 / max 1 over 3 periods and 75 B per embed. fn_usage_rating reads them joined (rating.sql:48-54). The subscription_id pointer stays a reference to subscriptions on the subdocument."
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: d-embed-vs-reference-rating-results = embed (recommended). sp_finalize_rating writes the period and its result in one procedure body, and the result id is md5(period_id), so a period has at most one result by construction (PK on id); the profile measures fanout rating_results->rating_periods min 1 / max 1 over 3 periods and 75 B per embed. fn_usage_rating reads them joined (rating.sql:48-54). The subscription_id pointer stays a reference to subscriptions on the subdocument.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "dunningAttempts",
+        "match": {
+          "kind": "lob",
+          "table": "dunning_attempts"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "97",
+          "quote": "status text NOT NULL CHECK (status IN ('scheduled', 'sent', 'skipped'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('scheduled', 'sent', 'skipped'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "embed",
+        "child_table": "dunning_attempts",
+        "into": "invoices",
+        "array_path": "dunningAttempts",
+        "cardinality": "1:few",
+        "shape": "array",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/dunning.sql",
+          "lines": "28-48",
+          "quote": "ON CONFLICT (invoice_id, attempt_no) DO NOTHING",
+          "note": "d-dunning-attempts = embed in invoices (recommended; the PRD's seven collections omit the table). Every read and write is keyed by invoice_id: sp_schedule_dunning reads max(attempt_no) per invoice (dunning.sql:34-36) and appends one attempt per overdue invoice per run, idempotent on (invoice_id, attempt_no). An invoice stops accruing attempts when it leaves status 'overdue', so the array is bounded by the dunning cycle; profile: fanout max 1, 61 B per element, 1 row. The redundant tenant_id column stays on the element as a reference to tenants."
+        },
+        "cited": "services/legacy-billing/db/procs/dunning.sql: d-dunning-attempts = embed in invoices (recommended; the PRD's seven collections omit the table). Every read and write is keyed by invoice_id: sp_schedule_dunning reads max(attempt_no) per invoice (dunning.sql:34-36) and appends one attempt per overdue invoice per run, idempotent on (invoice_id, attempt_no). An invoice stops accruing attempts when it leaves status 'overdue', so the array is bounded by the dunning cycle; profile: fanout max 1, 61 B per element, 1 row. The redundant tenant_id column stays on the element as a reference to tenants.",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "index",
+        "collection": "invoices",
+        "keys": [
+          [
+            "status",
+            1
+          ],
+          [
+            "issuedAt",
+            1
+          ]
+        ],
+        "evidence": {
+          "kind": "access_pattern",
+          "ref": "ap-bd84c606b3",
+          "note": "sp_suspend_overdue, sp_schedule_dunning and fn_overdue_accounts all select invoices by status = 'overdue' (and issued_at range / order); the only non-key access path on invoices"
+        },
+        "cited": "access_pattern ap-bd84c606b3: sp_suspend_overdue, sp_schedule_dunning and fn_overdue_accounts all select invoices by status = 'overdue' (and issued_at range / order); the only non-key access path on invoices",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "tenants",
+        "subject": "d-embed-vs-reference-credit-notes",
+        "decision": "keep the proposer's embed tenants.creditNotes (derived, co_read). The PRD lists credit_notes as a collection; the evidence says otherwise: fn_invoice_preview sums remaining_amount per tenant (invoicing.sql:34-37) and sp_issue_invoice applies credits FIFO per tenant (127-138), always together with the tenant; nothing in the estate inserts credit notes (seeded only), fanout p99 2 / max 2, 92 B per embed. Element writes become updateOne with arrayFilters on creditNotes.id.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "lines": "34-37",
+          "quote": "FROM billing.credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > 0"
+        },
+        "cited": "services/legacy-billing/db/procs/invoicing.sql: FROM billing.credit_notes WHERE tenant_id = p_tenant_id AND remaining_amount > 0",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "subscriptions",
+        "subject": "d-embed-vs-reference-subscriptions",
+        "decision": "keep the proposer's reference (derived, shared_child): subscriptions stays a collection keyed by tenantId. The PRD's seven collections imply subscriptions inside tenants, but rating_results.subscription_id points at a subscription row from another document (ratingPeriods.rating), sp_change_plan appends a new row per plan change (plans.sql:57-62) while ending the previous one, and the hot fn_entitlement read is served by the tenantId+endsOn+startsOn index. Embedding would need keep_references into array elements and a two-document write on every plan change.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "50-62",
+          "quote": "INSERT INTO billing.subscriptions ( id, tenant_id, plan_id, starts_on, status )"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: INSERT INTO billing.subscriptions ( id, tenant_id, plan_id, starts_on, status )",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptions",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "plans"
+        },
+        "resolution": "keep the reference, no copied fields: plans is 3-row reference data with no runtime writer (NOTES.md s2.3 write map), so fn_entitlement / fn_invoice_preview / fn_usage_rating read the plan by _id after the subscription (one point read on a cacheable collection). An extended reference can be added after cutover without touching the parity transcripts.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "30-34",
+          "quote": "JOIN billing.plans p ON p.id = s.plan_id"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: JOIN billing.plans p ON p.id = s.plan_id",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptions",
+        "match": {
+          "kind": "extended_reference_candidate",
+          "parent": "tenants"
+        },
+        "resolution": "nothing to copy: fn_entitlement reads only t.id from tenants, which is already subscriptions.tenantId",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "30-35",
+          "quote": "SELECT t.id, p.code, p.tier, p.monthly_fee, p.included_units"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: SELECT t.id, p.code, p.tier, p.monthly_fee, p.included_units",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "pattern",
+        "collection": "plans",
+        "pattern": "reference_data",
+        "detail": "3 rows, seeded only, no runtime writer; read whole by fn_list_plans and by _id elsewhere",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "12-15",
+          "quote": "FROM billing.plans WHERE active ORDER BY monthly_fee, code"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: FROM billing.plans WHERE active ORDER BY monthly_fee, code",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "invoices",
+        "match": {
+          "kind": "lob",
+          "table": "invoices"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "69",
+          "quote": "status text NOT NULL CHECK (status IN ('draft', 'issued', 'paid', 'overdue'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('draft', 'issued', 'paid', 'overdue'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "invoices",
+        "match": {
+          "kind": "lob",
+          "table": "invoice_lines"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "76-77",
+          "quote": "line_type text NOT NULL CHECK (line_type IN ('plan', 'usage', 'tax', 'credit')), description text NOT NULL"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: line_type text NOT NULL CHECK (line_type IN ('plan', 'usage', 'tax', 'credit')), description text NOT NULL",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "notifications",
+        "match": {
+          "kind": "lob",
+          "table": "notifications"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "104",
+          "quote": "kind text NOT NULL CHECK (kind IN ('invoice', 'dunning', 'suspension'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: kind text NOT NULL CHECK (kind IN ('invoice', 'dunning', 'suspension'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "plans",
+        "match": {
+          "kind": "lob",
+          "table": "plans"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "12-13",
+          "quote": "code text NOT NULL UNIQUE, tier text NOT NULL CHECK (tier IN ('starter', 'growth', 'scale'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: code text NOT NULL UNIQUE, tier text NOT NULL CHECK (tier IN ('starter', 'growth', 'scale'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "subscriptions",
+        "match": {
+          "kind": "lob",
+          "table": "subscriptions"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "26",
+          "quote": "status text NOT NULL CHECK (status IN ('active', 'suspended', 'cancelled'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: status text NOT NULL CHECK (status IN ('active', 'suspended', 'cancelled'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "tenants",
+        "match": {
+          "kind": "lob",
+          "table": "tenants"
+        },
+        "resolution": "PostgreSQL `text` is a variable-length column, not a LOB; every flagged column is a CHECK enum or a short unique name (max 14 bytes measured). Map as BSON string; the bound is enforced by the collection's $jsonSchema (enum / maxLength not needed). Plugin gap: the postgresql family classifies `text` as LOB.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "5-7",
+          "quote": "name text NOT NULL UNIQUE, tax_exempt boolean NOT NULL DEFAULT false, status text NOT NULL CHECK (status IN ('active', 'suspended'))"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: name text NOT NULL UNIQUE, tax_exempt boolean NOT NULL DEFAULT false, status text NOT NULL CHECK (status IN ('active', 'suspended'))",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "plans",
+        "match": {
+          "kind": "flag_domain_violation",
+          "column": "active"
+        },
+        "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+        "evidence": {
+          "kind": "data_profile",
+          "ref": "value_domain:plans.active",
+          "note": "measured values of plans.active are only true/false"
+        },
+        "cited": "data_profile value_domain:plans.active: measured values of plans.active are only true/false",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "collection": "tenants",
+        "match": {
+          "kind": "flag_domain_violation",
+          "column": "tax_exempt"
+        },
+        "resolution": "false positive: the column is a native PostgreSQL boolean and the measured domain is exactly {true,false}; load as BSON bool with no conversion ($jsonSchema bsonType bool). Plugin gap: the postgresql family attaches int_to_bool (0/1 domain) to native booleans.",
+        "evidence": {
+          "kind": "data_profile",
+          "ref": "value_domain:tenants.tax_exempt",
+          "note": "measured values of tenants.tax_exempt are only true/false"
+        },
+        "cited": "data_profile value_domain:tenants.tax_exempt: measured values of tenants.tax_exempt are only true/false",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "index",
+        "collection": "plans",
+        "keys": [
+          [
+            "code",
+            1
+          ]
+        ],
+        "unique": true,
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "12",
+          "quote": "code text NOT NULL UNIQUE",
+          "note": "natural key of plans (R2, PR #2019)"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: natural key of plans (R2, PR #2019)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "index",
+        "collection": "tenants",
+        "keys": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "unique": true,
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "5",
+          "quote": "name text NOT NULL UNIQUE",
+          "note": "natural key of tenants (R2, PR #2019)"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: natural key of tenants (R2, PR #2019)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "index",
+        "collection": "notifications",
+        "keys": [
+          [
+            "tenantId",
+            1
+          ],
+          [
+            "kind",
+            1
+          ],
+          [
+            "sentAt",
+            1
+          ]
+        ],
+        "unique": true,
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "106",
+          "quote": "UNIQUE (tenant_id, kind, sent_at)",
+          "note": "natural key of notifications; sp_suspend_overdue's WHERE NOT EXISTS insert becomes updateOne(upsert) on this key (R2, PR #2019)"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: natural key of notifications; sp_suspend_overdue's WHERE NOT EXISTS insert becomes updateOne(upsert) on this key (R2, PR #2019)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "tenants",
+        "subject": "validator: tenants",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, name, taxExempt, status; status enum [active, suspended]; taxExempt bsonType bool; creditNotes[]: required id, issuedOn, amount, remainingAmount (decimal, amount > 0, remainingAmount >= 0; remainingAmount <= amount is app-enforced). NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "3-8",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "plans",
+        "subject": "validator: plans",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, code, tier, monthlyFee, includedUnits, overageRate, active; tier enum [starter, growth, scale]; monthlyFee/overageRate bsonType decimal >= 0; includedUnits int >= 0; active bool. NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "10-18",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "subscriptions",
+        "subject": "validator: subscriptions",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, tenantId, planId, startsOn, status; status enum [active, suspended, cancelled]; endsOn/suspendedOn date or absent (null_missing_equiv); endsOn >= startsOn and suspendedOn >= startsOn are app-enforced (cross-field CHECKs). NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "20-30",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "usageEvents",
+        "subject": "validator: usageEvents",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, tenantId, occurredAt, units, kind; units int > 0 (minimum 1); kind enum [api, storage, compute]. NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "32-38",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "ratingPeriods",
+        "subject": "validator: ratingPeriods",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, tenantId, periodStart, periodEnd; periodEnd >= periodStart app-enforced; rating subdocument: required id, subscriptionId, usedUnits, quotaUnits, rolloverUnits, billableUnits (int >= 0), overageAmount (decimal >= 0), createdAt. NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "40-59",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "invoices",
+        "subject": "validator: invoices",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, tenantId, periodId, issuedAt, subtotal, tax, total, status; status enum [draft, issued, paid, overdue]; subtotal/tax/total decimal >= 0; invoiceLines[]: required id, lineNo (int >= 1), lineType enum [plan, usage, tax, credit], description, amount decimal; dunningAttempts[]: required id, tenantId, attemptNo (int >= 1), scheduledFor, status enum [scheduled, sent, skipped]. NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "61-99",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "collection": "notifications",
+        "subject": "validator: notifications",
+        "decision": "$jsonSchema (validationLevel strict, validationAction error) \u2014 required: _id, tenantId, kind, sentAt; kind enum [invoice, dunning, suspension]. NOT NULL -> required, CHECK IN -> enum, CHECK >= 0 -> minimum; cross-column CHECKs are app-side (recorded for p4 conversion_patterns). Plugin gap: the postgresql census returns no CHECK constraints (census.tables[*].checks empty), so the proposer emitted no check_constraint questions; this note is the disposition.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "lines": "101-107",
+          "note": "CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: CREATE TABLE with NOT NULL / CHECK / UNIQUE clauses for this collection's tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: '' vs NULL distinct",
+        "decision": "no nullable text column in schema billing (every text column is NOT NULL); the only nullable columns are subscriptions.ends_on / suspended_on (date), mapped with null_missing_equiv. No decision needed.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "note": "'' vs NULL distinct"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: '' vs NULL distinct",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: timestamp precision (us -> ms)",
+        "decision": "timestamptz columns occurred_at, created_at, issued_at, sent_at. Every runtime write is a date cast (p_period_end::timestamptz, p_as_of::timestamptz) and seeded values are whole seconds, so no microsecond information exists; canon rule datetime_utc_truncate_ms applies to both sides under tol-v1.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "131",
+          "note": "timestamp precision (us -> ms)"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: timestamp precision (us -> ms)",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: session TimeZone affects timestamptz",
+        "decision": "pin the source session to UTC (SET TIME ZONE 'UTC') in the loader and in recon; occurred_at::date BETWEEN ... in rating.sql:46 / 90 is evaluated in session time, so the app-side range is [periodStart 00:00Z, periodEnd+1d 00:00Z). BSON date is UTC.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "46",
+          "note": "session TimeZone affects timestamptz"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: session TimeZone affects timestamptz",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: identity / serial sequences",
+        "decision": "none: census.sequences = [] and every primary key is uuid. Seeded rows carry fixed uuids; procedure-created rows carry md5(...)::uuid identifiers (rating.sql:103,127; invoicing.sql:85-86,109; dunning.sql:46; plans.sql:60; dunning.sql:77). _id strategy: the source uuid survives the load as _id (BSON binData subtype 4) on every collection and as the element `id` inside creditNotes / invoiceLines / dunningAttempts / rating, so the parity transcripts line up; the app keeps computing the same md5 identifiers until cutover (new documents may switch to ObjectId after cutover).",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "103",
+          "note": "identity / serial sequences"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: identity / serial sequences",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: partitioned / inherited tables",
+        "decision": "none: census tables[*].partitioned = false for all 11 tables.",
+        "evidence": {
+          "file": ".migration/census.json",
+          "note": "partitioned / inherited tables"
+        },
+        "cited": ".migration/census.json: partitioned / inherited tables",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: identifier case folding",
+        "decision": "all identifiers are unquoted lower_snake_case in schema.sql; targets are camelCase per the proposer; no quoted identifiers.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "note": "identifier case folding"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: identifier case folding",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: deferrable constraints",
+        "decision": "none in schema.sql (no DEFERRABLE clause).",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "note": "deferrable constraints"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: deferrable constraints",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: partial / expression indexes",
+        "decision": "none: the 22 catalog indexes are primary-key and UNIQUE btree indexes without predicates (census.indexes).",
+        "evidence": {
+          "file": ".migration/census.json",
+          "note": "partial / expression indexes"
+        },
+        "cited": ".migration/census.json: partial / expression indexes",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: NULL elements in arrays",
+        "decision": "no array-typed columns in schema billing; target arrays (creditNotes, invoiceLines, dunningAttempts) are built from rows and cannot hold null elements.",
+        "evidence": {
+          "file": "services/legacy-billing/db/schema.sql",
+          "note": "NULL elements in arrays"
+        },
+        "cited": "services/legacy-billing/db/schema.sql: NULL elements in arrays",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: collation order",
+        "decision": "text ORDER BY in fn_list_plans (code), fn_usage_summary (kind), sp_issue_invoice credit FIFO (issued_on, id): plan codes are upper-case ASCII, kinds lower-case ASCII, so libc order equals MongoDB binary order on this data; uuid order (id) must be compared as binData bytes, same as PostgreSQL uuid order.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "15",
+          "note": "collation order"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: collation order",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: PL/pgSQL routines",
+        "decision": "12 routines, no triggers (census.triggers = []); each is dispositioned `migrate` in NOTES.md s2.3 and its conversion pattern is recorded per routine in the plsql_unit_needs_manual_review resolutions below (p4 conversion_patterns input).",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "note": "PL/pgSQL routines"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: PL/pgSQL routines",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: row-level security",
+        "decision": "none: billing_ro sees every row of every table (NOTES.md s2.3 access check; row counts equal seed.sql INSERT rows).",
+        "evidence": {
+          "file": ".migration/NOTES.md",
+          "note": "row-level security"
+        },
+        "cited": ".migration/NOTES.md: row-level security",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: materialized views",
+        "decision": "none: census.views = [] and census.materialized_views = [].",
+        "evidence": {
+          "file": ".migration/census.json",
+          "note": "materialized views"
+        },
+        "cited": ".migration/census.json: materialized views",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "known_incompatibilities: ON CONFLICT upserts",
+        "decision": "four sites become idempotent updateOne(upsert): rating_periods ON CONFLICT (tenant_id, period_start) DO UPDATE period_end (rating.sql:117) -> updateOne ratingPeriods {tenantId, periodStart} upsert; rating_results ON CONFLICT (id) DO UPDATE (133) -> same updateOne sets rating.*; invoices ON CONFLICT (id) DO UPDATE status (invoicing.sql:100) -> updateOne invoices {_id} upsert; dunning_attempts ON CONFLICT DO NOTHING (dunning.sql:48) -> updateOne invoices {_id, 'dunningAttempts.attemptNo': {$ne}} $push; notifications WHERE NOT EXISTS (dunning.sql:79-84) -> updateOne {tenantId, kind, sentAt} upsert $setOnInsert.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "117",
+          "note": "ON CONFLICT upserts"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: ON CONFLICT upserts",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "money columns",
+        "decision": "numeric(12,2) (monthly_fee, amounts, subtotal/tax/total, overage_amount) and numeric(12,6) (overage_rate) load as Decimal128 with the source scale, never double or minor-unit integers; tol-v1 numeric_abs_tol 0 so the loader must not re-round. PostgreSQL round(numeric, 2) is half-away-from-zero: the p4 app-side rating/invoice arithmetic must use Decimal with ROUND_HALF_UP semantics to reproduce rating.sql:60 and invoicing.sql:115-124.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "lines": "122-124",
+          "quote": "v_total := round(v_subtotal + v_tax - v_credit, 2);"
+        },
+        "cited": "services/legacy-billing/db/procs/invoicing.sql: v_total := round(v_subtotal + v_tax - v_credit, 2);",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "note",
+        "subject": "fixture coverage gaps (s2.4 manifest)",
+        "decision": "(1) rating_periods->usage_events has no FK and no event falls in any seeded period: the model keeps the legacy join as a range query on usageEvents (tenantId, occurredAt), so an empty period rates to used_units 0 exactly as fn_usage_rating does. (2) invoices.period_id crosses tenants (invoices of tenants Two/Five/Six point at tenant One's periods): invoices and ratingPeriods are both top-level collections referencing tenants and each other by _id, so the cross-tenant shape loads as-is with no tenant constraint on periodId; nothing is embedded under tenants that would need the period. (3) Threshold / 16 MB behaviour is not exercised at 49 rows; the only unbounded child (usage_events) is a collection, every embed is bounded by construction (1:1 rating, per-invoice lines and attempts, per-tenant credit notes with no insert path).",
+        "evidence": {
+          "file": ".migration/fixtures/legacy_billing.json",
+          "note": "coverage_gaps_for_s3.1"
+        },
+        "cited": ".migration/fixtures/legacy_billing.json: coverage_gaps_for_s3.1",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_entitlement"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read: subscriptions.find({tenantId, startsOn <= on, endsOn null-or >= on}).sort(startsOn desc).limit(1) then plans.findOne({_id: planId}); project code/tier/monthlyFee/includedUnits/status, effectiveOn = max(startsOn, on). Pure read, no writes.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "30-39",
+          "note": "FUNCTION billing.fn_entitlement body"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: FUNCTION billing.fn_entitlement body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_invoice_lines"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read: invoices.findOne({_id}, {invoiceLines}) sorted by invoiceLines.lineNo in the app (embedded array).",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "lines": "71-74",
+          "note": "FUNCTION billing.fn_invoice_lines body"
+        },
+        "cited": "services/legacy-billing/db/procs/invoicing.sql: FUNCTION billing.fn_invoice_lines body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_invoice_preview"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read + compute: subscription->plan as fn_entitlement, fn_usage_rating, sum of tenants.creditNotes[].remainingAmount > 0, tenants.taxExempt; builds the 5 preview lines in Decimal (tax 8.25% split in two, credit = min(credit, total)). Pure read.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "lines": "23-58",
+          "note": "FUNCTION billing.fn_invoice_preview body"
+        },
+        "cited": "services/legacy-billing/db/procs/invoicing.sql: FUNCTION billing.fn_invoice_preview body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_list_plans"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read: plans.find({active: true}).sort({monthlyFee: 1, code: 1}); index monthlyFee+code already planned.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "12-15",
+          "note": "FUNCTION billing.fn_list_plans body"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: FUNCTION billing.fn_list_plans body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_overdue_accounts"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read: invoices.find({status: 'overdue', issuedAt < asOf}).sort({issuedAt, _id}) then tenants status by _id (or $lookup); daysOverdue computed app-side from issuedAt in UTC.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/dunning.sql",
+          "lines": "11-17",
+          "note": "FUNCTION billing.fn_overdue_accounts body"
+        },
+        "cited": "services/legacy-billing/db/procs/dunning.sql: FUNCTION billing.fn_overdue_accounts body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_usage_rating"
+        },
+        "resolution": "migrate (NOTES.md s2.3): compute: subscription (as fn_entitlement), plan by _id, usageEvents aggregate sum(units) over tenantId + occurredAt in [periodStart, periodEnd+1d), ratingPeriods.find({tenantId, periodStart in [start-3 months, start)}) summing rating.rolloverUnits capped at 2*includedUnits; then the tier arithmetic (101-unit first tier, 1.5x second tier) and the suspension proration in Decimal with PostgreSQL round() semantics. Pure read.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "31-75",
+          "note": "FUNCTION billing.fn_usage_rating body"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: FUNCTION billing.fn_usage_rating body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "fn_usage_summary"
+        },
+        "resolution": "migrate (NOTES.md s2.3): read: usageEvents aggregate $match {tenantId, occurredAt range} $group by kind {count, sum units} $sort kind.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "87-92",
+          "note": "FUNCTION billing.fn_usage_summary body"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: FUNCTION billing.fn_usage_summary body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "sp_change_plan"
+        },
+        "resolution": "migrate (NOTES.md s2.3): write: subscriptions.updateMany({tenantId, endsOn: null, startsOn < effectiveOn}, set endsOn = effectiveOn-1 and status active unless cancelled) then insertOne({_id: md5(tenant||plan||effective_on), tenantId, planId, startsOn, status active}); two statements on one collection -> one multi-document transaction.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/plans.sql",
+          "lines": "50-62",
+          "note": "PROCEDURE billing.sp_change_plan body"
+        },
+        "cited": "services/legacy-billing/db/procs/plans.sql: PROCEDURE billing.sp_change_plan body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "sp_finalize_rating"
+        },
+        "resolution": "migrate (NOTES.md s2.3): write: fn_usage_rating then a single updateOne(upsert) on ratingPeriods {tenantId, periodStart} setting periodEnd, _id = md5(tenant||period_start) on insert, and rating {id: md5(period_id), subscriptionId, usedUnits, quotaUnits, rolloverUnits = max(quota-used,0), billableUnits, overageAmount, createdAt = periodEnd 00:00Z}; replaces the two ON CONFLICT statements.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/rating.sql",
+          "lines": "107-137",
+          "note": "PROCEDURE billing.sp_finalize_rating body"
+        },
+        "cited": "services/legacy-billing/db/procs/rating.sql: PROCEDURE billing.sp_finalize_rating body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "sp_issue_invoice"
+        },
+        "resolution": "migrate (NOTES.md s2.3): write: sp_finalize_rating; updateOne(upsert) invoices {_id: md5(period_id||'invoice')} set status issued, tenantId, periodId, issuedAt; invoiceLines replaced wholesale from fn_invoice_preview (DELETE+INSERT -> $set array), totals rounded to 2 places; then FIFO credit application as updateOne on tenants with arrayFilters per creditNotes.id ordered by issuedOn, id. Touches ratingPeriods, invoices, tenants -> one multi-document transaction.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/invoicing.sql",
+          "lines": "93-138",
+          "note": "PROCEDURE billing.sp_issue_invoice body"
+        },
+        "cited": "services/legacy-billing/db/procs/invoicing.sql: PROCEDURE billing.sp_issue_invoice body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "sp_schedule_dunning"
+        },
+        "resolution": "migrate (NOTES.md s2.3): write: for each invoices.find({status: 'overdue'}).sort({issuedAt, _id}): attemptNo = max(dunningAttempts.attemptNo)+1, scheduledFor = asOf rolled off the weekend, updateOne({_id, 'dunningAttempts.attemptNo': {$ne: attemptNo}}, {$push: {dunningAttempts: {id: md5(invoice_id||attempt_no), tenantId, attemptNo, scheduledFor, status scheduled}}}) \u2014 idempotent like ON CONFLICT DO NOTHING.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/dunning.sql",
+          "lines": "28-48",
+          "note": "PROCEDURE billing.sp_schedule_dunning body"
+        },
+        "cited": "services/legacy-billing/db/procs/dunning.sql: PROCEDURE billing.sp_schedule_dunning body",
+        "status": "PROPOSED"
+      },
+      {
+        "op": "resolve",
+        "match": {
+          "kind": "plsql_unit_needs_manual_review",
+          "name": "sp_suspend_overdue"
+        },
+        "resolution": "migrate (NOTES.md s2.3): write: for each distinct tenantId of invoices {status overdue, issuedAt <= asOf-14d} whose tenant is active: tenants.updateOne status suspended; subscriptions.updateMany({tenantId, status active}, set status suspended, suspendedOn asOf); notifications.updateOne({tenantId, kind suspension, sentAt asOf 00:00Z}, $setOnInsert {_id: md5(tenant||'suspension'||as_of)}, upsert). Three collections -> one multi-document transaction.",
+        "evidence": {
+          "file": "services/legacy-billing/db/procs/dunning.sql",
+          "lines": "59-85",
+          "note": "PROCEDURE billing.sp_suspend_overdue body"
+        },
+        "cited": "services/legacy-billing/db/procs/dunning.sql: PROCEDURE billing.sp_suspend_overdue body",
+        "status": "PROPOSED"
+      }
+    ],
+    "resolved": [
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_entitlement",
+        "resolution": "migrate (NOTES.md s2.3): read: subscriptions.find({tenantId, startsOn <= on, endsOn null-or >= on}).sort(startsOn desc).limit(1) then plans.findOne({_id: planId}); project code/tier/monthlyFee/includedUnits/status, effectiveOn = max(startsOn, on). Pure read, no writes.",
+        "evidence": "services/legacy-billing/db/procs/plans.sql: FUNCTION billing.fn_entitlement body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_invoice_lines",
+        "resolution": "migrate (NOTES.md s2.3): read: invoices.findOne({_id}, {invoiceLines}) sorted by invoiceLines.lineNo in the app (embedded array).",
+        "evidence": "services/legacy-billing/db/procs/invoicing.sql: FUNCTION billing.fn_invoice_lines body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_invoice_preview",
+        "resolution": "migrate (NOTES.md s2.3): read + compute: subscription->plan as fn_entitlement, fn_usage_rating, sum of tenants.creditNotes[].remainingAmount > 0, tenants.taxExempt; builds the 5 preview lines in Decimal (tax 8.25% split in two, credit = min(credit, total)). Pure read.",
+        "evidence": "services/legacy-billing/db/procs/invoicing.sql: FUNCTION billing.fn_invoice_preview body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_list_plans",
+        "resolution": "migrate (NOTES.md s2.3): read: plans.find({active: true}).sort({monthlyFee: 1, code: 1}); index monthlyFee+code already planned.",
+        "evidence": "services/legacy-billing/db/procs/plans.sql: FUNCTION billing.fn_list_plans body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_overdue_accounts",
+        "resolution": "migrate (NOTES.md s2.3): read: invoices.find({status: 'overdue', issuedAt < asOf}).sort({issuedAt, _id}) then tenants status by _id (or $lookup); daysOverdue computed app-side from issuedAt in UTC.",
+        "evidence": "services/legacy-billing/db/procs/dunning.sql: FUNCTION billing.fn_overdue_accounts body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_usage_rating",
+        "resolution": "migrate (NOTES.md s2.3): compute: subscription (as fn_entitlement), plan by _id, usageEvents aggregate sum(units) over tenantId + occurredAt in [periodStart, periodEnd+1d), ratingPeriods.find({tenantId, periodStart in [start-3 months, start)}) summing rating.rolloverUnits capped at 2*includedUnits; then the tier arithmetic (101-unit first tier, 1.5x second tier) and the suspension proration in Decimal with PostgreSQL round() semantics. Pure read.",
+        "evidence": "services/legacy-billing/db/procs/rating.sql: FUNCTION billing.fn_usage_rating body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "FUNCTION",
+        "name": "fn_usage_summary",
+        "resolution": "migrate (NOTES.md s2.3): read: usageEvents aggregate $match {tenantId, occurredAt range} $group by kind {count, sum units} $sort kind.",
+        "evidence": "services/legacy-billing/db/procs/rating.sql: FUNCTION billing.fn_usage_summary body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_change_plan",
+        "resolution": "migrate (NOTES.md s2.3): write: subscriptions.updateMany({tenantId, endsOn: null, startsOn < effectiveOn}, set endsOn = effectiveOn-1 and status active unless cancelled) then insertOne({_id: md5(tenant||plan||effective_on), tenantId, planId, startsOn, status active}); two statements on one collection -> one multi-document transaction.",
+        "evidence": "services/legacy-billing/db/procs/plans.sql: PROCEDURE billing.sp_change_plan body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_finalize_rating",
+        "resolution": "migrate (NOTES.md s2.3): write: fn_usage_rating then a single updateOne(upsert) on ratingPeriods {tenantId, periodStart} setting periodEnd, _id = md5(tenant||period_start) on insert, and rating {id: md5(period_id), subscriptionId, usedUnits, quotaUnits, rolloverUnits = max(quota-used,0), billableUnits, overageAmount, createdAt = periodEnd 00:00Z}; replaces the two ON CONFLICT statements.",
+        "evidence": "services/legacy-billing/db/procs/rating.sql: PROCEDURE billing.sp_finalize_rating body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_issue_invoice",
+        "resolution": "migrate (NOTES.md s2.3): write: sp_finalize_rating; updateOne(upsert) invoices {_id: md5(period_id||'invoice')} set status issued, tenantId, periodId, issuedAt; invoiceLines replaced wholesale from fn_invoice_preview (DELETE+INSERT -> $set array), totals rounded to 2 places; then FIFO credit application as updateOne on tenants with arrayFilters per creditNotes.id ordered by issuedOn, id. Touches ratingPeriods, invoices, tenants -> one multi-document transaction.",
+        "evidence": "services/legacy-billing/db/procs/invoicing.sql: PROCEDURE billing.sp_issue_invoice body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_schedule_dunning",
+        "resolution": "migrate (NOTES.md s2.3): write: for each invoices.find({status: 'overdue'}).sort({issuedAt, _id}): attemptNo = max(dunningAttempts.attemptNo)+1, scheduledFor = asOf rolled off the weekend, updateOne({_id, 'dunningAttempts.attemptNo': {$ne: attemptNo}}, {$push: {dunningAttempts: {id: md5(invoice_id||attempt_no), tenantId, attemptNo, scheduledFor, status scheduled}}}) \u2014 idempotent like ON CONFLICT DO NOTHING.",
+        "evidence": "services/legacy-billing/db/procs/dunning.sql: PROCEDURE billing.sp_schedule_dunning body"
+      },
+      {
+        "kind": "plsql_unit_needs_manual_review",
+        "unit_kind": "PROCEDURE",
+        "name": "sp_suspend_overdue",
+        "resolution": "migrate (NOTES.md s2.3): write: for each distinct tenantId of invoices {status overdue, issuedAt <= asOf-14d} whose tenant is active: tenants.updateOne status suspended; subscriptions.updateMany({tenantId, status active}, set status suspended, suspendedOn asOf); notifications.updateOne({tenantId, kind suspension, sentAt asOf 00:00Z}, $setOnInsert {_id: md5(tenant||'suspension'||as_of)}, upsert). Three collections -> one multi-document transaction.",
+        "evidence": "services/legacy-billing/db/procs/dunning.sql: PROCEDURE billing.sp_suspend_overdue body"
       }
     ]
   }

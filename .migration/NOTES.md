@@ -84,3 +84,65 @@ dunning_attempts 1, notifications 1.
    adds only this notes file.
 3. The legacy app's principal is the schema owner / superuser. Cutover (p6) cannot be a
    credential-only repoint; it is an `app.py` data-layer change or app retirement.
+
+## s3.1 — design decisions (mapping_spec v2)
+
+Scope: every open item the s2.2 proposal (`mapping_spec.json` v1, commit `d3ce341e9`) left
+behind — 12 `modeling.unresolved`, 17 collection `open_questions`, 0 embed
+`child_open_questions` — plus the PostgreSQL `known_incompatibilities` list from the plugin
+profile and the PRD modeling rules. Applied with `model_patch.py` from
+`.migration/design_decisions.json` (60 cited decisions) as **v2**; `model_patch.py --check`
+exit 0, zero open items left. The spec diff v1 → v2 (`spec_diff.py`) is three edges:
+
+| Edge | v1 (proposer) | v2 | Why |
+|---|---|---|---|
+| tenants → usage_events | embed `tenants.usageEvents` | collection `usageEvents` (+ index `tenantId, occurredAt`) | Plan decision `d-embed-usage-events` = separate-collection: append-only metering input, unbounded per tenant, only ever read as a `tenant_id` + `occurred_at` range aggregate (`rating.sql:43-46`, `87-90`). |
+| rating_periods → rating_results | reference (assumed) | 1:1 subdocument `ratingPeriods.rating` | `sp_finalize_rating` writes both in one body and sets the result id to `md5(period_id)` (`rating.sql:115-137`), so a period has at most one result by construction; `fn_usage_rating` reads them joined (`48-54`); profile fan-out min 1 / max 1, 75 B. |
+| invoices → dunning_attempts | reference (assumed; not in the PRD's seven collections) | 1:few array `invoices.dunningAttempts` | All reads and writes are keyed by `invoice_id` and idempotent on `(invoice_id, attempt_no)` (`dunning.sql:28-48`); attempts stop when the invoice leaves `overdue`; profile fan-out max 1, 61 B. |
+
+Kept from v1 with the proposer's evidence (not re-litigated): `invoices.invoiceLines` (FK
+cascade + unique `(invoice_id, line_no)` + hot read), `tenants.creditNotes` (co-read in
+`fn_invoice_preview` / `sp_issue_invoice`, no insert path in the estate), `subscriptions` as a
+collection (shared child of `rating_results`, appended per plan change). Both of the last two
+differ from the PRD's seven-collection shape and are recorded as `note` decisions so the
+human can re-pick them in the Plan view (`d-embed-vs-reference-credit-notes`,
+`d-embed-vs-reference-subscriptions`).
+
+Target shape (7 collections): `tenants{creditNotes[]}`, `plans`, `subscriptions`,
+`usageEvents`, `ratingPeriods{rating}`, `invoices{invoiceLines[], dunningAttempts[]}`,
+`notifications`. Every `_id` is the source uuid (BSON binData), including the `md5(...)::uuid`
+identifiers the procedures compute, so the `procs/` parity transcripts line up.
+
+Other dispositions (all in `design_decisions.json`, cited):
+
+- 9 `lob` questions: PostgreSQL `text` is not a LOB; every flagged column is a CHECK enum or a
+  short unique name — string, bound by the validator. 2 `flag_domain_violation`: native
+  booleans, the `int_to_bool` 0/1 domain does not apply. 3 `extended_reference_candidate`:
+  one superseded by the `rating` embed, two kept as references (`plans` is 3-row reference data
+  with no writer; `fn_entitlement` reads only `t.id` from tenants). 1 `unrated_access_basis`:
+  moot once `usage_events` is a collection.
+- R1 (`$jsonSchema`): one `validator:` note per collection (required ← NOT NULL, enum ← CHECK
+  IN, minimum ← CHECK >= 0; cross-column CHECKs stay app-side). R2 (unique natural keys):
+  unique indexes on `plans.code`, `tenants.name`, `notifications (tenantId, kind, sentAt)`;
+  `ratingPeriods (tenantId, periodStart)` was already there. New access index
+  `invoices (status, issuedAt)` for the three overdue scans.
+- 14 `known_incompatibilities` rows, each a `note`: no sequences (uuid keys), no partitions,
+  no deferrable/partial indexes, no arrays, no RLS, no materialized views, no nullable text;
+  timestamps pinned to UTC and truncated to ms on both sides; ASCII-only sort columns so libc
+  order = binary order; the 5 `ON CONFLICT` / `WHERE NOT EXISTS` sites → `updateOne(upsert)`;
+  money as Decimal128 at source scale with PostgreSQL `round()` (half away from zero)
+  semantics in the app arithmetic.
+- 12 `plsql_unit_needs_manual_review` → `migrate`, each resolution is the routine's
+  conversion pattern for p4 (`conversion_patterns` input): 7 pure reads, 5 writers of which
+  `sp_change_plan`, `sp_issue_invoice`, `sp_suspend_overdue` touch more than one document and
+  need a multi-document transaction.
+- Fixture gaps from s2.4: empty `rating_periods→usage_events` is the legacy range join on
+  `usageEvents` (rates to 0, as `fn_usage_rating` does); cross-tenant `invoices.period_id`
+  loads as-is because `invoices` and `ratingPeriods` are both top-level and reference each
+  other by `_id`.
+
+Plugin gaps found here (to file against mongo-migration-plugin, not hand-patched): the
+postgresql census returns no CHECK constraints (`tables[*].checks` empty) so no
+`check_constraint` questions are generated; the postgresql family classifies `text` as LOB
+and attaches `int_to_bool` to native booleans. The run branch still has no `tp-smoke`
+target (cut from `main`), so that gate did not run.
