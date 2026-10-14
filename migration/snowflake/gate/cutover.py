@@ -1,4 +1,4 @@
-"""Stop the legacy replay and switch consumers to Snowflake."""
+"""Stop the legacy replay, verify parity, and resume the Snowflake task graph."""
 
 from __future__ import annotations
 
@@ -66,6 +66,19 @@ def main() -> int:
             "--date",
             str(ledger.get("date", "")),
             "--reread",
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    if result.returncode:
+        return result.returncode
+    result = subprocess.run(
+        [  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args  # noqa: E501
+            sys.executable,
+            str(ROOT / "migration" / "snowflake" / "target" / "tasks" / "tasks.py"),
+            "--run",
+            args.run,
+            "resume",
         ],
         cwd=ROOT,
         check=False,

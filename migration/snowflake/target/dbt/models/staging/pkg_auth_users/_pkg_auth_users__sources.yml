@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: pkg_auth_users
+    schema: RAW
+    description: auth_users.csv as read by the SSIS package pkg_auth_users, every column VARCHAR.
+    tables:
+      - name: EXT_AUTH_USERS
+        columns:
+          - name: ID
+          - name: EMAIL
+          - name: DISPLAY_NAME
+          - name: EMAIL_VERIFIED
+          - name: MFA_ENABLED
+          - name: CREATED_AT
+          - name: UPDATED_AT
+          - name: LAST_LOGIN_AT

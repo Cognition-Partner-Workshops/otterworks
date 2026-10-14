@@ -1,0 +1,49 @@
+{
+  "run": "sfm-20261013-lv",
+  "date": "2026-09-30",
+  "generated_at": "2026-10-13T03:10:55.360786+00:00",
+  "spec": {
+    "package": "pkg_billing_invoices",
+    "destinations": [
+      {
+        "snowflake_model": "STAGING.STG_BILLING_INVOICES",
+        "keys": [
+          "invoice_id",
+          "line_no"
+        ],
+        "columns": [
+          "tenant_id",
+          "period_start",
+          "period_end",
+          "issued_at",
+          "subtotal",
+          "tax",
+          "total",
+          "status",
+          "line_id",
+          "line_type",
+          "description",
+          "amount",
+          "source_system"
+        ],
+        "sqlserver_table": "stg.stg_billing_invoices",
+        "rename": {},
+        "excluded": {
+          "extracted_at": "run timestamp: @[System::StartTime] (SQL Server GETDATE() at package start) on SQL Server, query time on Snowflake"
+        },
+        "unit": "ssis:pkg_billing_invoices"
+      }
+    ]
+  },
+  "units": [
+    {
+      "unit": "ssis:pkg_billing_invoices",
+      "status": "PASS",
+      "source_rows": 376,
+      "target_rows": 376,
+      "differing_key_count": 0,
+      "differences": [],
+      "explanation": ""
+    }
+  ]
+}

@@ -61,7 +61,7 @@ dual run require it.
 | `make sfm-gate RUN= DATE=` | run parity and write the ledger |
 | `make sfm-gate-test` | unit tests for the comparison logic, no connections |
 | `make sfm-dual-run RUN= DATE=` | agent replay, dbt build, then the gate |
-| `make sfm-cutover RUN=` | stop the SQL Server replay, set `UBW_BACKEND=snowflake`, re-read the ledger |
+| `make sfm-cutover RUN=` | stop the SQL Server replay, set `UBW_BACKEND=snowflake`, re-read the ledger, and resume the task graph if the reread passes |
 | `make sfm-teardown RUN=` | drop everything for the token |
 | `make sfm-verify-clean RUN=` | list anything still carrying the token, non-zero if anything does |
 

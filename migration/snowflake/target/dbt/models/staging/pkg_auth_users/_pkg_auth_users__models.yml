@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: stg_auth_users
+    description: Snowflake replacement for SSIS pkg_auth_users (stg.stg_auth_users).
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: email
+        tests: [not_null]
+      - name: display_name
+        tests: [not_null]
+      - name: email_verified
+        tests: [not_null]
+      - name: mfa_enabled
+        tests: [not_null]
+      - name: created_at
+        tests: [not_null]
+      - name: updated_at
+        tests: [not_null]
+      - name: email_domain
+        tests: [not_null]
+      - name: extracted_at
+        tests: [not_null]
+      - name: source_system
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['auth-service']

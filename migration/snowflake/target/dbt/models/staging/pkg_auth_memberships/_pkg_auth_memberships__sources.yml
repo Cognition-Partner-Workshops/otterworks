@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: pkg_auth_memberships
+    schema: RAW
+    description: Flat file read by SSIS package pkg_auth_memberships, loaded verbatim (all VARCHAR).
+    tables:
+      - name: EXT_AUTH_WORKSPACE_MEMBERS
+        description: auth_workspace_members.csv
+        columns:
+          - name: USER_ID
+          - name: WORKSPACE_ID
+          - name: WORKSPACE_NAME
+          - name: TENANT_ID
+          - name: ROLE
+          - name: JOINED_AT

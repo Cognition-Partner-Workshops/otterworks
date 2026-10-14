@@ -80,8 +80,8 @@ runs `target/bootstrap/account.sql` as ACCOUNTADMIN and creates:
 
 - database `OW_UBW_<TOKEN>` with schemas `RAW`, `STAGING`, `MARTS` and `OPS`
 - an X-Small warehouse `OW_UBW_<TOKEN>_WH` that suspends after 60 seconds and resumes on use
-- a resource monitor `OW_UBW_<TOKEN>_RM`, 5 credits a month, suspending the warehouse at 100
-  percent
+- a resource monitor `OW_UBW_<TOKEN>_RM`, 5 credits a month, notifying at 75 percent and
+  suspending the warehouse at 100 percent
 - role `..._ENGINEER`, which creates tables, views, tasks and procedures inside the
   database and uses the warehouse
 - role `..._READER`, which selects from every schema, monitors the warehouse and the `OPS`
@@ -120,8 +120,9 @@ handling lives in `target/dbt/macros/business_date.sql` and does not shift time 
 
 `target/tasks/` replaces the four agent jobs and the forecast cron entry with Snowflake tasks
 in `OPS`, rooted at `UBW_NIGHTLY_LOAD`. `make sfm-tasks RUN=<token>` publishes the compiled
-dbt models to a stage and creates the tasks suspended, so nothing spends credits until you
-resume them with `target/tasks/tasks.py --run <token> resume`.
+dbt models to a stage and creates the tasks suspended. `make sfm-cutover RUN=<token>` resumes
+the graph only after its parity reread passes; `target/tasks/tasks.py --run <token> resume`
+is also available for an explicit manual resume.
 
 ### Teardown
 
@@ -146,11 +147,52 @@ or any divergence is unexplained.
 
 `make sfm-dual-run RUN=<token> DATE=<date>` runs the agent replay on SQL Server and `dbt
 build` on Snowflake for the date, then the gate. `make sfm-cutover RUN=<token>` stops the
-SQL Server replay, sets `UBW_BACKEND=snowflake` for the consumers and re-reads the last ledger
-without connecting to anything. `make sfm-gate-test` runs the comparison unit tests, which use
-small in-memory tables and need no connections.
+SQL Server replay, sets `UBW_BACKEND=snowflake` for the consumers and re-reads the last ledger.
+If that reread passes, cutover resumes the Snowflake task graph. `make sfm-gate-test` runs
+the comparison unit tests, which use small in-memory tables and need no connections.
 
 To check the work in Snowsight, log in as the VIEWER user. Query history for the run's
 warehouse, task history for the `OPS` tasks and `OPS.PARITY_LEDGER` are all visible under
 READER.
-||||||| f77dad4aa
+
+## The report layer
+
+The thirty report datasets are views in a `REPORTS` schema of the run's database, one per
+`source/reports/<report>.rdl` with the same name (`target/dbt/models/reports/`). Each view keeps
+`business_date` and the report's fixed filters; consumers pass `@BusinessDate` (and
+`rpt_plan_tier_summary`'s `@PlanTier`) as `WHERE` arguments and keep the report's `ORDER BY`.
+dbt grants `SELECT` on the views and `USAGE` on the schema to the run's READER role.
+
+`make sfm-report-gate RUN=<token> DATE=<date>` runs every report's own DataSet query on SQL
+Server and the same fields from its view on Snowflake, with the same parameter values, and
+writes `gate/out/reports.json` / `reports.md` plus `OPS.REPORT_PARITY_LEDGER`. Keys and excluded
+columns are in `gate/reports.yaml`. Explanations work like the unit ledger.
+
+### Legacy behaviours kept behind flags
+
+The models default to the corrected numbers. Each dbt var below reproduces the legacy number
+exactly (the gate and report gate pass with all four set, see `gate/out/legacy-flags/`); the
+data owners decide which side survives cutover.
+
+| dbt var | Legacy behaviour it reproduces | Models |
+|---|---|---|
+| `legacy_storage_day_eastern_fixed_offset` | storage samples bucketed with a fixed `DATEADD(hour, -4, ...)` instead of the UTC day | rollup_storage_daily, build_capacity_forecast_input (and everything priced from them) |
+| `legacy_overage_whole_gb_truncation` | overage GB in bigint division, partial GB dropped before pricing | rate_overage, build_mart_overage |
+| `legacy_seats_count_workspace_memberships` | a user in two workspaces of a tenant counted as two seats | rollup_seats, apply_plan_limits, build_mart_plan_seat_summary, build_capacity_forecast_input |
+| `legacy_null_archived_counted_active` | documents with a NULL archived flag counted as active | rollup_document_status |
+
+Pass them with `--vars`, e.g. `make sfm-dbt RUN=<token> DATE=2026-09-30` after editing, or
+`target/python/dbt_env.py -- build --vars '{business_date: 2026-09-30, legacy_overage_whole_gb_truncation: true}'`.
+
+### Consumers and UBW_BACKEND
+
+| Consumer | `sqlserver` reads | `snowflake` reads |
+|---|---|---|
+| report-service `GET /api/v1/reports/ubw/{report}` | the RDL query on `mart` / `fact` | `REPORTS.<report>` |
+| admin-dashboard `/usage` (through report-service) | `mart.mart_tenant_usage_daily`, `mart.mart_plan_seat_summary` | `REPORTS.RPT_TENANT_USAGE_DAILY`, `REPORTS.RPT_PLAN_MIX` |
+| analytics-service `GET /api/v1/analytics/ubw/usage`, `/tenant-usage` | `fact.fact_usage_events`, `mart.mart_tenant_usage_daily` | `MARTS.ROLLUP_USAGE_EVENTS`, `REPORTS.RPT_TENANT_USAGE_DAILY` |
+| `etl/scripts/capacity_forecast_weekly.py` | forecast computed in the script | `CALL OPS.UBW_CAPACITY_FORECAST_WEEKLY(date)` (Snowpark, `target/snowpark/procs/`) |
+
+report-service's catalog (`services/report-service/src/main/resources/ubw/reports.json`) is
+generated from the RDL files by `consumers/report_catalog.py`; `make sfm-gate-test` fails when it
+is stale.
