@@ -29,6 +29,10 @@ Every file a package needs is its own, so the twelve packages never edit the sam
 | Staging parity spec | `gate/staging/<package>.yaml` |
 | Staging parity result and explanation | `gate/out/staging/<package>.md` |
 
+A package that lands several tables lists them under `destinations:` in its spec (one unit
+`ssis:<package>:<table>` each). Business decisions go under a `### Business decisions` heading
+at the end of the md; the gate keeps that section when it rewrites the file.
+
 `RAW.EXT_<file>` is the flat file verbatim: every column is `VARCHAR`, empty fields stay
 empty strings, nothing is trimmed. The staging model owns every conversion the package made.
 
