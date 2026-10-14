@@ -8,7 +8,7 @@ test.describe("Search Page", () => {
 
   test("shows Search heading", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "Search Document Center", exact: true })
+      page.getByRole("heading", { name: "Search", exact: true })
     ).toBeVisible({ timeout: 10_000 });
   });
 

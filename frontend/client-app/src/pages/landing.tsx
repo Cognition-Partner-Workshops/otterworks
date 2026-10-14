@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/layout/footer";
 import { ConceptBanner } from "@/components/layout/concept-banner";
 import { BrandLockup } from "@/components/ui/brand-lockup";
+import { SignInForm } from "@/components/auth/sign-in-form";
 import {
   COMPANY,
   FOUNDING_STORY,
@@ -56,30 +57,7 @@ export default function Home() {
             <h2 className="mb-5 text-xl font-semibold text-[#012169]">
               Sign in to your account
             </h2>
-            <label htmlFor="landing-email" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="landing-email"
-              type="email"
-              placeholder="you@example.com"
-              className="mb-4 w-full rounded-[4px] border border-[#333] px-3 py-3 text-sm"
-            />
-            <label htmlFor="landing-password" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="landing-password"
-              type="password"
-              placeholder="Enter your password"
-              className="mb-5 w-full rounded-[4px] border border-[#333] px-3 py-3 text-sm"
-            />
-            <Link
-              to="/login"
-              className="block w-full bg-otter-600 text-center text-sm font-medium text-white"
-            >
-              Log in
-            </Link>
+            <SignInForm idPrefix="landing-" />
           </div>
           <div className="py-2">
             <h1 className="mb-5 text-4xl font-light leading-tight text-white sm:text-5xl">
