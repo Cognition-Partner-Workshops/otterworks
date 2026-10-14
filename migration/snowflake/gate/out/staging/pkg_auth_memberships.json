@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:51:09.757404+00:00",
+  "generated_at": "2026-10-14T06:15:10.023828+00:00",
   "spec": {
     "package": "pkg_auth_memberships",
     "sqlserver_table": "stg.stg_auth_workspace_members",
