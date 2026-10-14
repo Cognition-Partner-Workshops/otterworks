@@ -78,7 +78,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 flex h-full flex-col border-r border-[#ddd] bg-white text-[#012169] transition-transform duration-200",
+          "fixed top-0 left-0 z-50 flex h-full flex-col border-r border-[#ddd] bg-white text-[#012169] transition-[width,transform] duration-200",
           "w-64",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-16"
         )}
