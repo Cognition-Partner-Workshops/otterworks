@@ -214,7 +214,18 @@ def manage(run: str, operation: str) -> None:
     prefix = object_prefix(run)
     with dbt_connection(run) as connection, connection.cursor() as cursor:
         if operation == "resume":
+            cursor.execute(f"SHOW TASKS IN SCHEMA {prefix}.OPS")
+            task_columns = {
+                (column.name if hasattr(column, "name") else column[0]).lower(): index
+                for index, column in enumerate(cursor.description)
+            }
+            task_names = {
+                str(row[task_columns["name"]]).upper() for row in cursor.fetchall()
+            }
             for name in STANDALONE_TASKS:
+                if name not in task_names:
+                    print(f"ABSENT            {prefix}.OPS.{name}")
+                    continue
                 cursor.execute(
                     f"ALTER TASK {prefix}.OPS.{name} RESUME"
                 )  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501

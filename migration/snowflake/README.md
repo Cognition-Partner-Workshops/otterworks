@@ -80,8 +80,8 @@ runs `target/bootstrap/account.sql` as ACCOUNTADMIN and creates:
 
 - database `OW_UBW_<TOKEN>` with schemas `RAW`, `STAGING`, `MARTS` and `OPS`
 - an X-Small warehouse `OW_UBW_<TOKEN>_WH` that suspends after 60 seconds and resumes on use
-- a resource monitor `OW_UBW_<TOKEN>_RM`, 5 credits a month, suspending the warehouse at 100
-  percent
+- a resource monitor `OW_UBW_<TOKEN>_RM`, 5 credits a month, notifying at 75 percent and
+  suspending the warehouse at 100 percent
 - role `..._ENGINEER`, which creates tables, views, tasks and procedures inside the
   database and uses the warehouse
 - role `..._READER`, which selects from every schema, monitors the warehouse and the `OPS`
@@ -120,8 +120,9 @@ handling lives in `target/dbt/macros/business_date.sql` and does not shift time 
 
 `target/tasks/` replaces the four agent jobs and the forecast cron entry with Snowflake tasks
 in `OPS`, rooted at `UBW_NIGHTLY_LOAD`. `make sfm-tasks RUN=<token>` publishes the compiled
-dbt models to a stage and creates the tasks suspended, so nothing spends credits until you
-resume them with `target/tasks/tasks.py --run <token> resume`.
+dbt models to a stage and creates the tasks suspended. `make sfm-cutover RUN=<token>` resumes
+the graph only after its parity reread passes; `target/tasks/tasks.py --run <token> resume`
+is also available for an explicit manual resume.
 
 ### Teardown
 
@@ -146,9 +147,9 @@ or any divergence is unexplained.
 
 `make sfm-dual-run RUN=<token> DATE=<date>` runs the agent replay on SQL Server and `dbt
 build` on Snowflake for the date, then the gate. `make sfm-cutover RUN=<token>` stops the
-SQL Server replay, sets `UBW_BACKEND=snowflake` for the consumers and re-reads the last ledger
-without connecting to anything. `make sfm-gate-test` runs the comparison unit tests, which use
-small in-memory tables and need no connections.
+SQL Server replay, sets `UBW_BACKEND=snowflake` for the consumers and re-reads the last ledger.
+If that reread passes, cutover resumes the Snowflake task graph. `make sfm-gate-test` runs
+the comparison unit tests, which use small in-memory tables and need no connections.
 
 To check the work in Snowsight, log in as the VIEWER user. Query history for the run's
 warehouse, task history for the `OPS` tasks and `OPS.PARITY_LEDGER` are all visible under
