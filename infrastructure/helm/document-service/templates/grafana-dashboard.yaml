@@ -8,7 +8,7 @@
 {{- range $a := $d.annotations.list -}}
 {{- if hasKey $a "expr" -}}
 {{- $_ := set $a "datasource" $ds -}}
-{{- $_ := set $a "expr" (include "document-service.scopeExpr" (dict "expr" $a.expr "namespace" $ns)) -}}
+{{- $_ := set $a "expr" (include "document-service.scopeExpr" (dict "expr" $a.expr "namespace" $ns "listHandler" $.Values.monitoring.listHandlerMatcher)) -}}
 {{- end -}}
 {{- end -}}
 {{- range $p := $d.panels -}}
@@ -18,7 +18,7 @@
 {{- range $t := ($p.targets | default list) -}}
 {{- $_ := set $t "datasource" $ds -}}
 {{- if hasKey $t "expr" -}}
-{{- $_ := set $t "expr" (include "document-service.scopeExpr" (dict "expr" $t.expr "namespace" $ns)) -}}
+{{- $_ := set $t "expr" (include "document-service.scopeExpr" (dict "expr" $t.expr "namespace" $ns "listHandler" $.Values.monitoring.listHandlerMatcher)) -}}
 {{- end -}}
 {{- end -}}
 {{- if and $links.jaeger $p.options (hasKey $p.options "content") -}}

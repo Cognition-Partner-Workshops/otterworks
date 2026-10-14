@@ -9,11 +9,15 @@ Namespace the incident rules and dashboard are scoped to.
 Scope a PromQL expression to one namespace by adding a namespace matcher to
 every otterworks_*, http_* and ALERTS selector. Selectors with braces get the
 matcher prepended; bare metric names get a new brace block.
-Usage: include "document-service.scopeExpr" (dict "expr" $expr "namespace" $ns)
+Usage: include "document-service.scopeExpr" (dict "expr" $expr "namespace" $ns "listHandler" $matcher)
 */}}
 {{- define "document-service.scopeExpr" -}}
 {{- $m := printf "namespace=%q" .namespace -}}
-{{- $expr := regexReplaceAll `\b((?:http|otterworks)_[a-z0-9_]+|ALERTS)\{` .expr (printf "${1}{%s, " $m) -}}
+{{- $e := .expr -}}
+{{- if .listHandler -}}
+{{- $e = replace `handler="/api/v1/documents/"` (printf "handler=~%q" .listHandler) $e -}}
+{{- end -}}
+{{- $expr := regexReplaceAll `\b((?:http|otterworks)_[a-z0-9_]+|ALERTS)\{` $e (printf "${1}{%s, " $m) -}}
 {{- regexReplaceAll `\b((?:http|otterworks)_[a-z0-9_]+)\b([^{a-z0-9_]|$)` $expr (printf "${1}{%s}${2}" $m) -}}
 {{- end -}}
 

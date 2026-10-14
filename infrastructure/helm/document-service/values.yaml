@@ -47,6 +47,9 @@ monitoring:
   port: 8083
   # Namespace the incident rules/dashboard select on; defaults to the release namespace.
   namespaceLabel: ""
+  # Regex replacing the `handler="/api/v1/documents/"` selector in the incident
+  # rules and dashboard (e.g. "/api/v1/documents/?" to include the no-slash route).
+  listHandlerMatcher: ""
   # Rendered only when the monitoring.coreos.com/v1 API exists in the cluster.
   serviceMonitor:
     interval: 30s
