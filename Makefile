@@ -64,13 +64,14 @@ infra-down: ## Stop local infrastructure
 	docker compose -f docker-compose.infra.yml down
 
 env: ## Write a random JWT_SECRET to .env for local Compose runs (an existing value is kept)
-	@touch .env
-	@if grep -qE '^JWT_SECRET=.+' .env; then \
+	@touch .env && chmod 600 .env
+	@if [ -n "$$(sed -n 's/^JWT_SECRET=//p' .env | tail -n 1)" ]; then \
 		echo ".env already has a JWT_SECRET"; \
 	else \
-		grep -v '^JWT_SECRET=' .env > .env.tmp || true; \
-		printf 'JWT_SECRET=%s\n' "$$(openssl rand -hex 32)" >> .env.tmp; \
-		mv .env.tmp .env; chmod 600 .env; \
+		secret="$$(openssl rand -hex 32)" && [ -n "$$secret" ] || \
+			{ echo "openssl rand failed; .env left unchanged" >&2; exit 1; }; \
+		( umask 077; grep -v '^JWT_SECRET=' .env > .env.tmp || true; \
+			printf 'JWT_SECRET=%s\n' "$$secret" >> .env.tmp ) && mv .env.tmp .env; \
 		echo "Wrote a random JWT_SECRET to .env"; \
 	fi
 
