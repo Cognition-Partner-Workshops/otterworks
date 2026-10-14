@@ -78,6 +78,11 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		}
 	}
 
+	proxy.ModifyResponse = func(res *http.Response) error {
+		middleware.StripSecurityHeaders(res.Header)
+		return nil
+	}
+
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		cfg.Logger.Error().
 			Err(err).
