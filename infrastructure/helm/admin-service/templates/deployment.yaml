@@ -21,6 +21,8 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ .Release.Name }}
+      # HealthChecker reads <SERVICE>_PORT, which service links set to tcp://ip:port.
+      enableServiceLinks: false
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ required "image.tag must be set (ECR uses IMMUTABLE tags)" .Values.image.tag }}"
