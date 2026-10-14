@@ -3,94 +3,6 @@
   "source_family": "postgresql",
   "collections": [
     {
-      "collection": "creditNotes",
-      "root_table": "credit_notes",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "_id"
-      },
-      "fields": [
-        {
-          "source": "tenant_id",
-          "target": "tenantId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "issued_on",
-          "target": "issuedOn",
-          "source_type": "DATE",
-          "bson_type": "date",
-          "rules": [
-            "datetime_utc_truncate_ms"
-          ]
-        },
-        {
-          "source": "amount",
-          "target": "amount",
-          "source_type": "NUMERIC(12,2)",
-          "bson_type": "decimal",
-          "rules": []
-        },
-        {
-          "source": "remaining_amount",
-          "target": "remainingAmount",
-          "source_type": "NUMERIC(12,2)",
-          "bson_type": "decimal",
-          "rules": []
-        }
-      ],
-      "embeds": [],
-      "decision": {
-        "shape": "collection",
-        "key_strategy": "natural primary key",
-        "key_fields": [
-          {
-            "source": "id",
-            "target": "id",
-            "source_type": "UUID",
-            "bson_type": "binData",
-            "rules": []
-          }
-        ],
-        "natural_keys": [],
-        "references": [
-          {
-            "column": [
-              "tenant_id"
-            ],
-            "to": "tenants",
-            "to_columns": [
-              "id"
-            ],
-            "why": "parent is shared by several tables"
-          }
-        ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "credit_notes",
-            "tables": [
-              "credit_notes"
-            ],
-            "index_candidates": [
-              {
-                "table": "credit_notes",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          }
-        ],
-        "access_basis": "ddl_only"
-      },
-      "indexes": []
-    },
-    {
       "collection": "dunningAttempts",
       "root_table": "dunning_attempts",
       "key": {
@@ -184,26 +96,6 @@
         ],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "dunning_attempts",
-            "tables": [
-              "dunning_attempts"
-            ],
-            "index_candidates": [
-              {
-                "table": "dunning_attempts",
-                "column": "invoice_id",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "dunning_attempts",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
-          {
             "kind": "lob",
             "table": "dunning_attempts",
             "columns": [
@@ -227,8 +119,7 @@
               }
             }
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": [
         {
@@ -411,6 +302,7 @@
           "evidence": "FK invoice_lines_invoice_id_fkey ON DELETE CASCADE; unique invoice_lines_invoice_id_line_no_key led by parent key",
           "basis_sources": [
             "ddl",
+            "access",
             "data"
           ],
           "evidence_refs": [
@@ -421,6 +313,10 @@
             {
               "kind": "data_profile",
               "ref": "embed_bytes:invoice_lines->invoices(invoice_id)"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-1a8c2fdba7"
             }
           ]
         }
@@ -461,32 +357,6 @@
           }
         ],
         "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "invoices",
-            "tables": [
-              "invoice_lines",
-              "invoices"
-            ],
-            "index_candidates": [
-              {
-                "table": "invoice_lines",
-                "column": "invoice_id",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "invoices",
-                "column": "period_id",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "invoices",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
           {
             "kind": "lob",
             "table": "invoices",
@@ -544,10 +414,25 @@
               }
             }
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "invoiceLines.lineNo",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-1a8c2fdba7"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "notifications",
@@ -611,21 +496,6 @@
         ],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "notifications",
-            "tables": [
-              "notifications"
-            ],
-            "index_candidates": [
-              {
-                "table": "notifications",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
-          {
             "kind": "lob",
             "table": "notifications",
             "columns": [
@@ -649,8 +519,7 @@
               }
             }
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
       "indexes": []
     },
@@ -726,15 +595,6 @@
         "references": [],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "plans",
-            "tables": [
-              "plans"
-            ],
-            "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
-          {
             "kind": "lob",
             "table": "plans",
             "columns": [
@@ -783,10 +643,29 @@
             },
             "proposal": "values outside the flag domain; extend the canon rule or fix data"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "monthlyFee",
+              1
+            ],
+            [
+              "code",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-2fad319cbe"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "ratingPeriods",
@@ -858,24 +737,7 @@
             "why": "parent is shared by several tables"
           }
         ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "rating_periods",
-            "tables": [
-              "rating_periods"
-            ],
-            "index_candidates": [
-              {
-                "table": "rating_periods",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          }
-        ],
-        "access_basis": "ddl_only"
+        "open_questions": []
       },
       "indexes": [
         {
@@ -889,9 +751,14 @@
               1
             ]
           ],
-          "unique": true,
           "origin": "natural_key",
-          "evidence": []
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-69f19c59f2"
+            }
+          ],
+          "unique": true
         }
       ]
     },
@@ -1002,29 +869,33 @@
         ],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "rating_results",
-            "tables": [
-              "rating_results"
+            "kind": "extended_reference_candidate",
+            "parent": "rating_periods",
+            "child": "rating_results",
+            "pattern_ids": [
+              "ap-69f19c59f2"
             ],
-            "index_candidates": [
-              {
-                "table": "rating_results",
-                "column": "period_id",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "rating_results",
-                "column": "subscription_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "periodId",
+              1
+            ]
+          ],
+          "origin": "reference_fk",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-69f19c59f2"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "subscriptions",
@@ -1125,24 +996,23 @@
         ],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "subscriptions",
-            "tables": [
-              "subscriptions"
+            "kind": "extended_reference_candidate",
+            "parent": "plans",
+            "child": "subscriptions",
+            "pattern_ids": [
+              "ap-64301fefb7",
+              "ap-ff88e55f57"
             ],
-            "index_candidates": [
-              {
-                "table": "subscriptions",
-                "column": "plan_id",
-                "kind": "foreign_key"
-              },
-              {
-                "table": "subscriptions",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
+          },
+          {
+            "kind": "extended_reference_candidate",
+            "parent": "tenants",
+            "child": "subscriptions",
+            "pattern_ids": [
+              "ap-ff88e55f57"
             ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "copy the parent fields this read uses into the child (extended reference); parent has no hot/warm writer"
           },
           {
             "kind": "lob",
@@ -1168,10 +1038,79 @@
               }
             }
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "tenantId",
+              1
+            ],
+            [
+              "endsOn",
+              1
+            ],
+            [
+              "startsOn",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-3174fb6852"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-64301fefb7"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-ff88e55f57"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "endsOn",
+              1
+            ],
+            [
+              "startsOn",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-ff88e55f57"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "planId",
+              1
+            ]
+          ],
+          "origin": "reference_fk",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-64301fefb7"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-ff88e55f57"
+            }
+          ]
+        }
+      ]
     },
     {
       "collection": "tenants",
@@ -1207,7 +1146,231 @@
           "rules": []
         }
       ],
-      "embeds": [],
+      "embeds": [
+        {
+          "array_path": "creditNotes",
+          "shape": "array",
+          "child_table": "credit_notes",
+          "child_key": [
+            "id"
+          ],
+          "child_fields": [
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "issued_on",
+              "target": "issuedOn",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "amount",
+              "target": "amount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            },
+            {
+              "source": "remaining_amount",
+              "target": "remainingAmount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            }
+          ],
+          "parent_key_fields": [
+            {
+              "source": "tenant_id",
+              "target": "tenantId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key": [
+            "tenant_id"
+          ],
+          "parent_ref": [
+            "id"
+          ],
+          "key": {
+            "source": [
+              "id"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "issued_on",
+              "target": "issuedOn",
+              "source_type": "DATE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "amount",
+              "target": "amount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            },
+            {
+              "source": "remaining_amount",
+              "target": "remainingAmount",
+              "source_type": "NUMERIC(12,2)",
+              "bson_type": "decimal",
+              "rules": []
+            }
+          ],
+          "cardinality": "1:N",
+          "cardinality_basis": "derived",
+          "evidence": "co_read: ap-0f4eabe333,ap-dfb5a1e7b8",
+          "basis_sources": [
+            "ddl",
+            "access"
+          ],
+          "evidence_refs": [
+            {
+              "kind": "data_profile",
+              "ref": "fanout:credit_notes->tenants(tenant_id)"
+            },
+            {
+              "kind": "data_profile",
+              "ref": "embed_bytes:credit_notes->tenants(tenant_id)"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-0f4eabe333"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-dfb5a1e7b8"
+            }
+          ]
+        },
+        {
+          "array_path": "usageEvents",
+          "shape": "array",
+          "child_table": "usage_events",
+          "child_key": [
+            "id"
+          ],
+          "child_fields": [
+            {
+              "source": "id",
+              "target": "id",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            },
+            {
+              "source": "occurred_at",
+              "target": "occurredAt",
+              "source_type": "TIMESTAMP WITH TIME ZONE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "units",
+              "target": "units",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "kind",
+              "target": "kind",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            }
+          ],
+          "parent_key_fields": [
+            {
+              "source": "tenant_id",
+              "target": "tenantId",
+              "source_type": "UUID",
+              "bson_type": "binData",
+              "rules": []
+            }
+          ],
+          "parent_key": [
+            "tenant_id"
+          ],
+          "parent_ref": [
+            "id"
+          ],
+          "key": {
+            "source": [
+              "id"
+            ],
+            "target": "id"
+          },
+          "fields": [
+            {
+              "source": "occurred_at",
+              "target": "occurredAt",
+              "source_type": "TIMESTAMP WITH TIME ZONE",
+              "bson_type": "date",
+              "rules": [
+                "datetime_utc_truncate_ms"
+              ]
+            },
+            {
+              "source": "units",
+              "target": "units",
+              "source_type": "INTEGER(32,0)",
+              "bson_type": "int",
+              "rules": []
+            },
+            {
+              "source": "kind",
+              "target": "kind",
+              "source_type": "TEXT",
+              "bson_type": "string",
+              "rules": []
+            }
+          ],
+          "cardinality": "1:N",
+          "cardinality_basis": "derived",
+          "evidence": "read_by_parent_key: ap-25c80e4647,ap-b0d666eafd",
+          "basis_sources": [
+            "ddl",
+            "access",
+            "data"
+          ],
+          "evidence_refs": [
+            {
+              "kind": "data_profile",
+              "ref": "fanout:usage_events->tenants(tenant_id)"
+            },
+            {
+              "kind": "data_profile",
+              "ref": "embed_bytes:usage_events->tenants(tenant_id)"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-25c80e4647"
+            },
+            {
+              "kind": "access_pattern",
+              "ref": "ap-b0d666eafd"
+            }
+          ]
+        }
+      ],
       "decision": {
         "shape": "collection",
         "key_strategy": "natural primary key",
@@ -1224,13 +1387,13 @@
         "references": [],
         "open_questions": [
           {
-            "kind": "no_access_evidence",
-            "table": "tenants",
-            "tables": [
-              "tenants"
+            "kind": "unrated_access_basis",
+            "table": "usage_events",
+            "pattern_ids": [
+              "ap-25c80e4647",
+              "ap-b0d666eafd"
             ],
-            "index_candidates": [],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
+            "proposal": "decision rests on cold/unrated reads: confirm call rate before load"
           },
           {
             "kind": "lob",
@@ -1266,114 +1429,6 @@
             }
           },
           {
-            "kind": "flag_domain_violation",
-            "table": "tenants",
-            "column": "tax_exempt",
-            "values": [
-              [
-                false,
-                8
-              ],
-              [
-                true,
-                1
-              ]
-            ],
-            "evidence": {
-              "kind": "data_profile",
-              "ref": "value_domain:tenants.tax_exempt"
-            },
-            "proposal": "values outside the flag domain; extend the canon rule or fix data"
-          }
-        ],
-        "access_basis": "ddl_only"
-      },
-      "indexes": []
-    },
-    {
-      "collection": "usageEvents",
-      "root_table": "usage_events",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "_id"
-      },
-      "fields": [
-        {
-          "source": "tenant_id",
-          "target": "tenantId",
-          "source_type": "UUID",
-          "bson_type": "binData",
-          "rules": []
-        },
-        {
-          "source": "occurred_at",
-          "target": "occurredAt",
-          "source_type": "TIMESTAMP WITH TIME ZONE",
-          "bson_type": "date",
-          "rules": [
-            "datetime_utc_truncate_ms"
-          ]
-        },
-        {
-          "source": "units",
-          "target": "units",
-          "source_type": "INTEGER(32,0)",
-          "bson_type": "int",
-          "rules": []
-        },
-        {
-          "source": "kind",
-          "target": "kind",
-          "source_type": "TEXT",
-          "bson_type": "string",
-          "rules": []
-        }
-      ],
-      "embeds": [],
-      "decision": {
-        "shape": "collection",
-        "key_strategy": "natural primary key",
-        "key_fields": [
-          {
-            "source": "id",
-            "target": "id",
-            "source_type": "UUID",
-            "bson_type": "binData",
-            "rules": []
-          }
-        ],
-        "natural_keys": [],
-        "references": [
-          {
-            "column": [
-              "tenant_id"
-            ],
-            "to": "tenants",
-            "to_columns": [
-              "id"
-            ],
-            "why": "parent is shared by several tables"
-          }
-        ],
-        "open_questions": [
-          {
-            "kind": "no_access_evidence",
-            "table": "usage_events",
-            "tables": [
-              "usage_events"
-            ],
-            "index_candidates": [
-              {
-                "table": "usage_events",
-                "column": "tenant_id",
-                "kind": "foreign_key"
-              }
-            ],
-            "proposal": "no confirmed non-deploy application pattern touches this collection or its embedded tables; review these pointer/FK columns as index candidates, but do not create indexes without workload evidence"
-          },
-          {
             "kind": "lob",
             "table": "usage_events",
             "columns": [
@@ -1396,11 +1451,69 @@
                 "max_bytes": 8.0
               }
             }
+          },
+          {
+            "kind": "flag_domain_violation",
+            "table": "tenants",
+            "column": "tax_exempt",
+            "values": [
+              [
+                false,
+                8
+              ],
+              [
+                true,
+                1
+              ]
+            ],
+            "evidence": {
+              "kind": "data_profile",
+              "ref": "value_domain:tenants.tax_exempt"
+            },
+            "proposal": "values outside the flag domain; extend the canon rule or fix data"
           }
-        ],
-        "access_basis": "ddl_only"
+        ]
       },
-      "indexes": []
+      "indexes": [
+        {
+          "keys": [
+            [
+              "creditNotes.remainingAmount",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-dfb5a1e7b8"
+            }
+          ]
+        },
+        {
+          "keys": [
+            [
+              "creditNotes.issuedOn",
+              1
+            ],
+            [
+              "creditNotes.id",
+              1
+            ],
+            [
+              "creditNotes.remainingAmount",
+              1
+            ]
+          ],
+          "origin": "access",
+          "evidence": [
+            {
+              "kind": "access_pattern",
+              "ref": "ap-fd8da9c0eb"
+            }
+          ]
+        }
+      ]
     }
   ],
   "canonicalization": {
@@ -1577,13 +1690,27 @@
         "child_columns": [
           "tenant_id"
         ],
-        "rule": "default",
-        "decision": "reference",
-        "basis": "assumed",
+        "rule": "co_read",
+        "decision": "embed",
+        "basis": "derived",
         "basis_sources": [
-          "ddl"
+          "ddl",
+          "access"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-0f4eabe333"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-dfb5a1e7b8"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-9992f40c8a"
+          }
+        ],
         "measurements": {
           "fanout:credit_notes->tenants(tenant_id)": {
             "parents": 9,
@@ -1609,7 +1736,16 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "shape": "array",
+        "n_plus_one": true,
+        "access_ids": [
+          "ap-0f4eabe333",
+          "ap-dfb5a1e7b8"
+        ],
+        "element_write_ids": [
+          "ap-9992f40c8a"
+        ]
       },
       {
         "parent": "invoices",
@@ -1623,7 +1759,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-f625f7e0e2"
+          }
+        ],
         "measurements": {
           "fanout:dunning_attempts->invoices(invoice_id)": {
             "parents": 3,
@@ -1657,6 +1798,9 @@
               "tenant_id"
             ]
           }
+        ],
+        "element_write_ids": [
+          "ap-f625f7e0e2"
         ]
       },
       {
@@ -1671,7 +1815,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-f625f7e0e2"
+          }
+        ],
         "measurements": {
           "fanout:dunning_attempts->tenants(tenant_id)": {
             "parents": 9,
@@ -1698,7 +1847,10 @@
             "max_bytes": 38.0
           }
         },
-        "owner": "invoices"
+        "owner": "invoices",
+        "element_write_ids": [
+          "ap-f625f7e0e2"
+        ]
       },
       {
         "parent": "invoices",
@@ -1706,11 +1858,12 @@
         "child_columns": [
           "invoice_id"
         ],
-        "rule": "ownership",
+        "rule": "read_by_parent_key",
         "decision": "embed",
         "basis": "derived",
         "basis_sources": [
           "ddl",
+          "access",
           "data"
         ],
         "evidence": [
@@ -1729,6 +1882,18 @@
           {
             "kind": "data_profile",
             "ref": "row_bytes:invoices"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-1a8c2fdba7"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-849777f660"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-97f9bea953"
           }
         ],
         "measurements": {
@@ -1757,7 +1922,14 @@
             "max_bytes": 83.0
           }
         },
-        "shape": "array"
+        "shape": "array",
+        "access_ids": [
+          "ap-1a8c2fdba7"
+        ],
+        "co_written_ids": [
+          "ap-849777f660",
+          "ap-97f9bea953"
+        ]
       },
       {
         "parent": "rating_periods",
@@ -1771,7 +1943,16 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-74635fe95f"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-7cd84fbad7"
+          }
+        ],
         "measurements": {
           "fanout:invoices->rating_periods(period_id)": {
             "parents": 3,
@@ -1797,7 +1978,11 @@
             "avg_bytes": 40.0,
             "max_bytes": 40.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-74635fe95f",
+          "ap-7cd84fbad7"
+        ]
       },
       {
         "parent": "tenants",
@@ -1811,7 +1996,16 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-74635fe95f"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-7cd84fbad7"
+          }
+        ],
         "measurements": {
           "fanout:invoices->tenants(tenant_id)": {
             "parents": 9,
@@ -1837,7 +2031,11 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-74635fe95f",
+          "ap-7cd84fbad7"
+        ]
       },
       {
         "parent": "tenants",
@@ -1851,7 +2049,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-47701613f1"
+          }
+        ],
         "measurements": {
           "fanout:notifications->tenants(tenant_id)": {
             "parents": 9,
@@ -1877,7 +2080,10 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "co_written_ids": [
+          "ap-47701613f1"
+        ]
       },
       {
         "parent": "tenants",
@@ -1891,7 +2097,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-b02e91b60c"
+          }
+        ],
         "measurements": {
           "fanout:rating_periods->tenants(tenant_id)": {
             "parents": 9,
@@ -1917,7 +2128,10 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-b02e91b60c"
+        ]
       },
       {
         "parent": "rating_periods",
@@ -1931,7 +2145,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-96e3fc65ee"
+          }
+        ],
         "measurements": {
           "fanout:rating_results->rating_periods(period_id)": {
             "parents": 3,
@@ -1957,7 +2176,10 @@
             "avg_bytes": 40.0,
             "max_bytes": 40.0
           }
-        }
+        },
+        "co_written_ids": [
+          "ap-96e3fc65ee"
+        ]
       },
       {
         "parent": "subscriptions",
@@ -1971,7 +2193,12 @@
         "basis_sources": [
           "ddl"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-96e3fc65ee"
+          }
+        ],
         "measurements": {
           "fanout:rating_results->subscriptions(subscription_id)": {
             "parents": 9,
@@ -1997,7 +2224,10 @@
             "avg_bytes": 59.77777777777778,
             "max_bytes": 66.0
           }
-        }
+        },
+        "element_write_ids": [
+          "ap-96e3fc65ee"
+        ]
       },
       {
         "parent": "plans",
@@ -2007,11 +2237,29 @@
         ],
         "rule": "shared_child",
         "decision": "reference",
-        "basis": "assumed",
+        "basis": "derived",
         "basis_sources": [
-          "ddl"
+          "ddl",
+          "access"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-3174fb6852"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-0b82c075b7"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-80c82f3704"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-f72f75ca73"
+          }
+        ],
         "measurements": {
           "fanout:subscriptions->plans(plan_id)": {
             "parents": 3,
@@ -2037,7 +2285,15 @@
             "avg_bytes": 45.0,
             "max_bytes": 47.0
           }
-        }
+        },
+        "access_ids": [
+          "ap-3174fb6852"
+        ],
+        "element_write_ids": [
+          "ap-0b82c075b7",
+          "ap-80c82f3704",
+          "ap-f72f75ca73"
+        ]
       },
       {
         "parent": "tenants",
@@ -2047,11 +2303,29 @@
         ],
         "rule": "shared_child",
         "decision": "reference",
-        "basis": "assumed",
+        "basis": "derived",
         "basis_sources": [
-          "ddl"
+          "ddl",
+          "access"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "access_pattern",
+            "ref": "ap-3174fb6852"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-f72f75ca73"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-0b82c075b7"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-80c82f3704"
+          }
+        ],
         "measurements": {
           "fanout:subscriptions->tenants(tenant_id)": {
             "parents": 9,
@@ -2077,7 +2351,17 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "access_ids": [
+          "ap-3174fb6852"
+        ],
+        "co_written_ids": [
+          "ap-f72f75ca73"
+        ],
+        "element_write_ids": [
+          "ap-0b82c075b7",
+          "ap-80c82f3704"
+        ]
       },
       {
         "parent": "tenants",
@@ -2085,13 +2369,40 @@
         "child_columns": [
           "tenant_id"
         ],
-        "rule": "default",
-        "decision": "reference",
-        "basis": "assumed",
+        "rule": "read_by_parent_key",
+        "decision": "embed",
+        "basis": "derived",
         "basis_sources": [
-          "ddl"
+          "ddl",
+          "access",
+          "data"
         ],
-        "evidence": [],
+        "evidence": [
+          {
+            "kind": "data_profile",
+            "ref": "embed_bytes:usage_events->tenants(tenant_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "fanout:usage_events->tenants(tenant_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "fk_integrity:usage_events->tenants(tenant_id)"
+          },
+          {
+            "kind": "data_profile",
+            "ref": "row_bytes:tenants"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-25c80e4647"
+          },
+          {
+            "kind": "access_pattern",
+            "ref": "ap-b0d666eafd"
+          }
+        ],
         "measurements": {
           "fanout:usage_events->tenants(tenant_id)": {
             "parents": 9,
@@ -2117,7 +2428,12 @@
             "avg_bytes": 36.333333333333336,
             "max_bytes": 38.0
           }
-        }
+        },
+        "shape": "array",
+        "access_ids": [
+          "ap-25c80e4647",
+          "ap-b0d666eafd"
+        ]
       }
     ],
     "policy": {
@@ -2126,17 +2442,37 @@
     },
     "data_profile": {
       "path": ".migration/data_profile.json",
-      "sha256": "1d118073f163b1b69e1e7ea4c0042d4e2332b0bfaf4f26725431dbebb80fffe5",
-      "as_of": "2026-10-14T20:06:21.677285+00:00"
+      "sha256": "c27b381ac17f36fc8a8005bfb80962a0fa2756f93d9b6fa52d33258bcc60614f",
+      "as_of": "2026-10-14T21:20:32.397758+00:00"
     },
     "access_patterns": {
       "path": ".migration/access_patterns.json",
-      "sha256": "df3c7f72fe4f08aed612c0039ec484312fb1a0389856cfa4a86dfcdfbf81f425"
+      "sha256": "7740cf43b1d848e105cdccb0e8e9f9914df1747217eb40bb4892908f3e704fb2"
     },
     "application_evidence": {
-      "confirmed_patterns": 0,
-      "files": []
+      "confirmed_patterns": 32,
+      "files": [
+        "services/legacy-billing/db/procs/dunning.sql",
+        "services/legacy-billing/db/procs/invoicing.sql",
+        "services/legacy-billing/db/procs/plans.sql",
+        "services/legacy-billing/db/procs/rating.sql"
+      ]
     },
-    "dropped_indexes": []
+    "dropped_indexes": [
+      {
+        "table": "rating_periods",
+        "columns": [
+          "tenant_id"
+        ],
+        "reason": "left prefix of planned index"
+      },
+      {
+        "table": "subscriptions",
+        "columns": [
+          "tenant_id"
+        ],
+        "reason": "left prefix of planned index"
+      }
+    ]
   }
 }
