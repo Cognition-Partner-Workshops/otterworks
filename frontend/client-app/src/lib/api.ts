@@ -109,15 +109,17 @@ export const authApi = {
   logout: async (): Promise<void> => {
     await apiClient.post("/auth/logout");
   },
-  lookupUser: async (email: string): Promise<{ id: string; email: string; displayName: string }> => {
-    const { data } = await apiClient.get<{ id: string; email: string; displayName: string }>(
+  // auth-service only returns id + displayName here (no email) so that any
+  // authenticated user cannot harvest other users' PII via these lookups.
+  lookupUser: async (email: string): Promise<{ id: string; displayName: string }> => {
+    const { data } = await apiClient.get<{ id: string; displayName: string }>(
       "/auth/users/lookup",
       { params: { email } }
     );
     return data;
   },
-  lookupUserById: async (id: string): Promise<{ id: string; email: string; displayName: string }> => {
-    const { data } = await apiClient.get<{ id: string; email: string; displayName: string }>(
+  lookupUserById: async (id: string): Promise<{ id: string; displayName: string }> => {
+    const { data } = await apiClient.get<{ id: string; displayName: string }>(
       `/auth/users/by-id/${id}`
     );
     return data;
