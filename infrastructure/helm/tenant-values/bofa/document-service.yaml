@@ -8,7 +8,8 @@ monitoring:
   enabled: true
   rules:
     enabled: true
-    # Page on any real traffic, so one visit to My documents (two 1,000-row
+    # Page on any real traffic on either list route (the web app calls
+    # /api/v1/documents, no slash), so one visit to My documents (two 1,000-row
     # pages, about 7 s each) is the trigger: the alert fires within about 30 s
     # and clears about two minutes after the page is closed.
     overrides:
@@ -17,10 +18,10 @@ monitoring:
         expr: |
           histogram_quantile(0.95,
             sum by (le) (rate(http_request_duration_seconds_bucket{
-              job="document-service", handler="/api/v1/documents/", method="GET"}[2m]))
+              job="document-service", handler=~"/api/v1/documents/?", method="GET"}[2m]))
           ) > 1
           and
-          sum(rate(http_requests_total{job="document-service", handler="/api/v1/documents/", method="GET"}[2m])) > 0
+          sum(rate(http_requests_total{job="document-service", handler=~"/api/v1/documents/?", method="GET"}[2m])) > 0
   serviceMonitor:
     interval: 15s
     labels:
