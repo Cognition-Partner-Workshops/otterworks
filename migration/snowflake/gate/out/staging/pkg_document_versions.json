@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:53:33.536240+00:00",
+  "generated_at": "2026-10-14T06:29:29.769547+00:00",
   "spec": {
     "package": "pkg_document_versions",
     "sqlserver_table": "stg.stg_document_versions",
