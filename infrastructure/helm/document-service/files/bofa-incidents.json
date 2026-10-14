@@ -117,7 +117,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (status) (rate(search_service_requests_total{namespace=\"otterworks-bofa\", endpoint=~\".*/suggest\"}[1m]))",
+          "expr": "sum by (status) (rate(search_service_requests_total{namespace=\"otterworks-bofa\", exported_endpoint=~\".*/suggest\"}[1m]))",
           "legendFormat": "{{status}}"
         }
       ]

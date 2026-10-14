@@ -43,7 +43,7 @@ monitoring:
               dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
           - alert: SearchSuggestErrors
             expr: |
-              sum(rate(search_service_requests_total{endpoint=~".*/suggest", status=~"5.."}[2m])) > 0
+              sum(rate(search_service_requests_total{exported_endpoint=~".*/suggest", status=~"5.."}[2m])) > 0
             for: 15s
             labels: {severity: critical, page: devin, service: search-service, scenario: suggest-errors}
             annotations:
