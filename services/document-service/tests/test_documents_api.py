@@ -293,3 +293,17 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
         json={"title": "No Auth Doc"},
     )
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_rejected(client: AsyncClient):
+    """Refresh tokens share the signing key but must not authenticate document calls."""
+    token = jwt.encode(
+        {"sub": str(uuid.uuid4()), "type": "refresh"}, TEST_JWT_SECRET, algorithm="HS512"
+    )
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Refresh Doc"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 401
