@@ -260,6 +260,20 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_create_document_via_jwt_hs512(client: AsyncClient):
+    """Create a document using an HS512-signed JWT (auth-service's current algorithm)."""
+    user_id = uuid.uuid4()
+    token = jwt.encode({"sub": str(user_id)}, TEST_JWT_SECRET, algorithm="HS512")
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "HS512 Doc"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
 async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()
