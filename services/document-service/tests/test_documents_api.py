@@ -260,6 +260,20 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_create_document_via_jwt_hs512(client: AsyncClient):
+    """Create a document using an HS512-signed JWT (auth-service's current algorithm)."""
+    user_id = uuid.uuid4()
+    token = jwt.encode({"sub": str(user_id)}, TEST_JWT_SECRET, algorithm="HS512")
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "HS512 Doc"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
 async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()
@@ -277,5 +291,19 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
     resp = await client.post(
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_rejected(client: AsyncClient):
+    """Refresh tokens share the signing key but must not authenticate document calls."""
+    token = jwt.encode(
+        {"sub": str(uuid.uuid4()), "type": "refresh"}, TEST_JWT_SECRET, algorithm="HS512"
+    )
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Refresh Doc"},
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert resp.status_code == 401
