@@ -1,0 +1,802 @@
+{
+  "kind": "migration-units",
+  "plan_step": "s3.3-unit-derivation",
+  "mapping_version": "v2",
+  "mapping_sha256": "6567c33adeada1a45ce93ab4096f2efb484e410263346dd66ed68f149a6e6704",
+  "recon_tolerances_version": "tol-v1",
+  "tolerance_sha256": "829cbb4d2de0d3cf5296d29622973d4bb11915382b0634ab88ad9f040ef5c9c2",
+  "source_access": "live",
+  "target_access": "migration_cluster",
+  "target_database": "billing_migration",
+  "fixture_manifest": ".migration/fixtures/legacy_billing.json",
+  "target_stack": {
+    "decision": "d-target-stack = fastapi-existing",
+    "service": "services/billing-service/",
+    "note": "FastAPI/Python (app/domain.py, app/repository.py, app/main.py, uv); the procs/ parity harness and rules gate are wired to it"
+  },
+  "rules": {
+    "unit": "one unit per legacy procedure module (services/legacy-billing/db/procs/<module>.sql): its routines, the collections it owns, the target module that replaces it. Every routine and every collection of mapping_spec v2 appears in exactly one unit.",
+    "ownership": "a collection is owned (loaded, declared as write target) by the earliest wave that writes it or embeds its table; later units read it but never load it. A routine that writes another unit's collection does so through the owner's repository API (writes_via_owner), so each billing_migration.<collection> is a write target of exactly one batch and wave-preflight's collision check passes.",
+    "depth": "0 = no other unit referenced; otherwise 1 + max depth of the units it reads from or writes through.",
+    "wave": "PRD waves kept: 1 plans, 2 rating, 3 invoicing + dunning (two batches, d-wave-width 2). depth 2 and 3 share wave 3 because the dunning batch's write target (notifications) is disjoint from invoicing's and its recon compares notifications against its own source table; its parity scenarios read invoices from the reset-seeded fixture target."
+  },
+  "cross_unit_writes": [
+    {
+      "routine": "billing.sp_issue_invoice",
+      "unit": "invoicing",
+      "touches": "ratingPeriods",
+      "owner": "rating",
+      "resolution": "API through owner (finalize_rating)"
+    },
+    {
+      "routine": "billing.sp_issue_invoice",
+      "unit": "invoicing",
+      "touches": "tenants.creditNotes",
+      "owner": "plans",
+      "resolution": "API through owner (apply_credit)"
+    },
+    {
+      "routine": "billing.sp_schedule_dunning",
+      "unit": "dunning",
+      "touches": "invoices.dunningAttempts",
+      "owner": "invoicing",
+      "resolution": "API through owner (append_dunning_attempt); dunning_attempts rows loaded through the same API"
+    },
+    {
+      "routine": "billing.sp_suspend_overdue",
+      "unit": "dunning",
+      "touches": "tenants, subscriptions",
+      "owner": "plans",
+      "resolution": "API through owner (suspend_tenant)"
+    }
+  ],
+  "waves": [
+    {
+      "wave": 1,
+      "batches": [
+        {
+          "id": "w1-b01",
+          "units": [
+            "plans"
+          ],
+          "write_targets": [
+            "billing_migration.plans",
+            "billing_migration.tenants",
+            "billing_migration.subscriptions"
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "batches": [
+        {
+          "id": "w2-b01",
+          "units": [
+            "rating"
+          ],
+          "write_targets": [
+            "billing_migration.usageEvents",
+            "billing_migration.ratingPeriods"
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "batches": [
+        {
+          "id": "w3-b01",
+          "units": [
+            "invoicing"
+          ],
+          "write_targets": [
+            "billing_migration.invoices"
+          ]
+        },
+        {
+          "id": "w3-b02",
+          "units": [
+            "dunning"
+          ],
+          "write_targets": [
+            "billing_migration.notifications"
+          ]
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "units": 4,
+    "routines": 12,
+    "collections": 7,
+    "source_tables": 11,
+    "waves": 3,
+    "batches": 4
+  },
+  "units": [
+    {
+      "unit": "plans",
+      "wave": 1,
+      "batch": "w1-b01",
+      "depth": 0,
+      "depends_on": [],
+      "module": "plans",
+      "routines": [
+        {
+          "name": "billing.fn_list_plans",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/plans.sql",
+            "lines": [
+              1,
+              16
+            ]
+          },
+          "reads": [
+            "plans"
+          ],
+          "writes": [],
+          "pattern": "pure read"
+        },
+        {
+          "name": "billing.fn_entitlement",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/plans.sql",
+            "lines": [
+              18,
+              40
+            ]
+          },
+          "reads": [
+            "tenants",
+            "subscriptions",
+            "plans"
+          ],
+          "writes": [],
+          "pattern": "pure read"
+        },
+        {
+          "name": "billing.sp_change_plan",
+          "kind": "PROCEDURE",
+          "source": {
+            "file": "services/legacy-billing/db/procs/plans.sql",
+            "lines": [
+              42,
+              64
+            ]
+          },
+          "reads": [
+            "subscriptions"
+          ],
+          "writes": [
+            "subscriptions"
+          ],
+          "pattern": "multi-document transaction (close open subscription + insert new)"
+        }
+      ],
+      "collections": [
+        "plans",
+        "tenants",
+        "subscriptions"
+      ],
+      "source_tables": [
+        "plans",
+        "tenants",
+        "credit_notes",
+        "subscriptions"
+      ],
+      "embeds": [
+        {
+          "collection": "tenants",
+          "array_path": "creditNotes",
+          "child_table": "credit_notes"
+        }
+      ],
+      "write_targets": [
+        "billing_migration.plans",
+        "billing_migration.tenants",
+        "billing_migration.subscriptions"
+      ],
+      "reference_layer": true,
+      "reads_from_other_units": [],
+      "writes_via_owner": [],
+      "owner_api_for_other_units": [
+        {
+          "caller": "invoicing",
+          "routine": "billing.sp_issue_invoice",
+          "target": "billing_migration.tenants (creditNotes[].remainingAmount)",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              127,
+              138
+            ]
+          }
+        },
+        {
+          "caller": "dunning",
+          "routine": "billing.sp_suspend_overdue",
+          "target": "billing_migration.tenants (status)",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              69,
+              71
+            ]
+          }
+        },
+        {
+          "caller": "dunning",
+          "routine": "billing.sp_suspend_overdue",
+          "target": "billing_migration.subscriptions (status, suspendedOn)",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              72,
+              75
+            ]
+          }
+        }
+      ],
+      "scenarios": [
+        "PLANS-001",
+        "PLANS-002",
+        "PLANS-003",
+        "PLANS-004",
+        "PLANS-005"
+      ],
+      "routes_yaml": {
+        "module": "plans",
+        "status_now": "extracted",
+        "flip": "none: already extracted; keep the three entrypoints, re-grade them against the Mongo-backed service",
+        "entrypoints": [
+          "billing.fn_list_plans",
+          "billing.fn_entitlement",
+          "billing.sp_change_plan"
+        ]
+      },
+      "rules_ledger": {
+        "path": "procs/rules/plans.rules.yaml",
+        "status": "approved (PLANS-001..004, reviewer product-owner)"
+      },
+      "target_module": {
+        "service": "services/billing-service/",
+        "status": "existing",
+        "files": [
+          "services/billing-service/app/domain.py",
+          "services/billing-service/app/repository.py",
+          "services/billing-service/app/main.py",
+          "services/billing-service/tests/test_domain.py",
+          "services/billing-service/tests/test_plans_api.py"
+        ],
+        "work": "swap PostgresPlansRepository (schema billing_svc) for a billing_migration-backed repository behind the existing PlansRepository protocol; load plans, tenants(+creditNotes), subscriptions; recon; no domain-logic rewrite"
+      },
+      "documents": {
+        "plans": 3,
+        "tenants": 9,
+        "subscriptions": 9,
+        "embedded_credit_notes": 5
+      }
+    },
+    {
+      "unit": "rating",
+      "wave": 2,
+      "batch": "w2-b01",
+      "depth": 1,
+      "depends_on": [
+        "plans"
+      ],
+      "module": "rating",
+      "routines": [
+        {
+          "name": "billing.fn_usage_rating",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/rating.sql",
+            "lines": [
+              1,
+              77
+            ]
+          },
+          "reads": [
+            "subscriptions",
+            "plans",
+            "usage_events",
+            "rating_results",
+            "rating_periods"
+          ],
+          "writes": [],
+          "pattern": "pure read (aggregate + 3-month rollover lookback)"
+        },
+        {
+          "name": "billing.fn_usage_summary",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/rating.sql",
+            "lines": [
+              79,
+              93
+            ]
+          },
+          "reads": [
+            "usage_events"
+          ],
+          "writes": [],
+          "pattern": "pure read (group by kind)"
+        },
+        {
+          "name": "billing.sp_finalize_rating",
+          "kind": "PROCEDURE",
+          "source": {
+            "file": "services/legacy-billing/db/procs/rating.sql",
+            "lines": [
+              95,
+              139
+            ]
+          },
+          "reads": [
+            "subscriptions"
+          ],
+          "writes": [
+            "rating_periods",
+            "rating_results"
+          ],
+          "calls": [
+            "billing.fn_usage_rating"
+          ],
+          "pattern": "single-document upsert (ratingPeriods with rating subdocument)"
+        }
+      ],
+      "collections": [
+        "usageEvents",
+        "ratingPeriods"
+      ],
+      "source_tables": [
+        "usage_events",
+        "rating_periods",
+        "rating_results"
+      ],
+      "embeds": [
+        {
+          "collection": "ratingPeriods",
+          "array_path": "rating",
+          "child_table": "rating_results",
+          "shape": "subdocument"
+        }
+      ],
+      "write_targets": [
+        "billing_migration.usageEvents",
+        "billing_migration.ratingPeriods"
+      ],
+      "reference_layer": false,
+      "reads_from_other_units": [
+        {
+          "unit": "plans",
+          "collections": [
+            "plans",
+            "subscriptions"
+          ]
+        }
+      ],
+      "writes_via_owner": [],
+      "owner_api_for_other_units": [
+        {
+          "caller": "invoicing",
+          "routine": "billing.sp_issue_invoice",
+          "target": "billing_migration.ratingPeriods (CALL sp_finalize_rating)",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              93,
+              93
+            ]
+          }
+        }
+      ],
+      "scenarios": [
+        "RATING-001",
+        "RATING-002",
+        "RATING-003",
+        "RATING-004",
+        "RATING-005",
+        "RATING-006",
+        "RATING-007",
+        "RATING-008"
+      ],
+      "routes_yaml": {
+        "module": "rating",
+        "status_now": "pending",
+        "flip": "pending -> extracted",
+        "entrypoints": [
+          "billing.fn_usage_rating",
+          "billing.fn_usage_summary",
+          "billing.sp_finalize_rating"
+        ]
+      },
+      "rules_ledger": {
+        "path": "procs/rules/rating.rules.yaml",
+        "status": "missing: authored in the batch, needs a human-approved decision per rule before procs-parity grades the module"
+      },
+      "target_module": {
+        "service": "services/billing-service/",
+        "status": "to_create",
+        "files": [
+          "services/billing-service/app/rating.py",
+          "services/billing-service/app/rating_repository.py",
+          "services/billing-service/app/main.py"
+        ],
+        "work": "rating domain + repository over usageEvents/ratingPeriods (reads plans/subscriptions through the plans repository); exposes finalize_rating for the invoicing unit"
+      },
+      "documents": {
+        "usageEvents": 10,
+        "ratingPeriods": 3,
+        "embedded_rating_results": 3
+      }
+    },
+    {
+      "unit": "invoicing",
+      "wave": 3,
+      "batch": "w3-b01",
+      "depth": 2,
+      "depends_on": [
+        "plans",
+        "rating"
+      ],
+      "module": "invoicing",
+      "routines": [
+        {
+          "name": "billing.fn_invoice_preview",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              1,
+              60
+            ]
+          },
+          "reads": [
+            "subscriptions",
+            "plans",
+            "credit_notes",
+            "tenants"
+          ],
+          "writes": [],
+          "calls": [
+            "billing.fn_usage_rating"
+          ],
+          "pattern": "pure read (5 computed lines)"
+        },
+        {
+          "name": "billing.fn_invoice_lines",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              62,
+              75
+            ]
+          },
+          "reads": [
+            "invoice_lines"
+          ],
+          "writes": [],
+          "pattern": "pure read (embedded array)"
+        },
+        {
+          "name": "billing.sp_issue_invoice",
+          "kind": "PROCEDURE",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              77,
+              140
+            ]
+          },
+          "reads": [
+            "credit_notes"
+          ],
+          "writes": [
+            "invoices",
+            "invoice_lines",
+            "credit_notes"
+          ],
+          "calls": [
+            "billing.sp_finalize_rating",
+            "billing.fn_invoice_preview"
+          ],
+          "pattern": "multi-document transaction (invoices upsert + lines replace + credit-note drawdown via plans)"
+        }
+      ],
+      "collections": [
+        "invoices"
+      ],
+      "source_tables": [
+        "invoices",
+        "invoice_lines"
+      ],
+      "embeds": [
+        {
+          "collection": "invoices",
+          "array_path": "invoiceLines",
+          "child_table": "invoice_lines"
+        },
+        {
+          "collection": "invoices",
+          "array_path": "dunningAttempts",
+          "child_table": "dunning_attempts",
+          "loaded_by": "dunning (element writer); invoicing loads the parent documents and the invoiceLines array only"
+        }
+      ],
+      "write_targets": [
+        "billing_migration.invoices"
+      ],
+      "reference_layer": false,
+      "reads_from_other_units": [
+        {
+          "unit": "plans",
+          "collections": [
+            "plans",
+            "subscriptions",
+            "tenants"
+          ]
+        },
+        {
+          "unit": "rating",
+          "collections": [
+            "ratingPeriods",
+            "usageEvents"
+          ]
+        }
+      ],
+      "writes_via_owner": [
+        {
+          "owner": "rating",
+          "target": "billing_migration.ratingPeriods",
+          "how": "CALL billing.sp_finalize_rating -> rating module finalize_rating()",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              93,
+              93
+            ]
+          }
+        },
+        {
+          "owner": "plans",
+          "target": "billing_migration.tenants (creditNotes[].remainingAmount)",
+          "how": "credit-note drawdown -> plans repository apply_credit() inside the issue-invoice transaction",
+          "source": {
+            "file": "services/legacy-billing/db/procs/invoicing.sql",
+            "lines": [
+              127,
+              138
+            ]
+          }
+        }
+      ],
+      "owner_api_for_other_units": [
+        {
+          "caller": "dunning",
+          "routine": "billing.sp_schedule_dunning",
+          "target": "billing_migration.invoices (dunningAttempts[] append)",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              43,
+              48
+            ]
+          }
+        }
+      ],
+      "scenarios": [
+        "INVOICE-001",
+        "INVOICE-002",
+        "INVOICE-003",
+        "INVOICE-004",
+        "INVOICE-005",
+        "INVOICE-006"
+      ],
+      "routes_yaml": {
+        "module": "invoicing",
+        "status_now": "pending",
+        "flip": "pending -> extracted",
+        "entrypoints": [
+          "billing.fn_invoice_preview",
+          "billing.sp_issue_invoice",
+          "billing.fn_invoice_lines"
+        ]
+      },
+      "rules_ledger": {
+        "path": "procs/rules/invoicing.rules.yaml",
+        "status": "missing: authored in the batch, needs a human-approved decision per rule before procs-parity grades the module"
+      },
+      "target_module": {
+        "service": "services/billing-service/",
+        "status": "to_create",
+        "files": [
+          "services/billing-service/app/invoicing.py",
+          "services/billing-service/app/invoicing_repository.py",
+          "services/billing-service/app/main.py"
+        ],
+        "work": "invoicing domain + repository over invoices{invoiceLines[]}; exposes append_dunning_attempt for the dunning unit"
+      },
+      "documents": {
+        "invoices": 3,
+        "embedded_invoice_lines": 2,
+        "embedded_dunning_attempts_loaded_by_dunning": 1
+      }
+    },
+    {
+      "unit": "dunning",
+      "wave": 3,
+      "batch": "w3-b02",
+      "depth": 3,
+      "depends_on": [
+        "plans",
+        "invoicing"
+      ],
+      "module": "dunning",
+      "routines": [
+        {
+          "name": "billing.fn_overdue_accounts",
+          "kind": "FUNCTION",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              1,
+              18
+            ]
+          },
+          "reads": [
+            "invoices",
+            "tenants"
+          ],
+          "writes": [],
+          "pattern": "pure read (status = overdue scan)"
+        },
+        {
+          "name": "billing.sp_schedule_dunning",
+          "kind": "PROCEDURE",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              20,
+              51
+            ]
+          },
+          "reads": [
+            "invoices",
+            "dunning_attempts"
+          ],
+          "writes": [
+            "dunning_attempts"
+          ],
+          "pattern": "per-invoice array append, idempotent on (invoiceId, attemptNo)"
+        },
+        {
+          "name": "billing.sp_suspend_overdue",
+          "kind": "PROCEDURE",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              53,
+              88
+            ]
+          },
+          "reads": [
+            "invoices",
+            "tenants"
+          ],
+          "writes": [
+            "tenants",
+            "subscriptions",
+            "notifications"
+          ],
+          "pattern": "multi-document transaction (tenant + subscriptions via plans, notifications upsert)"
+        }
+      ],
+      "collections": [
+        "notifications"
+      ],
+      "source_tables": [
+        "notifications",
+        "dunning_attempts"
+      ],
+      "embeds": [],
+      "write_targets": [
+        "billing_migration.notifications"
+      ],
+      "reference_layer": false,
+      "reads_from_other_units": [
+        {
+          "unit": "plans",
+          "collections": [
+            "tenants"
+          ]
+        },
+        {
+          "unit": "invoicing",
+          "collections": [
+            "invoices"
+          ]
+        }
+      ],
+      "writes_via_owner": [
+        {
+          "owner": "invoicing",
+          "target": "billing_migration.invoices (dunningAttempts[] append)",
+          "how": "invoicing repository append_dunning_attempt(invoiceId, attempt) with upsert semantics on (invoiceId, attemptNo); the dunning_attempts source rows are loaded through this API, never by a direct write to invoices",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              43,
+              48
+            ]
+          }
+        },
+        {
+          "owner": "plans",
+          "target": "billing_migration.tenants (status)",
+          "how": "plans repository suspend_tenant() inside the suspend-overdue transaction",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              69,
+              71
+            ]
+          }
+        },
+        {
+          "owner": "plans",
+          "target": "billing_migration.subscriptions (status, suspendedOn)",
+          "how": "plans repository suspend_tenant() inside the suspend-overdue transaction",
+          "source": {
+            "file": "services/legacy-billing/db/procs/dunning.sql",
+            "lines": [
+              72,
+              75
+            ]
+          }
+        }
+      ],
+      "owner_api_for_other_units": [],
+      "scenarios": [
+        "DUNNING-001",
+        "DUNNING-002",
+        "DUNNING-003",
+        "DUNNING-004",
+        "DUNNING-005"
+      ],
+      "routes_yaml": {
+        "module": "dunning",
+        "status_now": "pending",
+        "flip": "pending -> extracted",
+        "entrypoints": [
+          "billing.fn_overdue_accounts",
+          "billing.sp_schedule_dunning",
+          "billing.sp_suspend_overdue"
+        ]
+      },
+      "rules_ledger": {
+        "path": "procs/rules/dunning.rules.yaml",
+        "status": "missing: authored in the batch, needs a human-approved decision per rule before procs-parity grades the module"
+      },
+      "target_module": {
+        "service": "services/billing-service/",
+        "status": "to_create",
+        "files": [
+          "services/billing-service/app/dunning.py",
+          "services/billing-service/app/dunning_repository.py",
+          "services/billing-service/app/main.py"
+        ],
+        "work": "dunning domain + repository over notifications; reads invoices/tenants; all cross-unit writes go through the plans and invoicing repositories"
+      },
+      "documents": {
+        "notifications": 1,
+        "dunning_attempts_appended_into_invoices": 1
+      }
+    }
+  ]
+}
