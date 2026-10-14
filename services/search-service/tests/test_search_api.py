@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
+import pytest
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -110,6 +114,18 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+    @pytest.mark.parametrize("hits", [[], [{"title": "Test Doc 2"}, {"title": "Test Doc 1"}]])
+    def test_suggest_ranking_path_never_500s(self, client, mock_meilisearch_client, hits):
+        """With the ranking-score path enabled, suggest still returns 200 in MeiliSearch order."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": len(hits), "hits": hits}
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == [h["title"] for h in hits]
 
 
 class TestAdvancedSearchEndpoint:
