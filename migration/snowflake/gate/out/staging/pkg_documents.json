@@ -1,11 +1,12 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:11:09.728437+00:00",
+  "generated_at": "2026-10-14T06:59:01.712800+00:00",
   "spec": {
     "package": "pkg_documents",
     "destinations": [
       {
+        "sqlserver_table": "stg.stg_documents",
         "snowflake_model": "STAGING.STG_DOCUMENTS",
         "columns": [
           "title",
@@ -26,7 +27,6 @@
         "keys": [
           "id"
         ],
-        "sqlserver_table": "stg.stg_documents",
         "rename": {},
         "excluded": {
           "extracted_at": "run timestamp (@[System::StartTime] on SQL Server, dbt run_started_at in Snowflake); differs on every run"
