@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -110,6 +112,25 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+    def test_suggest_does_not_5xx_when_suggest_500_flag_set(self, client, mock_meilisearch_client):
+        """Suggest stays 200 with string suggestions while chaos:search-service:suggest_500 is set."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Quarterly report 1"}, {"title": "Quarterly report 2"}],
+        }
+        redis_with_flag = MagicMock()
+        redis_with_flag.exists.return_value = 1
+
+        with patch("app.api.search._get_redis", return_value=redis_with_flag):
+            response = client.get(
+                "/api/v1/search/suggest?q=qu",
+                headers={"X-User-ID": "user-1"},
+            )
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly report 1", "Quarterly report 2"]
 
 
 class TestAdvancedSearchEndpoint:
