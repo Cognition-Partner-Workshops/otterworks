@@ -1,22 +1,22 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-14T06:20:53.209381+00:00",
+  "generated_at": "2026-10-14T06:53:44.274435+00:00",
   "spec": {
     "package": "pkg_billing_core",
     "destinations": [
       {
+        "sqlserver_table": "stg.stg_billing_tenants",
+        "snowflake_model": "STAGING.STG_BILLING_TENANTS",
+        "keys": [
+          "id"
+        ],
         "columns": [
           "name",
           "tax_exempt",
           "status",
           "region_code",
           "source_system"
-        ],
-        "snowflake_model": "STAGING.STG_BILLING_TENANTS",
-        "sqlserver_table": "stg.stg_billing_tenants",
-        "keys": [
-          "id"
         ],
         "rename": {},
         "excluded": {
@@ -25,6 +25,11 @@
         "unit": "ssis:pkg_billing_core:stg_billing_tenants"
       },
       {
+        "sqlserver_table": "stg.stg_billing_plans",
+        "snowflake_model": "STAGING.STG_BILLING_PLANS",
+        "keys": [
+          "id"
+        ],
         "columns": [
           "code",
           "tier",
@@ -36,11 +41,6 @@
           "overage_cents_per_gb",
           "source_system"
         ],
-        "snowflake_model": "STAGING.STG_BILLING_PLANS",
-        "sqlserver_table": "stg.stg_billing_plans",
-        "keys": [
-          "id"
-        ],
         "rename": {},
         "excluded": {
           "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
@@ -48,6 +48,11 @@
         "unit": "ssis:pkg_billing_core:stg_billing_plans"
       },
       {
+        "sqlserver_table": "stg.stg_billing_subscriptions",
+        "snowflake_model": "STAGING.STG_BILLING_SUBSCRIPTIONS",
+        "keys": [
+          "id"
+        ],
         "columns": [
           "tenant_id",
           "plan_id",
@@ -56,11 +61,6 @@
           "status",
           "suspended_on",
           "source_system"
-        ],
-        "snowflake_model": "STAGING.STG_BILLING_SUBSCRIPTIONS",
-        "sqlserver_table": "stg.stg_billing_subscriptions",
-        "keys": [
-          "id"
         ],
         "rename": {},
         "excluded": {

@@ -1,13 +1,12 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:10:51.825456+00:00",
+  "generated_at": "2026-10-14T06:53:59.236431+00:00",
   "spec": {
     "package": "pkg_billing_usage",
     "destinations": [
       {
         "snowflake_model": "STAGING.STG_BILLING_USAGE_EVENTS",
-        "sqlserver_table": "stg.stg_billing_usage_events",
         "columns": [
           "tenant_id",
           "occurred_at",
@@ -16,6 +15,7 @@
           "event_ts_utc",
           "source_system"
         ],
+        "sqlserver_table": "stg.stg_billing_usage_events",
         "keys": [
           "id"
         ],

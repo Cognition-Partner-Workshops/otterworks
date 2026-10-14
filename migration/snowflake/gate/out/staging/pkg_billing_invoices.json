@@ -1,16 +1,11 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:10:55.360786+00:00",
+  "generated_at": "2026-10-14T06:54:02.451237+00:00",
   "spec": {
     "package": "pkg_billing_invoices",
     "destinations": [
       {
-        "snowflake_model": "STAGING.STG_BILLING_INVOICES",
-        "keys": [
-          "invoice_id",
-          "line_no"
-        ],
         "columns": [
           "tenant_id",
           "period_start",
@@ -26,6 +21,11 @@
           "amount",
           "source_system"
         ],
+        "keys": [
+          "invoice_id",
+          "line_no"
+        ],
+        "snowflake_model": "STAGING.STG_BILLING_INVOICES",
         "sqlserver_table": "stg.stg_billing_invoices",
         "rename": {},
         "excluded": {
