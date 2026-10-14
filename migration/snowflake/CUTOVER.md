@@ -120,6 +120,18 @@ The run database has the `MARTS` schema with 23 objects. The task graph (root `O
 runs UBW_LOAD_RAW → UBW_BUILD_DIMS → {UBW_BUILD_FACTS, UBW_ROLLUP_STORAGE_DAILY} → UBW_BUILD_MARTS →
 UBW_LOG_RUN. Screenshots are attached to the PR.
 
+## Devin Review on #1978
+
+Devin Review left five findings on #1978. Each thread has a reply:
+
+| Finding | Assessment | Resolution |
+|---|---|---|
+| A pinned `publish --business-date` freezes scheduled reports (`tasks.py`) | Confirmed. The live stage is not pinned: it still uses `dateadd(day, -1, current_date())`. | Fixed on this branch: a pinned publish writes a `PINNED_BUSINESS_DATE` marker, and `resume`/`sfm-cutover` refuse to resume while it exists. Separate backfill staging is left for a human. |
+| An empty day batch deletes nothing, so stale rows survive (`tasks.py`) | Confirmed, but only when the whole batch for the date is empty | Fixed on this branch: the delete always includes the rebuilt business date. Making the delete+insert atomic is left for a human. |
+| The hourly audit rebuilds yesterday (`hourly_audit.sql`) | Confirmed in #1978 | No fix here. #1979 retires `UBW_HOURLY_AUDIT` and lands together with #1978; the live run has no such task. |
+| UBW report routes return every tenant to anonymous callers (`UbwReportController`) | Confirmed. `/api/v1/reports/**` is `permitAll` (existing golden-app behaviour). | Left for a human: report-service auth and tenant scoping are out of scope for the cutover. |
+| UBW analytics routes return every tenant (`UbwUsage.scala`) | Confirmed: there is no tenant filter or auth directive | Left for a human, as above. |
+
 ## Open items for the data owners
 
 1. **Task graph: resumed.** Cutover left every `OPS` task suspended. The decision is that cutover leaves the schedule running, so `make sfm-cutover` now resumes the graph after its gate reread passes (`tasks.py resume`, which skips retired tasks). For this run, the graph was resumed as ENGINEER on 2026-10-14 at 06:36 UTC with `tasks.py --run sfm-20261013-lv resume`:
