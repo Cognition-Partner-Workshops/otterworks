@@ -1,40 +1,33 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:11:30.067149+00:00",
+  "generated_at": "2026-10-14T06:37:56.210486+00:00",
   "spec": {
     "package": "pkg_file_versions",
-    "destinations": [
-      {
-        "columns": [
-          "size_bytes",
-          "created_by",
-          "created_at",
-          "source_system"
-        ],
-        "keys": [
-          "file_id",
-          "version"
-        ],
-        "snowflake_model": "STAGING.STG_FILE_VERSIONS",
-        "sqlserver_table": "stg.stg_file_versions",
-        "rename": {},
-        "excluded": {
-          "extracted_at": "@[System::StartTime] of the package run; differs on every run on both sides"
-        },
-        "unit": "ssis:pkg_file_versions"
-      }
-    ]
+    "sqlserver_table": "stg.stg_file_versions",
+    "snowflake_model": "STAGING.STG_FILE_VERSIONS",
+    "keys": [
+      "file_id",
+      "version"
+    ],
+    "columns": [
+      "size_bytes",
+      "created_by",
+      "created_at",
+      "source_system"
+    ],
+    "excluded": {
+      "extracted_at": "@[System::StartTime] (GETDATE() of the package run, America/New_York); differs on every run on both sides"
+    },
+    "rename": {}
   },
-  "units": [
-    {
-      "unit": "ssis:pkg_file_versions",
-      "status": "PASS",
-      "source_rows": 49999,
-      "target_rows": 49999,
-      "differing_key_count": 0,
-      "differences": [],
-      "explanation": ""
-    }
-  ]
+  "unit": {
+    "unit": "ssis:pkg_file_versions",
+    "status": "PASS",
+    "source_rows": 49999,
+    "target_rows": 49999,
+    "differing_key_count": 0,
+    "differences": [],
+    "explanation": ""
+  }
 }
