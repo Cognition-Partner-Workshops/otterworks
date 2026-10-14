@@ -1,5 +1,4 @@
 {
   "databases": ["billing_migration"],
-  "catalogs": ["billing_migration"],
-  "guard_mode": "warn"
+  "catalogs": ["billing_migration"]
 }
