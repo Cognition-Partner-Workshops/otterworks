@@ -8,17 +8,23 @@ monitoring:
   enabled: true
   rules:
     enabled: true
-    # Page on any real traffic, so one visit to My documents (four 500-row
-    # pages, about 2 s each) is the trigger: the alert fires about a minute
-    # later and clears about two minutes after the page is closed.
-    exprOverrides:
-      DocumentListLatencyHigh: |
-        histogram_quantile(0.95,
-          sum by (le) (rate(http_request_duration_seconds_bucket{
-            job="document-service", handler="/api/v1/documents/", method="GET"}[2m]))
-        ) > 1
-        and
-        sum(rate(http_requests_total{job="document-service", handler="/api/v1/documents/", method="GET"}[2m])) > 0
+    # Page on any real traffic, so one visit to My documents (two 1,000-row
+    # pages, about 7 s each) is the trigger: the alert fires within about 30 s
+    # and clears about two minutes after the page is closed.
+    overrides:
+      DocumentListLatencyHigh:
+        for: 15s
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{
+              job="document-service", handler="/api/v1/documents/", method="GET"}[2m]))
+          ) > 1
+          and
+          sum(rate(http_requests_total{job="document-service", handler="/api/v1/documents/", method="GET"}[2m])) > 0
+  serviceMonitor:
+    interval: 15s
+    labels:
+      release: prometheus
   dashboard:
     enabled: true
   links:

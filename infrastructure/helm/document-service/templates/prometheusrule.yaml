@@ -8,8 +8,9 @@
 {{- $rules := list -}}
 {{- range $rule := $group.rules -}}
 {{- $r := deepCopy $rule -}}
-{{- $expr := index ($.Values.monitoring.rules.exprOverrides | default dict) ($rule.alert | default "") | default $rule.expr -}}
-{{- $_ := set $r "expr" (include "document-service.scopeExpr" (dict "expr" $expr "namespace" $ns)) -}}
+{{- $o := index ($.Values.monitoring.rules.overrides | default dict) ($rule.alert | default "") | default dict -}}
+{{- $_ := set $r "expr" (include "document-service.scopeExpr" (dict "expr" ($o.expr | default $rule.expr) "namespace" $ns)) -}}
+{{- with $o.for }}{{- $_ := set $r "for" . -}}{{- end }}
 {{- $labels := mergeOverwrite (deepCopy ($rule.labels | default dict)) ($.Values.monitoring.rules.extraLabels | default dict) (dict "namespace" $ns) -}}
 {{- $_ := set $r "labels" $labels -}}
 {{- $ann := deepCopy ($rule.annotations | default dict) -}}

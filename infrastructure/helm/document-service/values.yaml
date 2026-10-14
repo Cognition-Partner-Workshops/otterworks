@@ -60,8 +60,9 @@ monitoring:
     labels:
       release: prometheus
     extraLabels: {}
-    # Per-alert replacement expressions, keyed by alert name (scoped like the originals).
-    exprOverrides: {}
+    # Per-alert `expr` / `for` replacements, keyed by alert name; `expr` is
+    # scoped to namespaceLabel like the originals.
+    overrides: {}
   # Grafana dashboard ConfigMap rendered from files/incident-responder.json
   # (synced from observability/grafana/dashboards/incident-responder.json).
   dashboard:
