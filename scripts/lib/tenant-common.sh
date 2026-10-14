@@ -368,7 +368,7 @@ build_helm_args() {
       # from the image's CMD on every boot and shares one connection URL with
       # the app -- so the whole service uses the session-mode port.
       EXTRA_ARGS+=(--set-string "config.DATABASE_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DATABASE_PORT=${DB_SESSION_PORT}")
-      EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${DB_USER}")
+      EXTRA_ARGS+=(--set-string "config.DATABASE_NAME=${T_DB_NAME}" --set-string "config.DATABASE_USER=${DB_USER}")
       EXTRA_ARGS+=(--set-string "config.RAILS_ENV=production" --set-string "config.RAILS_LOG_TO_STDOUT=true")
       add_secret DATABASE_PASSWORD "${DB_PASSWORD}"
       add_secret SECRET_KEY_BASE "${SECRET_KEY_BASE}" ;;
