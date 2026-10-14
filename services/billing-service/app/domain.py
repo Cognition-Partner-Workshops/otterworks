@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
+from hashlib import md5
 from typing import Protocol
-from uuid import UUID, uuid5
-
-PLAN_CHANGE_NAMESPACE = UUID("d8e9df63-6e46-4d6a-b9c2-2ef6e99cb5ee")
+from uuid import UUID
 
 
 @dataclass(frozen=True)
@@ -89,15 +88,14 @@ def change_plan(
     subscriptions = repository.list_subscriptions(tenant_id)
     for subscription in subscriptions:
         if subscription.ends_on is None and subscription.starts_on < effective_on:
-            next_status = (
-                subscription.status if subscription.status == "cancelled" else "active"
-            )
+            next_status = subscription.status if subscription.status == "cancelled" else "active"
             repository.update_subscription(
                 subscription.subscription_id,
                 effective_on - timedelta(days=1),
                 next_status,
             )
-    created_id = uuid5(PLAN_CHANGE_NAMESPACE, f"{tenant_id}{plan_id}{effective_on.isoformat()}")
+    # sp_change_plan: md5(p_tenant_id::text || p_plan_id::text || p_effective_on::text)::uuid
+    created_id = UUID(md5(f"{tenant_id}{plan_id}{effective_on.isoformat()}".encode()).hexdigest())
     repository.insert_subscription(
         created_id,
         tenant_id,

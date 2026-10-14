@@ -1,34 +1,25 @@
 from __future__ import annotations
 
-from pathlib import Path
+from functools import lru_cache
 
-import psycopg
-from psycopg.rows import dict_row
+from pymongo import MongoClient
+from pymongo.database import Database
 
 from app.config import settings
 
-ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "db" / "migrations" / "001_initial.sql"
-SEED = ROOT / "db" / "seed.sql"
+
+@lru_cache(maxsize=1)
+def client() -> MongoClient:
+    return MongoClient(settings.mongodb_uri, uuidRepresentation="standard")
 
 
-def connect() -> psycopg.Connection:
-    return psycopg.connect(settings.database_url, row_factory=dict_row)
-
-
-def migrate() -> None:
-    with connect() as connection:
-        connection.execute(MIGRATION.read_text())
+def database() -> Database:
+    return client()[settings.mongodb_database]
 
 
 def reset() -> None:
-    with connect() as connection:
-        connection.execute(MIGRATION.read_text())
-        connection.execute(
-            """
-            TRUNCATE TABLE billing_svc.subscriptions,
-                           billing_svc.plans,
-                           billing_svc.tenants
-            """
-        )
-        connection.execute(SEED.read_text())
+    from app.load import load
+
+    if not settings.source_dsn:
+        raise RuntimeError("BILLING_SVC_SOURCE_DSN is required to reset the collections")
+    load(settings.source_dsn, database())

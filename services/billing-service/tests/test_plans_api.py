@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import date
 from uuid import UUID
 
-import psycopg
 from fastapi.testclient import TestClient
+from pymongo.errors import DuplicateKeyError
 
 import app.main as main
 from app.domain import SubscriptionRow
@@ -22,12 +23,13 @@ CREATED = SubscriptionRow(
 )
 
 
-class FakeConnection:
-    def __enter__(self) -> FakeConnection:
-        return self
-
-    def __exit__(self, *_args: object) -> None:
+class FakeRepository:
+    def __init__(self, _database: object) -> None:
         return None
+
+    @contextmanager
+    def transaction(self):
+        yield
 
 
 def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:
@@ -37,11 +39,11 @@ def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:
         nonlocal calls
         calls += 1
         if calls == 2:
-            raise psycopg.errors.UniqueViolation("duplicate subscription")
+            raise DuplicateKeyError("duplicate subscription")
         return [CREATED], CREATED
 
-    monkeypatch.setattr(main, "migrate", lambda: None)
-    monkeypatch.setattr(main, "connect", FakeConnection)
+    monkeypatch.setattr(main, "database", lambda: None)
+    monkeypatch.setattr(main, "MongoPlansRepository", FakeRepository)
     monkeypatch.setattr(main, "change_plan", fake_change_plan)
     with TestClient(main.app) as client:
         payload = {"plan_id": str(PLAN), "effective_on": "2026-03-01"}

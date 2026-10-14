@@ -49,10 +49,15 @@ services:
       context: ./services/billing-service
       dockerfile: Dockerfile
     depends_on:
-      billing-service-db:
+      billing-service-mongo:
+        condition: service_healthy
+      legacy-billing-db:
         condition: service_healthy
     environment:
-      BILLING_SVC_DATABASE_URL: postgresql://billing_svc:billing_svc@billing-service-db:5432/billing_svc_${NS:-dev}
+      BILLING_SVC_MONGODB_URI: mongodb://billing-service-mongo:27017/?replicaSet=rs0
+      BILLING_SVC_MONGODB_DATABASE: billing_migration
+      # SELECT-only read of the legacy before state; /internal/reset reloads from it.
+      BILLING_SVC_SOURCE_DSN: '{"user":"billing","password":"${DB_PASSWORD:-billing}","host":"legacy-billing-db","port":5432,"database":"billing_${NS:-dev}","schema":"billing"}'
       BILLING_SVC_ALLOW_INTERNAL_RESET: "true"
     ports:
       - "127.0.0.1:${PROCS_TARGET_PORT:-8097}:8097"
@@ -62,22 +67,19 @@ services:
       timeout: 5s
       retries: 12
 
-  billing-service-db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: billing_svc_${NS:-dev}
-      POSTGRES_USER: billing_svc
-      POSTGRES_PASSWORD: billing_svc
+  billing-service-mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "127.0.0.1:${PROCS_TARGET_DB_PORT:-56432}:5432"
+      - "127.0.0.1:${PROCS_TARGET_DB_PORT:-56432}:27017"
     volumes:
-      - billing-service-db-data:/var/lib/postgresql/data
+      - billing-service-mongo-data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U billing_svc -d billing_svc_${NS:-dev}"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'billing-service-mongo:27017'}]}).ok }\""]
       interval: 3s
-      timeout: 5s
+      timeout: 10s
       retries: 20
 
 volumes:
   legacy-billing-db-data:
-  billing-service-db-data:
+  billing-service-mongo-data:
