@@ -1,0 +1,88 @@
+{
+ "scanner": "quarterly-sast-sca-dast",
+ "exported_at": "2026-10-01T06:00:00Z",
+ "repository": "Cognition-Partner-Workshops/otterworks",
+ "ref": "main",
+ "findings": [
+  {
+   "id": "S-101",
+   "tool": "SAST",
+   "severity": "high",
+   "location": "services/document-service/app/services/document_query_repository.py",
+   "title": "SQL text built from caller values (CWE-89)",
+   "status": "open"
+  },
+  {
+   "id": "S-102",
+   "tool": "SAST",
+   "severity": "high",
+   "location": "services/document-service/app/services/export_archive.py",
+   "title": "caller path joined to the archive root without containment (CWE-22)",
+   "status": "open"
+  },
+  {
+   "id": "S-103",
+   "tool": "SAST",
+   "severity": "medium",
+   "location": "services/document-service/app/services/share_link.py",
+   "title": "MD5 used to mint share tokens (CWE-328)",
+   "status": "open"
+  },
+  {
+   "id": "S-104",
+   "tool": "SCA",
+   "severity": "critical",
+   "location": "frontend/web-app (.trivyignore)",
+   "title": "Next.js CVE-2025-29927 middleware authorization bypass",
+   "status": "open"
+  },
+  {
+   "id": "S-105",
+   "tool": "SAST",
+   "severity": "high",
+   "location": "docker-compose.yml",
+   "title": "hard-coded JWT_SECRET default (CWE-798)",
+   "status": "open"
+  },
+  {
+   "id": "D-201",
+   "tool": "DAST",
+   "severity": "medium",
+   "location": "api-gateway",
+   "title": "missing security headers on API responses",
+   "status": "open"
+  },
+  {
+   "id": "D-202",
+   "tool": "DAST",
+   "severity": "high",
+   "location": "api-gateway",
+   "title": "CORS origin reflection",
+   "status": "open"
+  },
+  {
+   "id": "S-106",
+   "tool": "SCA",
+   "severity": "high",
+   "location": "services/report-service",
+   "title": "Java 8 base image CVEs (directory skipped in trivy-config.yaml)",
+   "status": "open"
+  },
+  {
+   "id": "S-107",
+   "tool": "SAST",
+   "severity": "critical",
+   "location": "services/search-service/app/routes/exports.py",
+   "title": "path traversal in GET /documents/exports (CWE-22)",
+   "status": "open"
+  },
+  {
+   "id": "S-108",
+   "tool": "SAST",
+   "severity": "high",
+   "location": "services/file-service/src/handlers/share.rs",
+   "title": "object ownership not checked on share, download and delete (CWE-639)",
+   "status": "open"
+  }
+ ]
+}
