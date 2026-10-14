@@ -153,7 +153,6 @@ small in-memory tables and need no connections.
 To check the work in Snowsight, log in as the VIEWER user. Query history for the run's
 warehouse, task history for the `OPS` tasks and `OPS.PARITY_LEDGER` are all visible under
 READER.
-||||||| f77dad4aa
 
 ## The report layer
 

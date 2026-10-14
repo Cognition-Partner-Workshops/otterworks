@@ -87,12 +87,12 @@ Explanation: Inherited from rate_overage (whole-GB integer truncation, invoiced)
 - `{"business_date": "2026-09-15", "plan_tier": "growth"}` `seat_count`: SQL Server `863`, Snowflake `789`
 - `{"business_date": "2026-09-15", "plan_tier": "scale"}` `seat_count`: SQL Server `438`, Snowflake `393`
 - `{"business_date": "2026-09-15", "plan_tier": "starter"}` `seat_count`: SQL Server `1307`, Snowflake `1181`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide.
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag.
 
 ### rpt_plan_tier_summary
 
 - `{"business_date": "2026-09-15", "plan_tier": "growth"}` `seat_count`: SQL Server `863`, Snowflake `789`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide. The RDL passes @PlanTier='Growth' (title case) against lower-case data and relies on SQL Server's case-insensitive collation; the view's en-ci collation on plan_tier returns the same row in Snowflake (a case-sensitive comparison would return no rows).
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag. The RDL passes @PlanTier='Growth' (title case) against lower-case data and relies on SQL Server's case-insensitive collation; the view's en-ci collation on plan_tier returns the same row in Snowflake (a case-sensitive comparison would return no rows).
 
 ### rpt_seat_count_by_tenant
 
@@ -106,7 +106,7 @@ Explanation: Inherited from rollup_seats (users in two workspaces counted twice 
 - `{"business_date": "2026-09-15", "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"}` `seat_count`: SQL Server `45`, Snowflake `40`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide.
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag.
 
 ### rpt_seat_limit_headroom
 
@@ -120,7 +120,7 @@ Explanation: Inherited from rollup_seats (users in two workspaces counted twice 
 - `{"business_date": "2026-09-15", "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"}` `seat_count`: SQL Server `45`, Snowflake `40`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide.
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag.
 
 ### rpt_seat_utilization
 
@@ -134,7 +134,7 @@ Explanation: Inherited from rollup_seats (users in two workspaces counted twice 
 - `{"business_date": "2026-09-15", "tenant_id": "155a3480-6695-427d-808a-14101dccaaf4"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "1682084f-1849-48df-bb8b-ebf1b3d4eced"}` `seat_count`: SQL Server `45`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "173d79f8-8296-4103-9432-264b163ebec5"}` `seat_count`: SQL Server `45`, Snowflake `40`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide.
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag.
 
 ### rpt_seats_over_limit
 
@@ -148,7 +148,7 @@ Explanation: Inherited from rollup_seats (users in two workspaces counted twice 
 - `{"business_date": "2026-09-15", "tenant_id": "1d573d09-6ffc-401a-90d6-c424a7e95989"}` `seat_count`: SQL Server `44`, Snowflake `39`
 - `{"business_date": "2026-09-15", "tenant_id": "27557aaa-8749-43a8-91bc-1acd523bc5e0"}` `seat_count`: SQL Server `44`, Snowflake `40`
 - `{"business_date": "2026-09-15", "tenant_id": "2b217fd0-6983-42aa-a5a9-14dbde5391fb"}` `seat_count`: SQL Server `44`, Snowflake `39`
-Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Data owners decide.
+Explanation: Inherited from rollup_seats (users in two workspaces counted twice by the legacy procedure): seat_count and the columns derived from it differ (seat_limit and over_limit match). PASS with legacy_seats_count_workspace_memberships=true. Decided at cutover: the corrected count ships; the legacy count stays available to Billing behind the flag.
 
 ### rpt_storage_growth_trend
 

@@ -10,7 +10,6 @@
 !/gate/out/legacy-flags/
 !/gate/out/dbt/
 /.backend.env
-||||||| f77dad4aa
 .venv/
 source/build/
 __pycache__/
