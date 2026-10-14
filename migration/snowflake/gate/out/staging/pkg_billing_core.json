@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T03:10:37.500833+00:00",
+  "generated_at": "2026-10-14T06:20:53.209381+00:00",
   "spec": {
     "package": "pkg_billing_core",
     "destinations": [
@@ -13,11 +13,11 @@
           "region_code",
           "source_system"
         ],
+        "snowflake_model": "STAGING.STG_BILLING_TENANTS",
+        "sqlserver_table": "stg.stg_billing_tenants",
         "keys": [
           "id"
         ],
-        "snowflake_model": "STAGING.STG_BILLING_TENANTS",
-        "sqlserver_table": "stg.stg_billing_tenants",
         "rename": {},
         "excluded": {
           "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
@@ -36,11 +36,11 @@
           "overage_cents_per_gb",
           "source_system"
         ],
+        "snowflake_model": "STAGING.STG_BILLING_PLANS",
+        "sqlserver_table": "stg.stg_billing_plans",
         "keys": [
           "id"
         ],
-        "snowflake_model": "STAGING.STG_BILLING_PLANS",
-        "sqlserver_table": "stg.stg_billing_plans",
         "rename": {},
         "excluded": {
           "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"
@@ -57,11 +57,11 @@
           "suspended_on",
           "source_system"
         ],
+        "snowflake_model": "STAGING.STG_BILLING_SUBSCRIPTIONS",
+        "sqlserver_table": "stg.stg_billing_subscriptions",
         "keys": [
           "id"
         ],
-        "snowflake_model": "STAGING.STG_BILLING_SUBSCRIPTIONS",
-        "sqlserver_table": "stg.stg_billing_subscriptions",
         "rename": {},
         "excluded": {
           "extracted_at": "@[System::StartTime], the server clock when the package ran; differs on every run"

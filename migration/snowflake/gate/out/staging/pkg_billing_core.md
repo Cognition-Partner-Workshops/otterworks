@@ -16,6 +16,10 @@ Not compared:
 
 ### Notes
 
+What was compared: the SQL Server side is the replay harness (source/replay/ssis_replay.py) reading pkg_billing_core.dtsx and applying its Derived Column / Lookup expressions to the same flat files; it does not execute SSIS or C#. The package has no Script Task, no Conditional Split and no Execute SQL task other than the three TRUNCATEs, so there is no Snowpark procedure.
+
+Dates: the package declares BusinessDate but no expression or task reads it, and each Data Flow truncates and reloads its stg table from the full file, so replay order has no effect. 2026-09-15 and 2026-09-30 were both replayed, built and gated with identical results (PASS 60 / 60, 7 / 7, 72 / 72 on each date), and every row count below holds on both dates.
+
 All three destinations were also gated after a 2026-09-15 replay and build with the same result; the package reads neither the business date nor a watermark, so the stg tables are identical for both dates.
 
 ### Business decisions
