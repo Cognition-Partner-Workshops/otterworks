@@ -100,6 +100,17 @@ volumes (`docker compose ... down -v && make up`) and re-run the generator
 with `--register`; the blueprint snapshot bake already starts from `down -v`,
 so a rebuild picks the new content up automatically.
 
+## Bank profile
+
+The retail profile remains the default. Use `--profile bank` for the fictional
+Bank of America Document Center concept-demo corpus:
+
+```bash
+python generate_drive.py --profile bank --gateway http://<gw-host>:8080 \
+    --email "$DRIVE_EMAIL" --password "$DRIVE_PASSWORD" \
+    --departments all --scale 1.0 --register
+```
+
 ## Tests
 
 ```bash

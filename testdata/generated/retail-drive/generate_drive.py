@@ -36,8 +36,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
-import filegen
-import taxonomy
+import bank_filegen
+import bank_taxonomy
+import filegen as retail_filegen
+import taxonomy as retail_taxonomy
+
+filegen = retail_filegen
+taxonomy = retail_taxonomy
 
 # Per-axis breadth at --scale 1.0 (bounded so volume stays reasonable).
 AXIS_BASE = {
@@ -48,7 +53,8 @@ AXIS_BASE = {
 
 def selected(axis: str, scale: float) -> list:
     values = taxonomy.AXES[axis]
-    n = max(1, min(len(values), round(AXIS_BASE[axis] * scale)))
+    axis_base = getattr(taxonomy, "AXIS_BASE", AXIS_BASE)
+    n = max(1, min(len(values), round(axis_base[axis] * scale)))
     return values[:n]
 
 
@@ -68,11 +74,11 @@ class Client:
             "password": self.password, "confirmPassword": self.password,
         }, timeout=30)
 
-    def login(self, register_if_missing=False):
+    def login(self, register_if_missing=False, display_name="OtterWorks Enterprise Drive"):
         r = self.s.post(f"{self.gw}/api/v1/auth/login",
                         json={"email": self.email, "password": self.password}, timeout=30)
         if r.status_code >= 400 and register_if_missing:
-            self.register()
+            self.register(display_name=display_name)
             r = self.s.post(f"{self.gw}/api/v1/auth/login",
                             json={"email": self.email, "password": self.password}, timeout=30)
         r.raise_for_status()
@@ -298,6 +304,8 @@ def upload_assets(client: Client, cache: FolderCache, depts: list[str]) -> int:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Populate the OtterWorks enterprise drive.")
+    ap.add_argument("--profile", choices=("retail", "bank"), default="retail",
+                    help="content profile (default: retail)")
     ap.add_argument("--gateway", required=True)
     ap.add_argument("--email", required=True)
     ap.add_argument("--password", required=True)
@@ -311,6 +319,14 @@ def main(argv=None):
                     help="create the drive account if it does not exist (seed-loader use)")
     ap.add_argument("--dry-run", action="store_true", help="print file counts, upload nothing")
     args = ap.parse_args(argv)
+
+    global filegen, taxonomy
+    if args.profile == "bank":
+        taxonomy = bank_taxonomy
+        filegen = bank_filegen
+    else:
+        taxonomy = retail_taxonomy
+        filegen = retail_filegen
 
     if args.departments.strip().lower() == "all":
         depts = taxonomy.all_departments()
@@ -330,7 +346,9 @@ def main(argv=None):
         return 0
 
     client = Client(args.gateway, args.email, args.password)
-    client.login(register_if_missing=args.register)
+    display_name = ("Document Center Demo" if args.profile == "bank"
+                    else "OtterWorks Enterprise Drive")
+    client.login(register_if_missing=args.register, display_name=display_name)
     cache = FolderCache(client)
     print(f"[drive] owner_id={client.owner_id} departments={depts} scale={args.scale}")
     grand_files = grand_docs = 0
