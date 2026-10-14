@@ -265,7 +265,7 @@ async def list_documents(
     sort: str = DEFAULT_SORT,
     direction: str = DEFAULT_DIRECTION,
     page: int = Query(1, ge=1),
-    size: int = Query(20, ge=1, le=100),
+    size: int = Query(20, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ):
     """List documents with optional filtering and pagination."""
@@ -299,7 +299,7 @@ async def list_documents_no_slash(
     sort: str = DEFAULT_SORT,
     direction: str = DEFAULT_DIRECTION,
     page: int = Query(1, ge=1),
-    size: int = Query(20, ge=1, le=100),
+    size: int = Query(20, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
