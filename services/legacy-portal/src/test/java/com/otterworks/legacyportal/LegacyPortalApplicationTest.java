@@ -5,10 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.otterworks.legacyportal.common.TestTokens;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,7 +51,11 @@ class LegacyPortalApplicationTest {
 
     @Test
     void preferencesModuleReturnsDefaults() throws Exception {
-        mockMvc.perform(get("/api/preferences/newuser"))
+        mockMvc.perform(
+                        get("/api/preferences/newuser")
+                                .header(
+                                        HttpHeaders.AUTHORIZATION,
+                                        TestTokens.bearer(TestTokens.accessToken("newuser", "USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.theme").value("light"));
     }
@@ -58,9 +64,11 @@ class LegacyPortalApplicationTest {
     void feedbackModuleValidatesRating() throws Exception {
         mockMvc.perform(
                         post("/api/feedback")
+                                .header(
+                                        HttpHeaders.AUTHORIZATION,
+                                        TestTokens.bearer(TestTokens.accessToken("u1", "USER")))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        "{\"userId\":\"u1\",\"rating\":9,\"message\":\"bad rating\"}"))
+                                .content("{\"rating\":9,\"message\":\"bad rating\"}"))
                 .andExpect(status().isBadRequest());
     }
 }
