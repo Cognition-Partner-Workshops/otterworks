@@ -1,7 +1,7 @@
 {
   "run": "sfm-20261013-lv",
   "date": "2026-09-30",
-  "generated_at": "2026-10-13T02:57:23.650892+00:00",
+  "generated_at": "2026-10-14T06:37:56.210486+00:00",
   "spec": {
     "package": "pkg_file_versions",
     "sqlserver_table": "stg.stg_file_versions",
@@ -17,7 +17,7 @@
       "source_system"
     ],
     "excluded": {
-      "extracted_at": "@[System::StartTime] of the package run; differs on every run on both sides"
+      "extracted_at": "@[System::StartTime] (GETDATE() of the package run, America/New_York); differs on every run on both sides"
     },
     "rename": {}
   },
