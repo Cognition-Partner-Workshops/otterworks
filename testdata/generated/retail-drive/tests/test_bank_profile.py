@@ -58,6 +58,7 @@ def test_every_bank_department_expands_and_scale_one_is_bounded(monkeypatch):
     [
         ("Consumer statement 2024.csv", 2024),
         ("Treasury activity 2026.json", 2026),
+        ("LN-2024-100231 Payment History 2026.xlsx", 2026),
         ("Document without a year.md", 2025),
     ],
 )

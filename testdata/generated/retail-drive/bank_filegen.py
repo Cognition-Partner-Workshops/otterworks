@@ -67,8 +67,8 @@ def _facts(name: str, r: random.Random) -> dict[str, object]:
 
 
 def _name_year(name: str) -> int:
-    match = re.search(r"\b(20\d\d)\b", name)
-    return int(match.group(1)) if match else 2025
+    years = re.findall(r"(?<!LN-)\b(20\d\d)\b", name)
+    return int(years[-1]) if years else 2025
 
 
 def _transactions(
@@ -375,9 +375,10 @@ def _png(name: str, r: random.Random) -> bytes:
     FigureCanvasAgg(figure)
     ax = figure.add_subplot(111)
     ax.plot(range(8), values, color="#012169", marker="o", linewidth=2)
+    y = _name_year(name)
     ax.set_xticks(
         range(8),
-        [f"{y} {q}" for y in (2025, 2026) for q in ("Q1", "Q2", "Q3", "Q4")],
+        [f"{yy} {q}" for yy in (y, y + 1) for q in ("Q1", "Q2", "Q3", "Q4")],
         rotation=35,
     )
     ax.axhline(1.0, color="#dc1431", linestyle="--", linewidth=1, label="Illustrative threshold")
