@@ -66,6 +66,9 @@ monitoring:
     # Per-alert `expr` / `for` replacements, keyed by alert name; `expr` is
     # scoped to namespaceLabel like the originals.
     overrides: {}
+    # Extra rule groups (same shape as files/incident_alerts.yml), scoped and
+    # labelled like the originals.
+    extraGroups: []
   # Grafana dashboard ConfigMap rendered from files/incident-responder.json
   # (synced from observability/grafana/dashboards/incident-responder.json).
   dashboard:
@@ -75,6 +78,8 @@ monitoring:
     labels:
       grafana_dashboard: "1"
     annotations: {}
+    # Extra dashboards rendered verbatim from files/<name>.json.
+    extra: []
   # Base URLs written into alert annotations and dashboard text; empty keeps
   # the local Compose URLs from the source files.
   links:

@@ -4,7 +4,7 @@
 {{- $dashboardUid := include "document-service.dashboardUid" . -}}
 {{- $src := .Files.Get "files/incident_alerts.yml" | fromYaml -}}
 {{- $groups := list -}}
-{{- range $group := $src.groups -}}
+{{- range $group := concat $src.groups ($.Values.monitoring.rules.extraGroups | default list) -}}
 {{- $rules := list -}}
 {{- range $rule := $group.rules -}}
 {{- $r := deepCopy $rule -}}
