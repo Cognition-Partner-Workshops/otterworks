@@ -17,8 +17,8 @@ Usage: include "document-service.scopeExpr" (dict "expr" $expr "namespace" $ns "
 {{- if .listHandler -}}
 {{- $e = replace `handler="/api/v1/documents/"` (printf "handler=~%q" .listHandler) $e -}}
 {{- end -}}
-{{- $expr := regexReplaceAll `\b((?:http|otterworks)_[a-z0-9_]+|ALERTS)\{` $e (printf "${1}{%s, " $m) -}}
-{{- regexReplaceAll `\b((?:http|otterworks)_[a-z0-9_]+)\b([^{a-z0-9_]|$)` $expr (printf "${1}{%s}${2}" $m) -}}
+{{- $expr := regexReplaceAll `\b((?:http|otterworks|search_service|notifications)_[a-z0-9_]+|ALERTS)\{` $e (printf "${1}{%s, " $m) -}}
+{{- regexReplaceAll `\b((?:http|otterworks|search_service|notifications)_[a-z0-9_]+)\b([^{a-z0-9_]|$)` $expr (printf "${1}{%s}${2}" $m) -}}
 {{- end -}}
 
 {{/*

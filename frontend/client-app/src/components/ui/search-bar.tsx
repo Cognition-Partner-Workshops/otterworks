@@ -1,19 +1,56 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
+import { searchApi } from "@/lib/api";
 
 export function SearchBar() {
   const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestError, setSuggestError] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const q = query.trim();
+    setSuggestions([]);
+    setSuggestError(false);
+    if (q.length < 2) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      searchApi
+        .suggest(q)
+        .then((s) => {
+          if (cancelled) return;
+          setSuggestions(s.slice(0, 6));
+          setSuggestError(false);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setSuggestions([]);
+          setSuggestError(true);
+        });
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query]);
+
+  const go = useCallback(
+    (q: string) => {
+      if (q.trim()) {
+        setSuggestions([]);
+        navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+      }
+    },
+    [navigate]
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (query.trim()) {
-        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      }
+      go(query);
     },
-    [query, navigate]
+    [query, go]
   );
 
   return (
@@ -37,6 +74,27 @@ export function SearchBar() {
         >
           <X size={16} />
         </button>
+      )}
+      {(suggestError || suggestions.length > 0) && (
+        <ul className="absolute left-0 right-0 top-full z-20 mt-1 rounded-[4px] border border-[#ccc] bg-white py-1 text-sm shadow-lg">
+          {suggestError ? (
+            <li role="alert" className="px-4 py-2 text-[#c41230]">
+              Suggestions unavailable. Search service error.
+            </li>
+          ) : (
+            suggestions.map((s) => (
+              <li key={s}>
+                <button
+                  type="button"
+                  onClick={() => go(s)}
+                  className="w-full px-4 py-2 text-left text-gray-900 hover:bg-gray-100"
+                >
+                  {s}
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
       )}
     </form>
   );

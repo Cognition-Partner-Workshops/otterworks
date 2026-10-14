@@ -24,12 +24,56 @@ monitoring:
           ) > 1
           and
           sum(rate(http_requests_total{job="document-service", handler="/api/v1/documents/", method="GET"}[2m])) > 0
+    # One page per Operations Console chaos button, so pressing it (and then
+    # using the broken feature) pages Devin like the slow document list does.
+    extraGroups:
+      - name: bofa.chaos
+        interval: 15s
+        rules:
+          - alert: FileUploadErrors
+            expr: |
+              sum(rate(http_requests_total{job="file-service", method="POST", path="/api/v1/files/upload", status=~"5.."}[2m])) > 0
+            for: 15s
+            labels: {severity: critical, page: devin, service: file-service, scenario: upload-failures}
+            annotations:
+              summary: "File uploads are failing with server errors"
+              description: >-
+                POST /api/v1/files/upload on file-service is returning 5xx. Users see "Upload failed"
+                on every upload while the rest of the app works.
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
+          - alert: SearchSuggestErrors
+            expr: |
+              sum(rate(search_service_requests_total{endpoint=~".*/suggest", status=~"5.."}[2m])) > 0
+            for: 15s
+            labels: {severity: critical, page: devin, service: search-service, scenario: suggest-errors}
+            annotations:
+              summary: "Search suggestions are failing with server errors"
+              description: >-
+                GET /api/v1/search/suggest on search-service is returning 5xx, so the search box shows
+                "Suggestions unavailable" instead of suggestions.
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
+          - alert: DocumentOpenLatencyHigh
+            expr: |
+              histogram_quantile(0.95,
+                sum by (le) (rate(http_request_duration_seconds_bucket{job="document-service", handler="/api/v1/documents/{document_id}"}[2m]))
+              ) > 2
+              and
+              sum(rate(http_requests_total{job="document-service", handler="/api/v1/documents/{document_id}"}[2m])) > 0
+            for: 15s
+            labels: {severity: critical, page: devin, service: document-service, scenario: slow-document-open}
+            annotations:
+              summary: "Opening a document takes {{ $value | humanizeDuration }} (threshold 2s)"
+              description: >-
+                GET /api/v1/documents/{document_id} p95 is above 2s; opening any single document hangs
+                for seconds.
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
   serviceMonitor:
     interval: 15s
     labels:
       release: prometheus
   dashboard:
     enabled: true
+    extra: [bofa-incidents]
   links:
     grafana: https://grafana.otterworks.app
     jaeger: https://jaeger.otterworks.app

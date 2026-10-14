@@ -51,17 +51,16 @@ import { AuthService } from './core/services/auth.service';
     }
 
     .concept-banner {
-      min-height: 24px;
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2px 8px;
-      border-bottom: 1px solid #dddddd;
-      background: #f5f5f5;
-      color: #333333;
-      font-size: 12px;
-      font-style: italic;
-      line-height: 1.3;
+      padding: 8px 16px;
+      background: #e31837;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
       text-align: center;
     }
 

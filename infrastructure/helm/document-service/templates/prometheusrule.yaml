@@ -4,7 +4,7 @@
 {{- $dashboardUid := include "document-service.dashboardUid" . -}}
 {{- $src := .Files.Get "files/incident_alerts.yml" | fromYaml -}}
 {{- $groups := list -}}
-{{- range $group := $src.groups -}}
+{{- range $group := concat $src.groups ($.Values.monitoring.rules.extraGroups | default list) -}}
 {{- $rules := list -}}
 {{- range $rule := $group.rules -}}
 {{- $r := deepCopy $rule -}}
@@ -14,7 +14,7 @@
 {{- $labels := mergeOverwrite (deepCopy ($rule.labels | default dict)) ($.Values.monitoring.rules.extraLabels | default dict) (dict "namespace" $ns) -}}
 {{- $_ := set $r "labels" $labels -}}
 {{- $ann := deepCopy ($rule.annotations | default dict) -}}
-{{- if and $links.grafana (hasKey $ann "dashboard_url") -}}
+{{- if and $links.grafana (hasPrefix "http://localhost" ($ann.dashboard_url | default "")) -}}
 {{- $_ := set $ann "dashboard_url" (printf "%s/d/%s" (trimSuffix "/" $links.grafana) $dashboardUid) -}}
 {{- end -}}
 {{- if and $links.jaeger (hasKey $ann "traces_url") -}}

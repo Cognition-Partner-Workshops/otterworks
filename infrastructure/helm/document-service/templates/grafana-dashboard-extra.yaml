@@ -1,0 +1,18 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.dashboard.enabled -}}
+{{- range $name := .Values.monitoring.dashboard.extra }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-dashboard-{{ $name }}
+  labels:
+    app.kubernetes.io/name: {{ $.Chart.Name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    {{- with $.Values.monitoring.dashboard.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  {{ $name }}.json: |-
+    {{- $.Files.Get (printf "files/%s.json" $name) | nindent 4 }}
+{{- end }}
+{{- end }}

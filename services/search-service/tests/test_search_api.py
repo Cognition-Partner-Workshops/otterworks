@@ -82,6 +82,12 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_requires_user(self, client):
+        """Without X-User-ID, suggest returns nothing rather than other users' titles."""
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
     def test_suggest_with_prefix(self, client, mock_meilisearch_client):
         """Suggest with valid prefix returns suggestions."""
         mock_index = mock_meilisearch_client.index.return_value
@@ -93,7 +99,7 @@ class TestSuggestEndpoint:
             ],
         }
 
-        response = client.get("/api/v1/search/suggest?q=te")
+        response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
