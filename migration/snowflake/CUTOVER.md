@@ -122,9 +122,8 @@ UBW_LOG_RUN. Screenshots are attached to the PR.
 
 ## Open items for the data owners
 
-1. **The task graph is suspended.** Every task in `OPS`, including the root, shows `Suspended` in Snowsight. Cutover switches the readers; it does not resume the schedule. Until a builder role resumes `UBW_NIGHTLY_LOAD`, Snowflake will not refresh.
-2. **The live graph has drifted from PR #1978.** Live `OPS` has 10 tasks and no `UBW_HOURLY_AUDIT`, which PR #1979 (credit review) retired. PR #1978 still defines that task in `target/tasks/hourly_audit.sql`. Decide whether #1979 lands with #1978. Without it, audit marts refresh nightly rather than hourly.
-3. **The root schedule is a fixed offset.** It shows "02:30 AM, UTC-04:00", the same fixed-offset pattern as the storage-day defect, so it runs an hour off whenever Eastern is on standard time.
-4. **dbt build logs are not in the repo.** PR #1978 cites `gate/out/dbt/` (`PASS=440 WARN=0 ERROR=0` on each date), but the root `.gitignore` has `*.log`, so the fixture never committed them. They live in the Act 3 session that authored #1978: https://partner-workshops.devinenterprise.com/sessions/860860b4cf89499ca62c760f696cbe52
-5. **Merge leftovers.** Stray diff3 markers (`||||||| f77dad4aa`) from #1978's merge were removed from `migration/snowflake/.gitignore` and `README.md`.
-6. **First follow-up:** the side-by-side seat column on `/usage` (see above).
+1. **Task graph:** cutover left every `OPS` task suspended. The decision is that cutover leaves the schedule running, so `make sfm-cutover` now resumes the graph after its gate reread passes (`tasks.py resume`, which skips retired tasks). For this run, the graph is resumed only once the run's resource monitor `OW_UBW_SFM_20261013_LV_RM` (5 credits, notify at 75%, suspend at 100%) is confirmed on its warehouse. Bootstrap now creates and re-applies the 75% notify trigger.
+2. **`UBW_HOURLY_AUDIT`:** PR #1979 retires it and lands right after #1978 in the merge order, so the two land together. The live `OPS` schema already matches #1979: 10 tasks, no hourly audit.
+3. **dbt build logs are not in the repo.** PR #1978 cites `gate/out/dbt/` (`PASS=440 WARN=0 ERROR=0` on each date), but the root `.gitignore` has `*.log`, so the fixture never committed them. They live in the Act 3 session that authored #1978: https://partner-workshops.devinenterprise.com/sessions/860860b4cf89499ca62c760f696cbe52
+4. **Merge leftovers.** Stray diff3 markers (`||||||| f77dad4aa`) from #1978's merge were removed from `migration/snowflake/.gitignore` and `README.md`.
+5. **First follow-up:** the side-by-side seat column on `/usage` (see above).
