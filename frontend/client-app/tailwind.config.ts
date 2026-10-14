@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Bank of America concept demo theme: navy, red accents, and the supplied font stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,26 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f5f5f5",
+          100: "#e9edf5",
+          200: "#d2dbea",
+          300: "#b1c1dc",
+          400: "#819bc5",
+          500: "#5276ae",
+          600: "#2c5597",
+          700: "#123b7d",
+          800: "#012169",
+          900: "#012169",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#ed536c",
+          500: "#e31837",
+          600: "#c41230",
         },
+        link: "#0052c2",
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ["Roboto", "Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
       },
     },
   },

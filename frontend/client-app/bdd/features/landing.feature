@@ -1,14 +1,14 @@
 Feature: Landing Page
   As a prospective enterprise customer
-  I want to see the OtterWorks corporate landing page
+  I want to see the Bank of America corporate landing page
   So that I can learn about the company and sign up
 
   # AC-01 / BDD-01
-  Scenario: Visitor sees the corporate hero with the otter logo
+  Scenario: Visitor sees the corporate hero with the Document Center logo
     Given I am on the landing page
-    Then I should see the heading "OtterWorks"
-    And I should see the otter logo
-    And I should see the text "Enterprise retail products for otters"
+    Then I should see the heading "Document Center"
+    And I should see the Document Center logo
+    And I should see the text "Enterprise Document Center"
 
   Scenario: Visitor sees navigation CTAs
     Given I am on the landing page
@@ -22,7 +22,7 @@ Feature: Landing Page
     And I should see the text "Leadership"
     And I should see the text "Departments"
     And I should see the text "Products"
-    And I should see the text "Newsroom"
+    And I should see the text "Internal Updates"
     And I should see the text "Careers"
 
   Scenario: Sign In link navigates to login
@@ -38,7 +38,7 @@ Feature: Landing Page
   # AC-02c / BDD-06
   Scenario: Corporate footer is visible with legal links
     Given I am on the landing page
-    Then I should see the text "© OtterWorks, Inc."
+    Then I should see the text "© Bank of America · Concept demo"
     And I should see a link "Terms"
     And I should see a link "Privacy"
 

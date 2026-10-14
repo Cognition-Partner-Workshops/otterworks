@@ -22,8 +22,11 @@ import { AuthService } from '../../core/services/auth.service';
       <mat-card class="login-card">
         <mat-card-header>
           <div class="login-header">
-            <img class="login-logo" src="assets/otter-logo.png" alt="OtterWorks logo" width="64" height="64" />
-            <h1>OtterWorks Admin</h1>
+            <div class="login-brand">
+              <img class="login-logo" src="assets/bofa-logo.svg" alt="Bank of America" width="231" height="24" />
+              <span aria-hidden="true" class="brand-divider"></span>
+              <h1 class="product-name">Operations Console</h1>
+            </div>
             <p>Sign in to the admin dashboard</p>
           </div>
         </mat-card-header>
@@ -31,7 +34,7 @@ import { AuthService } from '../../core/services/auth.service';
           <form (ngSubmit)="onLogin()" class="login-form">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
-              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="admin@otterworks.io" (input)="clearError()">
+              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="admin@documentcenter.example" (input)="clearError()">
               <mat-icon matSuffix>email</mat-icon>
             </mat-form-field>
 
@@ -63,12 +66,15 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: #1f3a5f;
+      padding: 32px 16px;
+      background: linear-gradient(135deg, #c41230 0%, #7a0a26 100%);
     }
 
     .login-card {
-      width: 420px;
-      padding: 40px;
+      width: min(420px, 100%);
+      padding: 32px;
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     }
 
     .login-header {
@@ -77,16 +83,32 @@ import { AuthService } from '../../core/services/auth.service';
       margin-bottom: 24px;
     }
 
-    .login-logo {
-      width: 64px;
-      height: 64px;
+    .login-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 16px;
     }
 
-    .login-header h1 {
+    .login-logo {
+      width: auto;
+      height: 24px;
+      flex: 0 0 auto;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 20px;
+      background: #dddddd;
+    }
+
+    .product-name {
       margin: 0;
-      font-size: 1.5rem;
-      color: #333;
+      color: #666666;
+      font-size: 0.9rem;
+      font-weight: 400;
+      white-space: nowrap;
     }
 
     .login-header p {
@@ -123,6 +145,16 @@ import { AuthService } from '../../core/services/auth.service';
       color: #f44336;
       font-size: 0.85rem;
       margin-bottom: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .login-logo {
+        height: 18px;
+      }
+
+      .login-brand {
+        gap: 8px;
+      }
     }
   `],
 })

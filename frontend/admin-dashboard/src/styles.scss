@@ -2,24 +2,24 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
+// Bank of America concept demo theme: navy, red accents, and the supplied font stack.
 $otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+  50: #f5f5f5,
+  100: #e9edf5,
+  200: #d2dbea,
+  300: #b1c1dc,
+  400: #819bc5,
+  500: #5276ae,
+  600: #2c5597,
+  700: #123b7d,
+  800: #012169,
+  900: #012169,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
     200: rgba(0, 0, 0, 0.87),
     300: rgba(0, 0, 0, 0.87),
-    400: #ffffff,
+    400: rgba(0, 0, 0, 0.87),
     500: #ffffff,
     600: #ffffff,
     700: #ffffff,
@@ -28,8 +28,13 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$accent-red-palette: map-merge(mat.$red-palette, (
+  500: #e31837,
+  600: #c41230,
+));
+
+$admin-primary: mat.define-palette($otter-navy-palette, 800, 700, 900);
+$admin-accent: mat.define-palette($accent-red-palette, 500, 300, 600);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -38,7 +43,7 @@ $admin-theme: mat.define-light-theme((
     accent: $admin-accent,
     warn: $admin-warn,
   ),
-  typography: mat.define-typography-config(),
+  typography: mat.define-typography-config($font-family: 'Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif'),
   density: 0,
 ));
 
@@ -52,9 +57,9 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f5f5f5;
   color: #212529;
 }
 
@@ -64,7 +69,36 @@ body {
 
 a {
   text-decoration: none;
-  color: inherit;
+  color: #0052c2;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  border-radius: 4px;
+}
+
+button.mat-mdc-raised-button,
+button.mat-mdc-unelevated-button {
+  min-height: 40px;
+  padding: 8px 24px !important;
+  border: 1px solid #012169 !important;
+  border-radius: 22px !important;
+  background-color: #012169 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+}
+
+button.mat-mdc-outlined-button,
+button.mat-mdc-stroked-button,
+button.mat-mdc-button {
+  min-height: 40px;
+  padding: 8px 24px !important;
+  border: 1px solid #012169 !important;
+  border-radius: 22px !important;
+  background-color: #ffffff !important;
+  color: #012169 !important;
+  font-weight: 500 !important;
 }
 
 ::-webkit-scrollbar {
@@ -84,43 +118,50 @@ a {
   background: #999;
 }
 
-/* ── Sidebar nav-list overrides ──────────────────────────────────────────────
-   Angular Material's light theme renders mat-list-item text in dark ink.
-   These rules force white text/icons inside the dark sidebar regardless of
-   the global theme, replacing the weaker ::ng-deep rules in the component. */
+app-sidebar .sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid #dddddd;
+  color: #012169;
+}
+
 app-sidebar .mat-mdc-list-item,
 app-sidebar .mat-mdc-list-item .mdc-list-item__primary-text,
 app-sidebar .mat-mdc-list-item .mat-mdc-list-item-title {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: #012169 !important;
 }
 
 app-sidebar .mat-mdc-list-item .mat-icon {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: #012169 !important;
 }
 
 app-sidebar .mat-mdc-list-item:hover .mdc-list-item__primary-text,
 app-sidebar .mat-mdc-list-item:hover .mat-mdc-list-item-title,
 app-sidebar .mat-mdc-list-item:hover {
-  color: #ffffff !important;
+  color: #012169 !important;
+  background: #f5f5f5 !important;
 }
 
 app-sidebar .mat-mdc-list-item:hover .mat-icon {
-  color: #ffffff !important;
+  color: #012169 !important;
 }
 
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #012169 !important;
+  background: #f5f5f5 !important;
+  font-weight: 600 !important;
+}
+
+app-sidebar .active-link {
+  border-left: 3px solid #e31837 !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #012169 !important;
 }
 
-/* Ripple / focus state should also be light */
 app-sidebar .mat-mdc-list-item .mdc-list-item__ripple::before,
 app-sidebar .mat-mdc-list-item .mdc-list-item__ripple::after {
-  background-color: rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(1, 33, 105, 0.08) !important;
 }

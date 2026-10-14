@@ -1,16 +1,17 @@
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/layout/footer";
-import { Logo } from "@/components/ui/logo";
+import { BrandLockup } from "@/components/ui/brand-lockup";
 import { COMPANY } from "@/lib/corporate";
+import { ConceptBanner } from "@/components/layout/concept-banner";
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-otter-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo size={28} />
-            <span className="font-semibold text-gray-900">OtterWorks, Inc.</span>
+    <main className="flex min-h-screen flex-col bg-[#f5f5f5]">
+      <ConceptBanner />
+      <header className="border-b border-[#ddd] bg-white">
+        <div className="mx-auto flex min-h-16 max-w-4xl items-center px-4 py-3">
+          <Link to="/" aria-label="Bank of America Document Center home">
+            <BrandLockup />
           </Link>
         </div>
       </header>
@@ -22,29 +23,27 @@ export default function PrivacyPage() {
         <div className="bg-white border border-gray-300 rounded p-6 space-y-4 text-sm text-gray-600 leading-relaxed">
           <p>
             <strong className="text-gray-900">1. Information We Collect.</strong>{" "}
-            OtterWorks stores the files and documents you upload, your display
-            name, and your email address. We do not track your swimming routes
-            or your favorite fishing spots.
+            Document Center stores the files and documents you upload, your
+            display name, and your work email address.
           </p>
           <p>
             <strong className="text-gray-900">2. How We Use It.</strong> Your
-            data is used solely to operate the service: storage, sharing,
-            search, and notifications. We never sell den locations to
-            predators or advertisers.
+            Data is used only to operate the service: storage, sharing, search
+            and notifications. It is never sold or used for advertising.
           </p>
           <p>
             <strong className="text-gray-900">3. Sharing.</strong> Content is
-            shared only with the otters you explicitly authorize. Audit logs
-            record access for compliance with waterway regulations.
+            shared only with colleagues you explicitly authorize. Audit logs
+            record every access for compliance review.
           </p>
           <p>
             <strong className="text-gray-900">4. Retention.</strong> Deleted
-            items float in the Trash for thirty days before drifting out to
-            sea permanently.
+            items stay in Trash for thirty days before permanent deletion,
+            unless a legal hold applies.
           </p>
           <p>
             <strong className="text-gray-900">5. Contact.</strong> Questions?
-            Write to the Trust &amp; Compliance department at {COMPANY.headquarters}.
+            Write to the Records &amp; Compliance department at {COMPANY.headquarters}.
           </p>
         </div>
       </div>

@@ -133,10 +133,10 @@ import { DashboardStats } from '../../core/models/analytics.model';
       box-sizing: content-box;
     }
 
-    .users-icon { background: #e3f2fd; color: #1976d2; }
-    .docs-icon { background: #e8f5e9; color: #388e3c; }
-    .storage-icon { background: #fff3e0; color: #f57c00; }
-    .sessions-icon { background: #f3e5f5; color: #7b1fa2; }
+    .users-icon { background: #e8ecf5; color: #012169; }
+    .docs-icon { background: #fce8eb; color: #e31837; }
+    .storage-icon { background: #e8ecf5; color: #012169; }
+    .sessions-icon { background: #fce8eb; color: #e31837; }
 
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -198,8 +198,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         labels: report.userSignups.map(d => d.label),
         datasets: [{
           data: report.userSignups.map(d => d.value),
-          borderColor: '#1976d2',
-          backgroundColor: 'rgba(25, 118, 210, 0.1)',
+          borderColor: '#012169',
+          backgroundColor: 'rgba(1, 33, 105, 0.1)',
+          pointBackgroundColor: '#012169',
+          pointBorderColor: '#012169',
           fill: true,
           tension: 0.4,
         }],
@@ -209,7 +211,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         labels: report.documentActivity.map(d => d.label),
         datasets: [{
           data: report.documentActivity.map(d => d.value),
-          backgroundColor: '#4fc3f7',
+          backgroundColor: '#e31837',
           borderRadius: 4,
         }],
       };

@@ -1,54 +1,51 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
-
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Bank of America",
+  tagline: "Enterprise Document Center",
+  founded: 2026,
+  headquarters: "Charlotte, North Carolina",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Concept demo. Not affiliated with, endorsed by, or produced by Bank of America. All people, figures and events shown are fictional.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Document Center is a concept for the secure, internal document platform a large bank runs every day: loan files, KYC packages, client statements and policy documents, stored once and shared under audit.",
+  "Every file has a version history, every share has an owner, and every access lands in an immutable audit trail, so compliance teams can answer who saw what and when without a ticket.",
+  "Relationship managers, operations analysts and risk teams work in the same folders and documents in real time, with enterprise search across everything they are entitled to see.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Dana Whitfield", title: "Head of Enterprise Document Services", bio: "Leads the platform that stores and governs internal client documentation." },
+  { name: "Marcus Oyelaran", title: "Platform Engineering Lead", bio: "Owns the eleven services behind Document Center and their uptime." },
+  { name: "Priya Raman", title: "Records & Compliance Lead", bio: "Sets retention, legal-hold and audit policy for every document class." },
+  { name: "Tom Becker", title: "Product Lead, Collaboration", bio: "Runs real-time editing, sharing and notifications." },
+  { name: "Elena Duarte", title: "Operations Console Lead", bio: "Builds the tools operations teams use to manage users, quotas and health." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Platform Engineering", description: "Builds and runs the file, document, search and collaboration services." },
+  { name: "Records & Compliance", description: "Retention schedules, legal holds, audit and regulatory reporting." },
+  { name: "Information Security", description: "Access control, encryption, and security testing across the platform." },
+  { name: "Client Operations", description: "Onboarding, KYC and servicing teams who live in Document Center every day." },
+  { name: "Technology Risk", description: "Change management, resilience testing and third-party oversight." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Document Vault", description: "Secure file storage with folder trees, version history, and instant preview." },
+  { name: "Collaborative Docs", description: "Rich-text documents with real-time co-editing and change tracking." },
+  { name: "Enterprise Search", description: "Full-text search across every file and document you are entitled to see." },
+  { name: "Operations Console", description: "Users, quotas, audit logs and system health in one place." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Document Center completes migration of commercial lending files to the Document Vault" },
+  { date: "November 2025", title: "Immutable audit trail now covers every share, download and preview" },
+  { date: "June 2025", title: "Enterprise Search rolls out to client operations teams" },
+  { date: "January 2025", title: "Document Center pilot launches with relationship managers" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Charlotte, NC" },
+  { role: "Records Management Analyst", team: "Records & Compliance", location: "Charlotte, NC" },
+  { role: "Application Security Engineer", team: "Information Security", location: "New York, NY" },
+  { role: "Operations Support Specialist", team: "Client Operations", location: "Remote (US)" },
 ];
