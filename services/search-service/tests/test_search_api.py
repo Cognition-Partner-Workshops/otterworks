@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,20 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_stays_200_when_suggest_500_flag_is_set(self, client, mock_meilisearch_client):
+        """The chaos:search-service:suggest_500 flag no longer turns /suggest into a 5xx."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Quarterly budget review"}, {"title": "Quarterly risk report"}],
+        }
+
+        with patch("redis.Redis.exists", return_value=1):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly budget review", "Quarterly risk report"]
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
