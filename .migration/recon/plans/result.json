@@ -14,7 +14,7 @@
   "seed": 1,
   "params": {},
   "snapshot": null,
-  "generated_at": "2026-10-14T22:54:14.813508+00:00",
+  "generated_at": "2026-10-14T23:52:09.580824+00:00",
   "redacted": true,
   "redaction_salted": false,
   "tiers": [
@@ -36,23 +36,61 @@
       "tier": 2,
       "name": "per_field_aggregates",
       "passed": true,
-      "checks_run": 6,
+      "checks_run": 13,
       "stats": {
         "deferred_to_tier3": [
+          "plans.code",
+          "plans.tier",
           "plans.active",
           "subscriptions.startsOn",
           "subscriptions.endsOn",
-          "subscriptions.suspendedOn",
-          "tenants.taxExempt"
-        ],
-        "lob_deferred_to_tier3": [
-          "plans.code",
-          "plans.tier",
-          "subscriptions.tenantId",
-          "subscriptions.planId",
           "subscriptions.status",
+          "subscriptions.suspendedOn",
           "tenants.name",
+          "tenants.taxExempt",
           "tenants.status"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "plans.code",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "plans.tier",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptions.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "tenants.name",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "tenants.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
         ],
         "fields_fully_deferred": 2
       },
@@ -86,16 +124,8 @@
       "findings": []
     }
   ],
-  "warnings": [
-    "LOB field plans.code: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field plans.tier: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field subscriptions.tenantId: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field subscriptions.planId: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field subscriptions.status: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field tenants.name: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only",
-    "LOB field tenants.status: Tier 2 aggregates skipped (driver cannot aggregate LOBs); value-checked at Tier 3 only"
-  ],
+  "warnings": [],
   "verdict": "PASS",
-  "merge_eligible": false,
+  "merge_eligible": true,
   "error": null
 }
