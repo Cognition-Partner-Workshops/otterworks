@@ -120,8 +120,8 @@ python -m pytest tests -q
 
 ## Seed-loader integration
 
-`seed-loader.job.yaml` is a Kubernetes Job that runs this generator against the
-in-cluster gateway (`api-gateway.<ns>.svc.cluster.local:8080`) on demand /
-after a spin-up, mirroring the golden reference-data loader. It reads the drive
-credentials from the `retail-drive-seed` Secret and passes `--register` so it
-bootstraps the account on a fresh environment. See the job manifest for details.
+On tenant deploy, `scripts/deploy-tenant.sh` starts its `drive-seed` Job only
+when the deployed branch matches `SEED_BRANCH`; the Job runs the deployed tree's
+seeder from the `drive-seed-src` ConfigMap without cloning GitHub. The separate
+`seed-loader.job.yaml` remains a manually applied loader that reads credentials
+from the `retail-drive-seed` Secret.

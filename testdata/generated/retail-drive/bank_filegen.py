@@ -66,7 +66,14 @@ def _facts(name: str, r: random.Random) -> dict[str, object]:
     }
 
 
-def _transactions(r: random.Random, count: int = 12) -> list[dict[str, object]]:
+def _name_year(name: str) -> int:
+    match = re.search(r"\b(20\d\d)\b", name)
+    return int(match.group(1)) if match else 2025
+
+
+def _transactions(
+    r: random.Random, count: int = 12, start_year: int = 2025
+) -> list[dict[str, object]]:
     descriptions = [
         "ACH settlement — fictional",
         "Loan payment — demo record",
@@ -81,7 +88,7 @@ def _transactions(r: random.Random, count: int = 12) -> list[dict[str, object]]:
         amount = round(r.uniform(-18_000, 34_000), 2)
         balance = round(balance + amount, 2)
         rows.append({
-            "date": (datetime(2025, 1, 1) + timedelta(days=i * 17)).date().isoformat(),
+            "date": (datetime(start_year, 1, 1) + timedelta(days=i * 17)).date().isoformat(),
             "reference": f"TXN-DEMO-{i + 1:03d}",
             "description": r.choice(descriptions),
             "amount_usd": amount,
@@ -130,7 +137,7 @@ def _xlsx(name: str, r: random.Random) -> bytes:
         ws.append([label, value, note])
     activity = wb.create_sheet("Statement Activity")
     activity.append(["Date", "Reference", "Description", "Amount USD", "Balance USD"])
-    for tx in _transactions(r, 10):
+    for tx in _transactions(r, 10, start_year=_name_year(name)):
         activity.append(list(tx.values()))
     for sheet in wb.worksheets:
         sheet.freeze_panes = "A2"
@@ -299,7 +306,7 @@ def _csv(name: str, r: random.Random) -> bytes:
     writer = csv.writer(buf, lineterminator="\n")
     writer.writerow(["date", "transaction_ref", "fictional_client", "product",
                      "description", "amount_usd", "balance_usd"])
-    for tx in _transactions(r):
+    for tx in _transactions(r, start_year=_name_year(name)):
         writer.writerow([
             tx["date"], tx["reference"], facts["client"], facts["product"],
             tx["description"], f"{tx['amount_usd']:.2f}", f"{tx['balance_usd']:.2f}",
@@ -332,7 +339,7 @@ def _md(name: str, r: random.Random) -> bytes:
         "| Date | Reference | Description | Amount USD |",
         "|---|---|---|---:|",
     ]
-    for tx in _transactions(r, 4):
+    for tx in _transactions(r, 4, start_year=_name_year(name)):
         lines.append(
             f"| {tx['date']} | {tx['reference']} | {tx['description']} | "
             f"{tx['amount_usd']:.2f} |"
@@ -356,7 +363,7 @@ def _json(name: str, r: random.Random) -> bytes:
         "dti_pct": facts["dti"],
         "credit_risk_band": facts["risk_score"],
         "liquidity_coverage_ratio": facts["liquidity_ratio"],
-        "transactions": _transactions(r, 8),
+        "transactions": _transactions(r, 8, start_year=_name_year(name)),
     }
     return (json.dumps(obj, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
@@ -367,8 +374,12 @@ def _png(name: str, r: random.Random) -> bytes:
     figure = Figure(figsize=(7, 4), dpi=100)
     FigureCanvasAgg(figure)
     ax = figure.add_subplot(111)
-    ax.plot(["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"],
-            values, color="#012169", marker="o", linewidth=2)
+    ax.plot(range(8), values, color="#012169", marker="o", linewidth=2)
+    ax.set_xticks(
+        range(8),
+        [f"{y} {q}" for y in (2025, 2026) for q in ("Q1", "Q2", "Q3", "Q4")],
+        rotation=35,
+    )
     ax.axhline(1.0, color="#dc1431", linestyle="--", linewidth=1, label="Illustrative threshold")
     ax.set_title(name, color="#012169")
     ax.set_ylabel("Illustrative ratio / index")

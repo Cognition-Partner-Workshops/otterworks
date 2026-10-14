@@ -627,13 +627,14 @@ fi
 # ---------- Optional drive content seed ----------
 seed_drive() {
   local seed_config="${REPO_ROOT}/testdata/generated/retail-drive/tenant-seed.conf"
-  local seed_profile="" drive_email="" drive_password="" seed_scale=""
-  local repo_ref="${TENANT_BRANCH_ARG}"
+  local seed_branch="" seed_profile="" drive_email="" drive_password="" seed_scale=""
+  local branch="${TENANT_BRANCH_ARG:-}" src_archive
   local key value
   [ -f "${seed_config}" ] || return 0
 
   while IFS='=' read -r key value; do
     case "${key}" in
+      SEED_BRANCH)  seed_branch="${value}" ;;
       SEED_PROFILE)  seed_profile="${value}" ;;
       DRIVE_EMAIL)   drive_email="${value}" ;;
       DRIVE_PASSWORD) drive_password="${value}" ;;
@@ -641,7 +642,7 @@ seed_drive() {
     esac
   done < "${seed_config}"
 
-  if [ -z "${seed_profile}" ] || [ -z "${drive_email}" ] ||
+  if [ -z "${seed_branch}" ] || [ -z "${seed_profile}" ] || [ -z "${drive_email}" ] ||
      [ -z "${drive_password}" ] || [ -z "${seed_scale}" ]; then
     warn "Drive seed config is incomplete; skipping drive seed."
     return 0
@@ -655,13 +656,33 @@ seed_drive() {
     warn "Drive seed config has invalid scale or password length; skipping drive seed."
     return 0
   fi
-  if [ -z "${repo_ref}" ]; then
-    repo_ref="$(git -C "${REPO_ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null)" || repo_ref=""
+  if [ -z "${branch}" ]; then
+    branch="$(git -C "${REPO_ROOT}" symbolic-ref --short -q HEAD 2>/dev/null || true)"
   fi
-  if [ -z "${repo_ref}" ] || ! [[ "${repo_ref}" =~ ^[A-Za-z0-9._/-]+$ ]]; then
-    warn "Could not determine a usable branch for the drive seed; skipping drive seed."
+  if [ "${branch}" != "${seed_branch}" ]; then
+    log "drive seed is configured for ${seed_branch}; this deploy is ${branch:-a detached checkout}; skipping."
     return 0
   fi
+
+  if ! src_archive="$(mktemp)"; then
+    warn "Could not create a temporary drive-seed source archive; continuing deploy."
+    return 0
+  fi
+  if ! (cd "${REPO_ROOT}" && tar czf - testdata/generated/retail-drive/*.py \
+    testdata/generated/retail-drive/requirements.txt \
+    testdata/generated/retail-drive/assets testdata/market-series) > "${src_archive}"; then
+    warn "Could not package the drive-seed source; continuing deploy."
+    rm -f "${src_archive}"
+    return 0
+  fi
+  if ! kubectl -n "${NS}" create configmap drive-seed-src \
+    --from-file="src.tgz=${src_archive}" --dry-run=client -o yaml |
+    kubectl -n "${NS}" apply -f -; then
+    warn "Could not update the drive-seed source ConfigMap; continuing deploy."
+    rm -f "${src_archive}"
+    return 0
+  fi
+  rm -f "${src_archive}"
 
   kubectl -n "${NS}" delete job drive-seed --ignore-not-found ||
     warn "Could not remove the previous drive-seed job."
@@ -691,31 +712,15 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       volumes:
+        - name: src
+          configMap:
+            name: drive-seed-src
         - name: work
           emptyDir: {}
-      initContainers:
-        - name: clone
-          image: alpine/git:2.45.2
-          env:
-            - name: REPO_URL
-              value: "https://github.com/Cognition-Partner-Workshops/otterworks.git"
-            - name: REPO_REF
-              value: "${repo_ref}"
-          command: ["/bin/sh", "-c"]
-          args:
-            - git clone --depth 1 --branch "\$REPO_REF" "\$REPO_URL" /work/src
-          volumeMounts:
-            - name: work
-              mountPath: /work
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            capabilities:
-              drop: ["ALL"]
       containers:
         - name: loader
           image: python:3.11-slim
-          workingDir: /work/src/testdata/generated/retail-drive
+          workingDir: /work
           env:
             - name: HOME
               value: "/work"
@@ -733,6 +738,9 @@ spec:
           args:
             - |
               set -eu
+              mkdir -p /work/src &&
+              tar xzf /seed-src/src.tgz -C /work/src &&
+              cd /work/src/testdata/generated/retail-drive
               python - <<'PY'
               import os
               import sys
@@ -770,6 +778,9 @@ spec:
                 --profile "\$SEED_PROFILE" --scale "\$SEED_SCALE" \
                 --departments all --workers 4 --register
           volumeMounts:
+            - name: src
+              mountPath: /seed-src
+              readOnly: true
             - name: work
               mountPath: /work
           securityContext:

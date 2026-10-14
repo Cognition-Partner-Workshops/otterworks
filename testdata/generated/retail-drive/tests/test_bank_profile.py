@@ -53,6 +53,23 @@ def test_every_bank_department_expands_and_scale_one_is_bounded(monkeypatch):
     assert 400 <= sum(counts.values()) <= 700
 
 
+@pytest.mark.parametrize(
+    ("name", "year"),
+    [
+        ("Consumer statement 2024.csv", 2024),
+        ("Treasury activity 2026.json", 2026),
+        ("Document without a year.md", 2025),
+    ],
+)
+def test_transactions_start_in_the_filename_year(name, year):
+    actual_year = bank_filegen._name_year(name)
+    first = bank_filegen._transactions(bank_filegen._rng(name, 17), start_year=actual_year)
+    second = bank_filegen._transactions(bank_filegen._rng(name, 17), start_year=actual_year)
+
+    assert first == second
+    assert first[0]["date"] == f"{year}-01-01"
+
+
 def test_each_bank_spec_builds_small_deterministic_files_and_clean_text():
     banned = re.compile(r"otter|salmon|retailco", re.IGNORECASE)
     names = [str(dept) for dept in bank_taxonomy.DEPARTMENTS]
