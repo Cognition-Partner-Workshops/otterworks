@@ -22,6 +22,24 @@ The Flask layer intentionally binds request values, calls a database
 entrypoint, and renders the returned values. It does not reproduce domain
 decisions in Python.
 
+## Authentication and tenant scope
+
+Every route except `/health`, `/` and `/plans` (the plan catalog, which holds
+no tenant data) requires a gateway-issued `Authorization: Bearer <JWT>` signed
+with `JWT_SECRET` (HS256/HS384, the same secret the api-gateway and
+auth-service share). A single `before_request` hook binds the request to the
+authenticated principal:
+
+- tenant routes (`/plans/<tenant>/...`, `/api/invoices/<tenant>/...`,
+  `/api/rating/*` via the JSON `tenant_id`) must name a tenant in the token's
+  `tenant_ids` (or `tenant_id`) claim, otherwise `403`;
+- `/api/invoices/<invoice>/lines` resolves the invoice's owning tenant first
+  and applies the same check;
+- the cross-tenant dunning routes (`/api/dunning/*`) and any tenant require the
+  `ADMIN` role.
+
+With no `JWT_SECRET` configured the service fails closed (`401`).
+
 ## Why it is an extraction candidate
 
 - The domain boundaries are already grouped into database procedure modules.
