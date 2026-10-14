@@ -2,15 +2,17 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/layout/footer";
 import { Logo } from "@/components/ui/logo";
 import { COMPANY } from "@/lib/corporate";
+import { ConceptBanner } from "@/components/layout/concept-banner";
 
 export default function TermsPage() {
   return (
     <main className="min-h-screen bg-otter-50 flex flex-col">
+      <ConceptBanner />
       <header className="bg-white border-b border-gray-300">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <Logo size={28} />
-            <span className="font-semibold text-gray-900">OtterWorks, Inc.</span>
+            <span className="font-semibold text-gray-900">Bank of America</span>
           </Link>
         </div>
       </header>
@@ -22,30 +24,29 @@ export default function TermsPage() {
         <div className="bg-white border border-gray-300 rounded p-6 space-y-4 text-sm text-gray-600 leading-relaxed">
           <p>
             <strong className="text-gray-900">1. Acceptance of Terms.</strong>{" "}
-            By accessing OtterWorks, you agree to conduct all clam-related and
-            document-related commerce in accordance with the customs of the
-            waterways. These terms are entirely fictional and carry no legal
-            force anywhere, wet or dry.
+            By accessing Document Center you agree to use it only for authorized
+            business purposes. These terms are part of a concept demo and carry
+            no legal force.
           </p>
           <p>
             <strong className="text-gray-900">2. Use of the Service.</strong>{" "}
-            You may store files, edit documents, and collaborate with other
-            otters. You may not dam the service, hoard shared pebbles, or
-            misrepresent your den affiliation.
+            You may store files, edit documents and collaborate with colleagues.
+            You may not upload data you are not authorized to hold or share
+            documents outside your entitlements.
           </p>
           <p>
             <strong className="text-gray-900">3. Accounts.</strong> You are
-            responsible for keeping your password drier than your fur. Notify
-            us of any unauthorized access to your holt immediately.
+            responsible for your credentials. Report suspected unauthorized
+            access to Information Security immediately.
           </p>
           <p>
             <strong className="text-gray-900">4. Termination.</strong>{" "}
-            OtterWorks, Inc. may suspend accounts that disturb the ecosystem.
-            Suspended otters retain the right to appeal to the River Council.
+            Access may be suspended for policy violations or role changes.
+            Suspensions can be appealed through your manager.
           </p>
           <p>
             <strong className="text-gray-900">5. Governing Law.</strong> These
-            terms are governed by the fictional statutes of Estuary Bay.
+            Concept demo only; no governing law applies.
           </p>
         </div>
       </div>

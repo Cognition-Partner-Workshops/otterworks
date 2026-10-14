@@ -22,8 +22,8 @@ import { AuthService } from '../../core/services/auth.service';
       <mat-card class="login-card">
         <mat-card-header>
           <div class="login-header">
-            <img class="login-logo" src="assets/otter-logo.png" alt="OtterWorks logo" width="64" height="64" />
-            <h1>OtterWorks Admin</h1>
+            <img class="login-logo" src="assets/bank-mark.svg" alt="Document Center logo" width="64" height="64" />
+            <h1>Bank of America — Operations Console</h1>
             <p>Sign in to the admin dashboard</p>
           </div>
         </mat-card-header>
@@ -63,7 +63,7 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #012169;
     }
 
     .login-card {

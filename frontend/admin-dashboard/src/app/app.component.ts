@@ -13,6 +13,9 @@ import { AuthService } from './core/services/auth.service';
     <div class="app-layout" *ngIf="authService.isAuthenticated; else loginView">
       <app-sidebar [(collapsed)]="sidebarCollapsed"></app-sidebar>
       <div class="main-area">
+        <div class="concept-banner">
+          Concept demo. Not affiliated with, endorsed by, or produced by Bank of America. All people, figures and events shown are fictional.
+        </div>
         <app-toolbar></app-toolbar>
         <main class="content" [class.sidebar-collapsed]="sidebarCollapsed">
           <router-outlet></router-outlet>
@@ -34,6 +37,18 @@ import { AuthService } from './core/services/auth.service';
       display: flex;
       flex-direction: column;
       min-width: 0;
+    }
+
+    .concept-banner {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      background: #00123b;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 11px;
+      text-align: center;
     }
 
     .content {

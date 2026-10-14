@@ -1,4 +1,4 @@
-# OtterWorks Web App
+# Document Center Web App
 
 React 18 single-page application built with Vite, served by nginx in production,
 wrapped by Capacitor to produce the native Android and iOS apps, and by Electron
@@ -67,7 +67,7 @@ Install it with `xcrun simctl install booted <path>` and launch it with
 `xcrun simctl launch booted com.otterworks.app`.
 
 The native shells append a token to the WebView User-Agent (`appendUserAgent` in
-`capacitor.config.ts`): `OtterWorksApp/ios` and `OtterWorksApp/android`. The API
+`capacitor.config.ts`): the iOS and Android app projects. The API
 gateway uses it to tag each access log line with `client` (`ios`, `android`, `web`,
 `other`). That field separates app traffic from browser traffic in the edge logs.
 

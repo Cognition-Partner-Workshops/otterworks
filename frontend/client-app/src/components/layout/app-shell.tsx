@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { Footer } from "./footer";
+import { ConceptBanner } from "./concept-banner";
 import { SearchBar } from "@/components/ui/search-bar";
 import { NotificationBell } from "@/components/ui/notification-bell";
 import { useUIStore } from "@/stores/ui-store";
@@ -26,6 +27,7 @@ export function AppShell({ children }: AppShellProps) {
           sidebarOpen ? "lg:ml-64" : "lg:ml-16"
         )}
       >
+        <ConceptBanner />
         {/* Top utility bar */}
         <header className="sticky top-0 z-30 bg-white border-b border-gray-300 h-12">
           <div className="flex items-center justify-between h-full px-3 lg:px-4">
@@ -38,7 +40,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Menu size={18} />
               </button>
               <span className="hidden lg:block text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">
-                OtterWorks, Inc.
+                Bank of America · Document Center
               </span>
               <div className="w-full max-w-xl">
                 <SearchBar />

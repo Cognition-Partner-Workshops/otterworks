@@ -7,6 +7,7 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { Logo } from "@/components/ui/logo";
+import { ConceptBanner } from "@/components/layout/concept-banner";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -48,13 +49,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <ConceptBanner />
+      <div className="flex w-full max-w-lg flex-1 flex-col justify-center px-4 mx-auto">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <Logo size={40} />
-            <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
+            <span className="text-2xl font-bold text-gray-900">Document Center</span>
           </Link>
           <p className="text-gray-500 mt-2">Sign in to your account</p>
         </div>
