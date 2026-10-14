@@ -37,11 +37,14 @@ public class PortalAuthenticator {
     }
 
     public PortalPrincipal authenticate(HttpServletRequest request) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        return authenticate(bearerToken(request.getHeader(HttpHeaders.AUTHORIZATION)));
+    }
+
+    private static String bearerToken(String header) {
         if (header == null || !header.startsWith(BEARER_PREFIX)) {
             throw unauthenticated("Missing bearer token");
         }
-        return authenticate(header.substring(BEARER_PREFIX.length()).trim());
+        return header.substring(BEARER_PREFIX.length()).trim();
     }
 
     public PortalPrincipal authenticate(String token) {
