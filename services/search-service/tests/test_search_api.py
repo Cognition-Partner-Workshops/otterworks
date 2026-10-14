@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,21 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_ranked_path_returns_200(self, client, mock_meilisearch_client):
+        """With chaos:search-service:suggest_500 set, suggestions are ranked by score, not a 500."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"hits": [{"title": "Quarterly plan", "_rankingScore": 0.4}]},
+            {"hits": [{"name": "quarterly-report.pdf", "_rankingScore": 0.9}]},
+        ]
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["quarterly-report.pdf", "Quarterly plan"]
+        assert mock_index.search.call_args.args[1]["showRankingScore"] is True
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
