@@ -40,7 +40,7 @@ monitoring:
               description: >-
                 POST /api/v1/files/upload on file-service is returning 5xx. Users see "Upload failed"
                 on every upload while the rest of the app works.
-              grafana_dashboard: https://grafana.otterworks.app/d/bofa-incidents
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
           - alert: SearchSuggestErrors
             expr: |
               sum(rate(search_service_requests_total{endpoint=~".*/suggest", status=~"5.."}[2m])) > 0
@@ -51,7 +51,7 @@ monitoring:
               description: >-
                 GET /api/v1/search/suggest on search-service is returning 5xx, so the search box shows
                 "Suggestions unavailable" instead of suggestions.
-              grafana_dashboard: https://grafana.otterworks.app/d/bofa-incidents
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
           - alert: DocumentOpenLatencyHigh
             expr: |
               histogram_quantile(0.95,
@@ -66,7 +66,7 @@ monitoring:
               description: >-
                 GET /api/v1/documents/{document_id} p95 is above 2s; opening any single document hangs
                 for seconds.
-              grafana_dashboard: https://grafana.otterworks.app/d/bofa-incidents
+              dashboard_url: https://grafana.otterworks.app/d/bofa-incidents
   serviceMonitor:
     interval: 15s
     labels:

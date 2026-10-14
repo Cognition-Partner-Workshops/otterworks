@@ -11,11 +11,9 @@ export function SearchBar() {
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setSuggestError(false);
-      return;
-    }
+    setSuggestions([]);
+    setSuggestError(false);
+    if (q.length < 2) return;
     let cancelled = false;
     const timer = setTimeout(() => {
       searchApi

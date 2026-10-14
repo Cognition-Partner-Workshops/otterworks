@@ -36,7 +36,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "ALERTS{namespace=\"otterworks-bofa\", alertstate=\"firing\"}",
+          "expr": "ALERTS{namespace=\"otterworks-bofa\", alertstate=\"firing\", page=\"devin\"}",
           "instant": true,
           "format": "table"
         }
