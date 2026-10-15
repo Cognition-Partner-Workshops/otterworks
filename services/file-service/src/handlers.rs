@@ -16,11 +16,11 @@ use crate::events::EventPublisher;
 use crate::metadata::MetadataClient;
 use crate::middleware;
 use crate::models::{
-    ActivityItem, ActivityQuery, ActivityResponse, CreateFolderRequest, DownloadResponse,
-    FileDetailResponse, FileMetadata, FileShare, FileVersion, Folder, HealthResponse,
-    ListFilesQuery, ListFilesResponse, ListFoldersQuery, ListFoldersResponse, ListVersionsResponse,
-    MoveFileRequest, RenameFileRequest, ShareFileRequest, ShareFileResponse, UpdateFolderRequest,
-    UploadResponse,
+    ActivityItem, ActivityQuery, ActivityResponse, CreateFolderRequest, DownloadQuery,
+    DownloadResponse, FileDetailResponse, FileMetadata, FileShare, FileVersion, Folder,
+    HealthResponse, ListFilesQuery, ListFilesResponse, ListFoldersQuery, ListFoldersResponse,
+    ListVersionsResponse, MoveFileRequest, RenameFileRequest, ShareFileRequest, ShareFileResponse,
+    UpdateFolderRequest, UploadResponse,
 };
 use crate::storage::S3Client;
 
@@ -352,18 +352,57 @@ pub async fn delete_file(
     Ok(HttpResponse::NoContent().finish())
 }
 
+/// RFC 6266 attachment header: quoted ASCII fallback plus the RFC 5987 UTF-8 name.
+fn attachment_disposition(file_name: &str) -> String {
+    let fallback: String = file_name
+        .chars()
+        .map(|c| {
+            if (c.is_ascii_graphic() || c == ' ') && c != '"' && c != '\\' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    let encoded: String = file_name
+        .bytes()
+        .map(|b| {
+            if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+                (b as char).to_string()
+            } else {
+                format!("%{b:02X}")
+            }
+        })
+        .collect();
+    format!("attachment; filename=\"{fallback}\"; filename*=UTF-8''{encoded}")
+}
+
 pub async fn download_file(
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
+    query: web::Query<DownloadQuery>,
 ) -> Result<HttpResponse, ServiceError> {
     let file_id: Uuid = path
         .into_inner()
         .parse()
         .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
 
+    let attachment = match query.disposition.as_deref() {
+        None | Some("inline") => false,
+        Some("attachment") => true,
+        Some(other) => {
+            return Err(ServiceError::BadRequest(format!(
+                "invalid disposition: {other} (expected inline or attachment)"
+            )))
+        }
+    };
+
     let file = meta.get_file(&file_id).await?;
-    let url = s3.presigned_download_url(&file.s3_key, 3600).await?;
+    let content_disposition = attachment.then(|| attachment_disposition(&file.name));
+    let url = s3
+        .presigned_download_url(&file.s3_key, 3600, content_disposition)
+        .await?;
 
     Ok(HttpResponse::Ok().json(DownloadResponse {
         url,
@@ -721,5 +760,22 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    #[test]
+    fn test_attachment_disposition_ascii_name() {
+        assert_eq!(
+            attachment_disposition("report.txt"),
+            "attachment; filename=\"report.txt\"; filename*=UTF-8''report.txt"
+        );
+    }
+
+    #[test]
+    fn test_attachment_disposition_escapes_quotes_and_unicode() {
+        assert_eq!(
+            attachment_disposition("Q3 \"final\" résumé.pdf"),
+            "attachment; filename=\"Q3 _final_ r_sum_.pdf\"; \
+             filename*=UTF-8''Q3%20%22final%22%20r%C3%A9sum%C3%A9.pdf"
+        );
     }
 }

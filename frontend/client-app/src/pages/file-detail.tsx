@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   ArrowLeft,
-  Download,
-  Loader2,
   Share2,
   Trash2,
   Clock,
@@ -22,6 +20,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { PageLoader } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ShareDialog } from "@/components/files/share-dialog";
+import { DownloadButton } from "@/components/files/download-button";
 import { TextFilePreview, PdfFilePreview, ImageFilePreview } from "@/components/files/file-preview";
 import { filesApi, authApi } from "@/lib/api";
 import { formatFileSize, formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
@@ -55,7 +54,6 @@ function FileDetailContent() {
   });
 
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [resolvedUsers, setResolvedUsers] = useState<Record<string, { name: string; email: string }>>({});
 
   useEffect(() => {
@@ -152,31 +150,10 @@ function FileDetailContent() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            disabled={isDownloading}
-            onClick={async () => {
-              setIsDownloading(true);
-              try {
-                const downloadUrl = await filesApi.getDownloadUrl(file.id);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = file.name;
-                a.rel = "noopener";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                toast.success(`Downloading ${file.name}`);
-              } catch {
-                toast.error("Download failed. Please try again.");
-              } finally {
-                setIsDownloading(false);
-              }
-            }}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            {isDownloading ? "Downloading..." : "Download"}
-          </button>
+          <DownloadButton
+            fileName={file.name}
+            getDownloadUrl={() => filesApi.getDownloadUrl(file.id, { attachment: true })}
+          />
           <button
             onClick={() => setShowShareDialog(true)}
             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
