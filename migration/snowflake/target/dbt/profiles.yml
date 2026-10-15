@@ -1,0 +1,14 @@
+ubw:
+  target: migration
+  outputs:
+    migration:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      host: "{{ env_var('SNOWFLAKE_HOST') }}"
+      user: "{{ env_var('UBW_DBT_USER') }}"
+      private_key: "{{ env_var('UBW_DBT_PRIVATE_KEY') }}"
+      role: "{{ ('OW_UBW_' ~ env_var('UBW_RUN')).upper().replace('-', '_') ~ '_ENGINEER' }}"
+      warehouse: "{{ ('OW_UBW_' ~ env_var('UBW_RUN')).upper().replace('-', '_') ~ '_WH' }}"
+      database: "{{ ('OW_UBW_' ~ env_var('UBW_RUN')).upper().replace('-', '_') }}"
+      schema: MARTS
+      threads: 4

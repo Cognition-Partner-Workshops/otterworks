@@ -1,0 +1,186 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: RAW
+    tables:
+      - name: STG_BILLING_TENANTS
+        columns:
+          - name: id
+          - name: name
+          - name: tax_exempt
+          - name: status
+          - name: region_code
+          - name: extracted_at
+          - name: source_system
+      - name: STG_BILLING_PLANS
+        columns:
+          - name: id
+          - name: code
+          - name: tier
+          - name: monthly_fee
+          - name: included_units
+          - name: overage_rate
+          - name: active
+          - name: included_bytes
+          - name: overage_cents_per_gb
+          - name: extracted_at
+          - name: source_system
+      - name: STG_BILLING_SUBSCRIPTIONS
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: plan_id
+          - name: starts_on
+          - name: ends_on
+          - name: status
+          - name: suspended_on
+          - name: extracted_at
+          - name: source_system
+      - name: STG_BILLING_USAGE_EVENTS
+        columns:
+          - name: id
+          - name: tenant_id
+          - name: occurred_at
+          - name: units
+          - name: kind
+          - name: event_ts_utc
+          - name: extracted_at
+          - name: source_system
+      - name: STG_BILLING_INVOICES
+        columns:
+          - name: invoice_id
+          - name: tenant_id
+          - name: period_start
+          - name: period_end
+          - name: issued_at
+          - name: subtotal
+          - name: tax
+          - name: total
+          - name: status
+          - name: line_id
+          - name: line_no
+          - name: line_type
+          - name: description
+          - name: amount
+          - name: extracted_at
+          - name: source_system
+      - name: STG_AUTH_USERS
+        columns:
+          - name: id
+          - name: email
+          - name: display_name
+          - name: email_verified
+          - name: mfa_enabled
+          - name: created_at
+          - name: updated_at
+          - name: last_login_at
+          - name: email_domain
+          - name: extracted_at
+          - name: source_system
+      - name: STG_AUTH_WORKSPACE_MEMBERS
+        columns:
+          - name: user_id
+          - name: workspace_id
+          - name: workspace_name
+          - name: tenant_id
+          - name: role
+          - name: joined_at
+          - name: extracted_at
+          - name: source_system
+      - name: STG_DOCUMENTS
+        columns:
+          - name: id
+          - name: title
+          - name: content_type
+          - name: owner_id
+          - name: folder_id
+          - name: workspace_id
+          - name: is_deleted
+          - name: is_template
+          - name: archived
+          - name: word_count
+          - name: version
+          - name: created_at
+          - name: updated_at
+          - name: tenant_id
+          - name: extracted_at
+          - name: source_system
+      - name: STG_DOCUMENT_VERSIONS
+        columns:
+          - name: id
+          - name: document_id
+          - name: version_number
+          - name: title
+          - name: created_by
+          - name: created_at
+          - name: content_length
+          - name: extracted_at
+          - name: source_system
+      - name: STG_FILES
+        columns:
+          - name: id
+          - name: name
+          - name: mime_type
+          - name: size_bytes
+          - name: folder_id
+          - name: owner_id
+          - name: workspace_id
+          - name: version
+          - name: is_trashed
+          - name: archived
+          - name: created_at
+          - name: updated_at
+          - name: size_mb
+          - name: tenant_id
+          - name: extracted_at
+          - name: source_system
+      - name: STG_FILE_VERSIONS
+        columns:
+          - name: file_id
+          - name: version
+          - name: size_bytes
+          - name: created_by
+          - name: created_at
+          - name: extracted_at
+          - name: source_system
+      - name: STG_COLLAB_EVENTS
+        columns:
+          - name: id
+          - name: event_type
+          - name: document_id
+          - name: user_id
+          - name: session_id
+          - name: created_at
+          - name: tenant_id
+          - name: extracted_at
+          - name: source_system
+      - name: STG_AUDIT_EVENTS
+        columns:
+          - name: id
+          - name: user_id
+          - name: action
+          - name: resource_type
+          - name: resource_id
+          - name: details
+          - name: ip_address
+          - name: user_agent
+          - name: timestamp
+            description: Quoted in Snowflake because it is a reserved word.
+          - name: tenant_id
+          - name: extracted_at
+          - name: source_system
+      - name: STG_ANALYTICS_EVENTS
+        columns:
+          - name: event_id
+          - name: event_type
+          - name: user_id
+          - name: resource_id
+          - name: resource_type
+          - name: metadata
+          - name: occurred_at
+          - name: event_ts_utc
+          - name: row_checksum
+          - name: tenant_id
+          - name: extracted_at
+          - name: source_system

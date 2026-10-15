@@ -1,0 +1,11 @@
+/target/dbt/target/
+/target/dbt/logs/
+/target/dbt/dbt_packages/
+/target/dbt/.user.yml
+/gate/out/
+/.backend.env
+||||||| f77dad4aa
+.venv/
+source/build/
+__pycache__/
+.pytest_cache/

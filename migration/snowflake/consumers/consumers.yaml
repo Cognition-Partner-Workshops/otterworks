@@ -1,0 +1,78 @@
+consumers:
+  - name: report-service
+    owner_team: analytics
+    connection: JDBC
+    objects_read:
+      - mart
+      - fact
+    reports:
+      - rpt_tenant_usage_daily
+      - rpt_tenant_usage_by_region
+      - rpt_tenant_api_units
+      - rpt_tenant_compute_units
+      - rpt_tenant_storage_peak
+      - rpt_tenant_active_users
+      - rpt_tenant_content_counts
+      - rpt_tenant_usage_top20
+      - rpt_plan_tier_summary
+      - rpt_seat_utilization
+      - rpt_seats_over_limit
+      - rpt_seat_count_by_tenant
+      - rpt_plan_mix
+      - rpt_seat_limit_headroom
+      - rpt_overage_charges
+      - rpt_overage_by_tier
+      - rpt_invoice_lines
+      - rpt_invoice_totals_by_tenant
+      - rpt_storage_vs_included
+      - rpt_monthly_billing_summary
+      - rpt_retention_summary
+      - rpt_retention_candidates
+      - rpt_document_status
+      - rpt_archived_content
+      - rpt_trash_purge_candidates
+      - rpt_audit_rollup
+      - rpt_audit_user_activity
+      - rpt_audit_sensitive_actions
+      - rpt_capacity_forecast
+      - rpt_storage_growth_trend
+    query_shape: >
+      SELECT business_date, tenant_id, plan_tier, bytes_used
+      FROM mart.mart_tenant_usage_daily WHERE business_date = @BusinessDate
+    schedule: on demand
+  - name: admin-dashboard
+    owner_team: product
+    connection: JDBC
+    objects_read:
+      - mart.mart_tenant_usage_daily
+      - mart.mart_plan_seat_summary
+    query_shape: >
+      SELECT business_date, tenant_id, tenant_name, plan_tier, api_units,
+      compute_units, active_users FROM mart.mart_tenant_usage_daily
+      WHERE business_date = @BusinessDate
+    schedule: on dashboard request
+  - name: analytics-service
+    owner_team: data-platform
+    connection: JDBC
+    objects_read:
+      - fact.fact_usage_events
+      - mart.mart_tenant_usage_daily
+    query_shape: >
+      SELECT business_date, tenant_id, event_kind, SUM(units) AS units
+      FROM fact.fact_usage_events WHERE business_date = @BusinessDate
+      GROUP BY business_date, tenant_id, event_kind
+    schedule: on API request
+  - name: capacity-forecasting-job
+    owner_team: data-platform
+    connection: pymssql
+    objects_read:
+      - mart.mart_capacity_forecast_input
+    objects_written:
+      - mart.mart_capacity_forecast_input
+    script: etl/scripts/capacity_forecast_weekly.py
+    backend: UBW_BACKEND
+    query_shape: >
+      SELECT tenant_id, observation_date, bytes_used
+      FROM mart.mart_capacity_forecast_input
+      WHERE business_date = @BusinessDate
+    schedule: "15 6 * * 1"

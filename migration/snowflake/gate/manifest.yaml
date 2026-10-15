@@ -1,0 +1,177 @@
+# Compare columns come from migration/snowflake/source/ddl and source/procs.
+units:
+  - unit: load_dim_date
+    source_procedure: dbo.usp_load_dim_date
+    owned_table: dim.dim_date
+    target_model: MARTS.DIM_DATE
+    keys: [date_key]
+    columns: [calendar_date, year_number, month_number, day_number, day_of_week, day_name, month_name, is_weekend, is_month_end, fiscal_quarter]
+    business_date_column: null
+  - unit: load_dim_tenant
+    source_procedure: dbo.usp_load_dim_tenant
+    owned_table: dim.dim_tenant
+    target_model: MARTS.DIM_TENANT
+    keys: [tenant_id]
+    columns: [tenant_name, status, tax_exempt, region_code, plan_id, plan_tier, subscription_status]
+    business_date_column: null
+  - unit: load_dim_plan
+    source_procedure: dbo.usp_load_dim_plan
+    owned_table: dim.dim_plan
+    target_model: MARTS.DIM_PLAN
+    keys: [plan_id]
+    columns: [plan_code, plan_tier, monthly_fee_cents, included_units, included_bytes, overage_cents_per_gb, seat_limit, is_active]
+    business_date_column: null
+  - unit: load_dim_user
+    source_procedure: dbo.usp_load_dim_user
+    owned_table: dim.dim_user
+    target_model: MARTS.DIM_USER
+    keys: [user_id]
+    columns: [tenant_id, email, email_domain, display_name, email_verified, mfa_enabled, created_at_utc, last_login_utc]
+    business_date_column: null
+  - unit: load_dim_workspace
+    source_procedure: dbo.usp_load_dim_workspace
+    owned_table: dim.dim_workspace
+    target_model: MARTS.DIM_WORKSPACE
+    keys: [workspace_id]
+    columns: [workspace_name, tenant_id, member_count]
+    business_date_column: null
+  - unit: load_dim_document
+    source_procedure: dbo.usp_load_dim_document
+    owned_table: dim.dim_document
+    target_model: MARTS.DIM_DOCUMENT
+    keys: [document_id]
+    columns: [tenant_id, workspace_id, owner_id, title, content_type, is_deleted, is_template, archived, word_count, version_count, created_at_utc, updated_at_utc]
+    business_date_column: null
+  - unit: load_dim_file
+    source_procedure: dbo.usp_load_dim_file
+    owned_table: dim.dim_file
+    target_model: MARTS.DIM_FILE
+    keys: [file_id]
+    columns: [tenant_id, workspace_id, owner_id, file_name, mime_type, size_bytes, size_mb, is_trashed, archived, version_count, created_at_utc, updated_at_utc]
+    business_date_column: null
+  - unit: rollup_storage_daily
+    source_procedure: dbo.usp_rollup_storage_daily
+    owned_table: fact.fact_storage_usage_daily
+    target_model: MARTS.ROLLUP_STORAGE_DAILY
+    keys: [business_date, tenant_id]
+    columns: [plan_id, sample_count, peak_storage_mb, bytes_used, included_bytes]
+    business_date_column: business_date
+  - unit: rollup_usage_events
+    source_procedure: dbo.usp_rollup_usage_events
+    owned_table: fact.fact_usage_events
+    target_model: MARTS.ROLLUP_USAGE_EVENTS
+    keys: [business_date, event_id]
+    columns: [tenant_id, event_kind, units, event_ts_utc]
+    business_date_column: business_date
+  - unit: rollup_seats
+    source_procedure: dbo.usp_rollup_seats
+    owned_table: fact.fact_seat_assignments
+    target_model: MARTS.ROLLUP_SEATS
+    keys: [business_date, tenant_id]
+    columns: [plan_id, plan_tier, seat_count]
+    business_date_column: business_date
+  - unit: rollup_collab_daily
+    source_procedure: dbo.usp_rollup_collab_daily
+    owned_table: fact.fact_collab_activity_daily
+    target_model: MARTS.ROLLUP_COLLAB_DAILY
+    keys: [business_date, tenant_id, document_id]
+    columns: [comment_count, session_count, collaborator_count]
+    business_date_column: business_date
+  - unit: rollup_audit
+    source_procedure: dbo.usp_rollup_audit
+    owned_table: fact.fact_audit_events
+    target_model: MARTS.ROLLUP_AUDIT
+    keys: [business_date, audit_id]
+    columns: [tenant_id, user_id, action, resource_type, resource_id, ip_address, event_ts_utc]
+    business_date_column: business_date
+  - unit: rollup_document_status
+    source_procedure: dbo.usp_rollup_document_status
+    owned_table: fact.fact_document_status_daily
+    target_model: MARTS.ROLLUP_DOCUMENT_STATUS
+    keys: [business_date, tenant_id, workspace_id, status_label]
+    columns: [document_count, word_count]
+    business_date_column: business_date
+  - unit: rollup_retention
+    source_procedure: dbo.usp_rollup_retention
+    owned_table: fact.fact_retention_actions
+    target_model: MARTS.ROLLUP_RETENTION
+    keys: [business_date, resource_type, resource_id]
+    columns: [tenant_id, retention_action, days_since_update]
+    business_date_column: business_date
+  - unit: build_invoice_lines
+    source_procedure: dbo.usp_build_invoice_lines
+    owned_table: fact.fact_invoice_lines
+    target_model: MARTS.BUILD_INVOICE_LINES
+    keys: [business_date, invoice_id, line_no]
+    columns: [tenant_id, period_start, period_end, line_type, description, amount_cents, invoice_status]
+    business_date_column: business_date
+  - unit: rate_overage
+    source_procedure: dbo.usp_rate_overage
+    owned_table: fact.fact_storage_usage_daily
+    target_model: MARTS.RATE_OVERAGE
+    keys: [business_date, tenant_id]
+    columns: [overage_gb, overage_cents]
+    business_date_column: business_date
+  - unit: apply_plan_limits
+    source_procedure: dbo.usp_apply_plan_limits
+    owned_table: fact.fact_seat_assignments
+    target_model: MARTS.APPLY_PLAN_LIMITS
+    keys: [business_date, tenant_id]
+    columns: [seat_limit, over_limit]
+    business_date_column: business_date
+  - unit: build_capacity_forecast_input
+    source_procedure: dbo.usp_build_capacity_forecast_input
+    owned_table: mart.mart_capacity_forecast_input
+    target_model: MARTS.BUILD_CAPACITY_FORECAST_INPUT
+    keys: [business_date, tenant_id, observation_date]
+    columns: [plan_tier, peak_storage_mb, bytes_used, seat_count]
+    business_date_column: business_date
+  - unit: build_mart_tenant_usage
+    source_procedure: dbo.usp_build_mart_tenant_usage
+    owned_table: mart.mart_tenant_usage_daily
+    target_model: MARTS.BUILD_MART_TENANT_USAGE
+    keys: [business_date, tenant_id]
+    columns: [tenant_name, plan_tier, region_code, api_units, compute_units, storage_peak_mb, bytes_used, active_users, document_count, file_count]
+    business_date_column: business_date
+  - unit: build_mart_plan_seat_summary
+    source_procedure: dbo.usp_build_mart_plan_seat_summary
+    owned_table: mart.mart_plan_seat_summary
+    target_model: MARTS.BUILD_MART_PLAN_SEAT_SUMMARY
+    keys: [business_date, plan_tier]
+    columns: [tenant_count, seat_count, seat_limit_total, tenants_over_limit, avg_seats_per_tenant]
+    business_date_column: business_date
+  - unit: build_mart_overage
+    source_procedure: dbo.usp_build_mart_overage
+    owned_table: mart.mart_overage_charges
+    target_model: MARTS.BUILD_MART_OVERAGE
+    keys: [business_date, tenant_id]
+    columns: [tenant_name, plan_tier, bytes_used, included_bytes, overage_gb, overage_cents_per_gb, overage_cents]
+    business_date_column: business_date
+  - unit: build_mart_retention
+    source_procedure: dbo.usp_build_mart_retention
+    owned_table: mart.mart_retention_summary
+    target_model: MARTS.BUILD_MART_RETENTION
+    keys: [business_date, tenant_id, resource_type, retention_action]
+    columns: [item_count]
+    business_date_column: business_date
+  - unit: build_mart_audit
+    source_procedure: dbo.usp_build_mart_audit
+    owned_table: mart.mart_audit_rollup
+    target_model: MARTS.BUILD_MART_AUDIT
+    keys: [business_date, tenant_id, action, resource_type]
+    columns: [event_count, distinct_users, first_event_utc, last_event_utc]
+    business_date_column: business_date
+  - unit: log_run
+    source_procedure: dbo.usp_log_run
+    owned_table: ops.etl_run_log
+    target_model: OPS.LOG_RUN
+    keys: [business_date, object_name]
+    columns: [object_type, status, rows_written]
+    business_date_column: business_date
+  - unit: purge_expired
+    source_procedure: dbo.usp_purge_expired
+    owned_table: ops.etl_run_log
+    target_model: OPS.PURGE_EXPIRED
+    keys: [object_name]
+    columns: [status]
+    business_date_column: null

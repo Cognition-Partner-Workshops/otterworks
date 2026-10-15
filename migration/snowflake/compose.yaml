@@ -1,0 +1,27 @@
+name: otterworks-sfm
+
+services:
+  ubw-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${UBW_SQL_PASSWORD:-OtterUbw_2016dev}
+      MSSQL_COLLATION: SQL_Latin1_General_CP1_CI_AS
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:${UBW_SQL_PORT:-14333}:1433"
+    volumes:
+      - ubw-data:/var/opt/mssql
+      - ./source/build:/var/opt/ubw/build:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  ubw-data:
