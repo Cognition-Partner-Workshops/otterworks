@@ -27,3 +27,13 @@ output "audit_archive_bucket_arn" {
   description = "ARN of the S3 bucket for audit archive"
   value       = aws_s3_bucket.audit_archive.arn
 }
+
+output "access_logs_bucket_name" {
+  description = "Name of the S3 bucket receiving server access logs"
+  value       = aws_s3_bucket.access_logs.id
+}
+
+output "access_logs_bucket_arn" {
+  description = "ARN of the S3 bucket receiving server access logs"
+  value       = aws_s3_bucket.access_logs.arn
+}
