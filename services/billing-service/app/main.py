@@ -12,8 +12,18 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    NoSubscriptionError,
+    RatingResultRow,
+    UsageRating,
+    catalog,
+    change_plan,
+    entitlement,
+    finalize_rating,
+    rate_usage,
+    usage_summary,
+)
+from app.repository import PostgresPlansRepository, PostgresRatingRepository
 
 
 @asynccontextmanager
@@ -35,6 +45,14 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class RatingFinalization(BaseModel):
+    period_start: date
+    period_end: date
+
+
+NO_SUBSCRIPTION = "no subscription overlaps the rating period"
 
 
 @app.get("/health")
@@ -127,3 +145,86 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+def _usage_rating_body(rating: UsageRating) -> dict:
+    return {
+        "tenant_id": str(rating.tenant_id),
+        "period_start": rating.period_start.isoformat(),
+        "period_end": rating.period_end.isoformat(),
+        "used_units": rating.used_units,
+        "quota_units": rating.quota_units,
+        "rollover_units": rating.rollover_units,
+        "billable_units": rating.billable_units,
+        "first_tier_units": rating.first_tier_units,
+        "second_tier_units": rating.second_tier_units,
+        "overage_amount": f"{rating.overage_amount:.2f}",
+    }
+
+
+def _rating_result_body(result: RatingResultRow) -> dict:
+    return {
+        "used_units": result.used_units,
+        "quota_units": result.quota_units,
+        "rollover_units": result.rollover_units,
+        "billable_units": result.billable_units,
+        "overage_amount": f"{result.overage_amount:.2f}",
+    }
+
+
+@app.get("/api/tenants/{tenant_id}/usage-rating")
+def get_usage_rating(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    try:
+        with connect() as connection:
+            rating = rate_usage(
+                PostgresRatingRepository(connection), tenant_id, period_start, period_end
+            )
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail=NO_SUBSCRIPTION) from error
+    return _usage_rating_body(rating)
+
+
+@app.get("/api/tenants/{tenant_id}/usage-summary")
+def get_usage_summary(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    with connect() as connection:
+        events = PostgresRatingRepository(connection).list_usage_events(tenant_id)
+    return [
+        {"kind": row.kind, "event_count": row.event_count, "units": row.units}
+        for row in usage_summary(events, period_start, period_end)
+    ]
+
+
+@app.post("/api/tenants/{tenant_id}/rating-finalizations")
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingFinalization) -> dict:
+    if request.period_end < request.period_start:
+        raise HTTPException(status_code=422, detail="period_end must not precede period_start")
+    try:
+        with connect() as connection:
+            results = finalize_rating(
+                PostgresRatingRepository(connection),
+                tenant_id,
+                request.period_start,
+                request.period_end,
+            )
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail=NO_SUBSCRIPTION) from error
+    except psycopg.errors.ForeignKeyViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="rating period id does not match the existing period",
+        ) from error
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="the rating period is being finalized concurrently; retry",
+        ) from error
+    rows = [_rating_result_body(item) for item in results]
+    return {**rows[0], "rating_result": rows}
