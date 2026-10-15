@@ -2,6 +2,7 @@
 
 import uuid
 
+import jwt
 import pytest
 
 from app.services.share_link import ShareLinkService
@@ -33,16 +34,15 @@ def test_garbage_token_is_rejected(service):
 
 @pytest.mark.asyncio
 async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatch):
-    # tests/test_documents_api.py sets JWT_SECRET at import time, which switches the
-    # app off the X-User-ID fallback for the whole session. Drop it here so the
-    # identity path this test exercises is the same whichever tests ran first.
-    monkeypatch.delenv("JWT_SECRET", raising=False)
+    secret = "share-link-test-jwt-secret-pad32"  # noqa: S105
+    monkeypatch.setenv("JWT_SECRET", secret)
     created = await client.post(
         "/api/v1/documents/",
         json={"title": "Shared", "content": "body", "owner_id": str(owner_id)},
     )
     doc_id = created.json()["id"]
-    headers = {"Authorization": "Bearer token", "X-User-ID": str(owner_id)}
+    token = jwt.encode({"sub": str(owner_id)}, secret, algorithm="HS256")
+    headers = {"Authorization": f"Bearer {token}"}
 
     minted = await client.post(f"/api/v1/documents/{doc_id}/share", headers=headers)
     assert minted.status_code == 200
