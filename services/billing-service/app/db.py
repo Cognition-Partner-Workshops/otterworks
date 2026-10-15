@@ -8,7 +8,7 @@ from psycopg.rows import dict_row
 from app.config import settings
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "db" / "migrations" / "001_initial.sql"
+MIGRATIONS = ROOT / "db" / "migrations"
 SEED = ROOT / "db" / "seed.sql"
 
 
@@ -16,17 +16,25 @@ def connect() -> psycopg.Connection:
     return psycopg.connect(settings.database_url, row_factory=dict_row)
 
 
+def _apply_migrations(connection: psycopg.Connection) -> None:
+    for migration in sorted(MIGRATIONS.glob("*.sql")):
+        connection.execute(migration.read_text())
+
+
 def migrate() -> None:
     with connect() as connection:
-        connection.execute(MIGRATION.read_text())
+        _apply_migrations(connection)
 
 
 def reset() -> None:
     with connect() as connection:
-        connection.execute(MIGRATION.read_text())
+        _apply_migrations(connection)
         connection.execute(
             """
-            TRUNCATE TABLE billing_svc.subscriptions,
+            TRUNCATE TABLE billing_svc.notifications,
+                           billing_svc.dunning_attempts,
+                           billing_svc.invoices,
+                           billing_svc.subscriptions,
                            billing_svc.plans,
                            billing_svc.tenants
             """

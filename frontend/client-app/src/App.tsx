@@ -23,6 +23,7 @@ import PrivacyPage from "@/pages/privacy";
 import BillingPlansPage from "@/features/billing/plans-page";
 import BillingEntitlementPage from "@/features/billing/entitlement-page";
 import BillingChangePlanPage from "@/features/billing/change-plan-page";
+import BillingDunningPage from "@/features/billing/dunning-page";
 
 const BILLING_FIXTURE_ENABLED =
   import.meta.env.VITE_ENABLE_BILLING_FIXTURE === "true" ||
@@ -73,6 +74,7 @@ export default function App() {
                 path="/billing/change/:tenantId"
                 element={<BillingChangePlanPage />}
               />
+              <Route path="/billing/dunning" element={<BillingDunningPage />} />
             </>
           )}
           <Route path="*" element={<NotFound />} />
