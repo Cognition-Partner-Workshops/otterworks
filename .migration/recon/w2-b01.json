@@ -1,0 +1,15 @@
+{
+  "batch": "w2-b01",
+  "status": "PASS",
+  "recon_results": [
+    ".migration/recon/rating/result.json"
+  ],
+  "write_targets": [
+    "billing_migration.usageEvents",
+    "billing_migration.ratingPeriods"
+  ],
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2043",
+  "branch": "devin/1792024069-w2-b01-rating",
+  "failure_class": "",
+  "one_line_summary": "rating: live PASS, 0 findings, merge_eligible true; procs parity rating 8/8 (PASS=13 FAIL=0 SKIP=11); recon on mongo-migration-plugin main d6d72e8"
+}
