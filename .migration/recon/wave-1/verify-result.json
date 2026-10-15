@@ -1,0 +1,17 @@
+{
+  "run_id": "ticket-e880077948ab4d4bb2b47ccbaa0c494c",
+  "manifest_sha": "bdfa1550d194",
+  "wave": 1,
+  "wave_verdict": "PASS",
+  "unit_verdicts": {"w1-b01": "PASS"},
+  "recon_results": {"w1-b01": [".migration/recon/wave-1/w1-b01/plans/result.json"]},
+  "findings": [
+    "V1: OW_BILLING_PG_RO_DSN is not visible to worker sessions; the fixture ran on a session-local BILLING_RO_PASSWORD (verdict unaffected).",
+    "V2: billing_migration._connectivity_probe (empty, from the s1.2 probe) is outside the spec and every write target; drop it under the write fence before cutover evidence.",
+    "V3: RECON_REDACT_SALT was unset for the batch run and the re-run (redaction_salted false); set it before wave 2.",
+    "V4: manifest_sha bdfa1550d194 reproduces only with auto_merge true, while d-auto-merge is false; grade with that spec and keep merging manual.",
+    "V5: the seed has no subscription with ends_on set, so endsOn is exercised only on the missing/NULL path in live recon.",
+    "V6: the dbx guard refused the first probe script (dynamic SQL text); it was rewritten with literal read-only statements, nothing bypassed."
+  ],
+  "report_path": "recon/wave-1:.migration/recon/wave-1/verify-report.md"
+}

@@ -1,0 +1,346 @@
+{
+ "collections_in_target_db": [
+  "_connectivity_probe",
+  "plans",
+  "subscriptions",
+  "tenants"
+ ],
+ "probes": {
+  "plans": {
+   "source_rows": 3,
+   "target_docs": 3,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "code": 0,
+    "tier": 0,
+    "monthlyFee": 0,
+    "includedUnits": 0,
+    "overageRate": 0,
+    "active": 0
+   },
+   "target_null_counts": {
+    "code": 0,
+    "tier": 0,
+    "monthlyFee": 0,
+    "includedUnits": 0,
+    "overageRate": 0,
+    "active": 0
+   },
+   "source_null_counts": {
+    "code": 0,
+    "tier": 0,
+    "monthly_fee": 0,
+    "included_units": 0,
+    "overage_rate": 0,
+    "active": 0
+   },
+   "target_bson_types": {
+    "code": {
+     "string": 3
+    },
+    "tier": {
+     "string": 3
+    },
+    "monthlyFee": {
+     "decimal": 3
+    },
+    "includedUnits": {
+     "int": 3
+    },
+    "overageRate": {
+     "decimal": 3
+    },
+    "active": {
+     "bool": 3
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 3
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 2,
+    "present": 2,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "natural_key_code": {
+    "source_dupes": 0,
+    "target_dupes": 0
+   }
+  },
+  "subscriptions": {
+   "source_rows": 9,
+   "target_docs": 9,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "tenantId": 0,
+    "planId": 0,
+    "startsOn": 0,
+    "endsOn": 9,
+    "status": 0,
+    "suspendedOn": 8
+   },
+   "target_null_counts": {
+    "tenantId": 0,
+    "planId": 0,
+    "startsOn": 0,
+    "endsOn": 0,
+    "status": 0,
+    "suspendedOn": 0
+   },
+   "source_null_counts": {
+    "tenant_id": 0,
+    "plan_id": 0,
+    "starts_on": 0,
+    "ends_on": 9,
+    "status": 0,
+    "suspended_on": 8
+   },
+   "target_bson_types": {
+    "tenantId": {
+     "binData(uuid, subtype 4)": 9
+    },
+    "planId": {
+     "binData(uuid, subtype 4)": 9
+    },
+    "startsOn": {
+     "date": 9
+    },
+    "endsOn": {},
+    "status": {
+     "string": 9
+    },
+    "suspendedOn": {
+     "date": 1
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 9
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 3,
+    "present": 3,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "refs": {
+    "target_dangling_tenantId": 0,
+    "target_dangling_planId": 0,
+    "source_dangling_tenant_id": 0,
+    "source_dangling_plan_id": 0,
+    "open_subscriptions_per_tenant_target": {
+     "1": 9
+    },
+    "open_subscriptions_per_tenant_source": {
+     "1": 9
+    }
+   }
+  },
+  "tenants": {
+   "source_rows": 9,
+   "target_docs": 9,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "name": 0,
+    "taxExempt": 0,
+    "status": 0
+   },
+   "target_null_counts": {
+    "name": 0,
+    "taxExempt": 0,
+    "status": 0
+   },
+   "source_null_counts": {
+    "name": 0,
+    "tax_exempt": 0,
+    "status": 0
+   },
+   "target_bson_types": {
+    "name": {
+     "string": 9
+    },
+    "taxExempt": {
+     "bool": 9
+    },
+    "status": {
+     "string": 9
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 9
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 3,
+    "present": 3,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "natural_key_name": {
+    "source_dupes": 0,
+    "target_dupes": 0
+   },
+   "creditNotes": {
+    "source_child_rows": 5,
+    "target_elements": 5,
+    "length_distribution": {
+     "0": 6,
+     "1": 1,
+     "2": 2
+    },
+    "tenants_with_zero_notes": 6,
+    "length_mismatches": 0,
+    "orphan_child_rows_without_parent_doc": 0,
+    "element_value_diffs": 0,
+    "elements_not_in_source": 0,
+    "element_bson_types": {
+     "binData(uuid, subtype 4) / date / decimal / decimal": 5
+    },
+    "sorted_by_issuedOn_id": true
+   }
+  },
+  "boundaries": {
+   "subscriptions.startsOn": {
+    "source": [
+     "2026-01-01",
+     "2026-01-01"
+    ],
+    "target": [
+     "2026-01-01",
+     "2026-01-01"
+    ]
+   },
+   "subscriptions.endsOn": {
+    "source": null,
+    "target": null
+   },
+   "subscriptions.suspendedOn": {
+    "source": [
+     "2026-02-15",
+     "2026-02-15"
+    ],
+    "target": [
+     "2026-02-15",
+     "2026-02-15"
+    ]
+   },
+   "plans.monthlyFee": {
+    "source": [
+     "49",
+     "499"
+    ],
+    "target": [
+     "49",
+     "499"
+    ]
+   },
+   "plans.overageRate": {
+    "source": [
+     "0.02",
+     "0.055"
+    ],
+    "target": [
+     "0.02",
+     "0.055"
+    ]
+   },
+   "creditNotes.issuedOn": {
+    "source": [
+     "2026-01-31",
+     "2026-02-02"
+    ],
+    "target": [
+     "2026-01-31",
+     "2026-02-02"
+    ]
+   },
+   "creditNotes.remainingAmount": {
+    "source": [
+     "5",
+     "55"
+    ],
+    "target": [
+     "5",
+     "55"
+    ]
+   },
+   "date_midnight_utc": {
+    "subscriptions.startsOn": {
+     "values": 9,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "subscriptions.endsOn": {
+     "values": 0,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "subscriptions.suspendedOn": {
+     "values": 1,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "tenants.creditNotes.issuedOn": {
+     "values": 5,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "all_midnight_utc": true
+   },
+   "status_domains": {
+    "subscriptions": [
+     "active",
+     "suspended"
+    ],
+    "tenants": [
+     "active",
+     "suspended"
+    ],
+    "plans.tier": [
+     "growth",
+     "scale",
+     "starter"
+    ]
+   },
+   "plans.inactive_count": {
+    "source": 0,
+    "target": 0
+   },
+   "tenants.taxExempt_true": {
+    "source": 1,
+    "target": 1
+   }
+  },
+  "write_fence": {
+   "later_wave_collections_present": [
+    "_connectivity_probe"
+   ],
+   "source_later_wave_row_counts": {
+    "usage_events": 10,
+    "rating_periods": 3,
+    "rating_results": 3,
+    "invoices": 3,
+    "invoice_lines": 2,
+    "dunning_attempts": 1,
+    "notifications": 1
+   }
+  }
+ }
+}
