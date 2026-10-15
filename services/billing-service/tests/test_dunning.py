@@ -271,11 +271,13 @@ def test_a_reactivated_tenant_suspended_again_the_same_day_does_not_duplicate_th
 
 
 @pytest.mark.rule("DUNNING-003")
-def test_suspend_overdue_accepts_dates_at_the_start_of_the_calendar() -> None:
+def test_suspend_overdue_never_suspends_inside_the_grace_period_at_the_start_of_the_calendar() -> (
+    None
+):
     repository = FakeDunningRepository()
+    repository.invoices = {INVOICE_TWO: invoice(INVOICE_TWO, TENANT_FIVE, date.min)}
 
-    rows = suspend_overdue(repository, date(2026, 2, 26))  # invoice two issued 02-13 > 02-12
-
+    assert suspend_overdue(repository, date(1, 1, 2)) == []
+    assert suspend_overdue(repository, date(1, 1, 14)) == []
     assert repository.suspended == []
-    assert suspend_overdue(FakeDunningRepository(), date.min) == []
-    assert [row.tenant_id for row in rows] == [TENANT_TWO]
+    assert [row.suspended_now for row in suspend_overdue(repository, date(1, 1, 15))] == [True]
