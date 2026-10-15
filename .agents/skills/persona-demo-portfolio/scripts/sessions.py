@@ -8,17 +8,24 @@
 
 Needs DEVIN_ENTERPRISE_API_KEY. DEVIN_API_BASE overrides the base URL.
 """
-import argparse, json, os, sys, urllib.parse, urllib.request
+import argparse, http.client, json, os, sys, urllib.parse
 
 BASE = os.environ.get("DEVIN_API_BASE", "https://partner-workshops.devinenterprise.com/api/v3")
 HEADERS = {"Authorization": f"Bearer {os.environ['DEVIN_ENTERPRISE_API_KEY']}"}
 
 
+ENDPOINT = urllib.parse.urlsplit(BASE)
+
+
 def call(path, method="GET"):
-    req = urllib.request.Request(BASE + path, headers=HEADERS, method=method)
-    with urllib.request.urlopen(req, timeout=120) as r:
-        body = r.read()
-        return json.loads(body) if body else {}
+    conn = http.client.HTTPSConnection(ENDPOINT.netloc, timeout=120)
+    conn.request(method, ENDPOINT.path + path, headers=HEADERS)
+    resp = conn.getresponse()
+    body = resp.read()
+    conn.close()
+    if resp.status >= 400:
+        sys.exit(f"{method} {path}: HTTP {resp.status} {body[:300]!r}")
+    return json.loads(body) if body else {}
 
 
 def org_id(name):
