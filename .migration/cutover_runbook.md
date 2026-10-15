@@ -130,8 +130,9 @@ Steps:
    Reads only at this point: the Atlas state still equals the frozen source, so any difference from the
    pre-cutover legacy answer is a defect, and rollback is still a plain redeploy.
 4. One write smoke, route 3 (`plan-change`) on a **dedicated test tenant** (never a real one), read back
-   with route 2. This is the first intentional Atlas-only write; from here Atlas ≠ frozen source for that
-   tenant's `subscriptions` document, by design (sections 6 and 7 account for it).
+   with route 2. Record the request body and the response (the closed and the new subscription ids): they
+   are the only differences §7 may accept. This is the first intentional Atlas-only write; from here Atlas ≠
+   frozen source for that tenant's `subscriptions` documents, by design (sections 6 and 7 account for it).
 5. Post-cutover checks (section 6) within the first hour, then open to real traffic.
 
 ## 6. Post-cutover verification (Devin may run; read-only)
@@ -166,8 +167,12 @@ Steps:
    while consumers can still write.
 2. Verify independently that no real write reached Atlas — do not take the smoke log's word for it:
    `recon run … --mode live --target-class migration_cluster` (read-only) against the frozen source must
-   PASS, or its tier-3 keyed diff must name **only** the test tenant's `subscriptions` document from 5.4.
-   Any other difference = a real write happened = point of no return passed → go to step 5.
+   PASS, or its tier-3 keyed diff must name **only** the documents the 5.4 smoke is expected to touch: for a
+   tenant with an open subscription, `sp_change_plan`/`change_plan` closes it (`endsOn` set) and inserts a
+   new one, so up to **two** `subscriptions` documents, both belonging to the dedicated test tenant, with
+   keys and values matching the recorded 5.4 request/response (old id with the new `endsOn`, new id with
+   the new plan and `startsOn`). Any other document, tenant or value = a real write happened = point of no
+   return passed → go to step 5.
 3. Only then redeploy the previous `services/legacy-billing` image/revision (the one with `db_connect()`),
    restoring the `DB_*` environment with the `billing` principal; Dhrov supplies it, Devin does not.
    Verify legacy `GET /health` and routes 1, 2, 6 answer from PostgreSQL, then reopen traffic and resume
