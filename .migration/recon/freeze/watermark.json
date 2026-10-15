@@ -1,0 +1,94 @@
+{
+  "declared_at": "2026-10-15T03:16:56+00:00",
+  "source_dsn_secret": "POSTGRESQL_RO_DSN",
+  "source": {
+    "database": "billing_mig",
+    "schema": "billing",
+    "role": "billing_ro",
+    "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on x86_64-pc-linux-gnu"
+  },
+  "wal_lsn": "0/19DF898",
+  "txid_snapshot": "788:788:",
+  "session_timezone": "Etc/UTC",
+  "server_now_utc": "2026-10-15T03:16:56",
+  "tables": {
+    "plans": {
+      "rows": 3,
+      "pk": [
+        "id"
+      ],
+      "sha256": "0910407da03e54ee1f8685e4e136fd7731cd8b8117665d4d2c2a6142793215d3"
+    },
+    "tenants": {
+      "rows": 9,
+      "pk": [
+        "id"
+      ],
+      "sha256": "0a42f7895c6acd9391322cbccb52b7ac69d90f423ef42b5598f58634500225c5"
+    },
+    "credit_notes": {
+      "rows": 5,
+      "pk": [
+        "id"
+      ],
+      "sha256": "ad7986b4bd43da6f1a559e9b747eed61bfaa340f9d208688af06f09dc28c60e0"
+    },
+    "subscriptions": {
+      "rows": 9,
+      "pk": [
+        "id"
+      ],
+      "sha256": "c986047a58aaf1e7e05fa751e923f38d12275e932e56317843c009090d9e5a86"
+    },
+    "usage_events": {
+      "rows": 10,
+      "pk": [
+        "id"
+      ],
+      "sha256": "69a08f1f99f9ad502faba5fb20ee6157b1296f7b92ee6cae91299b7b7792b299"
+    },
+    "rating_periods": {
+      "rows": 3,
+      "pk": [
+        "id"
+      ],
+      "sha256": "7ac4a27b63d15b0a524886cd4ed1b170eecdd57d5c1c88819fa86d9ddbb12362"
+    },
+    "rating_results": {
+      "rows": 3,
+      "pk": [
+        "id"
+      ],
+      "sha256": "e677eaa9defc394ef03fe9d881616627efa1cb9128c87ab652279a4f2011804c"
+    },
+    "invoices": {
+      "rows": 3,
+      "pk": [
+        "id"
+      ],
+      "sha256": "3ed998555e231815d360ece2dee64c2c13a27ff18dc30d01e530a60dc0f2355a"
+    },
+    "invoice_lines": {
+      "rows": 2,
+      "pk": [
+        "id"
+      ],
+      "sha256": "701afbbd5efffd1716efb87da57a093fbdc0d8f8a665a0167da67859ea8a22c0"
+    },
+    "dunning_attempts": {
+      "rows": 1,
+      "pk": [
+        "id"
+      ],
+      "sha256": "ddefb80ee88a9944fa67ddf0aa18e28c36e390254a81baace4aa32410f8d3f5c"
+    },
+    "notifications": {
+      "rows": 1,
+      "pk": [
+        "id"
+      ],
+      "sha256": "67cd6132f1b1566a77581b75b7a415f3082467c41ee0b1fe194dd38e6af4eefb"
+    }
+  },
+  "rows_total": 49
+}

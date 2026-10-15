@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-10-15T03:18:55+00:00",
+  "freeze_held": true,
+  "moved": {},
+  "wal_lsn": {
+    "declared": "0/19DF898",
+    "now": "0/19E5200"
+  },
+  "rows_total": 49
+}
