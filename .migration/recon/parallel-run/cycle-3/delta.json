@@ -1,0 +1,121 @@
+{
+  "generated_at": "2026-10-15T02:22:44+00:00",
+  "duration_s": 1.592,
+  "collections": {
+    "plans": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "plans": 3
+      },
+      "target_before": 3,
+      "unchanged": 3,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 3,
+      "changed_keys": []
+    },
+    "tenants": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "tenants": 9,
+        "credit_notes": 5
+      },
+      "target_before": 9,
+      "unchanged": 9,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 9,
+      "changed_keys": []
+    },
+    "subscriptions": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "subscriptions": 15
+      },
+      "target_before": 13,
+      "unchanged": 11,
+      "upserted": 4,
+      "deleted": 0,
+      "target_after": 15,
+      "changed_keys": [
+        "4da3b4eb7914",
+        "623cfc51d281",
+        "7a6ab6e9a904",
+        "d1cea227c68f"
+      ]
+    },
+    "usageEvents": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "usage_events": 10
+      },
+      "target_before": 10,
+      "unchanged": 10,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 10,
+      "changed_keys": []
+    },
+    "ratingPeriods": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "rating_periods": 15,
+        "rating_results": 15
+      },
+      "target_before": 11,
+      "unchanged": 11,
+      "upserted": 4,
+      "deleted": 0,
+      "target_after": 15,
+      "changed_keys": [
+        "20c7c7d0a01e",
+        "6947c70264ab",
+        "d83160ad3ea2",
+        "e379cf881de0"
+      ]
+    },
+    "invoices": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "invoices": 12,
+        "invoice_lines": 47,
+        "dunning_attempts": 17
+      },
+      "target_before": 9,
+      "unchanged": 7,
+      "upserted": 5,
+      "deleted": 0,
+      "target_after": 12,
+      "changed_keys": [
+        "1f322acf195b",
+        "8fc449b269a7",
+        "ac040e26fd3b",
+        "bb6a5ddd6771",
+        "cb58a1b9b43d"
+      ]
+    },
+    "notifications": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "source_rows": {
+        "notifications": 2
+      },
+      "target_before": 2,
+      "unchanged": 2,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 2,
+      "changed_keys": []
+    }
+  },
+  "source_dsn_secret": "POSTGRESQL_RO_DSN",
+  "target_uri_secret": "MONGODB_ATLAS_URI",
+  "target_db": "billing_migration",
+  "redaction_salted": false
+}
