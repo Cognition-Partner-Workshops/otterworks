@@ -30,22 +30,33 @@ got = {k: h.get(k) for k in want}
 assert got == want, f"BILLING_SVC_URL is not on the delta/recon target: {got} != {want}"'
 "$PY" "$OUT/watermark.py" --check "$WM" > "$OUT/watermark-check-before.json"
 rm -rf procs/reports
+# the harness resets and writes Atlas before/while replaying, so the delta below must run even when
+# parity is red (same contract as run_cycle.sh): Atlas is always re-synced to the frozen source
+set +e
 BILLING_SVC_URL="$BILLING_SVC_URL" make -s procs-parity NS=mig | tee "$OUT/parity.log"
-python3 - "$OUT/parity" "$BILLING_SVC_URL" <<'PY'
+PARITY_RC=${PIPESTATUS[0]}
+set -e
+python3 - "$OUT/parity" "$BILLING_SVC_URL" "$PARITY_RC" <<'PY'
 import json, pathlib, shutil, sys
 out = pathlib.Path(sys.argv[1]); out.mkdir(parents=True, exist_ok=True)
 src = pathlib.Path("procs/reports")
-shutil.copy(src / "parity.md", out / "parity.md")
-report = json.load(open(src / "parity.json"))
-counts = {k: sum(r["status"] == k for r in report["results"]) for k in ("PASS", "FAIL", "SKIP")}
-report["target"] = {"billing_svc_url": sys.argv[2], "target_class": "migration_cluster", "database": "billing_migration"}
-report["counts"] = counts
-(out / "parity.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
-assert counts == {"PASS": 24, "FAIL": 0, "SKIP": 0}, counts
+if (src / "parity.md").exists():
+    shutil.copy(src / "parity.md", out / "parity.md")
+if (src / "parity.json").exists():
+    report = json.load(open(src / "parity.json"))
+    counts = {k: sum(r["status"] == k for r in report["results"]) for k in ("PASS", "FAIL", "SKIP")}
+    report["target"] = {"billing_svc_url": sys.argv[2], "target_class": "migration_cluster", "database": "billing_migration"}
+    report["counts"] = counts
+    (out / "parity.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+    assert sys.argv[3] != "0" or counts == {"PASS": 24, "FAIL": 0, "SKIP": 0}, counts
 PY
 ABS="$(realpath -m "$OUT")"
 (cd services/billing-service && uv run python -m app.delta --source-dsn-secret POSTGRESQL_RO_DSN \
   --target-uri-secret MONGODB_ATLAS_URI --log "$ABS/delta.json")
+if [ "$PARITY_RC" -ne 0 ]; then
+  echo "parity FAILED (rc=$PARITY_RC): Atlas re-synced to the frozen source, recon not run; keep parity/ as the red evidence" >&2
+  exit "$PARITY_RC"
+fi
 rm -rf "$OUT/recon"
 "$RECON" run --unit freeze-watermark --family postgresql --mapping .migration/mapping_spec.json \
   --tolerances .migration/recon_tolerances.json \

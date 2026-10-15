@@ -126,15 +126,24 @@ Steps:
    (`procs/routes.yaml` is the contract the 24 transcripts were recorded against).
 2. Deploy with the `billing` DSN **removed** from the legacy app's environment. The schema-owner principal
    should no longer be present on any running consumer.
-3. Smoke, in this order: `GET /health` on both services; route 1 (read), route 2 (read), route 6 (read),
-   then one write, route 3 (`plan-change`) on a test tenant, and read it back with route 2.
-4. First-cycle recon (section 6) within the first hour.
+3. Smoke, in this order: `GET /health` on both services; route 1 (read), route 2 (read), route 6 (read).
+   Reads only at this point: the Atlas state still equals the frozen source, so any difference from the
+   pre-cutover legacy answer is a defect, and rollback is still a plain redeploy.
+4. One write smoke, route 3 (`plan-change`) on a **dedicated test tenant** (never a real one), read back
+   with route 2. This is the first intentional Atlas-only write; from here Atlas ≠ frozen source for that
+   tenant's `subscriptions` document, by design (sections 6 and 7 account for it).
+5. Post-cutover checks (section 6) within the first hour, then open to real traffic.
 
 ## 6. Post-cutover verification (Devin may run; read-only)
 
-- `recon run … --mode live --target-class migration_cluster` against the frozen legacy source:
-  must still PASS (the source is frozen, so any drift is on the target and means a consumer is writing
-  unexpected shapes). Legacy writes after the freeze = rollback trigger (section 7).
+- The full source↔target **equality** gate is section 4c, and it is the *last* one: after the repoint
+  Atlas legitimately diverges from the frozen source (the test-tenant write, then real traffic), so
+  `recon run` equality is **not** a post-cutover gate and its failure is not a rollback trigger.
+- Post-cutover checks are target-side: `GET /health` reports `billing_migration` + the Atlas fingerprint;
+  the test-tenant write reads back through route 2; collection names are exactly the 7 mapped ones;
+  per-collection counts equal the frozen source counts (`watermark.json`) plus the writes consumers made.
+- Legacy side: `watermark.py --check` must keep passing (a legacy writer still running after the freeze
+  is a rollback trigger, section 7).
 - Parity harness replay is **not** run against production (it resets collections); it stays a
   pre-cutover gate (`.migration/recon/freeze/parity/`).
 - `app.delta` is **not** run after the repoint: once consumers write to Atlas, a keyed diff from the frozen
@@ -142,22 +151,33 @@ Steps:
 
 ## 7. Rollback (Dhrov)
 
-**Point of no return:** the first write accepted by billing-service from a real consumer after the repoint
-(step 5.2 live). Before it, rollback is a redeploy; after it, Atlas holds data PostgreSQL does not, and
-rollback requires a reverse sync that does not exist in this plan — stop and decide instead of improvising.
+**Point of no return:** the first write accepted by billing-service from a **real** consumer after the
+repoint (step 5.5 open). Before it, Atlas equals the frozen source except the test tenant, and rollback is
+a redeploy. After it, Atlas holds data PostgreSQL does not; restoring a writable PostgreSQL-backed app would
+serve stale data and fork the billing state, and the reverse sync that would be needed does not exist in
+this plan — so after the point of no return there is **no redeploy rollback**: stop traffic and decide.
 
 Trigger (any one): `/health` red on billing-service or the repointed app; a smoke read in 5.3 differs from
-the pre-cutover legacy answer; first-cycle recon not PASS; a legacy writer found still running
-(watermark check fails); error rate or latency on routes 1–11 above the legacy baseline.
+the pre-cutover legacy answer; the test-tenant write in 5.4 does not read back; a legacy writer found still
+running (`watermark.py --check` fails); error rate or latency on routes 1–11 above the legacy baseline.
 
 Steps:
-1. Redeploy the previous `services/legacy-billing` image/revision (the one with `db_connect()`), restoring
-   the `DB_*` environment with the `billing` principal; Dhrov supplies it, Devin does not.
-2. Verify legacy `GET /health` and routes 1, 2, 6 answer from PostgreSQL. Resume legacy writers only if
-   no Atlas write happened (point of no return above).
-3. Leave `billing_migration` as is for diagnosis; do not drop or reload it. Record the trigger and the
-   watermark check in `.migration/recon/freeze/` and reopen `d-cutover-authorization`.
-4. Re-entry: the next attempt starts again at section 2 (new watermark, final delta, full gate).
+1. Stop traffic to the repointed app first (scale to zero / block at the ingress). Nothing is redeployed
+   while consumers can still write.
+2. Verify independently that no real write reached Atlas — do not take the smoke log's word for it:
+   `recon run … --mode live --target-class migration_cluster` (read-only) against the frozen source must
+   PASS, or its tier-3 keyed diff must name **only** the test tenant's `subscriptions` document from 5.4.
+   Any other difference = a real write happened = point of no return passed → go to step 5.
+3. Only then redeploy the previous `services/legacy-billing` image/revision (the one with `db_connect()`),
+   restoring the `DB_*` environment with the `billing` principal; Dhrov supplies it, Devin does not.
+   Verify legacy `GET /health` and routes 1, 2, 6 answer from PostgreSQL, then reopen traffic and resume
+   the legacy writers.
+4. Leave `billing_migration` as is for diagnosis; do not drop or reload it. Record the trigger, the
+   watermark check and the step-2 recon in `.migration/recon/freeze/` and reopen `d-cutover-authorization`.
+   Re-entry: the next attempt starts again at section 2 (new watermark, final delta, full gate).
+5. After the point of no return: keep traffic stopped, keep billing-service as the system of record, and
+   take the decision (fix forward on Atlas, or a target-preserving recovery) with Dhrov. Do not redeploy
+   the PostgreSQL-backed app; do not run `app.delta` (it would delete the real writes).
 
 ## 8. What Devin does not do
 
