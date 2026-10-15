@@ -9,7 +9,15 @@ from typing import Any
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel
 
-COLLECTIONS = ("plans", "tenants", "subscriptions", "usageEvents", "ratingPeriods", "invoices")
+COLLECTIONS = (
+    "plans",
+    "tenants",
+    "subscriptions",
+    "usageEvents",
+    "ratingPeriods",
+    "invoices",
+    "notifications",
+)
 
 
 def bson_date(value: date | None) -> datetime | None:
@@ -151,6 +159,15 @@ def invoice_document(
     }
 
 
+def notification_document(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "_id": row["id"],
+        "tenantId": row["tenant_id"],
+        "kind": row["kind"],
+        "sentAt": row["sent_at"],
+    }
+
+
 INDEXES: dict[str, list[IndexModel]] = {
     "plans": [
         IndexModel([("monthlyFee", ASCENDING), ("code", ASCENDING)]),
@@ -179,6 +196,11 @@ INDEXES: dict[str, list[IndexModel]] = {
     "invoices": [
         IndexModel([("invoiceLines.lineNo", ASCENDING)]),
         IndexModel([("status", ASCENDING), ("issuedAt", ASCENDING)]),
+    ],
+    "notifications": [
+        IndexModel(
+            [("tenantId", ASCENDING), ("kind", ASCENDING), ("sentAt", ASCENDING)], unique=True
+        ),
     ],
 }
 
@@ -352,6 +374,18 @@ VALIDATORS: dict[str, dict[str, Any]] = {
                         },
                     },
                 },
+            },
+        }
+    },
+    "notifications": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["_id", "tenantId", "kind", "sentAt"],
+            "properties": {
+                "_id": _UUID,
+                "tenantId": _UUID,
+                "kind": {"enum": ["invoice", "dunning", "suspension"]},
+                "sentAt": _DATE,
             },
         }
     },
