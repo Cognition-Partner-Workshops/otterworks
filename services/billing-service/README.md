@@ -1,9 +1,10 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans module. It persists
-to the MongoDB `billing_migration` database (collections `plans`, `tenants` with
-embedded `creditNotes`, and `subscriptions`, per mapping spec v2), keeps the HTTP
-layer thin, and places plans behavior in a plain-Python domain layer.
+This FastAPI service is the extraction target for the plans and rating modules.
+It persists to the MongoDB `billing_migration` database (collections `plans`,
+`tenants` with embedded `creditNotes`, `subscriptions`, `usageEvents` and
+`ratingPeriods` with the embedded `rating` result, per mapping spec v2), keeps
+the HTTP layer thin, and places the behavior in a plain-Python domain layer.
 
 ## Development
 
@@ -19,13 +20,23 @@ the database (default `billing_migration`). Plan changes run in a multi-document
 transaction, so the deployment must be a replica set (Atlas, or the single-node
 `billing-service-mongo` set in `docker-compose.procs.yml`).
 
-`app/load.py` loads the three collections from the legacy PostgreSQL, creating
-the spec's indexes and validators. Secrets are passed by environment variable
-name only:
+`app/load.py` loads the collections from the legacy PostgreSQL, creating the
+spec's indexes and validators. Secrets are passed by environment variable name
+only; `--collections` restricts a run to one batch's write targets:
 
 ```bash
-uv run python -m app.load --source-dsn-secret POSTGRESQL_RO_DSN --target-uri-secret MONGODB_ATLAS_URI
+uv run python -m app.load --source-dsn-secret POSTGRESQL_RO_DSN --target-uri-secret MONGODB_ATLAS_URI \
+    --collections usageEvents,ratingPeriods
 ```
+
+Rating (`GET .../rating`, `GET .../usage-summary`, `POST .../rating-periods`)
+sums `usageEvents` and the prior periods' rollover with aggregation pipelines
+and reads plans and subscriptions only through the plans repository. Money is
+`Decimal` end to end (`Decimal128` in MongoDB) and rounded half away from zero
+like PostgreSQL `round(numeric, 2)`. Finalizing a period is idempotent: the
+period keeps its id, its single `rating` subdocument keeps the first
+subscription, quota and `createdAt`, and a re-run overwrites only used, rollover,
+billable and overage.
 
 `POST /internal/reset` runs the same load from `BILLING_SVC_SOURCE_DSN` (the
 disposable Compose stack's legacy database) so the parity harness can isolate
