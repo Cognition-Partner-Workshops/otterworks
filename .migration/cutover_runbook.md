@@ -124,7 +124,7 @@ Steps:
    instead of `select()`/`execute()`; remove `db_connect()` and the `DB_*` settings so the Flask process
    holds **no** PostgreSQL credential. Keep the legacy external paths/shapes for legacy callers: rows 3, 4,
    5 change HTTP shape as well as path (form-POST `/plans/<t>/change` → JSON `POST /api/tenants/{t}/plan-change`;
-   `POST /api/rating/preview` with a body → `GET /api/tenants/{t}/rating?period=`), so `app.py` must shim the
+   `POST /api/rating/preview` with a body → `GET /api/tenants/{t}/rating?period_start=…&period_end=…`), so `app.py` must shim the
    old shape onto the new call; `procs/routes.yaml` is the billing-service contract the 24 transcripts were
    recorded against and is not what legacy callers send.
 2. Deploy with the `billing` DSN **removed** from the legacy app's environment. The schema-owner principal
