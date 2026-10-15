@@ -1,0 +1,14 @@
+{
+  "batch": "w3-b01",
+  "status": "PASS",
+  "recon_results": [
+    ".migration/recon/invoicing/result.json"
+  ],
+  "write_targets": [
+    "billing_migration.invoices"
+  ],
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2055",
+  "branch": "devin/1792026323-w3-b01-invoicing",
+  "failure_class": "",
+  "one_line_summary": "invoicing: live PASS, 0 findings, merge_eligible true; procs parity invoicing 6/6 (PASS=6 FAIL=0 SKIP=0; full run PASS=19 FAIL=0 SKIP=5); manifest_sha 399f5a4f0b82; recon on mongo-migration-plugin main d6d72e8"
+}
