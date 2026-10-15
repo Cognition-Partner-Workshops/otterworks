@@ -69,14 +69,16 @@ test.describe("Search journeys (signed in)", () => {
   test("clicking a document result opens the document", async ({ page }) => {
     await page.goto(`/search?q=${seed.word}`);
     await page.getByText(`Otter plan ${seed.word}`).click();
-    await expect(page).toHaveURL(new RegExp(`/documents/${seed.docId}`));
+    await expect(page).toHaveURL((url) => url.pathname === `/documents/${seed.docId}`);
   });
 
   test("header search bar navigates to results", async ({ page }) => {
     const bar = page.getByPlaceholder("Search files, documents...");
     await bar.fill(seed.word);
     await bar.press("Enter");
-    await expect(page).toHaveURL(new RegExp(`/search\\?q=${seed.word}`));
+    await expect(page).toHaveURL(
+      (url) => url.pathname === "/search" && url.searchParams.get("q") === seed.word,
+    );
     await expect(page.getByText(`Otter plan ${seed.word}`)).toBeVisible();
   });
 
