@@ -1,0 +1,2 @@
+# python3 -m tests.parity.harness replay --out-dir tests/parity/results   (cwd services/search-service, HEAD cfee9ee6)
+replayed 130 HTTP cases: 0 differing; metrics dump: identical

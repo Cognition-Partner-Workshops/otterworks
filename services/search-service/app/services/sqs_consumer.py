@@ -2,21 +2,57 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import json
 import threading
-import time
-from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import structlog
 
 if TYPE_CHECKING:
+    from app.config import SQSConfig
     from app.services.indexer import Indexer
 
 logger = structlog.get_logger()
 
+T = TypeVar("T")
+
+
+async def _run_in_daemon_thread(func: Callable[..., T], /, *args: Any, **kwargs: Any) -> T:
+    """Like ``asyncio.to_thread`` but on a daemon thread that is never joined.
+
+    The default executor is joined on loop and interpreter shutdown, so a
+    cancelled 20 s ``receive_message`` long poll would still hold up process
+    exit. Abandoning it is safe: unreceived messages stay on the queue and
+    received-but-unprocessed ones reappear after the visibility timeout.
+    """
+    loop = asyncio.get_running_loop()
+    future: asyncio.Future[T] = loop.create_future()
+
+    def settle(result: Any, exc: BaseException | None) -> None:
+        if future.done():
+            return
+        if exc is not None:
+            future.set_exception(exc)
+        else:
+            future.set_result(result)
+
+    def run() -> None:
+        try:
+            result, exc = func(*args, **kwargs), None
+        except BaseException as e:  # noqa: BLE001 - handed to the awaiting task
+            result, exc = None, e
+        with contextlib.suppress(RuntimeError):  # loop already closed
+            loop.call_soon_threadsafe(settle, result, exc)
+
+    threading.Thread(target=run, daemon=True, name="sqs-consumer-poll").start()
+    return await future
+
 
 class SQSConsumer:
-    """Background thread SQS consumer for search-indexing queue events."""
+    """asyncio task SQS consumer for search-indexing queue events."""
 
     def __init__(
         self,
@@ -35,27 +71,40 @@ class SQSConsumer:
         self.max_messages = max_messages
         self.wait_time_seconds = wait_time_seconds
         self.visibility_timeout = visibility_timeout
-        self._running = False
-        self._thread: threading.Thread | None = None
+        self._task: asyncio.Task[None] | None = None
+
+    @classmethod
+    def from_config(cls, config: SQSConfig, indexer: Indexer) -> SQSConsumer:
+        return cls(
+            indexer=indexer,
+            queue_url=config.queue_url,
+            region=config.region,
+            endpoint_url=config.endpoint_url,
+            max_messages=config.max_messages,
+            wait_time_seconds=config.wait_time_seconds,
+            visibility_timeout=config.visibility_timeout,
+        )
 
     def start(self) -> None:
-        """Start the SQS consumer in a background daemon thread."""
+        """Start the SQS consumer as a task on the running event loop."""
         if not self.queue_url:
             logger.warning("sqs_consumer_skipped", reason="No SQS_QUEUE_URL configured")
             return
+        if self._task is not None and not self._task.done():
+            return
 
-        self._running = True
-        self._thread = threading.Thread(
-            target=self._poll_loop, daemon=True, name="sqs-consumer"
+        self._task = asyncio.get_running_loop().create_task(
+            self._poll_loop(), name="sqs-consumer"
         )
-        self._thread.start()
         logger.info("sqs_consumer_started", queue_url=self.queue_url)
 
-    def stop(self) -> None:
-        """Stop the SQS consumer."""
-        self._running = False
-        if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=5)
+    async def stop(self) -> None:
+        """Cancel the consumer task without waiting for an in-flight long poll."""
+        if self._task is not None:
+            self._task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._task
+            self._task = None
         logger.info("sqs_consumer_stopped")
 
     def _create_sqs_client(self) -> Any:
@@ -67,13 +116,14 @@ class SQSConsumer:
             kwargs["endpoint_url"] = self.endpoint_url
         return boto3.client("sqs", **kwargs)
 
-    def _poll_loop(self) -> None:
+    async def _poll_loop(self) -> None:
         """Main polling loop for SQS messages."""
-        sqs = self._create_sqs_client()
+        sqs = await asyncio.to_thread(self._create_sqs_client)
 
-        while self._running:
+        while True:
             try:
-                response = sqs.receive_message(
+                response = await _run_in_daemon_thread(
+                    sqs.receive_message,
                     QueueUrl=self.queue_url,
                     MaxNumberOfMessages=self.max_messages,
                     WaitTimeSeconds=self.wait_time_seconds,
@@ -82,11 +132,11 @@ class SQSConsumer:
 
                 messages = response.get("Messages", [])
                 for message in messages:
-                    self._process_message(sqs, message)
+                    await self._process_message(sqs, message)
 
             except Exception:
                 logger.exception("sqs_consumer_error")
-                time.sleep(5)
+                await asyncio.sleep(5)
 
     @staticmethod
     def _normalize_event(body: dict[str, Any]) -> dict[str, Any]:
@@ -159,7 +209,7 @@ class SQSConsumer:
         # Format 3: already in indexer format (action + data)
         return body
 
-    def _process_message(self, sqs: Any, message: dict[str, Any]) -> None:
+    async def _process_message(self, sqs: Any, message: dict[str, Any]) -> None:
         """Process a single SQS message."""
         receipt_handle = message.get("ReceiptHandle", "")
         try:
@@ -171,20 +221,26 @@ class SQSConsumer:
 
             body = self._normalize_event(body)
 
-            result = self.indexer.process_event(body)
+            result = await asyncio.to_thread(self.indexer.process_event, body)
             logger.info("sqs_message_processed", result=result)
 
             # Delete the message after successful processing
-            sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
+            await asyncio.to_thread(
+                sqs.delete_message, QueueUrl=self.queue_url, ReceiptHandle=receipt_handle
+            )
 
         except json.JSONDecodeError:
             logger.error("sqs_message_invalid_json", message_id=message.get("MessageId"))
-            sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
+            await asyncio.to_thread(
+                sqs.delete_message, QueueUrl=self.queue_url, ReceiptHandle=receipt_handle
+            )
         except ValueError:
             logger.error(
                 "sqs_message_validation_failed", message_id=message.get("MessageId")
             )
-            sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
+            await asyncio.to_thread(
+                sqs.delete_message, QueueUrl=self.queue_url, ReceiptHandle=receipt_handle
+            )
         except Exception:
             logger.exception(
                 "sqs_message_processing_failed", message_id=message.get("MessageId")
