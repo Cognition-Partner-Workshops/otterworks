@@ -8,6 +8,7 @@ from uuid import UUID
 import pytest
 
 from app.domain import (
+    InvalidPeriodError,
     NoSubscriptionError,
     PlanRow,
     RatingResultRow,
@@ -43,7 +44,7 @@ class FakeRatingRepository:
         self.by_kind = by_kind or []
         self.windows: list[tuple[date, date]] = []
         self.periods: dict[tuple[UUID, date], tuple[UUID, date]] = {}
-        self.results: dict[UUID, tuple[RatingResultRow, date]] = {}
+        self.results: dict[UUID, tuple[RatingResultRow, date]] = {}  # keyed by period id
 
     def list_plans(self) -> list[PlanRow]:
         return [STARTER_PLAN]
@@ -72,9 +73,9 @@ class FakeRatingRepository:
         self.periods[(tenant_id, period_start)] = (existing_id, period_end)
         return existing_id
 
-    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> None:
-        if result.result_id in self.results:
-            first, first_created = self.results[result.result_id]
+    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> RatingResultRow:
+        if result.period_id in self.results:
+            first, first_created = self.results[result.period_id]
             result = replace(
                 first,
                 used_units=result.used_units,
@@ -83,7 +84,8 @@ class FakeRatingRepository:
                 overage_amount=result.overage_amount,
             )
             created_at = first_created
-        self.results[result.result_id] = (result, created_at)
+        self.results[result.period_id] = (result, created_at)
+        return result
 
 
 @pytest.mark.rule("RATING-001")
@@ -176,7 +178,35 @@ def test_finalize_is_idempotent_and_keeps_the_first_subscription_quota_and_creat
     second = finalize_rating(repository, TENANT, FEB_START, date(2026, 2, 27))
     assert second.period_id == first.period_id and second.result_id == first.result_id
     assert repository.periods[(TENANT, FEB_START)] == (first.period_id, date(2026, 2, 27))
-    stored, created_at = repository.results[first.result_id]
+    stored, created_at = repository.results[first.period_id]
+    assert second == stored
     assert (stored.used_units, stored.billable_units) == (400, 300)
     assert (stored.subscription_id, stored.quota_units, created_at) == (SUBSCRIPTION, 100, FEB_END)
     assert len(repository.results) == 1
+
+
+@pytest.mark.rule("RATING-005")
+def test_finalize_keeps_an_imported_result_identity_and_returns_the_persisted_row() -> None:
+    repository = FakeRatingRepository(used=260)
+    imported_period = UUID("40000000-0000-0000-0000-000000000002")
+    imported_result = UUID("50000000-0000-0000-0000-000000000002")
+    other_subscription = UUID("20000000-0000-0000-0000-000000000009")
+    repository.periods[(TENANT, FEB_START)] = (imported_period, FEB_END)
+    repository.results[imported_period] = (
+        RatingResultRow(
+            imported_period, imported_result, other_subscription, 0, 500, 500, 0, Decimal("0")
+        ),
+        date(2026, 1, 31),
+    )
+    result = finalize_rating(repository, TENANT, FEB_START, FEB_END)
+    assert (result.period_id, result.result_id) == (imported_period, imported_result)
+    # subscription and quota are the imported ones, not the ones computed for this call
+    assert (result.subscription_id, result.quota_units) == (other_subscription, 500)
+    assert (result.used_units, result.rollover_units, result.billable_units) == (260, 0, 160)
+
+
+def test_finalize_rejects_a_period_that_ends_before_it_starts() -> None:
+    repository = FakeRatingRepository(used=260)
+    with pytest.raises(InvalidPeriodError):
+        finalize_rating(repository, TENANT, FEB_END, FEB_START)
+    assert repository.periods == {} and repository.results == {}

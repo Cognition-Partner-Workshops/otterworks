@@ -218,6 +218,8 @@ VALIDATORS: dict[str, dict[str, Any]] = {
         }
     },
     "ratingPeriods": {
+        # rating_periods CHECK (period_end >= period_start)
+        "$expr": {"$lte": ["$periodStart", "$periodEnd"]},
         "$jsonSchema": {
             "bsonType": "object",
             "required": ["_id", "tenantId", "periodStart", "periodEnd"],
@@ -250,6 +252,6 @@ VALIDATORS: dict[str, dict[str, Any]] = {
                     },
                 },
             },
-        }
+        },
     },
 }

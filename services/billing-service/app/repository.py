@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, TypeVar
 from uuid import UUID
@@ -140,6 +140,8 @@ class MongoPlansRepository:
 
 def _day_bounds(period_start: date, period_end: date) -> dict[str, datetime]:
     # occurred_at::date BETWEEN start AND end, with the legacy session timezone UTC.
+    if period_end == date.max:
+        return {"$gte": bson_date(period_start), "$lte": datetime.max.replace(tzinfo=UTC)}
     return {"$gte": bson_date(period_start), "$lt": bson_date(period_end + timedelta(days=1))}
 
 
@@ -215,9 +217,10 @@ class MongoRatingRepository(MongoPlansRepository):
         )
         return document["_id"]
 
-    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> None:
-        # ON CONFLICT (id) DO UPDATE touches only used, rollover, billable and overage;
-        # subscription, quota and created_at stay as first written.
+    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> RatingResultRow:
+        # ON CONFLICT (id) DO UPDATE touches only used, rollover, billable and overage; an
+        # existing result (imported or finalized earlier) keeps its id, subscription, quota
+        # and created_at. The persisted row is returned.
         rated = {
             "rating.usedUnits": result.used_units,
             "rating.rolloverUnits": result.rollover_units,
@@ -231,7 +234,7 @@ class MongoRatingRepository(MongoPlansRepository):
             "rating.createdAt": bson_date(created_at),
         }
         updated = self.database.ratingPeriods.update_one(
-            {"_id": result.period_id, "rating.id": result.result_id},
+            {"_id": result.period_id, "rating": {"$exists": True}},
             {"$set": rated},
             session=self.session,
         )
@@ -241,6 +244,10 @@ class MongoRatingRepository(MongoPlansRepository):
                 {"$set": {**first_write, **rated}},
                 session=self.session,
             )
+        persisted = self.find_rating_result(result.period_id)
+        if persisted is None:
+            raise LookupError(f"rating period {result.period_id} vanished during finalize")
+        return persisted
 
     def find_rating_result(self, period_id: UUID) -> RatingResultRow | None:
         document = self.database.ratingPeriods.find_one({"_id": period_id}, session=self.session)

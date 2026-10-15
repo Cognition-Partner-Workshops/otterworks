@@ -169,11 +169,17 @@ class RatingRepository(Protocol):
         self, tenant_id: UUID, period_id: UUID, period_start: date, period_end: date
     ) -> UUID: ...
 
-    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> None: ...
+    def upsert_rating_result(
+        self, result: RatingResultRow, created_at: date
+    ) -> RatingResultRow: ...
 
 
 class NoSubscriptionError(LookupError):
     """No subscription of the tenant overlaps the rating period."""
+
+
+class InvalidPeriodError(ValueError):
+    """rating_periods CHECK (period_end >= period_start)."""
 
 
 def _round_half_up(value: Decimal, exponent: Decimal = Decimal("1")) -> Decimal:
@@ -264,7 +270,11 @@ def finalize_rating(
     repository: RatingRepository, tenant_id: UUID, period_start: date, period_end: date
 ) -> RatingResultRow:
     """sp_finalize_rating: upsert the period keyed by (tenant, period_start), rate it, and
-    upsert its single result. Running it twice for the same period yields the same documents."""
+    upsert its single result. Running it twice for the same period yields the same documents;
+    the row returned is the persisted one (an existing result keeps its id, subscription,
+    quota and created_at)."""
+    if period_end < period_start:
+        raise InvalidPeriodError(f"period_end {period_end} is before period_start {period_start}")
     period_id = repository.upsert_rating_period(
         tenant_id, legacy_uuid(tenant_id, period_start.isoformat()), period_start, period_end
     )
@@ -279,5 +289,4 @@ def finalize_rating(
         billable_units=rating.billable_units,
         overage_amount=rating.overage_amount,
     )
-    repository.upsert_rating_result(result, period_end)
-    return result
+    return repository.upsert_rating_result(result, period_end)

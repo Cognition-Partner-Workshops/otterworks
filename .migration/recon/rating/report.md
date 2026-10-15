@@ -7,7 +7,7 @@
 - Tolerance version: `tol-v1` (sha256 `829cbb4d2de0`)
 - Collections: `ratingPeriods`, `usageEvents`
 - Seed: `1`
-- Generated: 2026-10-15T00:31:13.333589+00:00
+- Generated: 2026-10-15T00:36:12.415630+00:00
 - 4 fields: Tier 2 aggregates deferred to Tier 3 (rules change the value)
 - 1 string fields: min/max/distinct deferred to Tier 3
 

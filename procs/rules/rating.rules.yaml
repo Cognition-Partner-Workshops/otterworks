@@ -57,7 +57,7 @@ rules:
       date: "2026-10-15"
       note: Approved for the w2-b01 extraction.
   - id: RATING-005
-    statement: Finalizing a period is idempotent. The period is keyed by (tenant_id, period_start) and gets id md5(tenant_id || period_start) when new (an existing period keeps its id and only period_end is updated); its single result has id md5(period_id), stores used, quota, max(quota - used, 0) as rollover, billable and overage, and created_at = period_end; re-finalizing overwrites used, rollover, billable and overage only.
+    statement: Finalizing a period is idempotent. The period is keyed by (tenant_id, period_start) and gets id md5(tenant_id || period_start) when new (an existing period keeps its id and only period_end is updated); a new result gets id md5(period_id) and stores used, quota, max(quota - used, 0) as rollover, billable, overage and created_at = period_end; re-finalizing a period that already has a result (imported or finalized earlier) overwrites used, rollover, billable and overage only and keeps its id, subscription, quota and created_at. period_end must not precede period_start.
     source:
       file: services/legacy-billing/db/procs/rating.sql
       lines: [95, 139]

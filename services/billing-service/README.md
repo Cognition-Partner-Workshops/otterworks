@@ -34,9 +34,9 @@ sums `usageEvents` and the prior periods' rollover with aggregation pipelines
 and reads plans and subscriptions only through the plans repository. Money is
 `Decimal` end to end (`Decimal128` in MongoDB) and rounded half away from zero
 like PostgreSQL `round(numeric, 2)`. Finalizing a period is idempotent: the
-period keeps its id, its single `rating` subdocument keeps the first
+period keeps its id, its single `rating` subdocument keeps its id, first
 subscription, quota and `createdAt`, and a re-run overwrites only used, rollover,
-billable and overage.
+billable and overage; the response is the persisted result.
 
 `POST /internal/reset` runs the same load from `BILLING_SVC_SOURCE_DSN` (the
 disposable Compose stack's legacy database) so the parity harness can isolate

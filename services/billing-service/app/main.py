@@ -12,6 +12,7 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 from app.config import settings
 from app.db import client, database, reset
 from app.domain import (
+    InvalidPeriodError,
     NoSubscriptionError,
     catalog,
     change_plan,
@@ -168,6 +169,8 @@ def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingPe
         result = repository.run_in_transaction(
             lambda: finalize_rating(repository, tenant_id, request.period_start, request.period_end)
         )
+    except InvalidPeriodError as error:
+        raise HTTPException(status_code=400, detail="period_end is before period_start") from error
     except NoSubscriptionError as error:
         raise HTTPException(status_code=404, detail="no subscription in the period") from error
     row = {
