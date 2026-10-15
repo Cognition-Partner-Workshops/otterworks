@@ -76,7 +76,7 @@ describe('createAuthMiddleware', () => {
   });
 
   it('rejects a token signed with another secret', () => {
-    const token = jwt.sign({ sub: 'u-5' }, 'some-other-secret');
+    const token = jwt.sign({ sub: 'u-5' }, randomBytes(32).toString('hex'));
     expect(runAuth(fakeSocket({ auth: { token } }))?.message).toBe(
       'Invalid or expired token',
     );
