@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 import type { Socket } from 'socket.io';
 import type { Server as SocketIOServer } from 'socket.io';
 import {
@@ -9,7 +10,7 @@ import {
 import { AwarenessService } from '../services/awareness';
 import { PresenceHandler } from '../handlers/presence';
 
-const SECRET = 'presence-auth-test-secret';
+const SECRET = randomBytes(32).toString('hex');
 
 const mockLogger = {
   info: jest.fn(),
@@ -42,7 +43,7 @@ function runAuth(socket: Socket): Error | undefined {
 
 describe('createAuthMiddleware', () => {
   it('accepts a bearer token from the Authorization header', () => {
-    const token = jwt.sign({ sub: 'u-1', name: 'Una' }, SECRET); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+    const token = jwt.sign({ sub: 'u-1', name: 'Una' }, SECRET);
     const socket = fakeSocket({ headers: { authorization: `Bearer ${token}` } });
     expect(runAuth(socket)).toBeUndefined();
     expect((socket as AuthenticatedSocket).user?.userId).toBe('u-1');
@@ -51,11 +52,11 @@ describe('createAuthMiddleware', () => {
   it('falls back to display_name and then Anonymous', () => {
     const withSnake = fakeSocket({
       auth: { token: jwt.sign({ sub: 'u-2', display_name: 'Snake' }, SECRET) },
-    }); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+    });
     runAuth(withSnake);
     expect((withSnake as AuthenticatedSocket).user?.displayName).toBe('Snake');
 
-    const bare = fakeSocket({ auth: { token: jwt.sign({ sub: 'u-3' }, SECRET) } }); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+    const bare = fakeSocket({ auth: { token: jwt.sign({ sub: 'u-3' }, SECRET) } });
     runAuth(bare);
     expect((bare as AuthenticatedSocket).user).toMatchObject({
       displayName: 'Anonymous',
@@ -68,14 +69,14 @@ describe('createAuthMiddleware', () => {
     const token = jwt.sign(
       { sub: 'u-4', exp: Math.floor(Date.now() / 1000) - 60 },
       SECRET,
-    ); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+    );
     expect(runAuth(fakeSocket({ auth: { token } }))?.message).toBe(
       'Invalid or expired token',
     );
   });
 
   it('rejects a token signed with another secret', () => {
-    const token = jwt.sign({ sub: 'u-5' }, 'some-other-secret'); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+    const token = jwt.sign({ sub: 'u-5' }, 'some-other-secret');
     expect(runAuth(fakeSocket({ auth: { token } }))?.message).toBe(
       'Invalid or expired token',
     );
