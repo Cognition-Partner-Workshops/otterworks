@@ -18,7 +18,14 @@ import { setupCollaborationHandlers } from './handlers/collaboration';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
 
-const config = loadConfig();
+let config: ReturnType<typeof loadConfig>;
+try {
+  config = loadConfig();
+} catch (err) {
+  // The logger is configured from config, so it does not exist yet.
+  console.error(`collab-service: invalid configuration: ${(err as Error).message}`);
+  process.exit(1);
+}
 
 const logger = pino({
   level: config.logLevel,
