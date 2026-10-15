@@ -501,10 +501,10 @@
  ],
  "finding": "OW-SEC-401",
  "fingerprint": {
-  "cases_sha256": "e5e712c2e7cde249eeac558f8e7990d59eadceaa94b80caaecea3b499a2b6a58",
+  "cases_sha256": "1f4d6fa7a6cfea720a1e7b91cee82a86c4349fa7618b19f076836b770dd9d85c",
   "emitter_sha256": "085ebb3cb2d4f1799457ba0bdec2528f8bb2d5c6eff853f78c81b3340ffa0dc9",
   "observed_sha256": {
-   "services/document-service/app/api/documents.py": "0026eb7fda38ff10fce4d7699512a2d2af87f51b032c99ef000b7c20a8e75ca5"
+   "services/document-service/app/api/documents.py": "79b64a092a4728d6a37c1d2617bb6ff94db13effae4eb9c1fb5fefe688318975"
   },
   "seed_sha256": "8fdf4fcc58c4b0e23d90cb65e10c372edce4633651cabff071ebdc8c6ac7ee97",
   "subject_sha256": {
@@ -517,25 +517,25 @@
   "app.services.document_query_repository:DocumentQueryRepository.search_documents": "search_documents(self, *, owner_id: 'str | None' = None, title_contains: 'str | None' = None, content_type: 'str | None' = None, folder_id: 'str | None' = None, sort: 'str' = 'updated_at', direction: 'str' = 'desc', limit: 'int' = 20, offset: 'int' = 0) -> 'list[dict[str, Any]]'"
  },
  "module": "document-service",
- "reason": "route handler now maps every unreadable-export OSError to the recorded 404; refresh observed-file provenance and suite pass list",
- "recorded_at": "2026-08-18T01:19:28.827608+00:00",
+ "reason": "list/search now require the caller identity (sfind-3b1700d8); http cases authenticate as the owner they already query",
+ "recorded_at": "2026-10-07T14:25:29.525853+00:00",
  "rerecorded_from": {
   "fingerprint": {
    "cases_sha256": "e5e712c2e7cde249eeac558f8e7990d59eadceaa94b80caaecea3b499a2b6a58",
    "emitter_sha256": "085ebb3cb2d4f1799457ba0bdec2528f8bb2d5c6eff853f78c81b3340ffa0dc9",
    "observed_sha256": {
-    "services/document-service/app/api/documents.py": "dfac23263dfc7d0d548f34c33b2abcb3c8b09b6b8eeafd543ad03df8702934e1"
+    "services/document-service/app/api/documents.py": "0026eb7fda38ff10fce4d7699512a2d2af87f51b032c99ef000b7c20a8e75ca5"
    },
    "seed_sha256": "8fdf4fcc58c4b0e23d90cb65e10c372edce4633651cabff071ebdc8c6ac7ee97",
    "subject_sha256": {
     "services/document-service/app/services/document_query_repository.py": "a79c49a410fe174bab2247f776088d76d747c8bacc96c8f91fd5e0d281b95e6d"
    }
   },
-  "reason": "harness v2: subject vs observes split so one finding's refactor no longer regrades its neighbours",
-  "recorded_at": "2026-08-18T00:47:16.618672+00:00"
+  "reason": "route handler now maps every unreadable-export OSError to the recorded 404; refresh observed-file provenance and suite pass list",
+  "recorded_at": "2026-08-18T01:19:28.827608+00:00"
  },
  "suite": {
-  "command": "poetry run pytest -q --junitxml=/tmp/ow-equivalence-junit-y77h6q2j/junit.xml",
+  "command": "poetry run pytest -q --junitxml=/home/ubuntu/tmp/ow-equivalence-junit-xgt4bcau/junit.xml",
   "exit_code": 1,
   "failed": [
    "tests.test_documents_api::test_delete_document",
@@ -549,6 +549,9 @@
    "tests.test_documents_api::test_update_document"
   ],
   "passed": [
+   "tests.test_chaos_flags::test_flag_read_is_cached_within_window",
+   "tests.test_chaos_flags::test_redis_client_uses_bounded_timeouts",
+   "tests.test_chaos_flags::test_unreachable_redis_reads_off_and_backs_off",
    "tests.test_comments_api::test_add_comment",
    "tests.test_comments_api::test_add_comment_document_not_found",
    "tests.test_comments_api::test_delete_comment",
@@ -560,6 +563,18 @@
    "tests.test_document_filters::test_filter_orders_by_title_ascending",
    "tests.test_document_filters::test_filter_paginates",
    "tests.test_document_filters::test_unfiltered_list_is_unchanged",
+   "tests.test_document_owner_scoping::test_owner_id_param_cannot_read_another_users_documents[/api/v1/documents/]",
+   "tests.test_document_owner_scoping::test_owner_id_param_cannot_read_another_users_documents[/api/v1/documents]",
+   "tests.test_document_owner_scoping::test_owner_id_param_cannot_read_another_users_documents_on_filter_path",
+   "tests.test_document_owner_scoping::test_owner_still_lists_and_searches_own_documents",
+   "tests.test_document_owner_scoping::test_search_does_not_return_other_users_documents",
+   "tests.test_document_owner_scoping::test_spoofed_identity_header_alone_is_rejected",
+   "tests.test_document_owner_scoping::test_unauthenticated_filtered_list_is_rejected",
+   "tests.test_document_owner_scoping::test_unauthenticated_list_is_rejected[/api/v1/documents/]",
+   "tests.test_document_owner_scoping::test_unauthenticated_list_is_rejected[/api/v1/documents]",
+   "tests.test_document_owner_scoping::test_unauthenticated_list_with_owner_id_is_rejected[/api/v1/documents/]",
+   "tests.test_document_owner_scoping::test_unauthenticated_list_with_owner_id_is_rejected[/api/v1/documents]",
+   "tests.test_document_owner_scoping::test_unauthenticated_search_is_rejected",
    "tests.test_document_service::test_add_comment_to_nonexistent_document",
    "tests.test_document_service::test_comments_crud",
    "tests.test_document_service::test_create_and_get",
@@ -591,11 +606,24 @@
    "tests.test_export_archive::test_reads_export_in_subdirectory",
    "tests.test_health::test_health_check",
    "tests.test_health::test_metrics",
+   "tests.test_migrate::test_complete_legacy_schema_is_stamped_then_upgraded",
+   "tests.test_migrate::test_empty_database_just_upgrades",
+   "tests.test_migrate::test_partial_unversioned_schema_refuses_to_stamp",
+   "tests.test_request_log::test_large_stream_is_delivered_whole_but_only_a_prefix_is_logged",
+   "tests.test_request_log::test_logged_request_keeps_body_but_not_bearer_token",
+   "tests.test_request_log::test_redact_body_masks_minted_tokens_only",
+   "tests.test_request_log::test_redact_headers_masks_credentials_only",
+   "tests.test_request_log::test_redact_query_masks_share_tokens_only",
    "tests.test_share_link::test_garbage_token_is_rejected",
    "tests.test_share_link::test_minted_token_verifies",
    "tests.test_share_link::test_share_endpoint_round_trip",
    "tests.test_share_link::test_token_is_stable_across_calls",
    "tests.test_share_link::test_token_of_another_document_is_rejected",
+   "tests.test_stats_rollup::test_loop_survives_duplicate_check_failure_after_commit",
+   "tests.test_stats_rollup::test_other_host_still_writes_its_own_row",
+   "tests.test_stats_rollup::test_same_host_rerun_reuses_its_row",
+   "tests.test_telemetry::test_list_reports_query_count",
+   "tests.test_telemetry::test_metrics_expose_query_fanout",
    "tests.test_templates_api::test_create_document_from_template",
    "tests.test_templates_api::test_create_from_template_not_found",
    "tests.test_templates_api::test_create_template",
