@@ -122,17 +122,24 @@ billing-service route, or record it as "exposed, no legacy consumer".
 Steps:
 1. Branch from the run branch; change `app.py` so routes 1–12 call billing-service (`BILLING_SVC_URL`)
    instead of `select()`/`execute()`; remove `db_connect()` and the `DB_*` settings so the Flask process
-   holds **no** PostgreSQL credential. Keep the external paths/shapes the client fixture already uses
-   (`procs/routes.yaml` is the contract the 24 transcripts were recorded against).
+   holds **no** PostgreSQL credential. Keep the legacy external paths/shapes for legacy callers: rows 3, 4,
+   5 change HTTP shape as well as path (form-POST `/plans/<t>/change` → JSON `POST /api/tenants/{t}/plan-change`;
+   `POST /api/rating/preview` with a body → `GET /api/tenants/{t}/rating?period=`), so `app.py` must shim the
+   old shape onto the new call; `procs/routes.yaml` is the billing-service contract the 24 transcripts were
+   recorded against and is not what legacy callers send.
 2. Deploy with the `billing` DSN **removed** from the legacy app's environment. The schema-owner principal
    should no longer be present on any running consumer.
 3. Smoke, in this order: `GET /health` on both services; route 1 (read), route 2 (read), route 6 (read).
    Reads only at this point: the Atlas state still equals the frozen source, so any difference from the
    pre-cutover legacy answer is a defect, and rollback is still a plain redeploy.
 4. One write smoke, route 3 (`plan-change`) on a **dedicated test tenant** (never a real one), read back
-   with route 2. Record the request body and the response (the closed and the new subscription ids): they
-   are the only differences §7 may accept. This is the first intentional Atlas-only write; from here Atlas ≠
-   frozen source for that tenant's `subscriptions` documents, by design (sections 6 and 7 account for it).
+   with route 2. The `plan-change` response carries plan ids, dates and status but **no** subscription `_id`s,
+   so the evidence §7 needs is a **read-only snapshot** of the test tenant's `subscriptions` documents
+   (`_id`, `planId`, `startsOn`, `endsOn`, `status`) taken from `billing_migration` immediately **before** and
+   **after** this write (a `find({tenantId: <test>})` with the read-only Atlas principal; never a write), kept
+   with the request body. The before/after pair is the only difference §7 may accept. This is the first
+   intentional Atlas-only write; from here Atlas ≠ frozen source for that tenant's `subscriptions`
+   documents, by design (sections 6 and 7 account for it).
 5. Post-cutover checks (section 6) within the first hour, then open to real traffic.
 
 ## 6. Post-cutover verification (Devin may run; read-only)
@@ -169,10 +176,10 @@ Steps:
    `recon run … --mode live --target-class migration_cluster` (read-only) against the frozen source must
    PASS, or its tier-3 keyed diff must name **only** the documents the 5.4 smoke is expected to touch: for a
    tenant with an open subscription, `sp_change_plan`/`change_plan` closes it (`endsOn` set) and inserts a
-   new one, so up to **two** `subscriptions` documents, both belonging to the dedicated test tenant, with
-   keys and values matching the recorded 5.4 request/response (old id with the new `endsOn`, new id with
-   the new plan and `startsOn`). Any other document, tenant or value = a real write happened = point of no
-   return passed → go to step 5.
+   new one, so up to **two** `subscriptions` documents, both belonging to the dedicated test tenant, whose
+   `_id`s and full values match the 5.4 before/after snapshot exactly (old `_id` with the new `endsOn`, new
+   `_id` with the new plan and `startsOn`). Any other document, tenant or value = a real write happened =
+   point of no return passed → go to step 5.
 3. Only then redeploy the previous `services/legacy-billing` image/revision (the one with `db_connect()`),
    restoring the `DB_*` environment with the `billing` principal; Dhrov supplies it, Devin does not.
    Verify legacy `GET /health` and routes 1, 2, 6 answer from PostgreSQL, then reopen traffic and resume
