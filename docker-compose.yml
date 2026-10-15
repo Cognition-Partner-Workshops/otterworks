@@ -525,10 +525,21 @@ services:
     read_only: true
     tmpfs:
     - /tmp
+  workbench:
+    build:
+      context: ./frontend/workbench
+      dockerfile: Dockerfile
+    container_name: otterworks-workbench
+    ports:
+    - 3002:3002
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    tmpfs:
+    - /tmp
 networks:
   default:
     name: otterworks-network
 volumes:
   postgres_data: null
   localstack_data: null
-
