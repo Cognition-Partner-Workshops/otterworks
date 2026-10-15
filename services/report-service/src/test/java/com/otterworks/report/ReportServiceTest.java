@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportType;
+import com.otterworks.report.security.TestTokens;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - Use @Nested for test grouping
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = TestTokens.SECRET_PROPERTY)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ReportServiceTest {
@@ -73,6 +74,7 @@ public class ReportServiceTest {
         request.setDateTo(new Date());
 
         mockMvc.perform(post("/api/v1/reports")
+                        .with(TestTokens.asUser("test-user"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -93,6 +95,7 @@ public class ReportServiceTest {
         request.setRequestedBy("test-user-002");
 
         mockMvc.perform(post("/api/v1/reports")
+                        .with(TestTokens.asAdmin("test-user-002"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -108,6 +111,7 @@ public class ReportServiceTest {
         request.setRequestedBy("test-user-003");
 
         mockMvc.perform(post("/api/v1/reports")
+                        .with(TestTokens.asUser("test-user"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -116,13 +120,15 @@ public class ReportServiceTest {
 
     @Test
     public void getReportNotFoundShouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/v1/reports/99999"))
+        mockMvc.perform(get("/api/v1/reports/99999")
+                        .with(TestTokens.asUser("test-user")))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void listReportsShouldReturnEmptyList() throws Exception {
         mockMvc.perform(get("/api/v1/reports")
+                        .with(TestTokens.asUser("nonexistent-user"))
                         .param("userId", "nonexistent-user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reports").isArray())
@@ -138,6 +144,7 @@ public class ReportServiceTest {
         // Missing reportName — should fail validation
 
         mockMvc.perform(post("/api/v1/reports")
+                        .with(TestTokens.asUser("test-user"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -145,7 +152,8 @@ public class ReportServiceTest {
 
     @Test
     public void downloadNonExistentReportShouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/v1/reports/99999/download"))
+        mockMvc.perform(get("/api/v1/reports/99999/download")
+                        .with(TestTokens.asUser("test-user")))
                 .andExpect(status().isNotFound());
     }
 }
