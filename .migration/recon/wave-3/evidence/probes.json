@@ -1,0 +1,576 @@
+{
+ "collections_in_target_db": [
+  "_connectivity_probe",
+  "invoices",
+  "notifications",
+  "plans",
+  "ratingPeriods",
+  "subscriptions",
+  "tenants",
+  "usageEvents"
+ ],
+ "pg_session_timezone": "Etc/UTC",
+ "probes": {
+  "invoices": {
+   "source_rows": 3,
+   "target_docs": 3,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "tenantId": 0,
+    "periodId": 0,
+    "issuedAt": 0,
+    "subtotal": 0,
+    "tax": 0,
+    "total": 0,
+    "status": 0
+   },
+   "target_null_counts": {
+    "tenantId": 0,
+    "periodId": 0,
+    "issuedAt": 0,
+    "subtotal": 0,
+    "tax": 0,
+    "total": 0,
+    "status": 0
+   },
+   "source_null_counts": {
+    "tenant_id": 0,
+    "period_id": 0,
+    "issued_at": 0,
+    "subtotal": 0,
+    "tax": 0,
+    "total": 0,
+    "status": 0
+   },
+   "target_bson_types": {
+    "tenantId": {
+     "binData(uuid, subtype 4)": 3
+    },
+    "periodId": {
+     "binData(uuid, subtype 4)": 3
+    },
+    "issuedAt": {
+     "date": 3
+    },
+    "subtotal": {
+     "decimal": 3
+    },
+    "tax": {
+     "decimal": 3
+    },
+    "total": {
+     "decimal": 3
+    },
+    "status": {
+     "string": 3
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 3
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 2,
+    "present": 2,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "periodId_shared_by_several_invoices": {
+    "source": 1,
+    "target": 1
+   },
+   "invoiceLines": {
+    "source_child_rows": 2,
+    "target_elements": 2,
+    "source_children_per_invoice": {
+     "0001": 2,
+     "0002": 0,
+     "0003": 0
+    },
+    "target_elements_per_invoice": {
+     "0001": 2,
+     "0002": 0,
+     "0003": 0
+    },
+    "length_mismatches": 0,
+    "arrays_missing_on_target": 0,
+    "non_array_values": 0,
+    "elements_without_source_row": 0,
+    "source_rows_without_element": 0,
+    "duplicate_child_keys_in_array": 0,
+    "element_value_diffs": 0,
+    "element_value_diff_fields": [],
+    "element_bson_types": {
+     "id: binData(uuid, subtype 4)": 2,
+     "lineNo: int": 2,
+     "lineType: string": 2,
+     "description: string": 2,
+     "amount: decimal": 2
+    },
+    "parent_key_field_present_in_element": {},
+    "undeclared_element_fields": {},
+    "orphan_source_children_without_invoice": 0,
+    "out_of_order_arrays": 0,
+    "source_fanout_distribution": {
+     "2": 1,
+     "0": 2
+    },
+    "duplicate_lineNo_in_array": 0
+   },
+   "dunningAttempts": {
+    "source_child_rows": 1,
+    "target_elements": 1,
+    "source_children_per_invoice": {
+     "0001": 0,
+     "0002": 1,
+     "0003": 0
+    },
+    "target_elements_per_invoice": {
+     "0001": 0,
+     "0002": 1,
+     "0003": 0
+    },
+    "length_mismatches": 0,
+    "arrays_missing_on_target": 0,
+    "non_array_values": 0,
+    "elements_without_source_row": 0,
+    "source_rows_without_element": 0,
+    "duplicate_child_keys_in_array": 0,
+    "element_value_diffs": 0,
+    "element_value_diff_fields": [],
+    "element_bson_types": {
+     "tenantId: binData(uuid, subtype 4)": 1,
+     "attemptNo: int": 1,
+     "scheduledFor: date": 1,
+     "status: string": 1,
+     "id: binData(uuid, subtype 4)": 1
+    },
+    "parent_key_field_present_in_element": {},
+    "undeclared_element_fields": {},
+    "orphan_source_children_without_invoice": 0,
+    "out_of_order_arrays": 0,
+    "source_fanout_distribution": {
+     "1": 1,
+     "0": 2
+    },
+    "duplicate_attemptNo_in_array": 0,
+    "tenantId_differs_from_invoice": {
+     "source": 0,
+     "target": 0
+    }
+   }
+  },
+  "notifications": {
+   "source_rows": 1,
+   "target_docs": 1,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "tenantId": 0,
+    "kind": 0,
+    "sentAt": 0
+   },
+   "target_null_counts": {
+    "tenantId": 0,
+    "kind": 0,
+    "sentAt": 0
+   },
+   "source_null_counts": {
+    "tenant_id": 0,
+    "kind": 0,
+    "sent_at": 0
+   },
+   "target_bson_types": {
+    "tenantId": {
+     "binData(uuid, subtype 4)": 1
+    },
+    "kind": {
+     "string": 1
+    },
+    "sentAt": {
+     "date": 1
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 1
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 1,
+    "present": 1,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "natural_key_tenantId_kind_sentAt": {
+    "source_dupes": 0,
+    "target_dupes": 0
+   }
+  },
+  "identity_rule": {
+   "invoice_id_is_md5_period_id_invoice": {
+    "source": 0,
+    "target": 0
+   },
+   "line_id_is_md5_invoice_id_line_no": {
+    "source": 0,
+    "target": 0
+   },
+   "attempt_id_is_md5_invoice_id_attempt_no": {
+    "source": 0,
+    "target": 0
+   },
+   "notification_id_is_md5_tenant_kind_date": {
+    "source": 0,
+    "target": 0
+   }
+  },
+  "cross_unit": {
+   "earlier_wave_counts_target": {
+    "plans": 3,
+    "tenants": 9,
+    "subscriptions": 9,
+    "usageEvents": 10,
+    "ratingPeriods": 3
+   },
+   "earlier_wave_counts_source": {
+    "plans": 3,
+    "tenants": 9,
+    "subscriptions": 9,
+    "usageEvents": 10,
+    "ratingPeriods": 3
+   },
+   "invoices.tenantId_dangling": {
+    "source": 0,
+    "target": 0
+   },
+   "invoices.periodId_dangling_to_ratingPeriods": {
+    "source": 0,
+    "target": 0
+   },
+   "invoices.periodId_belongs_to_other_tenant": {
+    "source": 3,
+    "target": 3
+   },
+   "dunningAttempts.tenantId_dangling_target": 0,
+   "notifications.tenantId_dangling": {
+    "source": 0,
+    "target": 0
+   },
+   "notifications.kind_domain": {
+    "source": [
+     "dunning"
+    ],
+    "target": [
+     "dunning"
+    ]
+   },
+   "overdue_invoices_per_tenant_status": {
+    "source": {
+     "suspended": 1,
+     "active": 1
+    },
+    "target": {
+     "suspended": 1,
+     "active": 1
+    }
+   },
+   "tenants.creditNotes": {
+    "source_rows": 5,
+    "target_elements": 5,
+    "missing_on_target": 0,
+    "not_in_source": 0,
+    "on_wrong_tenant": 0,
+    "value_diffs": 0,
+    "remainingAmount_sum": {
+     "source": "145.00",
+     "target": "145.00"
+    },
+    "remainingAmount_gt_amount": {
+     "source": 0,
+     "target": 0
+    }
+   },
+   "tenants.status": {
+    "source": {
+     "active": 8,
+     "suspended": 1
+    },
+    "target": {
+     "active": 8,
+     "suspended": 1
+    },
+    "value_diffs": 0
+   },
+   "subscriptions.status_suspendedOn": {
+    "source_status": {
+     "active": 8,
+     "suspended": 1
+    },
+    "target_status": {
+     "active": 8,
+     "suspended": 1
+    },
+    "value_diffs": 0,
+    "suspendedOn_set": {
+     "source": 1,
+     "target": 1
+    }
+   }
+  },
+  "boundaries": {
+   "invoices.issuedAt": {
+    "source": [
+     "2026-02-01T00:00:00.000+00:00",
+     "2026-02-28T00:00:00.000+00:00"
+    ],
+    "target": [
+     "2026-02-01T00:00:00.000+00:00",
+     "2026-02-28T00:00:00.000+00:00"
+    ]
+   },
+   "invoices.status_domain": {
+    "source": [
+     "issued",
+     "overdue"
+    ],
+    "target": [
+     "issued",
+     "overdue"
+    ]
+   },
+   "invoices.status_count": {
+    "source": {
+     "overdue": 2,
+     "issued": 1
+    },
+    "target": {
+     "overdue": 2,
+     "issued": 1
+    }
+   },
+   "invoices.subtotal": {
+    "source": [
+     "49",
+     "149"
+    ],
+    "target": [
+     "49",
+     "149"
+    ],
+    "sum_source": "347.00",
+    "sum_target": "347.00"
+   },
+   "invoices.tax": {
+    "source": [
+     "4.04",
+     "12.29"
+    ],
+    "target": [
+     "4.04",
+     "12.29"
+    ],
+    "sum_source": "28.62",
+    "sum_target": "28.62"
+   },
+   "invoices.total": {
+    "source": [
+     "53.04",
+     "161.29"
+    ],
+    "target": [
+     "53.04",
+     "161.29"
+    ],
+    "sum_source": "375.62",
+    "sum_target": "375.62"
+   },
+   "invoices.decimal_scale_gt_2_target": 0,
+   "invoices.negative_amounts": {
+    "source": 0,
+    "target": 0
+   },
+   "invoices.total_eq_subtotal_plus_tax_minus_credit_lines": {
+    "source": {
+     "False": 1,
+     "None": 2
+    },
+    "target": {
+     "False": 1,
+     "None": 2
+    }
+   },
+   "invoices.total_eq_subtotal_plus_tax": {
+    "source": 3,
+    "target": 3
+   },
+   "invoiceLines.lineType_domain": {
+    "source": [
+     "plan",
+     "usage"
+    ],
+    "target": [
+     "plan",
+     "usage"
+    ]
+   },
+   "invoiceLines.amount": {
+    "source": [
+     "12.29",
+     "149"
+    ],
+    "target": [
+     "12.29",
+     "149"
+    ]
+   },
+   "invoiceLines.amount_scale_gt_2_target": 0,
+   "invoiceLines.lineNo": {
+    "source": [
+     1,
+     2
+    ],
+    "target": [
+     1,
+     2
+    ]
+   },
+   "invoiceLines.whitespace_in_text_target": 0,
+   "dunningAttempts.scheduledFor": {
+    "source": [
+     "2026-02-16T00:00:00.000+00:00",
+     "2026-02-16T00:00:00.000+00:00"
+    ],
+    "target": [
+     "2026-02-16T00:00:00.000+00:00",
+     "2026-02-16T00:00:00.000+00:00"
+    ]
+   },
+   "dunningAttempts.scheduledFor_on_weekend": {
+    "source": 0,
+    "target": 0
+   },
+   "dunningAttempts.scheduledFor_before_invoice_issued": {
+    "source": 0,
+    "target": 0
+   },
+   "dunningAttempts.status_domain": {
+    "source": [
+     "sent"
+    ],
+    "target": [
+     "sent"
+    ]
+   },
+   "dunningAttempts.attemptNo": {
+    "source": [
+     1,
+     1
+    ],
+    "target": [
+     1,
+     1
+    ]
+   },
+   "dunningAttempts.only_on_overdue_invoices": {
+    "source": 1,
+    "target": 1
+   },
+   "notifications.sentAt": {
+    "source": [
+     "2026-02-16T09:00:00.000+00:00",
+     "2026-02-16T09:00:00.000+00:00"
+    ],
+    "target": [
+     "2026-02-16T09:00:00.000+00:00",
+     "2026-02-16T09:00:00.000+00:00"
+    ]
+   },
+   "notifications.kind_whitespace_target": 0,
+   "date_midnight_utc": {
+    "dunningAttempts.scheduledFor": {
+     "values": 1,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    }
+   },
+   "timestamptz_fields": {
+    "invoices.issuedAt": {
+     "source_sub_ms_precision_values": 0,
+     "target_values": 3,
+     "target_not_a_bson_date": 0,
+     "target_multiset_equals_source_at_ms": true,
+     "target_non_midnight": 0
+    },
+    "notifications.sentAt": {
+     "source_sub_ms_precision_values": 0,
+     "target_values": 1,
+     "target_not_a_bson_date": 0,
+     "target_multiset_equals_source_at_ms": true,
+     "target_non_midnight": 1
+    }
+   }
+  },
+  "overdue_predicates": {
+   "2026-02-14": {
+    "fn_overdue_accounts_invoices": {
+     "source": 2,
+     "target": 2,
+     "equal": true
+    },
+    "sp_suspend_overdue_tenants": {
+     "source": 0,
+     "target": 0,
+     "equal": true
+    }
+   },
+   "2026-02-17": {
+    "fn_overdue_accounts_invoices": {
+     "source": 2,
+     "target": 2,
+     "equal": true
+    },
+    "sp_suspend_overdue_tenants": {
+     "source": 1,
+     "target": 1,
+     "equal": true
+    }
+   },
+   "2026-02-28": {
+    "fn_overdue_accounts_invoices": {
+     "source": 2,
+     "target": 2,
+     "equal": true
+    },
+    "sp_suspend_overdue_tenants": {
+     "source": 2,
+     "target": 2,
+     "equal": true
+    }
+   }
+  },
+  "write_fence": {
+   "mapped_collections": [
+    "invoices",
+    "notifications",
+    "plans",
+    "ratingPeriods",
+    "subscriptions",
+    "tenants",
+    "usageEvents"
+   ],
+   "unexpected_collections_in_target_db": [
+    "_connectivity_probe"
+   ],
+   "mapped_collections_missing": []
+  }
+ }
+}

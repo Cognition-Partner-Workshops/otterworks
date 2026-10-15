@@ -1,0 +1,923 @@
+{
+ "namespace": "v3",
+ "ports": {
+  "billing_service": 12585,
+  "local_mongo": 56921
+ },
+ "transcripts_current": {
+  "source_sha_matches_procs_sql": true,
+  "fixture_sha_matches_schema_seed": true
+ },
+ "scenarios": {
+  "DUNNING-002": {
+   "entrypoint": "billing.sp_schedule_dunning",
+   "inputs": {
+    "as_of": "2026-02-14",
+    "second_call": null
+   },
+   "legacy_transcript": {
+    "schedule_rows": [
+     {
+      "attempt_no": 1,
+      "invoice_id": "60000000-0000-0000-0000-000000000001",
+      "scheduled_for": "2026-02-16",
+      "status": "scheduled"
+     },
+     {
+      "attempt_no": 1,
+      "invoice_id": "60000000-0000-0000-0000-000000000002",
+      "scheduled_for": "2026-02-16",
+      "status": "sent"
+     },
+     {
+      "attempt_no": 2,
+      "invoice_id": "60000000-0000-0000-0000-000000000002",
+      "scheduled_for": "2026-02-16",
+      "status": "scheduled"
+     }
+    ]
+   },
+   "target_post_state": [
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000001",
+     "tenant_id": "00000000-0000-0000-0000-000000000002",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "35737ff3-1220-b903-45dc-e4051972899b",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000002",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-16",
+     "status": "sent",
+     "id": "80000000-0000-0000-0000-000000000001",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 2,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "6118c817-d22e-6eb3-832a-96f21a646a7a",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    }
+   ],
+   "rows": 3,
+   "new_attempts_target": 2,
+   "one_new_attempt_per_overdue_invoice_per_call": true,
+   "new_attempt_nos_consecutive_from_prior_max": true,
+   "ids_follow_md5_invoice_id_attempt_no_target": true,
+   "scheduledFor_is_next_business_day_target": true,
+   "status_scheduled_target": true,
+   "tenantId_eq_invoice_tenant_target": true,
+   "duplicate_attempt_no_per_invoice_target": 0,
+   "attempts_on_non_overdue_invoices_target": 0,
+   "seeded_attempt_untouched_target": true,
+   "target_eq_transcript_probe_schedule_rows": true,
+   "target_eq_transcript_business_fields": true,
+   "transcript_fingerprints_current": true
+  },
+  "DUNNING-003": {
+   "entrypoint": "billing.sp_schedule_dunning",
+   "inputs": {
+    "as_of": "2026-02-17",
+    "second_call": null
+   },
+   "legacy_transcript": {
+    "schedule_rows": [
+     {
+      "attempt_no": 1,
+      "invoice_id": "60000000-0000-0000-0000-000000000001",
+      "scheduled_for": "2026-02-17",
+      "status": "scheduled"
+     },
+     {
+      "attempt_no": 1,
+      "invoice_id": "60000000-0000-0000-0000-000000000002",
+      "scheduled_for": "2026-02-16",
+      "status": "sent"
+     },
+     {
+      "attempt_no": 2,
+      "invoice_id": "60000000-0000-0000-0000-000000000002",
+      "scheduled_for": "2026-02-17",
+      "status": "scheduled"
+     }
+    ]
+   },
+   "target_post_state": [
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000001",
+     "tenant_id": "00000000-0000-0000-0000-000000000002",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-17",
+     "status": "scheduled",
+     "id": "35737ff3-1220-b903-45dc-e4051972899b",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000002",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-16",
+     "status": "sent",
+     "id": "80000000-0000-0000-0000-000000000001",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 2,
+     "scheduled_for": "2026-02-17",
+     "status": "scheduled",
+     "id": "6118c817-d22e-6eb3-832a-96f21a646a7a",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    }
+   ],
+   "rows": 3,
+   "new_attempts_target": 2,
+   "one_new_attempt_per_overdue_invoice_per_call": true,
+   "new_attempt_nos_consecutive_from_prior_max": true,
+   "ids_follow_md5_invoice_id_attempt_no_target": true,
+   "scheduledFor_is_next_business_day_target": true,
+   "status_scheduled_target": true,
+   "tenantId_eq_invoice_tenant_target": true,
+   "duplicate_attempt_no_per_invoice_target": 0,
+   "attempts_on_non_overdue_invoices_target": 0,
+   "seeded_attempt_untouched_target": true,
+   "target_eq_transcript_probe_schedule_rows": true,
+   "target_eq_transcript_business_fields": true,
+   "transcript_fingerprints_current": true
+  },
+  "schedule_twice_same_as_of": {
+   "entrypoint": "billing.sp_schedule_dunning",
+   "inputs": {
+    "as_of": "2026-02-14",
+    "second_call": "2026-02-14"
+   },
+   "legacy_transcript": null,
+   "target_post_state": [
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000001",
+     "tenant_id": "00000000-0000-0000-0000-000000000002",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "35737ff3-1220-b903-45dc-e4051972899b",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000002",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000001",
+     "tenant_id": "00000000-0000-0000-0000-000000000002",
+     "attempt_no": 2,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "bdeccf71-00a7-7207-c613-a30b243c2176",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000002",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 1,
+     "scheduled_for": "2026-02-16",
+     "status": "sent",
+     "id": "80000000-0000-0000-0000-000000000001",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 2,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "6118c817-d22e-6eb3-832a-96f21a646a7a",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    },
+    {
+     "invoice_id": "60000000-0000-0000-0000-000000000002",
+     "tenant_id": "00000000-0000-0000-0000-000000000005",
+     "attempt_no": 3,
+     "scheduled_for": "2026-02-16",
+     "status": "scheduled",
+     "id": "70e0e4d2-99b7-47b3-9a09-37a6cc57dde0",
+     "invoice_tenant": "00000000-0000-0000-0000-000000000005",
+     "invoice_status": "overdue"
+    }
+   ],
+   "rows": 5,
+   "new_attempts_target": 4,
+   "one_new_attempt_per_overdue_invoice_per_call": true,
+   "new_attempt_nos_consecutive_from_prior_max": true,
+   "ids_follow_md5_invoice_id_attempt_no_target": true,
+   "scheduledFor_is_next_business_day_target": true,
+   "status_scheduled_target": true,
+   "tenantId_eq_invoice_tenant_target": true,
+   "duplicate_attempt_no_per_invoice_target": 0,
+   "attempts_on_non_overdue_invoices_target": 0,
+   "seeded_attempt_untouched_target": true
+  },
+  "DUNNING-004": {
+   "entrypoint": "billing.sp_suspend_overdue",
+   "inputs": {
+    "as_of": "2026-02-28",
+    "calls": 1
+   },
+   "legacy_transcript": {
+    "suspension_notifications": [
+     {
+      "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+      "kind": "suspension",
+      "sent_at": "2026-02-28T00:00:00Z",
+      "tenant_id": "00000000-0000-0000-0000-000000000005"
+     }
+    ]
+   },
+   "target_post_state": {
+    "tenants": [
+     {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "status": "suspended"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000003",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000004",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "status": "suspended"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000006",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000007",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000008",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000009",
+      "status": "active"
+     }
+    ],
+    "subscriptions": [
+     {
+      "id": "20000000-0000-0000-0000-000000000001",
+      "tenant_id": "00000000-0000-0000-0000-000000000001",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000002",
+      "tenant_id": "00000000-0000-0000-0000-000000000002",
+      "status": "suspended",
+      "suspended_on": "2026-02-15"
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000003",
+      "tenant_id": "00000000-0000-0000-0000-000000000003",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000004",
+      "tenant_id": "00000000-0000-0000-0000-000000000004",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000005",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "status": "suspended",
+      "suspended_on": "2026-02-28"
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000006",
+      "tenant_id": "00000000-0000-0000-0000-000000000006",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000007",
+      "tenant_id": "00000000-0000-0000-0000-000000000007",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000008",
+      "tenant_id": "00000000-0000-0000-0000-000000000008",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000009",
+      "tenant_id": "00000000-0000-0000-0000-000000000009",
+      "status": "active",
+      "suspended_on": null
+     }
+    ],
+    "notifications": [
+     {
+      "id": "90000000-0000-0000-0000-000000000001",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "kind": "dunning",
+      "sent_at": "2026-02-16T09:00:00Z"
+     },
+     {
+      "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "kind": "suspension",
+      "sent_at": "2026-02-28T00:00:00Z"
+     }
+    ]
+   },
+   "tenants_changed_target": [
+    "00000000-0000-0000-0000-000000000005"
+   ],
+   "suspended_now_target_eq_procedure_predicate": true,
+   "changed_tenants_now_suspended": true,
+   "subscriptions_changed_target": 1,
+   "changed_subscriptions_belong_to_suspended_tenants_and_were_active": true,
+   "changed_subscriptions_status_suspended_suspendedOn_as_of": true,
+   "tenant_2_already_suspended_untouched_target": true,
+   "suspension_notifications_target": 1,
+   "one_suspension_notification_per_suspended_tenant": true,
+   "suspension_notification_ids_follow_md5_target": true,
+   "notification_unique_key_dupes_target": 0,
+   "seeded_dunning_notification_untouched_target": true,
+   "target_eq_transcript_probe_suspension_notifications": true,
+   "transcript_fingerprints_current": true,
+   "target_eq_transcript_business_fields": true
+  },
+  "DUNNING-005": {
+   "entrypoint": "billing.sp_suspend_overdue",
+   "inputs": {
+    "as_of": "2026-02-28",
+    "calls": 2
+   },
+   "legacy_transcript": {
+    "suspension_notifications": [
+     {
+      "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+      "kind": "suspension",
+      "sent_at": "2026-02-28T00:00:00Z",
+      "tenant_id": "00000000-0000-0000-0000-000000000005"
+     }
+    ]
+   },
+   "target_post_state": {
+    "tenants": [
+     {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "status": "suspended"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000003",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000004",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "status": "suspended"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000006",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000007",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000008",
+      "status": "active"
+     },
+     {
+      "id": "00000000-0000-0000-0000-000000000009",
+      "status": "active"
+     }
+    ],
+    "subscriptions": [
+     {
+      "id": "20000000-0000-0000-0000-000000000001",
+      "tenant_id": "00000000-0000-0000-0000-000000000001",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000002",
+      "tenant_id": "00000000-0000-0000-0000-000000000002",
+      "status": "suspended",
+      "suspended_on": "2026-02-15"
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000003",
+      "tenant_id": "00000000-0000-0000-0000-000000000003",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000004",
+      "tenant_id": "00000000-0000-0000-0000-000000000004",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000005",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "status": "suspended",
+      "suspended_on": "2026-02-28"
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000006",
+      "tenant_id": "00000000-0000-0000-0000-000000000006",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000007",
+      "tenant_id": "00000000-0000-0000-0000-000000000007",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000008",
+      "tenant_id": "00000000-0000-0000-0000-000000000008",
+      "status": "active",
+      "suspended_on": null
+     },
+     {
+      "id": "20000000-0000-0000-0000-000000000009",
+      "tenant_id": "00000000-0000-0000-0000-000000000009",
+      "status": "active",
+      "suspended_on": null
+     }
+    ],
+    "notifications": [
+     {
+      "id": "90000000-0000-0000-0000-000000000001",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "kind": "dunning",
+      "sent_at": "2026-02-16T09:00:00Z"
+     },
+     {
+      "id": "8cd558f5-d843-8d3d-be19-fb94c21ab81f",
+      "tenant_id": "00000000-0000-0000-0000-000000000005",
+      "kind": "suspension",
+      "sent_at": "2026-02-28T00:00:00Z"
+     }
+    ]
+   },
+   "tenants_changed_target": [
+    "00000000-0000-0000-0000-000000000005"
+   ],
+   "suspended_now_target_eq_procedure_predicate": true,
+   "changed_tenants_now_suspended": true,
+   "subscriptions_changed_target": 1,
+   "changed_subscriptions_belong_to_suspended_tenants_and_were_active": true,
+   "changed_subscriptions_status_suspended_suspendedOn_as_of": true,
+   "tenant_2_already_suspended_untouched_target": true,
+   "suspension_notifications_target": 1,
+   "one_suspension_notification_per_suspended_tenant": true,
+   "suspension_notification_ids_follow_md5_target": true,
+   "notification_unique_key_dupes_target": 0,
+   "seeded_dunning_notification_untouched_target": true,
+   "target_eq_transcript_probe_suspension_notifications": true,
+   "transcript_fingerprints_current": true,
+   "target_eq_transcript_business_fields": true
+  },
+  "INVOICE-003": {
+   "entrypoint": "billing.sp_issue_invoice",
+   "inputs": {
+    "period_end": "2026-02-28",
+    "period_start": "2026-02-01",
+    "tenant_id": "00000000-0000-0000-0000-000000000009"
+   },
+   "legacy_transcript": {
+    "business_fields": {
+     "credit_ids": [
+      "70000000-0000-0000-0000-000000000005",
+      "70000000-0000-0000-0000-000000000006"
+     ],
+     "issued_on": [
+      "2026-01-31",
+      "2026-02-01"
+     ],
+     "remaining": [
+      "0.00",
+      "6.96"
+     ]
+    },
+    "probes": {
+     "invoice_state": [
+      {
+       "status": "issued",
+       "subtotal": "49.00",
+       "tax": "4.04",
+       "total": "0.00"
+      }
+     ]
+    }
+   },
+   "target_post_state": {
+    "credit_notes_before": [
+     {
+      "id": "70000000-0000-0000-0000-000000000005",
+      "issued_on": "2026-01-31",
+      "amount": "5.00",
+      "remaining_amount": "5.00"
+     },
+     {
+      "id": "70000000-0000-0000-0000-000000000006",
+      "issued_on": "2026-02-01",
+      "amount": "55.00",
+      "remaining_amount": "55.00"
+     }
+    ],
+    "credit_notes": [
+     {
+      "id": "70000000-0000-0000-0000-000000000005",
+      "issued_on": "2026-01-31",
+      "amount": "5.00",
+      "remaining_amount": "0.00"
+     },
+     {
+      "id": "70000000-0000-0000-0000-000000000006",
+      "issued_on": "2026-02-01",
+      "amount": "55.00",
+      "remaining_amount": "6.96"
+     }
+    ],
+    "invoice": {
+     "id": "f947416b-6478-ac32-911a-12ca7f03a6fb",
+     "status": "issued",
+     "subtotal": "49.00",
+     "tax": "4.04",
+     "total": "0.00",
+     "issued_at": "2026-02-28T00:00:00+00:00",
+     "lines": [
+      {
+       "id": "4b8a97a6-c20e-b1b8-de54-612eae0464f0",
+       "line_no": 1,
+       "line_type": "plan",
+       "description": "STARTER",
+       "amount": "49.00"
+      },
+      {
+       "id": "09d2f943-fd52-e644-1210-509825b89260",
+       "line_no": 2,
+       "line_type": "usage",
+       "description": "usage overage",
+       "amount": "0.00"
+      },
+      {
+       "id": "40d7d145-9ed7-c727-c584-d112dc76796e",
+       "line_no": 3,
+       "line_type": "tax",
+       "description": "regional tax",
+       "amount": "2.02"
+      },
+      {
+       "id": "7db70219-7443-f55b-3340-1128fb34d227",
+       "line_no": 4,
+       "line_type": "tax",
+       "description": "local tax",
+       "amount": "2.02"
+      },
+      {
+       "id": "319146eb-32e5-8342-c882-b44fcbd6aa32",
+       "line_no": 5,
+       "line_type": "credit",
+       "description": "credit notes",
+       "amount": "-53.04"
+      }
+     ],
+     "dunning_attempts": 0
+    },
+    "rating_period": {
+     "id": "5dc02199-0345-1f48-ab13-8eeefeba5910",
+     "has_rating": true,
+     "billable_units": 0
+    }
+   },
+   "credit_drawn_target": "53.04",
+   "credit_drawn_eq_min_available_gross_target": true,
+   "drawdown_order_issuedOn_then_id_target": true,
+   "no_remaining_above_amount_or_below_zero_target": true,
+   "credit_note_ids_and_amounts_unchanged_target": true,
+   "other_tenants_credit_notes_unchanged_target": true,
+   "invoice_created_target": true,
+   "invoice_id_follows_md5_period_id_invoice_target": true,
+   "line_ids_follow_md5_invoice_id_line_no_target": true,
+   "lines_target": 5,
+   "line_types_target": [
+    "plan",
+    "usage",
+    "tax",
+    "tax",
+    "credit"
+   ],
+   "invoice_total_eq_subtotal_plus_tax_minus_credit_target": true,
+   "credit_line_amount_eq_minus_drawn_target": true,
+   "issuedAt_eq_period_end_target": true,
+   "dunning_attempts_empty_on_new_invoice_target": true,
+   "rating_period_finalized_target": true,
+   "target_eq_transcript_probe_invoice_state": true,
+   "transcript_fingerprints_current": true,
+   "target_eq_transcript_business_fields": true
+  },
+  "INVOICE-004": {
+   "entrypoint": "billing.sp_issue_invoice",
+   "inputs": {
+    "period_end": "2026-02-28",
+    "period_start": "2026-02-01",
+    "tenant_id": "00000000-0000-0000-0000-000000000004"
+   },
+   "legacy_transcript": {
+    "business_fields": {
+     "credit_ids": [
+      "70000000-0000-0000-0000-000000000001",
+      "70000000-0000-0000-0000-000000000002"
+     ],
+     "issued_on": [
+      "2026-02-01",
+      "2026-02-01"
+     ],
+     "remaining": [
+      "0.00",
+      "6.96"
+     ]
+    },
+    "probes": {
+     "invoice_state": [
+      {
+       "status": "issued",
+       "subtotal": "49.00",
+       "tax": "4.04",
+       "total": "0.00"
+      }
+     ]
+    }
+   },
+   "target_post_state": {
+    "credit_notes_before": [
+     {
+      "id": "70000000-0000-0000-0000-000000000001",
+      "issued_on": "2026-02-01",
+      "amount": "30.00",
+      "remaining_amount": "30.00"
+     },
+     {
+      "id": "70000000-0000-0000-0000-000000000002",
+      "issued_on": "2026-02-01",
+      "amount": "30.00",
+      "remaining_amount": "30.00"
+     }
+    ],
+    "credit_notes": [
+     {
+      "id": "70000000-0000-0000-0000-000000000001",
+      "issued_on": "2026-02-01",
+      "amount": "30.00",
+      "remaining_amount": "0.00"
+     },
+     {
+      "id": "70000000-0000-0000-0000-000000000002",
+      "issued_on": "2026-02-01",
+      "amount": "30.00",
+      "remaining_amount": "6.96"
+     }
+    ],
+    "invoice": {
+     "id": "a4511ff5-6f77-90d0-0496-c188ef600b7b",
+     "status": "issued",
+     "subtotal": "49.00",
+     "tax": "4.04",
+     "total": "0.00",
+     "issued_at": "2026-02-28T00:00:00+00:00",
+     "lines": [
+      {
+       "id": "1bc306f8-5789-96ea-f29e-5c7fa10519e5",
+       "line_no": 1,
+       "line_type": "plan",
+       "description": "STARTER",
+       "amount": "49.00"
+      },
+      {
+       "id": "e8859bad-3910-d56a-bafb-f469163170af",
+       "line_no": 2,
+       "line_type": "usage",
+       "description": "usage overage",
+       "amount": "0.00"
+      },
+      {
+       "id": "a0b91dc8-d304-064c-6f59-2470c70a0af9",
+       "line_no": 3,
+       "line_type": "tax",
+       "description": "regional tax",
+       "amount": "2.02"
+      },
+      {
+       "id": "6d26d028-642d-f04f-1cb7-54574b097e9d",
+       "line_no": 4,
+       "line_type": "tax",
+       "description": "local tax",
+       "amount": "2.02"
+      },
+      {
+       "id": "844b2ce7-d648-7861-5d7d-1cda8c6c3125",
+       "line_no": 5,
+       "line_type": "credit",
+       "description": "credit notes",
+       "amount": "-53.04"
+      }
+     ],
+     "dunning_attempts": 0
+    },
+    "rating_period": {
+     "id": "93503474-dde4-608b-cda9-1a7dbeedb1df",
+     "has_rating": true,
+     "billable_units": 0
+    }
+   },
+   "credit_drawn_target": "53.04",
+   "credit_drawn_eq_min_available_gross_target": true,
+   "drawdown_order_issuedOn_then_id_target": true,
+   "no_remaining_above_amount_or_below_zero_target": true,
+   "credit_note_ids_and_amounts_unchanged_target": true,
+   "other_tenants_credit_notes_unchanged_target": true,
+   "invoice_created_target": true,
+   "invoice_id_follows_md5_period_id_invoice_target": true,
+   "line_ids_follow_md5_invoice_id_line_no_target": true,
+   "lines_target": 5,
+   "line_types_target": [
+    "plan",
+    "usage",
+    "tax",
+    "tax",
+    "credit"
+   ],
+   "invoice_total_eq_subtotal_plus_tax_minus_credit_target": true,
+   "credit_line_amount_eq_minus_drawn_target": true,
+   "issuedAt_eq_period_end_target": true,
+   "dunning_attempts_empty_on_new_invoice_target": true,
+   "rating_period_finalized_target": true,
+   "target_eq_transcript_probe_invoice_state": true,
+   "transcript_fingerprints_current": true,
+   "target_eq_transcript_business_fields": true
+  },
+  "INVOICE-005": {
+   "entrypoint": "billing.sp_issue_invoice",
+   "inputs": {
+    "period_end": "2026-02-28",
+    "period_start": "2026-02-01",
+    "tenant_id": "00000000-0000-0000-0000-000000000006"
+   },
+   "legacy_transcript": {
+    "business_fields": {
+     "status": "issued",
+     "tax": "4.50",
+     "total": "59.06"
+    },
+    "probes": {
+     "invoice_state": [
+      {
+       "status": "issued",
+       "subtotal": "54.56",
+       "tax": "4.50",
+       "total": "59.06"
+      }
+     ]
+    }
+   },
+   "target_post_state": {
+    "credit_notes_before": [],
+    "credit_notes": [],
+    "invoice": {
+     "id": "ec9434d5-6b88-cc45-051d-2187049adc12",
+     "status": "issued",
+     "subtotal": "54.56",
+     "tax": "4.50",
+     "total": "59.06",
+     "issued_at": "2026-02-28T00:00:00+00:00",
+     "lines": [
+      {
+       "id": "fdcfba40-b3a1-f198-fcd8-51e75ae397a8",
+       "line_no": 1,
+       "line_type": "plan",
+       "description": "STARTER",
+       "amount": "49.00"
+      },
+      {
+       "id": "1220931c-9c09-2468-c822-d45db75bc793",
+       "line_no": 2,
+       "line_type": "usage",
+       "description": "usage overage",
+       "amount": "5.56"
+      },
+      {
+       "id": "3e6bc074-d34b-f5d4-35f1-95149cb98694",
+       "line_no": 3,
+       "line_type": "tax",
+       "description": "regional tax",
+       "amount": "2.25"
+      },
+      {
+       "id": "c68623db-5cde-9799-4d76-3f694a102ea0",
+       "line_no": 4,
+       "line_type": "tax",
+       "description": "local tax",
+       "amount": "2.25"
+      },
+      {
+       "id": "9a10b2cd-9be8-a511-4f73-a78d427f651e",
+       "line_no": 5,
+       "line_type": "credit",
+       "description": "credit notes",
+       "amount": "0.00"
+      }
+     ],
+     "dunning_attempts": 0
+    },
+    "rating_period": {
+     "id": "1b886a8c-7ca6-751b-6c6f-d9435d323eb1",
+     "has_rating": true,
+     "billable_units": 101
+    }
+   },
+   "credit_drawn_target": "0.00",
+   "credit_drawn_eq_min_available_gross_target": true,
+   "drawdown_order_issuedOn_then_id_target": true,
+   "no_remaining_above_amount_or_below_zero_target": true,
+   "credit_note_ids_and_amounts_unchanged_target": true,
+   "other_tenants_credit_notes_unchanged_target": true,
+   "invoice_created_target": true,
+   "invoice_id_follows_md5_period_id_invoice_target": true,
+   "line_ids_follow_md5_invoice_id_line_no_target": true,
+   "lines_target": 5,
+   "line_types_target": [
+    "plan",
+    "usage",
+    "tax",
+    "tax",
+    "credit"
+   ],
+   "invoice_total_eq_subtotal_plus_tax_minus_credit_target": true,
+   "credit_line_amount_eq_minus_drawn_target": true,
+   "issuedAt_eq_period_end_target": true,
+   "dunning_attempts_empty_on_new_invoice_target": true,
+   "rating_period_finalized_target": true,
+   "target_eq_transcript_probe_invoice_state": true,
+   "transcript_fingerprints_current": true,
+   "target_eq_transcript_business_fields": true
+  }
+ },
+ "summary": {
+  "scenarios": [
+   "DUNNING-002",
+   "DUNNING-003",
+   "schedule_twice_same_as_of",
+   "DUNNING-004",
+   "DUNNING-005",
+   "INVOICE-003",
+   "INVOICE-004",
+   "INVOICE-005"
+  ],
+  "all_checks_pass": true,
+  "failed": [],
+  "legacy_side": "committed transcripts (recorded legacy post-state); no legacy database was written or called",
+  "atlas_touched": false
+ }
+}
