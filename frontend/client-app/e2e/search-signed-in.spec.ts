@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+import { randomBytes } from "node:crypto";
 import { uniqueEmail } from "./fixtures/test-helpers";
 
 const API_URL = process.env.API_URL || "http://localhost:8080";
@@ -9,7 +10,7 @@ interface Session {
 }
 
 async function registerViaApi(request: APIRequestContext): Promise<Session> {
-  const password = `Pw-${Math.random().toString(36).slice(2, 10)}!9A`;
+  const password = `Pw-${randomBytes(8).toString("hex")}!9A`;
   const res = await request.post(`${API_URL}/api/v1/auth/register`, {
     data: { email: uniqueEmail(), password, displayName: "Search QA" },
   });
@@ -54,7 +55,7 @@ async function waitForIndexed(request: APIRequestContext, session: Session, q: s
 }
 
 function tag() {
-  return Math.random().toString(36).slice(2, 10);
+  return randomBytes(4).toString("hex");
 }
 
 test.describe("Search (signed in)", () => {
