@@ -9,7 +9,6 @@
 # TODO ETL-167: Handle DynamoDB throughput throttling properly (2020-04-10)
 # TODO ETL-199: This script has no tests whatsoever (never prioritized)
 
-import configparser
 import gzip
 import io
 import json
@@ -29,16 +28,17 @@ class DecimalEncoder(json.JSONEncoder):
             return float(o)
         return super().default(o)
 
+from etl_config import load_config
+
 
 def main():
     print("[%s] audit_archive_weekly.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
+    config = load_config()
 
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    aws_access_key = config.get("aws", "access_key", required=False)
+    aws_secret_key = config.get("aws", "secret_key", required=False)
     aws_region = config.get("aws", "region")
 
     archive_bucket = config.get("s3", "archive_bucket")

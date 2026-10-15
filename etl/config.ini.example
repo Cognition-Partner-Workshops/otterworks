@@ -1,0 +1,35 @@
+# OtterWorks ETL configuration template (ETL-142).
+#
+# Copy to /opt/etl/config.ini (or point ETL_CONFIG_PATH at your copy) and fill
+# in the non-secret settings. The real config.ini is git-ignored -- never commit it.
+#
+# Credentials do NOT belong in this file. Supply them as environment variables
+# (e.g. in /opt/etl/.env, which run.sh sources, or injected by a secrets manager):
+#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY  (optional; omit to use the instance role)
+#   ETL_DB_PASSWORD
+#   MEILISEARCH_API_KEY
+# Any option below can also be overridden with ETL_<SECTION>_<OPTION>.
+[aws]
+access_key =
+secret_key =
+region = us-east-1
+
+[database]
+host = analytics-db.example.internal
+port = 5432
+database = otterworks_analytics
+user = etl_user
+password =
+
+[services]
+document_service_url = http://document-service:8083
+file_service_url = http://file-service:8082
+meilisearch_url = http://meilisearch:7700
+meilisearch_api_key =
+
+[s3]
+data_lake_bucket = otterworks-data-lake
+file_storage_bucket = otterworks-file-storage
+quarantine_bucket = otterworks-file-quarantine
+archive_bucket = otterworks-audit-archive
+analytics_prefix = analytics/daily
