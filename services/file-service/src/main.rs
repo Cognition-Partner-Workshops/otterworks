@@ -10,6 +10,8 @@ mod handlers;
 mod metadata;
 mod middleware;
 mod models;
+#[cfg(test)]
+mod share_tests;
 mod storage;
 
 #[actix_web::main]
