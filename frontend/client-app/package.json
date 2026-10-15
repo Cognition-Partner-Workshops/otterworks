@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npx playwright test",
+    "test:a11y": "PUBLIC_PAGES_BUILT=1 playwright test --grep @public-pages-a11y",
     "test:e2e:headed": "npx playwright test --headed",
     "test:bdd": "TS_NODE_PROJECT=bdd/tsconfig.bdd.json npx cucumber-js"
   },
@@ -50,6 +51,7 @@
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@capacitor/cli": "^8.4.2",
     "@cucumber/cucumber": "^12.8.2",
     "@playwright/test": "^1.59.1",
