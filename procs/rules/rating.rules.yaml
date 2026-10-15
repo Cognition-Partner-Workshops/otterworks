@@ -1,0 +1,72 @@
+module: rating
+rules:
+  - id: RATING-001
+    statement: Used units are the integer sum of the tenant's usage events whose occurred_at date (UTC) falls inside the period; the plan is the one of the latest-starting subscription overlapping the period.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [31, 46]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units, quota_units]
+    confidence: high
+    scenarios: [RATING-001]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w2-b01 extraction; merge authority is procs parity PASS=8 plus the recon harness PASS.
+  - id: RATING-002
+    statement: Rollover is the sum of rollover_units over the tenant's rated periods that start within the three months before period_start, capped at twice the plan's included units.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [48, 56]
+    inputs: [tenant_id, period_start]
+    outputs: [rollover_units]
+    confidence: high
+    scenarios: [RATING-002]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w2-b01 extraction. The window uses PostgreSQL month arithmetic (day clamped to month end).
+  - id: RATING-003
+    statement: Billable units are used minus rollover minus included units, floored at zero; the first 101 billable units are charged at the overage rate and the rest at 1.5x, rounded half away from zero to cents. A subscription suspended inside the period prorates billable units and amount by the days from the suspension date to period end.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [57, 73]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [billable_units, first_tier_units, second_tier_units, overage_amount]
+    confidence: high
+    scenarios: [RATING-003, RATING-004, RATING-005, RATING-006]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w2-b01 extraction. RATING-003 (tenant 2, suspended on 2026-02-15) exercises the proration branch; RATING-004/005/006 the tier boundary at 101 units.
+  - id: RATING-004
+    statement: The usage summary groups the period's usage events by kind, ordered by kind, with the event count and the unit sum per kind.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [79, 93]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [kind, event_count, units]
+    confidence: high
+    scenarios: [RATING-007]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w2-b01 extraction.
+  - id: RATING-005
+    statement: Finalizing a period is idempotent. The period is keyed by (tenant_id, period_start) and gets id md5(tenant_id || period_start) when new (an existing period keeps its id and only period_end is updated); a new result gets id md5(period_id) and stores used, quota, max(quota - used, 0) as rollover, billable, overage and created_at = period_end; re-finalizing a period that already has a result (imported or finalized earlier) overwrites used, rollover, billable and overage only and keeps its id, subscription, quota and created_at. period_end must not precede period_start.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [95, 139]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units, quota_units, rollover_units, billable_units, overage_amount]
+    confidence: high
+    scenarios: [RATING-008]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w2-b01 extraction. rating_results is the `rating` subdocument of ratingPeriods (mapping spec v2), so the period and its result are one document write.

@@ -11,8 +11,17 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from app.config import settings
 from app.db import client, database, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import MissingReferenceError, MongoPlansRepository
+from app.domain import (
+    InvalidPeriodError,
+    NoSubscriptionError,
+    catalog,
+    change_plan,
+    entitlement,
+    finalize_rating,
+    usage_rating,
+    usage_summary,
+)
+from app.repository import MissingReferenceError, MongoPlansRepository, MongoRatingRepository
 
 app = FastAPI(title=settings.app_name)
 app.add_middleware(
@@ -27,6 +36,11 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class RatingPeriod(BaseModel):
+    period_start: date
+    period_end: date
 
 
 @app.get("/health")
@@ -111,4 +125,65 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             }
             for item in subscriptions
         ],
+    }
+
+
+@app.get("/api/tenants/{tenant_id}/rating")
+def get_usage_rating(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    try:
+        row = usage_rating(MongoRatingRepository(database()), tenant_id, period_start, period_end)
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail="no subscription in the period") from error
+    return {
+        "tenant_id": str(row.tenant_id),
+        "period_start": row.period_start.isoformat(),
+        "period_end": row.period_end.isoformat(),
+        "used_units": row.used_units,
+        "quota_units": row.quota_units,
+        "rollover_units": row.rollover_units,
+        "billable_units": row.billable_units,
+        "first_tier_units": row.first_tier_units,
+        "second_tier_units": row.second_tier_units,
+        "overage_amount": f"{row.overage_amount:.2f}",
+    }
+
+
+@app.get("/api/tenants/{tenant_id}/usage-summary")
+def get_usage_summary(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    rows = usage_summary(MongoRatingRepository(database()), tenant_id, period_start, period_end)
+    return [{"kind": row.kind, "event_count": row.event_count, "units": row.units} for row in rows]
+
+
+@app.post("/api/tenants/{tenant_id}/rating-periods")
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingPeriod) -> dict:
+    repository = MongoRatingRepository(database())
+    try:
+        result = repository.run_in_transaction(
+            lambda: finalize_rating(repository, tenant_id, request.period_start, request.period_end)
+        )
+    except InvalidPeriodError as error:
+        raise HTTPException(status_code=400, detail="period_end is before period_start") from error
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail="no subscription in the period") from error
+    row = {
+        "used_units": result.used_units,
+        "quota_units": result.quota_units,
+        "rollover_units": result.rollover_units,
+        "billable_units": result.billable_units,
+        "overage_amount": f"{result.overage_amount:.2f}",
+    }
+    return {
+        "period_id": str(result.period_id),
+        "result_id": str(result.result_id),
+        "subscription_id": str(result.subscription_id),
+        **row,
+        "rating_result": [row],
     }

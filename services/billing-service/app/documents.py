@@ -9,7 +9,7 @@ from typing import Any
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel
 
-COLLECTIONS = ("plans", "tenants", "subscriptions")
+COLLECTIONS = ("plans", "tenants", "subscriptions", "usageEvents", "ratingPeriods")
 
 
 def bson_date(value: date | None) -> datetime | None:
@@ -74,6 +74,41 @@ def subscription_document(row: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def usage_event_document(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "_id": row["id"],
+        "tenantId": row["tenant_id"],
+        "occurredAt": row["occurred_at"],
+        "units": row["units"],
+        "kind": row["kind"],
+    }
+
+
+def rating_result_document(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "subscriptionId": row["subscription_id"],
+        "usedUnits": row["used_units"],
+        "quotaUnits": row["quota_units"],
+        "rolloverUnits": row["rollover_units"],
+        "billableUnits": row["billable_units"],
+        "overageAmount": bson_decimal(row["overage_amount"]),
+        "createdAt": row["created_at"],
+    }
+
+
+def rating_period_document(row: dict[str, Any], result: dict[str, Any] | None) -> dict[str, Any]:
+    return _compact(
+        {
+            "_id": row["id"],
+            "tenantId": row["tenant_id"],
+            "periodStart": bson_date(row["period_start"]),
+            "periodEnd": bson_date(row["period_end"]),
+            "rating": rating_result_document(result) if result is not None else None,
+        }
+    )
+
+
 INDEXES: dict[str, list[IndexModel]] = {
     "plans": [
         IndexModel([("monthlyFee", ASCENDING), ("code", ASCENDING)]),
@@ -94,6 +129,10 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("tenantId", ASCENDING), ("endsOn", ASCENDING), ("startsOn", ASCENDING)]),
         IndexModel([("endsOn", ASCENDING), ("startsOn", ASCENDING)]),
         IndexModel([("planId", ASCENDING)]),
+    ],
+    "usageEvents": [IndexModel([("tenantId", ASCENDING), ("occurredAt", ASCENDING)])],
+    "ratingPeriods": [
+        IndexModel([("tenantId", ASCENDING), ("periodStart", ASCENDING)], unique=True),
     ],
 }
 
@@ -164,5 +203,55 @@ VALIDATORS: dict[str, dict[str, Any]] = {
                 "suspendedOn": _DATE,
             },
         }
+    },
+    "usageEvents": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["_id", "tenantId", "occurredAt", "units", "kind"],
+            "properties": {
+                "_id": _UUID,
+                "tenantId": _UUID,
+                "occurredAt": _DATE,
+                "units": {"bsonType": "int", "minimum": 1},
+                "kind": {"enum": ["api", "storage", "compute"]},
+            },
+        }
+    },
+    "ratingPeriods": {
+        # rating_periods CHECK (period_end >= period_start)
+        "$expr": {"$lte": ["$periodStart", "$periodEnd"]},
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["_id", "tenantId", "periodStart", "periodEnd"],
+            "properties": {
+                "_id": _UUID,
+                "tenantId": _UUID,
+                "periodStart": _DATE,
+                "periodEnd": _DATE,
+                "rating": {
+                    "bsonType": "object",
+                    "required": [
+                        "id",
+                        "subscriptionId",
+                        "usedUnits",
+                        "quotaUnits",
+                        "rolloverUnits",
+                        "billableUnits",
+                        "overageAmount",
+                        "createdAt",
+                    ],
+                    "properties": {
+                        "id": _UUID,
+                        "subscriptionId": _UUID,
+                        "usedUnits": {"bsonType": "int", "minimum": 0},
+                        "quotaUnits": {"bsonType": "int", "minimum": 0},
+                        "rolloverUnits": {"bsonType": "int", "minimum": 0},
+                        "billableUnits": {"bsonType": "int", "minimum": 0},
+                        "overageAmount": _DECIMAL,
+                        "createdAt": _DATE,
+                    },
+                },
+            },
+        },
     },
 }

@@ -1,16 +1,23 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, TypeVar
 from uuid import UUID
 
+from pymongo import ReturnDocument
 from pymongo.client_session import ClientSession
 from pymongo.database import Database
 
-from app.documents import bson_date
-from app.domain import EntitlementRow, PlanRow, SubscriptionRow
+from app.documents import bson_date, bson_decimal
+from app.domain import (
+    EntitlementRow,
+    PlanRow,
+    RatingResultRow,
+    SubscriptionRow,
+    UsageSummaryRow,
+)
 
 T = TypeVar("T")
 
@@ -128,4 +135,132 @@ class MongoPlansRepository:
                 "status": status,
             },
             session=self.session,
+        )
+
+
+def _day_bounds(period_start: date, period_end: date) -> dict[str, datetime]:
+    # occurred_at::date BETWEEN start AND end, with the legacy session timezone UTC.
+    if period_end == date.max:
+        return {"$gte": bson_date(period_start), "$lte": datetime.max.replace(tzinfo=UTC)}
+    return {"$gte": bson_date(period_start), "$lt": bson_date(period_end + timedelta(days=1))}
+
+
+class MongoRatingRepository(MongoPlansRepository):
+    """Rating reads plans and subscriptions only through the Plans repository it extends;
+    it owns usageEvents and ratingPeriods (rating_results embedded as `rating`)."""
+
+    def sum_usage_units(self, tenant_id: UUID, period_start: date, period_end: date) -> int:
+        pipeline = [
+            {
+                "$match": {
+                    "tenantId": tenant_id,
+                    "occurredAt": _day_bounds(period_start, period_end),
+                }
+            },
+            {"$group": {"_id": None, "units": {"$sum": "$units"}}},
+        ]
+        rows = list(self.database.usageEvents.aggregate(pipeline, session=self.session))
+        return int(rows[0]["units"]) if rows else 0
+
+    def usage_by_kind(
+        self, tenant_id: UUID, period_start: date, period_end: date
+    ) -> list[UsageSummaryRow]:
+        pipeline = [
+            {
+                "$match": {
+                    "tenantId": tenant_id,
+                    "occurredAt": _day_bounds(period_start, period_end),
+                }
+            },
+            {"$group": {"_id": "$kind", "eventCount": {"$sum": 1}, "units": {"$sum": "$units"}}},
+            {"$sort": {"_id": 1}},
+        ]
+        return [
+            UsageSummaryRow(kind=row["_id"], event_count=row["eventCount"], units=int(row["units"]))
+            for row in self.database.usageEvents.aggregate(pipeline, session=self.session)
+        ]
+
+    def sum_prior_rollover_units(
+        self, tenant_id: UUID, window_start: date, period_start: date
+    ) -> int:
+        pipeline = [
+            {
+                "$match": {
+                    "tenantId": tenant_id,
+                    "periodStart": {
+                        "$gte": bson_date(window_start),
+                        "$lt": bson_date(period_start),
+                    },
+                    "rating": {"$exists": True},
+                }
+            },
+            {"$group": {"_id": None, "rolloverUnits": {"$sum": "$rating.rolloverUnits"}}},
+        ]
+        rows = list(self.database.ratingPeriods.aggregate(pipeline, session=self.session))
+        return int(rows[0]["rolloverUnits"]) if rows else 0
+
+    def upsert_rating_period(
+        self, tenant_id: UUID, period_id: UUID, period_start: date, period_end: date
+    ) -> UUID:
+        # ON CONFLICT (tenant_id, period_start) DO UPDATE SET period_end: an existing period
+        # keeps its id, a new one gets the legacy md5 id.
+        document = self.database.ratingPeriods.find_one_and_update(
+            {"tenantId": tenant_id, "periodStart": bson_date(period_start)},
+            {
+                "$set": {"periodEnd": bson_date(period_end)},
+                "$setOnInsert": {"_id": period_id},
+            },
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+            projection={"_id": 1},
+            session=self.session,
+        )
+        return document["_id"]
+
+    def upsert_rating_result(self, result: RatingResultRow, created_at: date) -> RatingResultRow:
+        # ON CONFLICT (id) DO UPDATE touches only used, rollover, billable and overage; an
+        # existing result (imported or finalized earlier) keeps its id, subscription, quota
+        # and created_at. The persisted row is returned.
+        rated = {
+            "rating.usedUnits": result.used_units,
+            "rating.rolloverUnits": result.rollover_units,
+            "rating.billableUnits": result.billable_units,
+            "rating.overageAmount": bson_decimal(result.overage_amount),
+        }
+        first_write = {
+            "rating.id": result.result_id,
+            "rating.subscriptionId": result.subscription_id,
+            "rating.quotaUnits": result.quota_units,
+            "rating.createdAt": bson_date(created_at),
+        }
+        updated = self.database.ratingPeriods.update_one(
+            {"_id": result.period_id, "rating": {"$exists": True}},
+            {"$set": rated},
+            session=self.session,
+        )
+        if updated.matched_count == 0:
+            self.database.ratingPeriods.update_one(
+                {"_id": result.period_id},
+                {"$set": {**first_write, **rated}},
+                session=self.session,
+            )
+        persisted = self.find_rating_result(result.period_id)
+        if persisted is None:
+            raise LookupError(f"rating period {result.period_id} vanished during finalize")
+        return persisted
+
+    def find_rating_result(self, period_id: UUID) -> RatingResultRow | None:
+        document = self.database.ratingPeriods.find_one({"_id": period_id}, session=self.session)
+        if document is None or "rating" not in document:
+            return None
+        rating = document["rating"]
+        return RatingResultRow(
+            period_id=document["_id"],
+            result_id=rating["id"],
+            subscription_id=rating["subscriptionId"],
+            used_units=rating["usedUnits"],
+            quota_units=rating["quotaUnits"],
+            rollover_units=rating["rolloverUnits"],
+            billable_units=rating["billableUnits"],
+            overage_amount=Decimal(rating["overageAmount"].to_decimal()),
         )
