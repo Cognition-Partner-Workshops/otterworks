@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import type { Logger } from 'pino';
 import type { PresenceHandler } from '../handlers/presence';
 import { createHttpAuthMiddleware, type AuthenticatedUser } from '../middleware/auth';
@@ -11,6 +12,15 @@ export function createPresenceRouter(
   logger: Logger,
 ): Router {
   const router = Router();
+  // Every presence request costs a document-service lookup per document, so cap it per client
+  router.use(
+    rateLimit({
+      windowMs: 60_000,
+      limit: 300,
+      standardHeaders: 'draft-7',
+      legacyHeaders: false,
+    }),
+  );
   router.use(createHttpAuthMiddleware(jwtSecret, logger));
 
   router.get('/documents/:id/presence', async (req, res) => {
