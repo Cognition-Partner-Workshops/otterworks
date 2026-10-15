@@ -1,5 +1,16 @@
-import { test, expect, type Browser, type BrowserContext, type Page, type WebSocketRoute } from "@playwright/test";
-import { uniqueEmail, loginUser, expectDashboard } from "./fixtures/test-helpers";
+import {
+  test,
+  expect,
+  type Browser,
+  type BrowserContext,
+  type Page,
+  type WebSocketRoute,
+} from "@playwright/test";
+import {
+  uniqueEmail,
+  loginUser,
+  expectDashboard,
+} from "./fixtures/test-helpers";
 
 const API_URL = process.env.API_URL || "http://localhost:8080";
 const PASSWORD = "Passw0rd!23";
@@ -10,7 +21,10 @@ interface Owner {
   documentId: string;
 }
 
-async function createOwnerWithDocument(browser: Browser, title: string): Promise<Owner> {
+async function createOwnerWithDocument(
+  browser: Browser,
+  title: string,
+): Promise<Owner> {
   const ctx = await browser.newContext();
   const displayName = `Collab QA ${Math.random().toString(36).slice(2, 6)}`;
   const email = uniqueEmail();
@@ -29,12 +43,17 @@ async function createOwnerWithDocument(browser: Browser, title: string): Promise
   return { email, displayName, documentId: id };
 }
 
-async function openEditor(context: BrowserContext, owner: Owner): Promise<Page> {
+async function openEditor(
+  context: BrowserContext,
+  owner: Owner,
+): Promise<Page> {
   const page = await context.newPage();
   await loginUser(page, owner.email, PASSWORD);
   await expectDashboard(page);
   await page.goto(`/documents/${owner.documentId}`);
-  await expect(page.getByText("All changes saved")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("All changes saved")).toBeVisible({
+    timeout: 15_000,
+  });
   return page;
 }
 
@@ -45,7 +64,9 @@ function editor(page: Page) {
 async function docText(page: Page): Promise<string> {
   return editor(page).evaluate((el) => {
     const clone = el.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll(".collaboration-cursor__caret").forEach((c) => c.remove());
+    clone
+      .querySelectorAll(".collaboration-cursor__caret")
+      .forEach((c) => c.remove());
     return clone.textContent ?? "";
   });
 }
@@ -63,7 +84,10 @@ async function typeAtEnd(page: Page, text: string) {
 }
 
 test.describe("Real-time collaboration (two sessions, one document)", () => {
-  test.skip(!!process.env.CI, "requires the local stack (gateway + collab-service)");
+  test.skip(
+    !!process.env.CI,
+    "requires the local stack (gateway + collab-service)",
+  );
 
   let owner: Owner;
   let left: BrowserContext;
@@ -88,7 +112,9 @@ test.describe("Real-time collaboration (two sessions, one document)", () => {
     await expect(editor(b)).toContainText("Hello from the left window");
 
     await typeAtEnd(b, " and the right one");
-    await expect(editor(a)).toContainText("Hello from the left window and the right one");
+    await expect(editor(a)).toContainText(
+      "Hello from the left window and the right one",
+    );
   });
 
   test("simultaneous typing in different places keeps both edits intact", async () => {
@@ -111,7 +137,9 @@ test.describe("Real-time collaboration (two sessions, one document)", () => {
 
     await Promise.all([typeAtEnd(a, "LEFT"), typeAtEnd(b, "RIGHT")]);
 
-    await expect.poll(async () => (await docText(a)) === (await docText(b))).toBe(true);
+    await expect
+      .poll(async () => (await docText(a)) === (await docText(b)))
+      .toBe(true);
     const merged = (await docText(a)).replace(/^base\s*/, "");
     expect([...merged].sort().join("")).toBe([..."LEFTRIGHT"].sort().join(""));
   });
@@ -148,7 +176,9 @@ test.describe("Real-time collaboration (two sessions, one document)", () => {
     await expect(editor(b)).not.toContainText("typed while offline");
 
     blocked = false;
-    await expect(a.getByText("All changes saved")).toBeVisible({ timeout: 20_000 });
+    await expect(a.getByText("All changes saved")).toBeVisible({
+      timeout: 20_000,
+    });
     await expect(editor(b)).toContainText("typed while offline");
   });
 
