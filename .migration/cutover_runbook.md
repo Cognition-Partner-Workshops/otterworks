@@ -4,7 +4,7 @@ Plan step `s6.2-catch-up-recon`, phase `p6-cutover`. Written and verified by Dev
 Subramanian** with the customer-held cutover principal. Nothing below has been executed: every Flask route
 still reads PostgreSQL, `billing_migration._connectivity_probe` still exists, and no consumer is repointed.
 
-**Who does what.** Dhrov executes sections 3–7 under decision `d-cutover-authorization` (open in `plan.yaml`).
+**Who does what.** Dhrov executes sections 3–7 under decision `d-cutover-authorization` (the board plan, approved in the Plan view; `plan.yaml` is not a repo file).
 Devin prepared the evidence (sections 1–2), writes nothing to the legacy estate ever
 (`.migration/authorizations.json` is `[]`), does not hold or request the cutover principal or the schema-owner
 `billing` password, does not run the repoint, the `_connectivity_probe` drop, or the rollback, and only
