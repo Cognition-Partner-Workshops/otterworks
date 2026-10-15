@@ -20,9 +20,10 @@
 #       [--ttl 8h] [--host-suffix demo.example.com] [--skip-db] \
 #       [--profile core|full]
 #
-# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
-#   are taken from the environment, else carried over from the tenant's existing
-#   Kubernetes Secrets on a redeploy, else generated for a brand-new tenant.
+# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE /
+#   ALERT_WEBHOOK_SECRET / CHAOS_SECRET are taken from the environment, else carried
+#   over from the tenant's existing Kubernetes Secrets on a redeploy, else generated
+#   for a brand-new tenant.
 # ------------------------------------------------------------------------------
 set -euo pipefail
 
@@ -163,6 +164,16 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
 fi
+# admin-service rejects alert webhooks / chaos requests when these are unset.
+for shared_secret in ALERT_WEBHOOK_SECRET CHAOS_SECRET; do
+  if [ -z "${!shared_secret:-}" ]; then
+    value="$(existing_tenant_secret admin-service-secrets "${shared_secret}")" ||
+      { err "Refusing to rotate ${shared_secret}; set it explicitly or retry"; exit 1; }
+    [ -n "${value}" ] || value="$(openssl rand -hex 32)"
+    printf -v "${shared_secret}" '%s' "${value}"
+  fi
+done
+unset shared_secret value
 
 # ---------- Namespace + isolation guardrails ----------
 log "Creating namespace ${NS} with quota / limits / network policy..."
