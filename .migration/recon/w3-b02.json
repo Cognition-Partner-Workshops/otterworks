@@ -1,0 +1,14 @@
+{
+  "batch": "w3-b02",
+  "status": "PASS",
+  "recon_results": [
+    ".migration/recon/dunning/result.json"
+  ],
+  "write_targets": [
+    "billing_migration.notifications"
+  ],
+  "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2056",
+  "branch": "devin/1792027615-w3-b02-dunning",
+  "failure_class": "",
+  "one_line_summary": "dunning: live PASS, 0 findings, merge_eligible true; procs parity dunning 5/5 (PASS=5 FAIL=0 SKIP=0; full run PASS=24 FAIL=0 SKIP=0); manifest_sha 399f5a4f0b82; recon on mongo-migration-plugin main d6d72e8"
+}
