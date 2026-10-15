@@ -58,7 +58,8 @@ class AuthQaIntegrationTest {
         objectMapper.writeValueAsString(
             Map.of("email", "pw@otterworks.dev", "password", password, "displayName", "QA"));
     return mockMvc
-        .perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+        .perform(
+            post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
         .andReturn()
         .getResponse()
         .getStatus();
@@ -88,7 +89,8 @@ class AuthQaIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"a@otterworks.dev\",\"password\":\"password123\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("displayName")));
+        .andExpect(
+            jsonPath("$.message").value(org.hamcrest.Matchers.containsString("displayName")));
   }
 
   @Test
@@ -194,7 +196,8 @@ class AuthQaIntegrationTest {
         objectMapper.writeValueAsString(
             Map.of("email", "DUP@otterworks.dev", "password", PASSWORD, "displayName", "QA"));
     mockMvc
-        .perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+        .perform(
+            post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
         .andExpect(status().isBadRequest());
   }
 

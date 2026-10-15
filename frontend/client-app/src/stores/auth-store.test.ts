@@ -21,7 +21,7 @@ function captureAuthHeader(method: "get" | "post", path: string, status = 200) {
       return status === 204
         ? new HttpResponse(null, { status })
         : HttpResponse.json({ error: "x" }, { status });
-    })
+    }),
   );
   return seen;
 }
@@ -91,11 +91,14 @@ describe("auth store logout", () => {
   // [REAL] ui-logout-no-token: logout() removes the tokens synchronously before the async
   // axios request interceptor runs, so POST /auth/logout goes out without a Bearer header
   // and auth-service never revokes the refresh token.
-  it.fails("sends the access token to POST /auth/logout so the server can revoke it", async () => {
-    seedTokens();
-    const seen = captureAuthHeader("post", "*/api/v1/auth/logout", 204);
-    useAuthStore.getState().logout();
-    await vi.waitFor(() => expect(seen.length).toBe(1));
-    expect(seen[0]).toBe(`Bearer ${ACCESS}`);
-  });
+  it.fails(
+    "sends the access token to POST /auth/logout so the server can revoke it",
+    async () => {
+      seedTokens();
+      const seen = captureAuthHeader("post", "*/api/v1/auth/logout", 204);
+      useAuthStore.getState().logout();
+      await vi.waitFor(() => expect(seen.length).toBe(1));
+      expect(seen[0]).toBe(`Bearer ${ACCESS}`);
+    },
+  );
 });
