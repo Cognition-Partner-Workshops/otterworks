@@ -296,6 +296,9 @@ build_helm_args() {
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
   fi
+  if [ "$service" = "document-service" ] && [ -n "${SHARE_LINK_SECRET:-}" ]; then
+    add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET}"
+  fi
 
   local sns_topic=""; local sqs_notif=""
   if [ "${T_WIRE_EVENTING}" = "true" ]; then
