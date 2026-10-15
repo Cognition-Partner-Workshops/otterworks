@@ -17,7 +17,6 @@ import pytest
 import socketio
 import websocket
 
-
 pytestmark = [pytest.mark.api_flow, pytest.mark.websocket]
 
 # Yjs updates generated with yjs 13 (Y.Text "qa" inserts by clientIDs 4242 / 4343).
@@ -33,7 +32,10 @@ REAL_NO_DOC_AUTHZ = (
 
 
 def _socketio_url(base_url: str) -> str:
-    return os.getenv("OTTERWORKS_COLLAB_WS_URL", base_url.replace("http://", "ws://").replace("https://", "wss://"))
+    return os.getenv(
+        "OTTERWORKS_COLLAB_WS_URL",
+        base_url.replace("http://", "ws://").replace("https://", "wss://"),
+    )
 
 
 def _ywebsocket_base() -> str:
@@ -146,13 +148,19 @@ def test_socketio_accepts_access_token_through_gateway(api_client, sockets):
     assert recorder.client.connected
 
 
-@pytest.mark.xfail(strict=True, reason="[REAL] collab-service accepts refresh tokens as access tokens")
+@pytest.mark.xfail(
+    strict=True, reason="[REAL] collab-service accepts refresh tokens as access tokens"
+)
 def test_socketio_rejects_refresh_token(api_client, base_url):
     user = api_client.register_user("collab-qa-refresh")
     client = socketio.Client(reconnection=False, request_timeout=3)
     try:
         with pytest.raises(socketio.exceptions.ConnectionError):
-            client.connect(_socketio_url(base_url), auth={"token": user.refresh_token}, transports=["websocket"])
+            client.connect(
+                _socketio_url(base_url),
+                auth={"token": user.refresh_token},
+                transports=["websocket"],
+            )
     finally:
         if client.connected:
             client.disconnect()
@@ -161,7 +169,9 @@ def test_socketio_rejects_refresh_token(api_client, base_url):
 # --- Socket.IO: co-editing, history sync, presence ------------------------------------
 
 
-def test_two_users_coedit_yjs_update_and_late_joiner_gets_full_state(api_client, sockets):
+def test_two_users_coedit_yjs_update_and_late_joiner_gets_full_state(
+    api_client, sockets
+):
     owner = api_client.register_user("collab-qa-owner")
     document = api_client.create_document(owner, f"Coedit {api_client.run_id}", "body")
     doc_id = document["id"]
@@ -176,7 +186,9 @@ def test_two_users_coedit_yjs_update_and_late_joiner_gets_full_state(api_client,
     assert relayed["update"] == YJS_UPDATE_HELLO
     assert not a.got("document-update"), "sender must not receive its own update"
 
-    b.client.emit("document-update", {"documentId": doc_id, "update": YJS_UPDATE_SECOND})
+    b.client.emit(
+        "document-update", {"documentId": doc_id, "update": YJS_UPDATE_SECOND}
+    )
     a.wait_for("document-update", lambda d: d["update"] == YJS_UPDATE_SECOND)
 
     late = sockets(owner.access_token)
@@ -187,13 +199,21 @@ def test_two_users_coedit_yjs_update_and_late_joiner_gets_full_state(api_client,
 
 def test_invalid_crdt_update_is_rejected_and_not_broadcast(api_client, sockets):
     owner = api_client.register_user("collab-qa-badcrdt")
-    doc_id = api_client.create_document(owner, f"Bad CRDT {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"Bad CRDT {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     b = sockets(owner.access_token)
     a.join(doc_id)
     b.join(doc_id)
 
-    a.client.emit("document-update", {"documentId": doc_id, "update": base64.b64encode(b"\xff\xff\xff\xff").decode()})
+    a.client.emit(
+        "document-update",
+        {
+            "documentId": doc_id,
+            "update": base64.b64encode(b"\xff\xff\xff\xff").decode(),
+        },
+    )
     a.wait_for("document-update-error", lambda d: d["documentId"] == doc_id)
     time.sleep(0.5)
     assert not b.got("document-update")
@@ -201,7 +221,9 @@ def test_invalid_crdt_update_is_rejected_and_not_broadcast(api_client, sockets):
 
 def test_presence_tracks_join_and_leave(api_client, sockets):
     owner = api_client.register_user("collab-qa-presence")
-    doc_id = api_client.create_document(owner, f"Presence {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"Presence {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     b = sockets(owner.access_token)
     a.join(doc_id)
@@ -214,8 +236,12 @@ def test_presence_tracks_join_and_leave(api_client, sockets):
     assert {u["userId"] for u in presence["users"]} == {owner.id}
     assert all(u["displayName"] == owner.display_name for u in presence["users"])
 
-    active = api_client.client.get("/api/v1/collab/documents", headers=owner.auth_headers).json()
-    assert any(d["documentId"] == doc_id and d["userCount"] == 2 for d in active["documents"])
+    active = api_client.client.get(
+        "/api/v1/collab/documents", headers=owner.auth_headers
+    ).json()
+    assert any(
+        d["documentId"] == doc_id and d["userCount"] == 2 for d in active["documents"]
+    )
 
     b.close()
     a.wait_for("user-left", lambda d: d["userId"] == owner.id)
@@ -235,7 +261,10 @@ def test_cursor_and_typing_indicators_fan_out(api_client, sockets):
     a.join(doc_id)
     b.join(doc_id)
 
-    a.client.emit("cursor-update", {"documentId": doc_id, "cursor": {"index": 3, "length": 0}, "selection": None})
+    a.client.emit(
+        "cursor-update",
+        {"documentId": doc_id, "cursor": {"index": 3, "length": 0}, "selection": None},
+    )
     cursor = b.wait_for("cursor-update")
     assert cursor["cursor"] == {"index": 3, "length": 0}
     assert cursor["displayName"] == owner.display_name
@@ -251,7 +280,9 @@ def test_cursor_and_typing_indicators_fan_out(api_client, sockets):
 
 def test_comment_add_update_delete_broadcast(api_client, sockets):
     owner = api_client.register_user("collab-qa-comments")
-    doc_id = api_client.create_document(owner, f"Comments {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"Comments {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     b = sockets(owner.access_token)
     a.join(doc_id)
@@ -262,7 +293,13 @@ def test_comment_add_update_delete_broadcast(api_client, sockets):
         "comment-add",
         {
             "documentId": doc_id,
-            "comment": {"id": comment_id, "threadId": comment_id, "content": "LGTM", "rangeStart": 0, "rangeEnd": 4},
+            "comment": {
+                "id": comment_id,
+                "threadId": comment_id,
+                "content": "LGTM",
+                "rangeStart": 0,
+                "rangeEnd": 4,
+            },
             # A spoofed author must be overwritten by the server.
         },
     )
@@ -272,7 +309,10 @@ def test_comment_add_update_delete_broadcast(api_client, sockets):
     assert added_b["author"] == {"userId": owner.id, "displayName": owner.display_name}
     assert added_b["documentId"] == doc_id and added_b["createdAt"]
 
-    a.client.emit("comment-update", {"documentId": doc_id, "commentId": comment_id, "content": "LGTM!"})
+    a.client.emit(
+        "comment-update",
+        {"documentId": doc_id, "commentId": comment_id, "content": "LGTM!"},
+    )
     updated = b.wait_for("comment-updated", lambda d: d["commentId"] == comment_id)
     assert updated["content"] == "LGTM!" and updated["updatedBy"]["userId"] == owner.id
 
@@ -283,7 +323,9 @@ def test_comment_add_update_delete_broadcast(api_client, sockets):
 
 def test_document_service_comment_rest_crud(api_client):
     owner = api_client.register_user("collab-qa-rest-comment")
-    doc_id = api_client.create_document(owner, f"REST comments {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(
+        owner, f"REST comments {api_client.run_id}", "x"
+    )["id"]
     created = api_client.client.post(
         f"/api/v1/documents/{doc_id}/comments",
         headers=owner.auth_headers,
@@ -291,19 +333,34 @@ def test_document_service_comment_rest_crud(api_client):
     )
     assert created.status_code == 201, created.text
     comment = created.json()
-    listed = api_client.client.get(f"/api/v1/documents/{doc_id}/comments", headers=owner.auth_headers)
+    listed = api_client.client.get(
+        f"/api/v1/documents/{doc_id}/comments", headers=owner.auth_headers
+    )
     assert listed.status_code == 200
     assert [c["id"] for c in listed.json()] == [comment["id"]]
-    deleted = api_client.client.delete(f"/api/v1/documents/{doc_id}/comments/{comment['id']}", headers=owner.auth_headers)
+    deleted = api_client.client.delete(
+        f"/api/v1/documents/{doc_id}/comments/{comment['id']}",
+        headers=owner.auth_headers,
+    )
     assert deleted.status_code == 204
-    assert api_client.client.get(f"/api/v1/documents/{doc_id}/comments", headers=owner.auth_headers).json() == []
+    assert (
+        api_client.client.get(
+            f"/api/v1/documents/{doc_id}/comments", headers=owner.auth_headers
+        ).json()
+        == []
+    )
 
 
-@pytest.mark.xfail(strict=True, reason="[REAL] document-service comment routes trust body author_id and have no document authz")
+@pytest.mark.xfail(
+    strict=True,
+    reason="[REAL] document-service comment routes trust body author_id and have no document authz",
+)
 def test_document_service_comment_rest_rejects_outsider_and_spoofed_author(api_client):
     owner = api_client.register_user("collab-qa-rest-owner")
     outsider = api_client.register_user("collab-qa-rest-outsider")
-    doc_id = api_client.create_document(owner, f"Private comments {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(
+        owner, f"Private comments {api_client.run_id}", "x"
+    )["id"]
     spoofed = api_client.client.post(
         f"/api/v1/documents/{doc_id}/comments",
         headers=outsider.auth_headers,
@@ -317,7 +374,9 @@ def test_document_service_comment_rest_rejects_outsider_and_spoofed_author(api_c
 
 def test_snapshot_and_history_sync(api_client, sockets):
     owner = api_client.register_user("collab-qa-history")
-    doc_id = api_client.create_document(owner, f"History {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"History {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     b = sockets(owner.access_token)
     a.join(doc_id)
@@ -349,7 +408,9 @@ def test_snapshot_for_unloaded_document_errors(api_client, sockets):
 
 def test_reconnect_after_everyone_left_restores_persisted_state(api_client, sockets):
     owner = api_client.register_user("collab-qa-reconnect")
-    doc_id = api_client.create_document(owner, f"Reconnect {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"Reconnect {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     a.join(doc_id)
     a.client.emit("document-update", {"documentId": doc_id, "update": YJS_UPDATE_HELLO})
@@ -371,8 +432,12 @@ def test_reconnect_after_everyone_left_restores_persisted_state(api_client, sock
 
 def test_switching_documents_leaves_previous_room(api_client, sockets):
     owner = api_client.register_user("collab-qa-switch")
-    doc_one = api_client.create_document(owner, f"Switch 1 {api_client.run_id}", "x")["id"]
-    doc_two = api_client.create_document(owner, f"Switch 2 {api_client.run_id}", "x")["id"]
+    doc_one = api_client.create_document(owner, f"Switch 1 {api_client.run_id}", "x")[
+        "id"
+    ]
+    doc_two = api_client.create_document(owner, f"Switch 2 {api_client.run_id}", "x")[
+        "id"
+    ]
     watcher = sockets(owner.access_token)
     mover = sockets(owner.access_token)
     watcher.join(doc_one)
@@ -390,7 +455,9 @@ def test_switching_documents_leaves_previous_room(api_client, sockets):
 def test_outsider_cannot_join_and_read_someone_elses_document(api_client, sockets):
     owner = api_client.register_user("collab-qa-authz-owner")
     outsider = api_client.register_user("collab-qa-authz-outsider")
-    doc_id = api_client.create_document(owner, f"Private {api_client.run_id}", "x")["id"]
+    doc_id = api_client.create_document(owner, f"Private {api_client.run_id}", "x")[
+        "id"
+    ]
     a = sockets(owner.access_token)
     a.join(doc_id)
     a.client.emit("document-update", {"documentId": doc_id, "update": YJS_UPDATE_HELLO})
@@ -398,10 +465,15 @@ def test_outsider_cannot_join_and_read_someone_elses_document(api_client, socket
 
     intruder = sockets(outsider.access_token)
     ack = intruder.client.call("join-document", {"documentId": doc_id}, timeout=5)
-    assert ack.get("success") is False, "outsider was allowed into the owner's document room"
+    assert ack.get("success") is False, (
+        "outsider was allowed into the owner's document room"
+    )
 
 
-@pytest.mark.xfail(strict=True, reason=REAL_NO_DOC_AUTHZ + " (comment-add does not require room membership)")
+@pytest.mark.xfail(
+    strict=True,
+    reason=REAL_NO_DOC_AUTHZ + " (comment-add does not require room membership)",
+)
 def test_unjoined_socket_cannot_inject_comments(api_client, sockets):
     owner = api_client.register_user("collab-qa-inject-owner")
     outsider = api_client.register_user("collab-qa-inject-outsider")
@@ -412,13 +484,25 @@ def test_unjoined_socket_cannot_inject_comments(api_client, sockets):
     intruder = sockets(outsider.access_token)  # never joins the room
     intruder.client.emit(
         "comment-add",
-        {"documentId": doc_id, "comment": {"id": "evil", "threadId": "evil", "content": "spam", "rangeStart": 0, "rangeEnd": 0}},
+        {
+            "documentId": doc_id,
+            "comment": {
+                "id": "evil",
+                "threadId": "evil",
+                "content": "spam",
+                "rangeStart": 0,
+                "rangeEnd": 0,
+            },
+        },
     )
     time.sleep(1.0)
     assert not [c for c in a.got("comment-added") if c["id"] == "evil"]
 
 
-@pytest.mark.xfail(strict=True, reason=REAL_NO_DOC_AUTHZ + " (presence leaks user emails for any document)")
+@pytest.mark.xfail(
+    strict=True,
+    reason=REAL_NO_DOC_AUTHZ + " (presence leaks user emails for any document)",
+)
 def test_presence_of_foreign_document_is_not_disclosed(api_client, sockets):
     owner = api_client.register_user("collab-qa-leak-owner")
     outsider = api_client.register_user("collab-qa-leak-outsider")
@@ -453,7 +537,9 @@ def test_ywebsocket_two_clients_sync_and_late_joiner_receives_state(api_client):
         late = _yws_connect(room, owner.access_token)
         try:
             late.send_binary(SYNC_STEP1_EMPTY)
-            assert _yws_collect(late, HELLO_TEXT), "late joiner did not receive document state"
+            assert _yws_collect(late, HELLO_TEXT), (
+                "late joiner did not receive document state"
+            )
         finally:
             late.close()
     finally:
@@ -472,13 +558,18 @@ def test_ywebsocket_client_reconnect_resyncs(api_client):
         time.sleep(0.3)
         editor = _yws_connect(room, owner.access_token)
         editor.send_binary(SYNC_STEP1_EMPTY)
-        assert _yws_collect(editor, SECOND_TEXT), "reconnected client missed edits made while offline"
+        assert _yws_collect(editor, SECOND_TEXT), (
+            "reconnected client missed edits made while offline"
+        )
     finally:
         keeper.close()
         editor.close()
 
 
-@pytest.mark.xfail(strict=True, reason=REAL_NO_DOC_AUTHZ + " (y-websocket room accepts any document id)")
+@pytest.mark.xfail(
+    strict=True,
+    reason=REAL_NO_DOC_AUTHZ + " (y-websocket room accepts any document id)",
+)
 def test_ywebsocket_outsider_cannot_open_foreign_document_room(api_client):
     owner = api_client.register_user("collab-qa-yws-owner")
     outsider = api_client.register_user("collab-qa-yws-outsider")
@@ -487,14 +578,20 @@ def test_ywebsocket_outsider_cannot_open_foreign_document_room(api_client):
         _yws_connect(room, outsider.access_token).close()
 
 
-@pytest.mark.xfail(strict=True, reason="[REAL] y-websocket upgrade accepts refresh tokens as access tokens")
+@pytest.mark.xfail(
+    strict=True,
+    reason="[REAL] y-websocket upgrade accepts refresh tokens as access tokens",
+)
 def test_ywebsocket_rejects_refresh_token(api_client):
     user = api_client.register_user("collab-qa-yws-refresh")
     with pytest.raises(websocket.WebSocketBadStatusException):
         _yws_connect(f"document-{uuid.uuid4()}", user.refresh_token).close()
 
 
-@pytest.mark.xfail(strict=True, reason="[REAL] collab-service logs the full ?token= URL on y-websocket connect")
+@pytest.mark.xfail(
+    strict=True,
+    reason="[REAL] collab-service logs the full ?token= URL on y-websocket connect",
+)
 def test_ywebsocket_does_not_log_access_tokens(api_client):
     container = os.getenv("OTTERWORKS_COLLAB_CONTAINER", "otterworks-collab-service")
     if not shutil.which("docker"):
@@ -503,7 +600,11 @@ def test_ywebsocket_does_not_log_access_tokens(api_client):
     _yws_connect(f"document-{uuid.uuid4()}", user.access_token).close()
     time.sleep(0.5)
     logs = subprocess.run(
-        ["docker", "logs", "--since", "30s", container], capture_output=True, text=True, timeout=15
+        ["docker", "logs", "--since", "30s", container],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=15,
     )
     if logs.returncode != 0:
         pytest.skip(f"cannot read {container} logs: {logs.stderr.strip()}")
