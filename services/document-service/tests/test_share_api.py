@@ -186,10 +186,10 @@ async def test_shared_route_rejects_empty_token(client: AsyncClient, owner_id: u
 async def test_shared_route_valid_token_for_deleted_document_is_404(
     client: AsyncClient, owner_id: uuid.UUID
 ):
-    missing = str(uuid.uuid4())
-    token = ShareLinkService().mint_token(missing)
+    deleted_doc = "00000000-0000-4000-8000-00000000dead"
+    token = ShareLinkService().mint_token(deleted_doc)
     resp = await client.get(
-        "/api/v1/documents/shared", params={"document_id": missing, "token": token}
+        "/api/v1/documents/shared", params={"document_id": deleted_doc, "token": token}
     )
     assert resp.status_code == 404
 
