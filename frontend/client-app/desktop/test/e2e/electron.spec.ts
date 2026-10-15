@@ -206,7 +206,7 @@ test.describe("Electron shell (no backend required)", () => {
       const menu = await app.evaluate(({ Menu }) => {
         const m = Menu.getApplicationMenu();
         return {
-          top: m?.items.map((i) => i.label.replace("&", "")) ?? [],
+          top: m?.items.map((i) => i.label.replace(/&/g, "")) ?? [],
           roles: m?.items.flatMap((i) => i.submenu?.items.map((s) => s.role ?? "") ?? []) ?? [],
         };
       });
