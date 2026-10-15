@@ -74,10 +74,19 @@ class Indexer:
         logger.info("indexer_file_indexed", file_id=file_data["id"])
         return {"status": "indexed", "id": file_data["id"], "type": "file"}
 
-    def remove(self, doc_type: str, doc_id: str) -> dict[str, Any]:
-        """Remove a document or file from the index."""
+    @staticmethod
+    def _check_type(doc_type: str) -> None:
         if doc_type not in ("document", "file"):
             raise ValueError(f"Invalid type '{doc_type}'. Must be 'document' or 'file'.")
+
+    def owner_of(self, doc_type: str, doc_id: str) -> str | None:
+        """Return the owner of an indexed entry, or None if it is not indexed."""
+        self._check_type(doc_type)
+        return self.search.get_owner(doc_type, doc_id)
+
+    def remove(self, doc_type: str, doc_id: str) -> dict[str, Any]:
+        """Remove a document or file from the index."""
+        self._check_type(doc_type)
 
         deleted = self.search.delete_document(doc_type, doc_id)
         status = "deleted" if deleted else "not_found"
