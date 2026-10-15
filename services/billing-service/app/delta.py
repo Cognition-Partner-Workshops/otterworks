@@ -10,7 +10,7 @@ are upserted with `ReplaceOne(upsert=True)`, documents whose key left the source
 Running the sync twice in a row is a no-op the second time. A collection whose source reads back
 empty while the target still holds documents is left untouched and reported (exit 1) unless
 `--allow-empty-source` is given; the other collections still sync. `--database` must be listed in
-the committed `.migration/allowed_targets.json`.
+the committed `HEAD:.migration/allowed_targets.json`.
 
     python -m app.delta --source-dsn-secret POSTGRESQL_RO_DSN \
         --target-uri-secret MONGODB_ATLAS_URI --log .migration/recon/parallel-run/cycle-1/delta.json
@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 import time
 from datetime import UTC, datetime
@@ -64,18 +65,17 @@ def _key_hash(key: Any, salt: str) -> str:
     return hashlib.sha256(f"{salt}{key}".encode()).hexdigest()[:12]
 
 
-def allowed_databases(allowed_targets_file: str | None = None) -> set[str]:
-    """Databases from the committed `.migration/allowed_targets.json` (the write fence)."""
-    if allowed_targets_file is None:
-        for parent in (Path.cwd(), *Path.cwd().parents):
-            candidate = parent / ".migration" / "allowed_targets.json"
-            if candidate.is_file():
-                allowed_targets_file = str(candidate)
-                break
-        else:
-            raise FileNotFoundError(".migration/allowed_targets.json not found above the cwd")
-    with open(allowed_targets_file) as handle:
-        return set(json.load(handle)["databases"])
+def allowed_databases() -> set[str]:
+    """Databases of the write fence in force: `HEAD:.migration/allowed_targets.json` as committed
+    in this repository (the same revision `mongo_guard` enforces), never a caller-supplied file."""
+    committed = subprocess.run(
+        ["git", "show", "HEAD:.migration/allowed_targets.json"],
+        cwd=Path(__file__).resolve().parent,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    return set(json.loads(committed)["databases"])
 
 
 def sync(
@@ -135,10 +135,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--collections", default=",".join(COLLECTIONS))
     parser.add_argument("--log", help="write the redacted sync log (JSON) here")
     parser.add_argument(
-        "--allowed-targets-file",
-        help="write fence (default: nearest .migration/allowed_targets.json above the cwd)",
-    )
-    parser.add_argument(
         "--allow-empty-source",
         action="store_true",
         help="let a collection whose source read back empty delete its target documents"
@@ -146,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     collections = tuple(name for name in args.collections.split(",") if name)
-    allowed = allowed_databases(args.allowed_targets_file)
+    allowed = allowed_databases()
     if args.database not in allowed:
         print(
             f"database {args.database!r} is not in the write fence {sorted(allowed)}",

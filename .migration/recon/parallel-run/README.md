@@ -13,7 +13,8 @@ logged as truncated SHA-256 hashes.
   parent), compares each document with the target by `_id` on its canonical BSON encoding, and
   applies the difference idempotently: `ReplaceOne(upsert=True)` for new or changed documents,
   `delete_many` for keys that left the source. Running it twice in a row is a no-op the second time.
-  `--database` must be listed in the committed `.migration/allowed_targets.json`. A collection whose
+  `--database` must be listed in the committed `HEAD:.migration/allowed_targets.json` (read
+  from git, not from a caller-supplied file). A collection whose
   source reads back empty while the target still holds documents is left untouched and reported
   (`blocked_empty_source: true`, exit 1) unless `--allow-empty-source` is passed; the other
   collections still sync.

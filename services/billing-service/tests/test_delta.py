@@ -54,9 +54,7 @@ def test_no_collection_has_a_watermark_column() -> None:
     assert all(column is None for column in WATERMARK.values())
 
 
-def test_allowed_databases_reads_the_committed_write_fence(tmp_path) -> None:
+def test_allowed_databases_is_the_committed_write_fence() -> None:
     from app.delta import allowed_databases
 
-    fence = tmp_path / "allowed_targets.json"
-    fence.write_text('{"databases": ["billing_migration"], "catalogs": ["billing_migration"]}')
-    assert allowed_databases(str(fence)) == {"billing_migration"}
+    assert allowed_databases() == {"billing_migration"}
