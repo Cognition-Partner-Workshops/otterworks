@@ -1,0 +1,208 @@
+{
+  "unit": "parallel-run-cycle-2",
+  "mode": "continuous",
+  "target_class": "migration_cluster",
+  "mapping_version": "v2",
+  "mapping_sha256": "6567c33adeada1a45ce93ab4096f2efb484e410263346dd66ed68f149a6e6704",
+  "tolerance_version": "tol-v1",
+  "tolerance_sha256": "829cbb4d2de0d3cf5296d29622973d4bb11915382b0634ab88ad9f040ef5c9c2",
+  "collections": [
+    "invoices",
+    "notifications",
+    "plans",
+    "ratingPeriods",
+    "subscriptions",
+    "tenants",
+    "usageEvents"
+  ],
+  "seed": 1,
+  "params": {},
+  "snapshot": null,
+  "generated_at": "2026-10-15T02:48:53.012909+00:00",
+  "redacted": true,
+  "redaction_salted": false,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 24,
+      "stats": {
+        "source_counts": {
+          "invoices": 9,
+          "notifications": 2,
+          "plans": 3,
+          "ratingPeriods": 11,
+          "subscriptions": 13,
+          "tenants": 9,
+          "usageEvents": 10
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 30,
+      "stats": {
+        "deferred_to_tier3": [
+          "invoices.issuedAt",
+          "invoices.status",
+          "notifications.kind",
+          "notifications.sentAt",
+          "plans.code",
+          "plans.tier",
+          "plans.active",
+          "ratingPeriods.periodStart",
+          "ratingPeriods.periodEnd",
+          "subscriptions.startsOn",
+          "subscriptions.endsOn",
+          "subscriptions.status",
+          "subscriptions.suspendedOn",
+          "tenants.name",
+          "tenants.taxExempt",
+          "tenants.status",
+          "usageEvents.occurredAt",
+          "usageEvents.kind"
+        ],
+        "string_aggregates_deferred_to_tier3": [
+          {
+            "field": "invoices.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "notifications.kind",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "plans.code",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "plans.tier",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "subscriptions.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "tenants.name",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "tenants.status",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          },
+          {
+            "field": "usageEvents.kind",
+            "stats": [
+              "min",
+              "max",
+              "distinct_count"
+            ]
+          }
+        ],
+        "fields_fully_deferred": 2
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 114,
+      "stats": {
+        "invoices": {
+          "mode": "stratified_sample",
+          "population": 9,
+          "sampled": 9,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "embeds_graded": {
+          "invoices.invoiceLines": 32,
+          "invoices.dunningAttempts": 9,
+          "ratingPeriods.rating": 11,
+          "tenants.creditNotes": 5
+        },
+        "notifications": {
+          "mode": "stratified_sample",
+          "population": 2,
+          "sampled": 2,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "plans": {
+          "mode": "stratified_sample",
+          "population": 3,
+          "sampled": 3,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "ratingPeriods": {
+          "mode": "stratified_sample",
+          "population": 11,
+          "sampled": 11,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "subscriptions": {
+          "mode": "stratified_sample",
+          "population": 13,
+          "sampled": 13,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "tenants": {
+          "mode": "stratified_sample",
+          "population": 9,
+          "sampled": 9,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        },
+        "usageEvents": {
+          "mode": "stratified_sample",
+          "population": 10,
+          "sampled": 10,
+          "coverage": 1.0,
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "PASS",
+  "merge_eligible": false,
+  "error": null
+}
