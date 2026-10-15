@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from datetime import date
+from hashlib import sha256
 from typing import Annotated
+from urllib.parse import urlsplit
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Path, Query, Response
@@ -88,7 +90,15 @@ def health() -> dict[str, str]:
         client().admin.command("ping")
     except PyMongoError as error:
         raise HTTPException(status_code=503, detail="database unavailable") from error
-    return {"status": "healthy", "service": settings.app_name}
+    # database + cluster fingerprint (never the URI) let the parallel-run harness prove which
+    # target a parity run exercised
+    host = urlsplit(settings.mongodb_uri).hostname or ""
+    return {
+        "status": "healthy",
+        "service": settings.app_name,
+        "database": settings.mongodb_database,
+        "cluster": sha256(host.encode()).hexdigest()[:12],
+    }
 
 
 @app.post("/internal/reset", status_code=204)
