@@ -72,6 +72,26 @@ test.describe("Incidents: user-visible symptoms", () => {
     }
   });
 
+  // [REAL] log-flood symptom: when GET /api/v1/documents/ returns 500 the page
+  // renders the "No documents yet" empty state (pages/documents.tsx ignores the
+  // query error), so an outage looks like data loss. Seen live during log-flood.
+  test("documents page surfaces a 500 instead of an empty state", async ({ page, request }) => {
+    test.fail(true, "[REAL] documents.tsx shows 'No documents yet' when the list call fails");
+    const session = await registerViaGateway(request);
+    await signIn(page, session);
+    await page.route("**/api/v1/documents/**", (route) =>
+      route.request().method() === "GET"
+        ? route.fulfill({ status: 500, contentType: "text/plain", body: "Internal Server Error" })
+        : route.continue()
+    );
+    await page.goto("/documents");
+    await expect(page.getByRole("heading", { name: "Documents" })).toBeVisible();
+    const emptyState = page.getByText("No documents yet");
+    const errorState = page.getByText(/error|failed|couldn.t load|try again/i);
+    await expect(emptyState.or(errorState).first()).toBeVisible({ timeout: 20_000 });
+    await expect(emptyState).toHaveCount(0);
+  });
+
   test("document export works from the API the export button uses", async ({ request }) => {
     const session = await registerViaGateway(request);
     const id = await createDocument(request, session, "Incident QA export");
