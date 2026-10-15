@@ -10,7 +10,8 @@ are upserted with `ReplaceOne(upsert=True)`, documents whose key left the source
 Running the sync twice in a row is a no-op the second time. A collection whose source reads back
 empty while the target still holds documents is left untouched and reported (exit 1) unless
 `--allow-empty-source` is given; the other collections still sync. `--database` must be listed in
-the committed `HEAD:.migration/allowed_targets.json`.
+the committed `HEAD:.migration/allowed_targets.json`, so the command runs from a checkout of the
+migration repository (not from the service image) and fails closed without it.
 
     python -m app.delta --source-dsn-secret POSTGRESQL_RO_DSN \
         --target-uri-secret MONGODB_ATLAS_URI --log .migration/recon/parallel-run/cycle-1/delta.json
@@ -67,14 +68,24 @@ def _key_hash(key: Any, salt: str) -> str:
 
 def allowed_databases() -> set[str]:
     """Databases of the write fence in force: `HEAD:.migration/allowed_targets.json` as committed
-    in this repository (the same revision `mongo_guard` enforces), never a caller-supplied file."""
-    committed = subprocess.run(
-        ["git", "show", "HEAD:.migration/allowed_targets.json"],
-        cwd=Path(__file__).resolve().parent,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
+    in this repository (the same revision `mongo_guard` enforces), never a caller-supplied file.
+
+    The delta sync is a migration-run tool: it runs from a repository checkout (where the guard
+    hooks apply), not from the billing-service image. Without the committed fence it fails closed.
+    """
+    try:
+        committed = subprocess.run(
+            ["git", "show", "HEAD:.migration/allowed_targets.json"],
+            cwd=Path(__file__).resolve().parent,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    except (FileNotFoundError, subprocess.CalledProcessError) as error:
+        raise RuntimeError(
+            "write fence unavailable: app.delta must run from a checkout of the migration repo"
+            " so HEAD:.migration/allowed_targets.json can be read"
+        ) from error
     return set(json.loads(committed)["databases"])
 
 
