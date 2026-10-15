@@ -1,0 +1,135 @@
+{
+  "generated_at": "2026-10-15T02:46:40+00:00",
+  "duration_s": 1.825,
+  "collections": {
+    "plans": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "plans": 3
+      },
+      "target_before": 3,
+      "unchanged": 3,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 3,
+      "changed_keys": []
+    },
+    "tenants": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "tenants": 9,
+        "credit_notes": 5
+      },
+      "target_before": 9,
+      "unchanged": 6,
+      "upserted": 3,
+      "deleted": 0,
+      "target_after": 9,
+      "changed_keys": [
+        "9002fa2529ae",
+        "a86578ff8fac",
+        "ca55ceea2bd0"
+      ]
+    },
+    "subscriptions": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "subscriptions": 11
+      },
+      "target_before": 9,
+      "unchanged": 6,
+      "upserted": 5,
+      "deleted": 0,
+      "target_after": 11,
+      "changed_keys": [
+        "390250719b72",
+        "521f8756f417",
+        "76198641a802",
+        "928b7648201a",
+        "979e0a2cd4a1"
+      ]
+    },
+    "usageEvents": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "usage_events": 10
+      },
+      "target_before": 10,
+      "unchanged": 10,
+      "upserted": 0,
+      "deleted": 0,
+      "target_after": 10,
+      "changed_keys": []
+    },
+    "ratingPeriods": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "rating_periods": 7,
+        "rating_results": 7
+      },
+      "target_before": 4,
+      "unchanged": 3,
+      "upserted": 4,
+      "deleted": 0,
+      "target_after": 7,
+      "changed_keys": [
+        "53f340b37719",
+        "c2aa1994eb56",
+        "e7f78733e230",
+        "ead1488ca98b"
+      ]
+    },
+    "invoices": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "invoices": 6,
+        "invoice_lines": 17,
+        "dunning_attempts": 5
+      },
+      "target_before": 3,
+      "unchanged": 1,
+      "upserted": 5,
+      "deleted": 0,
+      "target_after": 6,
+      "changed_keys": [
+        "685f01203352",
+        "ac040e26fd3b",
+        "b153ffa66877",
+        "b8b0d86f43e1",
+        "bb6a5ddd6771"
+      ]
+    },
+    "notifications": {
+      "watermark": null,
+      "method": "keyed_diff",
+      "blocked_empty_source": false,
+      "source_rows": {
+        "notifications": 2
+      },
+      "target_before": 1,
+      "unchanged": 1,
+      "upserted": 1,
+      "deleted": 0,
+      "target_after": 2,
+      "changed_keys": [
+        "706d6cd42e9f"
+      ]
+    }
+  },
+  "source_dsn_secret": "POSTGRESQL_RO_DSN",
+  "target_uri_secret": "MONGODB_ATLAS_URI",
+  "target_db": "billing_migration",
+  "redaction_salted": false
+}

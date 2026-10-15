@@ -1,4 +1,9 @@
-# Parallel run (s5.1): delta sync legacy PostgreSQL → Atlas `billing_migration`
+# Parallel run: delta sync legacy PostgreSQL → Atlas `billing_migration`
+
+s5.1 (recon only, `cycle-N/`) is below; s5.2 adds the full procs parity to every cycle, see
+[s5.2](#s52-recon--app-level-parity-per-cycle) and `s5.2/drift.md`.
+
+## s5.1: delta sync + continuous recon
 
 Coexistence-window evidence for the incremental load path. Written by the s5.1 ticket; refreshed
 by every cycle. No secret values: sources and targets are named by secret NAME, changed keys are
@@ -78,3 +83,35 @@ again for s5.2.
 | `_connectivity_probe` (empty, stray) | carry-over | untouched; cutover item |
 
 No data drift: every cycle's recon passed on tiers 1-3 with zero findings.
+
+## s5.2: recon + app-level parity per cycle
+
+Same mechanism, with `make procs-parity` added to every cycle (`run_cycle.sh`, `OUT_ROOT=s5.2`):
+replay (`cycle.py`) → parity against the migrated stack → delta sync → continuous recon. The
+parity target is billing-service on Atlas `billing_migration` (`BILLING_SVC_URL`, native
+`uvicorn` on `127.0.0.1:12930`) with `/internal/reset` loading the `billing_ro` baseline fixture
+`billing_mig`; the subsequent delta sync undoes the last scenario's writes, so recon sees the
+legacy `billing_p5` state. `procs/reports/` is gitignored, so each report is copied to
+`s5.2/cycle-N/parity/` tagged with the target (`target_class: migration_cluster`).
+
+| cycle | dates | scenarios replayed | parity (`make procs-parity`) | delta applied | recon (continuous) | evidence |
+|---|---|---|---|---|---|---|
+| 1 | +0 mo | 10 (all ok) | **PASS=24 FAIL=0 SKIP=0** | tenants +3 / subscriptions +5 / ratingPeriods +4 / invoices +5 / notifications +1 | **PASS** (136 checks, tiers 1-3) | `s5.2/cycle-1/parity/parity.json`, `s5.2/cycle-1/recon/result.json` |
+| 2 | +1 mo | 10 (all ok) | **PASS=24 FAIL=0 SKIP=0** | tenants +3 / subscriptions +7 / ratingPeriods +8 / invoices +8 / notifications +1 | **PASS** (168 checks, tiers 1-3) | `s5.2/cycle-2/parity/parity.json`, `s5.2/cycle-2/recon/result.json` |
+| 3 | +2 mo | 10 (all ok) | **PASS=24 FAIL=0 SKIP=0** | tenants +3 / subscriptions +9 / ratingPeriods +12 / invoices +11 / notifications +1 | **PASS** (200 checks, tiers 1-3) | `s5.2/cycle-3/parity/parity.json`, `s5.2/cycle-3/recon/result.json` |
+
+Each cycle also keeps `cycle.json`, `parity.log` (harness stdout), `parity/parity.md`, `delta.json`.
+Every `result.json`: `mode: continuous`, `target_class: migration_cluster`, mapping `v2`, `tol-v1`,
+zero findings, `merge_eligible: false` (coexistence evidence, by design).
+
+Green streak: **3 / 3** (`d-green-streak` = 3) — acceptance met, no red run. Drift report:
+`s5.2/drift.md`.
+
+Restore: `s5.2/restore-baseline/delta.json` re-synced Atlas from `billing_mig` (tenants +3 -0 /
+subscriptions +3 -6 / ratingPeriods +0 -12 / invoices +2 -9 / notifications +0 -1);
+`s5.2/restore-baseline/delta-rerun.json` is a no-op (36 unchanged). Namespace `p5` torn down
+(`docker compose down -v`), billing-service on 12930 stopped. Atlas `billing_migration` matches the
+`billing_ro` fixture again.
+
+Checks run: billing-service `ruff` clean, `pytest` 55 passed; `make tp-smoke` is still absent on
+the run branch.
