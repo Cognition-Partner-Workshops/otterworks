@@ -133,7 +133,7 @@ async def test_search(db_session: AsyncSession, owner_id: uuid.UUID):
         DocumentCreate(title="Rust Guide", content="Learn Rust", owner_id=owner_id)
     )
 
-    items, total = await service.search("Python")
+    items, total = await service.search("Python", owner_id=owner_id)
     assert total == 1
     assert items[0].title == "Python Guide"
 
@@ -166,11 +166,10 @@ async def test_comments_crud(db_session: AsyncSession, owner_id: uuid.UUID):
     )
     author = uuid.uuid4()
 
-    comment = await service.add_comment(
-        doc.id, CommentCreate(author_id=author, content="Nice!")
-    )
+    comment = await service.add_comment(doc.id, CommentCreate(content="Nice!"), author)
     assert comment is not None
     assert comment.content == "Nice!"
+    assert comment.author_id == author
 
     comments = await service.list_comments(doc.id)
     assert len(comments) == 1
@@ -183,7 +182,7 @@ async def test_comments_crud(db_session: AsyncSession, owner_id: uuid.UUID):
 async def test_add_comment_to_nonexistent_document(db_session: AsyncSession):
     service = DocumentService(db_session)
     result = await service.add_comment(
-        uuid.uuid4(), CommentCreate(author_id=uuid.uuid4(), content="Orphan")
+        uuid.uuid4(), CommentCreate(content="Orphan"), uuid.uuid4()
     )
     assert result is None
 
@@ -210,10 +209,12 @@ async def test_template_crud_and_create_from(
 
     doc = await service.create_from_template(
         template.id,
-        DocumentFromTemplate(title="Jan Report", owner_id=owner_id),
+        DocumentFromTemplate(title="Jan Report"),
+        owner_id,
     )
     assert doc is not None
     assert doc.title == "Jan Report"
+    assert doc.owner_id == owner_id
     assert doc.content == "## Report\n\nContent here"
 
 
@@ -226,7 +227,8 @@ async def test_create_from_nonexistent_template(
 
     result = await service.create_from_template(
         uuid.uuid4(),
-        DocumentFromTemplate(title="Orphan", owner_id=owner_id),
+        DocumentFromTemplate(title="Orphan"),
+        owner_id,
     )
     assert result is None
 
