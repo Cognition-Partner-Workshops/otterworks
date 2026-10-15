@@ -12,11 +12,16 @@ from pymongo.database import Database
 
 from app.documents import bson_date, bson_decimal
 from app.domain import (
+    CreditNoteRow,
+    DunningAttemptRow,
     EntitlementRow,
+    InvoiceLineRow,
+    InvoiceRow,
     PlanRow,
     RatingResultRow,
     SubscriptionRow,
     UsageSummaryRow,
+    draw_down_credit,
 )
 
 T = TypeVar("T")
@@ -51,6 +56,48 @@ def _subscription_row(document: dict[str, Any]) -> SubscriptionRow:
         ends_on=_as_date(document.get("endsOn")),
         status=document["status"],
         suspended_on=_as_date(document.get("suspendedOn")),
+    )
+
+
+def _credit_note_row(element: dict[str, Any]) -> CreditNoteRow:
+    return CreditNoteRow(
+        note_id=element["id"],
+        issued_on=element["issuedOn"].date(),
+        amount=Decimal(element["amount"].to_decimal()),
+        remaining_amount=Decimal(element["remainingAmount"].to_decimal()),
+    )
+
+
+def _invoice_row(document: dict[str, Any]) -> InvoiceRow:
+    return InvoiceRow(
+        invoice_id=document["_id"],
+        tenant_id=document["tenantId"],
+        period_id=document["periodId"],
+        issued_at=document["issuedAt"].replace(tzinfo=UTC),
+        subtotal=Decimal(document["subtotal"].to_decimal()),
+        tax=Decimal(document["tax"].to_decimal()),
+        total=Decimal(document["total"].to_decimal()),
+        status=document["status"],
+        lines=tuple(
+            InvoiceLineRow(
+                line_id=line["id"],
+                line_no=line["lineNo"],
+                line_type=line["lineType"],
+                description=line["description"],
+                amount=Decimal(line["amount"].to_decimal()),
+            )
+            for line in document["invoiceLines"]
+        ),
+        dunning_attempts=tuple(
+            DunningAttemptRow(
+                attempt_id=attempt["id"],
+                tenant_id=attempt["tenantId"],
+                attempt_no=attempt["attemptNo"],
+                scheduled_for=attempt["scheduledFor"].date(),
+                status=attempt["status"],
+            )
+            for attempt in document["dunningAttempts"]
+        ),
     )
 
 
@@ -136,6 +183,44 @@ class MongoPlansRepository:
             },
             session=self.session,
         )
+
+    def tenant_tax_exempt(self, tenant_id: UUID) -> bool:
+        tenant = self.database.tenants.find_one(
+            {"_id": tenant_id}, {"taxExempt": 1}, session=self.session
+        )
+        return bool(tenant and tenant["taxExempt"])
+
+    def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]:
+        tenant = self.database.tenants.find_one(
+            {"_id": tenant_id}, {"creditNotes": 1}, session=self.session
+        )
+        notes = [_credit_note_row(element) for element in (tenant or {}).get("creditNotes", [])]
+        return sorted(notes, key=lambda note: (note.issued_on, note.note_id))
+
+    def apply_credit(self, tenant_id: UUID, credit: Decimal) -> list[CreditNoteRow]:
+        """The tenants.creditNotes drawdown sp_issue_invoice does (invoicing.sql:127-138),
+        kept with the collection's owner: Invoicing calls it inside its transaction instead
+        of writing tenants itself. Returns every note of the tenant after the drawdown."""
+        before = {note.note_id: note for note in self.list_credit_notes(tenant_id)}
+        after = draw_down_credit(list(before.values()), credit)
+        changed = [note for note in after if note != before[note.note_id]]
+        if changed:
+            self.database.tenants.update_one(
+                {"_id": tenant_id},
+                {
+                    "$set": {
+                        f"creditNotes.$[note{index}].remainingAmount": bson_decimal(
+                            note.remaining_amount
+                        )
+                        for index, note in enumerate(changed)
+                    }
+                },
+                array_filters=[
+                    {f"note{index}.id": note.note_id} for index, note in enumerate(changed)
+                ],
+                session=self.session,
+            )
+        return after
 
 
 def _day_bounds(period_start: date, period_end: date) -> dict[str, datetime]:
@@ -264,3 +349,84 @@ class MongoRatingRepository(MongoPlansRepository):
             billable_units=rating["billableUnits"],
             overage_amount=Decimal(rating["overageAmount"].to_decimal()),
         )
+
+
+class MongoInvoicingRepository(MongoRatingRepository):
+    """Invoicing owns invoices {invoiceLines[], dunningAttempts[]}. It reads tenants, plans,
+    subscriptions and ratingPeriods through the repositories it extends and writes
+    ratingPeriods (finalize_rating) and tenants.creditNotes (apply_credit) only through them."""
+
+    def find_invoice(self, invoice_id: UUID) -> InvoiceRow | None:
+        document = self.database.invoices.find_one({"_id": invoice_id}, session=self.session)
+        return _invoice_row(document) if document is not None else None
+
+    def upsert_invoice(
+        self,
+        invoice_id: UUID,
+        tenant_id: UUID,
+        period_id: UUID,
+        issued_at: date,
+        subtotal: Decimal,
+        tax: Decimal,
+        total: Decimal,
+        lines: list[InvoiceLineRow],
+    ) -> InvoiceRow:
+        # INSERT ... ON CONFLICT (id) DO UPDATE SET status = 'issued', DELETE + INSERT the
+        # lines, UPDATE the totals: one document write. An existing invoice keeps its
+        # tenant, period, issuedAt and dunningAttempts.
+        self.database.invoices.update_one(
+            {"_id": invoice_id},
+            {
+                "$set": {
+                    "status": "issued",
+                    "subtotal": bson_decimal(subtotal),
+                    "tax": bson_decimal(tax),
+                    "total": bson_decimal(total),
+                    "invoiceLines": [
+                        {
+                            "id": line.line_id,
+                            "lineNo": line.line_no,
+                            "lineType": line.line_type,
+                            "description": line.description,
+                            "amount": bson_decimal(line.amount),
+                        }
+                        for line in sorted(lines, key=lambda line: line.line_no)
+                    ],
+                },
+                "$setOnInsert": {
+                    "tenantId": tenant_id,
+                    "periodId": period_id,
+                    "issuedAt": bson_date(issued_at),
+                    "dunningAttempts": [],
+                },
+            },
+            upsert=True,
+            session=self.session,
+        )
+        invoice = self.find_invoice(invoice_id)
+        if invoice is None:
+            raise LookupError(f"invoice {invoice_id} vanished during issue")
+        return invoice
+
+    def append_dunning_attempt(self, invoice_id: UUID, attempt: DunningAttemptRow) -> bool:
+        """Owner API for the dunning unit (sp_schedule_dunning, dunning.sql:43-48): append one
+        attempt to the invoice, idempotent on (invoiceId, attemptNo) like ON CONFLICT DO
+        NOTHING. Returns whether the element was appended; an unknown invoice is an error."""
+        result = self.database.invoices.update_one(
+            {"_id": invoice_id, "dunningAttempts.attemptNo": {"$ne": attempt.attempt_no}},
+            {
+                "$push": {
+                    "dunningAttempts": {
+                        "id": attempt.attempt_id,
+                        "tenantId": attempt.tenant_id,
+                        "attemptNo": attempt.attempt_no,
+                        "scheduledFor": bson_date(attempt.scheduled_for),
+                        "status": attempt.status,
+                    }
+                }
+            },
+            session=self.session,
+        )
+        if result.matched_count == 0 and self.find_invoice(invoice_id) is None:
+            raise MissingReferenceError(f"invoices {invoice_id} does not exist")
+        return result.modified_count == 1

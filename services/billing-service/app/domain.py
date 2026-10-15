@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, timedelta
+from dataclasses import dataclass, replace
+from datetime import date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from hashlib import md5
 from typing import Protocol
@@ -290,3 +290,170 @@ def finalize_rating(
         overage_amount=rating.overage_amount,
     )
     return repository.upsert_rating_result(result, period_end)
+
+
+TAX_RATE = Decimal("0.0825")
+ZERO = Decimal("0")
+
+
+@dataclass(frozen=True)
+class CreditNoteRow:
+    note_id: UUID
+    issued_on: date
+    amount: Decimal
+    remaining_amount: Decimal
+
+
+@dataclass(frozen=True)
+class InvoicePreviewLine:
+    line_no: int
+    line_type: str
+    description: str
+    amount: Decimal
+    tax_amount: Decimal
+    credit_applied: Decimal
+    total: Decimal
+
+
+@dataclass(frozen=True)
+class InvoiceLineRow:
+    line_id: UUID
+    line_no: int
+    line_type: str
+    description: str
+    amount: Decimal
+
+
+@dataclass(frozen=True)
+class DunningAttemptRow:
+    attempt_id: UUID
+    tenant_id: UUID
+    attempt_no: int
+    scheduled_for: date
+    status: str
+
+
+@dataclass(frozen=True)
+class InvoiceRow:
+    invoice_id: UUID
+    tenant_id: UUID
+    period_id: UUID
+    issued_at: datetime
+    subtotal: Decimal
+    tax: Decimal
+    total: Decimal
+    status: str
+    lines: tuple[InvoiceLineRow, ...]
+    dunning_attempts: tuple[DunningAttemptRow, ...]
+
+
+class InvoicingRepository(RatingRepository, Protocol):
+    def tenant_tax_exempt(self, tenant_id: UUID) -> bool: ...
+
+    def list_credit_notes(self, tenant_id: UUID) -> list[CreditNoteRow]: ...
+
+    def apply_credit(self, tenant_id: UUID, credit: Decimal) -> list[CreditNoteRow]: ...
+
+    def find_invoice(self, invoice_id: UUID) -> InvoiceRow | None: ...
+
+    def upsert_invoice(
+        self,
+        invoice_id: UUID,
+        tenant_id: UUID,
+        period_id: UUID,
+        issued_at: date,
+        subtotal: Decimal,
+        tax: Decimal,
+        total: Decimal,
+        lines: list[InvoiceLineRow],
+    ) -> InvoiceRow: ...
+
+
+def invoice_preview(
+    repository: InvoicingRepository, tenant_id: UUID, period_start: date, period_end: date
+) -> list[InvoicePreviewLine]:
+    """fn_invoice_preview: five computed lines. Tax is 8.25% of fee + overage, unrounded and
+    split in two halves (zero for a tax-exempt tenant); the credit line applies the tenant's
+    open credit up to the rounded charge."""
+    subscription = covering_subscription(
+        repository.list_subscriptions(tenant_id), period_start, period_end
+    )
+    if subscription is None:
+        raise NoSubscriptionError(f"tenant {tenant_id} has no subscription in the period")
+    plan = next(item for item in repository.list_plans() if item.plan_id == subscription.plan_id)
+    overage = usage_rating(repository, tenant_id, period_start, period_end).overage_amount
+    credit = sum(
+        (
+            note.remaining_amount
+            for note in repository.list_credit_notes(tenant_id)
+            if note.remaining_amount > 0
+        ),
+        ZERO,
+    )
+    fee = plan.monthly_fee
+    tax = ZERO if repository.tenant_tax_exempt(tenant_id) else (fee + overage) * TAX_RATE
+    applied = min(credit, _round_half_up(fee + overage + tax, CENTS))
+    fee_line, usage_line = _round_half_up(fee, CENTS), _round_half_up(overage, CENTS)
+    return [
+        InvoicePreviewLine(1, "plan", plan.code, fee_line, ZERO, ZERO, fee_line),
+        InvoicePreviewLine(2, "usage", "usage overage", usage_line, ZERO, ZERO, usage_line),
+        InvoicePreviewLine(3, "tax", "regional tax", tax / 2, ZERO, ZERO, tax / 2),
+        InvoicePreviewLine(4, "tax", "local tax", tax / 2, ZERO, ZERO, tax / 2),
+        InvoicePreviewLine(5, "credit", "credit notes", ZERO, ZERO, applied, -applied or ZERO),
+    ]
+
+
+def draw_down_credit(notes: list[CreditNoteRow], credit: Decimal) -> list[CreditNoteRow]:
+    """sp_issue_invoice credit drawdown: open notes in (issued_on, id) order, each reduced by
+    the credit still to consume; the consumed credit shrinks by the note's prior remaining."""
+    drawn = []
+    for note in sorted(notes, key=lambda note: (note.issued_on, note.note_id)):
+        if credit > 0 and note.remaining_amount > 0:
+            remaining = _round_half_up(max(note.remaining_amount - credit, ZERO), CENTS)
+            credit = max(credit - note.remaining_amount, ZERO)
+            note = replace(note, remaining_amount=remaining)
+        drawn.append(note)
+    return drawn
+
+
+def issue_invoice(
+    repository: InvoicingRepository, tenant_id: UUID, period_start: date, period_end: date
+) -> tuple[InvoiceRow, list[CreditNoteRow]]:
+    """sp_issue_invoice: finalize the rating period (rating module), upsert the invoice with
+    its lines as one document (an existing invoice is re-issued, its lines replaced), then
+    draw the applied credit down through the tenants owner. Idempotent per period."""
+    finalize_rating(repository, tenant_id, period_start, period_end)
+    period_id = legacy_uuid(tenant_id, period_start.isoformat())
+    invoice_id = legacy_uuid(period_id, "invoice")
+    lines: list[InvoiceLineRow] = []
+    subtotal = tax = credit = ZERO
+    for line in invoice_preview(repository, tenant_id, period_start, period_end):
+        stored = line.total if line.line_type == "credit" else line.amount
+        lines.append(
+            InvoiceLineRow(
+                legacy_uuid(invoice_id, line.line_no),
+                line.line_no,
+                line.line_type,
+                line.description,
+                _round_half_up(stored, CENTS),
+            )
+        )
+        if line.line_type in ("plan", "usage"):
+            subtotal += _round_half_up(line.amount, CENTS)
+        elif line.line_type == "tax":
+            tax += _round_half_up(line.amount, CENTS)
+        elif line.line_type == "credit":
+            credit = line.credit_applied
+    total = _round_half_up(subtotal + tax - credit, CENTS)
+    invoice = repository.upsert_invoice(
+        invoice_id, tenant_id, period_id, period_end, subtotal, tax, total, lines
+    )
+    return invoice, repository.apply_credit(tenant_id, credit)
+
+
+def invoice_lines(repository: InvoicingRepository, invoice_id: UUID) -> list[InvoiceLineRow]:
+    """fn_invoice_lines: the persisted lines in line_no order; none for an unknown invoice."""
+    invoice = repository.find_invoice(invoice_id)
+    if invoice is None:
+        return []
+    return sorted(invoice.lines, key=lambda line: line.line_no)

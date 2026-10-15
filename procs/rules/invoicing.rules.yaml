@@ -1,0 +1,72 @@
+module: invoicing
+rules:
+  - id: INVOICING-001
+    statement: The preview bills the plan of the latest-starting subscription overlapping the period and the overage from fn_usage_rating as lines 1 (plan code, fee) and 2 (usage overage), each rounded to cents; lines 3 and 4 (regional tax, local tax) are each half of 8.25% of fee + overage, computed unrounded, and zero when the tenant is tax exempt. tax_amount is 0 on every line.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [22, 59]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [line_no, line_type, description, amount, tax_amount, total]
+    confidence: high
+    scenarios: [INVOICE-001, INVOICE-002]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b01 extraction; merge authority is procs parity PASS=6 plus the recon harness PASS. The tax halves stay unrounded in the preview because sp_issue_invoice rounds each half separately (INVOICE-005 tax 4.50 = 2.25 + 2.25).
+  - id: INVOICING-002
+    statement: Line 5 (credit notes) has amount 0 and credit_applied equal to the tenant's open credit (sum of credit_notes.remaining_amount > 0) capped at round(fee + overage + tax, 2); its total is the negative applied credit.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [33, 59]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [credit_applied, total]
+    confidence: high
+    scenarios: [INVOICE-001, INVOICE-002]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b01 extraction. Open credit is read from the embedded tenants.creditNotes (mapping spec v2) through the plans repository.
+  - id: INVOICING-003
+    statement: Issuing first finalizes the rating period (sp_finalize_rating), then upserts invoice md5(period_id || 'invoice') for period md5(tenant_id || period_start) with issued_at = period_end and status 'issued' (an existing invoice keeps its row and is reset to 'issued'), replaces its lines with the preview lines (id md5(invoice_id || line_no); the credit line stores its negative total; amounts at cents), and sets subtotal = sum of the rounded plan and usage amounts, tax = sum of the rounded tax amounts, total = round(subtotal + tax - credit_applied, 2).
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [85, 125]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [status, subtotal, tax, total]
+    confidence: high
+    scenarios: [INVOICE-003, INVOICE-004, INVOICE-005]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b01 extraction. invoice_lines is the invoiceLines array of the invoices document (mapping spec v2), so the invoice upsert, line replacement and totals are one document write; the rating period is written through the rating module's finalize_rating in the same transaction; dunningAttempts of a re-issued invoice are untouched, as the legacy never deletes dunning_attempts.
+  - id: INVOICING-004
+    statement: After the invoice is written, the applied credit is drawn down from the tenant's credit notes with remaining_amount > 0 in (issued_on, id) order - each note's remaining becomes greatest(remaining - credit, 0) and the credit shrinks by the note's prior remaining - stopping once the credit is consumed.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [127, 138]
+    inputs: [tenant_id]
+    outputs: [remaining_amount]
+    confidence: high
+    scenarios: [INVOICE-003, INVOICE-004]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b01 extraction. tenants.creditNotes belongs to the plans unit (wave 1), so the drawdown is the plans repository's apply_credit called inside the issue-invoice transaction (units.json cross_unit_writes), never a direct write from invoicing.
+  - id: INVOICING-005
+    statement: Reading an invoice's lines returns line_no, line_type, description and amount of its persisted lines ordered by line_no; an unknown invoice has no lines.
+    source:
+      file: services/legacy-billing/db/procs/invoicing.sql
+      lines: [62, 75]
+    inputs: [invoice_id]
+    outputs: [line_no, line_type, description, amount]
+    confidence: high
+    scenarios: [INVOICE-006]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b01 extraction.
