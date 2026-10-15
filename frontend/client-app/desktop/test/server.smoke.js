@@ -2,6 +2,7 @@
  * Exercises static serving, SPA fallback, asset caching, path traversal,
  * and the /api/v1 HTTP + WebSocket proxy against a stub gateway. */
 const http = require("node:http");
+const net = require("node:net");
 const crypto = require("node:crypto");
 const path = require("node:path");
 const { startAppServer } = require("../build/server");
@@ -9,7 +10,9 @@ const { startAppServer } = require("../build/server");
 const WS_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 // Dummy "API gateway": echoes path + auth header; supports a raw WS handshake.
+const gatewaySeen = [];
 const gateway = http.createServer((req, res) => {
+  gatewaySeen.push(req.url);
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ path: req.url, auth: req.headers.authorization || null }));
 });
@@ -33,6 +36,20 @@ function get(url, headers = {}) {
       res.on("data", (c) => (body += c));
       res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body }));
     }).on("error", reject);
+  });
+}
+
+// Raw request line, so dot-segments and percent-encoding reach the server unnormalised.
+function rawGet(baseUrl, rawPath) {
+  const { hostname, port } = new URL(baseUrl);
+  return new Promise((resolve, reject) => {
+    const socket = net.connect(Number(port), hostname, () => {
+      socket.write(`GET ${rawPath} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n`);
+    });
+    let data = "";
+    socket.on("data", (c) => (data += c));
+    socket.on("end", () => resolve({ status: Number(data.split(" ")[1]), data }));
+    socket.on("error", reject);
   });
 }
 
@@ -79,6 +96,49 @@ async function main() {
     api.body
   );
 
+  for (const escape of [
+    "/api/v1/../../metrics",
+    "/api/v1/%2e%2e/%2e%2e/metrics",
+    "/api/v1/%2E%2E/%2E%2E/metrics",
+    "/api/v1/..%2f..%2fmetrics",
+    "/api/v1/..%5c..%5cmetrics",
+    "/api/v1/%2f..%2f..%2fmetrics",
+  ]) {
+    const before = gatewaySeen.length;
+    const res = await rawGet(app.url, escape);
+    check(
+      `rejects ${escape} escaping /api/v1 (not forwarded)`,
+      res.status === 400 && gatewaySeen.length === before,
+      JSON.stringify({ status: res.status, forwarded: gatewaySeen.slice(before) })
+    );
+  }
+
+  for (const [raw, forwarded] of [
+    ["/api/v1/files/../documents?x=1", "/api/v1/documents?x=1"],
+    ["/api/v1/%2e%2e/v1/documents", "/api/v1/documents"],
+    ["/api/v1/files/my%20report.pdf", "/api/v1/files/my%20report.pdf"],
+  ]) {
+    const before = gatewaySeen.length;
+    const res = await rawGet(app.url, raw);
+    check(
+      `proxies in-prefix ${raw} as ${forwarded}`,
+      res.status === 200 && gatewaySeen.slice(before).join() === forwarded,
+      JSON.stringify({ status: res.status, forwarded: gatewaySeen.slice(before) })
+    );
+  }
+
+  for (const malformed of ["/%E0%A4%A", "/api/v1/%E0%A4%A", "/api/v1/files/%zz"]) {
+    const before = gatewaySeen.length;
+    const res = await rawGet(app.url, malformed);
+    check(
+      `malformed percent-encoding ${malformed} is 400`,
+      res.status === 400 && !res.data.includes("URI malformed") && gatewaySeen.length === before,
+      res.data.slice(0, 120)
+    );
+  }
+  const afterMalformed = await get(`${app.url}/`);
+  check("still serves after malformed request", afterMalformed.status === 200, afterMalformed.status);
+
   // WebSocket upgrade through the proxy
   const wsResult = await new Promise((resolve) => {
     const key = crypto.randomBytes(16).toString("base64");
@@ -109,6 +169,25 @@ async function main() {
     req.end();
   });
   check("WebSocket upgrade proxied", wsResult.accept && wsResult.frame, JSON.stringify(wsResult));
+
+  const wsEscape = await new Promise((resolve) => {
+    const before = gatewaySeen.length;
+    const { hostname, port } = new URL(app.url);
+    const socket = net.connect(Number(port), hostname, () => {
+      socket.write(
+        "GET /api/v1/../../metrics HTTP/1.1\r\nHost: localhost\r\nConnection: Upgrade\r\n" +
+          "Upgrade: websocket\r\nSec-WebSocket-Key: " + crypto.randomBytes(16).toString("base64") +
+          "\r\nSec-WebSocket-Version: 13\r\n\r\n"
+      );
+    });
+    let data = "";
+    socket.on("data", (c) => (data += c));
+    const done = () => resolve({ upgraded: data.startsWith("HTTP/1.1 101"), forwarded: gatewaySeen.length - before });
+    socket.on("close", done);
+    socket.on("error", done);
+    setTimeout(() => { socket.destroy(); done(); }, 3000);
+  });
+  check("WebSocket upgrade escaping /api/v1 is refused", !wsEscape.upgraded && wsEscape.forwarded === 0, JSON.stringify(wsEscape));
 
   await app.close();
   gateway.close();
