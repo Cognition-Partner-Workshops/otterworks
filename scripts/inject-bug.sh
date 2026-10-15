@@ -41,16 +41,11 @@ declare -A CHAOS_KEY=(
   [search-suggest-500]="chaos:search-service:suggest_500"
   [document-slow]="chaos:document-service:slow_queries"
   [notification-schema]="chaos:notification-service:consumer_strict_schema"
-  [mobile-latency]="chaos:api-gateway:mobile_latency_ms"
 )
 CHAOS_TTL="${CHAOS_TTL:-3600}"
 # Per-scenario flag value and expiry where "1" / CHAOS_TTL do not fit.
-declare -A CHAOS_VALUE=(
-  [mobile-latency]="${MOBILE_LATENCY_MS:-3000}"
-)
-declare -A CHAOS_SCENARIO_TTL=(
-  [mobile-latency]=1200
-)
+declare -A CHAOS_VALUE=()
+declare -A CHAOS_SCENARIO_TTL=()
 
 redis_exec() { kubectl -n "${NS}" exec deploy/redis -- redis-cli "$@"; }
 
