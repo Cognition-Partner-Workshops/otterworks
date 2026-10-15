@@ -146,3 +146,18 @@ postgresql census returns no CHECK constraints (`tables[*].checks` empty) so no
 `check_constraint` questions are generated; the postgresql family classifies `text` as LOB
 and attaches `int_to_bool` to native booleans. The run branch still has no `tp-smoke`
 target (cut from `main`), so that gate did not run.
+
+## s5.1 delta sync (p5-parallel-run)
+
+Incremental path: `services/billing-service/app/delta.py` (`python -m app.delta`), a keyed diff
+on every collection because the legacy schema has no `updated_at`/sequence column anywhere
+(`rating_results.created_at` is write-once). It reuses `app.load.read_source` / `build_documents`
+(mapping v2, embedded children rebuilt with their parent) and applies `ReplaceOne(upsert=True)` +
+deletes for keys that left the source; a second run is a no-op. Cycles: `.migration/recon/
+parallel-run/run_cycle.sh N` replays `procs/scenarios` over HTTP against a disposable procs
+namespace with date inputs shifted N-1 months (the scenarios are not re-runnable on the same
+dates), runs the delta, then `recon --mode continuous`. Evidence and drift report:
+`.migration/recon/parallel-run/README.md` (3/3 cycles PASS; `merge_eligible` is false by design
+for continuous mode). Atlas was re-synced from `billing_mig` afterwards, so it matches the
+`billing_ro` fixture for s5.2. Carry-overs unchanged: `OW_BILLING_PG_RO_DSN` not injected,
+`RECON_REDACT_SALT` unset, no `tp-smoke` target, `_connectivity_probe` untouched.

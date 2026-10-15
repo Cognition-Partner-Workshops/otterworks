@@ -1,0 +1,91 @@
+{
+  "cycle": 2,
+  "generated_at": "2026-10-15T02:22:22+00:00",
+  "namespace": "p5",
+  "legacy_app": "http://127.0.0.1:8594",
+  "date_inputs_shifted_months": 1,
+  "scenarios_replayed": 10,
+  "all_succeeded": true,
+  "calls": [
+    {
+      "scenario": "DUNNING-002",
+      "source": "procs/scenarios/dunning/002.yaml",
+      "entrypoint": "billing.sp_schedule_dunning",
+      "path": "/api/dunning/schedule",
+      "status": 200,
+      "duration_ms": 11
+    },
+    {
+      "scenario": "DUNNING-003",
+      "source": "procs/scenarios/dunning/003.yaml",
+      "entrypoint": "billing.sp_schedule_dunning",
+      "path": "/api/dunning/schedule",
+      "status": 200,
+      "duration_ms": 9
+    },
+    {
+      "scenario": "DUNNING-004",
+      "source": "procs/scenarios/dunning/004.yaml",
+      "entrypoint": "billing.sp_suspend_overdue",
+      "path": "/api/dunning/suspend",
+      "status": 200,
+      "duration_ms": 7
+    },
+    {
+      "scenario": "DUNNING-005",
+      "source": "procs/scenarios/dunning/005.yaml",
+      "entrypoint": "billing.sp_suspend_overdue",
+      "path": "/api/dunning/suspend",
+      "status": 200,
+      "duration_ms": 7
+    },
+    {
+      "scenario": "INVOICE-003",
+      "source": "procs/scenarios/invoicing/003.yaml",
+      "entrypoint": "billing.sp_issue_invoice",
+      "path": "/api/invoices/00000000-0000-0000-0000-000000000009/issue",
+      "status": 200,
+      "duration_ms": 11
+    },
+    {
+      "scenario": "INVOICE-004",
+      "source": "procs/scenarios/invoicing/004.yaml",
+      "entrypoint": "billing.sp_issue_invoice",
+      "path": "/api/invoices/00000000-0000-0000-0000-000000000004/issue",
+      "status": 200,
+      "duration_ms": 11
+    },
+    {
+      "scenario": "INVOICE-005",
+      "source": "procs/scenarios/invoicing/005.yaml",
+      "entrypoint": "billing.sp_issue_invoice",
+      "path": "/api/invoices/00000000-0000-0000-0000-000000000006/issue",
+      "status": 200,
+      "duration_ms": 11
+    },
+    {
+      "scenario": "PLANS-004",
+      "source": "procs/scenarios/plans/004.yaml",
+      "entrypoint": "billing.sp_change_plan",
+      "path": "/plans/00000000-0000-0000-0000-000000000001/change",
+      "status": 302,
+      "duration_ms": 7
+    },
+    {
+      "scenario": "PLANS-005",
+      "source": "procs/scenarios/plans/005.yaml",
+      "entrypoint": "billing.sp_change_plan",
+      "path": "/plans/00000000-0000-0000-0000-000000000004/change",
+      "status": 302,
+      "duration_ms": 7
+    },
+    {
+      "scenario": "RATING-008",
+      "source": "procs/scenarios/rating/008.yaml",
+      "entrypoint": "billing.sp_finalize_rating",
+      "path": "/api/rating/finalize",
+      "status": 200,
+      "duration_ms": 9
+    }
+  ]
+}
