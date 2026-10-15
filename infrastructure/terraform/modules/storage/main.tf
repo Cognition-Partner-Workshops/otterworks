@@ -53,6 +53,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "files" {
   rule {
     id     = "archive-old-versions"
     status = "Enabled"
+
+    # Empty filter = whole bucket, as before; the provider requires filter or prefix.
+    filter {}
+
     noncurrent_version_transition {
       noncurrent_days = 30
       storage_class   = "GLACIER"

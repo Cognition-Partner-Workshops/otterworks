@@ -24,11 +24,24 @@ class NotificationService(
     private val processedCounter: Counter? = meterRegistry?.counter("notifications.processed")
     private val emailSentCounter: Counter? = meterRegistry?.counter("notifications.email.sent")
     private val pushSentCounter: Counter? = meterRegistry?.counter("notifications.push.sent")
+    private val duplicateCounter: Counter? = meterRegistry?.counter("notifications.duplicates.skipped")
 
-    suspend fun processEvent(event: SqsNotificationMessage) {
+    /**
+     * When [idempotencyKey] is set (the SNS/SQS message id), the notification id is derived from it
+     * so a redelivered message maps to the same DynamoDB item and its side effects are skipped.
+     */
+    suspend fun processEvent(event: SqsNotificationMessage, idempotencyKey: String? = null) {
         val targetUserId = resolveTargetUserId(event)
         if (targetUserId.isBlank()) {
             logger.warn { "No target user for event: ${event.eventType}" }
+            return
+        }
+
+        val notificationId = idempotencyKey?.let { notificationIdFor(it, targetUserId) }
+            ?: UUID.randomUUID().toString()
+        if (idempotencyKey != null && repository.getNotificationById(notificationId) != null) {
+            duplicateCounter?.increment()
+            logger.info { "Skipping duplicate delivery of $idempotencyKey (notification $notificationId)" }
             return
         }
 
@@ -59,7 +72,7 @@ class NotificationService(
 
         // Create notification and persist for audit trail and offline retrieval
         val notification = Notification(
-            id = UUID.randomUUID().toString(),
+            id = notificationId,
             userId = targetUserId,
             type = event.eventType,
             title = rendered.title,
@@ -72,7 +85,13 @@ class NotificationService(
             createdAt = Instant.now().toString(),
         )
 
-        repository.saveNotification(notification)
+        if (idempotencyKey == null) {
+            repository.saveNotification(notification)
+        } else if (!repository.createNotificationIfAbsent(notification)) {
+            duplicateCounter?.increment()
+            logger.info { "Skipping duplicate delivery of $idempotencyKey (notification $notificationId)" }
+            return
+        }
         logger.info { "Stored notification ${notification.id} for user $targetUserId" }
 
         // Attempt WebSocket push after save, then update record with actual delivery status
@@ -121,6 +140,9 @@ class NotificationService(
     }
 
     companion object {
+        fun notificationIdFor(idempotencyKey: String, targetUserId: String): String =
+            UUID.nameUUIDFromBytes("$idempotencyKey|$targetUserId".toByteArray(Charsets.UTF_8)).toString()
+
         fun resolveTargetUserId(event: SqsNotificationMessage): String {
             return when (event.eventType) {
                 "file_shared" -> event.sharedWithUserId

@@ -14,6 +14,7 @@ import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class NotificationServiceTest {
@@ -245,5 +246,95 @@ class NotificationServiceTest {
         service.processEvent(event)
 
         coVerify { webSocketManager.pushNotification("user-3", any()) }
+    }
+
+    private val sharedEvent = SqsNotificationMessage(
+        eventType = "file_shared",
+        fileId = "file-123",
+        ownerId = "owner-1",
+        sharedWithUserId = "user-2",
+        timestamp = "2024-01-01T00:00:00Z",
+    )
+
+    @Test
+    fun `notificationIdFor is deterministic per delivery key and target user`() {
+        val id = NotificationService.notificationIdFor("msg-1", "user-2")
+        assertEquals(id, NotificationService.notificationIdFor("msg-1", "user-2"))
+        assertNotEquals(id, NotificationService.notificationIdFor("msg-2", "user-2"))
+        assertNotEquals(id, NotificationService.notificationIdFor("msg-1", "user-3"))
+    }
+
+    @Test
+    fun `processEvent with idempotency key creates notification conditionally under derived id`() = runTest {
+        val expectedId = NotificationService.notificationIdFor("msg-1", "user-2")
+        coEvery { repository.getPreferences("user-2") } returns NotificationPreference(userId = "user-2")
+        coEvery { repository.getNotificationById(expectedId) } returns null
+        coEvery { repository.createNotificationIfAbsent(any()) } returns true
+
+        service.processEvent(sharedEvent, idempotencyKey = "msg-1")
+
+        val created = slot<Notification>()
+        coVerify(exactly = 1) { repository.createNotificationIfAbsent(capture(created)) }
+        assertEquals(expectedId, created.captured.id)
+        coVerify(exactly = 0) { repository.saveNotification(any()) }
+    }
+
+    @Test
+    fun `processEvent skips all side effects for an already-stored redelivery`() = runTest {
+        val expectedId = NotificationService.notificationIdFor("msg-1", "user-2")
+        coEvery { repository.getNotificationById(expectedId) } returns Notification(
+            id = expectedId,
+            userId = "user-2",
+            type = "file_shared",
+            title = "t",
+            message = "m",
+            createdAt = "2024-01-01T00:00:00Z",
+        )
+
+        service.processEvent(sharedEvent, idempotencyKey = "msg-1")
+
+        coVerify(exactly = 0) { emailSender.sendEmail(any(), any(), any()) }
+        coVerify(exactly = 0) { repository.createNotificationIfAbsent(any()) }
+        coVerify(exactly = 0) { repository.saveNotification(any()) }
+        coVerify(exactly = 0) { webSocketManager.pushNotification(any(), any()) }
+    }
+
+    @Test
+    fun `processEvent does not push when a concurrent duplicate won the conditional write`() = runTest {
+        val event = SqsNotificationMessage(
+            eventType = "user_mentioned",
+            mentionedUserId = "user-3",
+            documentId = "doc-1",
+            timestamp = "2024-01-01T00:00:00Z",
+        )
+        coEvery { repository.getPreferences("user-3") } returns NotificationPreference(userId = "user-3")
+        coEvery { repository.getNotificationById(any()) } returns null
+        coEvery { repository.createNotificationIfAbsent(any()) } returns false
+
+        service.processEvent(event, idempotencyKey = "msg-9")
+
+        coVerify(exactly = 0) { webSocketManager.pushNotification(any(), any()) }
+        coVerify(exactly = 0) { repository.saveNotification(any()) }
+    }
+
+    @Test
+    fun `processEvent with idempotency key updates delivery status after push`() = runTest {
+        val event = SqsNotificationMessage(
+            eventType = "user_mentioned",
+            mentionedUserId = "user-3",
+            documentId = "doc-1",
+            timestamp = "2024-01-01T00:00:00Z",
+        )
+        coEvery { repository.getPreferences("user-3") } returns NotificationPreference(userId = "user-3")
+        coEvery { repository.getNotificationById(any()) } returns null
+        coEvery { repository.createNotificationIfAbsent(any()) } returns true
+        coEvery { webSocketManager.pushNotification("user-3", any()) } returns 1
+
+        service.processEvent(event, idempotencyKey = "msg-10")
+
+        val updated = slot<Notification>()
+        coVerify(exactly = 1) { repository.saveNotification(capture(updated)) }
+        assertEquals(NotificationService.notificationIdFor("msg-10", "user-3"), updated.captured.id)
+        assertTrue(updated.captured.deliveredVia.contains("push"))
     }
 }

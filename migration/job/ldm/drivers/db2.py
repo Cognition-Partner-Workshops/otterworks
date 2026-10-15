@@ -122,12 +122,16 @@ class Db2Source:
     def _rows(self, sql: str, params: Sequence[object] = ()) -> Iterator[tuple[object, ...]]:
         db = self.ibm_db
         stmt = self._exec(sql, params)
-        while True:
-            row = db.fetch_tuple(stmt)
-            if row is False:
-                break
-            yield tuple(row)
-        db.free_result(stmt)
+        try:
+            while True:
+                row = db.fetch_tuple(stmt)
+                if row is False:
+                    break
+                yield tuple(row)
+        finally:
+            # The handle leaks if a consumer abandons the generator early (e.g. an encode error
+            # mid-fetch) unless free_result always runs.
+            db.free_result(stmt)
 
     # --- catalog ----------------------------------------------------------------------------------------------------
 
@@ -239,8 +243,15 @@ class Db2Source:
             if not db.commit(conn):
                 raise self._error(f"commit {table} batch {batch_no}")
             return deleted
-        except SourceError:
+        except SourceError as e:
             db.rollback(conn)
+            # CONTRACTS.md §9.4.4: an FK violation (SQLSTATE 23504) is a guard breach like the
+            # delete-count check — roll back, mark the batch ROLLED_BACK, exit 3 (not 1).
+            if e.sqlstate == "23504":
+                raise PurgeGuardError(
+                    f"{table} batch {batch_no}: foreign key violation purging a key "
+                    f"still referenced by a child row; rolled back: {e}"
+                ) from e
             raise
         except PurgeGuardError:
             raise

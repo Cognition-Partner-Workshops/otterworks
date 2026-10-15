@@ -75,19 +75,39 @@ class S3BlobStore:
 
     Credentials come from the default boto3 chain (IRSA on EKS, env/profile locally). `endpoint_url` points at a
     MinIO/localstack stand-in for tests.
+
+    Request deadlines and retries are explicit: a stalled socket would otherwise wait on botocore's library
+    defaults and adaptive mode suits a single-resource, latency-tolerant batch job
+    (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html).
     """
 
     enabled = True
 
-    def __init__(self, bucket: str, region: str | None = None, endpoint_url: str | None = None):
+    def __init__(
+        self,
+        bucket: str,
+        region: str | None = None,
+        endpoint_url: str | None = None,
+        *,
+        connect_timeout: int = 10,
+        read_timeout: int = 60,
+        max_attempts: int = 10,
+    ):
         try:
             import boto3
+            from botocore.config import Config
             from botocore.exceptions import ClientError
         except ImportError as e:  # pragma: no cover - exercised only in the image
             raise ConfigError("boto3 is not installed; pip install 'ldm[s3]'") from e
         self.bucket = bucket
         self._not_found = ClientError
-        self.client = boto3.client("s3", region_name=region or None, endpoint_url=endpoint_url or None)
+        config = Config(
+            connect_timeout=connect_timeout,
+            read_timeout=read_timeout,
+            tcp_keepalive=True,
+            retries={"mode": "adaptive", "max_attempts": max_attempts},
+        )
+        self.client = boto3.client("s3", region_name=region or None, endpoint_url=endpoint_url or None, config=config)
 
     def upload(self, local: Path, blob_path: str) -> None:
         with local.open("rb") as f:

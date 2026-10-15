@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -17,6 +18,14 @@ import org.springframework.context.annotation.Import;
 class AnnouncementServiceTest {
 
     @Autowired private AnnouncementService service;
+    @Autowired private AnnouncementRepository repository;
+
+    // The named in-memory H2 database outlives each Spring context in the forked JVM, so rows
+    // committed by full-context tests would otherwise leak in. Rolled back with the test.
+    @BeforeEach
+    void startFromEmptyTable() {
+        repository.deleteAllInBatch();
+    }
 
     @Test
     void listPublishedReturnsOnlyPublishedNewestFirst() {

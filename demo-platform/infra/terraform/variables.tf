@@ -83,6 +83,7 @@ variable "budget_alert_emails" {
   description = "Addresses notified when spend crosses the budget thresholds. No budget is created when empty."
   type        = list(string)
   default     = []
+  nullable    = false
 }
 
 # Seed values for the CONFIG#reaper control item. These apply at install only --

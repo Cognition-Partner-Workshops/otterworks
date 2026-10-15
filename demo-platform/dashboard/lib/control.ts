@@ -1,4 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, type DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
@@ -51,11 +51,31 @@ interface TenantItem {
 
 let _doc: DynamoDBDocumentClient | null = null;
 
+// The SDK's HTTP timeouts default to 0 (wait forever), so one stalled
+// connection would hang the API route that issued it. Bound each attempt and
+// keep the SDK's standard retry mode (exponential backoff with jitter) to a
+// small fixed number of attempts so retries stay inside a request deadline.
+export const DDB_CONNECTION_TIMEOUT_MS = 3000;
+export const DDB_REQUEST_TIMEOUT_MS = 5000;
+export const DDB_MAX_ATTEMPTS = 3;
+
+export function controlClientConfig(): DynamoDBClientConfig {
+  return {
+    region: env.awsRegion,
+    maxAttempts: DDB_MAX_ATTEMPTS,
+    retryMode: "standard",
+    requestHandler: {
+      connectionTimeout: DDB_CONNECTION_TIMEOUT_MS,
+      requestTimeout: DDB_REQUEST_TIMEOUT_MS,
+    },
+  };
+}
+
 // Lazily construct the client so that `next build` (which imports route
 // modules) never needs live AWS credentials.
 function doc(): DynamoDBDocumentClient {
   if (!_doc) {
-    const base = new DynamoDBClient({ region: env.awsRegion });
+    const base = new DynamoDBClient(controlClientConfig());
     _doc = DynamoDBDocumentClient.from(base, {
       marshallOptions: { removeUndefinedValues: true },
     });
@@ -151,7 +171,10 @@ export async function checkout(input: CheckoutInput): Promise<Tenant> {
           lock_ttl: lockTtl,
           ttl: lockTtl,
         },
-        ConditionExpression: "attribute_not_exists(PK)",
+        // DynamoDB's TTL sweep can lag expiry by days, so a lapsed lock may
+        // still be present; honour lock_ttl here instead of waiting for it.
+        ConditionExpression: "attribute_not_exists(PK) OR lock_ttl < :now",
+        ExpressionAttributeValues: { ":now": now },
       }),
     );
   } catch (err) {
@@ -199,14 +222,29 @@ export async function checkout(input: CheckoutInput): Promise<Tenant> {
       }),
     );
   } catch (err) {
+    // Either the tenant is live or the write failed outright (throttling,
+    // timeout, validation). In both cases undo our reservation lock so the id
+    // is not blocked until the lock lapses.
+    await releaseOwnLock(input.id, input.owner, now).catch(() => {});
     if (err instanceof Error && err.name === "ConditionalCheckFailedException") {
-      // Tenant is live; undo our reservation lock so we don't leave it dangling.
-      await releaseLock(input.id).catch(() => {});
       throw new LockConflictError(input.id);
     }
     throw err;
   }
   return itemToTenant(item);
+}
+
+/** Delete the lock only if it is still the one this checkout acquired. */
+async function releaseOwnLock(id: string, owner: string, acquiredAt: number): Promise<void> {
+  await doc().send(
+    new DeleteCommand({
+      TableName: table(),
+      Key: { PK: pkLock(id), SK: SK_LOCK },
+      ConditionExpression: "#o = :o AND acquired_at = :a",
+      ExpressionAttributeNames: { "#o": "owner" },
+      ExpressionAttributeValues: { ":o": owner, ":a": acquiredAt },
+    }),
+  );
 }
 
 /** Delete the reservation lock so the id can be checked out again immediately. */

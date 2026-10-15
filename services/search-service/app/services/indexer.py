@@ -16,6 +16,10 @@ FILE_SERVICE_URL = "http://file-service:8082"
 FETCH_TIMEOUT = 30
 
 
+class ReindexSourceError(RuntimeError):
+    """A source-of-truth service could not be fully read during reindex."""
+
+
 class Indexer:
     """Handles document and file indexing into MeiliSearch."""
 
@@ -89,8 +93,9 @@ class Indexer:
 
         Fetches all documents from the document-service and all files
         from the file-service, then passes them to MeiliSearch for
-        bulk re-indexing.  If a source service is unreachable the
-        corresponding index is still cleared and recreated empty.
+        bulk re-indexing.  If either source cannot be read completely,
+        ``ReindexSourceError`` is raised before any index is touched so the
+        existing search data is preserved.
         """
         documents = self._fetch_all_documents()
         files = self._fetch_all_files()
@@ -115,8 +120,12 @@ class Indexer:
                     timeout=FETCH_TIMEOUT,
                 )
                 if resp.status_code != 200:
-                    logger.warning("reindex_document_fetch_failed", status=resp.status_code)
-                    break
+                    logger.warning(
+                        "reindex_document_fetch_failed", status=resp.status_code, page=page
+                    )
+                    raise ReindexSourceError(
+                        f"document-service returned HTTP {resp.status_code} on page {page}"
+                    )
                 data = resp.json()
                 items = data.get("documents") or data.get("items") or data.get("data") or []
                 if not items:
@@ -133,9 +142,9 @@ class Indexer:
                         "type": "document",
                     })
                 page += 1
-            except requests.RequestException:
-                logger.exception("reindex_document_fetch_error")
-                break
+            except (requests.RequestException, ValueError) as exc:
+                logger.exception("reindex_document_fetch_error", page=page)
+                raise ReindexSourceError(f"document-service unreadable on page {page}") from exc
         return docs
 
     @staticmethod
@@ -151,8 +160,10 @@ class Indexer:
                     timeout=FETCH_TIMEOUT,
                 )
                 if resp.status_code != 200:
-                    logger.warning("reindex_file_fetch_failed", status=resp.status_code)
-                    break
+                    logger.warning("reindex_file_fetch_failed", status=resp.status_code, page=page)
+                    raise ReindexSourceError(
+                        f"file-service returned HTTP {resp.status_code} on page {page}"
+                    )
                 data = resp.json()
                 items = data.get("files") or data.get("items") or data.get("data") or []
                 if not items:
@@ -171,9 +182,9 @@ class Indexer:
                         "type": "file",
                     })
                 page += 1
-            except requests.RequestException:
-                logger.exception("reindex_file_fetch_error")
-                break
+            except (requests.RequestException, ValueError) as exc:
+                logger.exception("reindex_file_fetch_error", page=page)
+                raise ReindexSourceError(f"file-service unreadable on page {page}") from exc
         return files
 
     def process_event(self, event: dict[str, Any]) -> dict[str, Any] | None:

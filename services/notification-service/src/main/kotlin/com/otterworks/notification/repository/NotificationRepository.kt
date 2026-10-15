@@ -2,6 +2,7 @@ package com.otterworks.notification.repository
 
 import aws.sdk.kotlin.services.dynamodb.DynamoDbClient
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
+import aws.sdk.kotlin.services.dynamodb.model.ConditionalCheckFailedException
 import aws.sdk.kotlin.services.dynamodb.model.DeleteItemRequest
 import aws.sdk.kotlin.services.dynamodb.model.GetItemRequest
 import aws.sdk.kotlin.services.dynamodb.model.PutItemRequest
@@ -21,30 +22,48 @@ class NotificationRepository(
 ) {
 
     suspend fun saveNotification(notification: Notification) {
-        val item = mutableMapOf<String, AttributeValue>(
-            "id" to AttributeValue.S(notification.id),
-            "userId" to AttributeValue.S(notification.userId),
-            "type" to AttributeValue.S(notification.type),
-            "title" to AttributeValue.S(notification.title),
-            "message" to AttributeValue.S(notification.message),
-            "resourceId" to AttributeValue.S(notification.resourceId),
-            "resourceType" to AttributeValue.S(notification.resourceType),
-            "actorId" to AttributeValue.S(notification.actorId),
-            "read" to AttributeValue.Bool(notification.read),
-            "deliveredVia" to AttributeValue.L(
-                notification.deliveredVia.map { AttributeValue.S(it) }
-            ),
-            "createdAt" to AttributeValue.S(notification.createdAt),
-        )
-
         val request = PutItemRequest {
             tableName = config.dynamoDbTableNotifications
-            this.item = item
+            item = toItem(notification)
         }
 
         dynamoDbClient.putItem(request)
         logger.debug { "Saved notification ${notification.id} for user ${notification.userId}" }
     }
+
+    /** Returns false when an item with the same id already exists (duplicate delivery). */
+    suspend fun createNotificationIfAbsent(notification: Notification): Boolean {
+        val request = PutItemRequest {
+            tableName = config.dynamoDbTableNotifications
+            item = toItem(notification)
+            conditionExpression = "attribute_not_exists(id)"
+        }
+
+        return try {
+            dynamoDbClient.putItem(request)
+            logger.debug { "Created notification ${notification.id} for user ${notification.userId}" }
+            true
+        } catch (e: ConditionalCheckFailedException) {
+            logger.info { "Notification ${notification.id} already exists; skipping duplicate write" }
+            false
+        }
+    }
+
+    private fun toItem(notification: Notification): Map<String, AttributeValue> = mapOf(
+        "id" to AttributeValue.S(notification.id),
+        "userId" to AttributeValue.S(notification.userId),
+        "type" to AttributeValue.S(notification.type),
+        "title" to AttributeValue.S(notification.title),
+        "message" to AttributeValue.S(notification.message),
+        "resourceId" to AttributeValue.S(notification.resourceId),
+        "resourceType" to AttributeValue.S(notification.resourceType),
+        "actorId" to AttributeValue.S(notification.actorId),
+        "read" to AttributeValue.Bool(notification.read),
+        "deliveredVia" to AttributeValue.L(
+            notification.deliveredVia.map { AttributeValue.S(it) }
+        ),
+        "createdAt" to AttributeValue.S(notification.createdAt),
+    )
 
     suspend fun getNotificationById(id: String): Notification? {
         val request = GetItemRequest {

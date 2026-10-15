@@ -1,0 +1,4 @@
+-r requirements.txt
+numpy==1.21.6
+moto[s3,sqs,dynamodb]==4.1.14
+pytest==7.4.4

@@ -43,7 +43,10 @@ def main():
 
     archive_bucket = config.get("s3", "archive_bucket")
 
-    ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+    run_started_at = datetime.now(tz=timezone.utc)
+    ds = run_started_at.strftime("%Y-%m-%d")
+    # Unique per run so a same-week re-run never overwrites an earlier archive.
+    run_id = run_started_at.strftime("%Y%m%dT%H%M%S%fZ")
     retention_days = 90
     dynamodb_table_name = "otterworks-audit-events"
     dynamodb_batch_size = 25  # DynamoDB batch write limit
@@ -93,7 +96,7 @@ def main():
         sys.exit(0)
 
     # ---- Compress to JSONL.gz ----
-    archive_key = "%s/year=%s/week=%s/audit_events.jsonl.gz" % (s3_prefix, ds[:4], ds)
+    archive_key = "%s/year=%s/week=%s/audit_events_%s.jsonl.gz" % (s3_prefix, ds[:4], ds, run_id)
 
     buf = io.BytesIO()
     with gzip.GzipFile(fileobj=buf, mode="wb") as gz:
@@ -193,7 +196,7 @@ def main():
         },
     }
 
-    report_key = "reports/compliance/audit-archive/%s/report.json" % ds
+    report_key = "reports/compliance/audit-archive/%s/report_%s.json" % (ds, run_id)
     s3_client_report = boto3.client(
         "s3",
         aws_access_key_id=aws_access_key,
