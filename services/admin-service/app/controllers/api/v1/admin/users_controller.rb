@@ -2,7 +2,7 @@ module Api
   module V1
     module Admin
       class UsersController < ApplicationController
-        before_action :set_user, only: %i[show update destroy suspend activate]
+        before_action :set_user, only: %i[show update destroy suspend activate role]
 
         # GET /api/v1/admin/users
         def index
@@ -45,6 +45,29 @@ module Api
             render json: { error: 'Validation failed', details: @user.errors.full_messages },
                    status: :unprocessable_entity
           end
+        end
+
+        # PUT /api/v1/admin/users/:id/role
+        def role
+          new_role = params.require(:role)
+          AdminAuthorization.authorize_role_change!(actor_roles: current_user_roles, target: @user, new_role: new_role)
+          previous_role = @user.role
+
+          if @user.update(role: new_role)
+            AuditLogger.log(
+              action: 'user.role_changed',
+              resource_type: 'AdminUser',
+              resource_id: @user.id,
+              request: request,
+              changes_made: { before: { role: previous_role }, after: { role: @user.role } }
+            )
+            render json: @user, serializer: AdminUserSerializer, include_quota: true
+          else
+            render json: { error: 'Validation failed', details: @user.errors.full_messages },
+                   status: :unprocessable_entity
+          end
+        rescue AdminAuthorization::RoleChangeNotPermitted => e
+          render json: { error: e.message }, status: :forbidden
         end
 
         # DELETE /api/v1/admin/users/:id
@@ -97,7 +120,7 @@ module Api
         end
 
         def user_params
-          params.require(:user).permit(:email, :display_name, :role, :avatar_url) # nosemgrep: ruby.lang.security.model-attr-accessible.model-attr-accessible
+          params.require(:user).permit(:email, :display_name, :avatar_url)
         end
       end
     end
