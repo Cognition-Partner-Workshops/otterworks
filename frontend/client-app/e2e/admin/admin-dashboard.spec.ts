@@ -40,7 +40,7 @@ async function open(page: Page, path: string, title: string) {
 }
 
 test.describe("Admin dashboard", () => {
-  test.describe.configure({ mode: "serial" });
+  test.describe.configure({ mode: "default" });
 
   test.beforeAll(async ({ request }) => {
     const probe = await request.get(`${ADMIN_URL}/login`).catch(() => null);
@@ -112,20 +112,59 @@ test.describe("Admin dashboard", () => {
     await expect(page.locator("tr.mat-mdc-row").first()).toContainText(/GB|MB|KB| B/);
   });
 
-  test("toggles a feature flag and back", async ({ page }) => {
+  test("toggles a feature flag and persists it", async ({ page }) => {
     await login(page);
-    await open(page, "/features", "Feature Flags");
-    const toggle = page.locator("mat-slide-toggle button[role='switch']").first();
-    await expect(toggle).toBeVisible();
-    const before = await toggle.getAttribute("aria-checked");
+    const token = await page.evaluate(() => localStorage.getItem("ow_admin_token"));
+    const headers = { Authorization: `Bearer ${token}` };
+    const flag = (await (await page.request.get(`${API_URL}/api/v1/admin/features`, { headers })).json()).features[0];
     try {
-      await toggle.click();
-      await expect(page.locator(".mat-mdc-snack-bar-container")).toContainText(/enabled|disabled/);
-      await expect(toggle).toHaveAttribute("aria-checked", before === "true" ? "false" : "true");
+      await open(page, "/features", "Feature Flags");
+      const switchFor = () =>
+        page.locator("mat-card", { has: page.getByRole("heading", { name: flag.name }) }).locator("button[role='switch']");
+      await expect(switchFor()).toHaveAttribute("aria-checked", String(flag.enabled));
+      await switchFor().click();
+      await expect(page.locator(".mat-mdc-snack-bar-container")).toContainText(
+        `${flag.name} ${flag.enabled ? "disabled" : "enabled"}`,
+      );
+      await page.reload();
+      await expect(switchFor()).toHaveAttribute("aria-checked", String(!flag.enabled));
     } finally {
-      if ((await toggle.getAttribute("aria-checked")) !== before) await toggle.click();
+      await page.request.put(`${API_URL}/api/v1/admin/features/${flag.id}`, {
+        headers,
+        data: { feature: { enabled: flag.enabled } },
+      });
     }
-    await expect(toggle).toHaveAttribute("aria-checked", before ?? "false");
+  });
+
+  // [REAL] FeaturesComponent.toggleFlag computes `!flag.enabled` but never updates the flag after the
+  // PUT, so toggling the same switch back re-sends the first state and the flag stays flipped.
+  test("toggling a flag off and on again persists the original state [REAL: stale toggleFlag state]", async ({
+    page,
+  }) => {
+    await login(page);
+    const token = await page.evaluate(() => localStorage.getItem("ow_admin_token"));
+    const headers = { Authorization: `Bearer ${token}` };
+    const flags = (await (await page.request.get(`${API_URL}/api/v1/admin/features`, { headers })).json()).features;
+    const flag = flags[0];
+    try {
+      await open(page, "/features", "Feature Flags");
+      const card = page.locator("mat-card", { has: page.getByRole("heading", { name: flag.name }) });
+      const toggle = card.locator("button[role='switch']");
+      await toggle.click();
+      const snackbar = page.locator(".mat-mdc-snack-bar-container").last();
+      await expect(snackbar).toContainText(flag.enabled ? "disabled" : "enabled");
+      await toggle.click();
+      await expect(snackbar).toContainText(flag.enabled ? "enabled" : "disabled");
+      await page.reload();
+      await expect(
+        page.locator("mat-card", { has: page.getByRole("heading", { name: flag.name }) }).locator("button[role='switch']"),
+      ).toHaveAttribute("aria-checked", String(flag.enabled));
+    } finally {
+      await page.request.put(`${API_URL}/api/v1/admin/features/${flag.id}`, {
+        headers,
+        data: { feature: { enabled: flag.enabled } },
+      });
+    }
   });
 
   test("shows system health for backend services via the sidebar", async ({ page }) => {

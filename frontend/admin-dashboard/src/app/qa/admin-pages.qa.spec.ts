@@ -209,4 +209,14 @@ describe('FeaturesComponent (admin QA)', () => {
     req.flush({});
     expect(snack).toHaveBeenCalledWith('beta_search enabled', 'Dismiss', jasmine.any(Object));
   });
+
+  it('toggling the same flag twice sends opposite states [REAL: toggleFlag never updates flag.enabled]', () => {
+    const flag = component.flags[1];
+    component.toggleFlag(flag);
+    ctx.http.expectOne('/api/v1/admin/features/f-2').flush({});
+    component.toggleFlag(flag);
+    const second = ctx.http.expectOne('/api/v1/admin/features/f-2');
+    expect(second.request.body).toEqual({ feature: { enabled: false } });
+    second.flush({});
+  });
 });
