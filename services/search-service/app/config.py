@@ -40,6 +40,8 @@ class AuthConfig:
     service_token: str = field(
         default_factory=lambda: os.getenv("SEARCH_SERVICE_TOKEN", "")
     )
+    jwt_secret: str = field(default_factory=lambda: os.getenv("JWT_SECRET", ""))
+    jwt_peer_secret: str = field(default_factory=lambda: os.getenv("JWT_PEER_SECRET", ""))
     require_auth: bool = field(
         default_factory=lambda: os.getenv("REQUIRE_AUTH", "true").lower() == "true"
     )
