@@ -1,5 +1,7 @@
 class JwtAuthenticator
   EXCLUDED_PATHS = %w[/health /metrics /api/v1/admin/alerts/ingest /api/v1/admin/chaos].freeze
+  # admin-service tokens carry a singular `role`; auth-service tokens carry `roles` (e.g. ["ADMIN", "USER"]).
+  ADMIN_ROLES = %w[admin super_admin].freeze
 
   def initialize(app)
     @app = app
@@ -15,6 +17,7 @@ class JwtAuthenticator
 
     payload = decode_token(token)
     return unauthorized_response('Invalid or expired token') if payload.nil?
+    return forbidden_response unless admin?(payload)
 
     env['jwt.payload'] = payload
     env['jwt.user_id'] = payload['sub']
@@ -44,6 +47,15 @@ class JwtAuthenticator
   rescue JWT::DecodeError, JWT::ExpiredSignature, JWT::VerificationError => e
     Rails.logger.warn("JWT authentication failed: #{e.message}")
     nil
+  end
+
+  def admin?(payload)
+    roles = [payload['role'], *Array(payload['roles'])].compact.map { |role| role.to_s.downcase }
+    roles.intersect?(ADMIN_ROLES)
+  end
+
+  def forbidden_response
+    [403, { 'Content-Type' => 'application/json' }, [{ error: 'Admin role required' }.to_json]]
   end
 
   def unauthorized_response(message)
