@@ -146,7 +146,8 @@ def suspend_overdue(repository: DunningRepository, as_of: date) -> list[Suspensi
     the plans owner API) and gets one 'suspension' notification for as_of unless that
     (tenant, kind, sent_at) already exists. Tenants already suspended are left untouched, so
     a second run on the same day changes nothing."""
-    cutoff = as_of - timedelta(days=SUSPENSION_GRACE_DAYS)
+    # as_of - interval '14 days', clamped so a date near date.min cannot underflow
+    cutoff = date.fromordinal(max(as_of.toordinal() - SUSPENSION_GRACE_DAYS, 1))
     tenant_ids = sorted(
         {
             invoice.tenant_id

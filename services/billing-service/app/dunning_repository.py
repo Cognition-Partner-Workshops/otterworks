@@ -4,8 +4,6 @@ from datetime import UTC
 from typing import Any
 from uuid import UUID
 
-from pymongo.errors import DuplicateKeyError
-
 from app.domain import DunningAttemptRow, InvoiceRow
 from app.dunning import NotificationRow
 from app.repository import MongoInvoicingRepository, _invoice_row
@@ -52,18 +50,18 @@ class MongoDunningRepository(MongoInvoicingRepository):
         return sorted(rows, key=lambda row: (row.tenant_id.int, row.sent_at))
 
     def insert_notification(self, notification: NotificationRow) -> bool:
-        """INSERT ... WHERE NOT EXISTS (tenant_id, kind, sent_at): the unique index on
-        (tenantId, kind, sentAt) is the guard. Returns whether a document was inserted."""
-        try:
-            self.database.notifications.insert_one(
-                {
-                    "_id": notification.notification_id,
-                    "tenantId": notification.tenant_id,
-                    "kind": notification.kind,
-                    "sentAt": notification.sent_at,
-                },
-                session=self.session,
-            )
-        except DuplicateKeyError:
-            return False
-        return True
+        """INSERT ... WHERE NOT EXISTS (tenant_id, kind, sent_at) as one conditional upsert on
+        the unique (tenantId, kind, sentAt) key: an existing notice is left as is and, unlike
+        a DuplicateKeyError, does not abort the enclosing transaction. Returns whether a
+        document was inserted."""
+        result = self.database.notifications.update_one(
+            {
+                "tenantId": notification.tenant_id,
+                "kind": notification.kind,
+                "sentAt": notification.sent_at,
+            },
+            {"$setOnInsert": {"_id": notification.notification_id}},
+            upsert=True,
+            session=self.session,
+        )
+        return result.upserted_id is not None
