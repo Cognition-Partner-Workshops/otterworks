@@ -256,12 +256,11 @@ class DocumentService:
     # ---- Search ----
 
     async def search(
-        self, query: str, owner_id: UUID, page: int = 1, size: int = 20
+        self, query: str, owner_id: UUID | None = None, page: int = 1, size: int = 20
     ) -> tuple[list[Document], int]:
         escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{escaped}%"
         base = select(Document).where(
-            Document.owner_id == owner_id,
             Document.is_deleted.is_(False),
             Document.is_template.is_(False),
             or_(
@@ -269,6 +268,8 @@ class DocumentService:
                 Document.content.ilike(pattern),
             ),
         )
+        if owner_id is not None:
+            base = base.where(Document.owner_id == owner_id)
         count_q = select(func.count()).select_from(base.subquery())
         total = (await self.db.execute(count_q)).scalar_one()
 

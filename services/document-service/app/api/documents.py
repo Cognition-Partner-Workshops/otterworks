@@ -85,8 +85,15 @@ def _ensure_owner(document: object, user_id: UUID) -> None:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
-def _resolve_owner(requested_owner: UUID | None, caller_id: UUID) -> UUID:
-    """The caller is the only owner a request may act as; naming anyone else is denied."""
+def _resolve_owner(requested_owner: UUID | None, caller_id: UUID | None) -> UUID | None:
+    """An authenticated caller may only act as itself; naming anyone else is denied.
+
+    A request with no caller identity can only come from inside the network (the
+    gateway rejects unauthenticated traffic), e.g. the search-service reindexer, so
+    it keeps addressing owners explicitly.
+    """
+    if caller_id is None:
+        return requested_owner
     if requested_owner is not None and requested_owner != caller_id:
         raise HTTPException(
             status_code=403, detail="owner_id must match the authenticated caller"
@@ -94,12 +101,22 @@ def _resolve_owner(requested_owner: UUID | None, caller_id: UUID) -> UUID:
     return caller_id
 
 
+def _require_owner(requested_owner: UUID | None, request: Request) -> UUID:
+    owner_id = _resolve_owner(requested_owner, _extract_user_id(request))
+    if owner_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="owner_id is required: provide it in the body or authenticate via JWT",
+        )
+    return owner_id
+
+
 async def _do_create_document(
     body: DocumentCreate,
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    body.owner_id = _resolve_owner(body.owner_id, _require_user_id(request))
+    body.owner_id = _require_owner(body.owner_id, request)
 
     service = DocumentService(db)
     document = await service.create(body)
@@ -144,9 +161,10 @@ async def search_documents(
 ):
     """Search the caller's documents by title or content."""
     await _maybe_inject_latency()
-    user_id = _require_user_id(request)
     service = DocumentService(db)
-    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
+    items, total = await service.search(
+        q, owner_id=_extract_user_id(request), page=page, size=size
+    )
     return DocumentListResponse(
         items=items,
         total=total,
@@ -190,7 +208,7 @@ async def _do_list_documents(
     db: AsyncSession,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
-    owner_id = _resolve_owner(owner_id, _require_user_id(request))
+    owner_id = _resolve_owner(owner_id, _extract_user_id(request))
     service = DocumentService(db)
     items, total = await service.list_documents(
         owner_id=owner_id, folder_id=folder_id, page=page, size=size
@@ -217,7 +235,7 @@ async def _do_filter_documents(
     db: AsyncSession,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
-    owner_id = _resolve_owner(owner_id, _require_user_id(request))
+    owner_id = _resolve_owner(owner_id, _extract_user_id(request))
     repo = DocumentQueryRepository(db)
     filters = {
         "owner_id": str(owner_id) if owner_id else None,
@@ -504,7 +522,7 @@ async def create_from_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a document from a template, owned by the caller."""
-    owner_id = _resolve_owner(body.owner_id, _require_user_id(request))
+    owner_id = _require_owner(body.owner_id, request)
     service = DocumentService(db)
     document = await service.create_from_template(template_id, body, owner_id)
     if not document:

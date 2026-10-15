@@ -58,11 +58,20 @@ async def test_list_returns_only_the_callers_documents(client: AsyncClient, para
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("params", [{}, {"title": "x"}])
-async def test_list_requires_authentication(client: AsyncClient, params):
-    await _create(client, uuid.uuid4(), "x")
-    resp = await client.get("/api/v1/documents/", params=params)
-    assert resp.status_code == 401
+@pytest.mark.parametrize("params", [{}, {"title": "Doc"}])
+async def test_list_without_identity_is_an_internal_call_that_names_the_owner(
+    client: AsyncClient, params
+):
+    """No caller identity only happens in-network (the gateway rejects it), e.g. the
+    search-service reindexer; those calls keep addressing owners explicitly."""
+    owner, other = uuid.uuid4(), uuid.uuid4()
+    await _create(client, owner, "Doc")
+    await _create(client, other, "Doc")
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner), **params}
+    )
+    assert resp.status_code == 200
+    assert [item["owner_id"] for item in resp.json()["items"]] == [str(owner)]
 
 
 # ---- search ----
@@ -93,9 +102,11 @@ async def test_search_returns_the_callers_matches(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_search_requires_authentication(client: AsyncClient):
-    resp = await client.get("/api/v1/documents/search", params={"q": "anything"})
-    assert resp.status_code == 401
+async def test_search_without_identity_is_an_internal_call(client: AsyncClient):
+    await _create(client, uuid.uuid4(), "Indexed")
+    resp = await client.get("/api/v1/documents/search", params={"q": "Indexed"})
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
 
 
 # ---- create / create-from-template: owner comes from the token ----
@@ -128,10 +139,8 @@ async def test_create_with_own_owner_id_is_allowed(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_with_owner_id_but_no_authentication_is_rejected(client: AsyncClient):
-    resp = await client.post(
-        "/api/v1/documents/", json={"title": "Anon", "owner_id": str(uuid.uuid4())}
-    )
+async def test_create_without_identity_or_owner_is_rejected(client: AsyncClient):
+    resp = await client.post("/api/v1/documents/", json={"title": "Anon"})
     assert resp.status_code == 401
 
 
@@ -164,11 +173,10 @@ async def test_from_template_is_owned_by_the_caller(client: AsyncClient, send_ow
 
 
 @pytest.mark.asyncio
-async def test_from_template_requires_authentication(client: AsyncClient):
+async def test_from_template_without_identity_or_owner_is_rejected(client: AsyncClient):
     template_id = await _template(client)
     resp = await client.post(
-        f"/api/v1/documents/from-template/{template_id}",
-        json={"title": "Anon", "owner_id": str(uuid.uuid4())},
+        f"/api/v1/documents/from-template/{template_id}", json={"title": "Anon"}
     )
     assert resp.status_code == 401
 
