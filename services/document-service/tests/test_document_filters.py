@@ -86,3 +86,73 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_filter_title_with_quote_is_bound_not_interpolated(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "O'Brien's Report")
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "o'brien"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    assert [item["title"] for item in body["items"]] == ["O'Brien's Report"]
+
+
+@pytest.mark.asyncio
+async def test_filter_content_type_tautology_does_not_widen_results(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Plan", content_type="text/markdown")
+    await _create(client, owner_id, "Page", content_type="text/html")
+
+    resp = await client.get(
+        "/api/v1/documents/", params={"content_type": "text/markdown' OR '1'='1"}
+    )
+
+    assert resp.status_code == 200
+    assert resp.json() == {"items": [], "total": 0, "page": 1, "size": 20, "pages": 1}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"sort": "title; DROP TABLE documents"},
+        {"sort": "updated_at", "direction": "desc; DROP TABLE documents"},
+        {"sort": "(SELECT 1)"},
+    ],
+)
+async def test_filter_rejects_unknown_sort_without_leaking_sql(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict[str, str]
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params=params)
+
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert detail == "Invalid filter"
+    assert "DROP" not in detail and "SELECT" not in detail
+
+    after = await client.get("/api/v1/documents/", params={"title": "report"})
+    assert after.status_code == 200
+    assert after.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_repository_rejects_sort_not_in_allow_list(db_session):
+    from app.services.document_query_repository import DocumentQueryRepository
+
+    repo = DocumentQueryRepository(db_session)
+
+    with pytest.raises(ValueError):
+        await repo.search_documents(sort="title; DROP TABLE documents")
+    with pytest.raises(ValueError):
+        await repo.search_documents(sort="title", direction="asc, owner_id")
+
+    assert await repo.search_documents(sort="title", direction="ASC") == []
