@@ -18,6 +18,8 @@ locals {
       schema  = "announcements"
       handler = "com.otterworks.legacyportal.lambda.AnnouncementsHandler::handleRequest"
       events  = true
+      # Power tuning with the parity corpus: docs/aws-legacy-portal/announcements-power-tuning.md
+      architecture = "arm64"
     }
     preferences = {
       abbr    = "pref"
@@ -25,6 +27,8 @@ locals {
       schema  = "user_preferences"
       handler = "com.otterworks.legacyportal.lambda.preferences.PreferencesHandler::handleRequest"
       events  = false
+      # Not measured yet
+      architecture = "x86_64"
     }
     feedback = {
       abbr    = "fb"
@@ -32,10 +36,14 @@ locals {
       schema  = "feedback"
       handler = "com.otterworks.legacyportal.lambda.feedback.FeedbackHandler::handleRequest"
       events  = false
+      # Not measured yet
+      architecture = "x86_64"
     }
   }
   m      = local.modules[var.module]
   events = local.m.events
+
+  lambda_architecture = coalesce(var.lambda_architecture, local.m.architecture)
 
   tags = {
     demo        = "legacy-portal-strangler"
