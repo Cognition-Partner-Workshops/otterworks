@@ -9,10 +9,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.auth.entity.User;
 import com.otterworks.auth.repository.RefreshTokenRepository;
 import com.otterworks.auth.repository.UserRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -31,6 +35,9 @@ class AuthControllerIntegrationTest {
   @Autowired private UserRepository userRepository;
   @Autowired private RefreshTokenRepository refreshTokenRepository;
   @Autowired private PasswordEncoder passwordEncoder;
+
+  @Value("${jwt.secret}")
+  private String jwtSecret;
 
   @BeforeEach
   void setUp() {
@@ -220,6 +227,51 @@ class AuthControllerIntegrationTest {
   }
 
   @Test
+  void refresh_shouldReturn401WithoutAuthorizationHeader() throws Exception {
+    mockMvc
+        .perform(post("/api/v1/auth/refresh"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.message").value("Missing authorization header"));
+  }
+
+  @Test
+  void profile_shouldRejectRefreshTokenAsBearer() throws Exception {
+    String refreshToken =
+        registerAndGetTokens("refresh-bearer@otterworks.dev").get("refreshToken").asText();
+
+    mockMvc
+        .perform(get("/api/v1/auth/profile").header("Authorization", "Bearer " + refreshToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void profile_shouldRejectNonAccessTokenType() throws Exception {
+    JsonNode tokens = registerAndGetTokens("typed-token@otterworks.dev");
+    String userId =
+        mockMvc
+            .perform(
+                get("/api/v1/auth/profile")
+                    .header("Authorization", "Bearer " + tokens.get("accessToken").asText()))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String subject = objectMapper.readTree(userId).get("id").asText();
+    String otherTypeToken =
+        Jwts.builder()
+            .subject(subject)
+            .claim("roles", java.util.List.of("USER"))
+            .claim("type", "password-reset")
+            .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
+            .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+    mockMvc
+        .perform(get("/api/v1/auth/profile").header("Authorization", "Bearer " + otherTypeToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void users_shouldRequireAdminRole() throws Exception {
     String accessToken =
         registerAndGetAccessToken("regular@otterworks.dev", "password123", "Regular User");
@@ -289,5 +341,20 @@ class AuthControllerIntegrationTest {
 
     JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
     return json.get("accessToken").asText();
+  }
+
+  private JsonNode registerAndGetTokens(String email) throws Exception {
+    String body =
+        String.format(
+            "{\"email\": \"%s\", \"password\": \"password123\", \"displayName\": \"Token"
+                + " User\"}",
+            email);
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return objectMapper.readTree(result.getResponse().getContentAsString());
   }
 }

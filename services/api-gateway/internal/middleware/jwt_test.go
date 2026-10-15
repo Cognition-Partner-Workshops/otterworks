@@ -349,3 +349,60 @@ func TestGetJWTClaims_NilContext(t *testing.T) {
 	claims := GetJWTClaims(req.Context())
 	assert.Nil(t, claims)
 }
+
+func TestJWTAuth_TokenTypeEnforcement(t *testing.T) {
+	cfg := JWTConfig{
+		Secret:     testSecret,
+		PublicPath: DefaultPublicPaths(),
+		PrefixPath: DefaultPrefixPaths(),
+	}
+
+	var gotClaims *JWTClaims
+	handler := JWTAuth(cfg)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotClaims = GetJWTClaims(r.Context())
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	tokenOfType := func(tokenType string) string {
+		return generateTestToken(t, testSecret, JWTClaims{
+			Type: tokenType,
+			RegisteredClaims: jwt.RegisteredClaims{
+				Subject:   "user-123",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
+			},
+		})
+	}
+
+	tests := []struct {
+		name       string
+		tokenType  string
+		path       string
+		wantStatus int
+	}{
+		{"refresh token rejected on proxied route", "refresh", "/api/v1/files/list", http.StatusUnauthorized},
+		{"refresh token rejected on other auth route", "refresh", "/api/v1/auth/profile", http.StatusUnauthorized},
+		{"refresh token rejected on refresh sub-path", "refresh", "/api/v1/auth/refresh/extra", http.StatusUnauthorized},
+		{"unknown token type rejected", "password-reset", "/api/v1/files/list", http.StatusUnauthorized},
+		{"refresh token allowed on refresh endpoint", "refresh", "/api/v1/auth/refresh", http.StatusOK},
+		{"access token allowed on proxied route", "access", "/api/v1/files/list", http.StatusOK},
+		{"access token allowed on refresh endpoint", "access", "/api/v1/auth/refresh", http.StatusOK},
+		{"untyped token allowed on proxied route", "", "/api/v1/files/list", http.StatusOK},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotClaims = nil
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			req.Header.Set("Authorization", "Bearer "+tokenOfType(tt.tokenType))
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+			assert.Equal(t, tt.wantStatus, rec.Code)
+			if tt.wantStatus == http.StatusOK {
+				require.NotNil(t, gotClaims)
+				assert.Equal(t, "user-123", gotClaims.Subject)
+			} else {
+				assert.Nil(t, gotClaims, "handler must not be reached")
+			}
+		})
+	}
+}
