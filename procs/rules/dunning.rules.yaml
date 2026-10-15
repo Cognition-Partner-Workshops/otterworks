@@ -1,0 +1,58 @@
+module: dunning
+rules:
+  - id: DUNNING-001
+    statement: The overdue account list is every invoice with status 'overdue' whose issue date (UTC) is strictly before as_of, joined to its tenant, with days_overdue = as_of minus the issue date and the tenant's current status, ordered by issued_at then invoice id.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [1, 18]
+    inputs: [as_of]
+    outputs: [tenant_id, invoice_id, total, days_overdue, tenant_status]
+    confidence: high
+    scenarios: [DUNNING-001]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b02 extraction; merge authority is procs parity PASS=5 plus the recon harness PASS. Reads the invoices (w3-b01) and tenants (w1-b01) documents; writes nothing.
+  - id: DUNNING-002
+    statement: Scheduling walks every overdue invoice in (issued_at, id) order and appends one attempt numbered max(attempt_no) + 1 with id md5(invoice_id || attempt_no), status 'scheduled' and scheduled_for = as_of moved off the weekend (Saturday to Monday, Sunday to Monday); an attempt whose (invoice_id, attempt_no) already exists is left as is.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [20, 51]
+    inputs: [as_of]
+    outputs: [invoice_id, attempt_no, scheduled_for, status]
+    confidence: high
+    scenarios: [DUNNING-002, DUNNING-003]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b02 extraction. dunning_attempts is the dunningAttempts array of the invoices document (mapping spec v2, owner w3-b01), so the append goes through MongoInvoicingRepository.append_dunning_attempt, idempotent on (invoiceId, attemptNo) like ON CONFLICT DO NOTHING; the dunning unit never writes invoices itself.
+  - id: DUNNING-003
+    statement: Suspension considers each distinct tenant with an overdue invoice issued on or before as_of minus 14 days; a tenant whose status is 'active' becomes 'suspended' and each of its active subscriptions becomes 'suspended' with suspended_on = as_of; tenants in any other status are left untouched.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [53, 75]
+    inputs: [as_of]
+    outputs: [status, suspended_on]
+    confidence: high
+    scenarios: [DUNNING-004]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b02 extraction. tenants and subscriptions belong to the plans unit (wave 1), so both writes are the plans repository's suspend_tenant called inside the suspension transaction (units.json writes_via_owner), never a direct write from dunning.
+  - id: DUNNING-004
+    statement: Each tenant suspended by the run gets one 'suspension' notification with id md5(tenant_id || 'suspension' || as_of) and sent_at = as_of at midnight UTC, inserted only when no notification with the same (tenant_id, kind, sent_at) exists; because an already-suspended tenant is skipped, running the suspension twice for the same day leaves exactly one notification.
+    source:
+      file: services/legacy-billing/db/procs/dunning.sql
+      lines: [76, 86]
+    inputs: [as_of]
+    outputs: [id, tenant_id, kind, sent_at]
+    confidence: high
+    scenarios: [DUNNING-004, DUNNING-005]
+    decision:
+      status: approved
+      reviewer: dhrov.subramanian
+      date: "2026-10-15"
+      note: Approved for the w3-b02 extraction. notifications is this batch's only write target; the WHERE NOT EXISTS guard is the collection's unique (tenantId, kind, sentAt) index (mapping spec v2 R2).

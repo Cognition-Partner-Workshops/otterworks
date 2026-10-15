@@ -25,6 +25,13 @@ from app.domain import (
     usage_rating,
     usage_summary,
 )
+from app.dunning import (
+    NotificationRow,
+    overdue_accounts,
+    schedule_dunning,
+    suspend_overdue,
+)
+from app.dunning_repository import MongoDunningRepository
 from app.repository import (
     MissingReferenceError,
     MongoInvoicingRepository,
@@ -52,6 +59,10 @@ class RatingPeriod(BaseModel):
     period_end: date
 
 
+class DunningRun(BaseModel):
+    as_of: date
+
+
 def _line(line: InvoiceLineRow) -> dict:
     return {
         "line_id": str(line.line_id),
@@ -59,6 +70,15 @@ def _line(line: InvoiceLineRow) -> dict:
         "line_type": line.line_type,
         "description": line.description,
         "amount": f"{line.amount:.2f}",
+    }
+
+
+def _notification(row: NotificationRow) -> dict:
+    return {
+        "id": str(row.notification_id),
+        "tenant_id": str(row.tenant_id),
+        "kind": row.kind,
+        "sent_at": row.sent_at.isoformat(timespec="seconds").replace("+00:00", "Z"),
     }
 
 
@@ -275,3 +295,82 @@ def issue_tenant_invoice(tenant_id: Annotated[UUID, Path()], request: RatingPeri
 @app.get("/api/invoices/{invoice_id}/lines")
 def get_invoice_lines(invoice_id: Annotated[UUID, Path()]) -> list[dict]:
     return [_line(line) for line in invoice_lines(MongoInvoicingRepository(database()), invoice_id)]
+
+
+@app.get("/api/dunning/overdue-accounts")
+def list_overdue_accounts(as_of: Annotated[date, Query()]) -> list[dict]:
+    rows = overdue_accounts(MongoDunningRepository(database()), as_of)
+    return [
+        {
+            "tenant_id": str(row.tenant_id),
+            "invoice_id": str(row.invoice_id),
+            "total": f"{row.total:.2f}",
+            "days_overdue": row.days_overdue,
+            "tenant_status": row.tenant_status,
+        }
+        for row in rows
+    ]
+
+
+@app.post("/api/dunning/schedule-runs")
+def run_dunning_schedule(request: DunningRun) -> dict:
+    repository = MongoDunningRepository(database())
+    scheduled = repository.run_in_transaction(lambda: schedule_dunning(repository, request.as_of))
+    return {
+        "as_of": request.as_of.isoformat(),
+        # the invoices sp_schedule_dunning walked, each with the attempt it holds afterwards
+        "latest_attempts": {
+            str(item.invoice.invoice_id): {
+                "invoice_id": str(item.invoice.invoice_id),
+                "tenant_id": str(item.invoice.tenant_id),
+                "attempt_no": item.attempt.attempt_no,
+                "scheduled_for": item.attempt.scheduled_for.isoformat(),
+                "status": item.attempt.status,
+                "appended": item.appended,
+            }
+            for item in scheduled
+        },
+        # every dunning attempt of every invoice, as the legacy dunning_attempts table reads
+        "attempts": [
+            {
+                "invoice_id": str(invoice_id),
+                "attempt_no": attempt.attempt_no,
+                "scheduled_for": attempt.scheduled_for.isoformat(),
+                "status": attempt.status,
+            }
+            for invoice_id, attempt in repository.list_dunning_attempts()
+        ],
+    }
+
+
+@app.post("/api/dunning/suspension-runs")
+def run_overdue_suspension(request: DunningRun) -> dict:
+    repository = MongoDunningRepository(database())
+    rows = repository.run_in_transaction(lambda: suspend_overdue(repository, request.as_of))
+    return {
+        "as_of": request.as_of.isoformat(),
+        # the tenants sp_suspend_overdue evaluated (an overdue invoice past the grace period)
+        "tenants": {
+            str(row.tenant_id): {
+                "tenant_id": str(row.tenant_id),
+                "tenant_status": row.tenant_status,
+                "suspended_now": row.suspended_now,
+                "subscriptions": [
+                    {
+                        "subscription_id": str(item.subscription_id),
+                        "plan_id": str(item.plan_id),
+                        "status": item.status,
+                        "suspended_on": (
+                            item.suspended_on.isoformat() if item.suspended_on else None
+                        ),
+                    }
+                    for item in row.subscriptions
+                ],
+                "notification_kinds": [item.kind for item in row.notifications],
+            }
+            for row in rows
+        },
+        "suspension_notifications": [
+            _notification(row) for row in repository.list_notifications("suspension")
+        ],
+    }

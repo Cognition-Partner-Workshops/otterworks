@@ -145,5 +145,50 @@ modules:
             line_types: {json_path: "$[*].line_type", type: text, collect: true}
             amounts: {json_path: "$[*].amount", type: decimal, collect: true}
   dunning:
-    status: pending
-    entrypoints: {}
+    status: extracted
+    entrypoints:
+      billing.fn_overdue_accounts:
+        method: GET
+        path: /api/dunning/overdue-accounts
+        inputs:
+          query:
+            as_of: as_of
+        response:
+          business_fields:
+            tenant_ids: {json_path: "$[*].tenant_id", type: text, collect: true}
+            days_overdue: {json_path: "$[*].days_overdue", type: integer, collect: true}
+      billing.sp_schedule_dunning:
+        method: POST
+        path: /api/dunning/schedule-runs
+        inputs:
+          body:
+            as_of: as_of
+        response:
+          # The procedure returns nothing; the scenarios' capture queries read the latest
+          # attempt of seed invoice ...0001 (DUNNING-002) and ...0002 (DUNNING-003).
+          # `latest_attempts` is keyed by invoice id so the contract reads the same rows.
+          business_fields:
+            scheduled_for: {json_path: "$.latest_attempts.60000000-0000-0000-0000-000000000001.scheduled_for", type: text}
+            status: {json_path: "$.latest_attempts.60000000-0000-0000-0000-000000000001.status", type: text}
+            attempt_no: {json_path: "$.latest_attempts.60000000-0000-0000-0000-000000000002.attempt_no", type: integer}
+          probes:
+            schedule_rows:
+              json_path: "$.attempts"
+              type: rows
+      billing.sp_suspend_overdue:
+        method: POST
+        path: /api/dunning/suspension-runs
+        inputs:
+          body:
+            as_of: as_of
+        response:
+          # Capture queries read tenant ...0005's subscription and suspension notifications;
+          # `tenants` is keyed by tenant id for the same reason as `latest_attempts` above.
+          business_fields:
+            status: {json_path: "$.tenants.00000000-0000-0000-0000-000000000005.subscriptions[0].status", type: text}
+            suspended_on: {json_path: "$.tenants.00000000-0000-0000-0000-000000000005.subscriptions[0].suspended_on", type: text}
+            notification_kinds: {json_path: "$.tenants.00000000-0000-0000-0000-000000000005.notification_kinds", type: text, collect: true}
+          probes:
+            suspension_notifications:
+              json_path: "$.suspension_notifications"
+              type: rows

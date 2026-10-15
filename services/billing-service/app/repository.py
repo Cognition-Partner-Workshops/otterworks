@@ -184,6 +184,27 @@ class MongoPlansRepository:
             session=self.session,
         )
 
+    def tenant_status(self, tenant_id: UUID) -> str | None:
+        tenant = self.database.tenants.find_one(
+            {"_id": tenant_id}, {"status": 1}, session=self.session
+        )
+        return tenant["status"] if tenant else None
+
+    def suspend_tenant(self, tenant_id: UUID, as_of: date) -> list[SubscriptionRow]:
+        """The tenants.status and subscriptions writes sp_suspend_overdue does
+        (dunning.sql:69-75), kept with the collections' owner: Dunning calls it inside its
+        transaction instead of writing tenants or subscriptions itself. Returns every
+        subscription of the tenant afterwards."""
+        self.database.tenants.update_one(
+            {"_id": tenant_id}, {"$set": {"status": "suspended"}}, session=self.session
+        )
+        self.database.subscriptions.update_many(
+            {"tenantId": tenant_id, "status": "active"},
+            {"$set": {"status": "suspended", "suspendedOn": bson_date(as_of)}},
+            session=self.session,
+        )
+        return self.list_subscriptions(tenant_id)
+
     def tenant_tax_exempt(self, tenant_id: UUID) -> bool:
         tenant = self.database.tenants.find_one(
             {"_id": tenant_id}, {"taxExempt": 1}, session=self.session

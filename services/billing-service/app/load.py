@@ -23,6 +23,7 @@ from app.documents import (
     INDEXES,
     VALIDATORS,
     invoice_document,
+    notification_document,
     plan_document,
     rating_period_document,
     subscription_document,
@@ -37,6 +38,7 @@ SOURCE_TABLES: dict[str, tuple[str, ...]] = {
     "usageEvents": ("usage_events",),
     "ratingPeriods": ("rating_periods", "rating_results"),
     "invoices": ("invoices", "invoice_lines", "dunning_attempts"),
+    "notifications": ("notifications",),
 }
 STAGING_SUFFIX = "__staging"
 
@@ -93,6 +95,8 @@ def build_documents(tables: dict[str, list[dict[str, Any]]]) -> dict[str, list[d
             invoice_document(row, lines_by_invoice[row["id"]], attempts_by_invoice[row["id"]])
             for row in tables["invoices"]
         ]
+    if "notifications" in tables:
+        documents["notifications"] = [notification_document(row) for row in tables["notifications"]]
     return documents
 
 
