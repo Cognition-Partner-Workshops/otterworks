@@ -40,9 +40,12 @@ def scenarios():
 
 
 def shift_months(day, months):
+    """Day-preserving shift; a last-day-of-month input stays the last day (Feb 28 -> Mar 31)."""
     month = day.month - 1 + months
     year, month = day.year + month // 12, month % 12 + 1
-    return day.replace(year=year, month=month, day=min(day.day, calendar.monthrange(year, month)[1]))
+    last = calendar.monthrange(year, month)[1]
+    end_of_month = day.day == calendar.monthrange(day.year, day.month)[1]
+    return day.replace(year=year, month=month, day=last if end_of_month else min(day.day, last))
 
 
 def call(base, scenario, months):
@@ -65,7 +68,7 @@ def call(base, scenario, months):
             status = response.status
     except urllib.error.HTTPError as error:
         status = error.code
-    return {"path": path, "status": status, "duration_ms": round((time.monotonic() - started) * 1000)}
+    return {"path": path, "inputs": inputs, "status": status, "duration_ms": round((time.monotonic() - started) * 1000)}
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):

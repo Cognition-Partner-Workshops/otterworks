@@ -52,3 +52,11 @@ def test_embedded_change_is_an_upsert() -> None:
 def test_no_collection_has_a_watermark_column() -> None:
     assert set(WATERMARK) == set(COLLECTIONS)
     assert all(column is None for column in WATERMARK.values())
+
+
+def test_allowed_databases_reads_the_committed_write_fence(tmp_path) -> None:
+    from app.delta import allowed_databases
+
+    fence = tmp_path / "allowed_targets.json"
+    fence.write_text('{"databases": ["billing_migration"], "catalogs": ["billing_migration"]}')
+    assert allowed_databases(str(fence)) == {"billing_migration"}

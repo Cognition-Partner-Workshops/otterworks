@@ -10,7 +10,8 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 CYCLE="${1:?cycle number}"
 NS="${NS:-p5}"
-PROCS_DB_PORT="${PROCS_DB_PORT:-55930}"
+# same port convention as the Makefile procs targets: 55432 + crc32(NS) % 1000 (p5 -> 55930)
+PROCS_DB_PORT="${PROCS_DB_PORT:-$(NS="$NS" python3 -c 'import os, zlib; print(55432 + zlib.crc32(os.environ["NS"].encode()) % 1000)')}"
 PLUGIN="${MONGO_MIGRATION_PLUGIN:-$HOME/repos/mongo-migration-plugin}"
 RECON="${RECON_BIN:-$HOME/.venvs/recon/bin/recon}"
 OUT=".migration/recon/parallel-run/cycle-${CYCLE}"

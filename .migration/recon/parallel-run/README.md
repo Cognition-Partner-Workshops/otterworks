@@ -13,7 +13,10 @@ logged as truncated SHA-256 hashes.
   parent), compares each document with the target by `_id` on its canonical BSON encoding, and
   applies the difference idempotently: `ReplaceOne(upsert=True)` for new or changed documents,
   `delete_many` for keys that left the source. Running it twice in a row is a no-op the second time.
-  It refuses to run when a source table reads back empty while the target holds documents.
+  `--database` must be listed in the committed `.migration/allowed_targets.json`. A collection whose
+  source reads back empty while the target still holds documents is left untouched and reported
+  (`blocked_empty_source: true`, exit 1) unless `--allow-empty-source` is passed; the other
+  collections still sync.
 - **Watermarks: none available.** The census / `services/legacy-billing/db/schema.sql` show no
   `updated_at`, version or sequence column on any of the 11 billing tables; `rating_results.created_at`
   is set once and not touched by the `ON CONFLICT ... DO UPDATE` in `sp_finalize_rating`, so it cannot
@@ -29,7 +32,12 @@ logged as truncated SHA-256 hashes.
   because the scenarios are date-anchored business events and `sp_change_plan` is not re-runnable
   on the same date (subscription id = `md5(tenant, plan, effective_on)`); cycle 2 with no shift
   failed with `UniqueViolation` on `subscriptions_pkey` (that attempt was discarded).
-- `run_cycle.sh N` = replay → delta → `recon run --mode continuous` on all seven collections.
+  Month-end inputs stay month-end (Feb 28 → Mar 31). Cycles 2 and 3 below were recorded before
+  that rule was added, so their rating/invoicing periods ran Mar 1–28 and Apr 1–28 (the fixture has
+  no usage after February, so no rated usage was missed; the recon verdict compares legacy and
+  Atlas on the same calls either way). Later cycles record the shifted `inputs` in `cycle.json`.
+- `run_cycle.sh N` = replay → delta → `recon run --mode continuous` on all seven collections;
+  `PROCS_DB_PORT` defaults to the Makefile convention `55432 + crc32(NS) % 1000`.
 
 ## Cycles (namespace `p5`, legacy app `127.0.0.1:8594`, source `billing_p5` via `billing_ro`)
 
