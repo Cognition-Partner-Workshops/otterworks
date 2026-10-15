@@ -3,7 +3,8 @@ DUNNING-001) myself. Legacy side: the function bodies re-expressed as SELECTs (f
 as in the wave-2 replay) run under billing_ro (SELECT only, no EXECUTE) on the live fixture. Target
 side: the equivalent reads on Atlas billing_migration with the arithmetic of invoicing.sql /
 dunning.sql mirrored here (not the billing-service code). Legacy and target are compared field by
-field, and the pinned business-field subset against the committed transcripts. The write scenarios
+field at full precision (the preview's tax halves and credit cap are not rounded by the legacy function), and
+the pinned business-field subset, quantized to cents only there, against the committed transcripts. The write scenarios
 (INVOICE-003/004/005, DUNNING-002..005) are replayed in writes_replay.py on the disposable stack."""
 import calendar, glob, json, os
 from datetime import date, datetime, timezone
@@ -52,28 +53,40 @@ amt AS (
   SELECT *, round(first_tier_units * overage_rate + second_tier_units * overage_rate * 1.5, 2) AS amount0,
     (status = 'suspended' AND suspended_on IS NOT NULL AND suspended_on BETWEEN %(ps)s AND %(pe)s) AS prorate,
     ((%(pe)s::date - suspended_on + 1)::numeric / (%(pe)s::date - %(ps)s::date + 1)) AS factor
-  FROM tiers)
-SELECT code, monthly_fee, CASE WHEN prorate THEN round(amount0 * factor, 2) ELSE amount0 END AS overage_amount,
-  (SELECT tax_exempt FROM billing.tenants WHERE id = %(t)s) AS tax_exempt,
-  (SELECT COALESCE(sum(remaining_amount), 0) FROM billing.credit_notes WHERE tenant_id = %(t)s AND remaining_amount > 0) AS credit
-FROM amt
+  FROM tiers),
+fin AS (
+  SELECT code, monthly_fee, CASE WHEN prorate THEN round(amount0 * factor, 2) ELSE amount0 END AS overage_amount,
+    (SELECT tax_exempt FROM billing.tenants WHERE id = %(t)s) AS tax_exempt,
+    (SELECT COALESCE(sum(remaining_amount), 0) FROM billing.credit_notes WHERE tenant_id = %(t)s AND remaining_amount > 0) AS credit
+  FROM amt),
+tax AS (SELECT *, CASE WHEN tax_exempt THEN 0 ELSE (monthly_fee + overage_amount) * 0.0825 END AS v_tax FROM fin)
+SELECT code, monthly_fee, overage_amount, v_tax,
+  LEAST(credit, round(monthly_fee + overage_amount + v_tax, 2)) AS credit_cap
+FROM tax
 """
 
-def preview_lines(code, fee, overage, tax_exempt, credit):
-    """fn_invoice_preview's RETURN QUERY, mirrored. Returns rows of (line_no, line_type, description, amount, tax_amount, credit_applied, total) as strings."""
-    fee, overage, credit = D(fee), D(overage), D(credit)
-    tax = Decimal(0) if tax_exempt else (fee + overage) * TAX_RATE
-    cap = min(credit, Decimal(q2(fee + overage + tax)))
-    rows = [(1, "plan", code, q2(fee), "0.00", "0.00", q2(fee)),
-            (2, "usage", "usage overage", q2(overage), "0.00", "0.00", q2(overage)),
-            (3, "tax", "regional tax", q2(tax / 2), "0.00", "0.00", q2(tax / 2)),
-            (4, "tax", "local tax", q2(tax / 2), "0.00", "0.00", q2(tax / 2)),
-            (5, "credit", "credit notes", "0.00", "0.00", q2(cap), q2(-cap))]
+def full(v):
+    """Full-precision decimal as a canonical string (no rounding; '2.2506' == '2.25060000')."""
+    v = D(v); return str(v.normalize()) if v != 0 else "0"
+
+def preview_lines(code, fee, overage, tax, cap):
+    """fn_invoice_preview's RETURN QUERY, mirrored, at full precision: the legacy function returns
+    round(fee, 2) / round(overage, 2) for the plan and usage lines but the UNROUNDED v_tax / 2 for the two tax
+    lines and the unrounded cap for the credit line. Rounding to cents happens only in the transcript
+    projection (PINNED), never before the legacy-vs-target comparison."""
+    fee, overage, tax, cap = D(fee), D(overage), D(tax), D(cap)
+    half = tax / 2
+    rows = [(1, "plan", code, full(Decimal(q2(fee))), "0", "0", full(Decimal(q2(fee)))),
+            (2, "usage", "usage overage", full(Decimal(q2(overage))), "0", "0", full(Decimal(q2(overage)))),
+            (3, "tax", "regional tax", full(half), "0", "0", full(half)),
+            (4, "tax", "local tax", full(half), "0", "0", full(half)),
+            (5, "credit", "credit notes", "0", "0", full(cap), full(-cap))]
     return [dict(zip(("line_no", "line_type", "description", "amount", "tax_amount", "credit_applied", "total"), r)) for r in rows]
 
 def legacy_preview(t, ps, pe):
     r = pg.execute(LEGACY_RATING, {"t": t, "ps": ps, "pe": pe}).fetchone()
-    return None if r is None else preview_lines(r["code"], r["monthly_fee"], r["overage_amount"], r["tax_exempt"], r["credit"])
+    # tax and credit cap are computed by PostgreSQL numeric arithmetic here (billing_ro cannot EXECUTE the function)
+    return None if r is None else preview_lines(r["code"], r["monthly_fee"], r["overage_amount"], r["v_tax"], r["credit_cap"])
 
 def target_rating(t, ps, pe):
     subs = [s for s in db.subscriptions.find({"tenantId": t}) if utc_date(s["startsOn"]) <= pe and ("endsOn" not in s or utc_date(s["endsOn"]) >= ps)]
@@ -99,8 +112,11 @@ def target_preview(t, ps, pe):
     if r is None: return None
     plan, overage = r
     tenant = db.tenants.find_one({"_id": t})
-    credit = sum(D(n["remainingAmount"]) for n in tenant.get("creditNotes", []) if D(n["remainingAmount"]) > 0)
-    return preview_lines(plan["code"], D(plan["monthlyFee"]), overage, bool(tenant["taxExempt"]), credit)
+    credit = sum((D(n["remainingAmount"]) for n in tenant.get("creditNotes", []) if D(n["remainingAmount"]) > 0), Decimal(0))
+    fee = D(plan["monthlyFee"])
+    tax = Decimal(0) if tenant["taxExempt"] else (fee + overage) * TAX_RATE
+    cap = min(credit, Decimal(q2(fee + overage + tax)))
+    return preview_lines(plan["code"], fee, overage, tax, cap)
 
 def legacy_lines(invoice_id):
     return [{"line_no": r["line_no"], "line_type": r["line_type"], "description": r["description"], "amount": q2(r["amount"])}
@@ -123,9 +139,10 @@ def target_overdue(as_of):
     return rows
 
 def collect(rows, field): return [r[field] for r in rows]
+def cents(rows, field): return [q2(r[field]) for r in rows]
 PINNED = {  # transcript business_fields -> how to derive them from the replayed rows
-    "INVOICE-001": lambda rows: {"line_numbers": collect(rows, "line_no"), "amounts": collect(rows, "amount"), "totals": collect(rows, "total")},
-    "INVOICE-002": lambda rows: {"line_types": collect(rows, "line_type"), "tax_amount": collect(rows, "tax_amount")},
+    "INVOICE-001": lambda rows: {"line_numbers": collect(rows, "line_no"), "amounts": cents(rows, "amount"), "totals": cents(rows, "total")},
+    "INVOICE-002": lambda rows: {"line_types": collect(rows, "line_type"), "tax_amount": cents(rows, "tax_amount")},
     "INVOICE-006": lambda rows: {"line_types": collect(rows, "line_type"), "amounts": collect(rows, "amount")},
     "DUNNING-001": lambda rows: {"tenant_ids": collect(rows, "tenant_id"), "days_overdue": collect(rows, "days_overdue")},
 }

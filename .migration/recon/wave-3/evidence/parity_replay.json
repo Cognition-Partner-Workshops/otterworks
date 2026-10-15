@@ -90,46 +90,46 @@
     "line_no": 1,
     "line_type": "plan",
     "description": "STARTER",
-    "amount": "49.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "49.00"
+    "amount": "49",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "49"
    },
    {
     "line_no": 2,
     "line_type": "usage",
     "description": "usage overage",
     "amount": "5.56",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
+    "tax_amount": "0",
+    "credit_applied": "0",
     "total": "5.56"
    },
    {
     "line_no": 3,
     "line_type": "tax",
     "description": "regional tax",
-    "amount": "2.25",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "2.25"
+    "amount": "2.2506",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "2.2506"
    },
    {
     "line_no": 4,
     "line_type": "tax",
     "description": "local tax",
-    "amount": "2.25",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "2.25"
+    "amount": "2.2506",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "2.2506"
    },
    {
     "line_no": 5,
     "line_type": "credit",
     "description": "credit notes",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    }
   ],
   "target": [
@@ -137,46 +137,46 @@
     "line_no": 1,
     "line_type": "plan",
     "description": "STARTER",
-    "amount": "49.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "49.00"
+    "amount": "49",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "49"
    },
    {
     "line_no": 2,
     "line_type": "usage",
     "description": "usage overage",
     "amount": "5.56",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
+    "tax_amount": "0",
+    "credit_applied": "0",
     "total": "5.56"
    },
    {
     "line_no": 3,
     "line_type": "tax",
     "description": "regional tax",
-    "amount": "2.25",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "2.25"
+    "amount": "2.2506",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "2.2506"
    },
    {
     "line_no": 4,
     "line_type": "tax",
     "description": "local tax",
-    "amount": "2.25",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "2.25"
+    "amount": "2.2506",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "2.2506"
    },
    {
     "line_no": 5,
     "line_type": "credit",
     "description": "credit notes",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    }
   ],
   "transcript": {
@@ -227,46 +227,46 @@
     "line_no": 1,
     "line_type": "plan",
     "description": "SCALE",
-    "amount": "499.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "499.00"
+    "amount": "499",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "499"
    },
    {
     "line_no": 2,
     "line_type": "usage",
     "description": "usage overage",
     "amount": "5.02",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
+    "tax_amount": "0",
+    "credit_applied": "0",
     "total": "5.02"
    },
    {
     "line_no": 3,
     "line_type": "tax",
     "description": "regional tax",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    },
    {
     "line_no": 4,
     "line_type": "tax",
     "description": "local tax",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    },
    {
     "line_no": 5,
     "line_type": "credit",
     "description": "credit notes",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "25.00",
-    "total": "-25.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "25",
+    "total": "-25"
    }
   ],
   "target": [
@@ -274,46 +274,46 @@
     "line_no": 1,
     "line_type": "plan",
     "description": "SCALE",
-    "amount": "499.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "499.00"
+    "amount": "499",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "499"
    },
    {
     "line_no": 2,
     "line_type": "usage",
     "description": "usage overage",
     "amount": "5.02",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
+    "tax_amount": "0",
+    "credit_applied": "0",
     "total": "5.02"
    },
    {
     "line_no": 3,
     "line_type": "tax",
     "description": "regional tax",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    },
    {
     "line_no": 4,
     "line_type": "tax",
     "description": "local tax",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "0.00",
-    "total": "0.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "0",
+    "total": "0"
    },
    {
     "line_no": 5,
     "line_type": "credit",
     "description": "credit notes",
-    "amount": "0.00",
-    "tax_amount": "0.00",
-    "credit_applied": "25.00",
-    "total": "-25.00"
+    "amount": "0",
+    "tax_amount": "0",
+    "credit_applied": "25",
+    "total": "-25"
    }
   ],
   "transcript": {

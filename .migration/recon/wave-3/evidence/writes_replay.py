@@ -76,7 +76,12 @@ for sid, as_of, second in (("DUNNING-002", date(2026, 2, 14), None), ("DUNNING-0
     expected_day = as_of + __import__("datetime").timedelta(days={6: 2, 7: 1}.get(as_of.isoweekday(), 0))
     checks = {"rows": len(att), "new_attempts_target": len(new),
               "one_new_attempt_per_overdue_invoice_per_call": sorted(a["invoice_id"] for a in new) == sorted(overdue * (2 if second else 1)),
-              "new_attempt_no_is_prior_max_plus_one": all(a["attempt_no"] == max([b["attempt_no"] for b in before if b["invoice_id"] == a["invoice_id"]], default=0) + (1 if not second else 1) or second for a in new),
+              # per invoice, the new numbers are exactly prior_max+1 .. prior_max+calls (consecutive, no gap, no reuse)
+              "new_attempt_nos_consecutive_from_prior_max": all(
+                  sorted(a["attempt_no"] for a in new if a["invoice_id"] == inv) ==
+                  list(range(max([b["attempt_no"] for b in before if b["invoice_id"] == inv], default=0) + 1,
+                             max([b["attempt_no"] for b in before if b["invoice_id"] == inv], default=0) + 1 + (2 if second else 1)))
+                  for inv in overdue),
               "ids_follow_md5_invoice_id_attempt_no_target": sum(1 for a in new if UUID(a["id"]) == md5uuid(a["invoice_id"], str(a["attempt_no"]))) == len(new),
               "scheduledFor_is_next_business_day_target": all(a["scheduled_for"] == expected_day.isoformat() for a in new),
               "status_scheduled_target": all(a["status"] == "scheduled" for a in new),
