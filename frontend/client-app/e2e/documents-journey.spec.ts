@@ -52,7 +52,7 @@ test.describe("Document journeys", () => {
     await page.getByPlaceholder("Filter documents...").fill(title.slice(0, 12));
     await expect(page.getByText(title)).toBeVisible();
     await page.getByText(title).click();
-    await expect(page).toHaveURL(new RegExp(`/documents/${id}$`));
+    await page.waitForURL((url) => url.pathname === `/documents/${id}`);
   });
 
   test("typing in the editor autosaves and survives reload", async ({ page }) => {
