@@ -8,7 +8,7 @@
 
 Needs DEVIN_ENTERPRISE_API_KEY. DEVIN_API_BASE overrides the base URL.
 """
-import argparse, http.client, json, os, sys, urllib.parse
+import argparse, http.client, json, os, ssl, sys, urllib.parse
 
 BASE = os.environ.get("DEVIN_API_BASE", "https://partner-workshops.devinenterprise.com/api/v3")
 HEADERS = {"Authorization": f"Bearer {os.environ['DEVIN_ENTERPRISE_API_KEY']}"}
@@ -18,7 +18,8 @@ ENDPOINT = urllib.parse.urlsplit(BASE)
 
 
 def call(path, method="GET"):
-    conn = http.client.HTTPSConnection(ENDPOINT.netloc, timeout=120)
+    # nosemgrep: python.lang.security.audit.httpsconnection-detected.httpsconnection-detected
+    conn = http.client.HTTPSConnection(ENDPOINT.netloc, timeout=120, context=ssl.create_default_context())
     conn.request(method, ENDPOINT.path + path, headers=HEADERS)
     resp = conn.getresponse()
     body = resp.read()
