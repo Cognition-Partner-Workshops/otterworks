@@ -1,0 +1,324 @@
+{
+ "pg_session_timezone": "Etc/UTC",
+ "RATING-001": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000007"
+  },
+  "legacy": {
+   "used_units": 260,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 160,
+   "first_tier_units": 101,
+   "second_tier_units": 59,
+   "overage_amount": "10.42"
+  },
+  "target": {
+   "used_units": 260,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 160,
+   "first_tier_units": 101,
+   "second_tier_units": 59,
+   "overage_amount": "10.42"
+  },
+  "transcript": {
+   "billable_units": 160,
+   "rollover_units": 0,
+   "used_units": 260
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-002": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "legacy": {
+   "used_units": 260,
+   "quota_units": 100,
+   "rollover_units": 200,
+   "billable_units": 0,
+   "first_tier_units": 0,
+   "second_tier_units": 0,
+   "overage_amount": "0.00"
+  },
+  "target": {
+   "used_units": 260,
+   "quota_units": 100,
+   "rollover_units": 200,
+   "billable_units": 0,
+   "first_tier_units": 0,
+   "second_tier_units": 0,
+   "overage_amount": "0.00"
+  },
+  "transcript": {
+   "overage_amount": "0.00",
+   "rollover_units": 200
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-003": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000002"
+  },
+  "legacy": {
+   "used_units": 700,
+   "quota_units": 500,
+   "rollover_units": 0,
+   "billable_units": 100,
+   "first_tier_units": 101,
+   "second_tier_units": 99,
+   "overage_amount": "4.37"
+  },
+  "target": {
+   "used_units": 700,
+   "quota_units": 500,
+   "rollover_units": 0,
+   "billable_units": 100,
+   "first_tier_units": 101,
+   "second_tier_units": 99,
+   "overage_amount": "4.37"
+  },
+  "transcript": {
+   "billable_units": 100,
+   "overage_amount": "4.37"
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-004": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000006"
+  },
+  "legacy": {
+   "used_units": 201,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 101,
+   "first_tier_units": 101,
+   "second_tier_units": 0,
+   "overage_amount": "5.56"
+  },
+  "target": {
+   "used_units": 201,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 101,
+   "first_tier_units": 101,
+   "second_tier_units": 0,
+   "overage_amount": "5.56"
+  },
+  "transcript": {
+   "first_tier_units": 101,
+   "overage_amount": "5.56"
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-005": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000008"
+  },
+  "legacy": {
+   "used_units": 202,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 102,
+   "first_tier_units": 101,
+   "second_tier_units": 1,
+   "overage_amount": "5.64"
+  },
+  "target": {
+   "used_units": 202,
+   "quota_units": 100,
+   "rollover_units": 0,
+   "billable_units": 102,
+   "first_tier_units": 101,
+   "second_tier_units": 1,
+   "overage_amount": "5.64"
+  },
+  "transcript": {
+   "first_tier_units": 101,
+   "second_tier_units": 1
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-006": {
+  "entrypoint": "billing.fn_usage_rating",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000003"
+  },
+  "legacy": {
+   "used_units": 2201,
+   "quota_units": 2000,
+   "rollover_units": 0,
+   "billable_units": 201,
+   "first_tier_units": 101,
+   "second_tier_units": 100,
+   "overage_amount": "5.02"
+  },
+  "target": {
+   "used_units": 2201,
+   "quota_units": 2000,
+   "rollover_units": 0,
+   "billable_units": 201,
+   "first_tier_units": 101,
+   "second_tier_units": 100,
+   "overage_amount": "5.02"
+  },
+  "transcript": {
+   "first_tier_units": 101,
+   "overage_amount": "5.02",
+   "second_tier_units": 100
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "billable_units",
+   "first_tier_units",
+   "overage_amount",
+   "quota_units",
+   "rollover_units",
+   "second_tier_units",
+   "used_units"
+  ]
+ },
+ "RATING-007": {
+  "entrypoint": "billing.fn_usage_summary",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000004"
+  },
+  "legacy": {
+   "kinds": [
+    "api",
+    "storage"
+   ],
+   "event_counts": [
+    1,
+    1
+   ],
+   "units": [
+    20,
+    30
+   ]
+  },
+  "target": {
+   "kinds": [
+    "api",
+    "storage"
+   ],
+   "event_counts": [
+    1,
+    1
+   ],
+   "units": [
+    20,
+    30
+   ]
+  },
+  "transcript": {
+   "kinds": [
+    "api",
+    "storage"
+   ],
+   "units": [
+    20,
+    30
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "event_counts",
+   "kinds",
+   "units"
+  ]
+ },
+ "RATING-008": {
+  "entrypoint": "billing.sp_finalize_rating",
+  "replayed_here": false,
+  "reason": "write scenario; graded only by the procs harness on the local compose stack (evidence/procs_parity.json)",
+  "live_fixture_has_2026-02_period_for_tenant_1": 0,
+  "atlas_has_2026-02_period_for_tenant_1": 0
+ },
+ "summary": {
+  "scenarios_replayed": [
+   "RATING-001",
+   "RATING-002",
+   "RATING-003",
+   "RATING-004",
+   "RATING-005",
+   "RATING-006",
+   "RATING-007"
+  ],
+  "all_legacy_eq_target": true,
+  "all_target_eq_transcript": true
+ }
+}

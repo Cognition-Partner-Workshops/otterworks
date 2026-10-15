@@ -1,0 +1,297 @@
+{
+ "collections_in_target_db": [
+  "_connectivity_probe",
+  "plans",
+  "ratingPeriods",
+  "subscriptions",
+  "tenants",
+  "usageEvents"
+ ],
+ "probes": {
+  "ratingPeriods": {
+   "source_rows": 3,
+   "target_docs": 3,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "tenantId": 0,
+    "periodStart": 0,
+    "periodEnd": 0
+   },
+   "target_null_counts": {
+    "tenantId": 0,
+    "periodStart": 0,
+    "periodEnd": 0
+   },
+   "source_null_counts": {
+    "tenant_id": 0,
+    "period_start": 0,
+    "period_end": 0
+   },
+   "target_bson_types": {
+    "tenantId": {
+     "binData(uuid, subtype 4)": 3
+    },
+    "periodStart": {
+     "date": 3
+    },
+    "periodEnd": {
+     "date": 3
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 3
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 1,
+    "present": 1,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)",
+   "natural_key_tenantId_periodStart": {
+    "source_dupes": 0,
+    "target_dupes": 0
+   },
+   "rating_subdocument": {
+    "source_child_rows": 3,
+    "source_results_per_period_distribution": {
+     "1": 3
+    },
+    "source_periods_without_result": 0,
+    "orphan_source_results_without_period": 0,
+    "periods_with_rating": 3,
+    "periods_without_rating": 0,
+    "rating_is_array_not_subdocument": 0,
+    "rating_present_but_no_source_result": 0,
+    "rating_missing_but_source_result_exists": 0,
+    "element_value_diffs": 0,
+    "element_value_diff_fields": [],
+    "element_bson_types": {
+     "subscriptionId: binData(uuid, subtype 4)": 3,
+     "usedUnits: int": 3,
+     "quotaUnits: int": 3,
+     "rolloverUnits: int": 3,
+     "billableUnits: int": 3,
+     "overageAmount: decimal": 3,
+     "createdAt: date": 3,
+     "id: binData(uuid, subtype 4)": 3
+    },
+    "parent_key_field_present_in_subdocument": {},
+    "undeclared_subdocument_fields": {},
+    "period_id_is_md5_of_tenant_id_period_start_source": 0,
+    "period_id_is_md5_of_tenant_id_period_start_target": 0,
+    "result_id_is_md5_of_period_id_source": 0,
+    "result_id_is_md5_of_period_id_target": 0
+   }
+  },
+  "usageEvents": {
+   "source_rows": 10,
+   "target_docs": 10,
+   "duplicate_target_ids": 0,
+   "target_missing_field_counts": {
+    "occurredAt": 0,
+    "units": 0,
+    "kind": 0,
+    "tenantId": 0
+   },
+   "target_null_counts": {
+    "occurredAt": 0,
+    "units": 0,
+    "kind": 0,
+    "tenantId": 0
+   },
+   "source_null_counts": {
+    "occurred_at": 0,
+    "units": 0,
+    "kind": 0,
+    "tenant_id": 0
+   },
+   "target_bson_types": {
+    "occurredAt": {
+     "date": 10
+    },
+    "units": {
+     "int": 10
+    },
+    "kind": {
+     "string": 10
+    },
+    "tenantId": {
+     "binData(uuid, subtype 4)": 10
+    },
+    "_id": {
+     "binData(uuid, subtype 4)": 10
+    }
+   },
+   "undeclared_fields": {},
+   "value_diffs": 0,
+   "value_diff_fields": [],
+   "docs_not_in_source": 0,
+   "indexes": {
+    "spec": 1,
+    "present": 1,
+    "missing": [],
+    "undeclared": []
+   },
+   "validator_present": true,
+   "validation_level": "strict(default)"
+  },
+  "cross_unit": {
+   "wave1_counts_target": {
+    "plans": 3,
+    "tenants": 9,
+    "subscriptions": 9
+   },
+   "wave1_counts_source": {
+    "plans": 3,
+    "tenants": 9,
+    "subscriptions": 9
+   },
+   "usageEvents.tenantId_dangling_target": 0,
+   "usage_events.tenant_id_dangling_source": 0,
+   "ratingPeriods.tenantId_dangling_target": 0,
+   "rating_periods.tenant_id_dangling_source": 0,
+   "rating.subscriptionId_dangling_target": 0,
+   "rating_results.subscription_id_dangling_source": 0,
+   "rating.subscriptionId_belongs_to_other_tenant_target": 0,
+   "rating_results.subscription_id_belongs_to_other_tenant_source": 0,
+   "tenants_with_usage_target": 9,
+   "tenants_with_usage_source": 9,
+   "tenants_with_periods_target": 1,
+   "tenants_with_periods_source": 1
+  },
+  "period_containment": {
+   "periods": 3,
+   "events_in_some_period_source": 0,
+   "events_in_some_period_target": 0,
+   "per_period_mismatches": 0
+  },
+  "boundaries": {
+   "ratingPeriods.periodStart": {
+    "source": [
+     "2025-11-01T00:00:00.000+00:00",
+     "2026-01-01T00:00:00.000+00:00"
+    ],
+    "target": [
+     "2025-11-01T00:00:00.000+00:00",
+     "2026-01-01T00:00:00.000+00:00"
+    ]
+   },
+   "ratingPeriods.periodEnd": {
+    "source": [
+     "2025-11-30T00:00:00.000+00:00",
+     "2026-01-31T00:00:00.000+00:00"
+    ],
+    "target": [
+     "2025-11-30T00:00:00.000+00:00",
+     "2026-01-31T00:00:00.000+00:00"
+    ]
+   },
+   "periodEnd_before_periodStart": {
+    "source": 0,
+    "target": 0
+   },
+   "usageEvents.occurredAt": {
+    "source": [
+     "2026-02-01T10:00:00.000+00:00",
+     "2026-02-28T10:00:00.000+00:00"
+    ],
+    "target": [
+     "2026-02-01T10:00:00.000+00:00",
+     "2026-02-28T10:00:00.000+00:00"
+    ]
+   },
+   "usageEvents.units": {
+    "source": [
+     1,
+     2201
+    ],
+    "target": [
+     1,
+     2201
+    ]
+   },
+   "usageEvents.units_sum": {
+    "source": 4485,
+    "target": 4485
+   },
+   "usageEvents.kind_domain": {
+    "source": [
+     "api",
+     "compute",
+     "storage"
+    ],
+    "target": [
+     "api",
+     "compute",
+     "storage"
+    ]
+   },
+   "usageEvents.kind_trailing_or_leading_space_target": 0,
+   "rating.overageAmount": {
+    "source": [
+     "0",
+     "0"
+    ],
+    "target": [
+     "0",
+     "0"
+    ]
+   },
+   "rating.overageAmount_scale_gt_2_target": 0,
+   "rating.int_fields_negative_target": 0,
+   "rating.rolloverUnits_eq_max_quota_minus_used_0": {
+    "source": 3,
+    "target": 3
+   },
+   "rating.createdAt_eq_periodEnd": {
+    "source": 3,
+    "target": 3
+   },
+   "date_midnight_utc": {
+    "ratingPeriods.periodStart": {
+     "values": 3,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "ratingPeriods.periodEnd": {
+     "values": 3,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "all_midnight_utc": true
+   },
+   "timestamptz_fields": {
+    "usageEvents.occurredAt": {
+     "source_sub_ms_precision_values": 0,
+     "target_values": 10,
+     "target_not_a_bson_date": 0,
+     "target_multiset_equals_source_at_ms": true
+    },
+    "ratingPeriods.rating.createdAt": {
+     "source_sub_ms_precision_values": 0,
+     "target_values": 3,
+     "target_not_a_bson_date": 0,
+     "target_multiset_equals_source_at_ms": true
+    }
+   }
+  },
+  "write_fence": {
+   "unexpected_collections_in_target_db": [
+    "_connectivity_probe"
+   ],
+   "later_wave_collections_present": [],
+   "source_later_wave_row_counts": {
+    "invoices": 3,
+    "invoice_lines": 2,
+    "dunning_attempts": 1,
+    "notifications": 1
+   }
+  }
+ }
+}

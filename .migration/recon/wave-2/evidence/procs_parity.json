@@ -1,0 +1,55 @@
+{
+  "contract_errors": [],
+  "fixture_sha": "53b308f59df78d844cc95bb8d9071fdd8eb03bbae52c708dd67820d099f406da",
+  "results": [
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-001",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-002",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-003",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-004",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-005",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-006",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-007",
+      "status": "PASS"
+    },
+    {
+      "failures": [],
+      "module": "rating",
+      "scenario": "RATING-008",
+      "status": "PASS"
+    }
+  ],
+  "source_sha": "2b98f8dc350f9c70906398cf1ee3bae173239b53237b89b2ade4a51d43821929"
+}
