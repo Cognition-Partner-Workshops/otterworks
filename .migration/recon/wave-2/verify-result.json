@@ -1,0 +1,18 @@
+{
+  "run_id": "ticket-c31e85659f634f69b45026185783e05c",
+  "manifest_sha": "6f95cb27913a",
+  "wave": 2,
+  "wave_verdict": "PASS",
+  "unit_verdicts": {"w2-b01": "PASS"},
+  "recon_results": {"w2-b01": [".migration/recon/wave-2/w2-b01/rating/result.json"]},
+  "findings": [
+    "V1: OW_BILLING_PG_RO_DSN is still not visible to worker sessions; the fixture ran on a session-local BILLING_RO_PASSWORD (verdict unaffected).",
+    "V2: billing_migration._connectivity_probe (empty, from the s1.2 probe) is still present outside the spec and every write target; drop it under the write fence before cutover evidence.",
+    "V3: RECON_REDACT_SALT was unset for the batch run and the re-run (redaction_salted false).",
+    "V4: none of the seeded rating_periods / rating_results ids is the md5-derived identity (0/3 on both sides); re-finalizing an imported period must match on (tenantId, periodStart) and the existing subdocument, a path no recorded scenario covers (RATING-008 finalizes a new period only).",
+    "V5: no seeded usage event falls inside any seeded rating period and every seeded overageAmount is 0, so the stored rating subdocument exercises only the zero/rollover path live; the metering arithmetic is proven live through the fn_usage_rating / fn_usage_summary replays (7/7).",
+    "V6: occurred_at::date follows the legacy session time zone (Etc/UTC on the fixture) while the target buckets by UTC date; equal here, pin UTC in the cutover runbook.",
+    "V7: make tp-smoke does not exist on the run branch; CI's procs parity workflow stands in."
+  ],
+  "report_path": "recon/wave-2:.migration/recon/wave-2/verify-report.md"
+}
