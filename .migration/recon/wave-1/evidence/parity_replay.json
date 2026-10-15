@@ -1,0 +1,94 @@
+{
+ "PLANS-001": {
+  "legacy": {
+   "codes": [
+    "STARTER",
+    "GROWTH",
+    "SCALE"
+   ],
+   "fees": [
+    "49.00",
+    "149.00",
+    "499.00"
+   ]
+  },
+  "target": {
+   "codes": [
+    "STARTER",
+    "GROWTH",
+    "SCALE"
+   ],
+   "fees": [
+    "49.00",
+    "149.00",
+    "499.00"
+   ]
+  },
+  "transcript": {
+   "codes": [
+    "STARTER",
+    "GROWTH",
+    "SCALE"
+   ],
+   "fees": [
+    "49.00",
+    "149.00",
+    "499.00"
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true
+ },
+ "PLANS-002": {
+  "transcript": {
+   "included_units": 100,
+   "plan_code": "STARTER",
+   "subscription_status": "active",
+   "tier": "starter"
+  },
+  "inputs": {
+   "as_of": "2026-02-28",
+   "tenant_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "legacy": {
+   "plan_code": "STARTER",
+   "tier": "starter",
+   "included_units": 100,
+   "subscription_status": "active"
+  },
+  "target": {
+   "plan_code": "STARTER",
+   "tier": "starter",
+   "included_units": 100,
+   "subscription_status": "active"
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true
+ },
+ "PLANS-003": {
+  "transcript": {
+   "included_units": 500,
+   "plan_code": "GROWTH",
+   "subscription_status": "suspended",
+   "tier": "growth"
+  },
+  "inputs": {
+   "as_of": "2026-02-28",
+   "tenant_id": "00000000-0000-0000-0000-000000000002"
+  },
+  "legacy": {
+   "plan_code": "GROWTH",
+   "tier": "growth",
+   "included_units": 500,
+   "subscription_status": "suspended"
+  },
+  "target": {
+   "plan_code": "GROWTH",
+   "tier": "growth",
+   "included_units": 500,
+   "subscription_status": "suspended"
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true
+ }
+}
