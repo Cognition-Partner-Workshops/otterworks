@@ -1,24 +1,3 @@
-resource "random_password" "db" {
-  length  = 32
-  special = false
-}
-
-resource "aws_secretsmanager_secret" "db" { # nosemgrep: terraform.aws.security.aws-secretsmanager-secret-unencrypted.aws-secretsmanager-secret-unencrypted
-  name                    = "${local.name}/aurora/master"
-  description             = "Master credential of the ${local.name} Aurora cluster (legacy-portal-serverless)."
-  recovery_window_in_days = 0
-}
-
-resource "aws_secretsmanager_secret_version" "db" {
-  secret_id = aws_secretsmanager_secret.db.id
-  secret_string = jsonencode({
-    username = "legacyportal"
-    password = random_password.db.result
-    engine   = "postgres"
-    dbname   = "legacyportal"
-  })
-}
-
 resource "aws_db_subnet_group" "this" {
   name        = local.name
   description = "Private subnets of ${var.vpc_name} for ${local.name}"
@@ -32,6 +11,8 @@ resource "aws_security_group" "aurora" {
   vpc_id      = data.aws_vpc.this.id
 }
 
+# RDS generates the master password and keeps it in a Secrets Manager secret it owns and rotates,
+# so the password never appears in Terraform state or plans. Deleting the cluster deletes the secret.
 resource "aws_rds_cluster" "this" {
   cluster_identifier          = local.name
   engine                      = "aurora-postgresql"
@@ -39,7 +20,7 @@ resource "aws_rds_cluster" "this" {
   engine_version              = var.aurora_engine_version
   database_name               = "legacyportal"
   master_username             = "legacyportal"
-  master_password             = random_password.db.result
+  manage_master_user_password = true
   db_subnet_group_name        = aws_db_subnet_group.this.name
   vpc_security_group_ids      = [aws_security_group.aurora.id]
   enable_http_endpoint        = true
@@ -77,12 +58,12 @@ resource "terraform_data" "schema" {
     command = "${path.module}/apply-schema.sh"
     environment = {
       CLUSTER_ARN = aws_rds_cluster.this.arn
-      SECRET_ARN  = aws_secretsmanager_secret.db.arn
+      SECRET_ARN  = aws_rds_cluster.this.master_user_secret[0].secret_arn
       DATABASE    = aws_rds_cluster.this.database_name
       SQL_FILE    = "${path.module}/schema.sql"
       AWS_REGION  = var.region
     }
   }
 
-  depends_on = [aws_rds_cluster_instance.writer, aws_secretsmanager_secret_version.db]
+  depends_on = [aws_rds_cluster_instance.writer]
 }
