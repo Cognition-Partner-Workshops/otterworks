@@ -281,7 +281,29 @@
      "55"
     ]
    },
-   "date_midnight_utc_all": true,
+   "date_midnight_utc": {
+    "subscriptions.startsOn": {
+     "values": 9,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "subscriptions.endsOn": {
+     "values": 0,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "subscriptions.suspendedOn": {
+     "values": 1,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "tenants.creditNotes.issuedOn": {
+     "values": 5,
+     "non_midnight": 0,
+     "not_a_bson_date": 0
+    },
+    "all_midnight_utc": true
+   },
    "status_domains": {
     "subscriptions": [
      "active",

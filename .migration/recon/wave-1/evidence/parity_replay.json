@@ -37,7 +37,11 @@
    ]
   },
   "legacy_eq_target": true,
-  "target_eq_transcript": true
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "codes",
+   "fees"
+  ]
  },
  "PLANS-002": {
   "transcript": {
@@ -51,19 +55,34 @@
    "tenant_id": "00000000-0000-0000-0000-000000000001"
   },
   "legacy": {
+   "tenant_id": "00000000-0000-0000-0000-000000000001",
    "plan_code": "STARTER",
    "tier": "starter",
+   "monthly_fee": "49.00",
    "included_units": 100,
-   "subscription_status": "active"
+   "subscription_status": "active",
+   "effective_on": "2026-02-28"
   },
   "target": {
+   "tenant_id": "00000000-0000-0000-0000-000000000001",
    "plan_code": "STARTER",
    "tier": "starter",
+   "monthly_fee": "49.00",
    "included_units": 100,
-   "subscription_status": "active"
+   "subscription_status": "active",
+   "effective_on": "2026-02-28"
   },
   "legacy_eq_target": true,
-  "target_eq_transcript": true
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "effective_on",
+   "included_units",
+   "monthly_fee",
+   "plan_code",
+   "subscription_status",
+   "tenant_id",
+   "tier"
+  ]
  },
  "PLANS-003": {
   "transcript": {
@@ -77,18 +96,33 @@
    "tenant_id": "00000000-0000-0000-0000-000000000002"
   },
   "legacy": {
+   "tenant_id": "00000000-0000-0000-0000-000000000002",
    "plan_code": "GROWTH",
    "tier": "growth",
+   "monthly_fee": "149.00",
    "included_units": 500,
-   "subscription_status": "suspended"
+   "subscription_status": "suspended",
+   "effective_on": "2026-02-28"
   },
   "target": {
+   "tenant_id": "00000000-0000-0000-0000-000000000002",
    "plan_code": "GROWTH",
    "tier": "growth",
+   "monthly_fee": "149.00",
    "included_units": 500,
-   "subscription_status": "suspended"
+   "subscription_status": "suspended",
+   "effective_on": "2026-02-28"
   },
   "legacy_eq_target": true,
-  "target_eq_transcript": true
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "effective_on",
+   "included_units",
+   "monthly_fee",
+   "plan_code",
+   "subscription_status",
+   "tenant_id",
+   "tier"
+  ]
  }
 }

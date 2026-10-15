@@ -152,6 +152,18 @@ report["subscriptions"]["refs"] = {
     "open_subscriptions_per_tenant_target": dict(Counter(Counter(canon(d["tenantId"]) for d in tgt["subscriptions"] if "endsOn" not in d).values())),
     "open_subscriptions_per_tenant_source": dict(Counter(Counter(canon(r["tenant_id"]) for r in src["subscriptions"] if r["ends_on"] is None).values())),
 }
+# every target field mapped from a source DATE must be a BSON date at UTC midnight (00:00:00.000)
+def not_midnight(v):
+    return isinstance(v, datetime) and (v.hour, v.minute, v.second, v.microsecond) != (0, 0, 0, 0)
+date_fields = {
+    "subscriptions.startsOn": [d.get("startsOn") for d in tgt["subscriptions"]],
+    "subscriptions.endsOn": [d.get("endsOn") for d in tgt["subscriptions"]],
+    "subscriptions.suspendedOn": [d.get("suspendedOn") for d in tgt["subscriptions"]],
+    "tenants.creditNotes.issuedOn": [e.get("issuedOn") for d in tgt["tenants"] for e in d.get("creditNotes", [])],
+}
+midnight_check = {k: {"values": sum(1 for v in vs if v is not None), "non_midnight": sum(1 for v in vs if not_midnight(v)),
+                      "not_a_bson_date": sum(1 for v in vs if v is not None and not isinstance(v, datetime))} for k, vs in date_fields.items()}
+midnight_check["all_midnight_utc"] = all(m["non_midnight"] == 0 and m["not_a_bson_date"] == 0 for m in midnight_check.values())
 # boundaries
 def mm(vals):
     vals = [v.to_decimal() if isinstance(v, Decimal128) else v for v in vals if v is not None]
@@ -164,7 +176,7 @@ report["boundaries"] = {
     "plans.overageRate": {"source": mm([r["overage_rate"] for r in src["plans"]]), "target": mm([d["overageRate"] for d in tgt["plans"]])},
     "creditNotes.issuedOn": {"source": mm([r["issued_on"] for r in src["credit_notes"]]), "target": mm([e["issuedOn"] for d in tgt["tenants"] for e in d["creditNotes"]])},
     "creditNotes.remainingAmount": {"source": mm([r["remaining_amount"] for r in src["credit_notes"]]), "target": mm([e["remainingAmount"] for d in tgt["tenants"] for e in d["creditNotes"]])},
-    "date_midnight_utc_all": all(d["startsOn"].hour == 0 and d["startsOn"].minute == 0 and d["startsOn"].second == 0 and d["startsOn"].microsecond == 0 for d in tgt["subscriptions"]),
+    "date_midnight_utc": midnight_check,
     "status_domains": {"subscriptions": sorted({d["status"] for d in tgt["subscriptions"]}), "tenants": sorted({d["status"] for d in tgt["tenants"]}), "plans.tier": sorted({d["tier"] for d in tgt["plans"]})},
     "plans.inactive_count": {"source": sum(1 for r in src["plans"] if not r["active"]), "target": sum(1 for d in tgt["plans"] if not d["active"])},
     "tenants.taxExempt_true": {"source": sum(1 for r in src["tenants"] if r["tax_exempt"]), "target": sum(1 for d in tgt["tenants"] if d["taxExempt"])},

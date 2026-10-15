@@ -31,16 +31,23 @@ def target_entitlement(tenant, on):
     subs = [s for s in db.subscriptions.find({"tenantId": tenant}) if s["startsOn"] <= on_dt and ("endsOn" not in s or s["endsOn"] >= on_dt)]
     if not subs: return None
     s = max(subs, key=lambda s: s["startsOn"]); p = db.plans.find_one({"_id": s["planId"]})
-    return {"plan_code": p["code"], "tier": p["tier"], "included_units": p["includedUnits"], "subscription_status": s["status"]}
+    return {"tenant_id": str(tenant), "plan_code": p["code"], "tier": p["tier"], "monthly_fee": dec(p["monthlyFee"].to_decimal()),
+            "included_units": p["includedUnits"], "subscription_status": s["status"],
+            "effective_on": max(s["startsOn"].date(), on).isoformat()}
 import datetime as _dt
 for sid in ("PLANS-002", "PLANS-003"):
     t = transcripts[sid]; inp = t["inputs"]
     results[sid] = {"transcript": t["business_fields"], "inputs": inp}
     tenant = UUID(str(inp["tenant_id"])); on = _dt.date.fromisoformat(str(inp["as_of"]))
     l = legacy_entitlement(tenant, on); g = target_entitlement(tenant, on)
-    results[sid]["legacy"] = None if l is None else {"plan_code": l["plan_code"], "tier": l["tier"], "included_units": l["included_units"], "subscription_status": l["subscription_status"]}
+    results[sid]["legacy"] = None if l is None else {"tenant_id": str(l["id"]), "plan_code": l["plan_code"], "tier": l["tier"], "monthly_fee": dec(l["monthly_fee"]),
+                                                     "included_units": l["included_units"], "subscription_status": l["subscription_status"], "effective_on": l["effective_on"].isoformat()}
     results[sid]["target"] = g
 for sid, r in results.items():
+    # every column fn_entitlement / fn_list_plans returns is compared legacy vs target; the transcript
+    # pins only the business fields the scenario selects, so that comparison is on the subset
     r["legacy_eq_target"] = r["legacy"] == r["target"]
-    r["target_eq_transcript"] = r["target"] == r["transcript"]
+    subset = {k: v for k, v in (r["target"] or {}).items() if k in r["transcript"]} if isinstance(r["target"], dict) else r["target"]
+    r["target_eq_transcript"] = subset == r["transcript"]
+    r["compared_fields_legacy_vs_target"] = sorted(r["legacy"]) if isinstance(r["legacy"], dict) else None
 print(json.dumps(results, indent=1, default=str))
