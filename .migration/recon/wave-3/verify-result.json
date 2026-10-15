@@ -1,0 +1,20 @@
+{
+  "wave_verdict": "PASS",
+  "unit_verdicts": {"w3-b01": "PASS", "w3-b02": "PASS"},
+  "recon_results": {
+    "w3-b01": [".migration/recon/wave-3/w3-b01/invoicing/result.json"],
+    "w3-b02": [".migration/recon/wave-3/w3-b02/dunning/result.json"]
+  },
+  "findings": [
+    "V1 (open since wave 1): OW_BILLING_PG_RO_DSN is not injected into worker sessions; the fixture ran on a session-local BILLING_RO_PASSWORD.",
+    "V2 (open since wave 1): billing_migration._connectivity_probe (0 documents) is still present outside the mapping spec and every write target.",
+    "V3 (open): RECON_REDACT_SALT unset for the batch runs and the re-runs; recon artifacts carry unsalted hashes.",
+    "V4: no seeded invoice/line/attempt/notification id follows the md5 identity rule (source = target); re-issuing an imported invoice's period creates a second invoice on both sides.",
+    "V5: seed quality carried as-is: all 3 invoices reference another tenant's rating period and invoice 6000…01's lines do not reconcile to its subtotal/tax split (identical on both sides).",
+    "V6: live recon covers one notifications row and one seeded dunningAttempts element; the runtime write paths are proven by harness parity 24/24 and the verifier's write-path replay on the disposable stack, not on Atlas.",
+    "V7: make tp-smoke does not exist on the run branch; CI procs parity stands in.",
+    "V8: the dbx guard blocked the write replay's rolled-back CALLs on the disposable namespace's PostgreSQL (unresolvable runtime connection); the legacy side of the write replay is the committed transcripts instead.",
+    "V9: the disposable stack's mongo:7 aborted once (WiredTiger fassert 50853) during the first write-replay attempt; recovered with docker start, no recurrence."
+  ],
+  "report_path": "recon/wave-3:.migration/recon/wave-3/verify-report.md"
+}

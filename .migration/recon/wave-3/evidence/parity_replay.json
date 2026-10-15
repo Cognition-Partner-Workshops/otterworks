@@ -1,0 +1,426 @@
+{
+ "pg_session_timezone": "Etc/UTC",
+ "DUNNING-001": {
+  "entrypoint": "billing.fn_overdue_accounts",
+  "inputs": {
+   "as_of": "2026-02-28"
+  },
+  "legacy": [
+   {
+    "tenant_id": "00000000-0000-0000-0000-000000000002",
+    "invoice_id": "60000000-0000-0000-0000-000000000001",
+    "total": "161.29",
+    "days_overdue": 27,
+    "tenant_status": "suspended"
+   },
+   {
+    "tenant_id": "00000000-0000-0000-0000-000000000005",
+    "invoice_id": "60000000-0000-0000-0000-000000000002",
+    "total": "161.29",
+    "days_overdue": 15,
+    "tenant_status": "active"
+   }
+  ],
+  "target": [
+   {
+    "tenant_id": "00000000-0000-0000-0000-000000000002",
+    "invoice_id": "60000000-0000-0000-0000-000000000001",
+    "total": "161.29",
+    "days_overdue": 27,
+    "tenant_status": "suspended"
+   },
+   {
+    "tenant_id": "00000000-0000-0000-0000-000000000005",
+    "invoice_id": "60000000-0000-0000-0000-000000000002",
+    "total": "161.29",
+    "days_overdue": 15,
+    "tenant_status": "active"
+   }
+  ],
+  "transcript": {
+   "days_overdue": [
+    27,
+    15
+   ],
+   "tenant_ids": [
+    "00000000-0000-0000-0000-000000000002",
+    "00000000-0000-0000-0000-000000000005"
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "days_overdue",
+   "invoice_id",
+   "tenant_id",
+   "tenant_status",
+   "total"
+  ],
+  "rows": 2
+ },
+ "DUNNING-002": {
+  "entrypoint": "billing.sp_schedule_dunning",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "DUNNING-003": {
+  "entrypoint": "billing.sp_schedule_dunning",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "DUNNING-004": {
+  "entrypoint": "billing.sp_suspend_overdue",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "DUNNING-005": {
+  "entrypoint": "billing.sp_suspend_overdue",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "INVOICE-001": {
+  "entrypoint": "billing.fn_invoice_preview",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000006"
+  },
+  "legacy": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "STARTER",
+    "amount": "49.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "49.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "5.56",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "5.56"
+   },
+   {
+    "line_no": 3,
+    "line_type": "tax",
+    "description": "regional tax",
+    "amount": "2.25",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "2.25"
+   },
+   {
+    "line_no": 4,
+    "line_type": "tax",
+    "description": "local tax",
+    "amount": "2.25",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "2.25"
+   },
+   {
+    "line_no": 5,
+    "line_type": "credit",
+    "description": "credit notes",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   }
+  ],
+  "target": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "STARTER",
+    "amount": "49.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "49.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "5.56",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "5.56"
+   },
+   {
+    "line_no": 3,
+    "line_type": "tax",
+    "description": "regional tax",
+    "amount": "2.25",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "2.25"
+   },
+   {
+    "line_no": 4,
+    "line_type": "tax",
+    "description": "local tax",
+    "amount": "2.25",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "2.25"
+   },
+   {
+    "line_no": 5,
+    "line_type": "credit",
+    "description": "credit notes",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   }
+  ],
+  "transcript": {
+   "amounts": [
+    "49.00",
+    "5.56",
+    "2.25",
+    "2.25",
+    "0.00"
+   ],
+   "line_numbers": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "totals": [
+    "49.00",
+    "5.56",
+    "2.25",
+    "2.25",
+    "0.00"
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "amount",
+   "credit_applied",
+   "description",
+   "line_no",
+   "line_type",
+   "tax_amount",
+   "total"
+  ],
+  "rows": 5
+ },
+ "INVOICE-002": {
+  "entrypoint": "billing.fn_invoice_preview",
+  "inputs": {
+   "period_end": "2026-02-28",
+   "period_start": "2026-02-01",
+   "tenant_id": "00000000-0000-0000-0000-000000000003"
+  },
+  "legacy": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "SCALE",
+    "amount": "499.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "499.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "5.02",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "5.02"
+   },
+   {
+    "line_no": 3,
+    "line_type": "tax",
+    "description": "regional tax",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   },
+   {
+    "line_no": 4,
+    "line_type": "tax",
+    "description": "local tax",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   },
+   {
+    "line_no": 5,
+    "line_type": "credit",
+    "description": "credit notes",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "25.00",
+    "total": "-25.00"
+   }
+  ],
+  "target": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "SCALE",
+    "amount": "499.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "499.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "5.02",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "5.02"
+   },
+   {
+    "line_no": 3,
+    "line_type": "tax",
+    "description": "regional tax",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   },
+   {
+    "line_no": 4,
+    "line_type": "tax",
+    "description": "local tax",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "0.00",
+    "total": "0.00"
+   },
+   {
+    "line_no": 5,
+    "line_type": "credit",
+    "description": "credit notes",
+    "amount": "0.00",
+    "tax_amount": "0.00",
+    "credit_applied": "25.00",
+    "total": "-25.00"
+   }
+  ],
+  "transcript": {
+   "line_types": [
+    "plan",
+    "usage",
+    "tax",
+    "tax",
+    "credit"
+   ],
+   "tax_amount": [
+    "0.00",
+    "0.00",
+    "0.00",
+    "0.00",
+    "0.00"
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "amount",
+   "credit_applied",
+   "description",
+   "line_no",
+   "line_type",
+   "tax_amount",
+   "total"
+  ],
+  "rows": 5
+ },
+ "INVOICE-003": {
+  "entrypoint": "billing.sp_issue_invoice",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "INVOICE-004": {
+  "entrypoint": "billing.sp_issue_invoice",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "INVOICE-005": {
+  "entrypoint": "billing.sp_issue_invoice",
+  "replayed_here": false,
+  "reason": "write scenario; replayed on the disposable procs stack in writes_replay.py and by the procs harness"
+ },
+ "INVOICE-006": {
+  "entrypoint": "billing.fn_invoice_lines",
+  "inputs": {
+   "invoice_id": "60000000-0000-0000-0000-000000000001"
+  },
+  "legacy": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "GROWTH",
+    "amount": "149.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "12.29"
+   }
+  ],
+  "target": [
+   {
+    "line_no": 1,
+    "line_type": "plan",
+    "description": "GROWTH",
+    "amount": "149.00"
+   },
+   {
+    "line_no": 2,
+    "line_type": "usage",
+    "description": "usage overage",
+    "amount": "12.29"
+   }
+  ],
+  "transcript": {
+   "amounts": [
+    "149.00",
+    "12.29"
+   ],
+   "line_types": [
+    "plan",
+    "usage"
+   ]
+  },
+  "legacy_eq_target": true,
+  "target_eq_transcript": true,
+  "compared_fields_legacy_vs_target": [
+   "amount",
+   "description",
+   "line_no",
+   "line_type"
+  ],
+  "rows": 2
+ },
+ "summary": {
+  "scenarios_replayed": [
+   "INVOICE-001",
+   "INVOICE-002",
+   "INVOICE-006",
+   "DUNNING-001"
+  ],
+  "all_legacy_eq_target": true,
+  "all_target_eq_transcript": true
+ }
+}
