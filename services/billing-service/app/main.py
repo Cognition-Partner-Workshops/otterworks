@@ -13,15 +13,24 @@ from app.config import settings
 from app.db import client, database, reset
 from app.domain import (
     InvalidPeriodError,
+    InvoiceLineRow,
     NoSubscriptionError,
     catalog,
     change_plan,
     entitlement,
     finalize_rating,
+    invoice_lines,
+    invoice_preview,
+    issue_invoice,
     usage_rating,
     usage_summary,
 )
-from app.repository import MissingReferenceError, MongoPlansRepository, MongoRatingRepository
+from app.repository import (
+    MissingReferenceError,
+    MongoInvoicingRepository,
+    MongoPlansRepository,
+    MongoRatingRepository,
+)
 
 app = FastAPI(title=settings.app_name)
 app.add_middleware(
@@ -41,6 +50,16 @@ class PlanChange(BaseModel):
 class RatingPeriod(BaseModel):
     period_start: date
     period_end: date
+
+
+def _line(line: InvoiceLineRow) -> dict:
+    return {
+        "line_id": str(line.line_id),
+        "line_no": line.line_no,
+        "line_type": line.line_type,
+        "description": line.description,
+        "amount": f"{line.amount:.2f}",
+    }
 
 
 @app.get("/health")
@@ -187,3 +206,72 @@ def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingPe
         **row,
         "rating_result": [row],
     }
+
+
+@app.get("/api/tenants/{tenant_id}/invoice-preview")
+def preview_tenant_invoice(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    try:
+        lines = invoice_preview(
+            MongoInvoicingRepository(database()), tenant_id, period_start, period_end
+        )
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail="no subscription in the period") from error
+    # amounts are the function's exact numerics (tax halves are not rounded to cents)
+    return [
+        {
+            "line_no": line.line_no,
+            "line_type": line.line_type,
+            "description": line.description,
+            "amount": f"{line.amount:f}",
+            "tax_amount": f"{line.tax_amount:f}",
+            "credit_applied": f"{line.credit_applied:f}",
+            "total": f"{line.total:f}",
+        }
+        for line in lines
+    ]
+
+
+@app.post("/api/tenants/{tenant_id}/invoices")
+def issue_tenant_invoice(tenant_id: Annotated[UUID, Path()], request: RatingPeriod) -> dict:
+    repository = MongoInvoicingRepository(database())
+    try:
+        invoice, notes = repository.run_in_transaction(
+            lambda: issue_invoice(repository, tenant_id, request.period_start, request.period_end)
+        )
+    except InvalidPeriodError as error:
+        raise HTTPException(status_code=400, detail="period_end is before period_start") from error
+    except NoSubscriptionError as error:
+        raise HTTPException(status_code=404, detail="no subscription in the period") from error
+    state = {
+        "status": invoice.status,
+        "subtotal": f"{invoice.subtotal:.2f}",
+        "tax": f"{invoice.tax:.2f}",
+        "total": f"{invoice.total:.2f}",
+    }
+    return {
+        "invoice_id": str(invoice.invoice_id),
+        "tenant_id": str(invoice.tenant_id),
+        "period_id": str(invoice.period_id),
+        "issued_at": invoice.issued_at.isoformat(),
+        **state,
+        "invoice_lines": [_line(line) for line in invoice.lines],
+        "credit_notes": [
+            {
+                "id": str(note.note_id),
+                "issued_on": note.issued_on.isoformat(),
+                "amount": f"{note.amount:.2f}",
+                "remaining_amount": f"{note.remaining_amount:.2f}",
+            }
+            for note in notes
+        ],
+        "invoice_state": [state],
+    }
+
+
+@app.get("/api/invoices/{invoice_id}/lines")
+def get_invoice_lines(invoice_id: Annotated[UUID, Path()]) -> list[dict]:
+    return [_line(line) for line in invoice_lines(MongoInvoicingRepository(database()), invoice_id)]

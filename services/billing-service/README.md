@@ -1,9 +1,10 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans and rating modules.
-It persists to the MongoDB `billing_migration` database (collections `plans`,
-`tenants` with embedded `creditNotes`, `subscriptions`, `usageEvents` and
-`ratingPeriods` with the embedded `rating` result, per mapping spec v2), keeps
+This FastAPI service is the extraction target for the plans, rating and
+invoicing modules. It persists to the MongoDB `billing_migration` database
+(collections `plans`, `tenants` with embedded `creditNotes`, `subscriptions`,
+`usageEvents`, `ratingPeriods` with the embedded `rating` result and `invoices`
+with embedded `invoiceLines` and `dunningAttempts`, per mapping spec v2), keeps
 the HTTP layer thin, and places the behavior in a plain-Python domain layer.
 
 ## Development
@@ -26,7 +27,7 @@ only; `--collections` restricts a run to one batch's write targets:
 
 ```bash
 uv run python -m app.load --source-dsn-secret POSTGRESQL_RO_DSN --target-uri-secret MONGODB_ATLAS_URI \
-    --collections usageEvents,ratingPeriods
+    --collections invoices
 ```
 
 Rating (`GET .../rating`, `GET .../usage-summary`, `POST .../rating-periods`)
@@ -37,6 +38,18 @@ like PostgreSQL `round(numeric, 2)`. Finalizing a period is idempotent: the
 period keeps its id, its single `rating` subdocument keeps its id, first
 subscription, quota and `createdAt`, and a re-run overwrites only used, rollover,
 billable and overage; the response is the persisted result.
+
+Invoicing (`GET .../invoice-preview`, `POST .../invoices`,
+`GET /api/invoices/{id}/lines`) owns `invoices`. Issuing an invoice is one
+transaction: the rating period is finalized through the rating module, the
+invoice and its lines are one document upsert keyed by the legacy
+`md5(period_id || 'invoice')` id (a re-issue keeps the row, resets the status
+and replaces the lines), and the applied credit is drawn down through the plans
+repository's `apply_credit` because `tenants.creditNotes` belongs to the plans
+unit. The preview returns the function's exact numerics (the two tax halves are
+not rounded until they are issued). `MongoInvoicingRepository.append_dunning_attempt`
+is the owner API the dunning module uses to push into `invoices.dunningAttempts`,
+idempotent on `(invoiceId, attemptNo)`.
 
 `POST /internal/reset` runs the same load from `BILLING_SVC_SOURCE_DSN` (the
 disposable Compose stack's legacy database) so the parity harness can isolate

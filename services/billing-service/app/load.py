@@ -3,7 +3,7 @@ by environment variable NAME only; `--collections` restricts the run to a batch'
 targets (every collection by default, for the disposable parity stack's reset).
 
     python -m app.load --source-dsn-secret POSTGRESQL_RO_DSN --target-uri-secret MONGODB_ATLAS_URI \
-        --collections usageEvents,ratingPeriods
+        --collections invoices
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from app.documents import (
     COLLECTIONS,
     INDEXES,
     VALIDATORS,
+    invoice_document,
     plan_document,
     rating_period_document,
     subscription_document,
@@ -35,6 +36,7 @@ SOURCE_TABLES: dict[str, tuple[str, ...]] = {
     "subscriptions": ("subscriptions",),
     "usageEvents": ("usage_events",),
     "ratingPeriods": ("rating_periods", "rating_results"),
+    "invoices": ("invoices", "invoice_lines", "dunning_attempts"),
 }
 STAGING_SUFFIX = "__staging"
 
@@ -79,6 +81,17 @@ def build_documents(tables: dict[str, list[dict[str, Any]]]) -> dict[str, list[d
         documents["ratingPeriods"] = [
             rating_period_document(row, result_by_period.get(row["id"]))
             for row in tables["rating_periods"]
+        ]
+    if "invoices" in tables:
+        lines_by_invoice: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+        for line in tables["invoice_lines"]:
+            lines_by_invoice[line["invoice_id"]].append(line)
+        attempts_by_invoice: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+        for attempt in tables["dunning_attempts"]:
+            attempts_by_invoice[attempt["invoice_id"]].append(attempt)
+        documents["invoices"] = [
+            invoice_document(row, lines_by_invoice[row["id"]], attempts_by_invoice[row["id"]])
+            for row in tables["invoices"]
         ]
     return documents
 

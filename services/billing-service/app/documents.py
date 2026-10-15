@@ -9,7 +9,7 @@ from typing import Any
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel
 
-COLLECTIONS = ("plans", "tenants", "subscriptions", "usageEvents", "ratingPeriods")
+COLLECTIONS = ("plans", "tenants", "subscriptions", "usageEvents", "ratingPeriods", "invoices")
 
 
 def bson_date(value: date | None) -> datetime | None:
@@ -109,6 +109,48 @@ def rating_period_document(row: dict[str, Any], result: dict[str, Any] | None) -
     )
 
 
+def invoice_line_document(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "lineNo": row["line_no"],
+        "lineType": row["line_type"],
+        "description": row["description"],
+        "amount": bson_decimal(row["amount"]),
+    }
+
+
+def dunning_attempt_document(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "tenantId": row["tenant_id"],
+        "attemptNo": row["attempt_no"],
+        "scheduledFor": bson_date(row["scheduled_for"]),
+        "status": row["status"],
+    }
+
+
+def invoice_document(
+    row: dict[str, Any], lines: list[dict[str, Any]], attempts: list[dict[str, Any]]
+) -> dict[str, Any]:
+    return {
+        "_id": row["id"],
+        "tenantId": row["tenant_id"],
+        "periodId": row["period_id"],
+        "issuedAt": row["issued_at"],
+        "subtotal": bson_decimal(row["subtotal"]),
+        "tax": bson_decimal(row["tax"]),
+        "total": bson_decimal(row["total"]),
+        "status": row["status"],
+        "invoiceLines": [
+            invoice_line_document(line) for line in sorted(lines, key=lambda line: line["line_no"])
+        ],
+        "dunningAttempts": [
+            dunning_attempt_document(attempt)
+            for attempt in sorted(attempts, key=lambda attempt: attempt["attempt_no"])
+        ],
+    }
+
+
 INDEXES: dict[str, list[IndexModel]] = {
     "plans": [
         IndexModel([("monthlyFee", ASCENDING), ("code", ASCENDING)]),
@@ -133,6 +175,10 @@ INDEXES: dict[str, list[IndexModel]] = {
     "usageEvents": [IndexModel([("tenantId", ASCENDING), ("occurredAt", ASCENDING)])],
     "ratingPeriods": [
         IndexModel([("tenantId", ASCENDING), ("periodStart", ASCENDING)], unique=True),
+    ],
+    "invoices": [
+        IndexModel([("invoiceLines.lineNo", ASCENDING)]),
+        IndexModel([("status", ASCENDING), ("issuedAt", ASCENDING)]),
     ],
 }
 
@@ -253,5 +299,60 @@ VALIDATORS: dict[str, dict[str, Any]] = {
                 },
             },
         },
+    },
+    "invoices": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": [
+                "_id",
+                "tenantId",
+                "periodId",
+                "issuedAt",
+                "subtotal",
+                "tax",
+                "total",
+                "status",
+                "invoiceLines",
+                "dunningAttempts",
+            ],
+            "properties": {
+                "_id": _UUID,
+                "tenantId": _UUID,
+                "periodId": _UUID,
+                "issuedAt": _DATE,
+                "subtotal": {"bsonType": "decimal", "minimum": 0},
+                "tax": {"bsonType": "decimal", "minimum": 0},
+                "total": {"bsonType": "decimal", "minimum": 0},
+                "status": {"enum": ["draft", "issued", "paid", "overdue"]},
+                "invoiceLines": {
+                    "bsonType": "array",
+                    "items": {
+                        "bsonType": "object",
+                        "required": ["id", "lineNo", "lineType", "description", "amount"],
+                        "properties": {
+                            "id": _UUID,
+                            "lineNo": {"bsonType": "int", "minimum": 1},
+                            "lineType": {"enum": ["plan", "usage", "tax", "credit"]},
+                            "description": {"bsonType": "string"},
+                            "amount": _DECIMAL,
+                        },
+                    },
+                },
+                "dunningAttempts": {
+                    "bsonType": "array",
+                    "items": {
+                        "bsonType": "object",
+                        "required": ["id", "tenantId", "attemptNo", "scheduledFor", "status"],
+                        "properties": {
+                            "id": _UUID,
+                            "tenantId": _UUID,
+                            "attemptNo": {"bsonType": "int", "minimum": 1},
+                            "scheduledFor": _DATE,
+                            "status": {"enum": ["scheduled", "sent", "skipped"]},
+                        },
+                    },
+                },
+            },
+        }
     },
 }
