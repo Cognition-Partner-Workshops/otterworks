@@ -10,8 +10,10 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from sqlalchemy import text
+from sqlalchemy import BindParameter, ColumnElement, bindparam, false, func, select, table
+from sqlalchemy import column as sql_column
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import NullType
 
 logger = structlog.get_logger()
 
@@ -30,30 +32,54 @@ COLUMNS = (
     "updated_at",
 )
 
+DOCUMENTS = table("documents", *(sql_column(name) for name in COLUMNS))
+DIRECTIONS = {"asc": "asc", "desc": "desc"}
+
+
+def _untyped(value: Any) -> BindParameter[Any]:
+    """Bind without a client-side type so the database infers it (uuid columns)."""
+    return bindparam(None, value, type_=NullType())
+
 
 class DocumentQueryRepository:
-    """Reads the document table for the list endpoint's metadata filters."""
+    """Reads the document table for the list endpoint's metadata filters.
+
+    Statements are composed with SQLAlchemy Core, so every caller-supplied value
+    is a bound parameter. Sort column and direction are resolved from allow-lists.
+    """
 
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    @staticmethod
     def _where(
-        self,
         owner_id: str | None,
         title_contains: str | None,
         content_type: str | None,
         folder_id: str | None = None,
-    ) -> str:
-        clauses = ["is_deleted = false", "is_template = false"]
+    ) -> list[ColumnElement[bool]]:
+        c = DOCUMENTS.c
+        clauses: list[ColumnElement[bool]] = [c.is_deleted == false(), c.is_template == false()]
         if owner_id:
-            clauses.append(f"owner_id = '{owner_id}'")
+            clauses.append(c.owner_id == _untyped(owner_id))
         if folder_id:
-            clauses.append(f"folder_id = '{folder_id}'")
+            clauses.append(c.folder_id == _untyped(folder_id))
         if title_contains:
-            clauses.append(f"lower(title) LIKE lower('%{title_contains}%')")
+            clauses.append(func.lower(c.title).like(func.lower(f"%{title_contains}%")))
         if content_type:
-            clauses.append(f"content_type = '{content_type}'")
-        return " AND ".join(clauses)
+            clauses.append(c.content_type == content_type)
+        return clauses
+
+    @staticmethod
+    def _order_by(sort: str, direction: str) -> ColumnElement[Any]:
+        name = sort.lower()
+        if name not in COLUMNS:
+            raise ValueError("unsupported sort column")
+        keyword = DIRECTIONS.get(direction.lower())
+        if keyword is None:
+            raise ValueError("unsupported sort direction")
+        column = DOCUMENTS.c[name]
+        return column.asc() if keyword == "asc" else column.desc()
 
     async def count_documents(
         self,
@@ -64,15 +90,12 @@ class DocumentQueryRepository:
         folder_id: str | None = None,
     ) -> int:
         """Count documents matching the metadata filters."""
-        sql = (
-            "SELECT count(*) FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
+        statement = (
+            select(func.count())
+            .select_from(DOCUMENTS)
+            .where(*self._where(owner_id, title_contains, content_type, folder_id))
         )
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(statement)
         return int(result.scalar_one())
 
     async def search_documents(
@@ -88,15 +111,13 @@ class DocumentQueryRepository:
         offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Return document rows matching the metadata filters, newest first."""
-        sql = (
-            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-            + f" ORDER BY {sort} {direction} LIMIT {limit} OFFSET {offset}"
+        statement = (
+            select(*(DOCUMENTS.c[name] for name in COLUMNS))
+            .where(*self._where(owner_id, title_contains, content_type, folder_id))
+            .order_by(self._order_by(sort, direction))
+            .limit(int(limit))
+            .offset(int(offset))
         )
         logger.debug("document_filter_query", sort=sort, direction=direction)
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(statement)
         return [dict(row._mapping) for row in result]
