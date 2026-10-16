@@ -40,6 +40,70 @@ pub async fn metrics() -> HttpResponse {
         .body(middleware::render_metrics())
 }
 
+// -- Object-level authorization --
+
+/// The authenticated caller, from the `X-User-ID` header the api-gateway sets
+/// from validated JWT claims. Object-level handlers refuse to run without one.
+fn caller_id(req: &HttpRequest) -> Result<Uuid, ServiceError> {
+    req.headers()
+        .get("X-User-ID")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.trim().parse::<Uuid>().ok())
+        .ok_or_else(|| ServiceError::Unauthorized("missing or invalid X-User-ID header".into()))
+}
+
+fn ensure_owner(owner_id: &Uuid, caller: &Uuid) -> Result<(), ServiceError> {
+    if owner_id == caller {
+        Ok(())
+    } else {
+        Err(ServiceError::Forbidden(
+            "caller does not own this resource".into(),
+        ))
+    }
+}
+
+fn parse_id(raw: &str, kind: &str) -> Result<Uuid, ServiceError> {
+    raw.parse()
+        .map_err(|e| ServiceError::BadRequest(format!("invalid {kind} id: {e}")))
+}
+
+/// Load a file the caller owns; any other caller gets 403 before the file is acted on.
+async fn owned_file(
+    meta: &MetadataClient,
+    file_id: &Uuid,
+    caller: &Uuid,
+) -> Result<FileMetadata, ServiceError> {
+    let file = meta.get_file(file_id).await?;
+    ensure_owner(&file.owner_id, caller)?;
+    Ok(file)
+}
+
+/// Load a file the caller owns or has been granted a share on (read-only access).
+async fn readable_file(
+    meta: &MetadataClient,
+    file_id: &Uuid,
+    caller: &Uuid,
+) -> Result<FileMetadata, ServiceError> {
+    let file = meta.get_file(file_id).await?;
+    if file.owner_id == *caller || meta.find_existing_share(file_id, caller).await?.is_some() {
+        return Ok(file);
+    }
+    Err(ServiceError::Forbidden(
+        "caller does not own and has not been shared this file".into(),
+    ))
+}
+
+/// Load a folder the caller owns; any other caller gets 403 before the folder is acted on.
+async fn owned_folder(
+    meta: &MetadataClient,
+    folder_id: &Uuid,
+    caller: &Uuid,
+) -> Result<Folder, ServiceError> {
+    let folder = meta.get_folder(folder_id).await?;
+    ensure_owner(&folder.owner_id, caller)?;
+    Ok(folder)
+}
+
 // -- File Handlers --
 
 pub async fn upload_file(
@@ -201,14 +265,13 @@ pub async fn upload_file(
 }
 
 pub async fn get_file_metadata(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
-    let file = meta.get_file(&file_id).await?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
+    let file = readable_file(&meta, &file_id, &caller).await?;
     let shares = meta.list_shares(&file_id).await.unwrap_or_default();
     Ok(HttpResponse::Ok().json(FileDetailResponse {
         file,
@@ -332,17 +395,16 @@ pub async fn list_trashed(
     }))
 }
 pub async fn delete_file(
+    req: HttpRequest,
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
-    let file = meta.get_file(&file_id).await?;
+    let file = owned_file(&meta, &file_id, &caller).await?;
     meta.delete_file(&file_id).await?;
     s3.delete_object(&file.s3_key).await?;
 
@@ -353,16 +415,15 @@ pub async fn delete_file(
 }
 
 pub async fn download_file(
+    req: HttpRequest,
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
-    let file = meta.get_file(&file_id).await?;
+    let file = readable_file(&meta, &file_id, &caller).await?;
     let url = s3.presigned_download_url(&file.s3_key, 3600).await?;
 
     Ok(HttpResponse::Ok().json(DownloadResponse {
@@ -372,15 +433,19 @@ pub async fn download_file(
 }
 
 pub async fn move_file(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
     body: web::Json<MoveFileRequest>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
+
+    owned_file(&meta, &file_id, &caller).await?;
+    if let Some(folder_id) = &body.folder_id {
+        owned_folder(&meta, folder_id, &caller).await?;
+    }
 
     let file = meta.move_file(&file_id, body.folder_id).await?;
 
@@ -393,20 +458,21 @@ pub async fn move_file(
 }
 
 pub async fn rename_file(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
     body: web::Json<RenameFileRequest>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
     let name = body.name.trim();
     if name.is_empty() {
         return Err(ServiceError::BadRequest("name cannot be empty".into()));
     }
+
+    owned_file(&meta, &file_id, &caller).await?;
 
     let file = meta.rename_file(&file_id, name).await?;
 
@@ -426,28 +492,28 @@ pub async fn rename_file(
 }
 
 pub async fn list_versions(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
+    readable_file(&meta, &file_id, &caller).await?;
     let versions = meta.list_versions(&file_id).await?;
     Ok(HttpResponse::Ok().json(ListVersionsResponse { versions }))
 }
 
 pub async fn trash_file(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
+    owned_file(&meta, &file_id, &caller).await?;
     let file = meta.trash_file(&file_id).await?;
 
     let _ = events.file_trashed(&file_id, &file.owner_id).await;
@@ -457,15 +523,15 @@ pub async fn trash_file(
 }
 
 pub async fn restore_file(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
+    owned_file(&meta, &file_id, &caller).await?;
     let file = meta.restore_file(&file_id).await?;
 
     let _ = events
@@ -484,18 +550,17 @@ pub async fn restore_file(
 }
 
 pub async fn share_file(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     path: web::Path<String>,
     body: web::Json<ShareFileRequest>,
 ) -> Result<HttpResponse, ServiceError> {
-    let file_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let file_id = parse_id(&path.into_inner(), "file")?;
 
-    // Ensure file exists
-    let file = meta.get_file(&file_id).await?;
+    // Only the owner may grant access, and the grant is attributed to them.
+    let file = owned_file(&meta, &file_id, &caller).await?;
 
     // Check if share already exists for this file + user
     if let Some(existing) = meta
@@ -509,7 +574,7 @@ pub async fn share_file(
                 file_id,
                 shared_with: body.shared_with,
                 permission: body.permission.clone(),
-                shared_by: body.shared_by,
+                shared_by: caller,
                 created_at: existing.created_at,
             };
             meta.put_share(&updated).await?;
@@ -525,7 +590,7 @@ pub async fn share_file(
         file_id,
         shared_with: body.shared_with,
         permission: body.permission.clone(),
-        shared_by: body.shared_by,
+        shared_by: caller,
         created_at: Utc::now(),
     };
 
@@ -540,19 +605,20 @@ pub async fn share_file(
 }
 
 pub async fn remove_share(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<(String, String)>,
 ) -> Result<HttpResponse, ServiceError> {
+    let caller = caller_id(&req)?;
     let (file_id_str, user_id_str) = path.into_inner();
-    let file_id: Uuid = file_id_str
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid file id: {e}")))?;
-    let user_id: Uuid = user_id_str
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid user id: {e}")))?;
+    let file_id = parse_id(&file_id_str, "file")?;
+    let user_id = parse_id(&user_id_str, "user")?;
 
-    // Ensure file exists
-    let _file = meta.get_file(&file_id).await?;
+    // The owner may revoke any share; a recipient may only drop their own.
+    let file = meta.get_file(&file_id).await?;
+    if user_id != caller {
+        ensure_owner(&file.owner_id, &caller)?;
+    }
 
     // Find the existing share
     let share = meta
@@ -598,27 +664,30 @@ pub async fn create_folder(
 }
 
 pub async fn get_folder(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let folder_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid folder id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let folder_id = parse_id(&path.into_inner(), "folder")?;
 
-    let folder = meta.get_folder(&folder_id).await?;
+    let folder = owned_folder(&meta, &folder_id, &caller).await?;
     Ok(HttpResponse::Ok().json(folder))
 }
 
 pub async fn update_folder(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
     body: web::Json<UpdateFolderRequest>,
 ) -> Result<HttpResponse, ServiceError> {
-    let folder_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid folder id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let folder_id = parse_id(&path.into_inner(), "folder")?;
+
+    owned_folder(&meta, &folder_id, &caller).await?;
+    if let Some(parent_id) = &body.parent_id {
+        owned_folder(&meta, parent_id, &caller).await?;
+    }
 
     let folder = meta
         .update_folder(&folder_id, body.name.clone(), body.parent_id)
@@ -627,14 +696,14 @@ pub async fn update_folder(
 }
 
 pub async fn delete_folder(
+    req: HttpRequest,
     meta: web::Data<MetadataClient>,
     path: web::Path<String>,
 ) -> Result<HttpResponse, ServiceError> {
-    let folder_id: Uuid = path
-        .into_inner()
-        .parse()
-        .map_err(|e| ServiceError::BadRequest(format!("invalid folder id: {e}")))?;
+    let caller = caller_id(&req)?;
+    let folder_id = parse_id(&path.into_inner(), "folder")?;
 
+    owned_folder(&meta, &folder_id, &caller).await?;
     meta.delete_folder(&folder_id).await?;
     tracing::info!(folder_id = %folder_id, "Folder deleted");
     Ok(HttpResponse::NoContent().finish())
@@ -721,5 +790,421 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    #[test]
+    fn test_ensure_owner() {
+        let owner = Uuid::new_v4();
+        assert!(ensure_owner(&owner, &owner).is_ok());
+        assert!(matches!(
+            ensure_owner(&owner, &Uuid::new_v4()),
+            Err(ServiceError::Forbidden(_))
+        ));
+    }
+
+    mod authz {
+        use super::*;
+        use actix_web::http::StatusCode;
+        use actix_web::{test, App};
+        use std::sync::{Arc, Mutex};
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        use tokio::net::TcpListener;
+
+        const GET_ITEM: &str = "dynamodb_20120810.getitem";
+        const SCAN: &str = "dynamodb_20120810.scan";
+
+        type Calls = Arc<Mutex<Vec<String>>>;
+
+        fn header(head: &str, name: &str) -> Option<String> {
+            head.lines().find_map(|line| {
+                let (k, v) = line.split_once(':')?;
+                (k.trim() == name).then(|| v.trim().to_string())
+            })
+        }
+
+        fn item_owned_by(owner: Uuid) -> String {
+            let now = Utc::now().to_rfc3339();
+            serde_json::json!({
+                "Item": {
+                    "id": {"S": Uuid::new_v4().to_string()},
+                    "name": {"S": "victim.txt"},
+                    "mime_type": {"S": "text/plain"},
+                    "size_bytes": {"N": "1"},
+                    "s3_key": {"S": format!("files/{owner}/victim")},
+                    "owner_id": {"S": owner.to_string()},
+                    "version": {"N": "1"},
+                    "is_trashed": {"BOOL": false},
+                    "created_at": {"S": now},
+                    "updated_at": {"S": now},
+                }
+            })
+            .to_string()
+        }
+
+        /// A share `(file, recipient)`, returned only if it matches the Scan's `:fid` / `:uid` filter.
+        fn share_scan(owner: Uuid, grant: Option<(Uuid, Uuid)>, body: &[u8]) -> String {
+            let req: serde_json::Value = serde_json::from_slice(body).unwrap_or_default();
+            let filter = |key: &str| {
+                req["ExpressionAttributeValues"][key]["S"]
+                    .as_str()
+                    .map(str::to_string)
+            };
+            let items: Vec<serde_json::Value> = grant
+                .filter(|(file, recipient)| {
+                    filter(":fid").is_none_or(|f| f == file.to_string())
+                        && filter(":uid").is_none_or(|u| u == recipient.to_string())
+                })
+                .map(|(file, recipient)| {
+                    serde_json::json!({
+                        "id": {"S": Uuid::new_v4().to_string()},
+                        "file_id": {"S": file.to_string()},
+                        "shared_with": {"S": recipient.to_string()},
+                        "permission": {"S": "viewer"},
+                        "shared_by": {"S": owner.to_string()},
+                        "created_at": {"S": Utc::now().to_rfc3339()},
+                    })
+                })
+                .into_iter()
+                .collect();
+            serde_json::json!({"Items": items, "Count": items.len(), "ScannedCount": items.len()})
+                .to_string()
+        }
+
+        /// A stand-in for DynamoDB/S3 that serves every GetItem as an object owned by
+        /// `owner`, every Scan as the matching `grant` share (or empty), and records each call.
+        async fn fake_aws(owner: Uuid, grant: Option<(Uuid, Uuid)>) -> (String, Calls) {
+            let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let addr = listener.local_addr().unwrap();
+            let calls: Calls = Arc::default();
+            let recorded = calls.clone();
+            tokio::spawn(async move {
+                while let Ok((mut sock, _)) = listener.accept().await {
+                    let recorded = recorded.clone();
+                    tokio::spawn(async move {
+                        let mut buf: Vec<u8> = Vec::new();
+                        let mut chunk = [0u8; 8192];
+                        loop {
+                            let header_end = loop {
+                                if let Some(pos) = buf.windows(4).position(|w| w == b"\r\n\r\n") {
+                                    break pos + 4;
+                                }
+                                match sock.read(&mut chunk).await {
+                                    Ok(0) | Err(_) => return,
+                                    Ok(n) => buf.extend_from_slice(&chunk[..n]),
+                                }
+                            };
+                            let head = String::from_utf8_lossy(&buf[..header_end]).to_lowercase();
+                            let len: usize = header(&head, "content-length")
+                                .and_then(|v| v.parse().ok())
+                                .unwrap_or(0);
+                            while buf.len() < header_end + len {
+                                match sock.read(&mut chunk).await {
+                                    Ok(0) | Err(_) => return,
+                                    Ok(n) => buf.extend_from_slice(&chunk[..n]),
+                                }
+                            }
+                            let body: Vec<u8> =
+                                buf.drain(..header_end + len).skip(header_end).collect();
+                            let call = header(&head, "x-amz-target").unwrap_or_else(|| {
+                                head.lines().next().unwrap_or_default().to_string()
+                            });
+                            recorded.lock().unwrap().push(call.clone());
+                            let body = match call.as_str() {
+                                GET_ITEM => item_owned_by(owner),
+                                SCAN => share_scan(owner, grant, &body),
+                                _ => "{}".to_string(),
+                            };
+                            let resp = format!(
+                                "HTTP/1.1 200 OK\r\nContent-Type: application/x-amz-json-1.0\r\nContent-Length: {}\r\n\r\n{}",
+                                body.len(),
+                                body
+                            );
+                            if sock.write_all(resp.as_bytes()).await.is_err() {
+                                return;
+                            }
+                        }
+                    });
+                }
+            });
+            (format!("http://{addr}"), calls)
+        }
+
+        struct Harness {
+            meta: web::Data<MetadataClient>,
+            s3: web::Data<S3Client>,
+            events: web::Data<EventPublisher>,
+            calls: Calls,
+        }
+
+        async fn harness(owner: Uuid) -> Harness {
+            harness_with_grant(owner, None).await
+        }
+
+        async fn harness_with_grant(owner: Uuid, grant: Option<(Uuid, Uuid)>) -> Harness {
+            let (endpoint, calls) = fake_aws(owner, grant).await;
+            let creds =
+                aws_sdk_dynamodb::config::Credentials::new("test", "test", None, None, "test");
+            let dynamo = aws_sdk_dynamodb::Config::builder()
+                .behavior_version(aws_sdk_dynamodb::config::BehaviorVersion::latest())
+                .region(aws_sdk_dynamodb::config::Region::new("us-east-1"))
+                .credentials_provider(creds.clone())
+                .endpoint_url(&endpoint)
+                .build();
+            let s3 = aws_sdk_s3::Config::builder()
+                .behavior_version(aws_sdk_s3::config::BehaviorVersion::latest())
+                .region(aws_sdk_s3::config::Region::new("us-east-1"))
+                .credentials_provider(creds)
+                .endpoint_url(&endpoint)
+                .force_path_style(true)
+                .build();
+            let aws = crate::config::AwsConfig {
+                region: "us-east-1".into(),
+                endpoint_url: Some(endpoint),
+                s3_bucket: "otterworks-files".into(),
+                dynamodb_table: "files".into(),
+                dynamodb_folders_table: "folders".into(),
+                dynamodb_versions_table: "versions".into(),
+                dynamodb_shares_table: "shares".into(),
+            };
+            let events =
+                EventPublisher::new(&crate::config::SnsConfig { topic_arn: None }, &aws).await;
+            Harness {
+                meta: web::Data::new(MetadataClient {
+                    client: aws_sdk_dynamodb::Client::from_conf(dynamo),
+                    files_table: aws.dynamodb_table,
+                    folders_table: aws.dynamodb_folders_table,
+                    versions_table: aws.dynamodb_versions_table,
+                    shares_table: aws.dynamodb_shares_table,
+                }),
+                s3: web::Data::new(S3Client {
+                    client: aws_sdk_s3::Client::from_conf(s3),
+                    bucket: aws.s3_bucket,
+                }),
+                events: web::Data::new(events),
+                calls,
+            }
+        }
+
+        impl Harness {
+            async fn send(&self, req: test::TestRequest) -> (StatusCode, serde_json::Value) {
+                let app = test::init_service(
+                    App::new()
+                        .app_data(self.meta.clone())
+                        .app_data(self.s3.clone())
+                        .app_data(self.events.clone())
+                        .service(
+                            web::scope("/api/v1/files")
+                                .route("/{file_id}", web::get().to(get_file_metadata))
+                                .route("/{file_id}", web::delete().to(delete_file))
+                                .route("/{file_id}/download", web::get().to(download_file))
+                                .route("/{file_id}/move", web::put().to(move_file))
+                                .route("/{file_id}/rename", web::patch().to(rename_file))
+                                .route("/{file_id}/versions", web::get().to(list_versions))
+                                .route("/{file_id}/trash", web::post().to(trash_file))
+                                .route("/{file_id}/restore", web::post().to(restore_file))
+                                .route("/{file_id}/share", web::post().to(share_file))
+                                .route(
+                                    "/{file_id}/share/{user_id}",
+                                    web::delete().to(remove_share),
+                                ),
+                        )
+                        .service(
+                            web::scope("/api/v1/folders")
+                                .route("/{folder_id}", web::get().to(get_folder))
+                                .route("/{folder_id}", web::put().to(update_folder))
+                                .route("/{folder_id}", web::delete().to(delete_folder)),
+                        ),
+                )
+                .await;
+                let resp = test::call_service(&app, req.to_request()).await;
+                let status = resp.status();
+                let body = test::read_body(resp).await;
+                (status, serde_json::from_slice(&body).unwrap_or_default())
+            }
+
+            fn take_calls(&self) -> Vec<String> {
+                std::mem::take(&mut *self.calls.lock().unwrap())
+            }
+        }
+
+        fn object_requests(id: Uuid) -> Vec<test::TestRequest> {
+            let f = format!("/api/v1/files/{id}");
+            let d = format!("/api/v1/folders/{id}");
+            let other = Uuid::new_v4();
+            vec![
+                test::TestRequest::get().uri(&f),
+                test::TestRequest::delete().uri(&f),
+                test::TestRequest::get().uri(&format!("{f}/download")),
+                test::TestRequest::put()
+                    .uri(&format!("{f}/move"))
+                    .set_json(serde_json::json!({"folder_id": null})),
+                test::TestRequest::patch()
+                    .uri(&format!("{f}/rename"))
+                    .set_json(serde_json::json!({"name": "pwned"})),
+                test::TestRequest::get().uri(&format!("{f}/versions")),
+                test::TestRequest::post().uri(&format!("{f}/trash")),
+                test::TestRequest::post().uri(&format!("{f}/restore")),
+                test::TestRequest::post().uri(&format!("{f}/share")).set_json(
+                    serde_json::json!({"shared_with": other, "permission": "editor", "shared_by": other}),
+                ),
+                test::TestRequest::delete().uri(&format!("{f}/share/{other}")),
+                test::TestRequest::get().uri(&d),
+                test::TestRequest::put()
+                    .uri(&d)
+                    .set_json(serde_json::json!({"name": "pwned"})),
+                test::TestRequest::delete().uri(&d),
+            ]
+        }
+
+        #[actix_rt::test]
+        async fn missing_or_invalid_caller_is_rejected_before_any_aws_call() {
+            let h = harness(Uuid::new_v4()).await;
+            for (i, req) in object_requests(Uuid::new_v4()).into_iter().enumerate() {
+                let (status, _) = h.send(req).await;
+                assert_eq!(
+                    status,
+                    StatusCode::UNAUTHORIZED,
+                    "request #{i} without X-User-ID"
+                );
+            }
+            for req in object_requests(Uuid::new_v4()) {
+                let (status, _) = h.send(req.insert_header(("X-User-ID", "not-a-uuid"))).await;
+                assert_eq!(status, StatusCode::UNAUTHORIZED);
+            }
+            assert!(h.take_calls().is_empty());
+        }
+
+        #[actix_rt::test]
+        async fn non_owner_is_forbidden_before_acting_on_the_object() {
+            let owner = Uuid::new_v4();
+            let attacker = Uuid::new_v4();
+            let h = harness(owner).await;
+            for (i, req) in object_requests(Uuid::new_v4()).into_iter().enumerate() {
+                let (status, _) = h
+                    .send(req.insert_header(("X-User-ID", attacker.to_string())))
+                    .await;
+                assert_eq!(status, StatusCode::FORBIDDEN, "request #{i} as non-owner");
+                // Only the ownership lookup (plus the share-grant lookup for reads)
+                // may reach AWS: no update, delete, put, or S3 call.
+                for call in h.take_calls() {
+                    assert!(call == GET_ITEM || call == SCAN, "request #{i} made {call}");
+                }
+            }
+        }
+
+        #[actix_rt::test]
+        async fn owner_can_read_and_download_their_file() {
+            let owner = Uuid::new_v4();
+            let h = harness(owner).await;
+            let id = Uuid::new_v4();
+            let (status, _) = h
+                .send(
+                    test::TestRequest::get()
+                        .uri(&format!("/api/v1/files/{id}"))
+                        .insert_header(("X-User-ID", owner.to_string())),
+                )
+                .await;
+            assert_eq!(status, StatusCode::OK);
+            let (status, body) = h
+                .send(
+                    test::TestRequest::get()
+                        .uri(&format!("/api/v1/files/{id}/download"))
+                        .insert_header(("X-User-ID", owner.to_string())),
+                )
+                .await;
+            assert_eq!(status, StatusCode::OK);
+            assert!(body["url"].as_str().unwrap().contains(&owner.to_string()));
+        }
+
+        #[actix_rt::test]
+        async fn share_recipient_may_read_but_not_act_as_owner() {
+            let owner = Uuid::new_v4();
+            let recipient = Uuid::new_v4();
+            let shared = Uuid::new_v4();
+            let h = harness_with_grant(owner, Some((shared, recipient))).await;
+            let f = format!("/api/v1/files/{shared}");
+            let unshared = format!("/api/v1/files/{}", Uuid::new_v4());
+            let as_recipient =
+                |req: test::TestRequest| req.insert_header(("X-User-ID", recipient.to_string()));
+            for suffix in ["", "/download", "/versions"] {
+                let uri = format!("{f}{suffix}");
+                let (status, _) = h
+                    .send(as_recipient(test::TestRequest::get().uri(&uri)))
+                    .await;
+                assert_eq!(status, StatusCode::OK, "recipient GET {uri}");
+                // The grant covers one file only; the owner's other files stay private.
+                let uri = format!("{unshared}{suffix}");
+                let (status, _) = h
+                    .send(as_recipient(test::TestRequest::get().uri(&uri)))
+                    .await;
+                assert_eq!(status, StatusCode::FORBIDDEN, "recipient GET {uri}");
+            }
+            let owner_only = [
+                test::TestRequest::delete().uri(&f),
+                test::TestRequest::post()
+                    .uri(&format!("{f}/share"))
+                    .set_json(
+                        serde_json::json!({"shared_with": recipient, "permission": "editor"}),
+                    ),
+                test::TestRequest::patch()
+                    .uri(&format!("{f}/rename"))
+                    .set_json(serde_json::json!({"name": "pwned"})),
+                test::TestRequest::post().uri(&format!("{f}/trash")),
+            ];
+            h.take_calls();
+            for (i, req) in owner_only.into_iter().enumerate() {
+                let (status, _) = h.send(as_recipient(req)).await;
+                assert_eq!(status, StatusCode::FORBIDDEN, "owner-only request #{i}");
+                for call in h.take_calls() {
+                    assert!(call == GET_ITEM || call == SCAN, "request #{i} made {call}");
+                }
+            }
+        }
+
+        #[actix_rt::test]
+        async fn share_is_attributed_to_the_caller_not_the_body() {
+            let owner = Uuid::new_v4();
+            let h = harness(owner).await;
+            let forged = Uuid::new_v4();
+            let (status, body) = h
+                .send(
+                    test::TestRequest::post()
+                        .uri(&format!("/api/v1/files/{}/share", Uuid::new_v4()))
+                        .insert_header(("X-User-ID", owner.to_string()))
+                        .set_json(serde_json::json!({
+                            "shared_with": Uuid::new_v4(),
+                            "permission": "viewer",
+                            "shared_by": forged,
+                        })),
+                )
+                .await;
+            assert_eq!(status, StatusCode::CREATED);
+            assert_eq!(body["share"]["shared_by"], owner.to_string());
+        }
+
+        #[actix_rt::test]
+        async fn recipient_may_remove_only_their_own_share() {
+            let owner = Uuid::new_v4();
+            let recipient = Uuid::new_v4();
+            let h = harness(owner).await;
+            let file = Uuid::new_v4();
+            let (status, _) = h
+                .send(
+                    test::TestRequest::delete()
+                        .uri(&format!("/api/v1/files/{file}/share/{}", Uuid::new_v4()))
+                        .insert_header(("X-User-ID", recipient.to_string())),
+                )
+                .await;
+            assert_eq!(status, StatusCode::FORBIDDEN);
+            // Their own grant passes authorization; the fake has no share rows, so 404.
+            let (status, _) = h
+                .send(
+                    test::TestRequest::delete()
+                        .uri(&format!("/api/v1/files/{file}/share/{recipient}"))
+                        .insert_header(("X-User-ID", recipient.to_string())),
+                )
+                .await;
+            assert_eq!(status, StatusCode::NOT_FOUND);
+        }
     }
 }
