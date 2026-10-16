@@ -19,7 +19,7 @@
 #   OP            deploy | teardown | inject | reset | reap        (required)
 #   TENANT_ID     attendee id (required for deploy/teardown/inject/reset)
 #   TIER          A | B                                            (default A)
-#   TTL           e.g. 8h, 30m, 2d, or `never` for a perpetual tenant (default 8h)
+#   TTL           e.g. 8h, 30m, 2d, or `never` for a perpetual tenant (default 72h)
 #   REDEPLOY      true when deploying over a live tenant (CD)   (default unset)
 #   IMAGE_TAG     optional pinned image tag
 #   HOST_SUFFIX   ingress host suffix              (default demo.otterworks.app)
@@ -46,7 +46,7 @@ AWS_REGION="${AWS_REGION:-us-east-1}"
 EKS_CLUSTER="${EKS_CLUSTER:-otterworks-dev}"
 HOST_SUFFIX="${HOST_SUFFIX:-demo.otterworks.app}"
 TIER="${TIER:-A}"
-TTL="${TTL:-8h}"
+TTL="${TTL:-72h}"
 OP="${OP:-}"
 
 log()  { echo "[runner] $*"; }

@@ -17,7 +17,7 @@
 #
 # Usage:
 #   ./scripts/deploy-tenant.sh <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] \
-#       [--ttl 8h] [--host-suffix demo.example.com] [--skip-db] \
+#       [--ttl 72h] [--host-suffix demo.example.com] [--skip-db] \
 #       [--profile core|full]
 #
 # Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
@@ -36,7 +36,7 @@ ATTENDEE_ID=""
 TIER="A"
 IMAGE_TAG_OVERRIDE=""
 TENANT_BRANCH_ARG=""
-TTL="8h"
+TTL="72h"
 HOST_SUFFIX="${HOST_SUFFIX:-}"
 SKIP_DB=false
 # Deploy only the services the lab needs. At 100 tenants the difference between
@@ -57,7 +57,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 8h|never] [--profile core|full]"; exit 1; }
+[ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 72h|never] [--profile core|full]"; exit 1; }
 case "${TIER}" in A|B) ;; *) err "--tier must be A or B"; exit 1 ;; esac
 case "${PROFILE}" in core|full) ;; *) err "--profile must be core or full"; exit 1 ;; esac
 mapfile -t TENANT_SERVICES < <(profile_services "${PROFILE}")
@@ -440,11 +440,6 @@ kubectl -n "${NS}" rollout status deployment/meilisearch --timeout=180s || warn 
 log "Logging into ECR to resolve image tags..."
 aws ecr get-login-password --region "${AWS_REGION}" | \
   docker login --username AWS --password-stdin "${ECR_REGISTRY}" >/dev/null 2>&1 || true
-latest_tag() {
-  aws ecr describe-images --repository-name "${ECR_PREFIX}$1" --region "${AWS_REGION}" \
-    --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text 2>/dev/null
-}
-
 tag_exists() {
   aws ecr describe-images --repository-name "${ECR_PREFIX}$1" --image-ids "imageTag=$2" \
     --region "${AWS_REGION}" >/dev/null 2>&1
@@ -452,9 +447,9 @@ tag_exists() {
 
 # CI publishes each service a branch changed as `tenant-<id>` (and `main` for
 # the golden app), so a tenant runs its branch's build of the services that
-# branch touched and the golden build of everything else. Without this the
-# fallback is "newest image pushed to the repo", which is whichever branch built
-# last -- i.e. another tenant's code.
+# branch touched and the golden build of everything else. There is deliberately
+# no "newest image in the repo" fallback: that is whichever branch built last,
+# i.e. another tenant's code, and it once put a customer skin on t-main.
 TENANT_TAG=""
 [ -n "${TENANT_BRANCH_ARG}" ] &&
   TENANT_TAG="$(tenant_image_tag "${ATTENDEE_ID}")"
@@ -467,7 +462,6 @@ resolve_tag() {
   if tag_exists "${service}" main; then
     echo "main"; return 0
   fi
-  latest_tag "${service}"
 }
 
 # ---------- Deploy services via Helm ----------
@@ -482,8 +476,8 @@ deploy_service() {
   [ -n "${!var:-}" ] && tag="${!var}"
   [ -z "${tag}" ] && tag="$(resolve_tag "${service}")"
   if [ -z "${tag}" ] || [ "${tag}" = "None" ]; then
-    warn "No image in ECR for ${service}; skipping."
-    return 0
+    err "No :main image in ECR for ${service}; rebuild the golden images (cd-tenant.yml on main, rebuild_all) instead of deploying another branch's build."
+    return 1
   fi
   # Moving tags (tenant-<id>, main) are re-pointed by CD without the tag text
   # changing, which would leave the pod template identical and roll nothing
