@@ -123,7 +123,8 @@ public class ReconciliationRepository {
         JdbcTemplate jdbc = registry.migrationJdbc();
         if (jdbc == null) {
             registry.store();
-            throw new ArchiveStoreUnavailableException("migration ledger requires ARCHIVE_STORE=postgresql or azuresql");
+            throw new ArchiveStoreUnavailableException(
+                    "migration ledger requires ARCHIVE_STORE=postgresql or azuresql");
         }
         return jdbc;
     }
