@@ -59,7 +59,7 @@ spec:
             - { name: TENANT_ID, value: a01 }
             - { name: TENANT_BRANCH, value: workshop-a01 }
             - { name: TIER, value: A }
-            - { name: TTL, value: 8h }
+            - { name: TTL, value: 72h }
             - name: DB_PASSWORD
               valueFrom: { secretKeyRef: { name: demo-ops-dashboard, key: DB_PASSWORD } }
 ```

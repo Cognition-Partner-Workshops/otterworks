@@ -30,7 +30,7 @@
 # drives its own environments off branch names identical to this one's.
 #
 # Examples:
-#   tenant.sh checkout derek                   # -> workshop-derek, 8h
+#   tenant.sh checkout derek                   # -> workshop-derek, 72h
 #   tenant.sh checkout derek workshop-derek 24h
 #   tenant.sh sync workshop-derek              # -> tenant derek
 #   OPS_HOST=https://ops.example.app tenant.sh list
@@ -40,13 +40,23 @@ set -euo pipefail
 OPS_HOST="${OPS_HOST:-https://ops.otterworks.app}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 PASSCODE_SECRET_ID="${PASSCODE_SECRET_ID:-otterworks/dev/dashboard/passcode}"
-DEFAULT_TTL="${DEFAULT_TTL:-8h}"
+DEFAULT_TTL="${DEFAULT_TTL:-72h}"
 # What CD gives a tenant it creates for a branch nobody checked out by hand.
 # Long enough to span a few days' work, short enough that an abandoned branch
 # stops costing anything on its own.
 CD_TTL="${CD_TTL:-72h}"
 
 log()  { echo "[tenant] $*"; }
+
+# 72h / 30m / 3d -> seconds; a bare number is hours, as in the dashboard.
+ttl_seconds() {
+  local num="${1%%[!0-9]*}" unit="${1##*[0-9]}"
+  case "${unit}" in
+    m) echo $(( num * 60 )) ;;
+    d) echo $(( num * 86400 )) ;;
+    *) echo $(( num * 3600 )) ;;
+  esac
+}
 fail() { echo "[tenant] ERROR: $*" >&2; exit 1; }
 
 for bin in curl jq; do
@@ -292,6 +302,17 @@ case "${cmd}" in
                        '{branch:$b} + (if $img == "" then {} else {image_tag:$img} end)')")"
       warn_if_degraded "${out}" || fail "'${id}' redeploy was not enqueued -- check the runner"
       log "${id}: $(printf '%s' "${out}" | jq -r '.job // "accepted"')"
+
+      # A push counts as use: give the tenant CD_TTL from now, so a branch
+      # someone is still pushing to does not expire mid-demo. Never shortens an
+      # expiry someone set by hand, and perpetual tenants are left alone.
+      if [ "$(printf '%s' "${existing}" | jq -r '.persistent // false')" != "true" ]; then
+        current="$(printf '%s' "${existing}" | jq -r '.expiresAt // .expires_at // 0')"
+        if [ "$(( $(date +%s) + $(ttl_seconds "${CD_TTL}") ))" -gt "${current%.*}" ]; then
+          api POST "/api/tenants/${id}/extend" "$(jq -nc --arg t "${CD_TTL}" '{ttl:$t}')" |
+            jq -r --arg id "${id}" '"[tenant] \($id): now expires \(.expiresAt | todate)"'
+        fi
+      fi
     fi
 
     log "watch with: tenant.sh status ${id}"

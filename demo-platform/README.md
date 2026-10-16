@@ -106,7 +106,7 @@ and deploy scripts come from `main` here. Changing those is a PR upstream, not a
 for the agent platforms that do it on their behalf:
 
 ```bash
-tenant.sh checkout derek              # -> branch workshop-derek, 8h TTL
+tenant.sh checkout derek              # -> branch workshop-derek, 72h TTL
 tenant.sh status derek
 tenant.sh checkin derek
 tenant.sh list

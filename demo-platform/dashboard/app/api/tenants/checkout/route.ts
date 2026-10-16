@@ -32,7 +32,7 @@ export const POST = withSession(async (req: NextRequest, { actor }) => {
       `tenant '${id}' may not be perpetual; a perpetual tenant never expires and is never suspended`,
     );
   }
-  const ttlStr = persistent ? "never" : typeof body.ttl === "string" && body.ttl ? body.ttl : "8h";
+  const ttlStr = persistent ? "never" : typeof body.ttl === "string" && body.ttl ? body.ttl : "72h";
   const ttlSeconds = ttlToSeconds(ttlStr);
   if (ttlSeconds === null) return error(400, "invalid ttl");
 

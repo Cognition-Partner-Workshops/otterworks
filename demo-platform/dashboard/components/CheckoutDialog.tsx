@@ -17,7 +17,7 @@ export default function CheckoutDialog({
   const [owner, setOwner] = useState("");
   const [branch, setBranch] = useState("");
   const [tier, setTier] = useState<TenantTier>("A");
-  const [ttl, setTtl] = useState("8h");
+  const [ttl, setTtl] = useState("72h");
   const [imageTag, setImageTag] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function CheckoutDialog({
       setOwner("");
       setBranch("");
       setTier("A");
-      setTtl("8h");
+      setTtl("72h");
       setImageTag("");
       setError(null);
     }

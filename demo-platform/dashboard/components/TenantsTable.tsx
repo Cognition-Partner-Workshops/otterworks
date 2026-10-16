@@ -58,7 +58,7 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
       if (kind === "checkin") {
         await apiSend(`/api/tenants/${tenant.id}/checkin`, "POST");
       } else if (kind === "extend") {
-        await apiSend(`/api/tenants/${tenant.id}/extend`, "POST", { ttl: "8h" });
+        await apiSend(`/api/tenants/${tenant.id}/extend`, "POST", { ttl: "72h" });
       } else if (kind === "redeploy") {
         await apiSend(`/api/tenants/${tenant.id}/redeploy`, "POST");
       } else {

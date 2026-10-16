@@ -263,7 +263,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       # Creates the tenant with a 72h TTL if the branch has none, otherwise
-      # redeploys it in place. `main` is the perpetual tenant and must already
+      # redeploys it in place and pushes its expiry back out to 72h. `main` is the perpetual tenant and must already
       # exist -- CD deliberately cannot create a perpetual environment (see
       # `tenant.sh persist`), so a missing t-main is an error, not a silent
       # ephemeral tenant on the golden branch.
