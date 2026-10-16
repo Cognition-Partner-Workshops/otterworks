@@ -15,9 +15,11 @@ const config: CapacitorConfig = {
     // which is what makes the local dev gateway reachable. Point
     // VITE_API_BASE_URL at an https gateway for production builds.
     allowMixedContent: true,
+    appendUserAgent: "OtterWorksApp/android",
   },
   ios: {
     path: "mobile/ios",
+    appendUserAgent: "OtterWorksApp/ios",
   },
 };
 

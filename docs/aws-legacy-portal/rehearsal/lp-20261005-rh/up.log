@@ -1,0 +1,1067 @@
+# lp-up run=lp-20261005-rh started 2026-10-05T08:00:12Z
+# caller arn:aws:iam::<account>:user/<caller>
+terraform init: state otterworks/legacy-portal-serverless/lp-20261005-rh/terraform.tfstate
+data.archive_file.placeholder: Reading...
+data.archive_file.placeholder: Read complete after 0s [id=2bb269829b1fe2e849d12bcc2a57c553f2b457b0]
+data.aws_iam_policy_document.lambda_assume: Reading...
+data.aws_iam_role.builder: Reading...
+data.aws_caller_identity.current: Reading...
+data.aws_vpc.this: Reading...
+data.aws_partition.current: Reading...
+data.aws_partition.current: Read complete after 0s [id=aws]
+data.aws_iam_policy_document.lambda_assume: Read complete after 0s [id=2690255455]
+data.aws_caller_identity.current: Read complete after 1s [id=<account>]
+data.aws_iam_role.builder: Read complete after 1s [id=devin-cw-builder]
+data.aws_vpc.this: Read complete after 1s [id=vpc-06a10b8ada56a6b91]
+data.aws_subnets.private: Reading...
+data.aws_subnets.private: Read complete after 0s [id=us-east-1]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.aws_iam_policy_document.builder will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "builder" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "lambda:GetFunction",
+              + "lambda:GetFunctionConfiguration",
+              + "lambda:InvokeFunction",
+              + "lambda:ListVersionsByFunction",
+              + "lambda:PublishVersion",
+              + "lambda:UpdateFunctionCode",
+              + "lambda:UpdateFunctionConfiguration",
+            ]
+          + resources = [
+              + "arn:aws:lambda:us-east-1:<account>:function:lp-20261005-rh-*",
+            ]
+          + sid       = "LambdaRunFunctions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "lp-20261005-rh",
+                ]
+              + variable = "aws:ResourceTag/run_token"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "apigateway:GET",
+              + "apigateway:PATCH",
+              + "apigateway:POST",
+              + "apigateway:PUT",
+            ]
+          + resources = [
+              + (known after apply),
+              + (known after apply),
+            ]
+          + sid       = "HttpApiOfRun"
+        }
+      + statement {
+          + actions   = [
+              + "rds-data:BatchExecuteStatement",
+              + "rds-data:BeginTransaction",
+              + "rds-data:CommitTransaction",
+              + "rds-data:ExecuteStatement",
+              + "rds-data:RollbackTransaction",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "DataApiOnRunCluster"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "lp-20261005-rh",
+                ]
+              + variable = "aws:ResourceTag/run_token"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "secretsmanager:DescribeSecret",
+              + "secretsmanager:GetSecretValue",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "ReadRunDbSecret"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "lp-20261005-rh",
+                ]
+              + variable = "aws:ResourceTag/run_token"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "logs:DescribeLogStreams",
+              + "logs:FilterLogEvents",
+              + "logs:GetLogEvents",
+              + "logs:StartLiveTail",
+              + "logs:StartQuery",
+            ]
+          + resources = [
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+            ]
+          + sid       = "ReadRunLogs"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "lp-20261005-rh",
+                ]
+              + variable = "aws:ResourceTag/run_token"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "logs:GetQueryResults",
+              + "logs:StopQuery",
+            ]
+          + resources = [
+              + "*",
+            ]
+          + sid       = "LogQueryResults"
+        }
+    }
+
+  # data.aws_iam_policy_document.lambda will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "lambda" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "logs:CreateLogStream",
+              + "logs:PutLogEvents",
+            ]
+          + resources = [
+              + (known after apply),
+              + (known after apply),
+              + (known after apply),
+            ]
+          + sid       = "WriteOwnLogs"
+        }
+      + statement {
+          + actions   = [
+              + "rds-data:BatchExecuteStatement",
+              + "rds-data:BeginTransaction",
+              + "rds-data:CommitTransaction",
+              + "rds-data:ExecuteStatement",
+              + "rds-data:RollbackTransaction",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "DataApi"
+        }
+      + statement {
+          + actions   = [
+              + "secretsmanager:GetSecretValue",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "ReadDbSecret"
+        }
+    }
+
+  # aws_apigatewayv2_api.this will be created
+  + resource "aws_apigatewayv2_api" "this" {
+      + api_endpoint                 = (known after apply)
+      + api_key_selection_expression = "$request.header.x-api-key"
+      + arn                          = (known after apply)
+      + description                  = "legacy-portal routes for lp-20261005-rh"
+      + execution_arn                = (known after apply)
+      + id                           = (known after apply)
+      + ip_address_type              = (known after apply)
+      + name                         = "lp-20261005-rh"
+      + protocol_type                = "HTTP"
+      + route_selection_expression   = "$request.method $request.path"
+      + tags_all                     = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_apigatewayv2_integration.context["announcements"] will be created
+  + resource "aws_apigatewayv2_integration" "context" {
+      + api_id                                    = (known after apply)
+      + connection_type                           = "INTERNET"
+      + id                                        = (known after apply)
+      + integration_response_selection_expression = (known after apply)
+      + integration_type                          = "AWS_PROXY"
+      + integration_uri                           = (known after apply)
+      + payload_format_version                    = "2.0"
+      + timeout_milliseconds                      = 29000
+    }
+
+  # aws_apigatewayv2_integration.context["feedback"] will be created
+  + resource "aws_apigatewayv2_integration" "context" {
+      + api_id                                    = (known after apply)
+      + connection_type                           = "INTERNET"
+      + id                                        = (known after apply)
+      + integration_response_selection_expression = (known after apply)
+      + integration_type                          = "AWS_PROXY"
+      + integration_uri                           = (known after apply)
+      + payload_format_version                    = "2.0"
+      + timeout_milliseconds                      = 29000
+    }
+
+  # aws_apigatewayv2_integration.context["preferences"] will be created
+  + resource "aws_apigatewayv2_integration" "context" {
+      + api_id                                    = (known after apply)
+      + connection_type                           = "INTERNET"
+      + id                                        = (known after apply)
+      + integration_response_selection_expression = (known after apply)
+      + integration_type                          = "AWS_PROXY"
+      + integration_uri                           = (known after apply)
+      + payload_format_version                    = "2.0"
+      + timeout_milliseconds                      = 29000
+    }
+
+  # aws_apigatewayv2_route.context["announcements-proxy"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/announcements/{proxy+}"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.context["announcements-root"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/announcements"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.context["feedback-proxy"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/feedback/{proxy+}"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.context["feedback-root"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/feedback"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.context["preferences-proxy"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/preferences/{proxy+}"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.context["preferences-root"] will be created
+  + resource "aws_apigatewayv2_route" "context" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "ANY /api/preferences"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.default will be created
+  + resource "aws_apigatewayv2_route" "default" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "$default"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_stage.default will be created
+  + resource "aws_apigatewayv2_stage" "default" {
+      + api_id        = (known after apply)
+      + arn           = (known after apply)
+      + auto_deploy   = true
+      + deployment_id = (known after apply)
+      + execution_arn = (known after apply)
+      + id            = (known after apply)
+      + invoke_url    = (known after apply)
+      + name          = "$default"
+      + tags_all      = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+
+      + access_log_settings {
+          + destination_arn = (known after apply)
+          + format          = jsonencode(
+                {
+                  + error     = "$context.integrationErrorMessage"
+                  + latencyMs = "$context.integrationLatency"
+                  + method    = "$context.httpMethod"
+                  + path      = "$context.path"
+                  + requestId = "$context.requestId"
+                  + routeKey  = "$context.routeKey"
+                  + status    = "$context.status"
+                  + time      = "$context.requestTime"
+                }
+            )
+        }
+    }
+
+  # aws_cloudwatch_log_group.api will be created
+  + resource "aws_cloudwatch_log_group" "api" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/aws/apigateway/lp-20261005-rh"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 3
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_cloudwatch_log_group.lambda["announcements"] will be created
+  + resource "aws_cloudwatch_log_group" "lambda" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/aws/lambda/lp-20261005-rh-announcements"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 3
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_cloudwatch_log_group.lambda["feedback"] will be created
+  + resource "aws_cloudwatch_log_group" "lambda" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/aws/lambda/lp-20261005-rh-feedback"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 3
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_cloudwatch_log_group.lambda["preferences"] will be created
+  + resource "aws_cloudwatch_log_group" "lambda" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/aws/lambda/lp-20261005-rh-preferences"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 3
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_db_subnet_group.this will be created
+  + resource "aws_db_subnet_group" "this" {
+      + arn                     = (known after apply)
+      + description             = "Private subnets of otterworks-dev for lp-20261005-rh"
+      + id                      = (known after apply)
+      + name                    = "lp-20261005-rh"
+      + name_prefix             = (known after apply)
+      + subnet_ids              = [
+          + "subnet-019ec28935f650c45",
+          + "subnet-01d13ffe0d17f3195",
+        ]
+      + supported_network_types = (known after apply)
+      + tags_all                = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + vpc_id                  = (known after apply)
+    }
+
+  # aws_iam_policy.builder will be created
+  + resource "aws_iam_policy" "builder" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + description      = "legacy-portal-serverless run lp-20261005-rh: deploy and read the run's functions, API, Data API, secret and logs"
+      + id               = (known after apply)
+      + name             = "lp-20261005-rh-builder"
+      + name_prefix      = (known after apply)
+      + path             = "/"
+      + policy           = (known after apply)
+      + policy_id        = (known after apply)
+      + tags_all         = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+    }
+
+  # aws_iam_role.lambda will be created
+  + resource "aws_iam_role" "lambda" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "lambda.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + description           = "Execution role of the lp-20261005-rh context functions"
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "lp-20261005-rh-lambda"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy.lambda will be created
+  + resource "aws_iam_role_policy" "lambda" {
+      + id          = (known after apply)
+      + name        = "lp-20261005-rh-lambda"
+      + name_prefix = (known after apply)
+      + policy      = (known after apply)
+      + role        = (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.builder will be created
+  + resource "aws_iam_role_policy_attachment" "builder" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "devin-cw-builder"
+    }
+
+  # aws_lambda_function.context["announcements"] will be created
+  + resource "aws_lambda_function" "context" {
+      + architectures                  = [
+          + "x86_64",
+        ]
+      + arn                            = (known after apply)
+      + code_sha256                    = (known after apply)
+      + description                    = "legacy-portal announcements context (lp-20261005-rh)"
+      + filename                       = "./.build/placeholder.zip"
+      + function_name                  = "lp-20261005-rh-announcements"
+      + handler                        = "handler.handler"
+      + id                             = (known after apply)
+      + invoke_arn                     = (known after apply)
+      + last_modified                  = (known after apply)
+      + memory_size                    = 512
+      + package_type                   = "Zip"
+      + publish                        = false
+      + qualified_arn                  = (known after apply)
+      + qualified_invoke_arn           = (known after apply)
+      + reserved_concurrent_executions = -1
+      + role                           = (known after apply)
+      + runtime                        = "python3.12"
+      + signing_job_arn                = (known after apply)
+      + signing_profile_version_arn    = (known after apply)
+      + skip_destroy                   = false
+      + source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8="
+      + source_code_size               = (known after apply)
+      + tags_all                       = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + timeout                        = 29
+      + version                        = (known after apply)
+
+      + environment {
+          + variables = (known after apply)
+        }
+
+      + ephemeral_storage (known after apply)
+
+      + logging_config (known after apply)
+
+      + tracing_config (known after apply)
+    }
+
+  # aws_lambda_function.context["feedback"] will be created
+  + resource "aws_lambda_function" "context" {
+      + architectures                  = [
+          + "x86_64",
+        ]
+      + arn                            = (known after apply)
+      + code_sha256                    = (known after apply)
+      + description                    = "legacy-portal feedback context (lp-20261005-rh)"
+      + filename                       = "./.build/placeholder.zip"
+      + function_name                  = "lp-20261005-rh-feedback"
+      + handler                        = "handler.handler"
+      + id                             = (known after apply)
+      + invoke_arn                     = (known after apply)
+      + last_modified                  = (known after apply)
+      + memory_size                    = 512
+      + package_type                   = "Zip"
+      + publish                        = false
+      + qualified_arn                  = (known after apply)
+      + qualified_invoke_arn           = (known after apply)
+      + reserved_concurrent_executions = -1
+      + role                           = (known after apply)
+      + runtime                        = "python3.12"
+      + signing_job_arn                = (known after apply)
+      + signing_profile_version_arn    = (known after apply)
+      + skip_destroy                   = false
+      + source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8="
+      + source_code_size               = (known after apply)
+      + tags_all                       = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + timeout                        = 29
+      + version                        = (known after apply)
+
+      + environment {
+          + variables = (known after apply)
+        }
+
+      + ephemeral_storage (known after apply)
+
+      + logging_config (known after apply)
+
+      + tracing_config (known after apply)
+    }
+
+  # aws_lambda_function.context["preferences"] will be created
+  + resource "aws_lambda_function" "context" {
+      + architectures                  = [
+          + "x86_64",
+        ]
+      + arn                            = (known after apply)
+      + code_sha256                    = (known after apply)
+      + description                    = "legacy-portal preferences context (lp-20261005-rh)"
+      + filename                       = "./.build/placeholder.zip"
+      + function_name                  = "lp-20261005-rh-preferences"
+      + handler                        = "handler.handler"
+      + id                             = (known after apply)
+      + invoke_arn                     = (known after apply)
+      + last_modified                  = (known after apply)
+      + memory_size                    = 512
+      + package_type                   = "Zip"
+      + publish                        = false
+      + qualified_arn                  = (known after apply)
+      + qualified_invoke_arn           = (known after apply)
+      + reserved_concurrent_executions = -1
+      + role                           = (known after apply)
+      + runtime                        = "python3.12"
+      + signing_job_arn                = (known after apply)
+      + signing_profile_version_arn    = (known after apply)
+      + skip_destroy                   = false
+      + source_code_hash               = "lubw675HX/8Waf0VMUKKTOEylCUbzhrQUVXVw/YJoB8="
+      + source_code_size               = (known after apply)
+      + tags_all                       = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + timeout                        = 29
+      + version                        = (known after apply)
+
+      + environment {
+          + variables = (known after apply)
+        }
+
+      + ephemeral_storage (known after apply)
+
+      + logging_config (known after apply)
+
+      + tracing_config (known after apply)
+    }
+
+  # aws_lambda_permission.api["announcements"] will be created
+  + resource "aws_lambda_permission" "api" {
+      + action              = "lambda:InvokeFunction"
+      + function_name       = "lp-20261005-rh-announcements"
+      + id                  = (known after apply)
+      + principal           = "apigateway.amazonaws.com"
+      + source_arn          = (known after apply)
+      + statement_id        = "AllowHttpApi"
+      + statement_id_prefix = (known after apply)
+    }
+
+  # aws_lambda_permission.api["feedback"] will be created
+  + resource "aws_lambda_permission" "api" {
+      + action              = "lambda:InvokeFunction"
+      + function_name       = "lp-20261005-rh-feedback"
+      + id                  = (known after apply)
+      + principal           = "apigateway.amazonaws.com"
+      + source_arn          = (known after apply)
+      + statement_id        = "AllowHttpApi"
+      + statement_id_prefix = (known after apply)
+    }
+
+  # aws_lambda_permission.api["preferences"] will be created
+  + resource "aws_lambda_permission" "api" {
+      + action              = "lambda:InvokeFunction"
+      + function_name       = "lp-20261005-rh-preferences"
+      + id                  = (known after apply)
+      + principal           = "apigateway.amazonaws.com"
+      + source_arn          = (known after apply)
+      + statement_id        = "AllowHttpApi"
+      + statement_id_prefix = (known after apply)
+    }
+
+  # aws_rds_cluster.this will be created
+  + resource "aws_rds_cluster" "this" {
+      + allocated_storage                     = (known after apply)
+      + allow_major_version_upgrade           = false
+      + apply_immediately                     = true
+      + arn                                   = (known after apply)
+      + availability_zones                    = (known after apply)
+      + backup_retention_period               = 1
+      + ca_certificate_identifier             = (known after apply)
+      + ca_certificate_valid_till             = (known after apply)
+      + cluster_identifier                    = "lp-20261005-rh"
+      + cluster_identifier_prefix             = (known after apply)
+      + cluster_members                       = (known after apply)
+      + cluster_resource_id                   = (known after apply)
+      + cluster_scalability_type              = (known after apply)
+      + copy_tags_to_snapshot                 = true
+      + database_insights_mode                = (known after apply)
+      + database_name                         = "legacyportal"
+      + db_cluster_parameter_group_name       = (known after apply)
+      + db_subnet_group_name                  = "lp-20261005-rh"
+      + db_system_id                          = (known after apply)
+      + delete_automated_backups              = true
+      + deletion_protection                   = false
+      + enable_global_write_forwarding        = false
+      + enable_http_endpoint                  = true
+      + enable_local_write_forwarding         = false
+      + endpoint                              = (known after apply)
+      + engine                                = "aurora-postgresql"
+      + engine_lifecycle_support              = (known after apply)
+      + engine_mode                           = "provisioned"
+      + engine_version                        = "16.13"
+      + engine_version_actual                 = (known after apply)
+      + hosted_zone_id                        = (known after apply)
+      + iam_roles                             = (known after apply)
+      + id                                    = (known after apply)
+      + kms_key_id                            = (known after apply)
+      + master_password                       = (sensitive value)
+      + master_password_wo                    = (write-only attribute)
+      + master_user_secret                    = (known after apply)
+      + master_user_secret_kms_key_id         = (known after apply)
+      + master_username                       = "legacyportal"
+      + monitoring_interval                   = (known after apply)
+      + monitoring_role_arn                   = (known after apply)
+      + network_type                          = (known after apply)
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + preferred_backup_window               = (known after apply)
+      + preferred_maintenance_window          = (known after apply)
+      + reader_endpoint                       = (known after apply)
+      + skip_final_snapshot                   = true
+      + storage_encrypted                     = true
+      + storage_type                          = (known after apply)
+      + tags_all                              = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + vpc_security_group_ids                = (known after apply)
+
+      + serverlessv2_scaling_configuration {
+          + max_capacity             = 1
+          + min_capacity             = 0
+          + seconds_until_auto_pause = 600
+        }
+    }
+
+  # aws_rds_cluster_instance.writer will be created
+  + resource "aws_rds_cluster_instance" "writer" {
+      + apply_immediately                     = true
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = (known after apply)
+      + ca_cert_identifier                    = (known after apply)
+      + cluster_identifier                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + db_parameter_group_name               = (known after apply)
+      + db_subnet_group_name                  = "lp-20261005-rh"
+      + dbi_resource_id                       = (known after apply)
+      + endpoint                              = (known after apply)
+      + engine                                = "aurora-postgresql"
+      + engine_version                        = "16.13"
+      + engine_version_actual                 = (known after apply)
+      + force_destroy                         = false
+      + id                                    = (known after apply)
+      + identifier                            = "lp-20261005-rh-writer"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.serverless"
+      + kms_key_id                            = (known after apply)
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + network_type                          = (known after apply)
+      + performance_insights_enabled          = (known after apply)
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + preferred_backup_window               = (known after apply)
+      + preferred_maintenance_window          = (known after apply)
+      + promotion_tier                        = 0
+      + publicly_accessible                   = false
+      + storage_encrypted                     = (known after apply)
+      + tags_all                              = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + writer                                = (known after apply)
+    }
+
+  # aws_secretsmanager_secret.db will be created
+  + resource "aws_secretsmanager_secret" "db" {
+      + arn                            = (known after apply)
+      + description                    = "Master credential of the lp-20261005-rh Aurora cluster (legacy-portal-serverless)."
+      + force_overwrite_replica_secret = false
+      + id                             = (known after apply)
+      + name                           = "lp-20261005-rh/aurora/master"
+      + name_prefix                    = (known after apply)
+      + policy                         = (known after apply)
+      + recovery_window_in_days        = 0
+      + tags_all                       = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+
+      + replica (known after apply)
+    }
+
+  # aws_secretsmanager_secret_version.db will be created
+  + resource "aws_secretsmanager_secret_version" "db" {
+      + arn                  = (known after apply)
+      + has_secret_string_wo = (known after apply)
+      + id                   = (known after apply)
+      + secret_id            = (known after apply)
+      + secret_string        = (sensitive value)
+      + secret_string_wo     = (write-only attribute)
+      + version_id           = (known after apply)
+      + version_stages       = (known after apply)
+    }
+
+  # aws_security_group.aurora will be created
+  + resource "aws_security_group" "aurora" {
+      + arn                    = (known after apply)
+      + description            = "Aurora cluster of lp-20261005-rh; Data API only, no inbound rules"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "lp-20261005-rh-aurora"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags_all               = {
+          + "Expires"   = "2026-10-07"
+          + "ManagedBy" = "terraform"
+          + "RunToken"  = "lp-20261005-rh"
+          + "demo"      = "legacy-portal-serverless"
+          + "run_token" = "lp-20261005-rh"
+        }
+      + vpc_id                 = "vpc-06a10b8ada56a6b91"
+    }
+
+  # random_password.db will be created
+  + resource "random_password" "db" {
+      + bcrypt_hash = (sensitive value)
+      + id          = (known after apply)
+      + length      = 32
+      + lower       = true
+      + min_lower   = 0
+      + min_numeric = 0
+      + min_special = 0
+      + min_upper   = 0
+      + number      = true
+      + numeric     = true
+      + result      = (sensitive value)
+      + special     = false
+      + upper       = true
+    }
+
+  # terraform_data.schema will be created
+  + resource "terraform_data" "schema" {
+      + id               = (known after apply)
+      + triggers_replace = [
+          + (known after apply),
+          + "e4fcbbe8883e140ee8de1e28dd9678b855132f60c34047de7ae23d02effeb7e1",
+        ]
+    }
+
+Plan: 34 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + api_id             = (known after apply)
+  + api_url            = (known after apply)
+  + aurora_capacity    = "0-1 ACU"
+  + aurora_cluster_arn = (known after apply)
+  + builder_policy_arn = (known after apply)
+  + db_name            = "legacyportal"
+  + db_secret_arn      = (known after apply)
+  + lambda_names       = {
+      + announcements = "lp-20261005-rh-announcements"
+      + feedback      = "lp-20261005-rh-feedback"
+      + preferences   = "lp-20261005-rh-preferences"
+    }
+random_password.db: Creating...
+random_password.db: Creation complete after 0s [id=none]
+aws_cloudwatch_log_group.api: Creating...
+aws_security_group.aurora: Creating...
+aws_db_subnet_group.this: Creating...
+aws_secretsmanager_secret.db: Creating...
+aws_iam_role.lambda: Creating...
+aws_cloudwatch_log_group.lambda["preferences"]: Creating...
+aws_cloudwatch_log_group.lambda["feedback"]: Creating...
+aws_apigatewayv2_api.this: Creating...
+aws_cloudwatch_log_group.lambda["announcements"]: Creating...
+aws_secretsmanager_secret.db: Creation complete after 1s [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr]
+aws_secretsmanager_secret_version.db: Creating...
+aws_cloudwatch_log_group.lambda["preferences"]: Creation complete after 1s [id=/aws/lambda/lp-20261005-rh-preferences]
+aws_cloudwatch_log_group.lambda["announcements"]: Creation complete after 1s [id=/aws/lambda/lp-20261005-rh-announcements]
+aws_cloudwatch_log_group.lambda["feedback"]: Creation complete after 1s [id=/aws/lambda/lp-20261005-rh-feedback]
+aws_cloudwatch_log_group.api: Creation complete after 1s [id=/aws/apigateway/lp-20261005-rh]
+aws_iam_role.lambda: Creation complete after 1s [id=lp-20261005-rh-lambda]
+aws_apigatewayv2_api.this: Creation complete after 1s [id=iukn6912ki]
+aws_apigatewayv2_stage.default: Creating...
+aws_secretsmanager_secret_version.db: Creation complete after 0s [id=arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr|terraform-20261005080027643000000002]
+aws_db_subnet_group.this: Creation complete after 1s [id=lp-20261005-rh]
+aws_apigatewayv2_stage.default: Creation complete after 1s [id=$default]
+aws_security_group.aurora: Creation complete after 3s [id=sg-0bdb5e7583280678a]
+aws_rds_cluster.this: Creating...
+aws_rds_cluster.this: Still creating... [00m10s elapsed]
+aws_rds_cluster.this: Still creating... [00m20s elapsed]
+aws_rds_cluster.this: Still creating... [00m30s elapsed]
+aws_rds_cluster.this: Creation complete after 32s [id=lp-20261005-rh]
+data.aws_iam_policy_document.lambda: Reading...
+data.aws_iam_policy_document.builder: Reading...
+data.aws_iam_policy_document.lambda: Read complete after 0s [id=3852465628]
+aws_rds_cluster_instance.writer: Creating...
+aws_iam_role_policy.lambda: Creating...
+data.aws_iam_policy_document.builder: Read complete after 0s [id=1324129921]
+aws_iam_policy.builder: Creating...
+aws_iam_role_policy.lambda: Creation complete after 0s [id=lp-20261005-rh-lambda:lp-20261005-rh-lambda]
+aws_lambda_function.context["feedback"]: Creating...
+aws_lambda_function.context["preferences"]: Creating...
+aws_lambda_function.context["announcements"]: Creating...
+aws_iam_policy.builder: Creation complete after 0s [id=arn:aws:iam::<account>:policy/lp-20261005-rh-builder]
+aws_iam_role_policy_attachment.builder: Creating...
+aws_iam_role_policy_attachment.builder: Creation complete after 1s [id=devin-cw-builder-20261005080102549500000003]
+aws_lambda_function.context["feedback"]: Creation complete after 7s [id=lp-20261005-rh-feedback]
+aws_rds_cluster_instance.writer: Still creating... [00m10s elapsed]
+aws_lambda_function.context["announcements"]: Still creating... [00m10s elapsed]
+aws_lambda_function.context["preferences"]: Still creating... [00m10s elapsed]
+aws_lambda_function.context["preferences"]: Creation complete after 13s [id=lp-20261005-rh-preferences]
+aws_lambda_function.context["announcements"]: Creation complete after 19s [id=lp-20261005-rh-announcements]
+aws_lambda_permission.api["feedback"]: Creating...
+aws_lambda_permission.api["preferences"]: Creating...
+aws_lambda_permission.api["announcements"]: Creating...
+aws_apigatewayv2_integration.context["preferences"]: Creating...
+aws_apigatewayv2_integration.context["feedback"]: Creating...
+aws_apigatewayv2_integration.context["announcements"]: Creating...
+aws_lambda_permission.api["preferences"]: Creation complete after 1s [id=AllowHttpApi]
+aws_lambda_permission.api["announcements"]: Creation complete after 1s [id=AllowHttpApi]
+aws_lambda_permission.api["feedback"]: Creation complete after 1s [id=AllowHttpApi]
+aws_apigatewayv2_integration.context["announcements"]: Creation complete after 1s [id=n0qjdn2]
+aws_apigatewayv2_integration.context["feedback"]: Creation complete after 1s [id=7zjy8it]
+aws_apigatewayv2_integration.context["preferences"]: Creation complete after 1s [id=jc8tswi]
+aws_apigatewayv2_route.context["announcements-root"]: Creating...
+aws_apigatewayv2_route.context["preferences-root"]: Creating...
+aws_apigatewayv2_route.default: Creating...
+aws_apigatewayv2_route.context["feedback-root"]: Creating...
+aws_apigatewayv2_route.context["announcements-proxy"]: Creating...
+aws_apigatewayv2_route.context["feedback-proxy"]: Creating...
+aws_apigatewayv2_route.context["preferences-proxy"]: Creating...
+aws_apigatewayv2_route.default: Creation complete after 0s [id=5x32s50]
+aws_apigatewayv2_route.context["preferences-proxy"]: Creation complete after 0s [id=wivdv36]
+aws_apigatewayv2_route.context["preferences-root"]: Creation complete after 0s [id=5c160pk]
+aws_apigatewayv2_route.context["announcements-root"]: Creation complete after 0s [id=gcn82wd]
+aws_apigatewayv2_route.context["feedback-proxy"]: Creation complete after 0s [id=l6tiffg]
+aws_apigatewayv2_route.context["feedback-root"]: Creation complete after 0s [id=uj2d89r]
+aws_rds_cluster_instance.writer: Still creating... [00m20s elapsed]
+aws_apigatewayv2_route.context["announcements-proxy"]: Creation complete after 0s [id=z3gpriv]
+aws_rds_cluster_instance.writer: Still creating... [00m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [00m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [00m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [01m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [02m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [03m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [04m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [05m50s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m00s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m10s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m20s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m30s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m40s elapsed]
+aws_rds_cluster_instance.writer: Still creating... [06m50s elapsed]
+aws_rds_cluster_instance.writer: Creation complete after 7m0s [id=lp-20261005-rh-writer]
+terraform_data.schema: Creating...
+terraform_data.schema: Provisioning with 'local-exec'...
+terraform_data.schema (local-exec): Executing: ["/bin/sh" "-c" "./apply-schema.sh"]
+terraform_data.schema (local-exec): apply-schema: CREATE SCHEMA IF NOT EXISTS announcements;
+terraform_data.schema (local-exec): apply-schema: CREATE SCHEMA IF NOT EXISTS user_preferences;
+terraform_data.schema (local-exec): apply-schema: CREATE SCHEMA IF NOT EXISTS feedback;
+terraform_data.schema (local-exec): apply-schema: CREATE TABLE IF NOT EXISTS announcements.announcement (id bigserial NOT
+terraform_data.schema (local-exec): apply-schema: CREATE TABLE IF NOT EXISTS feedback.feedback (id bigserial NOT NULL, cre
+terraform_data.schema (local-exec): apply-schema: CREATE TABLE IF NOT EXISTS user_preferences.user_preference (user_id cha
+terraform_data.schema (local-exec): apply-schema: 6 statements applied
+terraform_data.schema: Creation complete after 6s [id=e79f29e2-4d3d-82e8-358e-6995c8307d15]
+
+Apply complete! Resources: 34 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+api_id = "iukn6912ki"
+api_url = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/"
+aurora_capacity = "0-1 ACU"
+aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder"
+db_name = "legacyportal"
+db_secret_arn = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+lambda_names = {
+  "announcements" = "lp-20261005-rh-announcements"
+  "feedback" = "lp-20261005-rh-feedback"
+  "preferences" = "lp-20261005-rh-preferences"
+}
+
+api_id = "iukn6912ki"
+api_url = "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/"
+aurora_capacity = "0-1 ACU"
+aurora_cluster_arn = "arn:aws:rds:us-east-1:<account>:cluster:lp-20261005-rh"
+builder_policy_arn = "arn:aws:iam::<account>:policy/lp-20261005-rh-builder"
+db_name = "legacyportal"
+db_secret_arn = "arn:aws:secretsmanager:us-east-1:<account>:secret:lp-20261005-rh/aurora/master-VopfYr"
+lambda_names = {
+  "announcements" = "lp-20261005-rh-announcements"
+  "feedback" = "lp-20261005-rh-feedback"
+  "preferences" = "lp-20261005-rh-preferences"
+}
+
+lp-up wall clock: 476 s (7.9 min)
+scripts/lp-serverless.sh: line 214: syntax error near unexpected token `RUN,'
+# lp-up finished 2026-10-05T08:08:09Z exit=2
+# transcript .demo/legacy-portal/lp-20261005-rh/up-20261005T080011Z.log

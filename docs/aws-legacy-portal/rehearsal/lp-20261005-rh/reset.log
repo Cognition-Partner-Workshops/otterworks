@@ -1,0 +1,6 @@
+# lp-reset run=lp-20261005-rh started 2026-10-05T08:09:07Z
+# caller arn:aws:iam::<account>:user/<caller>
+truncated announcements.announcement, user_preferences.user_preference, feedback.feedback and restarted the id sequences (the seeded state is empty tables, ids from 1)
+rows after reset: announcements=0 user_preferences=0 feedback=0
+# lp-reset finished 2026-10-05T08:09:13Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/reset-20261005T080906Z.log

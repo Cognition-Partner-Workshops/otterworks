@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -110,6 +110,13 @@ dev-web: dev-backend ## Start the client-app web dev server (HMR) on :3000
 dev-admin: dev-backend ## Start the admin dashboard dev server (HMR) on :4200
 	@$(COMPOSE) stop admin-dashboard 2>/dev/null || true
 	cd frontend/admin-dashboard && { [ -d node_modules ] || npm ci; } && npm start
+
+workbench-up: ## Build and start the Workbench container on :3002
+	$(COMPOSE) up -d --build --no-deps workbench
+	@echo "Workbench running at http://localhost:3002/"
+
+workbench-down: ## Stop and remove the Workbench container
+	$(COMPOSE) stop workbench && $(COMPOSE) rm -f workbench
 
 dev-android: dev-backend ## Build the web bundle and run the Android app on an emulator/device
 	cd frontend/client-app && { [ -d node_modules ] || npm ci; } && \
@@ -429,3 +436,196 @@ eq-tests: ## Run the affected module's own suite against the recorded pass list
 eq-record: ## Record the before-state as the reference evidence (REASON="..." required)
 	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make eq-record REASON="baseline before OW-SEC-401 refactor"' >&2; exit 2)
 	$(EQ) record --reason "$(REASON)" $(if $(FINDING),--finding $(FINDING),) $(if $(ALLOW_RERECORD),--allow-rerecord,)
+
+# ---------------------------------------------------------------------------
+# Legacy data migration demo (Db2 on EKS -> Azure SQL), ops unit.
+# Token NS=<run>-<before|after> (e.g. d24-before); see migration/CONTRACTS.md §12
+# and docs/demos/legacy-data-migration.md. DRY_RUN=1 prints commands only.
+# ---------------------------------------------------------------------------
+DEMO_NS_RE = ^[a-z][a-z0-9]{1,11}-(before|after)$$
+define demo_require_ns
+	@test -n "$(NS)" || (echo 'NS is required, e.g. make $(1) NS=d24-after' >&2; exit 2)
+	@echo "$(NS)" | grep -Eq '$(DEMO_NS_RE)' || (echo "NS='$(NS)' must match $(DEMO_NS_RE) and never main" >&2; exit 2)
+endef
+
+demo-up: ## Deploy one demo namespace: tenant + Db2 seed (+ Azure when overlay azure: true). NS=<token> [TTL=72h IMAGE_TAG=..]
+	$(call demo_require_ns,demo-up)
+	./scripts/deploy-demo.sh up $(NS) $(if $(TTL),--ttl $(TTL),) $(if $(IMAGE_TAG),--image-tag $(IMAGE_TAG),) $(if $(HOST_SUFFIX),--host-suffix $(HOST_SUFFIX),) $(if $(filter 1,$(DRY_RUN)),--dry-run,)
+
+demo-migrate: ## Run the staged migration Jobs for NS=<token> RUN_ID=<id>; streams logs, copies report to .demo/<token>/<run_id>/
+	$(call demo_require_ns,demo-migrate)
+	@test -n "$(RUN_ID)" || (echo 'RUN_ID is required, e.g. make demo-migrate NS=d24-after RUN_ID=$(shell date -u +r%Y%m%d%H%M%S)' >&2; exit 2)
+	@bash -c 'set -euo pipefail; source scripts/lib/demo-common.sh; start_transcript "$(NS)" "migrate-$(RUN_ID)"; demo_migrate "$(NS)" "$(RUN_ID)"'
+
+demo-destroy: ## Destroy everything for NS=<token> (Azure + Helm + tenant + S3 + demo-aws) and verify nothing tagged remains
+	$(call demo_require_ns,demo-destroy)
+	./scripts/demo-destroy.sh $(NS) $(if $(filter 1,$(DRY_RUN)),--dry-run,)
+
+demo-verify-clean: ## Exit 0 iff no AWS/Azure resource tagged namespace=NS and no otterworks-NS namespace remain
+	$(call demo_require_ns,demo-verify-clean)
+	./scripts/demo-destroy.sh verify $(NS)
+
+demo-reaper: ## Report (default) or destroy (APPLY=1) expired demo namespaces across AWS, Azure and the cluster
+	./scripts/demo-reaper.sh $(if $(filter 1,$(APPLY)),--apply,--dry-run)
+
+# --- Incident responder (see incident/README.md and .agents/skills/incident-responder) ---
+INCIDENT = uv run incident/incident.py
+INCIDENT_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.infra.yml -f docker-compose.incident.yml
+
+INCIDENT_SERVICES = postgres redis localstack otel-collector jaeger prometheus grafana alertmanager alert-sink document-service
+# UI=1 also builds the gateway + web front end so the slowness can be shown in the browser.
+ifdef UI
+INCIDENT_SERVICES += auth-service api-gateway web-app
+endif
+
+incident-up: ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
+	$(INCIDENT_COMPOSE) up -d --build $(INCIDENT_SERVICES)
+
+incident-down: ## Stop the incident demo stack (keeps volumes)
+	$(INCIDENT_COMPOSE) --profile double-run down
+
+incident-arm: ## Plant one scenario and start deterministic load (SCENARIO=n-plus-one|log-flood|cache-leak|double-run)
+ifndef SCENARIO
+	$(error SCENARIO is required, e.g. make incident-arm SCENARIO=n-plus-one)
+endif
+	$(INCIDENT) arm $(SCENARIO)
+
+incident-disarm: ## Reverse whatever is armed: stop load, clear flags, restore replicas/logs
+	$(INCIDENT) disarm
+
+arm: incident-arm ## Alias: make arm SCENARIO=<name>
+disarm: incident-disarm ## Alias: make disarm
+
+incident-status: ## Firing alerts and the current numbers behind them
+	$(INCIDENT) status
+
+incident-verify: ## Fail-closed gate (SCENARIO=<name> EXPECT=before|after)
+ifndef SCENARIO
+	$(error SCENARIO is required, e.g. make incident-verify SCENARIO=n-plus-one EXPECT=before)
+endif
+	$(INCIDENT) verify $(SCENARIO) --expect $(or $(EXPECT),before) $(if $(SOAK),--soak $(SOAK),)
+
+incident-load: ## Run a scenario's load profile in the foreground (SCENARIO=<name> [DURATION=s])
+ifndef SCENARIO
+	$(error SCENARIO is required, e.g. make incident-load SCENARIO=n-plus-one DURATION=120)
+endif
+	$(INCIDENT) load $(SCENARIO) $(if $(DURATION),--duration $(DURATION),)
+
+incident-seed: ## Create the deterministic fixture dataset (idempotent)
+	$(INCIDENT) seed
+
+incident-reset-fixture: ## Delete the fixture owner's documents so the next seed starts clean
+	$(INCIDENT) reset-fixture
+
+incident-simulate: ## Print the exact alert payload the Devin Automation webhook received (RECEIVER=devin|slack)
+	$(INCIDENT) simulate-alert --receiver $(or $(RECEIVER),devin)
+
+incident-chart-sync: ## Copy incident alert rules + dashboard into the document-service chart
+	scripts/sync-incident-chart-files.sh
+
+incident-chart-check: ## Fail if the chart's incident rules/dashboard differ from observability/
+	scripts/sync-incident-chart-files.sh --check
+
+incident-fingerprint: ## Compare fixture/source fingerprints with incident/expected.yaml (exit 2 on drift)
+	$(INCIDENT) fingerprint
+
+incident-record: ## Re-pin incident/expected.yaml (REASON="..." required, audited)
+	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make incident-record REASON="baseline before n-plus-one fix"' >&2; exit 2)
+	$(INCIDENT) record --reason "$(REASON)"
+
+# --- AWS cloud worker (see cloudworker/README.md) ---
+CW = $(if $(PAGE),CW_PAGE=$(PAGE) ,)cloudworker/cw.sh
+CW_FAULT_ARG = $(if $(FAULT),--fault $(FAULT),)
+.PHONY: cw-up cw-apply cw-credentials cw-arm cw-status cw-verify cw-simulate cw-quiet cw-disarm cw-reset cw-teardown cw-trail
+
+cw-up: ## Provision the cloud-worker infra, map the Devin roles, wire the tenant, smoke test
+	$(CW) up
+
+cw-apply: ## Re-render the cloud-worker tenant eventing config from eventing.env
+	$(CW) apply
+
+cw-credentials: ## Rotate the devin-cw-reader access key into cloudworker/.state/
+	$(CW) credentials
+
+cw-arm: ## Plant a fault and publish six file_shared events (FAULT=table|parser, default table; PAGE=0 keeps the EventBridge rule as is)
+	$(CW) arm $(CW_FAULT_ARG)
+
+cw-status: ## Tenant pods, live vs git table, image, queue depths, alarm, rule, helm history (JSON=1 for JSON)
+	$(CW) status $(if $(JSON),--json,)
+
+cw-verify: ## Fail-closed gate for the cloud-worker demo (EXPECT=before|after, FAULT=table|parser for before)
+ifndef EXPECT
+	$(error EXPECT is required, e.g. make cw-verify EXPECT=before)
+endif
+	$(CW) verify $(EXPECT) $(CW_FAULT_ARG)
+
+cw-simulate: ## Publish file_shared events to the cloud-worker topic (COUNT=n, default 1)
+	$(CW) simulate --count $(or $(COUNT),1)
+
+cw-quiet: ## Disable the DLQ alarm actions for a while (MINUTES=n, default 10)
+	$(CW) quiet $(or $(MINUTES),10)
+
+cw-disarm: ## Restore the config and image, purge both queues, reset the alarm (PAGE=0 keeps the rule as is)
+	$(CW) disarm
+
+cw-reset: ## Disarm, close demo-cw-* PRs and branches, drop cw-* tenants, re-plant the drift (SCOPE=run, PAGE=0)
+	$(CW) reset $(if $(SCOPE),--scope $(SCOPE),)
+
+cw-teardown: ## Reset, unmap the roles, delete RBAC and keys, destroy the cloud-worker infra
+	$(CW) teardown
+
+cw-trail: ## CloudTrail events from devin-cw-* identities in the last two hours
+	$(CW) trail
+
+# legacy-portal-serverless: Terraform root infrastructure/terraform/legacy-portal-serverless, one state per run token.
+# Transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
+LP = RUN=$(RUN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-serverless.sh
+
+lp-up: ## Apply the legacy-portal serverless stack for a run (RUN=lp-<yyyymmdd>-<xx>)
+	@$(LP) up
+
+lp-replay: ## Replay the recorded Java corpus against the run's HTTP API (RUN=, CTX=<context|all>, STAGE=first|full)
+	@$(LP) replay
+
+lp-status: ## List legacy-portal serverless runs by tag, or one run's outputs and functions (RUN optional)
+	@$(LP) status
+
+lp-reset: ## Truncate the run's context tables back to the seeded (empty) state (RUN=, CTX=<context|all>)
+	@$(LP) reset
+
+lp-down: ## Destroy the run's legacy-portal serverless stack (RUN=)
+	@$(LP) down
+
+lp-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
+	@$(LP) verify-clean
+
+lp-deploy: ## Build the Java handlers and move each live alias through CodeDeploy, then start the probe (RUN=, CTX=<context|all>)
+	@$(LP) deploy
+
+lp-break: ## Deploy a FAIL_READS=1 version of one function through the canary and tail the alarm to ALARM (RUN=, CTX=)
+	@$(LP) break
+
+lp-heal: ## Roll back the in-flight deployment or deploy the good version, then wait for the alarm to clear (RUN=, CTX=)
+	@$(LP) heal
+
+lp-page-status: ## Alarm history, deployment history and the page rule's last API destination invocation (RUN=)
+	@$(LP) page-status
+
+# legacy-portal-ec2: Terraform root infrastructure/terraform/legacy-portal-ec2, the EC2 "before" state.
+# One state per run token; transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
+LP_EC2 = RUN=$(RUN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-ec2.sh
+
+lp-ec2-up: ## Build the jar, apply the legacy-portal EC2 stack and wait for a healthy target (RUN=lp-ec2-<yyyymmdd>-<xx>)
+	@$(LP_EC2) up
+
+lp-ec2-status: ## List legacy-portal EC2 runs by tag, or one run's outputs, instance and health (RUN optional)
+	@$(LP_EC2) status
+
+lp-ec2-replay: ## Replay the recorded Java corpus against the run's ALB (RUN=, CTX=<context|all>, STAGE=first|full)
+	@$(LP_EC2) replay
+
+lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
+	@$(LP_EC2) down
+
+lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
+	@$(LP_EC2) verify-clean

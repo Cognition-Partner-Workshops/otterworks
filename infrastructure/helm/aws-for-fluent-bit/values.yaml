@@ -1,0 +1,111 @@
+# Values for the upstream eks/aws-for-fluent-bit chart (pinned in
+# scripts/install-log-shipping.sh). One DaemonSet in otterworks-system ships the
+# api-gateway and ingress-nginx access logs of every otterworks-* namespace to
+#   /otterworks/eks/otterworks-dev/<namespace>/<container>
+# with 7-day retention. ingress-nginx lines are filed under the namespace of the
+# tenant they were proxied to, not under ingress-nginx.
+
+serviceAccount:
+  create: true
+  name: fluent-bit
+  # annotations."eks.amazonaws.com/role-arn" is set by the install script from
+  # the otterworks-fluent-bit-<env> IRSA role (infrastructure/terraform/main.tf).
+
+input:
+  enabled: true
+  tag: "kube.*"
+  # Only the two containers we ship; everything else on the node is skipped.
+  path: "/var/log/containers/api-gateway-*_otterworks-*_api-gateway-*.log,/var/log/containers/ingress-nginx-controller-*_ingress-nginx_controller-*.log"
+  db: "/var/log/flb_otterworks.db"
+  multilineParser: "docker, cri"
+  memBufLimit: 5MB
+  skipLongLines: "On"
+  refreshInterval: 10
+
+filter:
+  enabled: true
+  match: "kube.*"
+  kubeURL: "https://kubernetes.default.svc.cluster.local:443"
+  # Lift the JSON access log fields to the top level so Logs Insights
+  # discovers method, route, status, duration_ms and client directly.
+  mergeLog: "On"
+  mergeLogKey: ""
+  keepLog: "Off"
+  k8sLoggingParser: "Off"
+  k8sLoggingExclude: "Off"
+  bufferSize: "0"
+  extraFilters: |
+    Labels              Off
+    Annotations         Off
+
+additionalFilters: |
+  [FILTER]
+      Name    lua
+      Match   kube.*
+      script  /fluent-bit/scripts/otterworks.lua
+      call    route_record
+
+cloudWatchLogs:
+  enabled: true
+  match: "kube.*"
+  region: "us-east-1"
+  # Fallback only; every record that survives the Lua filter carries both keys.
+  logGroupName: "/otterworks/eks/otterworks-dev/unrouted"
+  # Record accessor templates take one key at the end, so the Lua filter joins
+  # <namespace>/<container> into cw_group.
+  logGroupTemplate: "/otterworks/eks/otterworks-dev/$cw_group"
+  logStreamPrefix: "fluentbit-"
+  logStreamTemplate: "$kubernetes['pod_name']"
+  autoCreateGroup: true
+  logRetentionDays: 7
+
+firehose:
+  enabled: false
+kinesis:
+  enabled: false
+elasticsearch:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 250Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/health
+    port: 2020
+    scheme: HTTP
+  initialDelaySeconds: 10
+  timeoutSeconds: 5
+
+serviceMonitor:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 2020
+    targetPort: 2020
+
+volumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  - name: lua-scripts
+    configMap:
+      name: fluent-bit-otterworks-lua
+
+volumeMounts:
+  - name: varlog
+    mountPath: /var/log
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - name: lua-scripts
+    mountPath: /fluent-bit/scripts
+    readOnly: true

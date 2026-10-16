@@ -57,6 +57,7 @@ ensure_ingress_nginx() {
     --set controller.resources.requests.cpu=100m \
     --set controller.resources.requests.memory=128Mi \
     --set controller.metrics.enabled=true \
+    -f "$(dirname "${BASH_SOURCE[0]}")/../../infrastructure/helm/ingress-nginx/values-logging.yaml" \
     --wait --timeout 5m || ing_warn "ingress-nginx install reported an issue; continuing."
 
   kubectl label namespace "${INGRESS_NAMESPACE}" \

@@ -110,3 +110,13 @@ __pycache__/
 .terraform.lock.hcl
 *.tfstate
 *.tfstate.backup
+.demo/
+
+# incident-responder harness runtime state and gate reports
+incident/.state/
+incident/reports/
+!infrastructure/helm/tenant-values/**/eventing.env
+
+# legacy-portal replay evidence written by replay.py without --out
+services/legacy-portal/parity/out/
+services/legacy-portal-lambda/*/target/

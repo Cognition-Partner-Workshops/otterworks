@@ -2,15 +2,23 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, workshop, 'workshop-**']
   pull_request:
-    branches: [main]
+    branches: [main, workshop, 'review-base-**', 'demo-**']
 
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
 
 jobs:
+  # The document-service chart renders generated copies of the incident alert
+  # rules and dashboard; they must match observability/.
+  incident-chart-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/sync-incident-chart-files.sh --check
+
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -26,14 +34,15 @@ jobs:
       audit-service: ${{ steps.changes.outputs.audit-service }}
       web-app: ${{ steps.changes.outputs.web-app }}
       admin-dashboard: ${{ steps.changes.outputs.admin-dashboard }}
+      workbench: ${{ steps.changes.outputs.workbench }}
       demo-platform: ${{ steps.changes.outputs.demo-platform }}
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
           filters: |
@@ -61,6 +70,8 @@ jobs:
               - 'frontend/client-app/**'
             admin-dashboard:
               - 'frontend/admin-dashboard/**'
+            workbench:
+              - 'frontend/workbench/**'
             demo-platform:
               - 'demo-platform/**'
               - 'scripts/**'
@@ -298,6 +309,25 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  # React - Workbench
+  workbench:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workbench == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/workbench
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
   # Angular - Admin Dashboard
   admin-dashboard:
     needs: detect-changes
@@ -429,3 +459,82 @@ jobs:
       - run: python -m pip install -r tests/api/requirements.txt
       - run: python -m py_compile tests/api/*.py
       - run: python -m pytest tests/api --collect-only -q
+
+  # Legacy data migration job (migration/job): ruff + pytest (in-memory drivers, a real PostgreSQL
+  # service for the default target, PySpark local mode for the Spark LOAD engine), Helm lint of the
+  # one-shot Job chart. Self-contained path filter so the existing detect-changes job is untouched.
+  migration-job:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ldm
+          POSTGRES_PASSWORD: ldm
+          POSTGRES_DB: ldm
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ldm" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      LDM_TEST_PG_HOST: localhost
+      LDM_TEST_PG_PORT: "55432"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            ldm:
+              - 'migration/job/**'
+              - 'migration/target/sql/**'
+              - 'migration/target/postgresql/**'
+              - 'migration/manifest.yaml'
+              - 'migration/manifests/**'
+              - 'migration/source/copybooks/**'
+              - 'migration/source/oracle/**'
+              - 'migration/source/seed/**'
+              - 'infrastructure/helm/migration-job/**'
+              - 'infrastructure/helm/oracle-archive/**'
+      - if: steps.changes.outputs.ldm == 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.ldm == 'true'
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pip install -e '.[dev,postgresql,s3,spark]'
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        run: ruff check . && ruff format --check .
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pytest -q
+        working-directory: migration/job
+      - if: steps.changes.outputs.ldm == 'true'
+        run: python -m pytest -q test_oracle_seed.py
+        working-directory: migration/source/seed
+      - if: steps.changes.outputs.ldm == 'true'
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/migration-job --strict
+          --set namespaceToken=ci1-after --set stage=extract --set runId=ci
+          --set image.tag=ci --set expires=2026-01-01T00:00:00Z
+          --set-file manifest.base=migration/manifest.yaml
+          --set-file manifest.overlay=migration/manifests/d24-after.yaml
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/migration-job --strict
+          --set namespaceToken=ci1-after --set stage=extract --set runId=ci
+          --set image.tag=ci --set expires=2026-01-01T00:00:00Z
+          --set-file manifest.base=migration/manifest.yaml
+          --set-file manifest.overlay=migration/manifests/o27-after.yaml
+      - if: steps.changes.outputs.ldm == 'true'
+        run: >
+          helm lint infrastructure/helm/oracle-archive --strict
+          --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
+          --set pv.volumeName=pv-ci
+          --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci

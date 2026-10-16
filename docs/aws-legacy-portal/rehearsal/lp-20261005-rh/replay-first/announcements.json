@@ -1,0 +1,40 @@
+{
+  "context": "announcements",
+  "stage": "first",
+  "casesInCorpus": 36,
+  "casesRun": 1,
+  "identical": 0,
+  "different": 1,
+  "firstDivergence": "ann-01",
+  "divergentIds": [
+    "ann-01"
+  ],
+  "status": "stopped at ann-01",
+  "cases": [
+    {
+      "id": "ann-01",
+      "method": "GET",
+      "path": "/api/announcements",
+      "match": false,
+      "problems": [
+        "status 200 != 501",
+        "body differs"
+      ],
+      "elapsedMs": 220,
+      "java": {
+        "status": 200,
+        "mediaType": "application/json",
+        "json": "[]",
+        "raw": null
+      },
+      "target": {
+        "status": 501,
+        "mediaType": "application/json",
+        "json": "{\"error\": \"not implemented\", \"context\": \"announcements\", \"path\": \"/api/announcements\"}",
+        "raw": null
+      }
+    }
+  ],
+  "base": "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/",
+  "startedUtc": "2026-10-05T08:09:19Z"
+}

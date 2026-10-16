@@ -1,0 +1,35 @@
+# lp-replay run=lp-20261005-rh started 2026-10-05T08:09:14Z
+# caller arn:aws:iam::<account>:user/<caller>
+target https://iukn6912ki.execute-api.us-east-1.amazonaws.com/  context all  stage first
+requests.json: OK
+java-reference.json: OK
+corpus checksums: OK (SHA256SUMS)
+[common] 0/1 identical of 10 in corpus; stopped at common-01
+  first divergence common-01: GET /health: status 200 != 501; body differs
+  - java   200 application/json {"status": "UP", "service": "legacy-portal", "banner": "OtterWorks Portal (on-prem) - contact portal-support@otterworks.example"}
+  + target 501 application/json {"error": "not implemented", "context": "announcements", "path": "/health"}
+[announcements] 0/1 identical of 36 in corpus; stopped at ann-01
+  first divergence ann-01: GET /api/announcements: status 200 != 501; body differs
+  - java   200 application/json []
+  + target 501 application/json {"error": "not implemented", "context": "announcements", "path": "/api/announcements"}
+[preferences] 0/1 identical of 20 in corpus; stopped at pref-01
+  first divergence pref-01: GET /api/preferences/newuser: status 200 != 501; body differs
+  - java   200 application/json {"userId": "newuser", "theme": "light", "locale": "en-US", "emailNotifications": true}
+  + target 501 application/json {"error": "not implemented", "context": "preferences", "path": "/api/preferences/newuser"}
+[feedback] 0/1 identical of 29 in corpus; stopped at fb-01
+  first divergence fb-01: GET /api/feedback/average-rating: status 200 != 501; body differs
+  - java   200 application/json {"averageRating": 0.0}
+  + target 501 application/json {"error": "not implemented", "context": "feedback", "path": "/api/feedback/average-rating"}
+
+| Context | Cases in corpus | Cases run | Identical | Different | First divergence | Result |
+|---|---|---|---|---|---|---|
+| common | 10 | 1 | 0 | 1 | common-01 | stopped at common-01 |
+| announcements | 36 | 1 | 0 | 1 | ann-01 | stopped at ann-01 |
+| preferences | 20 | 1 | 0 | 1 | pref-01 | stopped at pref-01 |
+| feedback | 29 | 1 | 0 | 1 | fb-01 | stopped at fb-01 |
+
+
+evidence: /home/ubuntu/repos/otterworks/.demo/legacy-portal/lp-20261005-rh/replay-first-all-20261005T080918Z/<context>.json, summary: /home/ubuntu/repos/otterworks/.demo/legacy-portal/lp-20261005-rh/replay-first-all-20261005T080918Z/SUMMARY.md
+replay exit 1 (0 all identical, 1 divergences found, 3 corpus checksum mismatch)
+# lp-replay finished 2026-10-05T08:09:20Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/replay-20261005T080913Z.log

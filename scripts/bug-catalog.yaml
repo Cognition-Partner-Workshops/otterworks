@@ -37,6 +37,20 @@ scenarios:
     description: >
       Document reads get a 3-5s injected latency (P95 latency-alert demo).
 
+  mobile-latency:
+    mechanism: chaos
+    service: api-gateway
+    redis_key: "chaos:api-gateway:mobile_latency_ms"
+    value: 3000          # milliseconds; override with MOBILE_LATENCY_MS
+    ttl_seconds: 1200    # 20 minutes
+    description: >
+      The iOS and Android apps feel slow on the Files screen while the web app
+      is fine. api-gateway sleeps <value> ms before proxying GET /api/v1/files
+      when the User-Agent carries OtterWorksApp (the Capacitor shells append
+      OtterWorksApp/<platform>). Browsers, writes and other routes are untouched.
+      Evidence: the client field on api-gateway access logs in CloudWatch
+      (docs/observability/mobile-latency.md).
+
   notification-schema:
     mechanism: chaos
     service: notification-service

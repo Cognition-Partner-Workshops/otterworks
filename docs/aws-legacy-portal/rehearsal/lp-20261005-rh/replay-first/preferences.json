@@ -1,0 +1,40 @@
+{
+  "context": "preferences",
+  "stage": "first",
+  "casesInCorpus": 20,
+  "casesRun": 1,
+  "identical": 0,
+  "different": 1,
+  "firstDivergence": "pref-01",
+  "divergentIds": [
+    "pref-01"
+  ],
+  "status": "stopped at pref-01",
+  "cases": [
+    {
+      "id": "pref-01",
+      "method": "GET",
+      "path": "/api/preferences/newuser",
+      "match": false,
+      "problems": [
+        "status 200 != 501",
+        "body differs"
+      ],
+      "elapsedMs": 403,
+      "java": {
+        "status": 200,
+        "mediaType": "application/json",
+        "json": "{\"userId\": \"newuser\", \"theme\": \"light\", \"locale\": \"en-US\", \"emailNotifications\": true}",
+        "raw": null
+      },
+      "target": {
+        "status": 501,
+        "mediaType": "application/json",
+        "json": "{\"error\": \"not implemented\", \"context\": \"preferences\", \"path\": \"/api/preferences/newuser\"}",
+        "raw": null
+      }
+    }
+  ],
+  "base": "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/",
+  "startedUtc": "2026-10-05T08:09:19Z"
+}

@@ -38,9 +38,12 @@ provider "aws" {
       Environment = var.environment
       ManagedBy   = "terraform"
       Layer       = "application"
+      creator     = var.creator_tag
     }
   }
 }
+
+data "aws_caller_identity" "current" {}
 
 # --- Read Platform Outputs (VPC, EKS, ECR from /platform/terraform) ---
 
@@ -87,9 +90,10 @@ provider "helm" {
 # --- Modules ---
 
 module "storage" {
-  source      = "./modules/storage"
-  environment = var.environment
-  project     = "otterworks"
+  source        = "./modules/storage"
+  environment   = var.environment
+  project       = "otterworks"
+  force_destroy = coalesce(var.s3_force_destroy, var.environment == "dev")
 }
 
 module "database" {
@@ -97,6 +101,8 @@ module "database" {
   environment = var.environment
   project     = "otterworks"
   db_password = var.db_password
+
+  db_instance_class = "db.t3.small"
 
   vpc_id     = local.vpc_id
   vpc_cidr   = local.vpc_cidr
@@ -109,7 +115,9 @@ module "messaging" {
   project     = "otterworks"
 }
 
+# Shared ECS MeiliSearch. Tenants run MeiliSearch in-cluster, so this is off by default.
 module "search" {
+  count       = var.enable_shared_search ? 1 : 0
   source      = "./modules/search"
   environment = var.environment
   project     = "otterworks"
@@ -126,7 +134,9 @@ module "auth" {
   project     = "otterworks"
 }
 
+# Shared ElastiCache Redis. Tenants run Redis in-cluster, so this is off by default.
 module "cache" {
+  count               = var.enable_shared_cache ? 1 : 0
   source              = "./modules/cache"
   environment         = var.environment
   project             = "otterworks"
@@ -265,11 +275,11 @@ module "irsa" {
             "ecs:DescribeServices",
             "ecs:DescribeTasks",
           ]
-          Resource = [
-            module.search.meilisearch_ecs_cluster_arn,
-            module.search.meilisearch_ecs_service_arn,
-            "${replace(module.search.meilisearch_ecs_cluster_arn, ":cluster/", ":task/")}/*",
-          ]
+          Resource = var.enable_shared_search ? [
+            module.search[0].meilisearch_ecs_cluster_arn,
+            module.search[0].meilisearch_ecs_service_arn,
+            "${replace(module.search[0].meilisearch_ecs_cluster_arn, ":cluster/", ":task/")}/*",
+          ] : ["arn:aws:ecs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:cluster/otterworks-meilisearch-${var.environment}"]
         },
       ]
     })
@@ -387,6 +397,34 @@ module "irsa" {
           Effect   = "Allow"
           Action   = ["sns:Publish"]
           Resource = [module.messaging.events_topic_arn]
+        },
+      ]
+    })
+
+    # Ships api-gateway and ingress-nginx access logs to CloudWatch
+    # (infrastructure/helm/aws-for-fluent-bit, scripts/install-log-shipping.sh).
+    # Runs in otterworks-system, which the otterworks-* trust condition covers.
+    "fluent-bit" = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:PutRetentionPolicy",
+            "logs:DescribeLogStreams",
+          ]
+          Resource = [
+            "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/otterworks/eks/${local.cluster_name}/*",
+            "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/otterworks/eks/${local.cluster_name}/*:log-stream:*",
+          ]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["logs:DescribeLogGroups"]
+          Resource = "*"
         },
       ]
     })

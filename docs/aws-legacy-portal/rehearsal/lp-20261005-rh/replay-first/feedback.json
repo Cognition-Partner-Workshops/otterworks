@@ -1,0 +1,40 @@
+{
+  "context": "feedback",
+  "stage": "first",
+  "casesInCorpus": 29,
+  "casesRun": 1,
+  "identical": 0,
+  "different": 1,
+  "firstDivergence": "fb-01",
+  "divergentIds": [
+    "fb-01"
+  ],
+  "status": "stopped at fb-01",
+  "cases": [
+    {
+      "id": "fb-01",
+      "method": "GET",
+      "path": "/api/feedback/average-rating",
+      "match": false,
+      "problems": [
+        "status 200 != 501",
+        "body differs"
+      ],
+      "elapsedMs": 427,
+      "java": {
+        "status": 200,
+        "mediaType": "application/json",
+        "json": "{\"averageRating\": 0.0}",
+        "raw": null
+      },
+      "target": {
+        "status": 501,
+        "mediaType": "application/json",
+        "json": "{\"error\": \"not implemented\", \"context\": \"feedback\", \"path\": \"/api/feedback/average-rating\"}",
+        "raw": null
+      }
+    }
+  ],
+  "base": "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/",
+  "startedUtc": "2026-10-05T08:09:19Z"
+}

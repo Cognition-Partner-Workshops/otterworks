@@ -1,0 +1,40 @@
+{
+  "context": "common",
+  "stage": "first",
+  "casesInCorpus": 10,
+  "casesRun": 1,
+  "identical": 0,
+  "different": 1,
+  "firstDivergence": "common-01",
+  "divergentIds": [
+    "common-01"
+  ],
+  "status": "stopped at common-01",
+  "cases": [
+    {
+      "id": "common-01",
+      "method": "GET",
+      "path": "/health",
+      "match": false,
+      "problems": [
+        "status 200 != 501",
+        "body differs"
+      ],
+      "elapsedMs": 223,
+      "java": {
+        "status": 200,
+        "mediaType": "application/json",
+        "json": "{\"status\": \"UP\", \"service\": \"legacy-portal\", \"banner\": \"OtterWorks Portal (on-prem) - contact portal-support@otterworks.example\"}",
+        "raw": null
+      },
+      "target": {
+        "status": 501,
+        "mediaType": "application/json",
+        "json": "{\"error\": \"not implemented\", \"context\": \"announcements\", \"path\": \"/health\"}",
+        "raw": null
+      }
+    }
+  ],
+  "base": "https://iukn6912ki.execute-api.us-east-1.amazonaws.com/",
+  "startedUtc": "2026-10-05T08:09:19Z"
+}

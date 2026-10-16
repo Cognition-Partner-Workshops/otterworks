@@ -1,0 +1,17 @@
+# lp-verify-clean run=lp-20261005-rh started 2026-10-05T08:21:35Z
+# caller arn:aws:iam::<account>:user/<caller>
+tagging API, all 17 regions, run_token=lp-20261005-rh and RunToken=lp-20261005-rh: 0 resources
+direct lookups:
+  absent: lp-20261005-rh-lambda
+  absent: arn:aws:iam::<account>:policy/lp-20261005-rh-builder
+  absent: lp-20261005-rh
+  HTTP APIs named lp-20261005-rh: 0
+  not attached to devin-cw-builder: lp-20261005-rh-builder
+  absent: lp-20261005-rh-announcements
+  absent: lp-20261005-rh-preferences
+  absent: lp-20261005-rh-feedback
+  absent: lp-20261005-rh/aurora/master
+  log groups matching lp-20261005-rh: 0
+CLEAN: nothing tagged or named lp-20261005-rh remains
+# lp-verify-clean finished 2026-10-05T08:22:18Z exit=0
+# transcript .demo/legacy-portal/lp-20261005-rh/verify-clean-20261005T082134Z.log
