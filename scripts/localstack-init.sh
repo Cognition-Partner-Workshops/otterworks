@@ -12,6 +12,7 @@ make_bucket()   { bucket_exists "$1" || awslocal s3 mb "s3://$1"; }
 
 # S3 Buckets
 make_bucket otterworks-files
+awslocal s3api put-bucket-cors --bucket otterworks-files --cors-configuration '{"CORSRules":[{"AllowedOrigins":["http://localhost:3000","https://*.otterworks.app"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["Range"],"ExposeHeaders":["Content-Range","Content-Length","Content-Type","Accept-Ranges","ETag"],"MaxAgeSeconds":3000}]}'
 make_bucket otterworks-data-lake
 make_bucket otterworks-audit-archive
 

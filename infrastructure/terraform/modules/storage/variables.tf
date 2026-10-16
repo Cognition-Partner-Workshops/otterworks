@@ -23,3 +23,9 @@ variable "force_destroy" {
   type        = bool
   default     = false
 }
+
+variable "files_cors_allowed_origins" {
+  description = "Allowed browser origins for file previews"
+  type        = list(string)
+  default     = ["http://localhost:3000", "https://*.otterworks.app"]
+}

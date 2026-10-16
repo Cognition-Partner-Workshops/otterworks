@@ -22,7 +22,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { PageLoader } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ShareDialog } from "@/components/files/share-dialog";
-import { TextFilePreview, PdfFilePreview, ImageFilePreview } from "@/components/files/file-preview";
+import { FilePreview } from "@/components/files/preview/file-preview";
 import { filesApi, authApi } from "@/lib/api";
 import { formatFileSize, formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
 
@@ -45,13 +45,6 @@ function FileDetailContent() {
   const { data: file, isLoading } = useQuery({
     queryKey: ["files", fileId],
     queryFn: () => filesApi.get(fileId),
-  });
-
-  const { data: presignedUrl, isLoading: isUrlLoading } = useQuery({
-    queryKey: ["files", fileId, "download-url"],
-    queryFn: () => filesApi.getDownloadUrl(fileId),
-    enabled: !!file,
-    staleTime: 30 * 60 * 1000,
   });
 
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -111,17 +104,24 @@ function FileDetailContent() {
     );
   }
 
-  const isImage = file.mimeType.startsWith("image/");
-  const isVideo = file.mimeType.startsWith("video/");
-  const isPdf = file.mimeType === "application/pdf";
-  const isText =
-    file.mimeType.startsWith("text/") ||
-    file.mimeType === "application/json" ||
-    file.mimeType === "application/xml" ||
-    file.mimeType === "application/javascript" ||
-    file.mimeType === "application/typescript" ||
-    file.mimeType === "application/x-yaml" ||
-    file.mimeType === "application/x-sh";
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const downloadUrl = await filesApi.getDownloadUrl(file.id);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = file.name;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast.success(`Downloading ${file.name}`);
+    } catch {
+      toast.error("Download failed. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -133,7 +133,7 @@ function FileDetailContent() {
       />
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -154,24 +154,7 @@ function FileDetailContent() {
         <div className="flex items-center gap-2">
           <button
             disabled={isDownloading}
-            onClick={async () => {
-              setIsDownloading(true);
-              try {
-                const downloadUrl = await filesApi.getDownloadUrl(file.id);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = file.name;
-                a.rel = "noopener";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                toast.success(`Downloading ${file.name}`);
-              } catch {
-                toast.error("Download failed. Please try again.");
-              } finally {
-                setIsDownloading(false);
-              }
-            }}
+            onClick={() => void handleDownload()}
             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
@@ -205,14 +188,10 @@ function FileDetailContent() {
               </h2>
             </div>
             <div className="p-8 flex items-center justify-center min-h-[300px] bg-gray-50">
-              <FilePreviewContent
-                isImage={isImage}
-                isVideo={isVideo}
-                isPdf={isPdf}
-                isText={isText}
-                isUrlLoading={isUrlLoading}
-                presignedUrl={presignedUrl}
-                fileName={file.name}
+              <FilePreview
+                key={file.id}
+                file={file}
+                onDownload={() => void handleDownload()}
               />
             </div>
           </div>
@@ -400,59 +379,6 @@ function InfoRow({
   );
 }
 
-function FilePreviewContent({
-  isImage,
-  isVideo,
-  isPdf,
-  isText,
-  isUrlLoading,
-  presignedUrl,
-  fileName,
-}: Readonly<{
-  isImage: boolean;
-  isVideo: boolean;
-  isPdf: boolean;
-  isText: boolean;
-  isUrlLoading: boolean;
-  presignedUrl: string | undefined;
-  fileName: string;
-}>) {
-  if ((isImage || isVideo || isText || isPdf) && isUrlLoading) {
-    return (
-      <div className="w-full text-center py-8">
-        <div className="w-6 h-6 border-2 border-otter-600 border-t-transparent rounded-full animate-spin mx-auto" />
-      </div>
-    );
-  }
-
-  if (isImage) {
-    return <ImageFilePreview presignedUrl={presignedUrl} fileName={fileName} />;
-  }
-
-  if (isVideo && presignedUrl) {
-    return (
-      <video src={presignedUrl} controls className="max-w-full max-h-[500px] rounded-lg">
-        <track kind="captions" />
-      </video>
-    );
-  }
-
-  if (isPdf) {
-    return <PdfFilePreview presignedUrl={presignedUrl} />;
-  }
-
-  if (isText) {
-    return <TextFilePreview presignedUrl={presignedUrl} fileName={fileName} />;
-  }
-
-  return (
-    <div className="text-center">
-      <File size={64} className="text-gray-300 mx-auto mb-3" />
-      <p className="text-sm text-gray-500">Preview not available for this file type</p>
-    </div>
-  );
-}
-
 function FileIcon({ mimeType }: Readonly<{ mimeType: string }>) {
   if (mimeType.startsWith("image/"))
     return <ImageIcon size={24} className="text-otter-600" />;
@@ -462,5 +388,3 @@ function FileIcon({ mimeType }: Readonly<{ mimeType: string }>) {
     return <FileText size={24} className="text-red-500" />;
   return <File size={24} className="text-otter-600" />;
 }
-
-

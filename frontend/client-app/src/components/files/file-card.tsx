@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   File,
   FileText,
@@ -16,6 +16,7 @@ import {
   Check,
   X,
   Star,
+  Eye,
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { FileItem } from "@/types";
@@ -301,6 +302,7 @@ function FileMenu({
   onRename?: () => void;
   onDownload?: (id: string, name: string) => void;
 }) {
+  const navigate = useNavigate();
   return (
     <>
       <div className="fixed inset-0 z-10" onClick={onClose} />
@@ -317,6 +319,20 @@ function FileMenu({
           <Pencil size={14} />
           Rename
         </button>
+        {!file.isFolder && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(`/files/${file.id}`);
+              onClose();
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Eye size={14} />
+            Preview
+          </button>
+        )}
         {!file.isFolder && (
           <button
             onClick={(e) => {
