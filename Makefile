@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down env up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -63,7 +63,19 @@ infra-up: ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearc
 infra-down: ## Stop local infrastructure
 	docker compose -f docker-compose.infra.yml down
 
-up: ## Start all services (add seed=1 to seed after start)
+env: ## Write a random JWT_SECRET to .env for local Compose runs (an existing value is kept)
+	@touch .env && chmod 600 .env
+	@if [ -n "$$(sed -n 's/^JWT_SECRET=//p' .env | tail -n 1)" ]; then \
+		echo ".env already has a JWT_SECRET"; \
+	else \
+		secret="$$(openssl rand -hex 32)" && [ -n "$$secret" ] || \
+			{ echo "openssl rand failed; .env left unchanged" >&2; exit 1; }; \
+		( umask 077; grep -v '^JWT_SECRET=' .env > .env.tmp || true; \
+			printf 'JWT_SECRET=%s\n' "$$secret" >> .env.tmp ) && mv .env.tmp .env; \
+		echo "Wrote a random JWT_SECRET to .env"; \
+	fi
+
+up: env ## Start all services (add seed=1 to seed after start)
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
  ifdef seed
 	@$(MAKE) --no-print-directory wait-for-db seed
@@ -72,7 +84,7 @@ up: ## Start all services (add seed=1 to seed after start)
 down: ## Stop all application services
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml down
 
-build: ## Build all service images
+build: env ## Build all service images
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml build
 
 seed: ## Seed development data (services must be running)
@@ -98,7 +110,7 @@ COMPOSE := docker compose -f docker-compose.infra.yml -f docker-compose.yml
 # otherwise default to :8085, which only matches the k8s dev environment.
 COLLAB_WS_URL := ws://localhost:8084
 
-dev-backend: ## Start the Dockerized backend (all services except the frontend containers)
+dev-backend: env ## Start the Dockerized backend (all services except the frontend containers)
 	$(COMPOSE) up -d $$($(COMPOSE) config --services | grep -vE '^(web-app|admin-dashboard)$$')
 	@echo "Backend up - API gateway on http://localhost:8080 (fresh DB? run: make seed)"
 
@@ -111,7 +123,7 @@ dev-admin: dev-backend ## Start the admin dashboard dev server (HMR) on :4200
 	@$(COMPOSE) stop admin-dashboard 2>/dev/null || true
 	cd frontend/admin-dashboard && { [ -d node_modules ] || npm ci; } && npm start
 
-workbench-up: ## Build and start the Workbench container on :3002
+workbench-up: env ## Build and start the Workbench container on :3002
 	$(COMPOSE) up -d --build --no-deps workbench
 	@echo "Workbench running at http://localhost:3002/"
 
@@ -478,7 +490,7 @@ ifdef UI
 INCIDENT_SERVICES += auth-service api-gateway web-app
 endif
 
-incident-up: ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
+incident-up: env ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
 	$(INCIDENT_COMPOSE) up -d --build $(INCIDENT_SERVICES)
 
 incident-down: ## Stop the incident demo stack (keeps volumes)

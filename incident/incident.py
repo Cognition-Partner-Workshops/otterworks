@@ -138,8 +138,30 @@ def load_scale() -> float:
     return scale
 
 
+def dotenv_jwt_secret() -> str:
+    """JWT_SECRET from the repo-root .env, read the way Compose reads it (last entry wins)."""
+    dotenv = REPO / ".env"
+    if not dotenv.is_file():
+        return ""
+    value = ""
+    for line in dotenv.read_text().splitlines():
+        key, sep, raw = line.partition("=")
+        if sep and key.strip().removeprefix("export ").strip() == "JWT_SECRET":
+            value = raw.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+        value = value[1:-1]
+    else:
+        value = re.sub(r"\s+#.*$", "", value)
+    if "$" in value:
+        die("JWT_SECRET in .env uses interpolation; export the resolved value instead")
+    return value
+
+
 def jwt_secret() -> str:
-    return os.environ.get("JWT_SECRET", "otterworks-local-dev-jwt-secret-change-me-in-production")
+    secret = os.environ.get("JWT_SECRET", "") or dotenv_jwt_secret()
+    if not secret:
+        die("JWT_SECRET is not set: export the target's secret, or `make env` for the local stack")
+    return secret
 
 
 def bearer(user_id: str) -> dict[str, str]:

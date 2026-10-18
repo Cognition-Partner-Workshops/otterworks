@@ -17,7 +17,8 @@ Individual service development may also require the language toolchains listed i
 # Start infrastructure (Postgres, Redis, LocalStack, MeiliSearch, observability stack)
 make infra-up
 
-# Start all application services (builds images on first run)
+# Start all application services (builds images on first run).
+# The first run also writes a random JWT_SECRET to .env (`make env`).
 make up
 
 # Open the app
@@ -28,9 +29,13 @@ open http://localhost:4200        # Admin Dashboard (Angular)
 Or without Make:
 
 ```bash
+printf 'JWT_SECRET=%s\n' "$(openssl rand -hex 32)" > .env   # once; see .env.example
 docker compose -f docker-compose.infra.yml up -d
 docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
 ```
+
+`docker-compose.yml` has no default for `JWT_SECRET` and will not start until it is set, either in
+`.env` or exported in your shell. Every service that mints or verifies a token shares that one value.
 
 On first run, `scripts/init-db.sql` creates the required Postgres databases and `scripts/localstack-init.sh` provisions S3 buckets, SQS queues, SNS topics, and DynamoDB tables in LocalStack automatically.
 
