@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Brassmoor Industries">
+  <rect width="64" height="64" rx="6" fill="#263943"/>
+  <path d="M32 9 51.9 20.5v23L32 55 12.1 43.5v-23Z" fill="none" stroke="#e0701f" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25 21h9.5c4.4 0 7 2.2 7 5.6 0 2.3-1.2 3.9-3.2 4.6 2.6.6 4.2 2.5 4.2 5.2 0 3.9-2.9 6.6-7.7 6.6H25Zm5.4 4.3v4.6h3.4c1.6 0 2.5-.9 2.5-2.3s-.9-2.3-2.5-2.3Zm0 8.6v5h3.9c1.8 0 2.8-1 2.8-2.5s-1-2.5-2.8-2.5Z" fill="#ffffff"/>
+</svg>

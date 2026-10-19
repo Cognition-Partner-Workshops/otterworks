@@ -20,7 +20,7 @@ export default function Home() {
             <Logo size={36} />
             <div>
               <span className="block font-semibold text-gray-900 leading-tight">
-                OtterWorks, Inc.
+                {COMPANY.name}
               </span>
               <span className="block text-[11px] uppercase tracking-wider text-gray-500">
                 {COMPANY.tagline}
@@ -49,12 +49,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-16 text-center">
           <div className="flex items-center justify-center gap-4 mb-5">
             <Logo size={64} className="bg-white p-1 rounded-sm" />
-            <h1 className="text-4xl font-bold text-white">OtterWorks</h1>
+            <h1 className="text-4xl font-bold text-white">Brassmoor</h1>
           </div>
           <p className="text-lg text-otter-100 mb-2 max-w-2xl mx-auto">
-            {COMPANY.tagline}. Dependable systems of record for every den —
-            secure file storage, collaborative documents, and retail operations
-            since {COMPANY.founded}.
+            {COMPANY.tagline}. Drawings, change notices, inspection records and
+            supplier certs for five plants, in one place since {COMPANY.founded}.
           </p>
           <p className="text-xs text-otter-300 mb-8">{COMPANY.disclaimer}</p>
           <div className="flex items-center justify-center gap-3">
@@ -86,7 +85,7 @@ export default function Home() {
       </Section>
 
       {/* Products */}
-      <Section id="products" title="Products" alt>
+      <Section id="products" title="What we run on" alt>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {PRODUCTS.map((product) => (
             <Card key={product.name} title={product.name} body={product.description} />
@@ -113,7 +112,7 @@ export default function Home() {
       </Section>
 
       {/* Departments */}
-      <Section id="departments" title="Departments" alt>
+      <Section id="departments" title="Teams" alt>
         <div className="overflow-x-auto">
           <table className="w-full bg-white border border-gray-300 text-sm">
             <thead>
@@ -122,7 +121,7 @@ export default function Home() {
                   Department
                 </th>
                 <th className="px-4 py-2 border-b border-gray-300 text-xs uppercase tracking-wider text-gray-600">
-                  Charter
+                  What they do
                 </th>
               </tr>
             </thead>
@@ -157,8 +156,8 @@ export default function Home() {
       {/* Careers */}
       <Section id="careers" title="Careers" alt>
         <p className="text-center text-sm text-gray-600 mb-6 max-w-2xl mx-auto">
-          Join a company where every otter counts. Open roles across our
-          riverbank campuses (all positions fictional).
+          We hire machinists, engineers and inspectors at every plant. All
+          positions listed here are fictional.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {CAREERS.map((job) => (
