@@ -14,6 +14,7 @@ describe("board store", () => {
     const saved = loadBoardState(fixtures).issues[issue.key];
     expect(saved.status).toBe("done");
     expect(saved.activity[saved.activity.length - 1]?.actorId).toBe(fixtures.currentUserId);
+    expect(saved.activity[saved.activity.length - 1]?.text).toBe("moved In review to Done");
   });
 
   it("persists comments and an activity entry", () => {
@@ -23,7 +24,7 @@ describe("board store", () => {
 
     const saved = loadBoardState(fixtures).issues[issue.key];
     expect(saved.comments[saved.comments.length - 1]?.body).toBe(body);
-    expect(saved.activity[saved.activity.length - 1]?.text).toBe("Added a comment");
+    expect(saved.activity[saved.activity.length - 1]?.text).toBe("added a comment");
   });
 });
 

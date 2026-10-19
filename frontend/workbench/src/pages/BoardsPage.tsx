@@ -273,12 +273,15 @@ export function IssueDetail({ projectKey, issueKey }: { projectKey: string; issu
             <div className="border-t border-otter-200 pt-4">
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Activity log</h2>
               <ol className="space-y-3">
-                {issue.activity.map((entry, index) => (
-                  <li key={`${entry.at}-${index}`} className="text-sm">
-                    <p className="text-slate-700">{entry.text}</p>
-                    <time className="text-xs text-slate-500">{formatUtc(entry.at)}</time>
-                  </li>
-                ))}
+                {issue.activity.map((entry, index) => {
+                  const actor = fixtures.people.find((person) => person.id === entry.actorId);
+                  return (
+                    <li key={`${entry.at}-${index}`} className="text-sm">
+                      <p className="text-slate-700"><span className="font-medium text-slate-900">{actor?.name ?? entry.actorId}</span> {entry.text}</p>
+                      <time className="text-xs text-slate-500">{formatUtc(entry.at)}</time>
+                    </li>
+                  );
+                })}
               </ol>
             </div>
           </aside>

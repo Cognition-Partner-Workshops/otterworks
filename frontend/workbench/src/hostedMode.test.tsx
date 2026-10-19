@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResetDemoButton } from "@/components/shared";
+import { IssueDetail } from "@/pages/BoardsPage";
 import { ChannelPage } from "@/pages/ChatPage";
 import { fixtures as baseFixtures } from "@/fixtures/fixtures";
 import type { Fixtures } from "@/fixtures/types";
@@ -149,6 +150,34 @@ describe("hosted workbench client", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(screen.getAllByText(attendee.name).length).toBeGreaterThan(0);
     expect(screen.getByText("A rendered attendee message")).toBeInTheDocument();
+  });
+
+  it("renders the hosted attendee's name for their board move activity", () => {
+    const attendee = { id: "user-alice", name: "Alice Attendee", initials: "AA", title: "alice@example.com", kind: "human" as const };
+    const hostedFixtures: Fixtures = {
+      ...baseFixtures,
+      currentUserId: attendee.id,
+      people: [...baseFixtures.people, attendee],
+    };
+    const issue = hostedFixtures.issues.find((item) => item.key === "OW-42")!;
+
+    render(
+      <WorkbenchProvider value={{
+        fixtures: hostedFixtures,
+        user: { sub: "alice", name: attendee.name, email: attendee.title },
+        mode: "hosted",
+        tenantId: "",
+        setTenantId: () => undefined,
+      }}>
+        <MemoryRouter initialEntries={[`/boards/${issue.projectKey}/${issue.key}`]}>
+          <IssueDetail projectKey={issue.projectKey} issueKey={issue.key} />
+        </MemoryRouter>
+      </WorkbenchProvider>,
+    );
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Move to" }), { target: { value: "done" } });
+    const activityText = screen.getByText(attendee.name, { exact: true }).closest("li")?.textContent ?? "";
+    expect(activityText).toContain(`${attendee.name} moved In review to Done`);
   });
 
   it("keeps the static fixture identity", () => {

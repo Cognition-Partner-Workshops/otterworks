@@ -70,7 +70,7 @@ export function moveIssue(
     activity: [...current.activity, {
       at,
       actorId: fixtures.currentUserId,
-      text: `Moved from ${statusNames[current.status]} to ${statusNames[status]}`,
+      text: `moved ${statusNames[current.status]} to ${statusNames[status]}`,
     }],
   };
   getStorage(storage).setItem(BOARDS_STORAGE_KEY, JSON.stringify(state));
@@ -100,7 +100,7 @@ export function addIssueComment(
     activity: [...current.activity, {
       at,
       actorId: fixtures.currentUserId,
-      text: "Added a comment",
+      text: "added a comment",
     }],
   };
   getStorage(storage).setItem(BOARDS_STORAGE_KEY, JSON.stringify(state));
