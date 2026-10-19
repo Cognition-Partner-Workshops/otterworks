@@ -163,7 +163,7 @@ The probe keeps Aurora awake, so a run with the probe on does not pause at 0 ACU
 | `aws_lb` with target group and listener | Internet-facing, HTTP only, health check on `/health` |
 | `aws_cloudwatch_log_group` | `/otterworks/legacy-portal-ec2/<token>/app`, 7-day retention |
 
-User data installs Amazon Corretto 11 and PostgreSQL 15, creates the database, the login and the three context schemas, downloads the jar, writes the systemd unit with the `postgres` datasource and starts the service. The database lives on the instance on purpose. The before state runs its own PostgreSQL next to the app, with no RDS, no alarms and no autoscaling.
+User data installs Amazon Corretto 21 and PostgreSQL 15, creates the database, the login and the three context schemas, downloads the jar, writes the systemd unit with the `postgres` datasource and starts the service. The database lives on the instance on purpose. The before state runs its own PostgreSQL next to the app, with no RDS, no alarms and no autoscaling.
 
 The targets mirror the serverless ones and run `scripts/lp-ec2.sh`, with transcripts in the same `.demo/legacy-portal/<token>/` folder. `Expires` defaults to 72 hours from apply.
 
