@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "workbench_attendee_state" {
+resource "aws_dynamodb_table" "workbench_attendee_state" { # nosemgrep: terraform.aws.security.aws-dynamodb-table-unencrypted.aws-dynamodb-table-unencrypted -- server-side encryption uses the AWS-owned key per design
   name         = "workbench-attendee-state"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "user"

@@ -24,6 +24,7 @@ export async function createFakeIdp() {
   publicJwk.use = "sig";
   const codes = new Map<string, { request: AuthorizationRequest; user: FakeUser }>();
   const accessTokens = new Map<string, FakeUser>();
+  const pendingAuthorizations = new Map<string, AuthorizationRequest>();
   const app = express();
   app.use(express.urlencoded({ extended: false }));
 
@@ -62,16 +63,22 @@ export async function createFakeIdp() {
       completeAuthorization(request, { name: String(req.query.name), email: String(req.query.email) }, res);
       return;
     }
-    res.type("html").send(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Local identity</title><main><h1>Local identity</h1><form method="post" action="/authorize"><input type="hidden" name="redirect_uri" value="${escapeHtml(request.redirectUri)}"><input type="hidden" name="state" value="${escapeHtml(request.state)}"><input type="hidden" name="nonce" value="${escapeHtml(request.nonce)}"><input type="hidden" name="code_challenge" value="${escapeHtml(request.codeChallenge)}"><input type="hidden" name="code_challenge_method" value="${escapeHtml(request.codeChallengeMethod)}"><label>Name <input name="name" required value="Local attendee"></label><label>Email <input name="email" type="email" required value="attendee@example.com"></label><button>Continue</button></form></main></html>`);
+    const authorizationId = randomUUID();
+    pendingAuthorizations.set(authorizationId, request);
+    res.type("html").send(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Local identity</title><main><h1>Local identity</h1><form method="post" action="/authorize"><input type="hidden" name="authorization_id" value="${authorizationId}"><label>Name <input name="name" required value="Local attendee"></label><label>Email <input name="email" type="email" required value="attendee@example.com"></label><button>Continue</button></form></main></html>`);
   });
   app.post("/authorize", (req, res) => {
-    completeAuthorization({
-      redirectUri: String(req.body.redirect_uri ?? ""),
-      state: String(req.body.state ?? ""),
-      nonce: String(req.body.nonce ?? ""),
-      codeChallenge: String(req.body.code_challenge ?? ""),
-      codeChallengeMethod: String(req.body.code_challenge_method ?? ""),
-    }, { name: String(req.body.name ?? ""), email: String(req.body.email ?? "") }, res);
+    const authorizationId = String(req.body.authorization_id ?? "");
+    const request = pendingAuthorizations.get(authorizationId);
+    if (!request) {
+      res.status(400).type("text").send("Invalid authorization request");
+      return;
+    }
+    pendingAuthorizations.delete(authorizationId);
+    completeAuthorization(request, {
+      name: String(req.body.name ?? ""),
+      email: String(req.body.email ?? ""),
+    }, res);
   });
   app.post("/token", async (req, res) => {
     const entry = codes.get(String(req.body.code ?? ""));
@@ -129,16 +136,6 @@ export async function createFakeIdp() {
   }
 
   return { app };
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  })[character]!);
 }
 
 if (process.argv[1]?.endsWith("/fake-idp.ts")) {

@@ -91,6 +91,28 @@ describe("workbench server", () => {
     });
   });
 
+  it("keeps authorization parameters server-side while rendering the fake IdP form", async () => {
+    const response = await request(idpApp).get("/authorize").query({
+      redirect_uri: "https://client.example.test/auth/callback",
+      state: "form-state",
+      nonce: "form-nonce",
+      code_challenge: "form-challenge",
+      code_challenge_method: "S256",
+    }).expect(200);
+    expect(response.text).not.toContain("https://client.example.test/auth/callback");
+    const authorizationId = response.text.match(/name="authorization_id" value="([^"]+)"/)?.[1];
+    expect(authorizationId).toBeTruthy();
+
+    const completed = await request(idpApp).post("/authorize").type("form").send({
+      authorization_id: authorizationId,
+      name: "Local attendee",
+      email: "attendee@example.com",
+    }).expect(302);
+    const callback = new URL(completed.headers.location);
+    expect(callback.origin + callback.pathname).toBe("https://client.example.test/auth/callback");
+    expect(callback.searchParams.get("state")).toBe("form-state");
+  });
+
   it("sets a secure session cookie behind the trusted TLS proxy", async () => {
     const app = createApp(config({ publicUrl: "https://workbench.example.test" }), new MemoryStore());
     const response = await request(app)
