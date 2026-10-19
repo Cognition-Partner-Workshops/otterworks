@@ -53,7 +53,7 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
   // now+TTL on success: a tenant redeployed in its last seconds would otherwise
   // come back already expired and be reaped mid-deploy.
   const remaining = Math.max(300, tenant.expiresAt - Math.floor(Date.now() / 1000));
-  const ttl = tenant.persistent ? "never" : secondsToTtl(remaining);
+  const ttl = tenant.persistent || tenant.pinned ? "never" : secondsToTtl(remaining);
 
   let jobName: string;
   try {

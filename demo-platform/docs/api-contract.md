@@ -33,6 +33,10 @@ The dashboard is a **Next.js** app (server + UI in one deployable) in namespace
   to the TTL regime with `ttl` (default `24h`). Setting the flag is allowed only for an id in
   `PERPETUAL_TENANT_IDS`; clearing it is always allowed. The flag and `expires_at` are written
   in one update.
+- `POST /api/tenants/:id/pin` `{ pinned, ttl? }` → pin a tenant so it never expires but still
+  idles to zero, or unpin it with `ttl` (default `72h`). Allowed for any id; 409 for a persistent
+  tenant. A pinned tenant refuses check-in and extend (409) until unpinned, and CD leaves its
+  expiry alone.
 - `POST /api/tenants/:id/inject` `{ scenario }` → drive the bug catalog via a runner Job.
   409 for a persistent tenant: the perpetual environment exists precisely not to be broken.
 - `POST /api/tenants/:id/reset` → clear injected scenarios. Allowed for every tenant, including
@@ -58,6 +62,8 @@ interface Tenant {
   // Perpetual: exempt from the reaper and from idle-suspend, not checkin-able
   // and not injectable. At most one tenant (`main`) is normally persistent.
   persistent?: boolean;
+  // Pinned: never reaped and not checkin-able until unpinned, but still idle-suspended.
+  pinned?: boolean;
   live?: { phase: string; readyPods: number; totalPods: number;
            services: { name: string; ready: boolean; restarts: number }[] };
 }

@@ -25,6 +25,7 @@
 #   tenant.sh status   <id>
 #   tenant.sh sync     <branch> [image-tag]    # CD: redeploy, creating if absent
 #   tenant.sh persist  <id> true|false
+#   tenant.sh pin      <id> true|false        # never expire, still idle to zero
 #
 # TENANT_PREFIX namespaces the ids `sync` derives, so that a fork of this repo
 # drives its own environments off branch names identical to this one's.
@@ -305,8 +306,8 @@ case "${cmd}" in
 
       # A push counts as use: give the tenant CD_TTL from now, so a branch
       # someone is still pushing to does not expire mid-demo. Never shortens an
-      # expiry someone set by hand, and perpetual tenants are left alone.
-      if [ "$(printf '%s' "${existing}" | jq -r '.persistent // false')" != "true" ]; then
+      # expiry someone set by hand, and perpetual or pinned tenants are left alone.
+      if [ "$(printf '%s' "${existing}" | jq -r '(.persistent // false) or (.pinned // false)')" != "true" ]; then
         current="$(printf '%s' "${existing}" | jq -r '.expiresAt // .expires_at // 0')"
         if [ "$(( $(date +%s) + $(ttl_seconds "${CD_TTL}") ))" -gt "${current%.*}" ]; then
           api POST "/api/tenants/${id}/extend" "$(jq -nc --arg t "${CD_TTL}" '{ttl:$t}')" |
@@ -330,7 +331,19 @@ case "${cmd}" in
       jq -r --arg id "${id}" '"[tenant] \($id): persistent=\(.persistent), expires \(.expiresAt | todate)"'
     ;;
 
+  # Pinned tenants never expire but still idle to zero, so they cost a namespace
+  # and a database while nobody is using them. For long-lived demo branches.
+  pin)
+    id="${1:-}" flag="${2:-}"
+    case "${flag}" in true|false) ;; *) fail "usage: tenant.sh pin <id> true|false" ;; esac
+    [ -n "${id}" ] || fail "usage: tenant.sh pin <id> true|false"
+
+    login
+    api POST "/api/tenants/${id}/pin" "$(jq -nc --argjson p "${flag}" '{pinned:$p}')" |
+      jq -r --arg id "${id}" '"[tenant] \($id): pinned=\(.pinned), expires \(.expiresAt | todate)"'
+    ;;
+
   *)
-    fail "unknown command '${cmd}' -- expected list, checkout, checkin, extend, status, sync or persist"
+    fail "unknown command '${cmd}' -- expected list, checkout, checkin, extend, status, sync, persist or pin"
     ;;
 esac

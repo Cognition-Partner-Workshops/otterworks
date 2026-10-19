@@ -42,6 +42,9 @@ export interface Tenant {
   // Perpetual tenant: exempt from the reaper and from idle-suspend, and not
   // checkin-able or bug-injectable without explicitly clearing the flag first.
   persistent?: boolean;
+  // Pinned tenant: never expires and is not checkin-able until unpinned, but
+  // unlike a perpetual one it still idles to zero.
+  pinned?: boolean;
   live?: TenantLiveState;
 }
 
@@ -65,6 +68,7 @@ export type AuditAction =
   | "reset"
   | "redeploy"
   | "persist"
+  | "pin"
   | "login_ok"
   | "login_fail";
 
@@ -119,6 +123,11 @@ export interface RedeployRequest {
 
 export interface PersistRequest {
   persistent: boolean;
+}
+
+export interface PinRequest {
+  pinned: boolean;
+  ttl?: string;
 }
 
 export interface ExtendRequest {

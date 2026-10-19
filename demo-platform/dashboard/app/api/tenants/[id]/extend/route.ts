@@ -33,6 +33,13 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
     );
   }
 
+  if (tenant.pinned) {
+    return error(
+      409,
+      `tenant '${id}' is pinned and does not expire; POST /api/tenants/${id}/pin {"pinned":false} to give it a ttl`,
+    );
+  }
+
   const expiresAt = await extend(id, ttlSeconds);
   await appendAudit({ tenantId: id, action: "extend", actor, detail: `ttl=${ttlStr}` });
 

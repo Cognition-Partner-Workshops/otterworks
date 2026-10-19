@@ -91,6 +91,14 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
             perpetual
           </span>
         )}
+        {tenant.pinned && (
+          <span
+            className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600"
+            title="Pinned: never expires, still scales to zero when idle"
+          >
+            pinned
+          </span>
+        )}
       </Td>
       <Td>
         <StatusBadge status={tenant.status} />
@@ -114,7 +122,7 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
       </Td>
       <Td>{ready}</Td>
       <Td>
-        {tenant.persistent ? (
+        {tenant.persistent || tenant.pinned ? (
           <span className="text-xs text-slate-500">never</span>
         ) : (
           formatCountdown(tenant.expiresAt)
@@ -129,12 +137,16 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
           </button>
           {!tenant.persistent && (
             <>
-              <button className="btn-xs" disabled={busy !== null} onClick={() => act("checkin")}>
-                {busy === "checkin" ? "…" : "Check-in"}
-              </button>
-              <button className="btn-xs" disabled={busy !== null} onClick={() => act("extend")}>
-                {busy === "extend" ? "…" : "Extend"}
-              </button>
+              {!tenant.pinned && (
+                <>
+                  <button className="btn-xs" disabled={busy !== null} onClick={() => act("checkin")}>
+                    {busy === "checkin" ? "…" : "Check-in"}
+                  </button>
+                  <button className="btn-xs" disabled={busy !== null} onClick={() => act("extend")}>
+                    {busy === "extend" ? "…" : "Extend"}
+                  </button>
+                </>
+              )}
               <button className="btn-xs" disabled={busy !== null} onClick={() => act("inject")}>
                 {busy === "inject" ? "…" : "Inject"}
               </button>
