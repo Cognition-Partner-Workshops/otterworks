@@ -2,8 +2,9 @@
   "name": "@otterworks/desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "OtterWorks desktop app - Electron shell around the client-app web build",
-  "author": "OtterWorks",
+  "productName": "Quillstead Capital",
+  "description": "Quillstead Capital desktop app - Electron shell around the client-app web build",
+  "author": "Quillstead Capital",
   "main": "build/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",

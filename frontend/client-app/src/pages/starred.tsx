@@ -118,14 +118,14 @@ function StarredContent() {
         <EmptyState
           icon={Star}
           title="No starred items"
-          description="Star files and documents for quick access. They will appear here."
+          description="Star client files or research notes to find them here."
         />
       ) : (
         <div className="space-y-8">
           {files.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                Files
+                Client files
               </h2>
               <div
                 className={cn(
@@ -149,7 +149,7 @@ function StarredContent() {
           {documents.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                Documents
+                Research notes
               </h2>
               <div
                 className={cn(

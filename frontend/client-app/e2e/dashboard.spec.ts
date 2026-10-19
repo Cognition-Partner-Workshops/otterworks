@@ -8,68 +8,68 @@ test.describe("Dashboard", () => {
   test("shows the Dashboard heading", async ({ page }) => {
     // Dashboard may redirect to login if unauthenticated, or show the page
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
 
     // Either we see the dashboard or we get redirected to login
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
-  test("displays Upload file and New document buttons", async ({ page }) => {
+  test("displays client file and research note actions", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     const target = heading.or(loginHeading);
     await expect(target).toBeVisible({ timeout: 10_000 });
 
     // Only check buttons if we're on the dashboard (not redirected to login)
     if (await heading.isVisible().catch(() => false)) {
-      await expect(page.getByRole("link", { name: /Upload file/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /New document/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /Upload client file/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /New research note/i })).toBeVisible();
     }
   });
 
   test("renders stat cards or loading state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     const loader = page.locator("[class*='animate-spin']");
     // Dashboard may show heading, loader, or redirect to login
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
       // Stat card labels appear inside stat cards as combined text
-      await expect(page.getByText(/Total files/i)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/Client files/i)).toBeVisible({ timeout: 10_000 });
       await expect(page.getByText(/Storage used/i)).toBeVisible();
     }
   });
 
-  test("shows Recent files section or empty state", async ({ page }) => {
+  test("shows recent client files or the empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
-      const recentFiles = page.getByRole("heading", { name: "Recent files" });
-      const noFiles = page.getByText("No recent files");
+      const recentFiles = page.getByRole("heading", { name: "Recent client files" });
+      const noFiles = page.getByText("No recent client files");
       await expect(recentFiles.or(noFiles)).toBeVisible({ timeout: 10_000 });
     }
   });
 
-  test("shows Recent documents section or empty state", async ({ page }) => {
+  test("shows recent research notes or the empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
-      const recentDocs = page.getByRole("heading", { name: "Recent documents" });
-      const noDocs = page.getByText("No recent documents");
+      const recentDocs = page.getByRole("heading", { name: "Recent research notes" });
+      const noDocs = page.getByText("No recent research notes");
       await expect(recentDocs.or(noDocs)).toBeVisible({ timeout: 10_000 });
     }
   });
 
   test("shows Activity section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 

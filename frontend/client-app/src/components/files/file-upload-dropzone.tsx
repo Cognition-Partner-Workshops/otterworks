@@ -174,11 +174,11 @@ export const FileUploadDropzone = forwardRef(function FileUploadDropzone(
           )}
         />
         {isDragActive ? (
-          <p className="text-sm text-otter-600 font-medium">Drop files here</p>
+          <p className="text-sm text-otter-600 font-medium">Drop client files here</p>
         ) : (
           <>
             <p className="text-sm text-gray-600 font-medium">
-              Drag & drop files here, or click to browse
+              Drag client files here, or click to browse
             </p>
             <p className="text-xs text-gray-400 mt-1">
               Any file type, up to 100MB per file
@@ -194,7 +194,7 @@ export const FileUploadDropzone = forwardRef(function FileUploadDropzone(
               {dismissing ? (
                 <span className="flex items-center gap-1.5 text-green-600">
                   <CheckCircle2 size={14} />
-                  Upload complete — closing shortly
+                  Upload complete. Closing shortly.
                 </span>
               ) : (
                 "Uploads"

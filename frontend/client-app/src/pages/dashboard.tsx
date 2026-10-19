@@ -62,7 +62,7 @@ function DashboardContent() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Welcome back! Here&apos;s your latest activity.
+            Review the latest client files and research notes.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -71,14 +71,14 @@ function DashboardContent() {
             className="flex items-center gap-2 px-4 py-2 bg-otter-600 text-white rounded-lg hover:bg-otter-700 transition text-sm font-medium"
           >
             <Plus size={16} />
-            Upload file
+            Upload client file
           </Link>
           <Link
             to="/documents"
             className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium"
           >
             <FileText size={16} />
-            New document
+            New research note
           </Link>
         </div>
       </div>
@@ -87,13 +87,13 @@ function DashboardContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={FolderOpen}
-          label="Total files"
+          label="Client files"
           value={storage?.fileCount?.toString() || "0"}
           color="blue"
         />
         <StatCard
           icon={FileText}
-          label="Documents"
+          label="Research notes"
           value={storage?.documentCount?.toString() || "0"}
           color="purple"
         />
@@ -136,7 +136,7 @@ function DashboardContent() {
       {/* Recent files */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent files</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Recent client files</h2>
           <Link
             to="/files"
             className="flex items-center gap-1 text-sm text-otter-600 hover:text-otter-700 font-medium"
@@ -172,8 +172,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FolderOpen}
-            title="No recent files"
-            description="Upload files to get started"
+            title="No recent client files"
+            description="Upload client files to get started."
           />
         )}
       </section>
@@ -181,7 +181,7 @@ function DashboardContent() {
       {/* Recent documents */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent documents</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Recent research notes</h2>
           <Link
             to="/documents"
             className="flex items-center gap-1 text-sm text-otter-600 hover:text-otter-700 font-medium"
@@ -198,8 +198,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FileText}
-            title="No recent documents"
-            description="Create a document to start collaborating"
+            title="No recent research notes"
+            description="Create a research note to start collaborating."
           />
         )}
       </section>

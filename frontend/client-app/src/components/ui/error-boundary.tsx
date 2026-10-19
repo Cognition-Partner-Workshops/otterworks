@@ -35,10 +35,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div className="flex flex-col items-center justify-center min-h-[300px] p-8">
           <AlertTriangle size={48} className="text-red-500 mb-4" />
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Something went wrong
+            We couldn&apos;t load this page
           </h2>
           <p className="text-sm text-gray-500 mb-4 text-center max-w-md">
-            {this.state.error?.message || "An unexpected error occurred."}
+            {this.state.error?.message || "Try again or ask your administrator for help."}
           </p>
           <button
             onClick={this.handleReset}

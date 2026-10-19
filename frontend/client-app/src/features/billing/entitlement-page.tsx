@@ -52,7 +52,7 @@ export default function BillingEntitlementPage() {
       >
         Back
       </button>
-      <h1 className="text-3xl font-bold">Tenant entitlement</h1>
+      <h1 className="text-3xl font-bold">Workspace access</h1>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       {error && (
         <button
@@ -70,11 +70,11 @@ export default function BillingEntitlementPage() {
       {isLoading && <p role="status">Loading entitlement…</p>}
       {!isLoading && !error && !entitlement && <p>No entitlement found.</p>}
       {!isLoading && entitlement && (
-        <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm" aria-label="Tenant entitlement">
-          <p className="text-sm text-gray-600">Tenant {entitlement.tenant_id}</p>
+        <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm" aria-label="Workspace access">
+          <p className="text-sm text-gray-600">Workspace {entitlement.tenant_id}</p>
           <h2 className="mt-2 text-2xl font-semibold">{entitlement.plan_code}</h2>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div><dt className="text-sm text-gray-500">Tier</dt><dd>{entitlement.tier}</dd></div>
+            <div><dt className="text-sm text-gray-500">Service tier</dt><dd>{entitlement.tier}</dd></div>
             <div><dt className="text-sm text-gray-500">Status</dt><dd>{entitlement.subscription_status}</dd></div>
             <div><dt className="text-sm text-gray-500">Included units</dt><dd>{entitlement.included_units}</dd></div>
             <div><dt className="text-sm text-gray-500">Effective on</dt><dd>{entitlement.effective_on}</dd></div>

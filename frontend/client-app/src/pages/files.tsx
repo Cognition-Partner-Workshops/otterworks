@@ -161,7 +161,7 @@ function FileBrowserContent() {
   }, [queryClient]);
 
   const breadcrumbs: BreadcrumbItem[] | null = folderId
-    ? [{ label: "Files", href: "/files" }, { label: currentFolder?.name ?? "\u2026" }]
+    ? [{ label: "Client files", href: "/files" }, { label: currentFolder?.name ?? "\u2026" }]
     : null;
 
   const folders = folderItems ?? [];
@@ -272,8 +272,8 @@ function FileBrowserContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-otter-600/10 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-otter-500 p-12 text-center">
             <Upload size={48} className="mx-auto mb-4 text-otter-600" />
-            <p className="text-lg font-semibold text-gray-900">Drop files to upload</p>
-            <p className="text-sm text-gray-500 mt-1">Files will be added to the current folder</p>
+            <p className="text-lg font-semibold text-gray-900">Drop client files to upload</p>
+            <p className="text-sm text-gray-500 mt-1">Client files will be added to the current folder.</p>
           </div>
         </div>
       )}
@@ -314,7 +314,7 @@ function FileBrowserContent() {
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Files</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Client files</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -433,8 +433,8 @@ function FileBrowserContent() {
         <EmptyState
           icon={FolderOpen}
           title="This folder is empty"
-          description="Upload files or create folders to get started"
-          action={{ label: "Upload files", onClick: () => setShowUpload(true) }}
+          description="Upload client files or create folders to get started."
+          action={{ label: "Upload client files", onClick: () => setShowUpload(true) }}
         />
       ) : (
         <div className="space-y-6">
@@ -478,7 +478,7 @@ function FileBrowserContent() {
           {/* Files */}
           {files.length > 0 && (
             <section>
-              {viewMode === "grid" && <h2 className="text-sm font-medium text-gray-500 mb-3">Files</h2>}
+              {viewMode === "grid" && <h2 className="text-sm font-medium text-gray-500 mb-3">Client files</h2>}
               <div
                 className={cn(
                   viewMode === "grid"

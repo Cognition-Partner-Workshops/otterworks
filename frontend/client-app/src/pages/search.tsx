@@ -96,7 +96,7 @@ function SearchContent() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search files, documents, and folders..."
+          placeholder="Search client files, research notes, and folders..."
           className="w-full pl-12 pr-20 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
           autoFocus
         />
@@ -140,7 +140,13 @@ function SearchContent() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               )}
             >
-              {type === "all" ? "All types" : type.charAt(0).toUpperCase() + type.slice(1) + "s"}
+              {type === "all"
+                ? "All types"
+                : type === "file"
+                  ? "Client files"
+                  : type === "document"
+                    ? "Research notes"
+                    : "Folders"}
             </button>
           ))}
         </div>
@@ -167,8 +173,8 @@ function SearchContent() {
       ) : (
         <EmptyState
           icon={Search}
-          title="Search OtterWorks"
-          description="Find files, documents, and folders across your workspace"
+          title="Search Quillstead"
+          description="Find client files, research notes, and folders across the workspace."
         />
       )}
     </div>

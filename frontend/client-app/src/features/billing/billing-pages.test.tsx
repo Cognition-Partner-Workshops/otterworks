@@ -109,15 +109,15 @@ describe("Billing page state transitions", () => {
       }),
     );
     renderChangePlan();
-    await screen.findByRole("button", { name: "Save plan change" });
-    fireEvent.click(screen.getByRole("button", { name: "Save plan change" }));
-    expect(await screen.findByText("Plan change saved for 2026-03-01.")).toBeInTheDocument();
+    await screen.findByRole("button", { name: "Save service plan change" });
+    fireEvent.click(screen.getByRole("button", { name: "Save service plan change" }));
+    expect(await screen.findByText("Service plan updated for 2026-03-01.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Switch change tenant" }));
     await waitFor(() =>
       expect(screen.queryByText("Plan change saved for 2026-03-01.")).not.toBeInTheDocument(),
     );
-    await screen.findByRole("button", { name: "Save plan change" });
-    fireEvent.click(screen.getByRole("button", { name: "Save plan change" }));
+    await screen.findByRole("button", { name: "Save service plan change" });
+    fireEvent.click(screen.getByRole("button", { name: "Save service plan change" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "This plan change was already submitted.",
     );
@@ -153,8 +153,8 @@ describe("Billing page state transitions", () => {
       ),
     );
     renderChangePlan();
-    await screen.findByRole("button", { name: "Save plan change" });
-    fireEvent.click(screen.getByRole("button", { name: "Save plan change" }));
+    await screen.findByRole("button", { name: "Save service plan change" });
+    fireEvent.click(screen.getByRole("button", { name: "Save service plan change" }));
     fireEvent.click(screen.getByRole("button", { name: "Switch change tenant" }));
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(screen.queryByText("Plan change saved for 2026-03-01.")).not.toBeInTheDocument();

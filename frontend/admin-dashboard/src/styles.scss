@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+// Quillstead Capital theme: green primary palette with a brass accent.
+$quillstead-primary-palette: (
+  50: #f2f6f4,
+  100: #e1ebe6,
+  200: #c2d6cc,
+  300: #96b8a8,
+  400: #5f8f7a,
+  500: #1d4a3f,
+  600: #173d34,
+  700: #12312a,
+  800: #0c231e,
+  900: #071713,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -28,8 +28,33 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$quillstead-brass-palette: (
+  50: #fbf8f1,
+  100: #f6eedf,
+  200: #ecddbd,
+  300: #dfc38f,
+  400: #c9a25a,
+  500: #b8893a,
+  600: #96702e,
+  700: #7c5c26,
+  800: #62491e,
+  900: #493515,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+  ),
+);
+
+$admin-primary: mat.define-palette($quillstead-primary-palette, 500);
+$admin-accent: mat.define-palette($quillstead-brass-palette, 500);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -54,7 +79,7 @@ html, body {
   height: 100%;
   font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f2f6f4;
   color: #212529;
 }
 
@@ -72,16 +97,16 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #e1ebe6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #96b8a8;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: #5f8f7a;
 }
 
 /* ── Sidebar nav-list overrides ──────────────────────────────────────────────
@@ -111,12 +136,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #c9a25a !important;
+  background: rgba(184, 137, 58, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #c9a25a !important;
 }
 
 /* Ripple / focus state should also be light */

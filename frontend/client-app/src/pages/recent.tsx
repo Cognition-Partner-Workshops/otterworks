@@ -95,7 +95,7 @@ function RecentContent() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Recent</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Files and documents you&apos;ve recently accessed or modified.
+          Client files and research notes you recently opened or edited.
         </p>
       </div>
 
@@ -107,7 +107,7 @@ function RecentContent() {
         <EmptyState
           icon={Clock}
           title="No recent items"
-          description="Files and documents you open or edit will appear here."
+          description="Client files and research notes you open or edit will appear here."
         />
       )}
 

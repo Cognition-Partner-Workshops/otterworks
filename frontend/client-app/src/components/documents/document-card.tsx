@@ -109,7 +109,7 @@ export function DocumentCard({ document, onDelete, onShare, view = "grid", onSta
         <p className="text-xs text-gray-500 line-clamp-4 leading-relaxed">
           {document.content
             ? document.content.replace(/<[^>]{0,2048}>/g, "").slice(0, 200)
-            : "Empty document"}
+            : "No note text"}
         </p>
       </div>
 

@@ -105,7 +105,7 @@ function FileDetailContent() {
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-gray-500">File not found</p>
         <Link to="/files" className="text-otter-600 hover:underline mt-2 text-sm">
-          Back to files
+          Back to client files
         </Link>
       </div>
     );
@@ -127,7 +127,7 @@ function FileDetailContent() {
     <div className="max-w-5xl mx-auto space-y-6">
       <Breadcrumb
         items={[
-          { label: "Files", href: "/files" },
+          { label: "Client files", href: "/files" },
           { label: file.name },
         ]}
       />
@@ -462,5 +462,3 @@ function FileIcon({ mimeType }: Readonly<{ mimeType: string }>) {
     return <FileText size={24} className="text-red-500" />;
   return <File size={24} className="text-otter-600" />;
 }
-
-

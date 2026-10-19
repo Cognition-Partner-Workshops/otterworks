@@ -123,7 +123,7 @@ function TrashContent() {
         <EmptyState
           icon={Trash2}
           title="Trash is empty"
-          description="Deleted files and documents will appear here"
+          description="Deleted client files and research notes will appear here."
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">

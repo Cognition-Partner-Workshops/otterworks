@@ -97,7 +97,7 @@ export default function BillingChangePlanPage() {
       >
         Back
       </button>
-      <h1 className="text-3xl font-bold">Change plan</h1>
+      <h1 className="text-3xl font-bold">Change service plan</h1>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       {error && (
         <button
@@ -123,7 +123,7 @@ export default function BillingChangePlanPage() {
           }}
         >
           <div>
-            <label htmlFor="billing-plan" className="mb-1 block text-sm font-medium">Plan</label>
+            <label htmlFor="billing-plan" className="mb-1 block text-sm font-medium">Service plan</label>
             <select id="billing-plan" value={planId} onChange={(event) => setPlanId(event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
               {plans.map((plan) => <option key={plan.plan_id} value={plan.plan_id}>{plan.code}</option>)}
             </select>
@@ -141,11 +141,11 @@ export default function BillingChangePlanPage() {
             {error && <span id="billing-change-error" className="sr-only">{error}</span>}
           </div>
           <button type="submit" disabled={isSaving} className="rounded-lg bg-otter-600 px-4 py-2 font-semibold text-white disabled:opacity-50">
-            {isSaving ? "Saving…" : "Save plan change"}
+            {isSaving ? "Saving…" : "Save service plan change"}
           </button>
         </form>
       )}
-      {result && <p role="status" className="rounded-lg bg-green-50 p-4 text-green-800">Plan change saved for {result.latest_start}.</p>}
+      {result && <p role="status" className="rounded-lg bg-green-50 p-4 text-green-800">Service plan updated for {result.latest_start}.</p>}
     </main>
   );
 }

@@ -73,7 +73,7 @@ export const MOCK_ANALYTICS_REPORT: AnalyticsReport = {
     { label: 'Dec', value: 590 },
   ],
   topFileTypes: [
-    { label: 'Documents', value: 4250 },
+    { label: 'Research notes', value: 4250 },
     { label: 'Spreadsheets', value: 1820 },
     { label: 'PDFs', value: 1450 },
     { label: 'Images', value: 890 },

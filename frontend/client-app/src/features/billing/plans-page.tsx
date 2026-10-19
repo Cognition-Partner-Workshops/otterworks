@@ -42,11 +42,11 @@ export default function BillingPlansPage() {
     <main className="mx-auto max-w-5xl space-y-6 p-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-otter-600">Billing</p>
-          <h1 className="text-3xl font-bold text-gray-900">Plans</h1>
+          <p className="text-sm font-semibold uppercase tracking-wide text-otter-600">Administration</p>
+          <h1 className="text-3xl font-bold text-gray-900">Workspace service plans</h1>
         </div>
         <Link className="text-sm text-otter-700 hover:underline" to={`/billing/entitlement/${DEFAULT_TENANT}`}>
-          View tenant entitlement
+          View workspace access
         </Link>
       </header>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
@@ -62,7 +62,7 @@ export default function BillingPlansPage() {
         <p className="rounded-lg bg-white p-6 text-gray-600">No plans are available.</p>
       )}
       {!isLoading && plans.length > 0 && (
-        <ul className="grid gap-4 md:grid-cols-3" aria-label="Available plans">
+        <ul className="grid gap-4 md:grid-cols-3" aria-label="Available service plans">
           {plans.map((plan) => (
             <li key={plan.plan_id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-semibold">{plan.code}</h2>
@@ -73,7 +73,7 @@ export default function BillingPlansPage() {
                 className="mt-5 inline-block rounded-lg bg-otter-600 px-3 py-2 text-sm font-semibold text-white hover:bg-otter-700"
                 to={`/billing/change/${DEFAULT_TENANT}?plan=${encodeURIComponent(plan.plan_id)}`}
               >
-                Choose plan
+                Choose service plan
               </Link>
             </li>
           ))}

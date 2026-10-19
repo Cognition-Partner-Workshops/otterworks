@@ -7,13 +7,13 @@ test.describe("Settings Page", () => {
 
   test("shows Settings heading or redirects to login", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
   test("displays Profile section when authenticated", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -27,7 +27,7 @@ test.describe("Settings Page", () => {
     page,
   }) => {
     const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -42,7 +42,7 @@ test.describe("Settings Page", () => {
     page,
   }) => {
     const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -53,7 +53,7 @@ test.describe("Settings Page", () => {
 
   test("displays breadcrumb navigation", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your Quillstead account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {

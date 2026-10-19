@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Quillstead Capital theme: deep green primary, brass accent, and serif headings.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,26 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f2f6f4",
+          100: "#e1ebe6",
+          200: "#c2d6cc",
+          300: "#96b8a8",
+          400: "#5f8f7a",
+          500: "#2f6b55",
+          600: "#1d4a3f",
+          700: "#173d34",
+          800: "#12312a",
+          900: "#0c231e",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#c9a25a",
+          500: "#b8893a",
+          600: "#96702e",
         },
       },
       fontFamily: {
         sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        serif: ['Georgia', '"Times New Roman"', "serif"],
       },
     },
   },

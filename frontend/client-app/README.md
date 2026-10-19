@@ -1,4 +1,4 @@
-# OtterWorks Web App
+# Quillstead Capital Web App
 
 React 18 single-page application built with Vite, served by nginx in production,
 wrapped by Capacitor to produce the native Android and iOS apps, and by Electron
@@ -93,9 +93,9 @@ simulator), so collaborative editing works on both simulators out of the box.
 Override with `VITE_COLLAB_WS_URL` for physical devices or other environments, e.g.
 `VITE_COLLAB_WS_URL=wss://collab.example.com npm run build && npx cap sync`.
 
-Auth tokens are kept in `localStorage` (WebView-local). If shipping to stores, consider
-moving them to `@capacitor/preferences` or a secure-storage plugin, and add real app
-icons/splash screens with `@capacitor/assets`.
+The app stores authentication tokens in the WebView's `localStorage`. Before a store
+release, consider `@capacitor/preferences` or a secure-storage plugin for token storage.
+Add app icons and splash screens with `@capacitor/assets`.
 
 ## Desktop (Electron)
 
@@ -121,13 +121,13 @@ npm start              # compile the main process and launch the app
 | `npm run icons` | Regenerate `assets/icon*.png` from `public/favicon.svg` |
 
 Packaging targets: dmg/zip (macOS), NSIS (Windows), AppImage/deb (Linux), each built
-for the host architecture by default. Icons are rendered from the otter favicon by
-`scripts/make-icon.js` (runs inside Electron, so it works on all three OSes):
-`icon-mac.png` sits on Apple's icon grid (transparent margins), while Windows/Linux
-use the full-bleed `icon.png`; electron-builder derives `.icns`/`.ico`/png sets from
-these at package time.
+for the host architecture by default. Icons are rendered from the Quillstead favicon by
+`scripts/make-icon.js` (runs inside Electron, so it works on all three OSes).
+`icon-mac.png` uses Apple's icon grid with transparent margins. Windows and Linux use
+the full-bleed `icon.png`; electron-builder derives `.icns`/`.ico`/png sets from these
+at package time.
 
-Runtime env vars (main process, not baked in at build time):
+Runtime env vars reach the main process when the app starts:
 
 - `API_GATEWAY_URL` - gateway the `/api/v1` proxy targets (default `http://localhost:8080`)
 - `OTTER_DESKTOP_PORT` - preferred local port (default `34117`; kept fixed so the

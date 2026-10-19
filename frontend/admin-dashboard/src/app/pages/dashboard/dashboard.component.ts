@@ -39,7 +39,7 @@ import { DashboardStats } from '../../core/models/analytics.model';
           <mat-card class="stat-card">
             <mat-icon class="stat-icon docs-icon">description</mat-icon>
             <div class="stat-info">
-              <span class="stat-label">Active Documents</span>
+              <span class="stat-label">Active Research Notes</span>
               <span class="stat-value">{{ stats.activeDocuments | number }}</span>
               <span class="stat-growth" [class.positive]="stats.documentsGrowth > 0" [class.negative]="stats.documentsGrowth < 0">
                 <mat-icon>{{ stats.documentsGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
