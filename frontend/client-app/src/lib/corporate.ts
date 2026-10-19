@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
+// Wenlow Communications corporate identity content. All names, people, events, and
 // figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Wenlow Communications",
+  tagline: "Mobile and home broadband for the Fenmouth region",
+  founded: 1998,
+  headquarters: "Quayside Exchange, 400 Harbor Road, Fenmouth",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Wenlow Communications is a fictional operator. All people, places, products, and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Wenlow started in 1998 as a cable company with one headend and 4,000 homes on the Fenmouth estuary. We added a mobile network in 2006 and have run fibre to the street in every town we serve since 2017.",
+  "Most of our engineers live in the towns they look after. When a mast goes quiet or a cabinet floods, the crew that fixes it usually knows the street, and our network operations centre in Fenmouth keeps the outage map in front of them the whole time.",
+  "Today 2.1 million mobile subscribers and 640,000 broadband homes are on the Wenlow network. This workspace holds the site surveys, change records, and runbooks our teams use to keep them connected.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Imogen Thale", title: "Chief Executive Officer", bio: "Joined as a network planner in 2003 and ran the fibre build before taking the top job in 2021." },
+  { name: "Rafael Okonjo", title: "Chief Technology Officer", bio: "Owns the core network, the radio access network and the move of our OSS stack to the cloud." },
+  { name: "Harriet Vossel", title: "Chief Financial Officer", bio: "Came from a regional water utility. Signs off every spectrum bid and the yearly capex plan." },
+  { name: "Daniel Marsh", title: "Chief Operating Officer", bio: "Runs field service and the NOC. Still drives out to the bigger outages himself." },
+  { name: "Priya Lanford", title: "VP of Customer Experience", bio: "Looks after retail stores, the contact centre and the self-service app." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Network Operations", description: "The NOC, core and transport engineering, and the on-call rota for outages." },
+  { name: "Field Service", description: "Installs, repairs and mast maintenance across 31 depots." },
+  { name: "Consumer and Business", description: "Mobile plans, home broadband and business connectivity sales." },
+  { name: "Regulatory and Security", description: "Lawful intercept, number porting rules, spectrum licences and audit." },
+  { name: "Corporate Services", description: "Finance, legal, people and property, including our exchange buildings." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Wenlow Files", description: "Site surveys, drawings and photos for every mast and cabinet, with version history." },
+  { name: "Wenlow Docs", description: "Runbooks and change records the NOC and field crews edit together." },
+  { name: "Wenlow Search", description: "Find any site, ticket note or document by address, site ID or keyword." },
+  { name: "Wenlow Admin", description: "User access, storage quotas, audit logs and system health for IT." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Wenlow switches off its last 3G sites in the Fenmouth region" },
+  { date: "November 2025", title: "Full fibre now reaches 500,000 Wenlow homes" },
+  { date: "June 2025", title: "Wenlow opens a second network operations centre in Calder Bridge" },
+  { date: "January 2025", title: "Wenlow hires 220 field engineers for the rural mast programme" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Senior Network Engineer", team: "Network Operations", location: "Fenmouth NOC" },
+  { role: "Field Engineer, Fibre", team: "Field Service", location: "Calder Bridge depot" },
+  { role: "Spectrum Compliance Analyst", team: "Regulatory and Security", location: "Remote" },
+  { role: "Contact Centre Team Lead", team: "Consumer and Business", location: "Quayside Exchange" },
 ];

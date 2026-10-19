@@ -54,9 +54,10 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <Logo size={40} />
-            <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
+            <span className="text-2xl font-bold text-gray-900">Wenlow</span>
           </Link>
           <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <p className="text-xs text-gray-400 mt-1">Staff workspace for network and field teams</p>
         </div>
 
         {/* Form */}

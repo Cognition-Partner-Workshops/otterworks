@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
+// Wenlow theme: deep petrol primary with a coral signal accent.
 $otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+  50: #eff6f7,
+  100: #d8eaed,
+  200: #b1d3d9,
+  300: #7fb3bd,
+  400: #4b8f9c,
+  500: #0e4a5a,
+  600: #0b3f4d,
+  700: #09343f,
+  800: #062831,
+  900: #041d24,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -29,7 +29,7 @@ $otter-navy-palette: (
 );
 
 $admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$admin-accent: mat.define-palette(mat.$deep-orange-palette, 400);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -54,7 +54,7 @@ html, body {
   height: 100%;
   font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #eff6f7;
   color: #212529;
 }
 

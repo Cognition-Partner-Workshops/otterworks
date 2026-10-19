@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Wenlow theme: deep petrol primary, flat square corners,
+// coral signal accent, system sans stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,21 +22,21 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#eff6f7",
+          100: "#d8eaed",
+          200: "#b1d3d9",
+          300: "#7fb3bd",
+          400: "#4b8f9c",
+          500: "#22707f",
+          600: "#0e4a5a",
+          700: "#0b3f4d",
+          800: "#09343f",
+          900: "#062831",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#ea7d5f",
+          500: "#e2603f",
+          600: "#c24a2b",
         },
       },
       fontFamily: {

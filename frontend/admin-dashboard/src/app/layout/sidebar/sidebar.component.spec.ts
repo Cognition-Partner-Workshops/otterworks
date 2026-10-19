@@ -39,8 +39,8 @@ describe('SidebarComponent', () => {
     expect(labels).toContain('Users');
     expect(labels).toContain('Audit Logs');
     expect(labels).toContain('Feature Flags');
-    expect(labels).toContain('System Health');
-    expect(labels).toContain('Announcements');
+    expect(labels).toContain('Platform Health');
+    expect(labels).toContain('Staff Notices');
     expect(labels).toContain('Storage Quotas');
     expect(labels).toContain('Analytics');
   });
@@ -60,6 +60,6 @@ describe('SidebarComponent', () => {
 
   it('should render logo text when expanded', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('OtterWorks');
+    expect(compiled.textContent).toContain('Wenlow');
   });
 });

@@ -1,11 +1,11 @@
 Feature: Application Navigation
   As a user
   I want to navigate between pages
-  So that I can access all features of OtterWorks
+  So that I can access all features of the Wenlow workspace
 
   Scenario: Landing page is accessible
     Given I navigate to "/"
-    Then I should see the heading "OtterWorks"
+    Then I should see the heading "Wenlow"
 
   Scenario: Login page is accessible
     Given I navigate to "/login"

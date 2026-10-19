@@ -19,11 +19,11 @@ interface NavItem {
     <div class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
-          <span class="logo-text">OtterWorks</span>
+          <img class="logo-icon" src="assets/wenlow-mark.svg" alt="Wenlow logo" width="28" height="28" />
+          <span class="logo-text">Wenlow Admin</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/wenlow-mark.svg" alt="Wenlow logo" width="28" height="28" />
         </div>
         <button class="toggle-btn" (click)="toggleCollapsed()" [matTooltip]="collapsed ? 'Expand' : 'Collapse'">
           <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -48,7 +48,7 @@ interface NavItem {
     .sidebar {
       width: 260px;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #0e4a5a;
       color: #ffffff;
       display: flex;
       flex-direction: column;
@@ -82,8 +82,7 @@ interface NavItem {
     .logo-icon {
       width: 28px;
       height: 28px;
-      background: #ffffff;
-      border-radius: 2px;
+      border-radius: 6px;
     }
 
     .logo-text {
@@ -138,17 +137,17 @@ interface NavItem {
     }
 
     :host ::ng-deep .active-link {
-      background: rgba(217, 154, 61, 0.18) !important;
-      color: #d99a3d !important;
+      background: rgba(226, 96, 63, 0.2) !important;
+      color: #f08a6c !important;
     }
 
     :host ::ng-deep .active-link .mdc-list-item__primary-text,
     :host ::ng-deep .active-link .mat-mdc-list-item-title {
-      color: #d99a3d !important;
+      color: #f08a6c !important;
     }
 
     :host ::ng-deep .active-link .mat-icon {
-      color: #d99a3d !important;
+      color: #f08a6c !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item .mat-icon {
@@ -165,12 +164,12 @@ export class SidebarComponent {
     { label: 'Users', icon: 'people', route: '/users' },
     { label: 'Audit Logs', icon: 'history', route: '/audit' },
     { label: 'Feature Flags', icon: 'toggle_on', route: '/features' },
-    { label: 'System Health', icon: 'monitor_heart', route: '/health' },
-    { label: 'Announcements', icon: 'campaign', route: '/announcements' },
+    { label: 'Platform Health', icon: 'monitor_heart', route: '/health' },
+    { label: 'Staff Notices', icon: 'campaign', route: '/announcements' },
     { label: 'Storage Quotas', icon: 'storage', route: '/quotas' },
-    { label: 'Incidents', icon: 'report_problem', route: '/incidents' },
+    { label: 'Service Incidents', icon: 'report_problem', route: '/incidents' },
     { label: 'Analytics', icon: 'bar_chart', route: '/analytics' },
-    { label: 'Migration', icon: 'swap_horiz', route: '/migration' },
+    { label: 'OSS Migration', icon: 'swap_horiz', route: '/migration' },
   ];
 
   toggleCollapsed(): void {

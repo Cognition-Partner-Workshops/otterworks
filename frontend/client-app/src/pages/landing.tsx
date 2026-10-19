@@ -20,7 +20,7 @@ export default function Home() {
             <Logo size={36} />
             <div>
               <span className="block font-semibold text-gray-900 leading-tight">
-                OtterWorks, Inc.
+                Wenlow Communications
               </span>
               <span className="block text-[11px] uppercase tracking-wider text-gray-500">
                 {COMPANY.tagline}
@@ -49,12 +49,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-16 text-center">
           <div className="flex items-center justify-center gap-4 mb-5">
             <Logo size={64} className="bg-white p-1 rounded-sm" />
-            <h1 className="text-4xl font-bold text-white">OtterWorks</h1>
+            <h1 className="text-4xl font-bold text-white">Wenlow</h1>
           </div>
           <p className="text-lg text-otter-100 mb-2 max-w-2xl mx-auto">
-            {COMPANY.tagline}. Dependable systems of record for every den —
-            secure file storage, collaborative documents, and retail operations
-            since {COMPANY.founded}.
+            {COMPANY.tagline}. Site files, runbooks and change records for the
+            NOC, field crews and stores, in one place since {COMPANY.founded}.
           </p>
           <p className="text-xs text-otter-300 mb-8">{COMPANY.disclaimer}</p>
           <div className="flex items-center justify-center gap-3">
@@ -157,8 +156,8 @@ export default function Home() {
       {/* Careers */}
       <Section id="careers" title="Careers" alt>
         <p className="text-center text-sm text-gray-600 mb-6 max-w-2xl mx-auto">
-          Join a company where every otter counts. Open roles across our
-          riverbank campuses (all positions fictional).
+          We are hiring engineers, field crews and support staff across the
+          region (all positions fictional).
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {CAREERS.map((job) => (
