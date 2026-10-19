@@ -6,11 +6,56 @@ import { IssueDetail } from "@/pages/BoardsPage";
 import { ChannelPage } from "@/pages/ChatPage";
 import { fixtures as baseFixtures } from "@/fixtures/fixtures";
 import type { Fixtures } from "@/fixtures/types";
+import { startWorkbench } from "@/main";
 import { WorkbenchProvider } from "@/WorkbenchContext";
 import { isValidTenantId, tenantUrl } from "@/tenant";
 import { RemoteStorage, setWorkbenchStorage } from "@/stores/workbenchStorage";
 import { addIssueComment, loadBoardState, moveIssue } from "@/stores/boardsStore";
 import { sendChatMessage } from "@/stores/chatStore";
+
+interface HostedState {
+  boards: unknown | null;
+  chat: unknown | null;
+  settings: Record<string, unknown> | null;
+}
+
+const hostedUser = { sub: "alice", name: "Alice Attendee", email: "alice@example.com" };
+
+const fixturesWithTenantLink: Fixtures = {
+  ...baseFixtures,
+  issues: baseFixtures.issues.map((issue) => issue.key === "OW-42" ? {
+    ...issue,
+    links: [...issue.links, {
+      label: "Tenant service",
+      url: "https://t-old.otterworks.app/api",
+      kind: "other",
+    }],
+  } : issue),
+};
+
+function stubHostedApi(getState: () => HostedState) {
+  const fetchMock = vi.fn().mockImplementation((url: string, options?: RequestInit) => {
+    if (url === "/api/me") {
+      return Promise.resolve({ ok: true, status: 200, json: async () => hostedUser });
+    }
+    if (url === "/api/state") {
+      return Promise.resolve({ ok: true, status: 200, json: async () => getState() });
+    }
+    if (url === "/api/state/settings" && options?.method === "PUT") {
+      return Promise.resolve({ ok: true, status: 204 });
+    }
+    return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+async function bootWorkbench(mode: "hosted" | "static", path: string, fixtures: Fixtures = baseFixtures) {
+  document.body.innerHTML = '<div id="root"></div>';
+  window.history.replaceState({}, "", path);
+  vi.stubEnv("VITE_WORKBENCH_MODE", mode);
+  await startWorkbench(fixtures);
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -18,7 +63,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  document.getElementById("root")?.remove();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("hosted workbench client", () => {
@@ -32,6 +79,47 @@ describe("hosted workbench client", () => {
       .toBe("https://api-t-team-42.demo.otterworks.app/v1?x=2");
     expect(tenantUrl("https://example.com/path", "team-42")).toBe("https://example.com/path");
     expect(tenantUrl("https://t-old.otterworks.app/path", "")).toBe("https://t-old.otterworks.app/path");
+  });
+
+  it("persists hosted tenant settings and restores tenant links on the next boot", async () => {
+    let state: HostedState = { boards: null, chat: null, settings: null };
+    const fetchMock = stubHostedApi(() => state);
+
+    await bootWorkbench("hosted", "/boards/OW/OW-42?tenant=abc123", fixturesWithTenantLink);
+    expect(await screen.findByText("Lab: t-abc123")).toBeInTheDocument();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/state/settings", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ tenantId: "abc123" }),
+    })));
+
+    state = { ...state, settings: { tenantId: "abc123" } };
+    await bootWorkbench("hosted", "/boards/OW/OW-42", fixturesWithTenantLink);
+    expect(await screen.findByText("Lab: t-abc123")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Tenant service" }))
+      .toHaveAttribute("href", "https://t-abc123.demo.otterworks.app/api");
+  });
+
+  it("persists a static tenant selection across reloads", async () => {
+    await bootWorkbench("static", "/boards/OW/OW-42?tenant=abc123");
+    expect(localStorage.getItem("workbench.settings.v1")).toBe(JSON.stringify({ tenantId: "abc123" }));
+
+    await bootWorkbench("static", "/boards/OW/OW-42");
+    expect(await screen.findByText("Lab: t-abc123")).toBeInTheDocument();
+  });
+
+  it("persists a lab entered from the hosted header prompt", async () => {
+    const fetchMock = stubHostedApi(() => ({ boards: null, chat: null, settings: null }));
+    const promptMock = vi.fn().mockReturnValue("abc123");
+    vi.stubGlobal("prompt", promptMock);
+
+    await bootWorkbench("hosted", "/");
+    fireEvent.click(await screen.findByRole("button", { name: "Set lab" }));
+
+    expect(promptMock).toHaveBeenCalledWith("Lab ID");
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/state/settings", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ tenantId: "abc123" }),
+    })));
   });
 
   it("hydrates remote documents and writes through supported storage keys", async () => {

@@ -1,13 +1,16 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AppRoutes } from "@/AppRoutes";
 import { fixtures as baseFixtures } from "@/fixtures/fixtures";
 import type { Fixtures, Person } from "@/fixtures/types";
 import { WorkbenchProvider, type WorkbenchUser } from "@/WorkbenchContext";
 import { isValidTenantId } from "@/tenant";
-import { RemoteStorage, setWorkbenchStorage, STORAGE_DOCS } from "@/stores/workbenchStorage";
+import { RemoteStorage, setWorkbenchStorage } from "@/stores/workbenchStorage";
 import "./globals.css";
+
+const SETTINGS_STORAGE_KEY = "workbench.settings.v1";
+let workbenchRoot: Root | undefined;
 
 interface StateResponse {
   boards: unknown | null;
@@ -26,7 +29,7 @@ function personForUser(user: WorkbenchUser): Person {
 
 function readSettings(storage: Storage): Record<string, unknown> {
   try {
-    const value = storage.getItem(STORAGE_DOCS["workbench.settings.v1"]);
+    const value = storage.getItem(SETTINGS_STORAGE_KEY);
     if (!value) return {};
     const parsed: unknown = JSON.parse(value);
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
@@ -36,16 +39,17 @@ function readSettings(storage: Storage): Record<string, unknown> {
 }
 
 function persistSettings(storage: Storage, tenantId: string): void {
-  storage.setItem(STORAGE_DOCS["workbench.settings.v1"], JSON.stringify({ ...readSettings(storage), tenantId }));
+  storage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...readSettings(storage), tenantId }));
 }
 
 function renderWorkbench(fixtures: Fixtures, user: WorkbenchUser, mode: "hosted" | "static", tenantId: string, storage: Storage) {
-  const root = createRoot(document.getElementById("root")!);
+  workbenchRoot?.unmount();
+  workbenchRoot = createRoot(document.getElementById("root")!);
   const updateTenant = (value: string) => {
     const tenant = value && isValidTenantId(value) ? value : "";
     persistSettings(storage, tenant);
   };
-  root.render(
+  workbenchRoot.render(
     <StrictMode>
       <WorkbenchProvider value={{ fixtures, user, mode, tenantId, setTenantId: updateTenant }}>
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
@@ -56,16 +60,16 @@ function renderWorkbench(fixtures: Fixtures, user: WorkbenchUser, mode: "hosted"
   );
 }
 
-async function startWorkbench(): Promise<void> {
+export async function startWorkbench(initialFixtures: Fixtures = baseFixtures): Promise<void> {
   const mode = import.meta.env.VITE_WORKBENCH_MODE === "hosted" ? "hosted" : "static";
   let storage: Storage = window.localStorage;
-  let fixtures = baseFixtures;
+  let fixtures = initialFixtures;
   let user: WorkbenchUser = {
     sub: "dwhitfield",
-    name: baseFixtures.people.find((person) => person.id === "dwhitfield")?.name ?? "Local user",
-    email: baseFixtures.people.find((person) => person.id === "dwhitfield")?.title ?? "",
+    name: initialFixtures.people.find((person) => person.id === "dwhitfield")?.name ?? "Local user",
+    email: initialFixtures.people.find((person) => person.id === "dwhitfield")?.title ?? "",
   };
-  let stateSettings: Record<string, unknown> = readSettings(storage);
+  let stateSettings: Record<string, unknown> = {};
 
   if (mode === "hosted") {
     const meResponse = await fetch("/api/me", { credentials: "same-origin" });
@@ -86,12 +90,13 @@ async function startWorkbench(): Promise<void> {
     stateSettings = state.settings ?? {};
     const person = personForUser(user);
     fixtures = {
-      ...baseFixtures,
+      ...fixtures,
       currentUserId: person.id,
-      people: [...baseFixtures.people.filter((candidate) => candidate.id !== person.id), person],
+      people: [...fixtures.people.filter((candidate) => candidate.id !== person.id), person],
     };
   } else {
     setWorkbenchStorage(window.localStorage);
+    stateSettings = readSettings(window.localStorage);
   }
 
   const url = new URL(window.location.href);
@@ -108,7 +113,9 @@ async function startWorkbench(): Promise<void> {
   renderWorkbench(fixtures, user, mode, tenantId, storage);
 }
 
-void startWorkbench().catch((error: unknown) => {
-  console.error(error);
-  document.getElementById("root")!.textContent = "Workbench could not be loaded.";
-});
+if (import.meta.env.MODE !== "test" && document.getElementById("root")) {
+  void startWorkbench().catch((error: unknown) => {
+    console.error(error);
+    document.getElementById("root")!.textContent = "Workbench could not be loaded.";
+  });
+}
