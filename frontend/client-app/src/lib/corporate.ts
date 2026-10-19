@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
+// Vetchline Software, Inc. corporate identity content. All names, people, events, and
 // figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Vetchline Software, Inc.",
+  tagline: "Specs, runbooks and customer files for software teams",
+  founded: 2014,
+  headquarters: "Pier 14 Commons, Harlow Point",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Vetchline Software, Inc. is a fictional company. All people, places, products, and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Vetchline started in 2014 as an internal tool at a twelve-person dev shop that kept losing design specs between the issue tracker, a shared drive and somebody's laptop. The founders put specs, runbooks and customer files in one place, linked each file to the person who wrote it, and the shop's clients started asking for logins.",
+  "Engineers now write specs and incident runbooks next to the code they describe, and customer success keeps account notes and onboarding plans in the same workspace, so a support handoff arrives with the full history attached.",
+  "About 3,400 fictional software companies use Vetchline today, from four-person startups to product groups with 900 engineers across nine time zones.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Dana Whitcomb", title: "Chief Executive Officer", bio: "Co-founded Vetchline after eight years running platform teams. Still reads every release note before it ships on Friday." },
+  { name: "Ravi Lindqvist", title: "Chief Technology Officer", bio: "Wrote the first sync engine. Runs the platform group that owns storage, search and real-time editing." },
+  { name: "Maren Achebe", title: "Chief Financial Officer", bio: "Joined from a payments startup in 2019 and moved most accounts to annual contracts." },
+  { name: "Tomas Reyna", title: "VP of Customer Success", bio: "Built the onboarding program that gets a new team to its first shared runbook inside a week." },
+  { name: "Hollis Park", title: "VP of Product", bio: "Owns the Docs and Search roadmap. Prefers a dense table to a dashboard every time." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Platform Engineering", description: "Builds and runs the file, document, search, and collaboration services." },
+  { name: "Product & Design", description: "Plans the roadmap and designs the editor, search, and admin screens." },
+  { name: "Customer Success", description: "Onboarding, renewals, and support for every account from trial to enterprise." },
+  { name: "Security & Compliance", description: "SOC 2 audits, quarterly access reviews, and the audit log customers export." },
+  { name: "Go-to-Market", description: "Sales, partnerships, and developer relations." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Vetchline Files", description: "File storage with folder trees, version history, and previews for build artifacts, contracts, and screenshots." },
+  { name: "Vetchline Docs", description: "Specs, RFCs, and runbooks with real-time co-editing and change history." },
+  { name: "Vetchline Search", description: "Full-text search across every file and doc, filtered by owner, type, or date." },
+  { name: "Vetchline Admin", description: "Users, storage quotas, audit logs, and service health for workspace owners." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Vetchline opens an EU data region for customers with residency requirements" },
+  { date: "November 2025", title: "Teams have written 40 million specs and runbooks in Vetchline Docs" },
+  { date: "June 2025", title: "Vetchline completes its fourth SOC 2 Type II audit" },
+  { date: "January 2025", title: "Vetchline adds 120 engineers at its Harlow Point office" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Senior Backend Engineer", team: "Platform Engineering", location: "Harlow Point HQ" },
+  { role: "Customer Success Manager", team: "Customer Success", location: "Remote (US time zones)" },
+  { role: "Security Engineer", team: "Security & Compliance", location: "Remote (EU time zones)" },
+  { role: "Product Designer", team: "Product & Design", location: "Harlow Point HQ" },
 ];
