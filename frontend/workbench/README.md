@@ -41,3 +41,7 @@ The fixture data lives in `src/fixtures/fixtures.ts`, where you can update the l
 - Unknown route: `/unknown/workbench/route`
 
 GitHub Pages builds use `/otterworks/` as the base path. Vite also copies `index.html` to `404.html` so a refresh on a deep link returns the app shell.
+
+## Hosted runtime reference
+
+Hosted builds use `VITE_WORKBENCH_MODE=hosted`. Server configuration uses `WORKBENCH_AUTH`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `WORKBENCH_PUBLIC_URL`, `SESSION_SECRET`, `WORKBENCH_STORE`, `WORKBENCH_TABLE`, `AWS_REGION`, and `PORT`. Local OIDC uses `FAKE_IDP_PORT=9400 npm run dev:idp`; build with `VITE_WORKBENCH_MODE=hosted npm run build && npm run build:server`, then run `WORKBENCH_AUTH=oidc OIDC_ISSUER=http://localhost:9400 OIDC_CLIENT_ID=workbench-local OIDC_CLIENT_SECRET=local-only WORKBENCH_PUBLIC_URL=http://localhost:3002 SESSION_SECRET=local-only-session-secret WORKBENCH_STORE=memory PORT=3002 node server/dist/index.js`.

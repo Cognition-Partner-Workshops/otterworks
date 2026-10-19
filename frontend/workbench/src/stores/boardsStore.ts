@@ -1,4 +1,5 @@
 import type { ActivityEntry, Fixtures, IssueComment, IssueStatus } from "@/fixtures/types";
+import { getWorkbenchStorage } from "@/stores/workbenchStorage";
 
 export const BOARDS_STORAGE_KEY = "workbench.boards.v1";
 
@@ -21,7 +22,7 @@ const statusNames: Record<IssueStatus, string> = {
 };
 
 function getStorage(storage?: Storage): Storage {
-  return storage ?? window.localStorage;
+  return storage ?? getWorkbenchStorage();
 }
 
 export function loadBoardState(fixtures: Fixtures, storage?: Storage): BoardState {

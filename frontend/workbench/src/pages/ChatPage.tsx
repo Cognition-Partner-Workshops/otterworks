@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { FormEvent, ReactNode } from "react";
-import { fixtures } from "@/fixtures/fixtures";
 import type { ChatMessage, ChatReply } from "@/fixtures/types";
 import { MarkdownText } from "@/components/MarkdownText";
 import { Avatar, Panel, ResetDemoButton, formatUtc, personFor } from "@/components/shared";
 import { loadChatMessages, sendChatMessage } from "@/stores/chatStore";
+import { useWorkbench } from "@/WorkbenchContext";
 
 const reactionGlyphs: Record<string, string> = {
   "+1": "👍",
@@ -34,6 +34,7 @@ function ReactionChips({ reactions }: { reactions: ChatMessage["reactions"] }) {
 }
 
 function MessageContent({ authorId, at, text, reactions }: { authorId: string; at: string; text: string; reactions: ChatMessage["reactions"] }) {
+  const { fixtures } = useWorkbench();
   const person = personFor(fixtures.people, authorId);
   return (
     <div className="flex gap-3">
@@ -79,6 +80,7 @@ function Composer({ channelId, replyToId, onSend }: { channelId: string; replyTo
 }
 
 function ChatLayout({ children, title, topic, channelId, replyToId, onSend }: { children: ReactNode; title: string; topic: string; channelId: string; replyToId?: string; onSend: (text: string) => void }) {
+  const { fixtures } = useWorkbench();
   const channels = fixtures.channels;
   return (
     <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-[1500px] overflow-hidden bg-white shadow-sm">
@@ -108,6 +110,7 @@ function ChatLayout({ children, title, topic, channelId, replyToId, onSend }: { 
 }
 
 export function ChannelPage({ channelId }: { channelId: string }) {
+  const { fixtures } = useWorkbench();
   const channel = fixtures.channels.find((item) => item.id === channelId);
   const [revision, setRevision] = useState(0);
   if (!channel) {
@@ -143,6 +146,7 @@ function ReplyContent({ reply }: { reply: ChatReply }) {
 }
 
 export function ThreadPage({ channelId, messageId }: { channelId: string; messageId: string }) {
+  const { fixtures } = useWorkbench();
   const channel = fixtures.channels.find((item) => item.id === channelId);
   const [revision, setRevision] = useState(0);
   if (!channel) return <div className="mx-auto max-w-4xl px-5 py-8"><Panel title="Thread not found"><p>That channel is not in this workspace.</p></Panel></div>;

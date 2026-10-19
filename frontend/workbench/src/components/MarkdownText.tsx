@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { useWorkbench } from "@/WorkbenchContext";
+import { tenantUrl } from "@/tenant";
 
 const inlinePattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^)]+\)|https?:\/\/[^\s<]+|@[a-zA-Z0-9_-]+)/g;
 
-function inlineContent(text: string): ReactNode[] {
+function inlineContent(text: string, tenantId: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   let previousEnd = 0;
   let index = 0;
@@ -19,12 +21,12 @@ function inlineContent(text: string): ReactNode[] {
     } else if (value.startsWith("[")) {
       const link = value.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
       if (link) {
-        nodes.push(<a key={index} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>);
+        nodes.push(<a key={index} href={tenantUrl(link[2], tenantId)} target="_blank" rel="noreferrer">{link[1]}</a>);
       }
     } else if (value.startsWith("http")) {
       const url = value.replace(/[),.!?;:]+$/, "");
       const trailing = value.slice(url.length);
-      nodes.push(<a key={index} href={url} target="_blank" rel="noreferrer">{url}</a>);
+      nodes.push(<a key={index} href={tenantUrl(url, tenantId)} target="_blank" rel="noreferrer">{url}</a>);
       if (trailing) nodes.push(trailing);
     } else {
       nodes.push(<span key={index} className="font-medium text-otter-700">{value}</span>);
@@ -38,6 +40,7 @@ function inlineContent(text: string): ReactNode[] {
 }
 
 export function MarkdownText({ text }: { text: string }) {
+  const { tenantId } = useWorkbench();
   const paragraphs = text.split(/\n{2,}/).filter(Boolean);
 
   return (
@@ -48,7 +51,7 @@ export function MarkdownText({ text }: { text: string }) {
         if (isList) {
           return (
             <ul className="list-disc space-y-1 pl-5" key={paragraphIndex}>
-              {lines.map((line, lineIndex) => <li key={lineIndex}>{inlineContent(line.slice(2))}</li>)}
+              {lines.map((line, lineIndex) => <li key={lineIndex}>{inlineContent(line.slice(2), tenantId)}</li>)}
             </ul>
           );
         }
@@ -57,7 +60,7 @@ export function MarkdownText({ text }: { text: string }) {
             {lines.map((line, lineIndex) => (
               <span key={lineIndex}>
                 {lineIndex > 0 && <br />}
-                {inlineContent(line)}
+                {inlineContent(line, tenantId)}
               </span>
             ))}
           </p>

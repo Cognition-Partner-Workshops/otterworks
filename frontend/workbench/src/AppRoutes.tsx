@@ -1,11 +1,12 @@
 import { Link, NavLink, Navigate, Route, Routes, useParams } from "react-router-dom";
-import { fixtures } from "@/fixtures/fixtures";
 import { Panel, ResetDemoButton } from "@/components/shared";
 import { ChannelPage, ThreadPage } from "@/pages/ChatPage";
 import { IssueDetail, ProjectBoard, ProjectsPage } from "@/pages/BoardsPage";
 import { ItsmListPage, ItsmRecordPage, ItsmServicePage } from "@/pages/ItsmPage";
+import { useWorkbench } from "@/WorkbenchContext";
 
 function Header() {
+  const { mode, tenantId, setTenantId, user } = useWorkbench();
   return (
     <header className="sticky top-0 z-20 border-b border-otter-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3">
@@ -21,6 +22,25 @@ function Header() {
             </NavLink>
           ))}
         </nav>
+        <div className="flex items-center gap-3 text-sm">
+          {tenantId ? (
+            <span className="flex items-center gap-1 rounded bg-otter-50 px-2 py-1 text-otter-800">
+              <span>Lab: t-{tenantId}</span>
+              <button type="button" aria-label="Edit lab" className="px-1 underline" onClick={() => {
+                const value = window.prompt("Lab ID", tenantId);
+                if (value !== null) setTenantId(value.trim().toLowerCase());
+              }}>Edit</button>
+              <button type="button" aria-label="Clear lab" className="px-1 underline" onClick={() => setTenantId("")}>Clear</button>
+            </span>
+          ) : (
+            <button type="button" className="text-slate-500 hover:underline" onClick={() => {
+              const value = window.prompt("Lab ID");
+              if (value !== null) setTenantId(value.trim().toLowerCase());
+            }}>Set lab</button>
+          )}
+          {mode === "hosted" && <span className="text-slate-600">{user.name} · {user.email}</span>}
+          {mode === "hosted" && <a href="/auth/logout" className="font-medium text-otter-700 hover:underline">Sign out</a>}
+        </div>
         <ResetDemoButton />
       </div>
     </header>
@@ -28,6 +48,7 @@ function Header() {
 }
 
 function HomePage() {
+  const { fixtures } = useWorkbench();
   const owIssue = fixtures.issues.find((issue) => issue.key === "OW-42");
   const secIssue = fixtures.issues.find((issue) => issue.key === "SEC-12");
   const modIssue = fixtures.issues.find((issue) => issue.key === "MOD-11");

@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 import type { ExternalLink, Person, RecordRef, SupportStatus } from "@/fixtures/types";
 import { resetWorkbenchData } from "@/stores/resetStore";
+import { getWorkbenchStorage, RemoteStorage } from "@/stores/workbenchStorage";
+import { useWorkbench } from "@/WorkbenchContext";
+import { tenantUrl } from "@/tenant";
 
 const supportStyles: Record<SupportStatus, string> = {
   Supported: "bg-emerald-100 text-emerald-800",
@@ -46,12 +49,13 @@ export function Avatar({ person, size = "normal" }: { person: Person; size?: "no
 }
 
 export function ExternalLinks({ links }: { links: ExternalLink[] }) {
+  const { tenantId } = useWorkbench();
   if (!links.length) return <p className="text-sm text-slate-500">No links</p>;
   return (
     <ul className="space-y-2">
       {links.map((link) => (
         <li key={`${link.url}-${link.label}`}>
-          <a href={link.url} target="_blank" rel="noreferrer" className="text-sm font-medium hover:underline">
+          <a href={tenantUrl(link.url, tenantId)} target="_blank" rel="noreferrer" className="text-sm font-medium hover:underline">
             {link.label}
           </a>
           <span className="ml-2 text-xs uppercase tracking-wide text-slate-500">{link.kind}</span>
@@ -113,13 +117,22 @@ export function SupportBadge({ status }: { status: SupportStatus }) {
 }
 
 export function ResetDemoButton({ className = "" }: { className?: string }) {
+  const { mode } = useWorkbench();
   return (
     <button
       type="button"
       className={`rounded border border-otter-300 bg-white px-3 py-2 text-sm font-medium text-otter-800 hover:bg-otter-50 ${className}`}
       onClick={() => {
-        resetWorkbenchData();
-        window.location.reload();
+        if (mode === "hosted") {
+          const storage = getWorkbenchStorage();
+          const reset = storage instanceof RemoteStorage
+            ? storage.reset()
+            : fetch("/api/state", { method: "DELETE", credentials: "same-origin" }).then(() => undefined);
+          void reset.finally(() => window.location.reload());
+        } else {
+          resetWorkbenchData();
+          window.location.reload();
+        }
       }}
     >
       Reset demo data

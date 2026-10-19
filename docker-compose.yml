@@ -532,6 +532,9 @@ services:
     container_name: otterworks-workbench
     ports:
     - 3002:3002
+    environment:
+      WORKBENCH_AUTH: ${WORKBENCH_AUTH:-none}
+      WORKBENCH_STORE: ${WORKBENCH_STORE:-memory}
     security_opt:
     - no-new-privileges:true
     read_only: true

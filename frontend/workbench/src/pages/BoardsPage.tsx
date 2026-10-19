@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { DragEvent, FormEvent } from "react";
-import { fixtures } from "@/fixtures/fixtures";
 import type { Issue, IssueStatus } from "@/fixtures/types";
 import { Avatar, ExternalLinks, Panel, RelatedRecords, ResetDemoButton, formatUtc, personFor } from "@/components/shared";
 import { MarkdownText } from "@/components/MarkdownText";
 import { addIssueComment, loadBoardState, moveIssue } from "@/stores/boardsStore";
+import { useWorkbench } from "@/WorkbenchContext";
 
 const statuses: IssueStatus[] = ["backlog", "selected", "in_progress", "in_review", "done"];
 const statusLabels: Record<IssueStatus, string> = {
@@ -26,6 +26,7 @@ function NotFound({ message }: { message: string }) {
 }
 
 export function ProjectsPage() {
+  const { fixtures } = useWorkbench();
   const projects = fixtures.projects;
   const state = loadBoardState(fixtures);
   return (
@@ -71,6 +72,7 @@ export function ProjectsPage() {
 }
 
 function IssueCard({ issue, onDragStart }: { issue: Issue; onDragStart: (event: DragEvent<HTMLElement>, key: string) => void }) {
+  const { fixtures } = useWorkbench();
   const assignee = personFor(fixtures.people, issue.assigneeId);
   return (
     <article
@@ -98,6 +100,7 @@ function IssueCard({ issue, onDragStart }: { issue: Issue; onDragStart: (event: 
 }
 
 export function ProjectBoard({ projectKey }: { projectKey: string }) {
+  const { fixtures } = useWorkbench();
   const project = fixtures.projects.find((item) => item.key === projectKey);
   const [revision, setRevision] = useState(0);
   if (!project) return <NotFound message={`Project ${projectKey} was not found.`} />;
@@ -164,6 +167,7 @@ export function ProjectBoard({ projectKey }: { projectKey: string }) {
 }
 
 export function IssueDetail({ projectKey, issueKey }: { projectKey: string; issueKey: string }) {
+  const { fixtures } = useWorkbench();
   const [revision, setRevision] = useState(0);
   const [comment, setComment] = useState("");
   const project = fixtures.projects.find((item) => item.key === projectKey);
