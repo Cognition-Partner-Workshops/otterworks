@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
+// Thistlecombe Mutual corporate identity content. All names, people, events,
+// and figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Thistlecombe Mutual Insurance Company",
+  tagline: "Home, auto and life insurance, with claims handled in-house",
+  founded: 1952,
+  headquarters: "40 Harrow Street, Millbrook",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Thistlecombe Mutual is a fictional insurer. Every person, policy and event on this site is invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Thistlecombe Mutual started in 1952 as a farm mutual in Millbrook, where forty families pooled money to rebuild barns lost to fire. The first policies were typed on index cards and kept in a steel cabinet behind the front desk.",
+  "Auto cover came in 1968 and term life in 1981. The company still pays claims from its own adjusters rather than outsourcing them, and every policyholder still gets a vote at the annual meeting.",
+  "Today Thistlecombe writes home, auto, small business and life policies for about 900,000 members across eleven states (all fictional). Each policy file holds the application, the underwriting notes, the endorsements and every claim against it.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Ruth Okonkwo-Hale", title: "President and Chief Executive Officer", bio: "Joined as a claims adjuster in 1994 and ran the property claims unit through two hurricane seasons." },
+  { name: "Daniel Ferreira", title: "Chief Underwriting Officer", bio: "Sets risk appetite for the home and auto books and signs off on every new rating territory." },
+  { name: "Priya Ramanathan", title: "Chief Claims Officer", bio: "Runs the in-house adjuster network and the catastrophe response team." },
+  { name: "Tom Albrecht", title: "Chief Actuary", bio: "Prices the life and annuity products and owns the reserve review each quarter." },
+  { name: "Grace Whitlow", title: "Chief Information Officer", bio: "Moved policy administration off the mainframe and still keeps a binder of the old screen codes." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Personal Lines Underwriting", description: "Quotes, binds and renews home, condo, renters and auto policies." },
+  { name: "Commercial Lines", description: "Business owner policies, general liability and commercial auto for small firms." },
+  { name: "Life and Annuities", description: "Term and whole life policies, beneficiary changes and annuity payouts." },
+  { name: "Claims", description: "First notice of loss, adjuster assignment, reserves, payments and subrogation." },
+  { name: "Policy Administration", description: "Endorsements, cancellations, billing schedules and document issuance." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Policy Files", description: "Every application, declarations page and endorsement for a policy, stored with its version history." },
+  { name: "Claim Notes", description: "Shared notes for adjusters and underwriters, edited together while a claim is open." },
+  { name: "Policy Search", description: "Find a policy, claim or document by number, insured name or text in the file." },
+  { name: "Operations Console", description: "User access, storage limits, audit history and system health for the operations team." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Thistlecombe opens a second catastrophe claims center in Harlow County" },
+  { date: "November 2025", title: "Members receive a $14 million dividend after a quiet storm season" },
+  { date: "June 2025", title: "Thistlecombe adds same-day payment for auto glass claims" },
+  { date: "January 2025", title: "Life and annuities team moves onto the new policy administration system" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Property Claims Adjuster", team: "Claims", location: "Millbrook HQ" },
+  { role: "Personal Lines Underwriter", team: "Personal Lines Underwriting", location: "Riverside Office" },
+  { role: "Actuarial Analyst", team: "Life and Annuities", location: "Remote" },
+  { role: "Platform Engineer", team: "Information Technology", location: "Millbrook HQ" },
 ];

@@ -19,11 +19,11 @@ interface NavItem {
     <div class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
-          <span class="logo-text">OtterWorks</span>
+          <img class="logo-icon" src="assets/thistlecombe-mark.svg" alt="Thistlecombe Mutual logo" width="28" height="28" />
+          <span class="logo-text">Thistlecombe</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/thistlecombe-mark.svg" alt="Thistlecombe Mutual logo" width="28" height="28" />
         </div>
         <button class="toggle-btn" (click)="toggleCollapsed()" [matTooltip]="collapsed ? 'Expand' : 'Collapse'">
           <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -48,7 +48,7 @@ interface NavItem {
     .sidebar {
       width: 260px;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #1d5c54;
       color: #ffffff;
       display: flex;
       flex-direction: column;
@@ -138,17 +138,17 @@ interface NavItem {
     }
 
     :host ::ng-deep .active-link {
-      background: rgba(217, 154, 61, 0.18) !important;
-      color: #d99a3d !important;
+      background: rgba(192, 138, 46, 0.18) !important;
+      color: #c08a2e !important;
     }
 
     :host ::ng-deep .active-link .mdc-list-item__primary-text,
     :host ::ng-deep .active-link .mat-mdc-list-item-title {
-      color: #d99a3d !important;
+      color: #c08a2e !important;
     }
 
     :host ::ng-deep .active-link .mat-icon {
-      color: #d99a3d !important;
+      color: #c08a2e !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item .mat-icon {
@@ -161,9 +161,9 @@ export class SidebarComponent {
   @Output() collapsedChange = new EventEmitter<boolean>();
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/' },
-    { label: 'Users', icon: 'people', route: '/users' },
-    { label: 'Audit Logs', icon: 'history', route: '/audit' },
+    { label: 'Overview', icon: 'dashboard', route: '/' },
+    { label: 'Staff and agents', icon: 'people', route: '/users' },
+    { label: 'Audit trail', icon: 'history', route: '/audit' },
     { label: 'Feature Flags', icon: 'toggle_on', route: '/features' },
     { label: 'System Health', icon: 'monitor_heart', route: '/health' },
     { label: 'Announcements', icon: 'campaign', route: '/announcements' },

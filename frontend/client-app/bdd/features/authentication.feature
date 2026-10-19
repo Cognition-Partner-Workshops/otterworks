@@ -1,11 +1,11 @@
 Feature: Authentication
   As a user
-  I want to register and log in to OtterWorks
+  I want to register and log in to Thistlecombe Mutual
   So that I can access my documents and files
 
   Scenario: Registration form renders correctly
     Given I am on the registration page
-    Then I should see the text "Create your account"
+    Then I should see the text "Set up your Thistlecombe account"
     And I should see a "Full name" input field
     And I should see an "Email" input field
     And I should see a "Password" input field
@@ -41,7 +41,7 @@ Feature: Authentication
 
   Scenario: Login form renders correctly
     Given I am on the login page
-    Then I should see the text "Sign in to your account"
+    Then I should see the text "Sign in to the policy and claims workspace"
     And I should see an "Email" input field
     And I should see a "Password" input field
     And I should see a "Sign in" button

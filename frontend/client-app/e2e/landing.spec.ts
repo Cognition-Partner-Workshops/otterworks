@@ -7,13 +7,13 @@ test.describe("Landing Page", () => {
   });
 
   // AC-01 / BDD-01
-  test("displays the corporate hero with the otter logo", async ({ page }) => {
+  test("displays the corporate hero with the company logo", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "OtterWorks", exact: true })
+      page.getByRole("heading", { name: "Thistlecombe Mutual", exact: true })
     ).toBeVisible();
-    await expect(page.getByAltText("OtterWorks logo").first()).toBeVisible();
+    await expect(page.getByAltText("Thistlecombe Mutual logo").first()).toBeVisible();
     await expect(
-      page.getByText("Enterprise retail products for otters").first()
+      page.getByText("Home, auto and life insurance, with claims handled in-house").first()
     ).toBeVisible();
   });
 
@@ -55,7 +55,7 @@ test.describe("Landing Page", () => {
   test("corporate footer shows company, version and legal links", async ({
     page,
   }) => {
-    await expect(page.getByText("© OtterWorks, Inc.").first()).toBeVisible();
+    await expect(page.getByText("© Thistlecombe Mutual").first()).toBeVisible();
     await expect(page.getByText(/v\d+\.\d+\.\d+/).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Terms" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Privacy" }).first()).toBeVisible();

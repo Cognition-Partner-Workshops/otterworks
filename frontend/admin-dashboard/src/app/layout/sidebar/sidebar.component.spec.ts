@@ -35,9 +35,9 @@ describe('SidebarComponent', () => {
 
   it('should have all expected nav items', () => {
     const labels = component.navItems.map(item => item.label);
-    expect(labels).toContain('Dashboard');
-    expect(labels).toContain('Users');
-    expect(labels).toContain('Audit Logs');
+    expect(labels).toContain('Overview');
+    expect(labels).toContain('Staff and agents');
+    expect(labels).toContain('Audit trail');
     expect(labels).toContain('Feature Flags');
     expect(labels).toContain('System Health');
     expect(labels).toContain('Announcements');
@@ -60,6 +60,6 @@ describe('SidebarComponent', () => {
 
   it('should render logo text when expanded', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('OtterWorks');
+    expect(compiled.textContent).toContain('Thistlecombe');
   });
 });

@@ -2,18 +2,17 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+$pine-palette: (
+  50: #f2f7f6,
+  100: #dcebe8,
+  200: #b5d5cf,
+  300: #84b8af,
+  400: #4f958a,
+  500: #1d5c54,
+  600: #174a44,
+  700: #123b36,
+  800: #0d2c28,
+  900: #08201d,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -28,8 +27,33 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$brass-palette: (
+  50: #fff9ec,
+  100: #f8e9c7,
+  200: #f2d896,
+  300: #e5bd69,
+  400: #d6a545,
+  500: #c08a2e,
+  600: #9c6f22,
+  700: #825b1d,
+  800: #674819,
+  900: #4d3514,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+  ),
+);
+
+$admin-primary: mat.define-palette($pine-palette, 500);
+$admin-accent: mat.define-palette($brass-palette, 500);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -38,7 +62,9 @@ $admin-theme: mat.define-light-theme((
     accent: $admin-accent,
     warn: $admin-warn,
   ),
-  typography: mat.define-typography-config(),
+  typography: mat.define-typography-config(
+    $font-family: '"Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif'
+  ),
   density: 0,
 ));
 
@@ -52,9 +78,9 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f2f7f6;
   color: #212529;
 }
 
@@ -111,12 +137,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #c08a2e !important;
+  background: rgba(192, 138, 46, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #c08a2e !important;
 }
 
 /* Ripple / focus state should also be light */

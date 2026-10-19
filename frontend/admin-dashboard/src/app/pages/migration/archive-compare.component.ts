@@ -139,7 +139,7 @@ const rtrim = (s: string): string => s.replace(/ +$/, '');
     .sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
     .side { border: 1px solid #d9e2ec; border-radius: 4px; padding: 12px; }
     .side h3 { margin: 0 0 8px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-    .store { font-size: 0.75rem; background: #1f3a5f; color: #fff; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+    .store { font-size: 0.75rem; background: #1d5c54; color: #fff; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
     .base { font-size: 0.75rem; color: #52606d; }
     .hash code { word-break: break-all; font-size: 0.8rem; }
     .version { margin-top: 12px; }
