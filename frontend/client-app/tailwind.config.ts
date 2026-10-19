@@ -1,7 +1,5 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +20,25 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f3f7f5",
+          100: "#e1ece7",
+          200: "#c2d8ce",
+          300: "#93bba9",
+          400: "#5f9580",
+          500: "#3a7560",
+          600: "#1f5c48",
+          700: "#1a4d3c",
+          800: "#153e31",
+          900: "#0f2f25",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#f0a640",
+          500: "#e08e1f",
+          600: "#b97315",
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ['"Avenir Next"', '"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
       },
     },
   },

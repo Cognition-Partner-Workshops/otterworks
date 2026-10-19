@@ -113,10 +113,10 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/register/);
     });
 
-    test("displays OtterWorks logo and branding", async ({ page }) => {
+    test("displays Pennant Lane branding", async ({ page }) => {
       await page.goto("/login");
-      await expect(page.getByText("OtterWorks")).toBeVisible();
-      await expect(page.getByText("Sign in to your account")).toBeVisible();
+      await expect(page.getByText("Pennant Lane")).toBeVisible();
+      await expect(page.getByText("Sign in with your store account")).toBeVisible();
     });
   });
 });

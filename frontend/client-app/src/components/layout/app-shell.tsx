@@ -38,7 +38,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Menu size={18} />
               </button>
               <span className="hidden lg:block text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">
-                OtterWorks, Inc.
+                Pennant Lane, Inc.
               </span>
               <div className="w-full max-w-xl">
                 <SearchBar />

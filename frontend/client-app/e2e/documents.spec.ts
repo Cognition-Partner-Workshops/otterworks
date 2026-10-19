@@ -7,13 +7,13 @@ test.describe("Documents Page", () => {
 
   test("shows Documents heading or redirects to login", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
   test("has New document button when authenticated", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -25,7 +25,7 @@ test.describe("Documents Page", () => {
 
   test("has search/filter input when authenticated", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -37,7 +37,7 @@ test.describe("Documents Page", () => {
 
   test("has grid/list view toggle when authenticated", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -49,7 +49,7 @@ test.describe("Documents Page", () => {
 
   test("shows empty state when no documents exist", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -62,7 +62,7 @@ test.describe("Documents Page", () => {
 
   test("displays breadcrumb navigation", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in with your store account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {

@@ -19,11 +19,11 @@ interface NavItem {
     <div class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
-          <span class="logo-text">OtterWorks</span>
+          <img class="logo-icon" src="assets/pennant-lane-logo.svg" alt="Pennant Lane logo" width="28" height="28" />
+          <span class="logo-text">Pennant Lane</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/pennant-lane-logo.svg" alt="Pennant Lane logo" width="28" height="28" />
         </div>
         <button class="toggle-btn" (click)="toggleCollapsed()" [matTooltip]="collapsed ? 'Expand' : 'Collapse'">
           <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -48,7 +48,7 @@ interface NavItem {
     .sidebar {
       width: 260px;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #1a4d3c;
       color: #ffffff;
       display: flex;
       flex-direction: column;
@@ -138,17 +138,17 @@ interface NavItem {
     }
 
     :host ::ng-deep .active-link {
-      background: rgba(217, 154, 61, 0.18) !important;
-      color: #d99a3d !important;
+      background: rgba(224, 142, 31, 0.18) !important;
+      color: #e08e1f !important;
     }
 
     :host ::ng-deep .active-link .mdc-list-item__primary-text,
     :host ::ng-deep .active-link .mat-mdc-list-item-title {
-      color: #d99a3d !important;
+      color: #e08e1f !important;
     }
 
     :host ::ng-deep .active-link .mat-icon {
-      color: #d99a3d !important;
+      color: #e08e1f !important;
     }
 
     :host ::ng-deep .mat-mdc-list-item .mat-icon {

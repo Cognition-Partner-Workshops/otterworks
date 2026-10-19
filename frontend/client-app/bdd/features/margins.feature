@@ -6,7 +6,7 @@ Feature: Margins analytics dashboard
   # BDD-12 / AC-12: direct route works (redirects to login when unauthenticated)
   Scenario: Margins page loads or redirects
     Given I navigate to "/margins"
-    Then I should see the text "Margins" or "Sign in to your account"
+    Then I should see the text "Margins" or "Sign in with your store account"
 
   # BDD-08 / AC-08 + BDD-13 / AC-13: full dashboard renders from synthetic data
   Scenario: Authenticated user sees the full margins dashboard

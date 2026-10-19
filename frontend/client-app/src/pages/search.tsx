@@ -167,7 +167,7 @@ function SearchContent() {
       ) : (
         <EmptyState
           icon={Search}
-          title="Search OtterWorks"
+          title="Search Pennant Lane"
           description="Find files, documents, and folders across your workspace"
         />
       )}
