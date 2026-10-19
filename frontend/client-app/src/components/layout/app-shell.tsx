@@ -7,6 +7,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
 import { Menu, HelpCircle } from "lucide-react";
+import { COMPANY } from "@/lib/corporate";
 
 interface AppShellProps {
   children: ReactNode;
@@ -38,7 +39,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Menu size={18} />
               </button>
               <span className="hidden lg:block text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">
-                OtterWorks, Inc.
+                {COMPANY.name}
               </span>
               <div className="w-full max-w-xl">
                 <SearchBar />

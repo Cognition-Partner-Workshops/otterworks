@@ -7,13 +7,13 @@ test.describe("Landing Page", () => {
   });
 
   // AC-01 / BDD-01
-  test("displays the corporate hero with the otter logo", async ({ page }) => {
+  test("displays the corporate hero with the Halvorne logo", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "OtterWorks", exact: true })
+      page.getByRole("heading", { name: "Halvorne", exact: true })
     ).toBeVisible();
-    await expect(page.getByAltText("OtterWorks logo").first()).toBeVisible();
+    await expect(page.getByAltText("Halvorne logo").first()).toBeVisible();
     await expect(
-      page.getByText("Enterprise retail products for otters").first()
+      page.getByText("Trial, submission and batch records in one place").first()
     ).toBeVisible();
   });
 
@@ -55,7 +55,7 @@ test.describe("Landing Page", () => {
   test("corporate footer shows company, version and legal links", async ({
     page,
   }) => {
-    await expect(page.getByText("© OtterWorks, Inc.").first()).toBeVisible();
+    await expect(page.getByText("© Halvorne Biosciences, Inc.").first()).toBeVisible();
     await expect(page.getByText(/v\d+\.\d+\.\d+/).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Terms" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Privacy" }).first()).toBeVisible();

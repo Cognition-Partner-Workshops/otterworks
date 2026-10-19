@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Teal and coral palette with flat square corners and Source Sans 3.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,25 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f2f7f7",
+          100: "#dcebea",
+          200: "#b5d6d4",
+          300: "#84bab7",
+          400: "#4f9894",
+          500: "#2a7a76",
+          600: "#146461",
+          700: "#0f514f",
+          800: "#0c4140",
+          900: "#083130",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#ef8a5f",
+          500: "#e2703f",
+          600: "#c2582b",
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ['"Source Sans 3"', '"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
       },
     },
   },

@@ -8,7 +8,7 @@ test.describe("Dashboard", () => {
   test("shows the Dashboard heading", async ({ page }) => {
     // Dashboard may redirect to login if unauthenticated, or show the page
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
 
     // Either we see the dashboard or we get redirected to login
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
@@ -16,7 +16,7 @@ test.describe("Dashboard", () => {
 
   test("displays Upload file and New document buttons", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
     const target = heading.or(loginHeading);
     await expect(target).toBeVisible({ timeout: 10_000 });
 
@@ -29,7 +29,7 @@ test.describe("Dashboard", () => {
 
   test("renders stat cards or loading state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
     const loader = page.locator("[class*='animate-spin']");
     // Dashboard may show heading, loader, or redirect to login
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
@@ -43,7 +43,7 @@ test.describe("Dashboard", () => {
 
   test("shows Recent files section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
@@ -56,7 +56,7 @@ test.describe("Dashboard", () => {
 
   test("shows Recent documents section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
@@ -69,7 +69,7 @@ test.describe("Dashboard", () => {
 
   test("shows Activity section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your study workspace");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 

@@ -9,11 +9,11 @@ import {
   CAREERS,
 } from "./corporate";
 
-// AC-03 / BDD-07: the corporate identity content is complete and clearly fictional.
-describe("corporate identity content", () => {
-  it("identifies the company as OtterWorks, Inc. with the retail-for-otters tagline", () => {
-    expect(COMPANY.name).toBe("OtterWorks, Inc.");
-    expect(COMPANY.tagline).toMatch(/otters/i);
+// AC-03 / BDD-07: the company identity content is complete and clearly fictional.
+describe("company identity content", () => {
+  it("identifies Halvorne Biosciences, Inc. with a clinical records tagline", () => {
+    expect(COMPANY.name).toBe("Halvorne Biosciences, Inc.");
+    expect(COMPANY.tagline).toMatch(/batch records/i);
   });
 
   it("declares the content fictional", () => {

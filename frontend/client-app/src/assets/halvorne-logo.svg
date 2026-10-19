@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Halvorne logo">
+  <rect width="64" height="64" rx="12" fill="#0f514f"/>
+  <path d="M32 12 L49.3 22 V42 L32 52 L14.7 42 V22 Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25 25 V39 M39 25 V39 M25 32 H39" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="49.3" cy="22" r="5.5" fill="#e2703f" stroke="#0f514f" stroke-width="1.5"/>
+</svg>

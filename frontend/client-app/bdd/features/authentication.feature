@@ -1,6 +1,6 @@
 Feature: Authentication
   As a user
-  I want to register and log in to OtterWorks
+  I want to register and log in to Halvorne
   So that I can access my documents and files
 
   Scenario: Registration form renders correctly
@@ -41,7 +41,7 @@ Feature: Authentication
 
   Scenario: Login form renders correctly
     Given I am on the login page
-    Then I should see the text "Sign in to your account"
+    Then I should see the text "Sign in to your study workspace"
     And I should see an "Email" input field
     And I should see a "Password" input field
     And I should see a "Sign in" button
