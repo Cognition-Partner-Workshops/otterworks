@@ -31,6 +31,17 @@
         <commons-configuration2.version>2.8.0</commons-configuration2.version>
     </properties>
 
+    <!-- CVE-2022-42889: commons-configuration2 2.8.0 pulls commons-text 1.9 -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>1.10.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
