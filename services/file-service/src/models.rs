@@ -200,3 +200,97 @@ pub struct ActivityQuery {
 pub struct ActivityResponse {
     pub items: Vec<ActivityItem>,
 }
+
+#[cfg(test)]
+mod sharing_tests {
+    use super::*;
+
+    fn share_request_json(permission: &str) -> serde_json::Value {
+        serde_json::json!({
+            "shared_with": "22222222-2222-4222-8222-222222222222",
+            "permission": permission,
+            "shared_by": "11111111-1111-4111-8111-111111111111",
+        })
+    }
+
+    #[test]
+    fn share_request_accepts_viewer_and_editor() {
+        for (raw, expected) in [
+            ("viewer", SharePermission::Viewer),
+            ("editor", SharePermission::Editor),
+        ] {
+            let req: ShareFileRequest =
+                serde_json::from_value(share_request_json(raw)).expect("valid request");
+            assert_eq!(req.permission, expected);
+        }
+    }
+
+    #[test]
+    fn share_request_rejects_unknown_permission_levels() {
+        for raw in ["owner", "admin", "Viewer", ""] {
+            assert!(
+                serde_json::from_value::<ShareFileRequest>(share_request_json(raw)).is_err(),
+                "permission {raw:?} should be rejected"
+            );
+        }
+    }
+
+    #[test]
+    fn share_request_requires_recipient() {
+        let body = serde_json::json!({
+            "permission": "viewer",
+            "shared_by": "11111111-1111-4111-8111-111111111111",
+        });
+        assert!(serde_json::from_value::<ShareFileRequest>(body).is_err());
+    }
+
+    #[test]
+    fn share_permission_display_round_trips_through_parser() {
+        for perm in [SharePermission::Viewer, SharePermission::Editor] {
+            assert_eq!(
+                SharePermission::from_str_value(&perm.to_string()),
+                Some(perm)
+            );
+        }
+        assert_eq!(
+            SharePermission::from_str_value("EDITOR"),
+            Some(SharePermission::Editor)
+        );
+        assert_eq!(SharePermission::from_str_value("commenter"), None);
+    }
+
+    #[test]
+    fn file_detail_response_flattens_file_and_lists_shares() {
+        let now = Utc::now();
+        let file_id = Uuid::new_v4();
+        let owner = Uuid::new_v4();
+        let detail = FileDetailResponse {
+            file: FileMetadata {
+                id: file_id,
+                name: "shared.txt".into(),
+                mime_type: "text/plain".into(),
+                size_bytes: 2,
+                s3_key: format!("files/{owner}/{file_id}"),
+                folder_id: None,
+                owner_id: owner,
+                version: 1,
+                is_trashed: false,
+                created_at: now,
+                updated_at: now,
+            },
+            shared_with: vec![FileShare {
+                id: Uuid::new_v4(),
+                file_id,
+                shared_with: Uuid::new_v4(),
+                permission: SharePermission::Editor,
+                shared_by: owner,
+                created_at: now,
+            }],
+        };
+        let value = serde_json::to_value(&detail).unwrap();
+        assert_eq!(value["id"], file_id.to_string());
+        assert_eq!(value["owner_id"], owner.to_string());
+        assert_eq!(value["shared_with"][0]["permission"], "editor");
+        assert_eq!(value["shared_with"][0]["file_id"], file_id.to_string());
+    }
+}
