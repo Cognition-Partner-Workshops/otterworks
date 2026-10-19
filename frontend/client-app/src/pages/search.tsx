@@ -84,7 +84,7 @@ function SearchContent() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Search</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Search shipments and files</h1>
 
       {/* Search form */}
       <form onSubmit={handleSubmit} className="relative">
@@ -167,7 +167,7 @@ function SearchContent() {
       ) : (
         <EmptyState
           icon={Search}
-          title="Search OtterWorks"
+          title="Search Larkbridge"
           description="Find files, documents, and folders across your workspace"
         />
       )}

@@ -1,18 +1,18 @@
-Feature: Margins analytics dashboard
+Feature: Lane margins analytics dashboard
   As a merchandising analyst
   I want a margins dashboard driven by supply-chain market data
   So that I can monitor SKU profitability (OTD-15: AC-08, AC-11, AC-12, AC-13)
 
   # BDD-12 / AC-12: direct route works (redirects to login when unauthenticated)
-  Scenario: Margins page loads or redirects
+  Scenario: Lane margins page loads or redirects
     Given I navigate to "/margins"
-    Then I should see the text "Margins" or "Sign in to your account"
+    Then I should see the text "Lane margins" or "Sign in to track loads and open shipment files"
 
   # BDD-08 / AC-08 + BDD-13 / AC-13: full dashboard renders from synthetic data
   Scenario: Authenticated user sees the full margins dashboard
     Given I am logged in as a new user
     When I navigate to "/margins"
-    Then I should see the heading "Margins"
+    Then I should see the heading "Lane margins"
     And I should see the text "Gross Margin %"
     And I should see the text "COGS / unit"
     And I should see the text "Salmon Index"
@@ -28,9 +28,9 @@ Feature: Margins analytics dashboard
     Then I should see the margins source badge
 
   # BDD-12 / AC-12: sidebar entry navigates to /margins
-  Scenario: Sidebar Margins entry navigates to the dashboard
+  Scenario: Sidebar Lane margins entry navigates to the dashboard
     Given I am logged in as a new user
     When I navigate to "/dashboard"
-    And I click the link "Margins"
+    And I click the link "Lane margins"
     Then I should be on the "/margins" page
-    And I should see the heading "Margins"
+    And I should see the heading "Lane margins"

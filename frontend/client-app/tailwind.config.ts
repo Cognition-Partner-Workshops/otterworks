@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Larkbridge Freight theme: teal primary, signal-orange accent, system sans stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,25 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f2f7f6",
+          100: "#dcebe8",
+          200: "#b5d5cf",
+          300: "#84b8af",
+          400: "#4f958a",
+          500: "#2a756b",
+          600: "#165c54",
+          700: "#114c46",
+          800: "#0d3d38",
+          900: "#0a2f2b",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#f08a45",
+          500: "#e5702a",
+          600: "#c25a1c",
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ['"Inter"', '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
       },
     },
   },

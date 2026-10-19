@@ -196,7 +196,7 @@ function MarginsContent() {
       {/* Page header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Margins</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Lane margins</h1>
           <p className="text-sm text-gray-500 mt-1" data-testid="margins-caption">
             Data as of {margins.asOfDate}
             {margins.lastSyncAt ? ` (${margins.lastSyncAt})` : ""} — Source: Trading

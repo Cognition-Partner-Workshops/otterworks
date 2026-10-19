@@ -68,7 +68,7 @@ function DocumentsContent() {
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Paperwork</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => createMutation.mutate("Untitled document")}
@@ -146,11 +146,11 @@ function DocumentListing({
     return (
       <EmptyState
         icon={FileText}
-        title={searchQuery ? "No matching documents" : "No documents yet"}
+        title={searchQuery ? "No matching paperwork" : "No paperwork yet"}
         description={
           searchQuery
             ? "Try a different search term"
-            : "Create your first document to start collaborating"
+            : "Start a new document for a load or lane."
         }
         action={
           searchQuery

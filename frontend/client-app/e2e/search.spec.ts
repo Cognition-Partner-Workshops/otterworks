@@ -6,9 +6,9 @@ test.describe("Search Page", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test("shows Search heading", async ({ page }) => {
+  test("shows the shipment search heading", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "Search", exact: true })
+      page.getByRole("heading", { name: "Search shipments and files", exact: true })
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -19,7 +19,7 @@ test.describe("Search Page", () => {
   });
 
   test("shows empty state before searching", async ({ page }) => {
-    await expect(page.getByText("Search OtterWorks")).toBeVisible({
+    await expect(page.getByText("Search Larkbridge")).toBeVisible({
       timeout: 10_000,
     });
     await expect(

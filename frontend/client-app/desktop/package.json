@@ -1,9 +1,10 @@
 {
   "name": "@otterworks/desktop",
   "version": "0.1.0",
+  "productName": "Larkbridge",
   "private": true,
-  "description": "OtterWorks desktop app - Electron shell around the client-app web build",
-  "author": "OtterWorks",
+  "description": "Larkbridge desktop app - Electron shell around the client-app web build",
+  "author": "Larkbridge Freight",
   "main": "build/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",

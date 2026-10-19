@@ -22,16 +22,16 @@ import { AuthService } from '../../core/services/auth.service';
       <mat-card class="login-card">
         <mat-card-header>
           <div class="login-header">
-            <img class="login-logo" src="assets/otter-logo.png" alt="OtterWorks logo" width="64" height="64" />
-            <h1>OtterWorks Admin</h1>
-            <p>Sign in to the admin dashboard</p>
+            <img class="login-logo" src="assets/larkbridge-logo.svg" alt="Larkbridge Freight logo" width="64" height="64" />
+            <h1>Larkbridge Control Tower</h1>
+            <p>Staff sign-in for network operations</p>
           </div>
         </mat-card-header>
         <mat-card-content>
           <form (ngSubmit)="onLogin()" class="login-form">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
-              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="admin@otterworks.io" (input)="clearError()">
+              <input matInput type="email" [(ngModel)]="email" name="email" required placeholder="ops@larkbridgefreight.test" (input)="clearError()">
               <mat-icon matSuffix>email</mat-icon>
             </mat-form-field>
 
@@ -63,7 +63,7 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #165c54;
     }
 
     .login-card {

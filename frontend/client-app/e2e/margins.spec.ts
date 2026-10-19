@@ -11,7 +11,7 @@ test.describe("Margins dashboard", () => {
 
   test("renders KPI tiles, charts, caption, badge and grid (AC-08/AC-13)", async ({ page }) => {
     await page.goto("/margins");
-    await expect(page.getByRole("heading", { name: "Margins" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lane margins" })).toBeVisible();
 
     await expect(page.getByText("Gross Margin %")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText("COGS / unit")).toBeVisible();
@@ -94,17 +94,17 @@ test.describe("Margins dashboard", () => {
   test("sidebar navigation and direct URL work (AC-12)", async ({ page }) => {
     // Sidebar entry from dashboard
     await page.goto("/dashboard");
-    await page.getByRole("link", { name: "Margins" }).click();
+    await page.getByRole("link", { name: "Lane margins" }).click();
     await expect(page).toHaveURL(/\/margins$/);
-    await expect(page.getByRole("heading", { name: "Margins" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lane margins" })).toBeVisible();
 
     // Existing routes still work
-    await page.getByRole("link", { name: "Files", exact: true }).click();
+    await page.getByRole("link", { name: "Shipment files", exact: true }).click();
     await expect(page).toHaveURL(/\/files$/);
 
     // Browser back returns to margins
     await page.goBack();
     await expect(page).toHaveURL(/\/margins$/);
-    await expect(page.getByRole("heading", { name: "Margins" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lane margins" })).toBeVisible();
   });
 });

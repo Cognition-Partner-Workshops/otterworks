@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
+// Larkbridge Freight, Inc. corporate identity content. All names, people, events, and
 // figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Larkbridge Freight, Inc.",
+  tagline: "Freight, warehousing and shipment tracking",
+  founded: 1994,
+  headquarters: "Dock 4, Carrow Junction Logistics Park",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Larkbridge Freight, Inc. is a fictional company. All people, places, shipments, and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Larkbridge started in 1994 with two box trucks and a rented cross-dock at Carrow Junction, hauling auto parts for three suppliers along the river corridor. The dispatch board was a whiteboard, and every bill of lading lived in a filing cabinet by the loading door.",
+  "As the customer list grew, the paperwork grew with it. In 2006 Larkbridge moved its rate confirmations, delivery receipts and customs packets online, so a driver at a dock and a planner at a desk could open the same file.",
+  "Today Larkbridge runs 38 warehouses and a carrier network of about 1,900 fleets, and moves roughly 14,000 loads a week. Shippers work in the same workspace our planners use to track loads, share documents and check lane margins.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Dana Okafor", title: "Chief Executive Officer", bio: "Ran linehaul planning for 12 years before taking over from the founders in 2015. Still reads the Monday on-time report first." },
+  { name: "Rafael Brandt", title: "Chief Technology Officer", bio: "Built the first shipment tracking feed on one server in the dock office. Leads the teams behind all eleven platform services." },
+  { name: "Priya Halvorsen", title: "Chief Financial Officer", bio: "Joined from a regional grocery distributor. Keeps a close eye on fuel surcharges and detention costs." },
+  { name: "Tom Ekwueme", title: "Chief Operating Officer", bio: "Opened 30 of the 38 warehouses and spends most weeks on a dock somewhere." },
+  { name: "Mei Lindqvist", title: "VP of Product", bio: "Owns the shipper workspace and the carrier portal, and prefers a dense table over a page of big numbers." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Network Operations", description: "Dispatch, linehaul planning and the 24-hour shipment desk." },
+  { name: "Warehousing", description: "Receiving, put-away, pick and pack across 38 sites." },
+  { name: "Carrier Relations", description: "Onboarding, insurance checks and rate agreements with partner fleets." },
+  { name: "Customs & Compliance", description: "Import and export filings, hazmat paperwork and audit trails." },
+  { name: "Platform Engineering", description: "Builds and runs the file, document and tracking services." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Larkbridge Files", description: "Shared storage for shipment files, with a folder per customer or lane, version history and quick preview." },
+  { name: "Larkbridge Paperwork", description: "Bills of lading, delivery receipts and rate confirmations, edited together in real time with tracked changes." },
+  { name: "Larkbridge Search", description: "Find a load by PRO number, PO, consignee or any word in its paperwork." },
+  { name: "Larkbridge Control Tower", description: "Admin console for user access, storage quotas, audit logs and system health." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Larkbridge opens its 38th warehouse, a 220,000 sq ft cross-dock at Fenmore Yard" },
+  { date: "November 2025", title: "Larkbridge shippers pass 40 million tracked shipment documents" },
+  { date: "June 2025", title: "Larkbridge adds temperature-controlled lanes between Carrow Junction and Port Halden" },
+  { date: "January 2025", title: "Larkbridge hires 300 warehouse and dispatch staff ahead of the spring season" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Carrow Junction HQ" },
+  { role: "Night Dispatcher", team: "Network Operations", location: "Fenmore Yard" },
+  { role: "Customs Compliance Analyst", team: "Customs & Compliance", location: "Remote" },
+  { role: "Warehouse Shift Lead", team: "Warehousing", location: "Port Halden DC" },
 ];

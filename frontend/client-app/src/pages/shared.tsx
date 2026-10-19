@@ -64,7 +64,7 @@ function SharedContent() {
         <EmptyState
           icon={Share2}
           title="Nothing shared with you yet"
-          description="Files and documents shared with you will appear here"
+          description="Shipment files and paperwork shared with you will appear here."
         />
       ) : (
         <div

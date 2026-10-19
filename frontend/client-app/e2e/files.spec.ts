@@ -6,14 +6,14 @@ test.describe("Files Page", () => {
   });
 
   test("shows Files heading or redirects to login", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const heading = page.getByRole("heading", { name: "Shipment files" });
+    const loginHeading = page.getByText("Sign in to track loads and open shipment files");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
   test("has upload button", async ({ page }) => {
     // Wait for the Files heading to appear
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
+    const heading = page.getByRole("heading", { name: "Shipment files" });
     await expect(heading).toBeVisible({ timeout: 15_000 });
 
     // Files page has "Upload" and "New folder" buttons
@@ -22,8 +22,8 @@ test.describe("Files Page", () => {
   });
 
   test("shows empty state or file listing", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const heading = page.getByRole("heading", { name: "Shipment files" });
+    const loginHeading = page.getByText("Sign in to track loads and open shipment files");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -35,8 +35,8 @@ test.describe("Files Page", () => {
   });
 
   test("has grid/list view toggle", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const heading = page.getByRole("heading", { name: "Shipment files" });
+    const loginHeading = page.getByText("Sign in to track loads and open shipment files");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {

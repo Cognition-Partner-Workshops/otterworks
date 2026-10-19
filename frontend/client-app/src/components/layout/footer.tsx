@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="border-t border-gray-300 bg-white">
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-center gap-2 px-4 text-xs text-gray-500">
-        <span>© OtterWorks, Inc.</span>
+        <span>© Larkbridge Freight, Inc.</span>
         <span aria-hidden="true">·</span>
         <span>v{__APP_VERSION__}</span>
         <span aria-hidden="true">·</span>

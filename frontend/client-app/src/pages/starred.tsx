@@ -92,10 +92,10 @@ function StarredContent() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <Breadcrumb items={[{ label: "Starred" }]} />
+      <Breadcrumb items={[{ label: "Pinned" }]} />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Starred</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Pinned</h1>
         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
           <ViewBtn
             mode="grid"
@@ -117,8 +117,8 @@ function StarredContent() {
       ) : isEmpty ? (
         <EmptyState
           icon={Star}
-          title="No starred items"
-          description="Star files and documents for quick access. They will appear here."
+          title="No pinned items"
+          description="Pin shipment files and paperwork for quick access. They will appear here."
         />
       ) : (
         <div className="space-y-8">

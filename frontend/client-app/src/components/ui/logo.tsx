@@ -1,4 +1,4 @@
-import otterLogo from "@/assets/otter-logo.png";
+import larkbridgeLogo from "@/assets/larkbridge-logo.svg";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -9,8 +9,8 @@ interface LogoProps {
 export function Logo({ size = 32, className }: LogoProps) {
   return (
     <img
-      src={otterLogo}
-      alt="OtterWorks logo"
+      src={larkbridgeLogo}
+      alt="Larkbridge Freight logo"
       width={size}
       height={size}
       className={cn("shrink-0 select-none", className)}

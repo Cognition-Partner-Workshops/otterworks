@@ -314,7 +314,7 @@ function FileBrowserContent() {
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Files</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Shipment files</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -432,8 +432,8 @@ function FileBrowserContent() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title="This folder is empty"
-          description="Upload files or create folders to get started"
+          title="No shipment files yet."
+          description="Upload a bill of lading, POD or packing list to get started."
           action={{ label: "Upload files", onClick: () => setShowUpload(true) }}
         />
       ) : (

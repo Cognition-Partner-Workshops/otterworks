@@ -332,7 +332,7 @@ const CHAOS_STATE_KEY = 'ow_admin_chaos_state';
             <div class="onboarding-hero">
               <mat-icon class="onboarding-icon">smart_toy</mat-icon>
               <h2>Automated Incident Response</h2>
-              <p>Report an incident and Devin will automatically spin up a session to investigate the root cause across OtterWorks' 11 microservices.</p>
+              <p>Report an incident and Devin will open a session to trace the root cause across the 11 platform services.</p>
             </div>
             <div class="onboarding-steps">
               <div class="step">

@@ -36,21 +36,21 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Operations",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/dashboard", label: "Overview", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
-      { href: "/files", label: "Files", icon: FolderOpen },
-      { href: "/documents", label: "Documents", icon: FileText },
+      { href: "/files", label: "Shipment files", icon: FolderOpen },
+      { href: "/documents", label: "Paperwork", icon: FileText },
       { href: "/search", label: "Search", icon: Search },
-      { href: "/margins", label: "Margins", icon: TrendingUp },
+      { href: "/margins", label: "Lane margins", icon: TrendingUp },
     ],
   },
   {
-    label: "Collaboration",
+    label: "Team",
     items: [
       { href: "/shared", label: "Shared with me", icon: Share2 },
-      { href: "/starred", label: "Starred", icon: Star },
+      { href: "/starred", label: "Pinned", icon: Star },
       { href: "/notifications", label: "Notifications", icon: Bell },
     ],
   },
@@ -90,7 +90,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">OtterWorks</span>
+              <span className="font-semibold text-white text-sm">Larkbridge</span>
             </Link>
           )}
           <button

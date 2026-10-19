@@ -8,7 +8,7 @@ test.describe("Authentication", () => {
       // Without a running backend, registration will show an error or stay on the page
       // Verify the form was submitted (button becomes disabled during loading)
       const errorMsg = page.getByText("Registration failed");
-      const dashboard = page.getByRole("heading", { name: "Dashboard" });
+      const dashboard = page.getByRole("heading", { name: "Overview" });
       // Either we get an error (no backend) or we redirect to dashboard (backend running)
       await expect(errorMsg.or(dashboard)).toBeVisible({ timeout: 15_000 });
     });
@@ -113,10 +113,10 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/register/);
     });
 
-    test("displays OtterWorks logo and branding", async ({ page }) => {
+    test("displays Larkbridge branding", async ({ page }) => {
       await page.goto("/login");
-      await expect(page.getByText("OtterWorks")).toBeVisible();
-      await expect(page.getByText("Sign in to your account")).toBeVisible();
+      await expect(page.getByText("Larkbridge")).toBeVisible();
+      await expect(page.getByText("Sign in to track loads and open shipment files")).toBeVisible();
     });
   });
 });
