@@ -30,10 +30,15 @@ function config(overrides: Partial<ServerConfig> = {}) {
 async function signIn(agent: ReturnType<typeof request.agent>, name: string, email: string) {
   const login = await agent.get("/auth/login?returnTo=%2Fboards%2FOW%2FOW-42").expect(302);
   const authorization = new URL(login.headers.location);
-  authorization.searchParams.set("name", name);
-  authorization.searchParams.set("email", email);
-  const providerResponse = await request(idpApp)
+  const form = await request(idpApp)
     .get(`${authorization.pathname}${authorization.search}`)
+    .expect(200);
+  const authorizationId = form.text.match(/name="authorization_id" value="([^"]+)"/)?.[1];
+  expect(authorizationId).toBeTruthy();
+  const providerResponse = await request(idpApp)
+    .post("/authorize")
+    .type("form")
+    .send({ authorization_id: authorizationId, name, email })
     .expect(302);
   const callback = new URL(providerResponse.headers.location);
   await agent.get(`${callback.pathname}${callback.search}`).expect(302).expect("Location", "/boards/OW/OW-42");
@@ -79,9 +84,14 @@ describe("workbench server", () => {
     expect(authorization.searchParams.get("scope")).toBe("openid profile email");
 
     const idpUrl = new URL(login.headers.location);
-    idpUrl.searchParams.set("name", "Alice Example");
-    idpUrl.searchParams.set("email", "alice@example.com");
-    const providerResponse = await request(idpApp).get(`${idpUrl.pathname}${idpUrl.search}`).expect(302);
+    const form = await request(idpApp).get(`${idpUrl.pathname}${idpUrl.search}`).expect(200);
+    const authorizationId = form.text.match(/name="authorization_id" value="([^"]+)"/)?.[1];
+    expect(authorizationId).toBeTruthy();
+    const providerResponse = await request(idpApp).post("/authorize").type("form").send({
+      authorization_id: authorizationId,
+      name: "Alice Example",
+      email: "alice@example.com",
+    }).expect(302);
     const callback = new URL(providerResponse.headers.location);
     await agent.get(`${callback.pathname}${callback.search}`).expect(302).expect("Location", "/boards/OW/OW-42");
     await agent.get("/api/me").expect(200, {
@@ -98,6 +108,8 @@ describe("workbench server", () => {
       nonce: "form-nonce",
       code_challenge: "form-challenge",
       code_challenge_method: "S256",
+      name: "Query Attendee",
+      email: "query@example.com",
     }).expect(200);
     expect(response.text).not.toContain("https://client.example.test/auth/callback");
     const authorizationId = response.text.match(/name="authorization_id" value="([^"]+)"/)?.[1];
@@ -111,6 +123,20 @@ describe("workbench server", () => {
     const callback = new URL(completed.headers.location);
     expect(callback.origin + callback.pathname).toBe("https://client.example.test/auth/callback");
     expect(callback.searchParams.get("state")).toBe("form-state");
+  });
+
+  it("rate limits the fake IdP authorize and token endpoints", async () => {
+    const limitedIdp = await createFakeIdp({ rateLimit: 1 });
+    await request(limitedIdp.app).get("/authorize").expect(400);
+    await request(limitedIdp.app).get("/authorize").expect(429);
+    await request(limitedIdp.app).post("/token").type("form").send({
+      code: "invalid",
+      grant_type: "authorization_code",
+    }).expect(400);
+    await request(limitedIdp.app).post("/token").type("form").send({
+      code: "invalid",
+      grant_type: "authorization_code",
+    }).expect(429);
   });
 
   it("sets a secure session cookie behind the trusted TLS proxy", async () => {
@@ -149,10 +175,13 @@ describe("workbench server", () => {
   it("rejects bad state and unsafe return destinations", async () => {
     const agent = request.agent(createApp(config(), new MemoryStore()));
     await agent.get("/auth/callback?state=wrong&code=unused").expect(400);
-    expect(safeReturnTo("//evil.example")).toBe("/");
-    expect(safeReturnTo("https://evil.example")).toBe("/");
-    expect(safeReturnTo("/\\evil.example")).toBe("/");
-    expect(safeReturnTo("/boards/OW/OW-42?tab=history")).toBe("/boards/OW/OW-42?tab=history");
+    expect(safeReturnTo("//evil.example", "https://workbench.test")).toBe("/");
+    expect(safeReturnTo("https://evil.example", "https://workbench.test")).toBe("/");
+    expect(safeReturnTo("/\\evil.example", "https://workbench.test")).toBe("/");
+    expect(safeReturnTo("/boards/OW/OW-42?tab=history#comments", "https://workbench.test"))
+      .toBe("/boards/OW/OW-42?tab=history#comments");
+    expect(safeReturnTo("https://workbench.test/boards/OW/OW-42?tab=history", "https://workbench.test"))
+      .toBe("/boards/OW/OW-42?tab=history");
   });
 
   it("isolates attendee state and resets only the caller", async () => {
@@ -163,8 +192,8 @@ describe("workbench server", () => {
     await signIn(alice, "Alice Example", "alice@example.com");
     await signIn(bob, "Bob Example", "bob@example.com");
 
-    await alice.put("/api/state/chat").send([{ id: "alice-message" }]).expect(204);
-    await bob.put("/api/state/chat").send([{ id: "bob-message" }]).expect(204);
+    await alice.put("/api/state/chat").set("X-Workbench-Request", "1").send([{ id: "alice-message" }]).expect(204);
+    await bob.put("/api/state/chat").set("X-Workbench-Request", "1").send([{ id: "bob-message" }]).expect(204);
     await alice.get("/api/state").expect(200, {
       boards: null,
       chat: [{ id: "alice-message" }],
@@ -175,7 +204,7 @@ describe("workbench server", () => {
       chat: [{ id: "bob-message" }],
       settings: null,
     });
-    await alice.delete("/api/state").expect(204);
+    await alice.delete("/api/state").set("X-Workbench-Request", "1").expect(204);
     await alice.get("/api/state").expect(200, { boards: null, chat: null, settings: null });
     await bob.get("/api/state").expect(200, {
       boards: null,
@@ -183,6 +212,43 @@ describe("workbench server", () => {
       settings: null,
     });
     expect(userKey("alice#one")).toBe("fk:alice_one");
+  });
+
+  it("requires the custom request header and a same-origin Origin for API writes", async () => {
+    const agent = request.agent(createApp(config(), new MemoryStore()));
+    await signIn(agent, "Alice Example", "alice@example.com");
+
+    await agent.put("/api/state/chat").send([]).expect(403);
+    await agent.put("/api/state/chat")
+      .set("X-Workbench-Request", "1")
+      .set("Origin", "https://foreign.example")
+      .send([])
+      .expect(403);
+    await agent.put("/api/state/chat")
+      .set("X-Workbench-Request", "1")
+      .set("Origin", "http://workbench.test")
+      .send([])
+      .expect(204);
+  });
+
+  it("limits auth requests per IP and API requests per session subject", async () => {
+    const authApp = createApp(config({ auth: "none", authRateLimit: 2 }), new MemoryStore());
+    await request(authApp).get("/auth/login").expect(302);
+    await request(authApp).get("/auth/login").expect(302);
+    await request(authApp).get("/auth/login").expect(429);
+
+    const apiApp = createApp(config({ apiRateLimit: 1 }), new MemoryStore());
+    await request(apiApp).get("/api/me").expect(401);
+    await request(apiApp).get("/api/me").expect(429);
+
+    const userApp = createApp(config({ apiRateLimit: 1 }), new MemoryStore());
+    const alice = request.agent(userApp);
+    const bob = request.agent(userApp);
+    await signIn(alice, "Alice Example", "alice@example.com");
+    await signIn(bob, "Bob Example", "bob@example.com");
+    await alice.get("/api/me").expect(200);
+    await alice.get("/api/state").expect(429);
+    await bob.get("/api/me").expect(200);
   });
 
   it("serves health while sign-in configuration is missing and returns a 503 HTML page", async () => {

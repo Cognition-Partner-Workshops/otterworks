@@ -55,7 +55,10 @@ export class RemoteStorage implements Storage {
       const response = await fetch(`/api/state/${doc}`, {
         method: "PUT",
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Workbench-Request": "1",
+        },
         body: JSON.stringify(parsed),
       });
       if (response.status === 401) {
@@ -75,7 +78,11 @@ export class RemoteStorage implements Storage {
     if (this.resetStarted) return this.pendingWrites;
     this.resetStarted = true;
     this.pendingWrites = this.pendingWrites.then(async () => {
-      const response = await fetch("/api/state", { method: "DELETE", credentials: "same-origin" });
+      const response = await fetch("/api/state", {
+        method: "DELETE",
+        credentials: "same-origin",
+        headers: { "X-Workbench-Request": "1" },
+      });
       if (response.status === 401) {
         redirectToLogin();
         return;

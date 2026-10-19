@@ -127,7 +127,11 @@ export function ResetDemoButton({ className = "" }: { className?: string }) {
           const storage = getWorkbenchStorage();
           const reset = storage instanceof RemoteStorage
             ? storage.reset()
-            : fetch("/api/state", { method: "DELETE", credentials: "same-origin" }).then(() => undefined);
+            : fetch("/api/state", {
+              method: "DELETE",
+              credentials: "same-origin",
+              headers: { "X-Workbench-Request": "1" },
+            }).then(() => undefined);
           void reset.finally(() => window.location.reload());
         } else {
           resetWorkbenchData();

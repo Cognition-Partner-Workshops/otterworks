@@ -2,6 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand, DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import cookieSession from "cookie-session";
 import express, { type NextFunction, type Request, type Response } from "express";
+import { rateLimit } from "express-rate-limit";
 import { generators, Issuer, type Client } from "openid-client";
 import path from "node:path";
 
@@ -35,6 +36,8 @@ export interface ServerConfig {
   region?: string;
   port: number;
   distDir: string;
+  authRateLimit?: number;
+  apiRateLimit?: number;
 }
 
 export function readConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
@@ -55,9 +58,15 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   };
 }
 
-export function safeReturnTo(value: unknown): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return "/";
-  return value;
+export function safeReturnTo(value: unknown, publicOrigin: string): string {
+  if (typeof value !== "string") return "/";
+  try {
+    const origin = new URL(publicOrigin).origin;
+    const url = new URL(value, origin);
+    return url.origin === origin ? `${url.pathname}${url.search}${url.hash}` : "/";
+  } catch {
+    return "/";
+  }
 }
 
 export function userKey(sub: string): string {
@@ -72,12 +81,32 @@ export class MemoryStore implements StateStore {
   }
 
   async put(key: string, doc: StateDoc, value: unknown): Promise<void> {
-    this.data.set(key, { ...(this.data.get(key) ?? {}), [doc]: value });
+    const state = { ...(this.data.get(key) ?? {}) };
+    assignStateDoc(state, doc, value);
+    this.data.set(key, state);
   }
 
   async reset(key: string): Promise<void> {
     this.data.delete(key);
   }
+}
+
+function assignStateDoc(state: Partial<Record<StateDoc, unknown>>, doc: string, value: unknown): void {
+  switch (doc) {
+    case "boards":
+      state.boards = value;
+      break;
+    case "chat":
+      state.chat = value;
+      break;
+    case "settings":
+      state.settings = value;
+      break;
+  }
+}
+
+function isStateDoc(doc: string): doc is StateDoc {
+  return DOCS.some((allowedDoc) => allowedDoc === doc);
 }
 
 export class DynamoStore implements StateStore {
@@ -101,12 +130,11 @@ export class DynamoStore implements StateStore {
         ...(lastKey ? { ExclusiveStartKey: lastKey } : {}),
       }));
       for (const item of response.Items ?? []) {
-        if (DOCS.includes(item.doc as StateDoc) && typeof item.value === "string") {
-          try {
-            state[item.doc as StateDoc] = JSON.parse(item.value);
-          } catch {
-            continue;
-          }
+        if (typeof item.doc !== "string" || typeof item.value !== "string") continue;
+        try {
+          assignStateDoc(state, item.doc, JSON.parse(item.value));
+        } catch {
+          continue;
         }
       }
       lastKey = response.LastEvaluatedKey;
@@ -149,6 +177,7 @@ export class DynamoStore implements StateStore {
 
 type SessionState = {
   user?: User;
+  issuedAt?: number;
   authRequest?: { state: string; nonce: string; codeVerifier: string; returnTo: string; expiresAt: number };
 };
 
@@ -174,6 +203,21 @@ function currentUser(req: Request): User | undefined {
   return (req.session as SessionState | null)?.user;
 }
 
+function csrfProtection(publicOrigin: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.method === "GET" || req.method === "HEAD") {
+      next();
+      return;
+    }
+    const origin = req.get("Origin");
+    if (req.get("X-Workbench-Request") !== "1" || (origin !== undefined && origin !== publicOrigin)) {
+      res.status(403).json({ error: "forbidden" });
+      return;
+    }
+    next();
+  };
+}
+
 function userFromClaims(claims: Record<string, unknown>, fallback?: Record<string, unknown>): User {
   const source = { ...fallback, ...claims };
   const sub = typeof source.sub === "string" ? source.sub : "";
@@ -195,6 +239,7 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
   ? new MemoryStore()
   : new DynamoStore(config.table, config.region)) {
   const app = express();
+  const publicOrigin = new URL(config.publicUrl).origin;
   const sessionSecret = config.sessionSecret || (config.auth === "none" ? "local-workbench-session-secret" : undefined);
   const configured = config.auth === "none" || Boolean(config.clientId && config.clientSecret && sessionSecret);
 
@@ -218,6 +263,24 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
       sameSite: "lax",
     }));
   }
+  app.use("/auth", rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: config.authRateLimit ?? 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }));
+  app.use("/api", rateLimit({
+    windowMs: 60 * 1000,
+    limit: config.apiRateLimit ?? 1200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      const user = currentUser(req);
+      return user ? `sub:${user.sub}` : `ip:${req.ip}`;
+    },
+  }));
+  app.use("/api", csrfProtection(publicOrigin));
+  app.use("/auth", csrfProtection(publicOrigin));
   app.use(express.json({
     limit: "350kb",
     verify: (req, _res, buffer) => {
@@ -243,7 +306,7 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
     }
     if (config.auth === "none") {
       req.session = { user: { sub: "local", name: "Local user", email: "local@example.com" } } as SessionState;
-      res.redirect(safeReturnTo(req.query.returnTo));
+      res.redirect(safeReturnTo(req.query.returnTo, publicOrigin));
       return;
     }
     try {
@@ -256,7 +319,7 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
         state,
         nonce,
         codeVerifier,
-        returnTo: safeReturnTo(req.query.returnTo),
+        returnTo: safeReturnTo(req.query.returnTo, publicOrigin),
         expiresAt: Date.now() + 5 * 60 * 1000,
       };
       res.redirect(client.authorizationUrl({
@@ -299,7 +362,7 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
         userInfo = await client.userinfo(tokens.access_token!) as Record<string, unknown>;
       }
       const user = userFromClaims(claims, userInfo);
-      req.session = { user } as SessionState;
+      req.session = { user, issuedAt: Date.now() } as SessionState;
       res.redirect(authRequest.returnTo);
     } catch {
       const loginUrl = `/auth/login?returnTo=${encodeURIComponent(authRequest.returnTo)}`;
@@ -342,7 +405,8 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
     }
   });
   app.put("/api/state/:doc", async (req, res, next) => {
-    if (!DOCS.includes(req.params.doc as StateDoc)) {
+    const doc = req.params.doc;
+    if (!isStateDoc(doc)) {
       res.status(400).json({ error: "invalid document" });
       return;
     }
@@ -351,7 +415,7 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
       return;
     }
     try {
-      await store.put(userKey(currentUser(req)!.sub), req.params.doc as StateDoc, req.body);
+      await store.put(userKey(currentUser(req)!.sub), doc, req.body);
       res.status(204).end();
     } catch (error) {
       next(error);

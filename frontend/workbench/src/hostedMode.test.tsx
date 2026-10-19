@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ResetDemoButton } from "@/components/shared";
 import { ChannelPage } from "@/pages/ChatPage";
 import { fixtures as baseFixtures } from "@/fixtures/fixtures";
 import type { Fixtures } from "@/fixtures/types";
@@ -44,6 +45,7 @@ describe("hosted workbench client", () => {
     storage.setItem("workbench.chat.v1", JSON.stringify([{ id: "message-1" }]));
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/state/chat", expect.objectContaining({
       method: "PUT",
+      headers: expect.objectContaining({ "X-Workbench-Request": "1" }),
       body: JSON.stringify([{ id: "message-1" }]),
     })));
   });
@@ -57,7 +59,29 @@ describe("hosted workbench client", () => {
     storage.clear();
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(fetchMock.mock.calls.filter(([url, options]) => url === "/api/state" && options?.method === "DELETE")).toHaveLength(1);
+    expect(fetchMock.mock.calls[1]?.[1]?.headers).toEqual({ "X-Workbench-Request": "1" });
     expect(fetchMock.mock.calls.map(([, options]) => options?.method)).toEqual(["PUT", "DELETE"]);
+  });
+
+  it("marks the hosted reset fallback request with the CSRF header", () => {
+    const fetchMock = vi.fn().mockImplementation(() => new Promise(() => undefined));
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <WorkbenchProvider value={{
+        fixtures: baseFixtures,
+        user: { sub: "alice", name: "Alice Attendee", email: "alice@example.com" },
+        mode: "hosted",
+        tenantId: "",
+        setTenantId: () => undefined,
+      }}>
+        <ResetDemoButton />
+      </WorkbenchProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Reset demo data" }));
+    expect(fetchMock).toHaveBeenCalledWith("/api/state", expect.objectContaining({
+      method: "DELETE",
+      headers: { "X-Workbench-Request": "1" },
+    }));
   });
 
   it("redirects expired PUT and DELETE sessions back to the current route", async () => {
@@ -86,6 +110,11 @@ describe("hosted workbench client", () => {
       "/auth/login?returnTo=%2Fboards%2FOW%2FOW-42%3Fview%3Dhistory",
     );
     expect(fetchMock.mock.calls.map(([, options]) => options?.method)).toEqual(["PUT", "DELETE"]);
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual({
+      "Content-Type": "application/json",
+      "X-Workbench-Request": "1",
+    });
+    expect(fetchMock.mock.calls[1]?.[1]?.headers).toEqual({ "X-Workbench-Request": "1" });
   });
 
   it("attributes new chat, comment, and activity records to the hosted attendee", () => {

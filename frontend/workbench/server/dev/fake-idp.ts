@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from "express";
+import { rateLimit } from "express-rate-limit";
 import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
@@ -16,7 +17,7 @@ interface FakeUser {
   email: string;
 }
 
-export async function createFakeIdp() {
+export async function createFakeIdp(options: { rateLimit?: number } = {}) {
   const { privateKey, publicKey } = await generateKeyPair("RS256");
   const publicJwk = await exportJWK(publicKey);
   publicJwk.kid = "fake-idp-key";
@@ -27,6 +28,18 @@ export async function createFakeIdp() {
   const pendingAuthorizations = new Map<string, AuthorizationRequest>();
   const app = express();
   app.use(express.urlencoded({ extended: false }));
+  app.use("/authorize", rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: options.rateLimit ?? 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }));
+  app.use("/token", rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: options.rateLimit ?? 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }));
 
   const issuer = (req: Request) => `${req.protocol}://${req.get("host")}`;
   app.get("/.well-known/openid-configuration", (req, res) => {
@@ -57,10 +70,6 @@ export async function createFakeIdp() {
     };
     if (!request.redirectUri || !request.state || !request.nonce || request.codeChallengeMethod !== "S256") {
       res.status(400).type("text").send("Invalid authorization request");
-      return;
-    }
-    if (req.query.name && req.query.email) {
-      completeAuthorization(request, { name: String(req.query.name), email: String(req.query.email) }, res);
       return;
     }
     const authorizationId = randomUUID();
