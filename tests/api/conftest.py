@@ -61,6 +61,26 @@ class ApiClient:
             refresh_token=data["refreshToken"],
         )
 
+    def login_admin(self) -> RegisteredUser:
+        """Log in as the seeded admin (index mutation requires the ADMIN role)."""
+        email = os.getenv("OTTERWORKS_ADMIN_EMAIL", "admin@otterworks.dev")
+        password = os.getenv("OTTERWORKS_ADMIN_PASSWORD", "Admin123!")
+        response = self.client.post(
+            "/api/v1/auth/login",
+            json={"email": email, "password": password},
+        )
+        assert response.status_code == 200, response.text
+        data = response.json()
+        user = data["user"]
+        return RegisteredUser(
+            email=email,
+            password=password,
+            display_name=user.get("displayName", "Admin User"),
+            id=user["id"],
+            access_token=data["accessToken"],
+            refresh_token=data["refreshToken"],
+        )
+
     def login_user(self, user: RegisteredUser) -> dict:
         response = self.client.post(
             "/api/v1/auth/login",

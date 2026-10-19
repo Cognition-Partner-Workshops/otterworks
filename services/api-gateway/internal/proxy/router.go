@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
@@ -12,6 +13,17 @@ import (
 
 	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/middleware"
 )
+
+const (
+	// HeaderUserID carries the authenticated user's ID to backends.
+	HeaderUserID = "X-User-ID"
+	// HeaderUserRoles carries the authenticated user's roles (comma-separated) to backends.
+	HeaderUserRoles = "X-User-Roles"
+)
+
+// IdentityHeaders are set exclusively by the gateway from validated JWT claims.
+// Inbound values are always stripped before proxying.
+var IdentityHeaders = []string{HeaderUserID, HeaderUserRoles}
 
 // Route defines a mapping from a URL prefix to a backend service.
 type Route struct {
@@ -21,10 +33,10 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -59,23 +71,35 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-
-	// Wrap the default director to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
-			userID := claims.Subject
-			if userID == "" {
-				userID = claims.UserID
+	// Rewrite (not Director) so that nothing the gateway sets on the outbound
+	// request can be stripped afterwards by ReverseProxy. The auth-service issues
+	// JWTs with the user ID in the standard "sub" claim (claims.Subject); fall back
+	// to the custom "user_id" claim for compatibility.
+	//
+	// Backends trust the identity headers as the gateway's word, so any value the
+	// client sent is dropped first; a backend only ever sees a value this gateway
+	// derived from validated claims (or no header at all on public paths).
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(target)
+			pr.Out.Host = pr.In.Host
+			pr.SetXForwarded()
+			for _, h := range IdentityHeaders {
+				pr.Out.Header.Del(h)
 			}
-			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+			if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
+				userID := claims.Subject
+				if userID == "" {
+					userID = claims.UserID
+				}
+				if userID != "" {
+					pr.Out.Header.Set(HeaderUserID, userID)
+				}
+				if len(claims.Roles) > 0 {
+					pr.Out.Header.Set(HeaderUserRoles, strings.Join(claims.Roles, ","))
+				}
 			}
-		}
+		},
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
