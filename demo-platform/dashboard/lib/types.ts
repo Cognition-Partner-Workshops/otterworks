@@ -59,6 +59,7 @@ export interface PodInfo {
 // Audit `action` set from control-table-schema.md.
 export type AuditAction =
   | "checkout"
+  | "wake"
   | "checkin"
   | "extend"
   | "deploy_ok"

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { withSession, json, error } from "@/lib/api";
 import { appendAudit, getTenant, setPinned } from "@/lib/control";
 import type { PinRequest } from "@/lib/types";
+import { setNamespaceExpiry } from "@/lib/k8s";
 import { NEVER_TTL_SECONDS, ttlToSeconds } from "@/lib/util";
 
 export const runtime = "nodejs";
@@ -37,6 +38,12 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
   }
 
   const expiresAt = await setPinned(id, body.pinned, ttlSeconds);
+  try {
+    await setNamespaceExpiry(tenant.namespace || `otterworks-${id}`, expiresAt);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return error(502, `pin saved but namespace expiry not updated (the namespace reaper still uses the old one): ${msg}`);
+  }
 
   await appendAudit({
     tenantId: id,

@@ -26,6 +26,7 @@
 #   tenant.sh sync     <branch> [image-tag]    # CD: redeploy, creating if absent
 #   tenant.sh persist  <id> true|false
 #   tenant.sh pin      <id> true|false        # never expire, still idle to zero
+#   tenant.sh wake     <id>                   # scale an idle tenant back up
 #
 # TENANT_PREFIX namespaces the ids `sync` derives, so that a fork of this repo
 # drives its own environments off branch names identical to this one's.
@@ -343,7 +344,18 @@ case "${cmd}" in
       jq -r --arg id "${id}" '"[tenant] \($id): pinned=\(.pinned), expires \(.expiresAt | todate)"'
     ;;
 
+  # Idle-suspend keeps the tenant reserved, so check-out refuses it; this
+  # scales it back up in place.
+  wake)
+    id="${1:-}"
+    [ -n "${id}" ] || fail "usage: tenant.sh wake <id>"
+
+    login
+    api POST "/api/tenants/${id}/wake" '{}' |
+      jq -r --arg id "${id}" '"[tenant] \($id): waking (job \(.job)); give it a minute or two"'
+    ;;
+
   *)
-    fail "unknown command '${cmd}' -- expected list, checkout, checkin, extend, status, sync, persist or pin"
+    fail "unknown command '${cmd}' -- expected list, checkout, checkin, extend, status, sync, persist, pin or wake"
     ;;
 esac

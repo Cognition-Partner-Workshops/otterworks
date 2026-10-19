@@ -28,7 +28,10 @@ The dashboard is a **Next.js** app (server + UI in one deployable) in namespace
   if a deploy is already running for it.
 - `POST /api/tenants/:id/checkin` → enqueue **teardown runner Job**, status `draining`.
   409 for a persistent tenant; clear the flag first (there is deliberately no force flag).
-- `POST /api/tenants/:id/extend` `{ ttl }` → bump `expires_at`.
+- `POST /api/tenants/:id/extend` `{ ttl }` → bump `expires_at` (and the namespace's
+  `demo/expires-at-epoch`, which the namespace reaper reads).
+- `POST /api/tenants/:id/wake` → runner Job (`OP=wake`) that scales an idle-suspended tenant's
+  deployments back to 1 without touching its record. 409 unless the tenant is `active`.
 - `POST /api/tenants/:id/persist` `{ persistent, ttl? }` → mark a tenant perpetual, or return it
   to the TTL regime with `ttl` (default `24h`). Setting the flag is allowed only for an id in
   `PERPETUAL_TENANT_IDS`; clearing it is always allowed. The flag and `expires_at` are written

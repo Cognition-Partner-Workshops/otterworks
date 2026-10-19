@@ -51,7 +51,7 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function act(kind: "checkin" | "extend" | "inject" | "redeploy") {
+  async function act(kind: "checkin" | "extend" | "inject" | "redeploy" | "wake") {
     setBusy(kind);
     setError(null);
     try {
@@ -59,6 +59,8 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
         await apiSend(`/api/tenants/${tenant.id}/checkin`, "POST");
       } else if (kind === "extend") {
         await apiSend(`/api/tenants/${tenant.id}/extend`, "POST", { ttl: "72h" });
+      } else if (kind === "wake") {
+        await apiSend(`/api/tenants/${tenant.id}/wake`, "POST");
       } else if (kind === "redeploy") {
         await apiSend(`/api/tenants/${tenant.id}/redeploy`, "POST");
       } else {
@@ -137,6 +139,11 @@ function Row({ tenant, onChanged }: { tenant: Tenant; onChanged: () => void }) {
           </button>
           {!tenant.persistent && (
             <>
+              {tenant.status === "active" && (
+                <button className="btn-xs" disabled={busy !== null} onClick={() => act("wake")}>
+                  {busy === "wake" ? "…" : "Wake"}
+                </button>
+              )}
               {!tenant.pinned && (
                 <>
                   <button className="btn-xs" disabled={busy !== null} onClick={() => act("checkin")}>
