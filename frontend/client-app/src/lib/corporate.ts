@@ -4,12 +4,12 @@ export const COMPANY = {
   name: "Halvorne Biosciences, Inc.",
   tagline: "Trial, submission and batch records in one place",
   founded: 2004,
-  headquarters: "Building 3, Fenwick Science Park, Aldermoor",
+  headquarters: "Building 3, Esker Hill Science Park, Aldermoor",
   disclaimer: "Halvorne Biosciences, Inc. is a fictional company. All people, places, products and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "Halvorne started in 2004 as a four-person contract research group running Phase I studies out of a rented lab at Fenwick Science Park. The first product was a shared drive the team built because trial master files kept going missing between the clinic and the sponsor.",
+  "Halvorne started in 2004 as a four-person contract research group running Phase I studies out of a rented lab at Esker Hill Science Park. The first product was a shared drive the team built because trial master files kept going missing between the clinic and the sponsor.",
   "The company now runs its own pipeline in immunology and rare metabolic disease, with two plants making clinical and commercial supply. Protocols, batch records and regulatory submissions share one audit trail, so a deviation found on the plant floor can be traced to the study it touched.",
   "About 1,900 people work across the Aldermoor campus, the Kestrel Bay manufacturing site and the Lindqvist Road quality lab.",
 ];
