@@ -8,7 +8,7 @@ test.describe("Dashboard", () => {
   test("shows the Dashboard heading", async ({ page }) => {
     // Dashboard may redirect to login if unauthenticated, or show the page
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
 
     // Either we see the dashboard or we get redirected to login
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
@@ -16,7 +16,7 @@ test.describe("Dashboard", () => {
 
   test("displays Upload file and New document buttons", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     const target = heading.or(loginHeading);
     await expect(target).toBeVisible({ timeout: 10_000 });
 
@@ -29,47 +29,47 @@ test.describe("Dashboard", () => {
 
   test("renders stat cards or loading state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     const loader = page.locator("[class*='animate-spin']");
     // Dashboard may show heading, loader, or redirect to login
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
       // Stat card labels appear inside stat cards as combined text
-      await expect(page.getByText(/Total files/i)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/Member files/i)).toBeVisible({ timeout: 10_000 });
       await expect(page.getByText(/Storage used/i)).toBeVisible();
     }
   });
 
-  test("shows Recent files section or empty state", async ({ page }) => {
+  test("shows Recent member files section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
-      const recentFiles = page.getByRole("heading", { name: "Recent files" });
-      const noFiles = page.getByText("No recent files");
+      const recentFiles = page.getByRole("heading", { name: "Recent member files" });
+      const noFiles = page.getByText("No member files yet");
       await expect(recentFiles.or(noFiles)).toBeVisible({ timeout: 10_000 });
     }
   });
 
-  test("shows Recent documents section or empty state", async ({ page }) => {
+  test("shows Recent care notes section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
-      const recentDocs = page.getByRole("heading", { name: "Recent documents" });
-      const noDocs = page.getByText("No recent documents");
+      const recentDocs = page.getByRole("heading", { name: "Recent care notes" });
+      const noDocs = page.getByText("No care notes yet");
       await expect(recentDocs.or(noDocs)).toBeVisible({ timeout: 10_000 });
     }
   });
 
   test("shows Activity section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 

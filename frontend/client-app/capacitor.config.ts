@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.otterworks.app",
-  appName: "OtterWorks",
+  appName: "Halvenmoor Health",
   webDir: "dist",
   android: {
     path: "mobile/android",

@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Halvenmoor Health theme: teal primary, coral accent, softened corners, system sans stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -10,37 +9,37 @@ const config: Config = {
   theme: {
     borderRadius: {
       none: "0",
-      sm: "1px",
-      DEFAULT: "2px",
-      md: "2px",
-      lg: "2px",
-      xl: "2px",
-      "2xl": "2px",
-      "3xl": "2px",
+      sm: "2px",
+      DEFAULT: "4px",
+      md: "4px",
+      lg: "6px",
+      xl: "8px",
+      "2xl": "10px",
+      "3xl": "12px",
       full: "9999px",
     },
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f1f8f8",
+          100: "#dcefef",
+          200: "#b5dcdc",
+          300: "#84c2c3",
+          400: "#4c9fa1",
+          500: "#2a8083",
+          600: "#13686c",
+          700: "#0f5559",
+          800: "#0d4548",
+          900: "#0a3537",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#ec8a6c",
+          500: "#e0714f",
+          600: "#c25a3a",
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
       },
     },
   },

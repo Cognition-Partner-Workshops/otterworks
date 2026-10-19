@@ -99,7 +99,7 @@ test.describe("Margins dashboard", () => {
     await expect(page.getByRole("heading", { name: "Margins" })).toBeVisible();
 
     // Existing routes still work
-    await page.getByRole("link", { name: "Files", exact: true }).click();
+    await page.getByRole("link", { name: "Member files", exact: true }).click();
     await expect(page).toHaveURL(/\/files$/);
 
     // Browser back returns to margins

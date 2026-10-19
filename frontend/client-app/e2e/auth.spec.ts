@@ -113,10 +113,10 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/register/);
     });
 
-    test("displays OtterWorks logo and branding", async ({ page }) => {
+    test("displays Halvenmoor Health logo and branding", async ({ page }) => {
       await page.goto("/login");
-      await expect(page.getByText("OtterWorks")).toBeVisible();
-      await expect(page.getByText("Sign in to your account")).toBeVisible();
+      await expect(page.getByText("Halvenmoor Health")).toBeVisible();
+      await expect(page.getByText("Sign in to your member account")).toBeVisible();
     });
   });
 });

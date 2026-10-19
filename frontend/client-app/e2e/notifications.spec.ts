@@ -7,7 +7,7 @@ test.describe("Notifications Page", () => {
 
   test("shows Notifications heading or redirects to login", async ({ page }) => {
     const heading = page.getByRole("heading", { name: /Notification/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 

@@ -7,7 +7,7 @@ test.describe("Files Page", () => {
 
   test("shows Files heading or redirects to login", async ({ page }) => {
     const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -23,7 +23,7 @@ test.describe("Files Page", () => {
 
   test("shows empty state or file listing", async ({ page }) => {
     const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {
@@ -36,7 +36,7 @@ test.describe("Files Page", () => {
 
   test("has grid/list view toggle", async ({ page }) => {
     const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to your member account");
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await heading.isVisible().catch(() => false)) {

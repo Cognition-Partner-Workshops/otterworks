@@ -87,13 +87,13 @@ function DashboardContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={FolderOpen}
-          label="Total files"
+          label="Member files"
           value={storage?.fileCount?.toString() || "0"}
           color="blue"
         />
         <StatCard
           icon={FileText}
-          label="Documents"
+          label="Care notes"
           value={storage?.documentCount?.toString() || "0"}
           color="purple"
         />
@@ -136,7 +136,7 @@ function DashboardContent() {
       {/* Recent files */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent files</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Recent member files</h2>
           <Link
             to="/files"
             className="flex items-center gap-1 text-sm text-otter-600 hover:text-otter-700 font-medium"
@@ -172,8 +172,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FolderOpen}
-            title="No recent files"
-            description="Upload files to get started"
+            title="No member files yet"
+            description="Upload an ID card, referral or lab result to get started"
           />
         )}
       </section>
@@ -181,7 +181,7 @@ function DashboardContent() {
       {/* Recent documents */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent documents</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Recent care notes</h2>
           <Link
             to="/documents"
             className="flex items-center gap-1 text-sm text-otter-600 hover:text-otter-700 font-medium"
@@ -198,7 +198,7 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FileText}
-            title="No recent documents"
+            title="No care notes yet"
             description="Create a document to start collaborating"
           />
         )}

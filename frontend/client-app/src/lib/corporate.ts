@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
+// Halvenmoor Health corporate identity content. All names, people, events, and
 // figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Halvenmoor Health, Inc.",
+  tagline: "Your health plan and care team, on one record",
+  founded: 1982,
+  headquarters: "200 Larch Street, Eastbrook",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Halvenmoor Health is a fictional company. Every person, place, plan and figure on this site is made up.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Halvenmoor Health started in 1982 as a single nonprofit clinic in Eastbrook, run by two family doctors who were tired of chasing paper referrals between offices. In 1991 the clinic group started its own health plan so members could get one bill and one network.",
+  "The plan and the clinics have shared one member record since 2004. When a care coordinator updates a care plan, the member's doctor and the claims team see the same version that day.",
+  "Today Halvenmoor covers about 640,000 members across 38 counties and works with 9,200 in-network providers, from rural family practices to the Eastbrook Medical Center.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Renata Vasquez-Hale", title: "Chief Executive Officer", bio: "Ran the Eastbrook clinic for twelve years before the plan and the clinics merged their records in 2004." },
+  { name: "Samuel Adeyemi, MD", title: "Chief Medical Officer", bio: "Internist. Sets clinical policy for care coordination and signs off on every prior authorization rule." },
+  { name: "Priya Lindqvist", title: "Chief Financial Officer", bio: "Came over from hospital finance in 2016 and cut average claim turnaround from 21 days to 9." },
+  { name: "Thomas Brennagh", title: "Chief Operating Officer", bio: "Runs member services, claims operations and the four regional service centers." },
+  { name: "Mei Hartwell", title: "Chief Information Officer", bio: "Former nurse informaticist. Owns the member record and the systems that read and write it." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Member Services", description: "Answers member calls and messages about coverage, ID cards, bills and finding a doctor." },
+  { name: "Care Coordination", description: "Nurses and social workers who build care plans and follow members between visits." },
+  { name: "Claims Operations", description: "Reviews, prices and pays provider claims, and handles appeals." },
+  { name: "Clinical Records & Privacy", description: "Keeps the member record accurate, controls who can open it and reviews every access log." },
+  { name: "Provider Network", description: "Contracts with clinics, hospitals and specialists, and keeps the provider directory current." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Member Files", description: "Upload ID cards, referrals and explanation of benefits letters, share them with your care team and see every past version." },
+  { name: "Care Notes", description: "Care plans and visit notes that your coordinator and your clinicians edit together in real time." },
+  { name: "Record Search", description: "Find a claim, referral or note by member name, claim number or date of service." },
+  { name: "Network Admin", description: "Provider and staff accounts, storage limits, audit trails and system status for the operations team." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Halvenmoor opens its fourth regional service center in Millbrook Falls" },
+  { date: "November 2025", title: "Members can now send referrals and lab results straight to their care coordinator" },
+  { date: "June 2025", title: "Average claim turnaround drops to 9 days across all Halvenmoor plans" },
+  { date: "January 2025", title: "Halvenmoor adds 1,100 behavioral health providers to its network" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Care Coordinator, RN", team: "Care Coordination", location: "Eastbrook Service Center" },
+  { role: "Claims Analyst", team: "Claims Operations", location: "Remote (in state)" },
+  { role: "Member Services Representative", team: "Member Services", location: "Millbrook Falls" },
+  { role: "Health Records Engineer", team: "Clinical Records & Privacy", location: "Eastbrook HQ" },
 ];

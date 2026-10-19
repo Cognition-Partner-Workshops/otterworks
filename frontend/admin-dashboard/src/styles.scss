@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+// Halvenmoor Health theme: teal primary with a coral accent.
+$halvenmoor-teal-palette: (
+  50: #f1f8f8,
+  100: #dcefef,
+  200: #b5dcdc,
+  300: #84c2c3,
+  400: #4c9fa1,
+  500: #13686c,
+  600: #0f5559,
+  700: #0d4548,
+  800: #0a3537,
+  900: #072628,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -28,8 +28,8 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$admin-primary: mat.define-palette($halvenmoor-teal-palette, 500);
+$admin-accent: mat.define-palette(mat.$deep-orange-palette, 400);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -52,9 +52,9 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f1f8f8;
   color: #212529;
 }
 
@@ -111,12 +111,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #ec8a6c !important;
+  background: rgba(224, 113, 79, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #ec8a6c !important;
 }
 
 /* Ripple / focus state should also be light */
