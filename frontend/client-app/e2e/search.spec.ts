@@ -8,22 +8,22 @@ test.describe("Search Page", () => {
 
   test("shows Search heading", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "Search", exact: true })
+      page.getByRole("heading", { name: "Search case files and records", exact: true })
     ).toBeVisible({ timeout: 10_000 });
   });
 
   test("displays search input with placeholder", async ({ page }) => {
     await expect(
-      page.getByPlaceholder("Search files, documents, and folders...")
+      page.getByPlaceholder("Search case files, records, and folders...")
     ).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows empty state before searching", async ({ page }) => {
-    await expect(page.getByText("Search OtterWorks")).toBeVisible({
+    await expect(page.getByText("Search case files and records")).toBeVisible({
       timeout: 10_000,
     });
     await expect(
-      page.getByText("Find files, documents, and folders across your workspace")
+      page.getByText("Find case files, records, and folders across your workspace")
     ).toBeVisible();
   });
 
@@ -35,7 +35,7 @@ test.describe("Search Page", () => {
 
   test("can type a query in the search input", async ({ page }) => {
     const searchInput = page.getByPlaceholder(
-      "Search files, documents, and folders..."
+      "Search case files, records, and folders..."
     );
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill("test query");
@@ -44,7 +44,7 @@ test.describe("Search Page", () => {
 
   test("shows no results for gibberish query", async ({ page }) => {
     const searchInput = page.getByPlaceholder(
-      "Search files, documents, and folders..."
+      "Search case files, records, and folders..."
     );
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill("xyznonexistent9999");

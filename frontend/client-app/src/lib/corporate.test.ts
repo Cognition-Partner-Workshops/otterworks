@@ -11,9 +11,9 @@ import {
 
 // AC-03 / BDD-07: the corporate identity content is complete and clearly fictional.
 describe("corporate identity content", () => {
-  it("identifies the company as OtterWorks, Inc. with the retail-for-otters tagline", () => {
-    expect(COMPANY.name).toBe("OtterWorks, Inc.");
-    expect(COMPANY.tagline).toMatch(/otters/i);
+  it("identifies the fictional department and its public-service tagline", () => {
+    expect(COMPANY.name).toBe("Brindlemoor Department of Resident Services");
+    expect(COMPANY.tagline).toBe("Cases, permits, benefits and records for the State of Brindlemoor");
   });
 
   it("declares the content fictional", () => {

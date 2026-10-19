@@ -19,11 +19,11 @@ interface NavItem {
     <div class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="logo" *ngIf="!collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
-          <span class="logo-text">OtterWorks</span>
+          <img class="logo-icon" src="assets/brindlemoor-seal.svg" alt="Brindlemoor DRS logo" width="28" height="28" />
+          <span class="logo-text">Brindlemoor DRS</span>
         </div>
         <div class="logo logo-collapsed" *ngIf="collapsed">
-          <img class="logo-icon" src="assets/otter-logo.png" alt="OtterWorks logo" width="28" height="28" />
+          <img class="logo-icon" src="assets/brindlemoor-seal.svg" alt="Brindlemoor DRS logo" width="28" height="28" />
         </div>
         <button class="toggle-btn" (click)="toggleCollapsed()" [matTooltip]="collapsed ? 'Expand' : 'Collapse'">
           <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -48,7 +48,7 @@ interface NavItem {
     .sidebar {
       width: 260px;
       min-height: 100vh;
-      background: #1f3a5f;
+      background: #1f5446;
       color: #ffffff;
       display: flex;
       flex-direction: column;

@@ -1,54 +1,53 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
+// Brindlemoor Department of Resident Services content for the demo's public pages.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Brindlemoor Department of Resident Services",
+  tagline: "Cases, permits, benefits and records for the State of Brindlemoor",
+  founded: 1962,
+  headquarters: "Capitol Annex, 400 Statehouse Row, Ferris Landing",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "The State of Brindlemoor and its Department of Resident Services are fictional. All people, places, programs and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "The legislature created the Department of Resident Services in 1962 to pull three paper-heavy offices (welfare intake, building permits and the state records room) under one roof in Ferris Landing. For the first twenty years a resident could wait a month for a benefits decision while the file moved between buildings by courier.",
+  "The department moved its case files onto a shared system in 1998 and opened online permit applications in 2011. Caseworkers in all nine regional offices now open the same record, so a resident who calls the Harlow office gets the same answer as one who walks into the Capitol Annex.",
+  "Today the department handles about 410,000 open cases, 62,000 permit applications and 1.8 million public records requests a year, with a staff of 3,200 across nine regions.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Dana Whitcombe", title: "Director", bio: "Ran the Harlow regional office for eleven years before the governor appointed her director in 2022." },
+  { name: "Marcus Oyelaran", title: "Deputy Director, Benefits", bio: "Former SNAP eligibility supervisor. Cut the average benefits decision from 34 days to 19." },
+  { name: "Priya Castellanos", title: "Chief Information Officer", bio: "Leads the case management platform and the move off the 1998 mainframe screens." },
+  { name: "Tom Bratley", title: "Deputy Director, Permits and Licensing", bio: "Licensed civil engineer who spent fifteen years reviewing county building plans." },
+  { name: "Ellen Faraday", title: "State Records Officer", bio: "Keeps the retention schedules and answers to the legislature on public records requests." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Benefits Eligibility", description: "Applications, renewals and appeals for cash assistance, food assistance and child care subsidies." },
+  { name: "Case Management", description: "Caseworker assignments, home visits, case notes and service plans." },
+  { name: "Permits and Licensing", description: "Building, occupational and business permits, inspections and renewals." },
+  { name: "State Records", description: "Vital records, retention schedules and public records requests." },
+  { name: "Constituent Services", description: "The resident help line, regional front desks and complaint handling." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Case Files", description: "Every application, note, letter and decision for a resident, with version history and a full audit trail." },
+  { name: "Permit Applications", description: "Residents and contractors apply online, upload plans and track review status." },
+  { name: "Records Search", description: "Full-text search across case files and public records, filtered by program, region or date." },
+  { name: "Staff Console", description: "Supervisors manage staff accounts, storage quotas, audit logs and system health." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Harlow and Pine Ford offices start same-day permit pickup" },
+  { date: "November 2025", title: "Online benefits renewals pass 50 percent of all renewals for the first time" },
+  { date: "June 2025", title: "Department finishes scanning the 1962 to 1990 paper case archive" },
+  { date: "January 2025", title: "Records request backlog falls below 30 days statewide" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Caseworker II", team: "Case Management", location: "Harlow Regional Office" },
+  { role: "Permit Reviewer", team: "Permits and Licensing", location: "Capitol Annex" },
+  { role: "Records Analyst", team: "State Records", location: "Remote (in state)" },
+  { role: "Eligibility Specialist", team: "Benefits Eligibility", location: "Pine Ford Regional Office" },
 ];

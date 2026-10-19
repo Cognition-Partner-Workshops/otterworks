@@ -1,14 +1,14 @@
 Feature: Landing Page
-  As a prospective enterprise customer
-  I want to see the OtterWorks corporate landing page
-  So that I can learn about the company and sign up
+  As a resident
+  I want to see the Brindlemoor DRS landing page
+  So that I can learn about department services
 
   # AC-01 / BDD-01
-  Scenario: Visitor sees the corporate hero with the otter logo
+  Scenario: Visitor sees the department hero with the statehouse logo
     Given I am on the landing page
-    Then I should see the heading "OtterWorks"
-    And I should see the otter logo
-    And I should see the text "Enterprise retail products for otters"
+    Then I should see the heading "Brindlemoor DRS"
+    And I should see the Brindlemoor DRS logo
+    And I should see the text "One office for case files, permits, benefits and public records. Residents apply and check status online, and caseworkers keep every file, note and decision in the same record. Serving the state since 1962."
 
   Scenario: Visitor sees navigation CTAs
     Given I am on the landing page
@@ -18,11 +18,11 @@ Feature: Landing Page
   # AC-03 / BDD-07
   Scenario: Visitor sees the full corporate identity sections
     Given I am on the landing page
-    Then I should see the text "Our Story"
+    Then I should see the text "About the department"
     And I should see the text "Leadership"
-    And I should see the text "Departments"
-    And I should see the text "Products"
-    And I should see the text "Newsroom"
+    And I should see the text "Divisions"
+    And I should see the text "Services"
+    And I should see the text "News and notices"
     And I should see the text "Careers"
 
   Scenario: Sign In link navigates to login
@@ -38,7 +38,7 @@ Feature: Landing Page
   # AC-02c / BDD-06
   Scenario: Corporate footer is visible with legal links
     Given I am on the landing page
-    Then I should see the text "© OtterWorks, Inc."
+    Then I should see the text "© State of Brindlemoor"
     And I should see a link "Terms"
     And I should see a link "Privacy"
 

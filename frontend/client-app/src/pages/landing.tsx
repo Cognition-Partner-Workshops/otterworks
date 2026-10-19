@@ -12,7 +12,7 @@ import {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-otter-50 text-gray-800">
+    <main className="min-h-screen bg-[var(--background)] text-gray-800">
       {/* Top utility bar */}
       <header className="bg-white border-b border-gray-300">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -20,7 +20,7 @@ export default function Home() {
             <Logo size={36} />
             <div>
               <span className="block font-semibold text-gray-900 leading-tight">
-                OtterWorks, Inc.
+                Brindlemoor Department of Resident Services
               </span>
               <span className="block text-[11px] uppercase tracking-wider text-gray-500">
                 {COMPANY.tagline}
@@ -49,12 +49,13 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-16 text-center">
           <div className="flex items-center justify-center gap-4 mb-5">
             <Logo size={64} className="bg-white p-1 rounded-sm" />
-            <h1 className="text-4xl font-bold text-white">OtterWorks</h1>
+            <h1 className="text-4xl font-bold text-white">Brindlemoor DRS</h1>
           </div>
           <p className="text-lg text-otter-100 mb-2 max-w-2xl mx-auto">
-            {COMPANY.tagline}. Dependable systems of record for every den —
-            secure file storage, collaborative documents, and retail operations
-            since {COMPANY.founded}.
+            One office for case files, permits, benefits and public records.
+            Residents apply and check status online, and caseworkers keep every
+            file, note and decision in the same record. Serving the state since
+            1962.
           </p>
           <p className="text-xs text-otter-300 mb-8">{COMPANY.disclaimer}</p>
           <div className="flex items-center justify-center gap-3">
@@ -75,7 +76,7 @@ export default function Home() {
       </div>
 
       {/* Our Story */}
-      <Section id="story" title="Our Story">
+      <Section id="story" title="About the department">
         <div className="max-w-3xl mx-auto space-y-4">
           {FOUNDING_STORY.map((paragraph) => (
             <p key={paragraph.slice(0, 32)} className="text-sm text-gray-600 leading-relaxed">
@@ -86,7 +87,7 @@ export default function Home() {
       </Section>
 
       {/* Products */}
-      <Section id="products" title="Products" alt>
+      <Section id="products" title="Services" alt>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {PRODUCTS.map((product) => (
             <Card key={product.name} title={product.name} body={product.description} />
@@ -113,16 +114,16 @@ export default function Home() {
       </Section>
 
       {/* Departments */}
-      <Section id="departments" title="Departments" alt>
+      <Section id="departments" title="Divisions" alt>
         <div className="overflow-x-auto">
           <table className="w-full bg-white border border-gray-300 text-sm">
             <thead>
               <tr className="bg-otter-50 text-left">
                 <th className="px-4 py-2 border-b border-gray-300 text-xs uppercase tracking-wider text-gray-600">
-                  Department
+                  Division
                 </th>
                 <th className="px-4 py-2 border-b border-gray-300 text-xs uppercase tracking-wider text-gray-600">
-                  Charter
+                  What it handles
                 </th>
               </tr>
             </thead>
@@ -141,7 +142,7 @@ export default function Home() {
       </Section>
 
       {/* Press / Newsroom */}
-      <Section id="press" title="Newsroom">
+      <Section id="press" title="News and notices">
         <ul className="max-w-3xl mx-auto divide-y divide-gray-200 bg-white border border-gray-300 rounded">
           {PRESS_RELEASES.map((release) => (
             <li key={release.title} className="px-5 py-3">
@@ -157,8 +158,7 @@ export default function Home() {
       {/* Careers */}
       <Section id="careers" title="Careers" alt>
         <p className="text-center text-sm text-gray-600 mb-6 max-w-2xl mx-auto">
-          Join a company where every otter counts. Open roles across our
-          riverbank campuses (all positions fictional).
+          Caseworker, permit and records jobs across our regional offices (all positions fictional).
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {CAREERS.map((job) => (
@@ -182,7 +182,7 @@ export default function Home() {
 
       <div className="bg-white border-t border-gray-300 py-6 text-center">
         <p className="text-xs text-gray-400">
-          {COMPANY.name} · Headquartered at {COMPANY.headquarters} · Founded{" "}
+          {COMPANY.name} · {COMPANY.headquarters} · Established{" "}
           {COMPANY.founded}
         </p>
       </div>

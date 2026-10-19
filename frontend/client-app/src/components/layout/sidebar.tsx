@@ -36,22 +36,22 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Casework",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/dashboard", label: "Caseload", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
-      { href: "/files", label: "Files", icon: FolderOpen },
-      { href: "/documents", label: "Documents", icon: FileText },
+      { href: "/files", label: "Records", icon: FolderOpen },
+      { href: "/documents", label: "Case files", icon: FileText },
       { href: "/search", label: "Search", icon: Search },
-      { href: "/margins", label: "Margins", icon: TrendingUp },
+      { href: "/margins", label: "Program budgets", icon: TrendingUp },
     ],
   },
   {
-    label: "Collaboration",
+    label: "Interagency",
     items: [
       { href: "/shared", label: "Shared with me", icon: Share2 },
-      { href: "/starred", label: "Starred", icon: Star },
-      { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/starred", label: "Flagged", icon: Star },
+      { href: "/notifications", label: "Notices", icon: Bell },
     ],
   },
   {
@@ -90,7 +90,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">OtterWorks</span>
+              <span className="font-semibold text-white text-sm">Brindlemoor DRS</span>
             </Link>
           )}
           <button
@@ -110,7 +110,7 @@ export function Sidebar() {
               className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 transition font-medium text-sm"
             >
               <Plus size={16} />
-              New
+              New intake
             </Link>
           </div>
         )}

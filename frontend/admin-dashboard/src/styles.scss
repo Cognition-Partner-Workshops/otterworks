@@ -2,18 +2,17 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
 $otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+  50: #f2f6f5,
+  100: #e1ebe8,
+  200: #bfd4ce,
+  300: #93b5ab,
+  400: #5e8f82,
+  500: #1f5446,
+  600: #19463b,
+  700: #143830,
+  800: #0f2a24,
+  900: #0a1f1a,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -38,7 +37,9 @@ $admin-theme: mat.define-light-theme((
     accent: $admin-accent,
     warn: $admin-warn,
   ),
-  typography: mat.define-typography-config(),
+  typography: mat.define-typography-config(
+    $font-family: 'Public Sans, "Segoe UI", Helvetica, Arial, sans-serif'
+  ),
   density: 0,
 ));
 
@@ -52,9 +53,9 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: 'Public Sans', 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f3f5f4;
   color: #212529;
 }
 

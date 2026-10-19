@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Public-sector theme with a statehouse green primary and seal gold accent.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,25 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f2f6f5",
+          100: "#e1ebe8",
+          200: "#bfd4ce",
+          300: "#93b5ab",
+          400: "#5e8f82",
+          500: "#3a6f62",
+          600: "#1f5446",
+          700: "#19463b",
+          800: "#143830",
+          900: "#0f2a24",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#d4a64a",
+          500: "#c08f2c",
+          600: "#9c7221",
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        sans: ['"Public Sans"', '"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
       },
     },
   },

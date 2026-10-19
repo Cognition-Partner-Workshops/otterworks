@@ -1,7 +1,7 @@
 # Packaging config for the OtterWorks desktop app.
 # Run `npm run dist` after building the web bundle (`npm run build:web`).
 appId: com.otterworks.app
-productName: OtterWorks
+productName: Brindlemoor DRS
 directories:
   output: release
   # Holds the icon pngs (regenerate with `npm run icons`); electron-builder
