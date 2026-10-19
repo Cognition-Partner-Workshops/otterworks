@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
+// Halvergate Bank corporate identity content. All names, people, events, and figures are fictional and exist only for the product's marketing surfaces.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Halvergate Bank",
+  tagline: "Checking, lending and treasury for households and businesses",
+  founded: 1952,
+  headquarters: "220 Mill Street, Ashford Falls",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Halvergate Bank is a fictional company. All people, places, products, and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Halvergate opened in 1952 as a savings and loan on Mill Street, started by four tradespeople who wanted a bank that would lend to the shops on their own block. The first branch had two tellers, one vault and a waiting list for home loans.",
+  "Through the rate shocks of 1980 and the regional mergers of the 1990s, Halvergate stayed independent and kept lending decisions in the branches that knew the borrowers.",
+  "Today the bank runs 64 branches across three states, holds $18.4 billion in deposits and serves about 410,000 checking customers and 12,000 commercial clients.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Margaret Okafor-Hale", title: "Chief Executive Officer", bio: "Ran commercial lending for eleven years before taking the top job in 2019. Reviews the largest loan approvals herself every quarter." },
+  { name: "Daniel Ferreira", title: "Chief Technology Officer", bio: "Moved the core banking platform off the mainframe in 2022 and runs the teams behind online banking and the branch systems." },
+  { name: "Priya Raman", title: "Chief Financial Officer", bio: "Former regional controller. Owns capital planning, the treasury desk and the quarterly filings." },
+  { name: "Thomas Brekke", title: "Chief Risk Officer", bio: "Spent fifteen years as a bank examiner before joining. Runs credit risk, fraud operations and model review." },
+  { name: "Alicia Moreno", title: "Head of Retail Banking", bio: "Oversees the branch network, checking and savings, and the consumer lending desk." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Retail Banking", description: "Checking, savings, debit cards and the 64-branch network." },
+  { name: "Commercial Lending", description: "Term loans, lines of credit and equipment financing for small and mid-sized businesses." },
+  { name: "Treasury Services", description: "Cash management, ACH and wire origination, and positive pay for business clients." },
+  { name: "Risk & Compliance", description: "Credit risk, BSA/AML monitoring, fraud operations and regulatory exams." },
+  { name: "Branch Operations", description: "Staffing, vault and cash logistics, and opening and closing procedures for every branch." },
+  { name: "Technology", description: "Core banking, online and mobile banking, and the records system behind every loan file." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Everyday Checking", description: "No monthly fee with direct deposit, a free debit card and access to 64 branches and 900 ATMs." },
+  { name: "Home and Auto Loans", description: "Fixed and adjustable mortgages, home equity lines and auto loans, approved by a local loan officer." },
+  { name: "Business Banking", description: "Business checking, merchant services and lines of credit up to $5 million." },
+  { name: "Treasury Management", description: "ACH and wire origination, positive pay, sweep accounts and a daily cash position report." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Halvergate opens its 64th branch, in Cedar Point" },
+  { date: "November 2025", title: "Commercial loan book passes $6 billion" },
+  { date: "June 2025", title: "Treasury clients get same-day ACH at no extra charge" },
+  { date: "January 2025", title: "Loan files and account documents move to one records system across all branches" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Commercial Relationship Manager", team: "Commercial Lending", location: "Mill Street HQ" },
+  { role: "Branch Manager", team: "Retail Banking", location: "Cedar Point Branch" },
+  { role: "BSA/AML Analyst", team: "Risk & Compliance", location: "Remote" },
+  { role: "Platform Engineer", team: "Technology", location: "Mill Street HQ" },
 ];

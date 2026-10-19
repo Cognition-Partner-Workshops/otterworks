@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
+// Halvergate Bank theme.
 const config: Config = {
   content: [
     "./index.html",
@@ -22,25 +21,26 @@ const config: Config = {
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f3f6f4",
+          100: "#e3ebe6",
+          200: "#c3d5ca",
+          300: "#98b8a5",
+          400: "#5f8f74",
+          500: "#2f6b4f",
+          600: "#1d5340",
+          700: "#174433",
+          800: "#123628",
+          900: "#0d281e",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#c9a24a",
+          500: "#b38a2e",
+          600: "#946f1f",
         },
       },
       fontFamily: {
         sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
+        serif: ["Georgia", "Cambria", '"Times New Roman"', "serif"],
       },
     },
   },

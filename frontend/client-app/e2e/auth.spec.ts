@@ -113,9 +113,9 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/register/);
     });
 
-    test("displays OtterWorks logo and branding", async ({ page }) => {
+    test("displays Halvergate Bank logo and branding", async ({ page }) => {
       await page.goto("/login");
-      await expect(page.getByText("OtterWorks")).toBeVisible();
+      await expect(page.getByText("Halvergate Bank")).toBeVisible();
       await expect(page.getByText("Sign in to your account")).toBeVisible();
     });
   });
