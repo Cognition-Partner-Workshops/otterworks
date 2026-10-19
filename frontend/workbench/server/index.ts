@@ -38,6 +38,7 @@ export interface ServerConfig {
   distDir: string;
   authRateLimit?: number;
   apiRateLimit?: number;
+  fallbackRateLimit?: number;
 }
 
 export function readConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
@@ -430,6 +431,12 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
     }
   });
 
+  app.use(rateLimit({
+    windowMs: 60 * 1000,
+    limit: config.fallbackRateLimit ?? 600,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }));
   app.use("/assets", express.static(path.join(config.distDir, "assets"), {
     immutable: true,
     maxAge: "1y",

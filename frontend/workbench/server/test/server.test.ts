@@ -251,6 +251,12 @@ describe("workbench server", () => {
     await bob.get("/api/me").expect(200);
   });
 
+  it("rate limits SPA fallback requests per IP", async () => {
+    const app = createApp(config({ fallbackRateLimit: 1 }), new MemoryStore());
+    await request(app).get("/boards/OW/OW-42").set("Accept", "text/html").expect(302);
+    await request(app).get("/boards/OW/OW-42").set("Accept", "text/html").expect(429);
+  });
+
   it("serves health while sign-in configuration is missing and returns a 503 HTML page", async () => {
     const app = createApp(config({ clientId: undefined, clientSecret: undefined }), new MemoryStore());
     await request(app).get("/healthz").expect(200, "ok");
