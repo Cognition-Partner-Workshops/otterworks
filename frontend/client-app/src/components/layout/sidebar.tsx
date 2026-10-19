@@ -89,7 +89,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between h-12 px-3 border-b border-otter-600">
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
-              <Logo size={28} className="rounded-sm bg-white" />
+              <Logo size={28} />
               <span className="font-semibold text-white text-sm">Larkbridge</span>
             </Link>
           )}
